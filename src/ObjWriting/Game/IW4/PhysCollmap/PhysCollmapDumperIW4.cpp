@@ -7,19 +7,18 @@
 #include <sstream>
 
 using namespace IW4;
-using namespace ::phys_collmap;
 
-namespace IW4::phys_collmap
+namespace phys_collmap
 {
-    bool Dumper::ShouldDump(XAssetInfo<PhysCollmap>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<PhysCollmap>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysCollmap>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysCollmap>* asset)
     {
         const auto* physCollmap = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(phys_collmap::GetFileNameForAssetName(asset->m_name));
 
         if (!assetFile)
             return;
@@ -80,4 +79,4 @@ namespace IW4::phys_collmap
 
         mapFileDumper.EndEntity();
     }
-} // namespace IW4::phys_collmap
+} // namespace phys_collmap

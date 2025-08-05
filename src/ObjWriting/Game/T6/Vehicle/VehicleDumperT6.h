@@ -4,12 +4,12 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 
-namespace T6::vehicle
+namespace vehicle
 {
-    class Dumper final : public AbstractAssetDumper<VehicleDef>
+    class DumperT6 final : public AbstractAssetDumper<T6::VehicleDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::VehicleDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::VehicleDef>* asset) override;
     };
-} // namespace T6::vehicle
+} // namespace vehicle

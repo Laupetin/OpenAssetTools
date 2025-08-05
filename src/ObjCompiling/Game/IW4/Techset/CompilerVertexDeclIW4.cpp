@@ -92,10 +92,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::vertex_decl
+namespace vertex_decl
 {
-    std::unique_ptr<AssetCreator<AssetVertexDecl>> CreateLoader(MemoryManager& memory)
+    std::unique_ptr<AssetCreator<AssetVertexDecl>> CreateLoaderIW4(MemoryManager& memory)
     {
         return std::make_unique<LoaderVertexDecl>(memory);
     }
-} // namespace IW4::vertex_decl
+} // namespace vertex_decl

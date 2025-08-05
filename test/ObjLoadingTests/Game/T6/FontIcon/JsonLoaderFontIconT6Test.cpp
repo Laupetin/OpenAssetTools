@@ -90,7 +90,7 @@ namespace
         GivenMaterial("ui_button_xenon_lstick_anim_d", context, memory);
         GivenMaterial("xenonbutton_ls", context, memory);
 
-        auto loader = font_icon::CreateJsonLoader(memory, searchPath);
+        auto loader = font_icon::CreateJsonLoaderT6(memory, searchPath);
         auto result = loader->CreateAsset("fonticon/test.csv", context);
         REQUIRE(result.HasBeenSuccessful());
 

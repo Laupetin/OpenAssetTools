@@ -4,12 +4,12 @@
 #include "Game/IW4/IW4.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4::vehicle
+namespace vehicle
 {
-    class Dumper final : public AbstractAssetDumper<VehicleDef>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::VehicleDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::VehicleDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::VehicleDef>* asset) override;
     };
-} // namespace IW4::vehicle
+} // namespace vehicle

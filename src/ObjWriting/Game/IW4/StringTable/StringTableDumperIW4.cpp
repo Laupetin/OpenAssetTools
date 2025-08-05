@@ -4,14 +4,14 @@
 
 using namespace IW4;
 
-namespace IW4::string_table
+namespace string_table
 {
-    bool Dumper::ShouldDump(XAssetInfo<StringTable>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<StringTable>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset)
     {
         const auto* stringTable = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -39,4 +39,4 @@ namespace IW4::string_table
             csv.NextRow();
         }
     }
-} // namespace IW4::string_table
+} // namespace string_table

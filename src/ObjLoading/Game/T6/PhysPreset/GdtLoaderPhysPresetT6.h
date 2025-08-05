@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace T6::phys_preset
+namespace phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateGdtLoader(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone);
-} // namespace T6::phys_preset
+    std::unique_ptr<AssetCreator<T6::AssetPhysPreset>> CreateGdtLoaderT6(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone);
+} // namespace phys_preset

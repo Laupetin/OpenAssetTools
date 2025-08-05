@@ -7,14 +7,14 @@ using namespace T6;
 
 // #define DUMP_FONT_ICON_AS_CSV 1
 
-namespace T6::font_icon
+namespace font_icon
 {
-    std::unique_ptr<IAssetDumper<FontIcon>> CreateDumper()
+    std::unique_ptr<IAssetDumper<FontIcon>> CreateDumperT6()
     {
 #ifdef DUMP_FONT_ICON_AS_CSV
-        return std::make_unique<CsvDumper>();
+        return std::make_unique<CsvDumperT6>();
 #else
-        return std::make_unique<JsonDumper>();
+        return std::make_unique<JsonDumperT6>();
 #endif
     }
-} // namespace T6::font_icon
+} // namespace font_icon

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::phys_constraints
+namespace phys_constraints
 {
-    std::unique_ptr<AssetCreator<AssetPhysConstraints>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6::phys_constraints
+    std::unique_ptr<AssetCreator<T6::AssetPhysConstraints>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace phys_constraints

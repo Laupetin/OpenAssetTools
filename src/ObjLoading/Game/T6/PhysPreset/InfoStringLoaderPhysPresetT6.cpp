@@ -60,15 +60,15 @@ namespace
     }
 } // namespace
 
-namespace T6::phys_preset
+namespace phys_preset
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, Zone& zone)
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, Zone& zone)
         : m_memory(memory),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* physPreset = m_memory.Alloc<PhysPreset>();
         physPreset->name = m_memory.Dup(assetName.c_str());
@@ -95,4 +95,4 @@ namespace T6::phys_preset
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace T6::phys_preset
+} // namespace phys_preset

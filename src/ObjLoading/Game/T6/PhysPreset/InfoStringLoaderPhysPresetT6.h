@@ -4,12 +4,12 @@
 #include "Asset/AssetCreationResult.h"
 #include "InfoString/InfoString.h"
 
-namespace T6::phys_preset
+namespace phys_preset
 {
-    class InfoStringLoader
+    class InfoStringLoaderT6
     {
     public:
-        InfoStringLoader(MemoryManager& memory, Zone& zone);
+        InfoStringLoaderT6(MemoryManager& memory, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
@@ -17,4 +17,4 @@ namespace T6::phys_preset
         MemoryManager& m_memory;
         Zone& m_zone;
     };
-} // namespace T6::phys_preset
+} // namespace phys_preset

@@ -3,11 +3,11 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::sound
+namespace sound
 {
-    class SndBankDumper final : public IAssetDumper<SndBank>
+    class SndBankDumperT6 final : public IAssetDumper<T6::SndBank>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<T6::SndBank>* pool) override;
     };
-} // namespace T6::sound
+} // namespace sound

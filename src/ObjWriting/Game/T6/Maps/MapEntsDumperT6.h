@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::map_ents
+namespace map_ents
 {
-    class Dumper final : public AbstractAssetDumper<MapEnts>
+    class DumperT6 final : public AbstractAssetDumper<T6::MapEnts>
     {
     protected:
-        bool ShouldDump(XAssetInfo<MapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::MapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::MapEnts>* asset) override;
     };
-} // namespace T6::map_ents
+} // namespace map_ents

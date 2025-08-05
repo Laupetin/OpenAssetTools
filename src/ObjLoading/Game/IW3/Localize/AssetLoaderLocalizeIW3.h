@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace IW3::localize
+namespace localize
 {
-    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace IW3::localize
+    std::unique_ptr<AssetCreator<IW3::AssetLocalize>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace localize

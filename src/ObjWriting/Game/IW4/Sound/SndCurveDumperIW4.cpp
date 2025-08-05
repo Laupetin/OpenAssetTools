@@ -6,16 +6,15 @@
 #include <sstream>
 
 using namespace IW4;
-using namespace ::sound_curve;
 
-namespace IW4::sound_curve
+namespace sound_curve
 {
-    bool Dumper::ShouldDump(XAssetInfo<SndCurve>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<SndCurve>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<SndCurve>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<SndCurve>* asset)
     {
         const auto* sndCurve = asset->Asset();
 
@@ -32,4 +31,4 @@ namespace IW4::sound_curve
         for (auto i = 0u; i < knotCount; i++)
             dumper.WriteKnot(sndCurve->knots[i][0], sndCurve->knots[i][1]);
     }
-} // namespace IW4::sound_curve
+} // namespace sound_curve

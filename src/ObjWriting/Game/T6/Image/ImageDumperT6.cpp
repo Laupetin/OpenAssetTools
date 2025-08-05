@@ -13,7 +13,6 @@
 #include <format>
 
 using namespace T6;
-using namespace ::image;
 
 namespace
 {
@@ -55,7 +54,7 @@ namespace
             }
         }
 
-        const auto imageFileName = std::format("images/{}.iwi", image.name);
+        const auto imageFileName = image::GetFileNameForAsset(image.name, ".iwi");
         const auto filePathImage = searchPath.Open(imageFileName);
         if (!filePathImage.IsOpen())
         {
@@ -75,9 +74,9 @@ namespace
     }
 } // namespace
 
-namespace T6::image
+namespace image
 {
-    Dumper::Dumper()
+    DumperT6::DumperT6()
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
@@ -94,12 +93,12 @@ namespace T6::image
         }
     }
 
-    bool Dumper::ShouldDump(XAssetInfo<GfxImage>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<GfxImage>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
     {
         const auto* image = asset->Asset();
         const auto texture = LoadImageData(context.m_obj_search_path, *image);
@@ -114,4 +113,4 @@ namespace T6::image
         auto& stream = *assetFile;
         m_writer->DumpImage(stream, texture.get());
     }
-} // namespace T6::image
+} // namespace image

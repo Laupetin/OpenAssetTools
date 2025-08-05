@@ -11,7 +11,6 @@
 
 using namespace nlohmann;
 using namespace IW5;
-using namespace ::attachment;
 
 namespace
 {
@@ -643,7 +642,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(GetJsonFileNameForAssetName(assetName));
+            const auto file = m_search_path.Open(attachment::GetJsonFileNameForAssetName(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -667,10 +666,10 @@ namespace
     };
 } // namespace
 
-namespace IW5::attachment
+namespace attachment
 {
-    std::unique_ptr<AssetCreator<AssetAttachment>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetAttachment>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<AttachmentLoader>(memory, searchPath);
     }
-} // namespace IW5::attachment
+} // namespace attachment

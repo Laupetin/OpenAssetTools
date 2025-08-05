@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4::structured_data_def
+namespace structured_data_def
 {
-    std::unique_ptr<AssetCreator<AssetStructuredDataDef>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4::structured_data_def
+    std::unique_ptr<AssetCreator<IW4::AssetStructuredDataDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace structured_data_def

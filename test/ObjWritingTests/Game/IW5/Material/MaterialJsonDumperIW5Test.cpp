@@ -1,8 +1,8 @@
-#include "Game/IW3/Material/MaterialJsonDumperIW3.h"
+#include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 
 #include "Asset/AssetRegistration.h"
-#include "Game/IW3/CommonIW3.h"
-#include "Game/IW3/GameIW3.h"
+#include "Game/IW5/CommonIW5.h"
+#include "Game/IW5/GameIW5.h"
 #include "NormalizedJson.h"
 #include "Pool/AssetPoolDynamic.h"
 #include "SearchPath/MockOutputPath.h"
@@ -13,7 +13,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-using namespace IW3;
+using namespace IW5;
 using namespace Catch;
 using namespace std::literals;
 
@@ -40,24 +40,24 @@ namespace
         auto* material = memory.Alloc<Material>();
         material->info.name = memory.Dup(name.c_str());
         material->info.gameFlags = 0x52;
-        material->info.sortKey = 4;
+        material->info.sortKey = 1;
         material->info.textureAtlasRowCount = 1;
         material->info.textureAtlasColumnCount = 1;
-        material->info.surfaceTypeBits = 0x8000;
+        material->info.surfaceTypeBits = 0x1000;
 
-        constexpr int8_t stateBitsEntry[] = {0,  1,  2,  3,  1, -1, -1, 1,  1,  1,  1,  1, 1,  1, -1, -1, -1,
-                                             -1, -1, -1, -1, 4, 4,  4,  -1, -1, -1, -1, 5, -1, 1, 6,  1,  -1};
+        constexpr int8_t stateBitsEntry[] = {0,  1,  2,  3,  4,  -1, -1, -1, -1, 4,  4,  4,  4,  4,  4, 4, 4, 4, 4,  4,  4,  4,  4, 4,  4,  -1, -1,
+                                             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, 5, 5, 5, -1, -1, -1, -1, 6, -1, -1, 4,  -1};
         std::memcpy(material->stateBitsEntry, stateBitsEntry, sizeof(material->stateBitsEntry));
 
-        material->cameraRegion = CAMERA_REGION_LIT;
-        material->stateFlags = 57;
+        material->cameraRegion = CAMERA_REGION_LIT_OPAQUE;
+        material->stateFlags = 59;
         material->techniqueSet = GivenTechset("wc_l_sm_r0c0n0s0", memory);
 
         material->textureCount = 3;
         material->textureTable = memory.Alloc<MaterialTextureDef>(3);
 
         auto& textureDef0 = material->textureTable[0];
-        textureDef0.u.image = GivenImage("~ch_plasterwall_long_spc-r-49~3c124bfe", memory);
+        textureDef0.u.image = GivenImage("~me_metal_rusty02_spc-rgb&me_~927de80f", memory);
         textureDef0.nameHash = 0x34ecccb3;
         textureDef0.nameStart = 's';
         textureDef0.nameEnd = 'p';
@@ -69,7 +69,7 @@ namespace
         textureDef0.semantic = TS_SPECULAR_MAP;
 
         auto& textureDef1 = material->textureTable[1];
-        textureDef1.u.image = GivenImage("ch_plasterwall_long_nml", memory);
+        textureDef1.u.image = GivenImage("me_metal_rusty02_nml", memory);
         textureDef1.nameHash = 0x59d30d0f;
         textureDef1.nameStart = 'n';
         textureDef1.nameEnd = 'p';
@@ -81,7 +81,7 @@ namespace
         textureDef1.semantic = TS_NORMAL_MAP;
 
         auto& textureDef2 = material->textureTable[2];
-        textureDef2.u.image = GivenImage("ch_plasterwall_long_col", memory);
+        textureDef2.u.image = GivenImage("me_metal_rusty02_col", memory);
         textureDef2.nameHash = 0xa0ab1041;
         textureDef2.nameStart = 'c';
         textureDef2.nameEnd = 'p';
@@ -98,10 +98,10 @@ namespace
         auto& constantDef0 = material->constantTable[0];
         constantDef0.nameHash = 0x3d9994dc;
         strncpy(constantDef0.name, "envMapParms", std::extent_v<decltype(MaterialConstantDef::name)>);
-        constantDef0.literal.x = 0.8f;
-        constantDef0.literal.y = 2.0f;
-        constantDef0.literal.z = 1.0f;
-        constantDef0.literal.w = 0.625f;
+        constantDef0.literal.x = 0.07f;
+        constantDef0.literal.y = 0.33f;
+        constantDef0.literal.z = 1.4f;
+        constantDef0.literal.w = 2.0f;
 
         auto& constantDef1 = material->constantTable[1];
         constantDef1.nameHash = 0xb60c3b3a;
@@ -126,6 +126,7 @@ namespace
         stateBits0.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits0.loadBits.structured.colorWriteRgb = 0;
         stateBits0.loadBits.structured.colorWriteAlpha = 0;
+        stateBits0.loadBits.structured.gammaWrite = 0;
         stateBits0.loadBits.structured.polymodeLine = 0;
         stateBits0.loadBits.structured.depthWrite = 1;
         stateBits0.loadBits.structured.depthTestDisabled = 0;
@@ -154,6 +155,7 @@ namespace
         stateBits1.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits1.loadBits.structured.colorWriteRgb = 1;
         stateBits1.loadBits.structured.colorWriteAlpha = 1;
+        stateBits1.loadBits.structured.gammaWrite = 0;
         stateBits1.loadBits.structured.polymodeLine = 0;
         stateBits1.loadBits.structured.depthWrite = 1;
         stateBits1.loadBits.structured.depthTestDisabled = 0;
@@ -182,6 +184,7 @@ namespace
         stateBits2.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits2.loadBits.structured.colorWriteRgb = 0;
         stateBits2.loadBits.structured.colorWriteAlpha = 0;
+        stateBits2.loadBits.structured.gammaWrite = 0;
         stateBits2.loadBits.structured.polymodeLine = 0;
         stateBits2.loadBits.structured.depthWrite = 1;
         stateBits2.loadBits.structured.depthTestDisabled = 0;
@@ -210,6 +213,7 @@ namespace
         stateBits3.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits3.loadBits.structured.colorWriteRgb = 1;
         stateBits3.loadBits.structured.colorWriteAlpha = 1;
+        stateBits3.loadBits.structured.gammaWrite = 0;
         stateBits3.loadBits.structured.polymodeLine = 0;
         stateBits3.loadBits.structured.depthWrite = 1;
         stateBits3.loadBits.structured.depthTestDisabled = 0;
@@ -227,9 +231,9 @@ namespace
         stateBits3.loadBits.structured.stencilBackFunc = 0;
 
         auto& stateBits4 = material->stateBitsTable[4];
-        stateBits4.loadBits.structured.srcBlendRgb = GFXS_BLEND_INVDESTALPHA;
-        stateBits4.loadBits.structured.dstBlendRgb = GFXS_BLEND_ONE;
-        stateBits4.loadBits.structured.blendOpRgb = GFXS_BLENDOP_ADD;
+        stateBits4.loadBits.structured.srcBlendRgb = GFXS_BLEND_ONE;
+        stateBits4.loadBits.structured.dstBlendRgb = GFXS_BLEND_ZERO;
+        stateBits4.loadBits.structured.blendOpRgb = GFXS_BLENDOP_DISABLED;
         stateBits4.loadBits.structured.alphaTestDisabled = 1;
         stateBits4.loadBits.structured.alphaTest = 0;
         stateBits4.loadBits.structured.cullFace = GFXS_CULL_BACK;
@@ -238,16 +242,17 @@ namespace
         stateBits4.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits4.loadBits.structured.colorWriteRgb = 1;
         stateBits4.loadBits.structured.colorWriteAlpha = 1;
+        stateBits4.loadBits.structured.gammaWrite = 1;
         stateBits4.loadBits.structured.polymodeLine = 0;
-        stateBits4.loadBits.structured.depthWrite = 0;
+        stateBits4.loadBits.structured.depthWrite = 1;
         stateBits4.loadBits.structured.depthTestDisabled = 0;
-        stateBits4.loadBits.structured.depthTest = GFXS_DEPTHTEST_EQUAL;
+        stateBits4.loadBits.structured.depthTest = GFXS_DEPTHTEST_LESSEQUAL;
         stateBits4.loadBits.structured.polygonOffset = GFXS_POLYGON_OFFSET_0;
-        stateBits4.loadBits.structured.stencilFrontEnabled = 1;
-        stateBits4.loadBits.structured.stencilFrontPass = GFXS_STENCILOP_KEEP;
-        stateBits4.loadBits.structured.stencilFrontFail = GFXS_STENCILOP_KEEP;
-        stateBits4.loadBits.structured.stencilFrontZFail = GFXS_STENCILOP_KEEP;
-        stateBits4.loadBits.structured.stencilFrontFunc = GFXS_STENCILFUNC_EQUAL;
+        stateBits4.loadBits.structured.stencilFrontEnabled = 0;
+        stateBits4.loadBits.structured.stencilFrontPass = 0;
+        stateBits4.loadBits.structured.stencilFrontFail = 0;
+        stateBits4.loadBits.structured.stencilFrontZFail = 0;
+        stateBits4.loadBits.structured.stencilFrontFunc = 0;
         stateBits4.loadBits.structured.stencilBackEnabled = 0;
         stateBits4.loadBits.structured.stencilBackPass = 0;
         stateBits4.loadBits.structured.stencilBackFail = 0;
@@ -256,8 +261,8 @@ namespace
 
         auto& stateBits5 = material->stateBitsTable[5];
         stateBits5.loadBits.structured.srcBlendRgb = GFXS_BLEND_ONE;
-        stateBits5.loadBits.structured.dstBlendRgb = GFXS_BLEND_ZERO;
-        stateBits5.loadBits.structured.blendOpRgb = GFXS_BLENDOP_DISABLED;
+        stateBits5.loadBits.structured.dstBlendRgb = GFXS_BLEND_ONE;
+        stateBits5.loadBits.structured.blendOpRgb = GFXS_BLENDOP_ADD;
         stateBits5.loadBits.structured.alphaTestDisabled = 1;
         stateBits5.loadBits.structured.alphaTest = 0;
         stateBits5.loadBits.structured.cullFace = GFXS_CULL_BACK;
@@ -265,17 +270,18 @@ namespace
         stateBits5.loadBits.structured.dstBlendAlpha = GFXS_BLEND_ZERO;
         stateBits5.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits5.loadBits.structured.colorWriteRgb = 1;
-        stateBits5.loadBits.structured.colorWriteAlpha = 0;
-        stateBits5.loadBits.structured.polymodeLine = 1;
+        stateBits5.loadBits.structured.colorWriteAlpha = 1;
+        stateBits5.loadBits.structured.gammaWrite = 1;
+        stateBits5.loadBits.structured.polymodeLine = 0;
         stateBits5.loadBits.structured.depthWrite = 0;
         stateBits5.loadBits.structured.depthTestDisabled = 0;
-        stateBits5.loadBits.structured.depthTest = GFXS_DEPTHTEST_LESSEQUAL;
-        stateBits5.loadBits.structured.polygonOffset = GFXS_POLYGON_OFFSET_2;
-        stateBits5.loadBits.structured.stencilFrontEnabled = 0;
-        stateBits5.loadBits.structured.stencilFrontPass = 0;
-        stateBits5.loadBits.structured.stencilFrontFail = 0;
-        stateBits5.loadBits.structured.stencilFrontZFail = 0;
-        stateBits5.loadBits.structured.stencilFrontFunc = 0;
+        stateBits5.loadBits.structured.depthTest = GFXS_DEPTHTEST_EQUAL;
+        stateBits5.loadBits.structured.polygonOffset = GFXS_POLYGON_OFFSET_0;
+        stateBits5.loadBits.structured.stencilFrontEnabled = 1;
+        stateBits5.loadBits.structured.stencilFrontPass = GFXS_STENCILOP_KEEP;
+        stateBits5.loadBits.structured.stencilFrontFail = GFXS_STENCILOP_KEEP;
+        stateBits5.loadBits.structured.stencilFrontZFail = GFXS_STENCILOP_KEEP;
+        stateBits5.loadBits.structured.stencilFrontFunc = GFXS_STENCILFUNC_EQUAL;
         stateBits5.loadBits.structured.stencilBackEnabled = 0;
         stateBits5.loadBits.structured.stencilBackPass = 0;
         stateBits5.loadBits.structured.stencilBackFail = 0;
@@ -283,9 +289,9 @@ namespace
         stateBits5.loadBits.structured.stencilBackFunc = 0;
 
         auto& stateBits6 = material->stateBitsTable[6];
-        stateBits6.loadBits.structured.srcBlendRgb = GFXS_BLEND_ZERO;
-        stateBits6.loadBits.structured.dstBlendRgb = GFXS_BLEND_INVSRCCOLOR;
-        stateBits6.loadBits.structured.blendOpRgb = GFXS_BLENDOP_ADD;
+        stateBits6.loadBits.structured.srcBlendRgb = GFXS_BLEND_ONE;
+        stateBits6.loadBits.structured.dstBlendRgb = GFXS_BLEND_ZERO;
+        stateBits6.loadBits.structured.blendOpRgb = GFXS_BLENDOP_DISABLED;
         stateBits6.loadBits.structured.alphaTestDisabled = 1;
         stateBits6.loadBits.structured.alphaTest = 0;
         stateBits6.loadBits.structured.cullFace = GFXS_CULL_BACK;
@@ -293,8 +299,9 @@ namespace
         stateBits6.loadBits.structured.dstBlendAlpha = GFXS_BLEND_ZERO;
         stateBits6.loadBits.structured.blendOpAlpha = GFXS_BLENDOP_DISABLED;
         stateBits6.loadBits.structured.colorWriteRgb = 1;
-        stateBits6.loadBits.structured.colorWriteAlpha = 1;
-        stateBits6.loadBits.structured.polymodeLine = 0;
+        stateBits6.loadBits.structured.colorWriteAlpha = 0;
+        stateBits6.loadBits.structured.gammaWrite = 0;
+        stateBits6.loadBits.structured.polymodeLine = 1;
         stateBits6.loadBits.structured.depthWrite = 0;
         stateBits6.loadBits.structured.depthTestDisabled = 0;
         stateBits6.loadBits.structured.depthTest = GFXS_DEPTHTEST_LESSEQUAL;
@@ -313,22 +320,22 @@ namespace
         pool.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, name, material));
     }
 
-    TEST_CASE("DumperMaterial(IW3): Can dump material", "[iw3][material][assetdumper]")
+    TEST_CASE("DumperMaterial(IW5): Can dump material", "[iw5][material][assetdumper]")
     {
         std::string expected(R"MATERIAL(
 {
     "$schema": "http://openassettools.dev/schema/material.v1.json",
-    "_game": "iw3",
+    "_game": "iw5",
     "_type": "material",
     "_version": 1,
-    "cameraRegion": "lit",
+    "cameraRegion": "litOpaque",
     "constants": [
         {
             "literal": [
-                0.800000011920929,
-                2.0,
-                1.0,
-                0.625
+                0.07000000029802322,
+                0.33000001311302185,
+                1.399999976158142,
+                2.0
             ],
             "name": "envMapParms"
         },
@@ -345,9 +352,9 @@ namespace
     "gameFlags": [
         "2",
         "10",
-        "CASTS_SHADOW"
+        "40"
     ],
-    "sortKey": 4,
+    "sortKey": 1,
     "stateBits": [
         {
             "alphaTest": "disabled",
@@ -360,6 +367,7 @@ namespace
             "depthWrite": true,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "zero",
+            "gammaWrite": false,
             "polygonOffset": "offset0",
             "polymodeLine": false,
             "srcBlendAlpha": "one",
@@ -376,6 +384,7 @@ namespace
             "depthWrite": true,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "zero",
+            "gammaWrite": false,
             "polygonOffset": "offset0",
             "polymodeLine": false,
             "srcBlendAlpha": "one",
@@ -392,6 +401,7 @@ namespace
             "depthWrite": true,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "zero",
+            "gammaWrite": false,
             "polygonOffset": "offsetShadowmap",
             "polymodeLine": false,
             "srcBlendAlpha": "one",
@@ -408,6 +418,24 @@ namespace
             "depthWrite": true,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "zero",
+            "gammaWrite": false,
+            "polygonOffset": "offset0",
+            "polymodeLine": false,
+            "srcBlendAlpha": "one",
+            "srcBlendRgb": "one"
+        },
+        {
+            "alphaTest": "disabled",
+            "blendOpAlpha": "disabled",
+            "blendOpRgb": "disabled",
+            "colorWriteAlpha": true,
+            "colorWriteRgb": true,
+            "cullFace": "back",
+            "depthTest": "less_equal",
+            "depthWrite": true,
+            "dstBlendAlpha": "zero",
+            "dstBlendRgb": "zero",
+            "gammaWrite": true,
             "polygonOffset": "offset0",
             "polymodeLine": false,
             "srcBlendAlpha": "one",
@@ -424,10 +452,11 @@ namespace
             "depthWrite": false,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "one",
+            "gammaWrite": true,
             "polygonOffset": "offset0",
             "polymodeLine": false,
             "srcBlendAlpha": "one",
-            "srcBlendRgb": "invdestalpha",
+            "srcBlendRgb": "one",
             "stencilFront": {
                 "fail": "keep",
                 "func": "equal",
@@ -446,26 +475,11 @@ namespace
             "depthWrite": false,
             "dstBlendAlpha": "zero",
             "dstBlendRgb": "zero",
+            "gammaWrite": false,
             "polygonOffset": "offset2",
             "polymodeLine": true,
             "srcBlendAlpha": "one",
             "srcBlendRgb": "one"
-        },
-        {
-            "alphaTest": "disabled",
-            "blendOpAlpha": "disabled",
-            "blendOpRgb": "add",
-            "colorWriteAlpha": true,
-            "colorWriteRgb": true,
-            "cullFace": "back",
-            "depthTest": "less_equal",
-            "depthWrite": false,
-            "dstBlendAlpha": "zero",
-            "dstBlendRgb": "invsrccolor",
-            "polygonOffset": "offset2",
-            "polymodeLine": false,
-            "srcBlendAlpha": "one",
-            "srcBlendRgb": "zero"
         }
     ],
     "stateBitsEntry": [
@@ -473,19 +487,7 @@ namespace
         1,
         2,
         3,
-        1,
-        -1,
-        -1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        -1,
-        -1,
-        -1,
+        4,
         -1,
         -1,
         -1,
@@ -493,19 +495,51 @@ namespace
         4,
         4,
         4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
         -1,
         -1,
         -1,
         -1,
         5,
+        5,
+        5,
+        5,
         -1,
-        1,
+        -1,
+        -1,
+        -1,
         6,
-        1,
+        -1,
+        -1,
+        4,
         -1
     ],
-    "stateFlags": 57,
-    "surfaceTypeBits": 32768,
+    "stateFlags": 59,
+    "surfaceTypeBits": 4096,
     "techniqueSet": "wc_l_sm_r0c0n0s0",
     "textureAtlas": {
         "columns": 1,
@@ -513,7 +547,7 @@ namespace
     },
     "textures": [
         {
-            "image": "~ch_plasterwall_long_spc-r-49~3c124bfe",
+            "image": "~me_metal_rusty02_spc-rgb&me_~927de80f",
             "name": "specularMap",
             "samplerState": {
                 "clampU": false,
@@ -525,7 +559,7 @@ namespace
             "semantic": "specularMap"
         },
         {
-            "image": "ch_plasterwall_long_nml",
+            "image": "me_metal_rusty02_nml",
             "name": "normalMap",
             "samplerState": {
                 "clampU": false,
@@ -537,7 +571,7 @@ namespace
             "semantic": "normalMap"
         },
         {
-            "image": "ch_plasterwall_long_col",
+            "image": "me_metal_rusty02_col",
             "name": "colorMap",
             "samplerState": {
                 "clampU": false,
@@ -551,7 +585,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW3));
+        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW5));
 
         MemoryManager memory;
         MockSearchPath mockObjPath;
@@ -560,12 +594,12 @@ namespace
 
         AssetPoolDynamic<Material> materialPool(0);
 
-        GivenMaterial("wc/ch_plasterwall_long", materialPool, memory);
+        GivenMaterial("wc/me_metal_rust_02", materialPool, memory);
 
-        material::JsonDumper dumper;
+        material::JsonDumperIW5 dumper;
         dumper.DumpPool(context, &materialPool);
 
-        const auto* file = mockOutput.GetMockedFile("materials/wc/ch_plasterwall_long.json");
+        const auto* file = mockOutput.GetMockedFile("materials/wc/me_metal_rust_02.json");
         REQUIRE(file);
         REQUIRE(JsonNormalized(file->AsString()) == JsonNormalized(expected));
     }

@@ -3,19 +3,18 @@
 #include "Shader/ShaderCommon.h"
 
 using namespace IW4;
-using namespace ::shader;
 
-namespace IW4::shader
+namespace shader
 {
-    bool VertexShaderDumper::ShouldDump(XAssetInfo<MaterialVertexShader>* asset)
+    bool VertexShaderDumperIW4::ShouldDump(XAssetInfo<IW4::MaterialVertexShader>* asset)
     {
         return true;
     }
 
-    void VertexShaderDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialVertexShader>* asset)
+    void VertexShaderDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialVertexShader>* asset)
     {
         const auto* vertexShader = asset->Asset();
-        const auto shaderFile = context.OpenAssetFile(GetFileNameForVertexShaderAssetName(asset->m_name));
+        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForVertexShaderAssetName(asset->m_name));
 
         if (!shaderFile)
             return;
@@ -23,4 +22,4 @@ namespace IW4::shader
         shaderFile->write(reinterpret_cast<const char*>(vertexShader->prog.loadDef.program),
                           static_cast<std::streamsize>(vertexShader->prog.loadDef.programSize) * 4u);
     }
-} // namespace IW4::shader
+} // namespace shader

@@ -12,7 +12,6 @@
 #include <sstream>
 
 using namespace IW4;
-using namespace ::sound_curve;
 
 namespace
 {
@@ -27,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForAssetName(assetName);
+            const auto fileName = sound_curve::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -71,10 +70,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::sound_curve
+namespace sound_curve
 {
-    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderSoundCurve>(memory, searchPath);
     }
-} // namespace IW4::sound_curve
+} // namespace sound_curve

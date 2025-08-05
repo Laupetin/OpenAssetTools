@@ -141,7 +141,7 @@ namespace
     {
         // combinedAttachmentTypeMask
         std::vector<eAttachment> attachmentsFromName;
-        if (!T6::attachment_unique::ExtractAttachmentsFromAssetName(assetName, attachmentsFromName))
+        if (!attachment_unique::ExtractAttachmentsFromAssetNameT6(assetName, attachmentsFromName))
         {
             std::cerr << std::format("Failed to determine attachments from attachment unique name \"{}\"\n", assetName);
             return false;
@@ -159,9 +159,9 @@ namespace
     }
 } // namespace
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    bool ExtractAttachmentsFromAssetName(const std::string& assetName, std::vector<eAttachment>& attachmentList)
+    bool ExtractAttachmentsFromAssetNameT6(const std::string& assetName, std::vector<eAttachment>& attachmentList)
     {
         std::vector<std::string> parts;
 
@@ -210,14 +210,14 @@ namespace T6::attachment_unique
         return true;
     }
 
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* attachmentUniqueFull = m_memory.Alloc<WeaponAttachmentUniqueFull>();
         attachmentUniqueFull->attachment.szInternalName = m_memory.Dup(assetName.c_str());
@@ -244,4 +244,4 @@ namespace T6::attachment_unique
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

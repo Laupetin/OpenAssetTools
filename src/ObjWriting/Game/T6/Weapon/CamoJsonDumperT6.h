@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::camo
+namespace camo
 {
-    class JsonDumper final : public AbstractAssetDumper<WeaponCamo>
+    class JsonDumperT6 final : public AbstractAssetDumper<T6::WeaponCamo>
     {
     protected:
-        bool ShouldDump(XAssetInfo<WeaponCamo>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCamo>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::WeaponCamo>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::WeaponCamo>* asset) override;
     };
-} // namespace T6::camo
+} // namespace camo

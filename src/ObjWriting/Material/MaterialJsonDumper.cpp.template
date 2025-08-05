@@ -48,7 +48,8 @@
 
 using namespace nlohmann;
 using namespace GAME;
-using namespace ::material;
+
+#set CLASS_NAME "JsonDumper" + GAME
 
 namespace
 {
@@ -358,9 +359,9 @@ namespace
     };
 } // namespace
 
-namespace GAME::material
+namespace material
 {
-    void JsonDumper::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
+    void CLASS_NAME::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
     {
         auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
         materialConstantState->ExtractNamesFromZone();
@@ -368,12 +369,12 @@ namespace GAME::material
         AbstractAssetDumper::DumpPool(context, pool);
     }
 
-    bool JsonDumper::ShouldDump(XAssetInfo<Material>* asset)
+    bool CLASS_NAME::ShouldDump(XAssetInfo<Material>* asset)
     {
         return true;
     }
 
-    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
     {
         const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
 
@@ -393,5 +394,5 @@ namespace GAME::material
         JsonDumperImpl dumper(context, *assetFile);
         dumper.Dump(*material);
     }
-} // namespace T6::leaderboard
+} // namespace material
 

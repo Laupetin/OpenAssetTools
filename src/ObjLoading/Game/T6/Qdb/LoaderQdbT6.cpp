@@ -44,10 +44,10 @@ namespace
     };
 } // namespace
 
-namespace T6::qdb
+namespace qdb
 {
-    std::unique_ptr<AssetCreator<AssetQdb>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetQdb>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<QdbLoader>(memory, searchPath);
     }
-} // namespace T6::qdb
+} // namespace qdb

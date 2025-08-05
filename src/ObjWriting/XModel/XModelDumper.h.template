@@ -13,12 +13,14 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include GAME_HEADER
 
-namespace GAME::xmodel
+#set CLASS_NAME "Dumper" + GAME
+
+namespace xmodel
 {
-    class Dumper final : public AbstractAssetDumper<XModel>
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::XModel>
     {
     protected:
-        bool ShouldDump(XAssetInfo<XModel>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset) override;
+        bool ShouldDump(XAssetInfo<GAME::XModel>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::XModel>* asset) override;
     };
-} // namespace GAME
+} // namespace xmodel

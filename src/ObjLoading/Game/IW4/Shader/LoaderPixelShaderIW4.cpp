@@ -8,7 +8,6 @@
 #include <iostream>
 
 using namespace IW4;
-using namespace ::shader;
 
 namespace
 {
@@ -23,7 +22,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForPixelShaderAssetName(assetName);
+            const auto fileName = shader::GetFileNameForPixelShaderAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -55,10 +54,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::shader
+namespace shader
 {
-    std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<PixelShaderLoader>(memory, searchPath);
     }
-} // namespace IW4::shader
+} // namespace shader

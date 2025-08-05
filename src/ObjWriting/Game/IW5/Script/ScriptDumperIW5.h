@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5::script
+namespace script
 {
-    class Dumper final : public AbstractAssetDumper<ScriptFile>
+    class DumperIW5 final : public AbstractAssetDumper<IW5::ScriptFile>
     {
     protected:
-        bool ShouldDump(XAssetInfo<ScriptFile>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptFile>* asset) override;
+        bool ShouldDump(XAssetInfo<IW5::ScriptFile>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::ScriptFile>* asset) override;
     };
-} // namespace IW5::script
+} // namespace script

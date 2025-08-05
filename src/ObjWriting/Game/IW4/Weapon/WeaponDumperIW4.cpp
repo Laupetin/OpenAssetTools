@@ -14,7 +14,6 @@
 #include <type_traits>
 
 using namespace IW4;
-using namespace ::weapon;
 
 namespace
 {
@@ -404,14 +403,14 @@ namespace
     }
 } // namespace
 
-namespace IW4::weapon
+namespace weapon
 {
-    bool Dumper::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -436,4 +435,4 @@ namespace IW4::weapon
 
         DumpAccuracyGraphs(context, asset);
     }
-} // namespace IW4::weapon
+} // namespace weapon

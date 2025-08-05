@@ -4,12 +4,12 @@
 #include "Game/IW4/IW4.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4::tracer
+namespace tracer
 {
-    class Dumper final : public AbstractAssetDumper<TracerDef>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::TracerDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<TracerDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::TracerDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::TracerDef>* asset) override;
     };
-} // namespace IW4::tracer
+} // namespace tracer

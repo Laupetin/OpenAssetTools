@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4::shader
+namespace shader
 {
-    class VertexShaderDumper final : public AbstractAssetDumper<MaterialVertexShader>
+    class VertexShaderDumperIW4 final : public AbstractAssetDumper<IW4::MaterialVertexShader>
     {
     protected:
-        bool ShouldDump(XAssetInfo<MaterialVertexShader>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialVertexShader>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::MaterialVertexShader>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialVertexShader>* asset) override;
     };
-} // namespace IW4::shader
+} // namespace shader

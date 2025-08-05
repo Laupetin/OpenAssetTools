@@ -2,15 +2,15 @@
 
 using namespace IW5;
 
-namespace IW5::script
+namespace script
 {
-    bool Dumper::ShouldDump(XAssetInfo<ScriptFile>* asset)
+    bool DumperIW5::ShouldDump(XAssetInfo<IW5::ScriptFile>* asset)
     {
         return true;
     }
 
     // See https://github.com/xensik/gsc-tool#file-format for an in-depth explanation about the .gscbin format
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptFile>* asset)
+    void DumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::ScriptFile>* asset)
     {
         auto* scriptFile = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name + ".gscbin");
@@ -30,4 +30,4 @@ namespace IW5::script
         stream.write(scriptFile->buffer, scriptFile->compressedLen);
         stream.write(reinterpret_cast<char*>(scriptFile->bytecode), scriptFile->bytecodeLen);
     }
-} // namespace IW5::script
+} // namespace script

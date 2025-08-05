@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4::vertex_decl
+namespace vertex_decl
 {
-    std::unique_ptr<AssetCreator<AssetVertexDecl>> CreateLoader(MemoryManager& memory);
-} // namespace IW4::vertex_decl
+    std::unique_ptr<AssetCreator<IW4::AssetVertexDecl>> CreateLoaderIW4(MemoryManager& memory);
+} // namespace vertex_decl

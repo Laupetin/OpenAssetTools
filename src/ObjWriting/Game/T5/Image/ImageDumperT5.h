@@ -6,18 +6,18 @@
 
 #include <memory>
 
-namespace T5::image
+namespace image
 {
-    class Dumper final : public AbstractAssetDumper<GfxImage>
+    class DumperT5 final : public AbstractAssetDumper<T5::GfxImage>
     {
     public:
-        Dumper();
+        DumperT5();
 
     protected:
-        bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset) override;
+        bool ShouldDump(XAssetInfo<T5::GfxImage>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T5::GfxImage>* asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;
     };
-} // namespace T5::image
+} // namespace image

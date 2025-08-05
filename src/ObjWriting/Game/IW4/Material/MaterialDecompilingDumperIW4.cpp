@@ -1108,14 +1108,14 @@ namespace
     };
 } // namespace
 
-namespace IW4::material
+namespace material
 {
-    bool DecompilingGdtDumper::ShouldDump(XAssetInfo<Material>* asset)
+    bool DecompilingGdtDumperIW4::ShouldDump(XAssetInfo<Material>* asset)
     {
         return true;
     }
 
-    void DecompilingGdtDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
+    void DecompilingGdtDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
     {
         if (!context.m_gdt)
             return;
@@ -1123,4 +1123,4 @@ namespace IW4::material
         MaterialGdtDumper dumper(*asset->Asset());
         context.m_gdt->WriteEntry(dumper.CreateGdtEntry());
     }
-} // namespace IW4::material
+} // namespace material

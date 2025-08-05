@@ -183,14 +183,14 @@ namespace
     }
 } // namespace
 
-namespace IW4::structured_data_def
+namespace structured_data_def
 {
-    bool Dumper::ShouldDump(XAssetInfo<StructuredDataDefSet>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<StructuredDataDefSet>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<StructuredDataDefSet>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<StructuredDataDefSet>* asset)
     {
         const auto* set = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -205,4 +205,4 @@ namespace IW4::structured_data_def
             dumper.DumpDef(*def);
         }
     }
-} // namespace IW4::structured_data_def
+} // namespace structured_data_def

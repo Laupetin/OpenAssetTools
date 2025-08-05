@@ -12,7 +12,6 @@
 
 using namespace nlohmann;
 using namespace T6;
-using namespace ::camo;
 
 namespace
 {
@@ -253,7 +252,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(GetJsonFileNameForAssetName(assetName));
+            const auto file = m_search_path.Open(camo::GetJsonFileNameForAssetName(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -277,10 +276,10 @@ namespace
     };
 } // namespace
 
-namespace T6::camo
+namespace camo
 {
-    std::unique_ptr<AssetCreator<AssetWeaponCamo>> CreateJsonLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetWeaponCamo>> CreateJsonLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<WeaponCamoLoader>(memory, searchPath);
     }
-} // namespace T6::camo
+} // namespace camo

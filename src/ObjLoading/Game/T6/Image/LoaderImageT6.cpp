@@ -12,7 +12,6 @@
 #include <zlib.h>
 
 using namespace T6;
-using namespace ::image;
 
 namespace
 {
@@ -27,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForAsset(assetName, ".iwi");
+            const auto fileName = image::GetFileNameForAsset(assetName, ".iwi");
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -70,10 +69,10 @@ namespace
     };
 } // namespace
 
-namespace T6::image
+namespace image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetImage>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ImageLoader>(memory, searchPath);
     }
-} // namespace T6::image
+} // namespace image

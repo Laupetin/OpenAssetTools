@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::image
+namespace image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6::image
+    std::unique_ptr<AssetCreator<T6::AssetImage>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace image

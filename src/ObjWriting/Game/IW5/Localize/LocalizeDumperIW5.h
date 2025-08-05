@@ -3,11 +3,11 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5::localize
+namespace localize
 {
-    class Dumper final : public IAssetDumper<LocalizeEntry>
+    class DumperIW5 final : public IAssetDumper<IW5::LocalizeEntry>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<IW5::LocalizeEntry>* pool) override;
     };
-} // namespace IW5::localize
+} // namespace localize

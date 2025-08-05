@@ -22,14 +22,14 @@ namespace
     }
 } // namespace
 
-namespace IW3::sound
+namespace sound
 {
-    bool LoadedSoundDumper::ShouldDump(XAssetInfo<LoadedSound>* asset)
+    bool LoadedSoundDumperIW3::ShouldDump(XAssetInfo<LoadedSound>* asset)
     {
         return true;
     }
 
-    void LoadedSoundDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset)
+    void LoadedSoundDumperIW3::DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset)
     {
         const auto* loadedSound = asset->Asset();
         const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset->m_name));
@@ -49,4 +49,4 @@ namespace IW3::sound
             break;
         }
     }
-} // namespace IW3::sound
+} // namespace sound

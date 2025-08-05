@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::qdb
+namespace qdb
 {
-    std::unique_ptr<AssetCreator<AssetQdb>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6::qdb
+    std::unique_ptr<AssetCreator<T6::AssetQdb>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace qdb

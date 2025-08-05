@@ -5,17 +5,17 @@
 #include "Game/IW4/Menu/MenuDumperIW4.h"
 #include "Menu/MenuDumpingZoneState.h"
 
-namespace IW4::menu
+namespace menu
 {
-    void CreateDumpingStateForMenuList(::menu::MenuDumpingZoneState* zoneState, const MenuList* menuList);
+    void CreateDumpingStateForMenuListIW4(MenuDumpingZoneState* zoneState, const IW4::MenuList* menuList);
 
-    class MenuListDumper final : public AbstractAssetDumper<MenuList>
+    class MenuListDumperIW4 final : public AbstractAssetDumper<IW4::MenuList>
     {
     protected:
-        bool ShouldDump(XAssetInfo<MenuList>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::MenuList>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MenuList>* asset) override;
 
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<MenuList>* pool) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<IW4::MenuList>* pool) override;
     };
-} // namespace IW4::menu
+} // namespace menu

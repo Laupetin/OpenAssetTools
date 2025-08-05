@@ -13,7 +13,6 @@
 #include <type_traits>
 
 using namespace IW4;
-using namespace ::techset;
 
 namespace IW4
 {
@@ -533,14 +532,14 @@ namespace IW4
     };
 } // namespace IW4
 
-namespace IW4::techset
+namespace techset
 {
-    bool Dumper::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
     {
         const auto* techset = asset->Asset();
 
@@ -566,4 +565,4 @@ namespace IW4::techset
             }
         }
     }
-} // namespace IW4::techset
+} // namespace techset

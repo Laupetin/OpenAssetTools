@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    std::unique_ptr<AssetCreator<AssetAttachmentUnique>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
-} // namespace T6::attachment_unique
+    std::unique_ptr<AssetCreator<T6::AssetAttachmentUnique>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
+} // namespace attachment_unique

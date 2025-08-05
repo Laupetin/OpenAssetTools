@@ -1079,10 +1079,10 @@ namespace
     };
 } // namespace
 
-namespace T6::sound
+namespace sound
 {
-    std::unique_ptr<AssetCreator<AssetSoundBank>> CreateSoundBankLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetSoundBank>> CreateSoundBankLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<SoundBankLoader>(memory, searchPath);
     }
-} // namespace T6::sound
+} // namespace sound

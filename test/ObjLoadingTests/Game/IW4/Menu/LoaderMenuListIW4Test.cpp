@@ -11,7 +11,6 @@
 #include <iostream>
 #include <string>
 
-using namespace ::menu;
 using namespace IW4;
 using namespace std::literals;
 using namespace Catch::Matchers;
@@ -36,7 +35,7 @@ namespace test::game::iw4::menu::parsing::it
               m_ignored_asset_lookup(),
               m_context(m_zone, &m_creator_collection, &m_ignored_asset_lookup)
         {
-            m_asset_creator = IW4::menu::CreateMenuListLoader(m_zone.Memory(), m_search_path);
+            m_asset_creator = ::menu::CreateMenuListLoaderIW4(m_zone.Memory(), m_search_path);
         }
 
         void AddFile(std::string fileName, std::string data)

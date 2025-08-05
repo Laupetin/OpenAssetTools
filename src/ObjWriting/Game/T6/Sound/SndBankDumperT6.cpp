@@ -910,9 +910,9 @@ namespace
     }
 } // namespace
 
-namespace T6::sound
+namespace sound
 {
-    void SndBankDumper::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
+    void SndBankDumperT6::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
     {
         LoadedSoundBankHashes soundBankHashes;
         soundBankHashes.Initialize();
@@ -924,4 +924,4 @@ namespace T6::sound
             DumpSndBank(context, soundBankHashes, *assetInfo);
         }
     }
-} // namespace T6::sound
+} // namespace sound

@@ -13,15 +13,17 @@
 #set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
 #include GAME_HEADER
 
-namespace GAME::material
+#set CLASS_NAME "JsonDumper" + GAME
+
+namespace material
 {
-    class JsonDumper final : public AbstractAssetDumper<Material>
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::Material>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<GAME::Material>* pool) override;
         
     protected:
-        [[nodiscard]] bool ShouldDump(XAssetInfo<Material>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset) override;
+        [[nodiscard]] bool ShouldDump(XAssetInfo<GAME::Material>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::Material>* asset) override;
     };
-} // namespace GAME::material
+} // namespace material

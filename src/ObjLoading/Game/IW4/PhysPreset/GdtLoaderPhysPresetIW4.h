@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateGdtLoader(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone);
-} // namespace IW4::phys_preset
+    std::unique_ptr<AssetCreator<IW4::AssetPhysPreset>> CreateGdtLoaderIW4(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone);
+} // namespace phys_preset

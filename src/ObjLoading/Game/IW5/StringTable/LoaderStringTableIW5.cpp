@@ -10,7 +10,6 @@
 #include <cstring>
 
 using namespace IW5;
-using namespace ::string_table;
 
 namespace
 {
@@ -29,7 +28,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            StringTableLoaderV2<StringTable, Common::StringTable_HashString> loader;
+            string_table::StringTableLoaderV2<StringTable, Common::StringTable_HashString> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
 
             return AssetCreationResult::Success(context.AddAsset<AssetStringTable>(assetName, stringTable));
@@ -41,10 +40,10 @@ namespace
     };
 } // namespace
 
-namespace IW5::string_table
+namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }
-} // namespace IW5::string_table
+} // namespace string_table

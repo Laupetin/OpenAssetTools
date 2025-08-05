@@ -12,7 +12,6 @@
 #include <limits>
 
 using namespace T6;
-using namespace ::tracer;
 
 namespace
 {
@@ -48,16 +47,16 @@ namespace
     };
 } // namespace
 
-namespace T6::tracer
+namespace tracer
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* tracer = m_memory.Alloc<TracerDef>();
         tracer->name = m_memory.Dup(assetName.c_str());
@@ -75,4 +74,4 @@ namespace T6::tracer
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
 
-} // namespace T6::tracer
+} // namespace tracer

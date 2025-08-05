@@ -856,16 +856,16 @@ namespace
     }
 } // namespace
 
-namespace IW5::weapon
+namespace weapon
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderIW5::InfoStringLoaderIW5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
+    AssetCreationResult InfoStringLoaderIW5::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
 
@@ -888,4 +888,4 @@ namespace IW5::weapon
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace IW5::weapon
+} // namespace weapon

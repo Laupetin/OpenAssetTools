@@ -57,7 +57,7 @@ namespace
 
 namespace
 {
-    class MenuWriter final : public ::menu::AbstractBaseWriter, public IW5::menu::IWriterIW5
+    class MenuWriter final : public menu::AbstractBaseWriter, public menu::IWriterIW5
     {
     public:
         explicit MenuWriter(std::ostream& stream)
@@ -948,10 +948,10 @@ namespace
     };
 } // namespace
 
-namespace IW5::menu
+namespace menu
 {
-    std::unique_ptr<IWriterIW5> CreateMenuWriter(std::ostream& stream)
+    std::unique_ptr<IWriterIW5> CreateMenuWriterIW5(std::ostream& stream)
     {
         return std::make_unique<MenuWriter>(stream);
     }
-} // namespace IW5::menu
+} // namespace menu

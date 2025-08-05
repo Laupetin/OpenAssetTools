@@ -43,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        IW5::weapon::InfoStringLoader m_info_string_loader;
+        weapon::InfoStringLoaderIW5 m_info_string_loader;
     };
 } // namespace
 
-namespace IW5::weapon
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawLoaderIW5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderWeapon>(memory, searchPath, zone);
     }
-} // namespace IW5::weapon
+} // namespace weapon

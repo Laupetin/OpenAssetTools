@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace T6::font_icon
+namespace font_icon
 {
     std::string GetJsonFileNameForAssetName(const std::string& assetName);
 }

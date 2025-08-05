@@ -14,7 +14,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::weapon;
 
 namespace
 {
@@ -460,14 +459,14 @@ namespace
     }
 } // namespace
 
-namespace T6::weapon
+namespace weapon
 {
-    bool Dumper::ShouldDump(XAssetInfo<WeaponVariantDef>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<WeaponVariantDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -492,4 +491,4 @@ namespace T6::weapon
 
         DumpAccuracyGraphs(context, asset);
     }
-} // namespace T6::weapon
+} // namespace weapon

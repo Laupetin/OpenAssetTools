@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW5::material
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW5::material
+    std::unique_ptr<AssetCreator<IW5::AssetMaterial>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace material

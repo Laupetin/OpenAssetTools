@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW5::raw_file
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW5::raw_file
+    std::unique_ptr<AssetCreator<IW5::AssetRawFile>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace raw_file

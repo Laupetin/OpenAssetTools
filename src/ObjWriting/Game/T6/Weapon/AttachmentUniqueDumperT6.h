@@ -4,12 +4,12 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    class Dumper final : public AbstractAssetDumper<WeaponAttachmentUnique>
+    class DumperT6 final : public AbstractAssetDumper<T6::WeaponAttachmentUnique>
     {
     protected:
-        bool ShouldDump(XAssetInfo<WeaponAttachmentUnique>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::WeaponAttachmentUnique>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::WeaponAttachmentUnique>* asset) override;
     };
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

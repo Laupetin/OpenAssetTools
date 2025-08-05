@@ -6,7 +6,7 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
-namespace IW4::material
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4::material
+    std::unique_ptr<AssetCreator<IW4::AssetMaterial>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace material

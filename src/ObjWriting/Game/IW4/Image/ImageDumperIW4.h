@@ -6,18 +6,18 @@
 
 #include <memory>
 
-namespace IW4::image
+namespace image
 {
-    class Dumper final : public AbstractAssetDumper<GfxImage>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::GfxImage>
     {
     public:
-        Dumper();
+        DumperIW4();
 
     protected:
-        bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::GfxImage>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::GfxImage>* asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;
     };
-} // namespace IW4::image
+} // namespace image

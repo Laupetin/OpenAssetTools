@@ -4,12 +4,12 @@
 #include "Game/IW4/IW4.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    class InfoStringDumper final : public AbstractAssetDumper<PhysPreset>
+    class InfoStringDumperIW4 final : public AbstractAssetDumper<IW4::PhysPreset>
     {
     protected:
-        bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::PhysPreset>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::PhysPreset>* asset) override;
     };
-} // namespace IW4::phys_preset
+} // namespace phys_preset

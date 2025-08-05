@@ -76,16 +76,16 @@ namespace
     }
 } // namespace
 
-namespace T6::phys_constraints
+namespace phys_constraints
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* physConstraints = m_memory.Alloc<PhysConstraints>();
         physConstraints->name = m_memory.Dup(assetName.c_str());
@@ -110,4 +110,4 @@ namespace T6::phys_constraints
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace T6::phys_constraints
+} // namespace phys_constraints

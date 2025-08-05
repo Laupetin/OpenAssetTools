@@ -12,7 +12,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::attachment_unique;
 
 namespace
 {
@@ -130,14 +129,14 @@ namespace
     }
 } // namespace
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    bool Dumper::ShouldDump(XAssetInfo<WeaponAttachmentUnique>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<WeaponAttachmentUnique>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -160,4 +159,4 @@ namespace T6::attachment_unique
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

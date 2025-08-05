@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5::menu
+namespace menu
 {
-    class MenuListDumper final : public AbstractAssetDumper<MenuList>
+    class MenuListDumperIW5 final : public AbstractAssetDumper<IW5::MenuList>
     {
     protected:
-        bool ShouldDump(XAssetInfo<MenuList>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset) override;
+        bool ShouldDump(XAssetInfo<IW5::MenuList>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::MenuList>* asset) override;
     };
-} // namespace IW5::menu
+} // namespace menu

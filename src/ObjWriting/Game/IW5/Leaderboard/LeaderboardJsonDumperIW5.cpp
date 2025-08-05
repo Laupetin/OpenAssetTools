@@ -10,7 +10,6 @@
 
 using namespace nlohmann;
 using namespace IW5;
-using namespace ::leaderboard;
 
 namespace
 {
@@ -93,14 +92,14 @@ namespace
     };
 } // namespace
 
-namespace IW5::leaderboard
+namespace leaderboard
 {
-    bool JsonDumper::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
+    bool JsonDumperIW5::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
     {
         return true;
     }
 
-    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
+    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
 
@@ -110,4 +109,4 @@ namespace IW5::leaderboard
         Dumper dumper(*assetFile);
         dumper.Dump(*asset->Asset());
     }
-} // namespace IW5::leaderboard
+} // namespace leaderboard

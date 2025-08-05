@@ -39,14 +39,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        IW4::phys_preset::InfoStringLoader m_info_string_loader;
+        phys_preset::InfoStringLoaderIW4 m_info_string_loader;
     };
 } // namespace
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateGdtLoader(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<IW4::AssetPhysPreset>> CreateGdtLoaderIW4(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderPhysPreset>(memory, gdt, zone);
     }
-} // namespace IW4::phys_preset
+} // namespace phys_preset

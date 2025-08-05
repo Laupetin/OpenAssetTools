@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::attachment
+namespace attachment
 {
-    std::unique_ptr<AssetCreator<AssetAttachment>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6::attachment
+    std::unique_ptr<AssetCreator<T6::AssetAttachment>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace attachment

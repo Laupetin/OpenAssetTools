@@ -10,7 +10,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::attachment;
 
 namespace
 {
@@ -66,14 +65,14 @@ namespace
     }
 } // namespace
 
-namespace T6::attachment
+namespace attachment
 {
-    bool Dumper::ShouldDump(XAssetInfo<WeaponAttachment>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<WeaponAttachment>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -96,4 +95,4 @@ namespace T6::attachment
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::attachment
+} // namespace attachment

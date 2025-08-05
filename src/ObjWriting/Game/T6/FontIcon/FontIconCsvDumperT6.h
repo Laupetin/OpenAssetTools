@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::font_icon
+namespace font_icon
 {
-    class CsvDumper final : public AbstractAssetDumper<FontIcon>
+    class CsvDumperT6 final : public AbstractAssetDumper<T6::FontIcon>
     {
     protected:
-        bool ShouldDump(XAssetInfo<FontIcon>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::FontIcon>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::FontIcon>* asset) override;
     };
-} // namespace T6::font_icon
+} // namespace font_icon

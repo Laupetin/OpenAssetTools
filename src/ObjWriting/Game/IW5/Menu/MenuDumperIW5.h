@@ -4,12 +4,12 @@
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Menu/MenuDumperIW5.h"
 
-namespace IW5::menu
+namespace menu
 {
-    class MenuDumper final : public AbstractAssetDumper<menuDef_t>
+    class MenuDumperIW5 final : public AbstractAssetDumper<IW5::menuDef_t>
     {
     protected:
-        bool ShouldDump(XAssetInfo<menuDef_t>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset) override;
+        bool ShouldDump(XAssetInfo<IW5::menuDef_t>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::menuDef_t>* asset) override;
     };
-} // namespace IW5::menu
+} // namespace menu

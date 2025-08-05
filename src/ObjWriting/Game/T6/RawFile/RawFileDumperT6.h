@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::raw_file
+namespace raw_file
 {
-    class Dumper final : public AbstractAssetDumper<RawFile>
+    class DumperT6 final : public AbstractAssetDumper<T6::RawFile>
     {
     protected:
-        bool ShouldDump(XAssetInfo<RawFile>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::RawFile>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::RawFile>* asset) override;
     };
-} // namespace T6::raw_file
+} // namespace raw_file

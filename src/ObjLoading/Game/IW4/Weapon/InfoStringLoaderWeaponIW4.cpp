@@ -426,16 +426,16 @@ namespace
     }
 } // namespace
 
-namespace IW4::weapon
+namespace weapon
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderIW4::InfoStringLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderIW4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
 
@@ -458,4 +458,4 @@ namespace IW4::weapon
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace IW4::weapon
+} // namespace weapon

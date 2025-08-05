@@ -17,10 +17,10 @@ namespace
         auto& memory = zone.Memory();
 
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
-        collection.AddAssetCreator(material::CreateCompiler(memory, searchPath, gdt));
-        collection.AddAssetCreator(IW4::techset::CreateLoader(memory, searchPath));
+        collection.AddAssetCreator(material::CreateCompilerIW4(memory, searchPath, gdt));
+        collection.AddAssetCreator(techset::CreateLoaderIW4(memory, searchPath));
 #endif
-        collection.AddAssetCreator(vertex_decl::CreateLoader(memory));
+        collection.AddAssetCreator(vertex_decl::CreateLoaderIW4(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,

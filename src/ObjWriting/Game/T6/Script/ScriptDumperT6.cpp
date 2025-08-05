@@ -2,14 +2,14 @@
 
 using namespace T6;
 
-namespace T6::script
+namespace script
 {
-    bool Dumper::ShouldDump(XAssetInfo<ScriptParseTree>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<ScriptParseTree>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset)
     {
         const auto* scriptParseTree = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -20,4 +20,4 @@ namespace T6::script
         auto& stream = *assetFile;
         stream.write(scriptParseTree->buffer, scriptParseTree->len);
     }
-} // namespace T6::script
+} // namespace script

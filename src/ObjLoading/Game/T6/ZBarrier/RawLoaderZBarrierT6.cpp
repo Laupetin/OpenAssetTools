@@ -11,7 +11,6 @@
 #include <iostream>
 
 using namespace T6;
-using namespace ::z_barrier;
 
 namespace
 {
@@ -26,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForAssetName(assetName);
+            const auto fileName = z_barrier::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -43,14 +42,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        T6::z_barrier::InfoStringLoader m_info_string_loader;
+        z_barrier::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6::z_barrier
+namespace z_barrier
 {
-    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderZBarrier>(memory, searchPath, zone);
     }
-} // namespace T6::z_barrier
+} // namespace z_barrier

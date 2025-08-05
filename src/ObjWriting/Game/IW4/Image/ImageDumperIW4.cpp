@@ -12,7 +12,6 @@
 #include <format>
 
 using namespace IW4;
-using namespace ::image;
 
 namespace
 {
@@ -37,7 +36,7 @@ namespace
 
     std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)
     {
-        const auto imageFileName = std::format("images/{}.iwi", image.name);
+        const auto imageFileName = image::GetFileNameForAsset(image.name, ".iwi");
         const auto filePathImage = searchPath.Open(imageFileName);
         if (!filePathImage.IsOpen())
         {
@@ -57,9 +56,9 @@ namespace
     }
 } // namespace
 
-namespace IW4::image
+namespace image
 {
-    Dumper::Dumper()
+    DumperIW4::DumperIW4()
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
@@ -76,12 +75,12 @@ namespace IW4::image
         }
     }
 
-    bool Dumper::ShouldDump(XAssetInfo<GfxImage>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<GfxImage>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
     {
         const auto* image = asset->Asset();
         const auto texture = LoadImageData(context.m_obj_search_path, *image);
@@ -96,4 +95,4 @@ namespace IW4::image
         auto& stream = *assetFile;
         m_writer->DumpImage(stream, texture.get());
     }
-} // namespace IW4::image
+} // namespace image

@@ -19,7 +19,7 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        collection.AddAssetCreator(T6::key_value_pairs::CreateCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
+        collection.AddAssetCreator(key_value_pairs::CreateCompilerT6(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,

@@ -9,7 +9,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::z_barrier;
 
 namespace
 {
@@ -49,14 +48,14 @@ namespace
     }
 } // namespace
 
-namespace T6::z_barrier
+namespace z_barrier
 {
-    bool Dumper::ShouldDump(XAssetInfo<ZBarrierDef>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<ZBarrierDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -79,4 +78,4 @@ namespace T6::z_barrier
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::z_barrier
+} // namespace z_barrier

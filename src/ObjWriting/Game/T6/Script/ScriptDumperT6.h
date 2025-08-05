@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::script
+namespace script
 {
-    class Dumper final : public AbstractAssetDumper<ScriptParseTree>
+    class DumperT6 final : public AbstractAssetDumper<T6::ScriptParseTree>
     {
     protected:
-        bool ShouldDump(XAssetInfo<ScriptParseTree>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset) override;
+        bool ShouldDump(XAssetInfo<T6::ScriptParseTree>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::ScriptParseTree>* asset) override;
     };
-} // namespace T6::script
+} // namespace script

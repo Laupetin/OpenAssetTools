@@ -131,14 +131,14 @@ namespace
     };
 } // namespace
 
-namespace T6::font_icon
+namespace font_icon
 {
-    bool CsvDumper::ShouldDump(XAssetInfo<FontIcon>* asset)
+    bool CsvDumperT6::ShouldDump(XAssetInfo<FontIcon>* asset)
     {
         return true;
     }
 
-    void CsvDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
+    void CsvDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
     {
         const auto assetFile = context.OpenAssetFile(asset->m_name);
 
@@ -148,4 +148,4 @@ namespace T6::font_icon
         Dumper dumper(*assetFile);
         dumper.Dump(*asset->Asset());
     }
-} // namespace T6::font_icon
+} // namespace font_icon

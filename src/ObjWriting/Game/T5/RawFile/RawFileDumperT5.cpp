@@ -93,14 +93,14 @@ namespace
     }
 } // namespace
 
-namespace T5::raw_file
+namespace raw_file
 {
-    bool Dumper::ShouldDump(XAssetInfo<RawFile>* asset)
+    bool DumperT5::ShouldDump(XAssetInfo<RawFile>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
+    void DumperT5::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
     {
         const auto* rawFile = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -118,4 +118,4 @@ namespace T5::raw_file
         else
             stream.write(rawFile->buffer, rawFile->len);
     }
-} // namespace T5::raw_file
+} // namespace raw_file

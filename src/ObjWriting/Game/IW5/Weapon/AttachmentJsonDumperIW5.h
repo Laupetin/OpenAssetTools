@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5::attachment
+namespace attachment
 {
-    class JsonDumper final : public AbstractAssetDumper<WeaponAttachment>
+    class JsonDumperIW5 final : public AbstractAssetDumper<IW5::WeaponAttachment>
     {
     protected:
-        bool ShouldDump(XAssetInfo<WeaponAttachment>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset) override;
+        bool ShouldDump(XAssetInfo<IW5::WeaponAttachment>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::WeaponAttachment>* asset) override;
     };
-} // namespace IW5::attachment
+} // namespace attachment

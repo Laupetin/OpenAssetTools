@@ -58,15 +58,15 @@ namespace
     }
 } // namespace
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, Zone& zone)
+    InfoStringLoaderIW4::InfoStringLoaderIW4(MemoryManager& memory, Zone& zone)
         : m_memory(memory),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderIW4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         PhysPresetInfo presetInfo;
         std::memset(&presetInfo, 0, sizeof(presetInfo));
@@ -87,4 +87,4 @@ namespace IW4::phys_preset
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace IW4::phys_preset
+} // namespace phys_preset

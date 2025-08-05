@@ -3,11 +3,11 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::sound
+namespace sound
 {
-    class SndDriverGlobalsDumper final : public IAssetDumper<SndDriverGlobals>
+    class SndDriverGlobalsDumperT6 final : public IAssetDumper<T6::SndDriverGlobals>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<SndDriverGlobals>* pool) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<T6::SndDriverGlobals>* pool) override;
     };
-} // namespace T6::sound
+} // namespace sound

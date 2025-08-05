@@ -75,14 +75,14 @@ namespace
     }
 } // namespace
 
-namespace T6::techset
+namespace techset
 {
-    bool Dumper::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
     {
         const auto* techniqueSet = asset->Asset();
         auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
@@ -104,4 +104,4 @@ namespace T6::techset
             }
         }
     }
-} // namespace T6::techset
+} // namespace techset

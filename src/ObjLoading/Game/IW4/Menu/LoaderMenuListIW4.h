@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4::menu
+namespace menu
 {
-    std::unique_ptr<AssetCreator<AssetMenuList>> CreateMenuListLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4::menu
+    std::unique_ptr<AssetCreator<IW4::AssetMenuList>> CreateMenuListLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace menu

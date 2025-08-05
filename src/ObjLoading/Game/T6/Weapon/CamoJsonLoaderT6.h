@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::camo
+namespace camo
 {
-    std::unique_ptr<AssetCreator<AssetWeaponCamo>> CreateJsonLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6::camo
+    std::unique_ptr<AssetCreator<T6::AssetWeaponCamo>> CreateJsonLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace camo

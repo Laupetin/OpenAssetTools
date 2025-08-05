@@ -49,14 +49,14 @@ namespace
     }
 } // namespace
 
-namespace IW5::menu
+namespace menu
 {
-    bool MenuDumper::ShouldDump(XAssetInfo<menuDef_t>* asset)
+    bool MenuDumperIW5::ShouldDump(XAssetInfo<menuDef_t>* asset)
     {
         return true;
     }
 
-    void MenuDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
+    void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
     {
         const auto* menu = asset->Asset();
         const auto menuFilePath = GetPathForMenu(asset);
@@ -74,10 +74,10 @@ namespace IW5::menu
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateMenuWriter(*assetFile);
+        auto menuWriter = CreateMenuWriterIW5(*assetFile);
 
         menuWriter->Start();
         menuWriter->WriteMenu(*menu);
         menuWriter->End();
     }
-} // namespace IW5::menu
+} // namespace menu

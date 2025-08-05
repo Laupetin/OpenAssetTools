@@ -40,14 +40,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        IW4::weapon::InfoStringLoader m_info_string_loader;
+        weapon::InfoStringLoaderIW4 m_info_string_loader;
     };
 } // namespace
 
-namespace IW4::weapon
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<IW4::AssetWeapon>> CreateGdtLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderWeapon>(memory, searchPath, gdt, zone);
     }
-} // namespace IW4::weapon
+} // namespace weapon

@@ -4,12 +4,12 @@
 #include "Game/IW4/IW4.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4::weapon
+namespace weapon
 {
-    class Dumper final : public AbstractAssetDumper<WeaponCompleteDef>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::WeaponCompleteDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<WeaponCompleteDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::WeaponCompleteDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::WeaponCompleteDef>* asset) override;
     };
-} // namespace IW4::weapon
+} // namespace weapon

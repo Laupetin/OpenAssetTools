@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4::string_table
+namespace string_table
 {
-    class Dumper final : public AbstractAssetDumper<StringTable>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::StringTable>
     {
     protected:
-        bool ShouldDump(XAssetInfo<StringTable>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::StringTable>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::StringTable>* asset) override;
     };
-} // namespace IW4::string_table
+} // namespace string_table

@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW3/IW3.h"
 
-namespace IW3::map_ents
+namespace map_ents
 {
-    class Dumper final : public AbstractAssetDumper<MapEnts>
+    class DumperIW3 final : public AbstractAssetDumper<IW3::MapEnts>
     {
     protected:
-        bool ShouldDump(XAssetInfo<MapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset) override;
+        bool ShouldDump(XAssetInfo<IW3::MapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW3::MapEnts>* asset) override;
     };
-} // namespace IW3::map_ents
+} // namespace map_ents

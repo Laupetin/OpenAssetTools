@@ -8,7 +8,6 @@
 #include <iostream>
 
 using namespace IW5;
-using namespace ::material;
 
 namespace
 {
@@ -23,7 +22,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(GetFileNameForAssetName(assetName));
+            const auto file = m_search_path.Open(material::GetFileNameForAssetName(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -46,10 +45,10 @@ namespace
     };
 } // namespace
 
-namespace IW5::material
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath);
     }
-} // namespace IW5::material
+} // namespace material

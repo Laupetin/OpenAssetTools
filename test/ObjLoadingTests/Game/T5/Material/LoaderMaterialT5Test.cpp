@@ -370,7 +370,7 @@ namespace
         GivenImage("~-gjun_art_brick_foundation_c", context, memory);
         GivenTechset("mc_l_sm_r0c0n0s0", context, memory);
 
-        auto loader = material::CreateLoader(memory, searchPath);
+        auto loader = material::CreateLoaderT5(memory, searchPath);
         auto result = loader->CreateAsset("mc/jun_art_brick_foundation", context);
         REQUIRE(result.HasBeenSuccessful());
 

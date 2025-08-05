@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::vehicle
+namespace vehicle
 {
-    std::unique_ptr<AssetCreator<AssetVehicle>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6::vehicle
+    std::unique_ptr<AssetCreator<T6::AssetVehicle>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace vehicle

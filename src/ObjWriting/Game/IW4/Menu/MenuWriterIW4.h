@@ -6,14 +6,14 @@
 #include <memory>
 #include <string>
 
-namespace IW4::menu
+namespace menu
 {
-    class IWriterIW4 : public ::menu::IWriter
+    class IWriterIW4 : public IWriter
     {
     public:
-        virtual void WriteFunctionDef(const std::string& functionName, const Statement_s* statement) = 0;
-        virtual void WriteMenu(const menuDef_t& menu) = 0;
+        virtual void WriteFunctionDef(const std::string& functionName, const IW4::Statement_s* statement) = 0;
+        virtual void WriteMenu(const IW4::menuDef_t& menu) = 0;
     };
 
-    std::unique_ptr<IWriterIW4> CreateMenuWriter(std::ostream& stream);
-} // namespace IW4::menu
+    std::unique_ptr<IWriterIW4> CreateMenuWriterIW4(std::ostream& stream);
+} // namespace menu

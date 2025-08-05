@@ -8,7 +8,6 @@
 #include <iostream>
 
 using namespace IW4;
-using namespace ::light_def;
 
 namespace
 {
@@ -25,7 +24,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto filename = GetFileNameForAsset(assetName);
+            const auto filename = light_def::GetFileNameForAsset(assetName);
             const auto file = m_search_path.Open(filename);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -68,10 +67,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::light_def
+namespace light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderLightDef>(memory, searchPath);
     }
-} // namespace IW4::light_def
+} // namespace light_def

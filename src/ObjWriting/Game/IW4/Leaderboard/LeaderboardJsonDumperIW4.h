@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4::leaderboard
+namespace leaderboard
 {
-    class JsonDumper final : public AbstractAssetDumper<LeaderboardDef>
+    class JsonDumperIW4 final : public AbstractAssetDumper<IW4::LeaderboardDef>
     {
     protected:
-        [[nodiscard]] bool ShouldDump(XAssetInfo<LeaderboardDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset) override;
+        [[nodiscard]] bool ShouldDump(XAssetInfo<IW4::LeaderboardDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::LeaderboardDef>* asset) override;
     };
-} // namespace IW4::leaderboard
+} // namespace leaderboard

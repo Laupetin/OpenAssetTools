@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T5/T5.h"
 
-namespace T5::string_table
+namespace string_table
 {
-    class Dumper final : public AbstractAssetDumper<StringTable>
+    class DumperT5 final : public AbstractAssetDumper<T5::StringTable>
     {
     protected:
-        bool ShouldDump(XAssetInfo<StringTable>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
+        bool ShouldDump(XAssetInfo<T5::StringTable>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T5::StringTable>* asset) override;
     };
-} // namespace T5::string_table
+} // namespace string_table

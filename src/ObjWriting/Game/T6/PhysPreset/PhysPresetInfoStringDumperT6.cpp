@@ -11,7 +11,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::phys_preset;
 
 namespace
 {
@@ -81,14 +80,14 @@ namespace
     }
 } // namespace
 
-namespace T6::phys_preset
+namespace phys_preset
 {
-    bool InfoStringDumper::ShouldDump(XAssetInfo<PhysPreset>* asset)
+    bool InfoStringDumperT6::ShouldDump(XAssetInfo<PhysPreset>* asset)
     {
         return true;
     }
 
-    void InfoStringDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
+    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -111,4 +110,4 @@ namespace T6::phys_preset
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::phys_preset
+} // namespace phys_preset

@@ -8,7 +8,6 @@
 #include <cstring>
 
 using namespace T6;
-using namespace ::string_table;
 
 namespace
 {
@@ -27,7 +26,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            StringTableLoaderV3<StringTable, Common::Com_HashString> loader;
+            string_table::StringTableLoaderV3<StringTable, Common::Com_HashString> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
 
             return AssetCreationResult::Success(context.AddAsset<AssetStringTable>(assetName, stringTable));
@@ -39,10 +38,10 @@ namespace
     };
 } // namespace
 
-namespace T6::string_table
+namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }
-} // namespace T6::string_table
+} // namespace string_table

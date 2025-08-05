@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW5::attachment
+namespace attachment
 {
-    std::unique_ptr<AssetCreator<AssetAttachment>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW5::attachment
+    std::unique_ptr<AssetCreator<IW5::AssetAttachment>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace attachment

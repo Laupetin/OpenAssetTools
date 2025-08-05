@@ -203,7 +203,7 @@ namespace
                          ISearchPath& searchPath,
                          MemoryManager& memory,
                          AssetCreationContext& context,
-                         IW4::techset::ICreator* techsetCreator)
+                         techset::ICreatorIW4* techsetCreator)
             : m_technique_name(techniqueName),
               m_search_path(searchPath),
               m_memory(memory),
@@ -1026,13 +1026,13 @@ namespace
         TechniqueZoneLoadingState& m_zone_state;
         TechniqueStateMapCache& m_state_map_cache;
         ShaderInfoFromFileSystemCacheState& m_shader_info_cache;
-        IW4::techset::ICreator* m_techset_creator;
+        techset::ICreatorIW4* m_techset_creator;
     };
 
     class TechniqueLoader
     {
     public:
-        TechniqueLoader(ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, IW4::techset::ICreator* techsetCreator)
+        TechniqueLoader(ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, techset::ICreatorIW4* techsetCreator)
             : m_search_path(searchPath),
               m_memory(memory),
               m_context(context),
@@ -1260,10 +1260,10 @@ namespace
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         TechniqueZoneLoadingState& m_zone_state;
-        IW4::techset::ICreator* m_techset_creator;
+        techset::ICreatorIW4* m_techset_creator;
     };
 
-    class TechsetLoader final : public IW4::techset::ICreator
+    class TechsetLoader final : public techset::ICreatorIW4
     {
     public:
         TechsetLoader(MemoryManager& memory, ISearchPath& searchPath)
@@ -1369,10 +1369,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::techset
+namespace techset
 {
-    std::unique_ptr<ICreator> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<ICreatorIW4> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<TechsetLoader>(memory, searchPath);
     }
-} // namespace IW4::techset
+} // namespace techset

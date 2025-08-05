@@ -40,14 +40,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        T6::attachment_unique::InfoStringLoader m_info_string_loader;
+        attachment_unique::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    std::unique_ptr<AssetCreator<AssetAttachmentUnique>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetAttachmentUnique>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderAttachmentUnique>(memory, searchPath, gdt, zone);
     }
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

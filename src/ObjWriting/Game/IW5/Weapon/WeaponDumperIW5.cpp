@@ -15,7 +15,6 @@
 #include <unordered_set>
 
 using namespace IW5;
-using namespace ::weapon;
 
 namespace
 {
@@ -732,14 +731,14 @@ namespace
     }
 } // namespace
 
-namespace IW5::weapon
+namespace weapon
 {
-    bool Dumper::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
+    bool DumperIW5::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
+    void DumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
     {
         // TODO: only dump infostring fields when non-default
 
@@ -766,4 +765,4 @@ namespace IW5::weapon
 
         DumpAccuracyGraphs(context, asset);
     }
-} // namespace IW5::weapon
+} // namespace weapon

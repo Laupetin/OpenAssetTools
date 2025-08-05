@@ -2,14 +2,14 @@
 
 using namespace IW3;
 
-namespace IW3::map_ents
+namespace map_ents
 {
-    bool Dumper::ShouldDump(XAssetInfo<MapEnts>* asset)
+    bool DumperIW3::ShouldDump(XAssetInfo<MapEnts>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
+    void DumperIW3::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
     {
         const auto* mapEnts = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name + ".ents");
@@ -20,4 +20,4 @@ namespace IW3::map_ents
         auto& stream = *assetFile;
         stream.write(mapEnts->entityString, mapEnts->numEntityChars);
     }
-} // namespace IW3::map_ents
+} // namespace map_ents

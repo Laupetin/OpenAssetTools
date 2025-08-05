@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4::material
+namespace material
 {
-    class DecompilingGdtDumper final : public AbstractAssetDumper<Material>
+    class DecompilingGdtDumperIW4 final : public AbstractAssetDumper<IW4::Material>
     {
     protected:
-        bool ShouldDump(XAssetInfo<Material>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::Material>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::Material>* asset) override;
     };
-} // namespace IW4::material
+} // namespace material

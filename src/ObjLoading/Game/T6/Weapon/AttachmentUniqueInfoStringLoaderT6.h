@@ -7,14 +7,14 @@
 
 #include <vector>
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    bool ExtractAttachmentsFromAssetName(const std::string& assetName, std::vector<eAttachment>& attachmentList);
+    bool ExtractAttachmentsFromAssetNameT6(const std::string& assetName, std::vector<T6::eAttachment>& attachmentList);
 
-    class InfoStringLoader
+    class InfoStringLoaderT6
     {
     public:
-        InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+        InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
@@ -23,4 +23,4 @@ namespace T6::attachment_unique
         ISearchPath& m_search_path;
         Zone& m_zone;
     };
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

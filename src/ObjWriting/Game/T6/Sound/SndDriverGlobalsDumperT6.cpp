@@ -382,11 +382,11 @@ namespace
     };
 } // namespace
 
-namespace T6::sound
+namespace sound
 {
-    void SndDriverGlobalsDumper::DumpPool(AssetDumpingContext& context, AssetPool<SndDriverGlobals>* pool)
+    void SndDriverGlobalsDumperT6::DumpPool(AssetDumpingContext& context, AssetPool<SndDriverGlobals>* pool)
     {
         Internal internal(context);
         internal.DumpPool(pool);
     }
-} // namespace T6::sound
+} // namespace sound

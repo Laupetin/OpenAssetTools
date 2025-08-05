@@ -122,10 +122,10 @@ namespace
     };
 } // namespace
 
-namespace IW3::image
+namespace image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetImage>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ImageLoader>(memory, searchPath);
     }
-} // namespace IW3::image
+} // namespace image

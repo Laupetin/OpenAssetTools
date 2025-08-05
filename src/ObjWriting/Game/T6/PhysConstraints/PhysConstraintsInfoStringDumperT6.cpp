@@ -9,7 +9,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::phys_constraints;
 
 namespace
 {
@@ -60,14 +59,14 @@ namespace
     }
 } // namespace
 
-namespace T6::phys_constraints
+namespace phys_constraints
 {
-    bool InfoStringDumper::ShouldDump(XAssetInfo<PhysConstraints>* asset)
+    bool InfoStringDumperT6::ShouldDump(XAssetInfo<PhysConstraints>* asset)
     {
         return true;
     }
 
-    void InfoStringDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
+    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -90,4 +89,4 @@ namespace T6::phys_constraints
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::phys_constraints
+} // namespace phys_constraints

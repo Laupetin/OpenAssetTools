@@ -9,7 +9,6 @@
 #include <type_traits>
 
 using namespace T6;
-using namespace ::tracer;
 
 namespace
 {
@@ -59,14 +58,14 @@ namespace
     }
 } // namespace
 
-namespace T6::tracer
+namespace tracer
 {
-    bool Dumper::ShouldDump(XAssetInfo<TracerDef>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<TracerDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -89,4 +88,4 @@ namespace T6::tracer
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::tracer
+} // namespace tracer

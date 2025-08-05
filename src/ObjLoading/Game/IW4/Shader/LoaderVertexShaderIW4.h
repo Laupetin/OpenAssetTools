@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4::shader
+namespace shader
 {
-    std::unique_ptr<AssetCreator<AssetVertexShader>> CreateVertexShaderLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4::shader
+    std::unique_ptr<AssetCreator<IW4::AssetVertexShader>> CreateVertexShaderLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace shader

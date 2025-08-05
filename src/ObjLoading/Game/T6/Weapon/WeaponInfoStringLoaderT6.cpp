@@ -568,7 +568,7 @@ namespace
                     && weapon.attachmentUniques[attachmentUniqueIndex]->attachmentType != attachmentUnique.attachmentType)
                 {
                     std::vector<eAttachment> attachments;
-                    if (T6::attachment_unique::ExtractAttachmentsFromAssetName(weapon.attachmentUniques[attachmentUniqueIndex]->szInternalName, attachments)
+                    if (attachment_unique::ExtractAttachmentsFromAssetNameT6(weapon.attachmentUniques[attachmentUniqueIndex]->szInternalName, attachments)
                         && attachments.front() == attachmentUnique.attachmentType)
                     {
                         if (lastSibling == nullptr)
@@ -599,16 +599,16 @@ namespace
     }
 } // namespace
 
-namespace T6::weapon
+namespace weapon
 {
-    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
         weaponFullDef->weapVariantDef.szInternalName = m_memory.Dup(assetName.c_str());
@@ -632,4 +632,4 @@ namespace T6::weapon
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
-} // namespace T6::weapon
+} // namespace weapon

@@ -9,7 +9,6 @@
 
 using namespace nlohmann;
 using namespace IW5;
-using namespace ::attachment;
 
 namespace
 {
@@ -394,14 +393,14 @@ namespace
     };
 } // namespace
 
-namespace IW5::attachment
+namespace attachment
 {
-    bool JsonDumper::ShouldDump(XAssetInfo<WeaponAttachment>* asset)
+    bool JsonDumperIW5::ShouldDump(XAssetInfo<WeaponAttachment>* asset)
     {
         return true;
     }
 
-    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
+    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset->m_name));
 
@@ -411,4 +410,4 @@ namespace IW5::attachment
         const JsonDumperImpl dumper(context, *assetFile);
         dumper.Dump(asset->Asset());
     }
-} // namespace IW5::attachment
+} // namespace attachment

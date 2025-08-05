@@ -45,7 +45,7 @@ namespace
         return result;
     }
 
-    void DumpFunctions(IW5::menu::IWriterIW5& menuDumper, const MenuList* menuList)
+    void DumpFunctions(menu::IWriterIW5& menuDumper, const MenuList* menuList)
     {
         const auto allSupportingData = GetAllUniqueExpressionSupportingData(menuList);
         auto functionIndex = 0u;
@@ -70,7 +70,7 @@ namespace
         }
     }
 
-    void DumpMenus(IW5::menu::IWriterIW5& menuDumper, const MenuList* menuList)
+    void DumpMenus(menu::IWriterIW5& menuDumper, const MenuList* menuList)
     {
         const fs::path p(menuList->name);
 
@@ -104,14 +104,14 @@ namespace
     }
 } // namespace
 
-namespace IW5::menu
+namespace menu
 {
-    bool MenuListDumper::ShouldDump(XAssetInfo<MenuList>* asset)
+    bool MenuListDumperIW5::ShouldDump(XAssetInfo<MenuList>* asset)
     {
         return true;
     }
 
-    void MenuListDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset)
+    void MenuListDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset)
     {
         const auto* menuList = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -119,7 +119,7 @@ namespace IW5::menu
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateMenuWriter(*assetFile);
+        auto menuWriter = CreateMenuWriterIW5(*assetFile);
 
         menuWriter->Start();
 
@@ -130,4 +130,4 @@ namespace IW5::menu
 
         menuWriter->End();
     }
-} // namespace IW5::menu
+} // namespace menu

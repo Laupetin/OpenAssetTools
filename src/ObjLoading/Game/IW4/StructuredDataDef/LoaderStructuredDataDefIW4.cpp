@@ -207,10 +207,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::structured_data_def
+namespace structured_data_def
 {
-    std::unique_ptr<AssetCreator<AssetStructuredDataDef>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStructuredDataDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StructuredDataDefLoader>(memory, searchPath);
     }
-} // namespace IW4::structured_data_def
+} // namespace structured_data_def

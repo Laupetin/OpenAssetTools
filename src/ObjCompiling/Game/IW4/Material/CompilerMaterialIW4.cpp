@@ -48,7 +48,7 @@ namespace
               m_registration(registration),
               m_state_map_cache(context.GetZoneAssetCreationState<::techset::TechniqueStateMapCache>()),
               m_base_state_bits{},
-              m_techset_creator(IW4::techset::CreateLoader(memory, searchPath))
+              m_techset_creator(techset::CreateLoaderIW4(memory, searchPath))
         {
         }
 
@@ -1325,7 +1325,7 @@ namespace
         std::vector<MaterialTextureDef> m_textures;
         std::vector<MaterialConstantDef> m_constants;
 
-        std::unique_ptr<::IW4::techset::ICreator> m_techset_creator;
+        std::unique_ptr<techset::ICreatorIW4> m_techset_creator;
     };
 
     class MaterialLoader final : public AssetCreator<AssetMaterial>
@@ -1375,10 +1375,10 @@ namespace
     };
 } // namespace
 
-namespace IW4::material
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateCompiler(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateCompilerIW4(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath, gdt);
     }
-} // namespace IW4::material
+} // namespace material

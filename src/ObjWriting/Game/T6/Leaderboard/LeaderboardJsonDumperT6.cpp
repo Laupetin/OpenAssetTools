@@ -10,7 +10,6 @@
 
 using namespace nlohmann;
 using namespace T6;
-using namespace ::leaderboard;
 
 namespace
 {
@@ -97,14 +96,14 @@ namespace
     };
 } // namespace
 
-namespace T6::leaderboard
+namespace leaderboard
 {
-    bool JsonDumper::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
+    bool JsonDumperT6::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
     {
         return true;
     }
 
-    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
 
@@ -114,4 +113,4 @@ namespace T6::leaderboard
         Dumper dumper(*assetFile);
         dumper.Dump(*asset->Asset());
     }
-} // namespace T6::leaderboard
+} // namespace leaderboard

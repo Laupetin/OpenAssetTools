@@ -109,14 +109,14 @@ namespace
     }
 } // namespace
 
-namespace T6::vehicle
+namespace vehicle
 {
-    bool Dumper::ShouldDump(XAssetInfo<VehicleDef>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<VehicleDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -139,4 +139,4 @@ namespace T6::vehicle
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace T6::vehicle
+} // namespace vehicle

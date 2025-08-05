@@ -8,9 +8,9 @@
 
 using namespace T5;
 
-namespace T5::localize
+namespace localize
 {
-    void Dumper::DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool)
+    void DumperT5::DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool)
     {
         if (pool->m_asset_lookup.empty())
             return;
@@ -41,4 +41,4 @@ namespace T5::localize
             std::cerr << std::format("Could not create string file for dumping localized strings of zone '{}'\n", context.m_zone.m_name);
         }
     }
-} // namespace T5::localize
+} // namespace localize

@@ -9,7 +9,6 @@
 
 using namespace nlohmann;
 using namespace T6;
-using namespace ::camo;
 
 namespace
 {
@@ -103,14 +102,14 @@ namespace
     };
 } // namespace
 
-namespace T6::camo
+namespace camo
 {
-    bool JsonDumper::ShouldDump(XAssetInfo<WeaponCamo>* asset)
+    bool JsonDumperT6::ShouldDump(XAssetInfo<WeaponCamo>* asset)
     {
         return true;
     }
 
-    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCamo>* asset)
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCamo>* asset)
     {
         const auto fileName = GetJsonFileNameForAssetName(asset->m_name);
         const auto assetFile = context.OpenAssetFile(fileName);
@@ -121,4 +120,4 @@ namespace T6::camo
         const JsonDumperImpl dumper(*assetFile);
         dumper.Dump(asset->Asset());
     }
-} // namespace T6::camo
+} // namespace camo

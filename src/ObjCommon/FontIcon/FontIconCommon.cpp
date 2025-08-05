@@ -1,11 +1,11 @@
-#include "FontIconCommonT6.h"
+#include "FontIconCommon.h"
 
 #include "Utils/StringUtils.h"
 
 #include <filesystem>
 namespace fs = std::filesystem;
 
-namespace T6::font_icon
+namespace font_icon
 {
     std::string GetJsonFileNameForAssetName(const std::string& assetName)
     {
@@ -20,4 +20,4 @@ namespace T6::font_icon
 
         return assetName;
     }
-} // namespace T6::font_icon
+} // namespace font_icon

@@ -11,7 +11,6 @@
 #include <type_traits>
 
 using namespace IW4;
-using namespace ::phys_preset;
 
 namespace
 {
@@ -79,14 +78,14 @@ namespace
     }
 } // namespace
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    bool InfoStringDumper::ShouldDump(XAssetInfo<PhysPreset>* asset)
+    bool InfoStringDumperIW4::ShouldDump(XAssetInfo<IW4::PhysPreset>* asset)
     {
         return true;
     }
 
-    void InfoStringDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
+    void InfoStringDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::PhysPreset>* asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
@@ -109,4 +108,4 @@ namespace IW4::phys_preset
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
-} // namespace IW4::phys_preset
+} // namespace phys_preset

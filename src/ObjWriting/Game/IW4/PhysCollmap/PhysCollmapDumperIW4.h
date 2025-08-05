@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4::phys_collmap
+namespace phys_collmap
 {
-    class Dumper final : public AbstractAssetDumper<PhysCollmap>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::PhysCollmap>
     {
     protected:
-        bool ShouldDump(XAssetInfo<PhysCollmap>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysCollmap>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::PhysCollmap>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::PhysCollmap>* asset) override;
     };
-} // namespace IW4::phys_collmap
+} // namespace phys_collmap

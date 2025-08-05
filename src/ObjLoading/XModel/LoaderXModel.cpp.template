@@ -1082,9 +1082,11 @@ namespace
     };
 } // namespace
 
-namespace GAME::xmodel
+#set CREATE_LOADER_METHOD "CreateLoader" + GAME
+
+namespace xmodel
 {
-    std::unique_ptr<AssetCreator<AssetXModel>> CreateXModelLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetXModel>> CREATE_LOADER_METHOD (MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<XModelLoader>(memory, searchPath, zone.m_script_strings);
     }

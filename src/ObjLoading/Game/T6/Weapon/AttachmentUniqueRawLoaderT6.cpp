@@ -11,7 +11,6 @@
 #include <iostream>
 
 using namespace T6;
-using namespace ::attachment_unique;
 
 namespace
 {
@@ -26,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForAssetName(assetName);
+            const auto fileName = attachment_unique::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -43,14 +42,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        T6::attachment_unique::InfoStringLoader m_info_string_loader;
+        attachment_unique::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6::attachment_unique
+namespace attachment_unique
 {
-    std::unique_ptr<AssetCreator<AssetAttachmentUnique>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetAttachmentUnique>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoader>(memory, searchPath, zone);
     }
-} // namespace T6::attachment_unique
+} // namespace attachment_unique

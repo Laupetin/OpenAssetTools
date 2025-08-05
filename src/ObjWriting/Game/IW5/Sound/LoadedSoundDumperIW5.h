@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5::sound
+namespace sound
 {
-    class LoadedSoundDumper final : public AbstractAssetDumper<LoadedSound>
+    class LoadedSoundDumperIW5 final : public AbstractAssetDumper<IW5::LoadedSound>
     {
     protected:
-        bool ShouldDump(XAssetInfo<LoadedSound>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset) override;
+        bool ShouldDump(XAssetInfo<IW5::LoadedSound>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::LoadedSound>* asset) override;
     };
-} // namespace IW5::sound
+} // namespace sound

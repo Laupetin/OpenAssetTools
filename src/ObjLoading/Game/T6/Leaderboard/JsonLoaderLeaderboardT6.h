@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::leaderboard
+namespace leaderboard
 {
-    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6::leaderboard
+    std::unique_ptr<AssetCreator<T6::AssetLeaderboard>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace leaderboard

@@ -5,16 +5,15 @@
 #include <sstream>
 
 using namespace IW4;
-using namespace ::light_def;
 
-namespace IW4::light_def
+namespace light_def
 {
-    bool Dumper::ShouldDump(XAssetInfo<GfxLightDef>* asset)
+    bool DumperIW4::ShouldDump(XAssetInfo<GfxLightDef>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxLightDef>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxLightDef>* asset)
     {
         const auto* lightDef = asset->Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset->m_name));
@@ -30,4 +29,4 @@ namespace IW4::light_def
 
         stream << lightDef->attenuation.samplerState << imageName << static_cast<char>(lightDef->lmapLookupStart);
     }
-} // namespace IW4::light_def
+} // namespace light_def

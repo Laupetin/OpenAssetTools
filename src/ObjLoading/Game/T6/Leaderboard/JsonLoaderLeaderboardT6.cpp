@@ -12,7 +12,6 @@
 
 using namespace nlohmann;
 using namespace T6;
-using namespace ::leaderboard;
 
 namespace
 {
@@ -140,7 +139,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(GetJsonFileNameForAsset(assetName));
+            const auto file = m_search_path.Open(leaderboard::GetJsonFileNameForAsset(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -163,10 +162,10 @@ namespace
     };
 } // namespace
 
-namespace T6::leaderboard
+namespace leaderboard
 {
-    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LeaderboardLoader>(memory, searchPath);
     }
-} // namespace T6::leaderboard
+} // namespace leaderboard

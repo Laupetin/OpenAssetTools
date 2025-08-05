@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW3/IW3.h"
 
-namespace IW3::raw_file
+namespace raw_file
 {
-    class Dumper final : public AbstractAssetDumper<RawFile>
+    class DumperIW3 final : public AbstractAssetDumper<IW3::RawFile>
     {
     protected:
-        bool ShouldDump(XAssetInfo<RawFile>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
+        bool ShouldDump(XAssetInfo<IW3::RawFile>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW3::RawFile>* asset) override;
     };
-} // namespace IW3::raw_file
+} // namespace raw_file

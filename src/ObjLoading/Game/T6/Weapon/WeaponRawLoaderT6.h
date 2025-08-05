@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6::weapon
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6::weapon
+    std::unique_ptr<AssetCreator<T6::AssetWeapon>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace weapon

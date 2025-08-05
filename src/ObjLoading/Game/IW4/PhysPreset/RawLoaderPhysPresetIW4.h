@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4::phys_preset
+namespace phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace IW4::phys_preset
+    std::unique_ptr<AssetCreator<IW4::AssetPhysPreset>> CreateRawLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace phys_preset

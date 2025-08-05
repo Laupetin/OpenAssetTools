@@ -3,12 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
-namespace T6::leaderboard
+namespace leaderboard
 {
-    class JsonDumper final : public AbstractAssetDumper<LeaderboardDef>
+    class JsonDumperT6 final : public AbstractAssetDumper<T6::LeaderboardDef>
     {
     protected:
-        [[nodiscard]] bool ShouldDump(XAssetInfo<LeaderboardDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset) override;
+        [[nodiscard]] bool ShouldDump(XAssetInfo<T6::LeaderboardDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::LeaderboardDef>* asset) override;
     };
-} // namespace T6::leaderboard
+} // namespace leaderboard

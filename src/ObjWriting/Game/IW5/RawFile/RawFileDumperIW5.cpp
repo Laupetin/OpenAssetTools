@@ -6,14 +6,14 @@
 
 using namespace IW5;
 
-namespace IW5::raw_file
+namespace raw_file
 {
-    bool Dumper::ShouldDump(XAssetInfo<RawFile>* asset)
+    bool DumperIW5::ShouldDump(XAssetInfo<RawFile>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
+    void DumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
     {
         const auto* rawFile = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -62,4 +62,4 @@ namespace IW5::raw_file
 
         inflateEnd(&zs);
     }
-} // namespace IW5::raw_file
+} // namespace raw_file

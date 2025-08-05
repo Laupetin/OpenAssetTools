@@ -47,7 +47,8 @@
 #include <format>
 
 using namespace GAME;
-using namespace ::xmodel;
+
+#set CLASS_NAME "Dumper" + GAME
 
 namespace
 {
@@ -831,7 +832,7 @@ namespace
 
     void DumpXModelJson(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
-        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset->m_name));
         if (!assetFile)
             return;
 
@@ -840,14 +841,14 @@ namespace
     }
 } // namespace
 
-namespace GAME::xmodel
+namespace xmodel
 {
-    bool Dumper::ShouldDump(XAssetInfo<XModel>* asset)
+    bool CLASS_NAME::ShouldDump(XAssetInfo<XModel>* asset)
     {
         return !asset->m_name.empty() && asset->m_name[0] != ',';
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);

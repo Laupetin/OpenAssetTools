@@ -11,7 +11,6 @@
 #include <iostream>
 
 using namespace T6;
-using namespace ::tracer;
 
 namespace
 {
@@ -26,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetFileNameForAssetName(assetName);
+            const auto fileName = tracer::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -43,14 +42,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        T6::tracer::InfoStringLoader m_info_string_loader;
+        tracer::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6::tracer
+namespace tracer
 {
-    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderTracer>(memory, searchPath, zone);
     }
-} // namespace T6::tracer
+} // namespace tracer

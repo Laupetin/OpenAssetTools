@@ -13,7 +13,6 @@
 namespace fs = std::filesystem;
 
 using namespace IW4;
-using namespace ::menu;
 
 namespace
 {
@@ -45,7 +44,7 @@ namespace
         return result;
     }
 
-    void DumpFunctions(IW4::menu::IWriterIW4& menuDumper, const MenuList* menuList)
+    void DumpFunctions(menu::IWriterIW4& menuDumper, const MenuList* menuList)
     {
         const auto allSupportingData = GetAllUniqueExpressionSupportingData(menuList);
         auto functionIndex = 0u;
@@ -73,7 +72,7 @@ namespace
         }
     }
 
-    void DumpMenus(IW4::menu::IWriterIW4& menuDumper, ::menu::MenuDumpingZoneState* zoneState, const MenuList* menuList)
+    void DumpMenus(menu::IWriterIW4& menuDumper, menu::MenuDumpingZoneState* zoneState, const MenuList* menuList)
     {
         for (auto menuNum = 0; menuNum < menuList->menuCount; menuNum++)
         {
@@ -108,9 +107,9 @@ namespace
     }
 } // namespace
 
-namespace IW4::menu
+namespace menu
 {
-    void CreateDumpingStateForMenuList(::menu::MenuDumpingZoneState* zoneState, const MenuList* menuList)
+    void CreateDumpingStateForMenuListIW4(MenuDumpingZoneState* zoneState, const MenuList* menuList)
     {
         if (menuList->menuCount <= 0 || menuList->menus == nullptr || menuList->name == nullptr)
             return;
@@ -148,12 +147,12 @@ namespace IW4::menu
         }
     }
 
-    bool MenuListDumper::ShouldDump(XAssetInfo<MenuList>* asset)
+    bool MenuListDumperIW4::ShouldDump(XAssetInfo<MenuList>* asset)
     {
         return true;
     }
 
-    void MenuListDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset)
+    void MenuListDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset)
     {
         const auto* menuList = asset->Asset();
         const auto assetFile = context.OpenAssetFile(asset->m_name);
@@ -163,7 +162,7 @@ namespace IW4::menu
 
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        auto menuWriter = CreateMenuWriter(*assetFile);
+        auto menuWriter = CreateMenuWriterIW4(*assetFile);
 
         menuWriter->Start();
 
@@ -175,13 +174,13 @@ namespace IW4::menu
         menuWriter->End();
     }
 
-    void MenuListDumper::DumpPool(AssetDumpingContext& context, AssetPool<MenuList>* pool)
+    void MenuListDumperIW4::DumpPool(AssetDumpingContext& context, AssetPool<MenuList>* pool)
     {
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
         for (auto* asset : *pool)
-            CreateDumpingStateForMenuList(zoneState, asset->Asset());
+            CreateDumpingStateForMenuListIW4(zoneState, asset->Asset());
 
         AbstractAssetDumper<MenuList>::DumpPool(context, pool);
     }
-} // namespace IW4::menu
+} // namespace menu

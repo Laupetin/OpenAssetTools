@@ -43,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        T6::attachment::InfoStringLoader m_info_string_loader;
+        attachment::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6::attachment
+namespace attachment
 {
-    std::unique_ptr<AssetCreator<AssetAttachment>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetAttachment>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderAttachment>(memory, searchPath, zone);
     }
-} // namespace T6::attachment
+} // namespace attachment

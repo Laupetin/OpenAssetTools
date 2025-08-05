@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace T5::localize
+namespace localize
 {
-    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T5::localize
+    std::unique_ptr<AssetCreator<T5::AssetLocalize>> CreateLoaderT5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace localize

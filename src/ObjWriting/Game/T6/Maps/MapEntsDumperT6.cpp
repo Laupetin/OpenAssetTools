@@ -4,14 +4,14 @@
 
 using namespace T6;
 
-namespace T6::map_ents
+namespace map_ents
 {
-    bool Dumper::ShouldDump(XAssetInfo<MapEnts>* asset)
+    bool DumperT6::ShouldDump(XAssetInfo<MapEnts>* asset)
     {
         return true;
     }
 
-    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
     {
         const auto* mapEnts = asset->Asset();
 
@@ -23,4 +23,4 @@ namespace T6::map_ents
         auto& stream = *mapEntsFile;
         stream.write(mapEnts->entityString, mapEnts->numEntityChars - 1);
     }
-} // namespace T6::map_ents
+} // namespace map_ents

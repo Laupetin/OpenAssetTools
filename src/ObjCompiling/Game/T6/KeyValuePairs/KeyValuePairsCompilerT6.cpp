@@ -71,11 +71,11 @@ namespace
     };
 } // namespace
 
-namespace T6::key_value_pairs
+namespace key_value_pairs
 {
     std::unique_ptr<IAssetCreator>
-        CreateCompiler(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates)
+        CreateCompilerT6(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates)
     {
         return std::make_unique<KeyValuePairsCompiler>(memory, zone, zoneDefinition, zoneStates);
     }
-} // namespace T6::key_value_pairs
+} // namespace key_value_pairs

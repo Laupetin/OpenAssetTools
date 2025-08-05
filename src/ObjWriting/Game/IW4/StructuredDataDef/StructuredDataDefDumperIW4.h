@@ -6,12 +6,12 @@
 
 #include <cstddef>
 
-namespace IW4::structured_data_def
+namespace structured_data_def
 {
-    class Dumper final : public AbstractAssetDumper<StructuredDataDefSet>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::StructuredDataDefSet>
     {
     protected:
-        bool ShouldDump(XAssetInfo<StructuredDataDefSet>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<StructuredDataDefSet>* asset) override;
+        bool ShouldDump(XAssetInfo<IW4::StructuredDataDefSet>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::StructuredDataDefSet>* asset) override;
     };
-} // namespace IW4::structured_data_def
+} // namespace structured_data_def

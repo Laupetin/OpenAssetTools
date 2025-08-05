@@ -3,19 +3,18 @@
 #include "Shader/ShaderCommon.h"
 
 using namespace IW4;
-using namespace ::shader;
 
-namespace IW4::shader
+namespace shader
 {
-    bool PixelShaderDumper::ShouldDump(XAssetInfo<MaterialPixelShader>* asset)
+    bool PixelShaderDumperIW4::ShouldDump(XAssetInfo<IW4::MaterialPixelShader>* asset)
     {
         return true;
     }
 
-    void PixelShaderDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialPixelShader>* asset)
+    void PixelShaderDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialPixelShader>* asset)
     {
         const auto* pixelShader = asset->Asset();
-        const auto shaderFile = context.OpenAssetFile(GetFileNameForPixelShaderAssetName(asset->m_name));
+        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForPixelShaderAssetName(asset->m_name));
 
         if (!shaderFile)
             return;
@@ -23,4 +22,4 @@ namespace IW4::shader
         shaderFile->write(reinterpret_cast<const char*>(pixelShader->prog.loadDef.program),
                           static_cast<std::streamsize>(pixelShader->prog.loadDef.programSize) * 4u);
     }
-} // namespace IW4::shader
+} // namespace shader

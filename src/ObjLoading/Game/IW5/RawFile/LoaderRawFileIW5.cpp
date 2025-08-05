@@ -81,10 +81,10 @@ namespace
     };
 } // namespace
 
-namespace IW5::raw_file
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<RawFileLoader>(memory, searchPath);
     }
-} // namespace IW5::raw_file
+} // namespace raw_file

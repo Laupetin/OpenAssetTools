@@ -26,13 +26,13 @@ namespace
               m_creators(m_zone),
               m_ignored_assets(),
               m_context(m_zone, &m_creators, &m_ignored_assets),
-              m_kvp_creator(m_zone_states.GetZoneAssetCreationState<::key_value_pairs::Creator>())
+              m_kvp_creator(m_zone_states.GetZoneAssetCreationState<key_value_pairs::Creator>())
         {
         }
 
         std::unique_ptr<IAssetCreator> CreateSut()
         {
-            return T6::key_value_pairs::CreateCompiler(m_memory, m_zone, m_zone_definition, m_zone_states);
+            return key_value_pairs::CreateCompilerT6(m_memory, m_zone, m_zone_definition, m_zone_states);
         }
 
         TestMemoryManager m_memory;

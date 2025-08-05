@@ -253,7 +253,7 @@ namespace
         GivenImage("~-gmetal_ac_duct_c", context, memory);
         GivenTechset("wpc_lit_sm_r0c0n0s0_1zzj1138", context, memory);
 
-        auto loader = material::CreateLoader(memory, searchPath);
+        auto loader = material::CreateLoaderT6(memory, searchPath);
         auto result = loader->CreateAsset("wpc/metal_ac_duct", context);
         REQUIRE(result.HasBeenSuccessful());
 
