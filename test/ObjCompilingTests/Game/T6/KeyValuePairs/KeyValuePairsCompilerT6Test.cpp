@@ -43,7 +43,7 @@ namespace
         IgnoredAssetLookup m_ignored_assets;
         AssetCreationContext m_context;
 
-        ::key_value_pairs::Creator& m_kvp_creator;
+        key_value_pairs::Creator& m_kvp_creator;
     };
 } // namespace
 
@@ -81,7 +81,7 @@ namespace test::game::t6::keyvaluepairs
         TestContext testContext;
         const auto sut = testContext.CreateSut();
 
-        testContext.m_kvp_creator.AddKeyValuePair(::key_value_pairs::CommonKeyValuePair("ipak_read", "test_ipak"));
+        testContext.m_kvp_creator.AddKeyValuePair(key_value_pairs::CommonKeyValuePair("ipak_read", "test_ipak"));
 
         sut->FinalizeZone(testContext.m_context);
 
@@ -107,7 +107,7 @@ namespace test::game::t6::keyvaluepairs
         TestContext testContext;
         const auto sut = testContext.CreateSut();
 
-        testContext.m_kvp_creator.AddKeyValuePair(::key_value_pairs::CommonKeyValuePair(0xDDEEFFAA, "hello_there"));
+        testContext.m_kvp_creator.AddKeyValuePair(key_value_pairs::CommonKeyValuePair(0xDDEEFFAA, "hello_there"));
 
         sut->FinalizeZone(testContext.m_context);
 

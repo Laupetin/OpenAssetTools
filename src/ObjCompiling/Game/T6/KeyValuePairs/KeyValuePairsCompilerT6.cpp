@@ -18,7 +18,7 @@ namespace
             : m_memory(memory),
               m_zone(zone),
               m_zone_definition(zoneDefinition),
-              m_kvp_creator(zoneStates.GetZoneAssetCreationState<::key_value_pairs::Creator>())
+              m_kvp_creator(zoneStates.GetZoneAssetCreationState<key_value_pairs::Creator>())
         {
         }
 
@@ -67,7 +67,7 @@ namespace
         MemoryManager& m_memory;
         const Zone& m_zone;
         const ZoneDefinition& m_zone_definition;
-        ::key_value_pairs::Creator m_kvp_creator;
+        key_value_pairs::Creator& m_kvp_creator;
     };
 } // namespace
 
