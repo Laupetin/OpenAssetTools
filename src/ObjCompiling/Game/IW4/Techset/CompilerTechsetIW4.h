@@ -10,21 +10,17 @@
 #include <memory>
 #include <string>
 
-namespace IW4
+namespace IW4::techset
 {
-    [[nodiscard]] std::string GetTechsetFileName(const std::string& techsetAssetName);
-    [[nodiscard]] std::string GetTechniqueFileName(const std::string& techniqueName);
-    [[nodiscard]] std::string GetStateMapFileName(const std::string& stateMapName);
-
-    class ITechsetCreator : public AssetCreator<AssetTechniqueSet>
+    class ICreator : public AssetCreator<AssetTechniqueSet>
     {
     public:
-        ITechsetCreator() = default;
-        virtual ~ITechsetCreator() = default;
+        ICreator() = default;
+        virtual ~ICreator() = default;
 
-        virtual techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) = 0;
+        virtual ::techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) = 0;
         virtual const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) = 0;
     };
 
-    std::unique_ptr<ITechsetCreator> CreateTechsetLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<ICreator> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW4::techset

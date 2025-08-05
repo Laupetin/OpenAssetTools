@@ -19,7 +19,7 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        collection.AddAssetCreator(CreateKeyValuePairsCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
+        collection.AddAssetCreator(T6::key_value_pairs::CreateCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -31,11 +31,11 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        if (ImageIPakPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
-            collection.AddAssetPostProcessor(std::make_unique<ImageIPakPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
+        if (image::IPakPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
+            collection.AddAssetPostProcessor(std::make_unique<image::IPakPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
 
-        if (ImageIwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
-            collection.AddAssetPostProcessor(std::make_unique<ImageIwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
+        if (image::IwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
+            collection.AddAssetPostProcessor(std::make_unique<image::IwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
     }
 } // namespace
 

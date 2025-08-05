@@ -13,7 +13,7 @@ namespace test::keyvaluepairs
 {
     TEST_CASE("KeyValuePairsCreator: ZoneDefinition with no properties produces no KeyValuePairs", "[keyvaluepairs]")
     {
-        KeyValuePairsCreator sut;
+        key_value_pairs::Creator sut;
 
         ZoneDefinition zoneDefinition;
         sut.Finalize(zoneDefinition);
@@ -25,7 +25,7 @@ namespace test::keyvaluepairs
 
     TEST_CASE("KeyValuePairsCreator: ZoneDefinition with unrelated properties produce no KeyValuePairs", "[keyvaluepairs]")
     {
-        KeyValuePairsCreator sut;
+        key_value_pairs::Creator sut;
 
         ZoneDefinition zoneDefinition;
         zoneDefinition.m_properties.AddProperty("linker.test", "yes");
@@ -38,7 +38,7 @@ namespace test::keyvaluepairs
 
     TEST_CASE("KeyValuePairsCreator: ZoneDefinition with level properties produce KeyValuePairs", "[keyvaluepairs]")
     {
-        KeyValuePairsCreator sut;
+        key_value_pairs::Creator sut;
 
         ZoneDefinition zoneDefinition;
         zoneDefinition.m_properties.AddProperty("linker.test", "yes");
@@ -56,7 +56,7 @@ namespace test::keyvaluepairs
 
     TEST_CASE("KeyValuePairsCreator: ZoneDefinition can have level properties with hash", "[keyvaluepairs]")
     {
-        KeyValuePairsCreator sut;
+        key_value_pairs::Creator sut;
 
         ZoneDefinition zoneDefinition;
         zoneDefinition.m_properties.AddProperty("level.@D34DB33F", "yes");
@@ -77,7 +77,7 @@ namespace test::keyvaluepairs
 
     TEST_CASE("KeyValuePairsCreator: ZoneDefinition can have level properties with name and/or hash", "[keyvaluepairs]")
     {
-        KeyValuePairsCreator sut;
+        key_value_pairs::Creator sut;
 
         ZoneDefinition zoneDefinition;
         zoneDefinition.m_properties.AddProperty("level.ipak_read", "asdf");

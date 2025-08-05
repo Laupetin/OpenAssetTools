@@ -26,9 +26,9 @@ namespace
         {
         }
 
-        IPakCreator& CreateSut()
+        image::IPakCreator& CreateSut()
         {
-            return m_zone_states.GetZoneAssetCreationState<IPakCreator>();
+            return m_zone_states.GetZoneAssetCreationState<image::IPakCreator>();
         }
 
         Zone m_zone;

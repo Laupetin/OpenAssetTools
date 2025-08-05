@@ -25,8 +25,8 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        if (ImageIwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
-            collection.AddAssetPostProcessor(std::make_unique<ImageIwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
+        if (image::IwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
+            collection.AddAssetPostProcessor(std::make_unique<image::IwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
     }
 } // namespace
 

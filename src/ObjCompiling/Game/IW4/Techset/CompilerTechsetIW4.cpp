@@ -9,6 +9,7 @@
 #include "StateMap/StateMapReader.h"
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechniqueStateMapCache.h"
+#include "Techset/TechsetCommon.h"
 #include "Techset/TechsetDefinitionCache.h"
 #include "Techset/TechsetFileReader.h"
 #include "Utils/Alignment.h"
@@ -25,6 +26,7 @@
 #include <unordered_map>
 
 using namespace IW4;
+using namespace ::techset;
 using namespace std::string_literals;
 
 namespace
@@ -62,7 +64,7 @@ namespace
                 .first->second.get();
         }
 
-        literal_t GetAllocatedLiteral(MemoryManager& memory, techset::ShaderArgumentLiteralSource source)
+        literal_t GetAllocatedLiteral(MemoryManager& memory, ShaderArgumentLiteralSource source)
         {
             const auto& existingEntry = m_allocated_literals.find(source);
 
@@ -81,7 +83,7 @@ namespace
 
     private:
         std::unordered_map<std::string, std::unique_ptr<LoadedTechnique>> m_loaded_techniques;
-        std::map<techset::ShaderArgumentLiteralSource, literal_t> m_allocated_literals;
+        std::map<ShaderArgumentLiteralSource, literal_t> m_allocated_literals;
     };
 
     class ShaderInfoFromFileSystemCacheState final : public IZoneAssetCreationState
@@ -121,7 +123,7 @@ namespace
         std::unordered_map<std::string, std::unique_ptr<d3d9::ShaderInfo>> m_cached_shader_info;
     };
 
-    class TechniqueCreator final : public techset::ITechniqueDefinitionAcceptor
+    class TechniqueCreator final : public ITechniqueDefinitionAcceptor
     {
     public:
         class PassShaderArgument
@@ -197,14 +199,17 @@ namespace
             std::vector<PassShaderArgument> m_arguments;
         };
 
-        TechniqueCreator(
-            const std::string& techniqueName, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, ITechsetCreator* techsetCreator)
+        TechniqueCreator(const std::string& techniqueName,
+                         ISearchPath& searchPath,
+                         MemoryManager& memory,
+                         AssetCreationContext& context,
+                         IW4::techset::ICreator* techsetCreator)
             : m_technique_name(techniqueName),
               m_search_path(searchPath),
               m_memory(memory),
               m_context(context),
               m_zone_state(context.GetZoneAssetCreationState<TechniqueZoneLoadingState>()),
-              m_state_map_cache(context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>()),
+              m_state_map_cache(context.GetZoneAssetCreationState<TechniqueStateMapCache>()),
               m_shader_info_cache(context.GetZoneAssetCreationState<ShaderInfoFromFileSystemCacheState>()),
               m_techset_creator(techsetCreator)
         {
@@ -230,7 +235,7 @@ namespace
                    || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
         }
 
-        bool AutoCreateShaderArgument(const techset::ShaderSelector shaderType,
+        bool AutoCreateShaderArgument(const ShaderSelector shaderType,
                                       const d3d9::ShaderConstant& shaderArgument,
                                       const size_t elementOffset,
                                       const size_t registerOffset)
@@ -239,7 +244,7 @@ namespace
             auto& pass = m_passes.at(m_passes.size() - 1);
 
             const auto isSamplerArgument = IsSamplerArgument(shaderArgument);
-            if (shaderType == techset::ShaderSelector::VERTEX_SHADER && isSamplerArgument)
+            if (shaderType == ShaderSelector::VERTEX_SHADER && isSamplerArgument)
                 return false;
 
             MaterialShaderArgument argument;
@@ -270,7 +275,7 @@ namespace
                 if (!constantSource)
                     return false;
 
-                argument.type = shaderType == techset::ShaderSelector::VERTEX_SHADER ? MTL_ARG_CODE_VERTEX_CONST : MTL_ARG_CODE_PIXEL_CONST;
+                argument.type = shaderType == ShaderSelector::VERTEX_SHADER ? MTL_ARG_CODE_VERTEX_CONST : MTL_ARG_CODE_PIXEL_CONST;
                 argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source + elementOffset);
                 argument.u.codeConst.firstRow = 0u;
                 argument.u.codeConst.rowCount = static_cast<unsigned char>(shaderArgument.m_type_rows);
@@ -301,7 +306,7 @@ namespace
                 {
                     if (!pass.m_handled_vertex_shader_arguments[argumentHandledIndex + elementIndex])
                     {
-                        if (!AutoCreateShaderArgument(techset::ShaderSelector::VERTEX_SHADER, argument, elementIndex, registerIndex))
+                        if (!AutoCreateShaderArgument(ShaderSelector::VERTEX_SHADER, argument, elementIndex, registerIndex))
                         {
                             std::string elementIndexStr;
                             if (argument.m_type_elements > 1)
@@ -336,7 +341,7 @@ namespace
                 {
                     if (!pass.m_handled_pixel_shader_arguments[argumentHandledIndex + elementIndex])
                     {
-                        if (!AutoCreateShaderArgument(techset::ShaderSelector::PIXEL_SHADER, argument, elementIndex, registerIndex))
+                        if (!AutoCreateShaderArgument(ShaderSelector::PIXEL_SHADER, argument, elementIndex, registerIndex))
                         {
                             std::ostringstream ss;
                             ss << "Unassigned pixel shader \"" << pass.m_pixel_shader->m_name << "\" arg: " << argument.m_name;
@@ -572,11 +577,8 @@ namespace
             return foundSource;
         }
 
-        static bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo,
-                                       const techset::ShaderArgument& argument,
-                                       size_t& constantIndex,
-                                       size_t& registerOffset,
-                                       std::string& errorMessage)
+        static bool FindShaderArgument(
+            const d3d9::ShaderInfo& shaderInfo, const ShaderArgument& argument, size_t& constantIndex, size_t& registerOffset, std::string& errorMessage)
         {
             const auto matchingShaderConstant = std::ranges::find_if(shaderInfo.m_constants,
                                                                      [argument](const d3d9::ShaderConstant& constant)
@@ -622,7 +624,7 @@ namespace
         }
 
         static bool SetArgumentCodeConst(MaterialShaderArgument& argument,
-                                         const techset::ShaderArgumentCodeSource& source,
+                                         const ShaderArgumentCodeSource& source,
                                          const d3d9::ShaderConstant& shaderConstant,
                                          const unsigned sourceIndex,
                                          const unsigned arrayCount,
@@ -660,7 +662,7 @@ namespace
         }
 
         static bool SetArgumentCodeSampler(MaterialShaderArgument& argument,
-                                           const techset::ShaderArgumentCodeSource& source,
+                                           const ShaderArgumentCodeSource& source,
                                            const d3d9::ShaderConstant& shaderConstant,
                                            const unsigned sourceIndex,
                                            const unsigned arrayCount,
@@ -695,9 +697,7 @@ namespace
             return true;
         }
 
-        bool AcceptVertexShaderConstantArgument(const techset::ShaderArgument& shaderArgument,
-                                                const techset::ShaderArgumentCodeSource& source,
-                                                std::string& errorMessage)
+        bool AcceptVertexShaderConstantArgument(const ShaderArgument& shaderArgument, const ShaderArgumentCodeSource& source, std::string& errorMessage)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -745,8 +745,8 @@ namespace
             return true;
         }
 
-        bool AcceptPixelShaderCodeArgument(const techset::ShaderArgument& shaderArgument,
-                                           const techset::ShaderArgumentCodeSource& source,
+        bool AcceptPixelShaderCodeArgument(const ShaderArgument& shaderArgument,
+                                           const ShaderArgumentCodeSource& source,
                                            std::string& errorMessage,
                                            const bool isSampler)
         {
@@ -826,36 +826,36 @@ namespace
             return true;
         }
 
-        bool AcceptShaderConstantArgument(const techset::ShaderSelector shader,
-                                          const techset::ShaderArgument shaderArgument,
-                                          const techset::ShaderArgumentCodeSource source,
+        bool AcceptShaderConstantArgument(const ShaderSelector shader,
+                                          const ShaderArgument shaderArgument,
+                                          const ShaderArgumentCodeSource source,
                                           std::string& errorMessage) override
         {
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
                 return AcceptVertexShaderConstantArgument(shaderArgument, source, errorMessage);
 
-            assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+            assert(shader == ShaderSelector::PIXEL_SHADER);
             return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, false);
         }
 
-        bool AcceptShaderSamplerArgument(const techset::ShaderSelector shader,
-                                         const techset::ShaderArgument shaderArgument,
-                                         const techset::ShaderArgumentCodeSource source,
+        bool AcceptShaderSamplerArgument(const ShaderSelector shader,
+                                         const ShaderArgument shaderArgument,
+                                         const ShaderArgumentCodeSource source,
                                          std::string& errorMessage) override
         {
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
             {
                 errorMessage = "Vertex sampler are unsupported";
                 return false;
             }
 
-            assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+            assert(shader == ShaderSelector::PIXEL_SHADER);
             return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, true);
         }
 
-        bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader,
-                                         const techset::ShaderArgument shaderArgument,
-                                         const techset::ShaderArgumentLiteralSource source,
+        bool AcceptShaderLiteralArgument(const ShaderSelector shader,
+                                         const ShaderArgument shaderArgument,
+                                         const ShaderArgumentLiteralSource source,
                                          std::string& errorMessage) override
         {
             assert(!m_passes.empty());
@@ -864,14 +864,14 @@ namespace
             MaterialShaderArgument argument;
             const d3d9::ShaderInfo* shaderInfo;
 
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
             {
                 argument.type = MTL_ARG_LITERAL_VERTEX_CONST;
                 shaderInfo = pass.m_vertex_shader_info;
             }
             else
             {
-                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                assert(shader == ShaderSelector::PIXEL_SHADER);
                 argument.type = MTL_ARG_LITERAL_PIXEL_CONST;
                 shaderInfo = pass.m_pixel_shader_info;
             }
@@ -892,7 +892,7 @@ namespace
             const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
             if (argumentIsSampler)
             {
-                if (shader == techset::ShaderSelector::VERTEX_SHADER)
+                if (shader == ShaderSelector::VERTEX_SHADER)
                     errorMessage = "Vertex shader argument expects sampler but got constant";
                 else
                     errorMessage = "Pixel shader argument expects sampler but got constant";
@@ -904,7 +904,7 @@ namespace
             argument.u.literalConst = m_zone_state.GetAllocatedLiteral(m_memory, source);
             pass.m_arguments.emplace_back(argument);
 
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
                 pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
             else
                 pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
@@ -912,9 +912,9 @@ namespace
             return true;
         }
 
-        bool AcceptShaderMaterialArgument(const techset::ShaderSelector shader,
-                                          const techset::ShaderArgument shaderArgument,
-                                          const techset::ShaderArgumentMaterialSource source,
+        bool AcceptShaderMaterialArgument(const ShaderSelector shader,
+                                          const ShaderArgument shaderArgument,
+                                          const ShaderArgumentMaterialSource source,
                                           std::string& errorMessage) override
         {
             assert(!m_passes.empty());
@@ -923,13 +923,13 @@ namespace
             MaterialShaderArgument argument;
             const d3d9::ShaderInfo* shaderInfo;
 
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
             {
                 shaderInfo = pass.m_vertex_shader_info;
             }
             else
             {
-                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                assert(shader == ShaderSelector::PIXEL_SHADER);
                 shaderInfo = pass.m_pixel_shader_info;
             }
 
@@ -947,7 +947,7 @@ namespace
             const auto elementOffset = shaderArgument.m_argument_index_specified ? shaderArgument.m_argument_index : 0u;
             const auto& shaderConstant = shaderInfo->m_constants[shaderConstantIndex];
             const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
             {
                 if (argumentIsSampler)
                 {
@@ -958,7 +958,7 @@ namespace
             }
             else
             {
-                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                assert(shader == ShaderSelector::PIXEL_SHADER);
                 argument.type = !argumentIsSampler ? MTL_ARG_MATERIAL_PIXEL_CONST : MTL_ARG_MATERIAL_PIXEL_SAMPLER;
             }
 
@@ -970,7 +970,7 @@ namespace
             argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
             pass.m_arguments.emplace_back(argument);
 
-            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            if (shader == ShaderSelector::VERTEX_SHADER)
                 pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
             else
                 pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
@@ -1024,15 +1024,15 @@ namespace
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         TechniqueZoneLoadingState& m_zone_state;
-        techset::TechniqueStateMapCache& m_state_map_cache;
+        TechniqueStateMapCache& m_state_map_cache;
         ShaderInfoFromFileSystemCacheState& m_shader_info_cache;
-        ITechsetCreator* m_techset_creator;
+        IW4::techset::ICreator* m_techset_creator;
     };
 
     class TechniqueLoader
     {
     public:
-        TechniqueLoader(ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, ITechsetCreator* techsetCreator)
+        TechniqueLoader(ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, IW4::techset::ICreator* techsetCreator)
             : m_search_path(searchPath),
               m_memory(memory),
               m_context(context),
@@ -1243,13 +1243,13 @@ namespace
 
         MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
-            const auto techniqueFileName = GetTechniqueFileName(techniqueName);
+            const auto techniqueFileName = GetFileNameForTechniqueName(techniqueName);
             const auto file = m_search_path.Open(techniqueFileName);
             if (!file.IsOpen())
                 return nullptr;
 
             TechniqueCreator creator(techniqueName, m_search_path, m_memory, m_context, m_techset_creator);
-            const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
+            const TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
             if (!reader.ReadTechniqueDefinition())
                 return nullptr;
 
@@ -1260,10 +1260,10 @@ namespace
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         TechniqueZoneLoadingState& m_zone_state;
-        ITechsetCreator* m_techset_creator;
+        IW4::techset::ICreator* m_techset_creator;
     };
 
-    class TechsetLoader final : public ITechsetCreator
+    class TechsetLoader final : public IW4::techset::ICreator
     {
     public:
         TechsetLoader(MemoryManager& memory, ISearchPath& searchPath)
@@ -1283,8 +1283,7 @@ namespace
         }
 
     private:
-        AssetCreationResult
-            CreateTechsetFromDefinition(const std::string& assetName, const techset::TechsetDefinition& definition, AssetCreationContext& context)
+        AssetCreationResult CreateTechsetFromDefinition(const std::string& assetName, const TechsetDefinition& definition, AssetCreationContext& context)
         {
             auto* techset = m_memory.Alloc<MaterialTechniqueSet>();
             techset->name = m_memory.Dup(assetName.c_str());
@@ -1312,20 +1311,20 @@ namespace
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
 
-        techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) override
+        TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) override
         {
             failure = false;
-            auto& definitionCache = context.GetZoneAssetCreationState<techset::TechsetDefinitionCache>();
+            auto& definitionCache = context.GetZoneAssetCreationState<TechsetDefinitionCache>();
             auto* cachedTechsetDefinition = definitionCache.GetCachedTechsetDefinition(assetName);
             if (cachedTechsetDefinition)
                 return cachedTechsetDefinition;
 
-            const auto techsetFileName = GetTechsetFileName(assetName);
+            const auto techsetFileName = GetFileNameForTechsetName(assetName);
             const auto file = m_search_path.Open(techsetFileName);
             if (!file.IsOpen())
                 return nullptr;
 
-            const techset::TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+            const TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
             auto techsetDefinition = reader.ReadTechsetDefinition();
             if (!techsetDefinition)
             {
@@ -1342,12 +1341,12 @@ namespace
 
         const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) override
         {
-            auto& stateMapCache = context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>();
+            auto& stateMapCache = context.GetZoneAssetCreationState<TechniqueStateMapCache>();
             auto* cachedStateMap = stateMapCache.GetCachedStateMap(stateMapName);
             if (cachedStateMap)
                 return cachedStateMap;
 
-            const auto stateMapFileName = GetStateMapFileName(stateMapName);
+            const auto stateMapFileName = GetFileNameForStateMapName(stateMapName);
             const auto file = m_search_path.Open(stateMapFileName);
             if (!file.IsOpen())
                 return nullptr;
@@ -1370,25 +1369,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::techset
 {
-    std::string GetTechsetFileName(const std::string& techsetAssetName)
-    {
-        return std::format("techsets/{}.techset", techsetAssetName);
-    }
-
-    std::string GetTechniqueFileName(const std::string& techniqueName)
-    {
-        return std::format("techniques/{}.tech", techniqueName);
-    }
-
-    std::string GetStateMapFileName(const std::string& stateMapName)
-    {
-        return std::format("statemaps/{}.sm", stateMapName);
-    }
-
-    std::unique_ptr<ITechsetCreator> CreateTechsetLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<ICreator> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<TechsetLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::techset

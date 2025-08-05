@@ -18,7 +18,7 @@ namespace
             : m_memory(memory),
               m_zone(zone),
               m_zone_definition(zoneDefinition),
-              m_kvp_creator(zoneStates.GetZoneAssetCreationState<KeyValuePairsCreator>())
+              m_kvp_creator(zoneStates.GetZoneAssetCreationState<::key_value_pairs::Creator>())
         {
         }
 
@@ -67,15 +67,15 @@ namespace
         MemoryManager& m_memory;
         const Zone& m_zone;
         const ZoneDefinition& m_zone_definition;
-        KeyValuePairsCreator& m_kvp_creator;
+        ::key_value_pairs::Creator m_kvp_creator;
     };
 } // namespace
 
-namespace T6
+namespace T6::key_value_pairs
 {
     std::unique_ptr<IAssetCreator>
-        CreateKeyValuePairsCompiler(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates)
+        CreateCompiler(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates)
     {
         return std::make_unique<KeyValuePairsCompiler>(memory, zone, zoneDefinition, zoneStates);
     }
-} // namespace T6
+} // namespace T6::key_value_pairs
