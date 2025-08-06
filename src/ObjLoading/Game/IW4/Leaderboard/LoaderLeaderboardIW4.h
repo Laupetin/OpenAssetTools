@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace leaderboard
 {
-    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLeaderboardLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<IW4::AssetLeaderboard>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace leaderboard

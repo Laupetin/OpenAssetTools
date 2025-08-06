@@ -45,10 +45,10 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath);
     }
-} // namespace IW5
+} // namespace material

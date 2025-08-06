@@ -33,7 +33,7 @@ namespace
 
         std::unique_ptr<IAssetPostProcessor> CreateSut()
         {
-            return std::make_unique<ImageIwdPostProcessor<AssetImage>>(m_zone_definition_context, m_search_path, m_zone_states, m_out_dir);
+            return std::make_unique<image::IwdPostProcessor<AssetImage>>(m_zone_definition_context, m_search_path, m_zone_states, m_out_dir);
         }
 
         Zone m_zone;

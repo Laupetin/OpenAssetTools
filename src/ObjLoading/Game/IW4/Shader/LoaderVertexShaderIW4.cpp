@@ -1,6 +1,7 @@
 #include "LoaderVertexShaderIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Shader/ShaderCommon.h"
 
 #include <cstdint>
 #include <format>
@@ -21,7 +22,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetVertexShaderFileName(assetName);
+            const auto fileName = shader::GetFileNameForVertexShaderAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -53,15 +54,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace shader
 {
-    std::string GetVertexShaderFileName(const std::string& vertexShaderAssetName)
-    {
-        return std::format("shader_bin/vs_{}.cso", vertexShaderAssetName);
-    }
-
-    std::unique_ptr<AssetCreator<AssetVertexShader>> CreateVertexShaderLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetVertexShader>> CreateVertexShaderLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<VertexShaderLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace shader

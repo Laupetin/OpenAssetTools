@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace T6
+namespace tracer
 {
-    std::unique_ptr<AssetCreator<AssetTracer>> CreateGdtTracerLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetTracer>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
+} // namespace tracer

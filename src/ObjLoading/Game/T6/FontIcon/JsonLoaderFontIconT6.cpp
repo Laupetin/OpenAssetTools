@@ -1,7 +1,7 @@
 #include "JsonLoaderFontIconT6.h"
 
+#include "FontIcon/FontIconCommon.h"
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/FontIcon/FontIconCommonT6.h"
 #include "Game/T6/FontIcon/JsonFontIconT6.h"
 #include "Game/T6/T6.h"
 
@@ -141,10 +141,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace font_icon
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonFontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<JsonFontIconLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace font_icon

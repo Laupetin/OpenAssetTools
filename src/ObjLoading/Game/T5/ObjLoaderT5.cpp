@@ -104,8 +104,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
-        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
+        collection.AddAssetCreator(xmodel::CreateLoaderT5(memory, searchPath, zone));
+        collection.AddAssetCreator(material::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundBank>(memory));
@@ -120,13 +120,13 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-        collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
+        collection.AddAssetCreator(localize::CreateLoaderT5(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
+        collection.AddAssetCreator(raw_file::CreateLoaderT5(memory, searchPath));
+        collection.AddAssetCreator(string_table::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPackIndex>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace font_icon
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateCsvFontIconLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetFontIcon>> CreateCsvLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace font_icon

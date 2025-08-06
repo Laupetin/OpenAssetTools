@@ -26,13 +26,13 @@ namespace
               m_creators(m_zone),
               m_ignored_assets(),
               m_context(m_zone, &m_creators, &m_ignored_assets),
-              m_kvp_creator(m_zone_states.GetZoneAssetCreationState<KeyValuePairsCreator>())
+              m_kvp_creator(m_zone_states.GetZoneAssetCreationState<key_value_pairs::Creator>())
         {
         }
 
         std::unique_ptr<IAssetCreator> CreateSut()
         {
-            return CreateKeyValuePairsCompiler(m_memory, m_zone, m_zone_definition, m_zone_states);
+            return key_value_pairs::CreateCompilerT6(m_memory, m_zone, m_zone_definition, m_zone_states);
         }
 
         TestMemoryManager m_memory;
@@ -43,7 +43,7 @@ namespace
         IgnoredAssetLookup m_ignored_assets;
         AssetCreationContext m_context;
 
-        KeyValuePairsCreator& m_kvp_creator;
+        key_value_pairs::Creator& m_kvp_creator;
     };
 } // namespace
 
@@ -81,7 +81,7 @@ namespace test::game::t6::keyvaluepairs
         TestContext testContext;
         const auto sut = testContext.CreateSut();
 
-        testContext.m_kvp_creator.AddKeyValuePair(CommonKeyValuePair("ipak_read", "test_ipak"));
+        testContext.m_kvp_creator.AddKeyValuePair(key_value_pairs::CommonKeyValuePair("ipak_read", "test_ipak"));
 
         sut->FinalizeZone(testContext.m_context);
 
@@ -107,7 +107,7 @@ namespace test::game::t6::keyvaluepairs
         TestContext testContext;
         const auto sut = testContext.CreateSut();
 
-        testContext.m_kvp_creator.AddKeyValuePair(CommonKeyValuePair(0xDDEEFFAA, "hello_there"));
+        testContext.m_kvp_creator.AddKeyValuePair(key_value_pairs::CommonKeyValuePair(0xDDEEFFAA, "hello_there"));
 
         sut->FinalizeZone(testContext.m_context);
 

@@ -35,10 +35,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace localize
 {
-    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLocalizeLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<LocalizeLoader>(memory, searchPath, zone);
     }
-} // namespace IW4
+} // namespace localize

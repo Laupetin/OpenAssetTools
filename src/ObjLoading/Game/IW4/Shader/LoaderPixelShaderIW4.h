@@ -7,9 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace shader
 {
-    [[nodiscard]] std::string GetPixelShaderFileName(const std::string& pixelShaderAssetName);
-
-    std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<IW4::AssetPixelShader>> CreatePixelShaderLoaderIW4(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace shader

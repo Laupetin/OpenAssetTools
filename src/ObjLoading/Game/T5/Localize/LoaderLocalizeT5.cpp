@@ -35,10 +35,10 @@ namespace
     };
 } // namespace
 
-namespace T5
+namespace localize
 {
-    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLocalizeLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetLocalize>> CreateLoaderT5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<LocalizeLoader>(memory, searchPath, zone);
     }
-} // namespace T5
+} // namespace localize

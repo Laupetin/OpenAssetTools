@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace z_barrier
 {
-    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateRawZBarrierLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetZBarrier>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace z_barrier

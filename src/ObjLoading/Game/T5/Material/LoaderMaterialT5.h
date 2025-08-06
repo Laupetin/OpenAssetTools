@@ -6,7 +6,7 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
-namespace T5
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T5
+    std::unique_ptr<AssetCreator<T5::AssetMaterial>> CreateLoaderT5(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace material

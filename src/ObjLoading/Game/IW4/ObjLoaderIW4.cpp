@@ -5,7 +5,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
-#include "LightDef/LoaderLightDefIW4.h"
+#include "LightDef/LightDefLoaderIW4.h"
 #include "Localize/LoaderLocalizeIW4.h"
 #include "Material/LoaderMaterialIW4.h"
 #include "Menu/LoaderMenuListIW4.h"
@@ -119,19 +119,19 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        collection.AddAssetCreator(std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone));
-        collection.AddAssetCreator(std::make_unique<GdtLoaderPhysPreset>(memory, gdt, zone));
+        collection.AddAssetCreator(phys_preset::CreateRawLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(phys_preset::CreateGdtLoaderIW4(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysCollMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
-        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
-        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
-        collection.AddAssetCreator(CreatePixelShaderLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateVertexShaderLoader(memory, searchPath));
+        collection.AddAssetCreator(xmodel::CreateLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(material::CreateLoaderIW4(memory, searchPath));
+        collection.AddAssetCreator(shader::CreatePixelShaderLoaderIW4(memory, searchPath));
+        collection.AddAssetCreator(shader::CreateVertexShaderLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
-        collection.AddAssetCreator(CreateSoundCurveLoader(memory, searchPath));
+        collection.AddAssetCreator(sound_curve::CreateLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
@@ -140,19 +140,19 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
-        collection.AddAssetCreator(CreateLightDefLoader(memory, searchPath));
+        collection.AddAssetCreator(light_def::CreateLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
-        collection.AddAssetCreator(CreateMenuListLoader(memory, searchPath));
+        collection.AddAssetCreator(menu::CreateMenuListLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-        collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
-        collection.AddAssetCreator(CreateRawWeaponLoader(memory, searchPath, zone));
-        collection.AddAssetCreator(CreateGdtWeaponLoader(memory, searchPath, gdt, zone));
+        collection.AddAssetCreator(localize::CreateLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(weapon::CreateRawLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(weapon::CreateGdtLoaderIW4(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateLeaderboardLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateStructuredDataDefLoader(memory, searchPath));
+        collection.AddAssetCreator(raw_file::CreateLoaderIW4(memory, searchPath));
+        collection.AddAssetCreator(string_table::CreateLoaderIW4(memory, searchPath));
+        collection.AddAssetCreator(leaderboard::CreateLoaderIW4(memory, searchPath));
+        collection.AddAssetCreator(structured_data_def::CreateLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));

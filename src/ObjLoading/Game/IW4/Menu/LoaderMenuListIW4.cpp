@@ -212,10 +212,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace menu
 {
-    std::unique_ptr<AssetCreator<AssetMenuList>> CreateMenuListLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetMenuList>> CreateMenuListLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MenuListLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace menu

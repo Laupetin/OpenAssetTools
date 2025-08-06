@@ -10,10 +10,17 @@
 
 #pragma once
 
-#include "Dumping/AssetDumpingContext.h"
+#include "Dumping/AbstractAssetDumper.h"
 #include GAME_HEADER
 
-namespace GAME
+#set CLASS_NAME "Dumper" + GAME
+
+namespace xmodel
 {
-    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
-}
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::XModel>
+    {
+    protected:
+        bool ShouldDump(XAssetInfo<GAME::XModel>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::XModel>* asset) override;
+    };
+} // namespace xmodel

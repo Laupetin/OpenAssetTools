@@ -28,13 +28,13 @@ namespace
               m_ignored_assets(),
               m_out_dir(),
               m_context(m_zone, &m_creators, &m_ignored_assets),
-              m_ipak_creator(m_zone_states.GetZoneAssetCreationState<IPakCreator>())
+              m_ipak_creator(m_zone_states.GetZoneAssetCreationState<image::IPakCreator>())
         {
         }
 
         std::unique_ptr<IAssetPostProcessor> CreateSut()
         {
-            return std::make_unique<ImageIPakPostProcessor<AssetImage>>(m_zone_definition_context, m_search_path, m_zone_states, m_out_dir);
+            return std::make_unique<image::IPakPostProcessor<AssetImage>>(m_zone_definition_context, m_search_path, m_zone_states, m_out_dir);
         }
 
         Zone m_zone;
@@ -47,7 +47,7 @@ namespace
         MockOutputPath m_out_dir;
         AssetCreationContext m_context;
 
-        IPakCreator& m_ipak_creator;
+        image::IPakCreator& m_ipak_creator;
     };
 } // namespace
 

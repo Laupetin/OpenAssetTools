@@ -48,6 +48,8 @@
 
 using namespace GAME;
 
+#set CLASS_NAME "Dumper" + GAME
+
 namespace
 {
     std::string GetFileNameForLod(const std::string& modelName, const unsigned lod, const std::string& extension)
@@ -830,7 +832,7 @@ namespace
 
     void DumpXModelJson(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
-        const auto assetFile = context.OpenAssetFile(std::format("xmodel/{}.json", asset->m_name));
+        const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset->m_name));
         if (!assetFile)
             return;
 
@@ -839,11 +841,16 @@ namespace
     }
 } // namespace
 
-namespace GAME
+namespace xmodel
 {
-    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    bool CLASS_NAME::ShouldDump(XAssetInfo<XModel>* asset)
+    {
+        return !asset->m_name.empty() && asset->m_name[0] != ',';
+    }
+
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);
     }
-} // namespace GAME
+}

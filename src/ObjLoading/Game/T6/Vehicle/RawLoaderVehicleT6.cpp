@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderVehicleT6.h"
+#include "Vehicle/VehicleCommon.h"
 
 #include <cstring>
 #include <format>
@@ -24,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("vehicles/{}", assetName);
+            const auto fileName = vehicle::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -41,14 +42,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderVehicle m_info_string_loader;
+        vehicle::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace vehicle
 {
-    std::unique_ptr<AssetCreator<AssetVehicle>> CreateRawVehicleLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetVehicle>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderVehicle>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace vehicle

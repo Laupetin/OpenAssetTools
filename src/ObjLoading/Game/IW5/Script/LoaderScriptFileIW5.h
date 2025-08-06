@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW5
+namespace script
 {
-    std::unique_ptr<AssetCreator<AssetScript>> CreateScriptLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW5
+    std::unique_ptr<AssetCreator<IW5::AssetScript>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace script

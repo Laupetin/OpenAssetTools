@@ -55,29 +55,32 @@ namespace
     }
 } // namespace
 
-InfoStringLoaderZBarrier::InfoStringLoaderZBarrier(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace z_barrier
 {
-}
-
-AssetCreationResult InfoStringLoaderZBarrier::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
-{
-    auto* zbarrier = m_memory.Alloc<ZBarrierDef>();
-    zbarrier->name = m_memory.Dup(assetName.c_str());
-
-    AssetRegistration<AssetZBarrier> registration(assetName, zbarrier);
-
-    InfoStringToZBarrierConverter converter(
-        infoString, *zbarrier, m_zone.m_script_strings, m_memory, context, registration, zbarrier_fields, std::extent_v<decltype(zbarrier_fields)>);
-    if (!converter.Convert())
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse zbarrier: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    CalculateZBarrierFields(*zbarrier);
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* zbarrier = m_memory.Alloc<ZBarrierDef>();
+        zbarrier->name = m_memory.Dup(assetName.c_str());
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+        AssetRegistration<AssetZBarrier> registration(assetName, zbarrier);
+
+        InfoStringToZBarrierConverter converter(
+            infoString, *zbarrier, m_zone.m_script_strings, m_memory, context, registration, zbarrier_fields, std::extent_v<decltype(zbarrier_fields)>);
+        if (!converter.Convert())
+        {
+            std::cerr << std::format("Failed to parse zbarrier: \"{}\"\n", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        CalculateZBarrierFields(*zbarrier);
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace z_barrier

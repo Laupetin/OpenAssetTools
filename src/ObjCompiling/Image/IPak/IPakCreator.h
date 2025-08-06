@@ -9,32 +9,35 @@
 #include <string>
 #include <unordered_map>
 
-class IPakToCreate
+namespace image
 {
-public:
-    explicit IPakToCreate(std::string name);
+    class IPakToCreate
+    {
+    public:
+        explicit IPakToCreate(std::string name);
 
-    void AddImage(std::string imageName);
-    void Build(ISearchPath& searchPath, IOutputPath& outPath);
-    [[nodiscard]] const std::vector<std::string>& GetImageNames() const;
+        void AddImage(std::string imageName);
+        void Build(ISearchPath& searchPath, IOutputPath& outPath);
+        [[nodiscard]] const std::vector<std::string>& GetImageNames() const;
 
-private:
-    std::string m_name;
-    std::vector<std::string> m_image_names;
-};
+    private:
+        std::string m_name;
+        std::vector<std::string> m_image_names;
+    };
 
-class IPakCreator final : public IZoneAssetCreationState
-{
-public:
-    IPakCreator();
+    class IPakCreator final : public IZoneAssetCreationState
+    {
+    public:
+        IPakCreator();
 
-    void Inject(ZoneAssetCreationInjection& inject) override;
+        void Inject(ZoneAssetCreationInjection& inject) override;
 
-    IPakToCreate* GetOrAddIPak(const std::string& ipakName);
-    void Finalize(ISearchPath& searchPath, IOutputPath& outPath);
+        IPakToCreate* GetOrAddIPak(const std::string& ipakName);
+        void Finalize(ISearchPath& searchPath, IOutputPath& outPath);
 
-private:
-    KeyValuePairsCreator* m_kvp_creator;
-    std::unordered_map<std::string, IPakToCreate*> m_ipak_lookup;
-    std::vector<std::unique_ptr<IPakToCreate>> m_ipaks;
-};
+    private:
+        key_value_pairs::Creator* m_kvp_creator;
+        std::unordered_map<std::string, IPakToCreate*> m_ipak_lookup;
+        std::vector<std::unique_ptr<IPakToCreate>> m_ipaks;
+    };
+} // namespace image

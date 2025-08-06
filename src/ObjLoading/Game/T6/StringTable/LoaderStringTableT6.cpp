@@ -38,10 +38,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace string_table

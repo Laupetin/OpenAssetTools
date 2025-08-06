@@ -2,6 +2,7 @@
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
+#include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
 
 #include <cstring>
@@ -25,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("images/{}.iwi", assetName);
+            const auto fileName = image::GetFileNameForAsset(assetName, ".iwi");
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -68,10 +69,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateImageLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetImage>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ImageLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace image

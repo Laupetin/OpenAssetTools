@@ -27,7 +27,7 @@ namespace
         IgnoredAssetLookup ignoredAssetLookup;
         AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
 
-        auto loader = CreateStringTableLoader(memory, searchPath);
+        auto loader = string_table::CreateLoaderIW4(memory, searchPath);
         auto result = loader->CreateAsset("mp/cooltable.csv", context);
         REQUIRE(result.HasBeenSuccessful());
 
