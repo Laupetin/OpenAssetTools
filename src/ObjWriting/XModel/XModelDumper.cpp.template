@@ -532,6 +532,12 @@ namespace
         }
     }
 
+    bool CanOmitDefaultArmature()
+    {
+        return ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT
+               && ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
+    }
+
     void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
     {
         DistinctMapper<Material*> materialMapper(model->numsurfs);
@@ -542,8 +548,8 @@ namespace
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
         AddXModelFaces(out, model, lod);
-
-        if (!HasDefaultArmature(model, lod))
+        
+        if (!CanOmitDefaultArmature() || !HasDefaultArmature(model, lod))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
