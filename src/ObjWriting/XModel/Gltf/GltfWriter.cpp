@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <format>
+#include <numbers>
 
 using namespace gltf;
 using namespace nlohmann;
@@ -34,33 +35,17 @@ namespace
         coords[2] = -two[1];
     }
 
-    void LhcToRhcCoordinates(std::array<float, 3>& coords)
-    {
-        float two[3]{coords[0], coords[1], coords[2]};
-        LhcToRhcCoordinates(two);
-        coords[0] = two[0];
-        coords[1] = two[1];
-        coords[2] = two[2];
-    }
-
     void LhcToRhcQuaternion(float (&quat)[4])
     {
-        const float two[4]{quat[0], quat[1], quat[2], quat[3]};
+        Eigen::Quaternionf eigenQuat(quat[3], quat[0], quat[1], quat[2]);
+        const Eigen::Quaternionf eigenRotationQuat(Eigen::AngleAxisf(-std::numbers::pi_v<float> / 2.f, Eigen::Vector3f::UnitX()));
 
-        quat[0] = two[0];
-        quat[1] = two[2];
-        quat[2] = -two[1];
-        quat[3] = two[3];
-    }
+        eigenQuat = eigenRotationQuat * eigenQuat;
 
-    void LhcToRhcQuaternion(std::array<float, 4>& quat)
-    {
-        float two[4]{quat[0], quat[1], quat[2], quat[3]};
-        LhcToRhcQuaternion(two);
-        quat[0] = two[0];
-        quat[1] = two[1];
-        quat[2] = two[2];
-        quat[3] = two[3];
+        quat[0] = eigenQuat.x();
+        quat[1] = eigenQuat.y();
+        quat[2] = eigenQuat.z();
+        quat[3] = eigenQuat.w();
     }
 
     void LhcToRhcIndices(unsigned short* indices)
@@ -298,18 +283,30 @@ namespace
                 JsonNode boneNode;
                 const auto& bone = common.m_bones[boneIndex];
 
-                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
-                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
+                float globalTranslationData[3]{bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]};
+                LhcToRhcCoordinates(globalTranslationData);
+                Eigen::Vector3f translation(globalTranslationData[0], globalTranslationData[1], globalTranslationData[2]);
+
+                float globalRotationData[4]{bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z, bone.globalRotation.w};
+                LhcToRhcQuaternion(globalRotationData);
+                Eigen::Quaternionf rotation(globalRotationData[3], globalRotationData[0], globalRotationData[1], globalRotationData[2]);
+
                 if (bone.parentIndex)
                 {
                     const auto& parentBone = common.m_bones[*bone.parentIndex];
-                    const auto inverseParentRotation =
-                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z)
-                            .normalized()
-                            .inverse()
-                            .normalized();
 
-                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]);
+                    float parentGlobalTranslationData[3]{parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]};
+                    LhcToRhcCoordinates(parentGlobalTranslationData);
+                    const Eigen::Vector3f parentTranslation(parentGlobalTranslationData[0], parentGlobalTranslationData[1], parentGlobalTranslationData[2]);
+
+                    float parentGlobalRotationData[4]{
+                        parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z, parentBone.globalRotation.w};
+                    LhcToRhcQuaternion(parentGlobalRotationData);
+                    const Eigen::Quaternionf parentRotation(
+                        parentGlobalRotationData[3], parentGlobalRotationData[0], parentGlobalRotationData[1], parentGlobalRotationData[2]);
+                    const auto inverseParentRotation = parentRotation.inverse();
+
+                    translation -= parentTranslation;
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
                 }
@@ -318,10 +315,7 @@ namespace
                 boneNode.name = bone.name;
 
                 boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
-                LhcToRhcCoordinates(*boneNode.translation);
-
                 boneNode.rotation = std::to_array({rotation.x(), rotation.y(), rotation.z(), rotation.w()});
-                LhcToRhcQuaternion(*boneNode.rotation);
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
