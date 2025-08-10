@@ -1,5 +1,9 @@
 #include "XModelCommon.h"
 
+#pragma warning(push, 0)
+#include <Eigen>
+#pragma warning(pop)
+
 #include <cmath>
 #include <format>
 #include <limits>
@@ -46,6 +50,41 @@ void XModelMaterial::ApplyDefaults()
     blinn[0] = -1;
     blinn[1] = -1;
     phong = -1;
+}
+
+void XModelCommon::CalculateBoneLocalsFromGlobals()
+{
+    const auto boneCount = m_bones.size();
+    for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+    {
+        auto& bone = m_bones[boneIndex];
+
+        Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
+        Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
+
+        if (bone.parentIndex)
+        {
+            assert(boneIndex > *bone.parentIndex);
+            const auto& parentBone = m_bones[*bone.parentIndex];
+
+            const Eigen::Vector3f parentTranslation(parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]);
+            const Eigen::Quaternionf parentRotation(
+                parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z);
+            const auto inverseParentRotation = parentRotation.inverse();
+
+            translation -= parentTranslation;
+            translation = inverseParentRotation * translation;
+            rotation = inverseParentRotation * rotation;
+        }
+
+        bone.localOffset[0] = translation.x();
+        bone.localOffset[1] = translation.y();
+        bone.localOffset[2] = translation.z();
+        bone.localRotation.x = rotation.x();
+        bone.localRotation.y = rotation.y();
+        bone.localRotation.z = rotation.z();
+        bone.localRotation.w = rotation.w();
+    }
 }
 
 bool operator==(const VertexMergerPos& lhs, const VertexMergerPos& rhs)
