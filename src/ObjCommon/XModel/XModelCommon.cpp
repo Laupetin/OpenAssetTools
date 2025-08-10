@@ -1,9 +1,13 @@
 #include "XModelCommon.h"
 
 #pragma warning(push, 0)
+// clang-format off: Order of includes is important
+#include <bit> // Eigen uses std::bit_cast without including header themselves...
 #include <Eigen>
+// clang-format on
 #pragma warning(pop)
 
+#include <cassert>
 #include <cmath>
 #include <format>
 #include <limits>
