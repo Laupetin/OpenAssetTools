@@ -14,6 +14,7 @@
 #include <iostream>
 #include <limits>
 #include <nlohmann/json.hpp>
+#include <numbers>
 #include <string>
 
 using namespace gltf;
@@ -40,6 +41,59 @@ namespace
             return !(lhs == rhs);
         }
     };
+
+    void RhcToLhcCoordinates(float (&coords)[3])
+    {
+        const float two[3]{coords[0], coords[1], coords[2]};
+
+        coords[0] = two[0];
+        coords[1] = -two[2];
+        coords[2] = two[1];
+    }
+
+    void RhcToLhcScale(float (&coords)[3])
+    {
+        const float two[3]{coords[0], coords[1], coords[2]};
+
+        coords[0] = two[0];
+        coords[1] = two[2];
+        coords[2] = two[1];
+    }
+
+    void RhcToLhcQuaternion(XModelQuaternion& quat)
+    {
+        Eigen::Quaternionf eigenQuat(quat.w, quat.x, quat.y, quat.z);
+        const Eigen::Quaternionf eigenRotationQuat(Eigen::AngleAxisf(std::numbers::pi_v<float> / 2.f, Eigen::Vector3f::UnitX()));
+
+        eigenQuat = eigenRotationQuat * eigenQuat;
+
+        quat.x = eigenQuat.x();
+        quat.y = eigenQuat.y();
+        quat.z = eigenQuat.z();
+        quat.w = eigenQuat.w();
+    }
+
+    void RhcToLhcIndices(unsigned (&indices)[3])
+    {
+        const unsigned two[3]{indices[0], indices[1], indices[2]};
+
+        indices[0] = two[2];
+        indices[1] = two[1];
+        indices[2] = two[0];
+    }
+
+    void RhcToLhcMatrix(Eigen::Matrix4f& matrix)
+    {
+        const Eigen::Matrix4f convertMatrix({
+            {1.0, 0.0, 0.0,  0.0},
+            {0.0, 0.0, -1.0, 0.0},
+            {0.0, 1.0, 0.0,  0.0},
+            {0.0, 0.0, 0.0,  1.0}
+        });
+
+        const auto result = convertMatrix * matrix;
+        matrix = result;
+    }
 } // namespace
 
 template<> struct std::hash<AccessorsForVertex>
@@ -268,21 +322,15 @@ namespace
                 unsigned joints[4];
                 float weights[4];
 
-                float coordinates[3];
-                float normal[3];
-                if (!positionAccessor->GetFloatVec3(vertexIndex, coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, normal)
+                if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, vertex.normal)
                     || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !uvAccessor->GetFloatVec2(vertexIndex, vertex.uv)
                     || !jointsAccessor->GetUnsignedVec4(vertexIndex, joints) || !weightsAccessor->GetFloatVec4(vertexIndex, weights))
                 {
                     return false;
                 }
 
-                vertex.coordinates[0] = coordinates[0];
-                vertex.coordinates[1] = -coordinates[2];
-                vertex.coordinates[2] = coordinates[1];
-                vertex.normal[0] = normal[0];
-                vertex.normal[1] = -normal[2];
-                vertex.normal[2] = normal[1];
+                RhcToLhcCoordinates(vertex.coordinates);
+                RhcToLhcCoordinates(vertex.normal);
 
                 common.m_vertices.emplace_back(vertex);
 
@@ -351,11 +399,12 @@ namespace
                 {
                     return false;
                 }
+                RhcToLhcIndices(indices);
 
                 object.m_faces.emplace_back(XModelFace{
-                    vertexOffset + indices[2],
-                    vertexOffset + indices[1],
                     vertexOffset + indices[0],
+                    vertexOffset + indices[1],
+                    vertexOffset + indices[2],
                 });
             }
 
@@ -412,7 +461,7 @@ namespace
             return std::nullopt;
         }
 
-        static void ApplyNodeMatrixTRS(XModelBone& bone, const JsonNode& node)
+        static void ApplyNodeMatrixTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
         {
             const auto matrix = Eigen::Matrix4f({
                 {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
@@ -423,63 +472,63 @@ namespace
             Eigen::Affine3f transform(matrix);
 
             const auto translation = transform.translation();
-            bone.localOffset[0] = translation.x();
-            bone.localOffset[1] = -translation.z();
-            bone.localOffset[2] = translation.y();
+            localOffsetRhc[0] = translation.x();
+            localOffsetRhc[1] = translation.y();
+            localOffsetRhc[2] = translation.z();
 
             const auto rotation = transform.rotation();
             const auto rotationQuat = Eigen::Quaternionf(rotation);
-            bone.localRotation.x = rotationQuat.x();
-            bone.localRotation.y = -rotationQuat.z();
-            bone.localRotation.z = rotationQuat.y();
-            bone.localRotation.w = rotationQuat.w();
+            localRotationRhc[0] = rotationQuat.x();
+            localRotationRhc[1] = rotationQuat.y();
+            localRotationRhc[2] = rotationQuat.z();
+            localRotationRhc[3] = rotationQuat.w();
 
-            bone.scale[0] = matrix.block<3, 1>(0, 0).norm();
-            bone.scale[1] = matrix.block<3, 1>(0, 1).norm();
-            bone.scale[2] = matrix.block<3, 1>(0, 2).norm();
+            scaleRhc[0] = matrix.block<3, 1>(0, 0).norm();
+            scaleRhc[1] = matrix.block<3, 1>(0, 1).norm();
+            scaleRhc[2] = matrix.block<3, 1>(0, 2).norm();
         }
 
-        static void ApplyNodeSeparateTRS(XModelBone& bone, const JsonNode& node)
+        static void ApplyNodeSeparateTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
         {
             if (node.translation)
             {
-                bone.localOffset[0] = (*node.translation)[0];
-                bone.localOffset[1] = -(*node.translation)[2];
-                bone.localOffset[2] = (*node.translation)[1];
+                localOffsetRhc[0] = (*node.translation)[0];
+                localOffsetRhc[1] = (*node.translation)[1];
+                localOffsetRhc[2] = (*node.translation)[2];
             }
             else
             {
-                bone.localOffset[0] = 0.0f;
-                bone.localOffset[1] = 0.0f;
-                bone.localOffset[2] = 0.0f;
+                localOffsetRhc[0] = 0.0f;
+                localOffsetRhc[1] = 0.0f;
+                localOffsetRhc[2] = 0.0f;
             }
 
             if (node.rotation)
             {
-                bone.localRotation.x = (*node.rotation)[0];
-                bone.localRotation.y = -(*node.rotation)[2];
-                bone.localRotation.z = (*node.rotation)[1];
-                bone.localRotation.w = (*node.rotation)[3];
+                localRotationRhc[0] = (*node.rotation)[0];
+                localRotationRhc[1] = (*node.rotation)[1];
+                localRotationRhc[2] = (*node.rotation)[2];
+                localRotationRhc[3] = (*node.rotation)[3];
             }
             else
             {
-                bone.localRotation.x = 0.0f;
-                bone.localRotation.y = 0.0f;
-                bone.localRotation.z = 0.0f;
-                bone.localRotation.w = 1.0f;
+                localRotationRhc[0] = 0.0f;
+                localRotationRhc[1] = 0.0f;
+                localRotationRhc[2] = 0.0f;
+                localRotationRhc[3] = 1.0f;
             }
 
             if (node.scale)
             {
-                bone.scale[0] = (*node.scale)[0];
-                bone.scale[1] = (*node.scale)[1];
-                bone.scale[2] = (*node.scale)[2];
+                scaleRhc[0] = (*node.scale)[0];
+                scaleRhc[1] = (*node.scale)[1];
+                scaleRhc[2] = (*node.scale)[2];
             }
             else
             {
-                bone.scale[0] = 1.0f;
-                bone.scale[1] = 1.0f;
-                bone.scale[2] = 1.0f;
+                scaleRhc[0] = 1.0f;
+                scaleRhc[1] = 1.0f;
+                scaleRhc[2] = 1.0f;
             }
         }
 
@@ -489,8 +538,8 @@ namespace
                                  const unsigned skinBoneOffset,
                                  const unsigned nodeIndex,
                                  const std::optional<unsigned> parentIndex,
-                                 const float (&parentOffset)[3],
-                                 const XModelQuaternion& parentRotation,
+                                 const Eigen::Vector3f& parentTranslationEigenRhc,
+                                 const Eigen::Quaternionf& parentRotationEigenRhc,
                                  const float (&parentScale)[3])
         {
             if (!jRoot.nodes || nodeIndex >= jRoot.nodes->size())
@@ -507,36 +556,42 @@ namespace
             bone.name = node.name.value_or(std::string());
             bone.parentIndex = parentIndex;
 
+            float localOffsetRhc[3];
+            float localRotationRhc[4];
+            float localScaleRhc[3];
             if (node.matrix)
-                ApplyNodeMatrixTRS(bone, node);
+                ApplyNodeMatrixTRS(node, localOffsetRhc, localRotationRhc, localScaleRhc);
             else
-                ApplyNodeSeparateTRS(bone, node);
+                ApplyNodeSeparateTRS(node, localOffsetRhc, localRotationRhc, localScaleRhc);
 
-            bone.scale[0] *= parentScale[0];
-            bone.scale[1] *= parentScale[1];
-            bone.scale[2] *= parentScale[2];
+            bone.scale[0] = localScaleRhc[0] * parentScale[0];
+            bone.scale[1] = localScaleRhc[1] * parentScale[1];
+            bone.scale[2] = localScaleRhc[2] * parentScale[2];
+            RhcToLhcScale(bone.scale);
 
-            const auto localRotationEigen = Eigen::Quaternionf(bone.localRotation.w, bone.localRotation.x, bone.localRotation.y, bone.localRotation.z);
-            const auto parentRotationEigen = Eigen::Quaternionf(parentRotation.w, parentRotation.x, parentRotation.y, parentRotation.z);
-            const auto globalRotationEigen = (parentRotationEigen * localRotationEigen).normalized();
+            const Eigen::Vector3f localTranslationEigen(localOffsetRhc[0], localOffsetRhc[1], localOffsetRhc[2]);
+            const Eigen::Quaternionf localRotationEigen(localRotationRhc[3], localRotationRhc[0], localRotationRhc[1], localRotationRhc[2]);
 
-            const Eigen::Vector3f localTranslationEigen(bone.localOffset[0], bone.localOffset[1], bone.localOffset[2]);
-            const Eigen::Vector3f parentTranslationEigen(parentOffset[0], parentOffset[1], parentOffset[2]);
-            const auto globalTranslationEigen = (parentRotationEigen * localTranslationEigen) + parentTranslationEigen;
-            bone.globalOffset[0] = globalTranslationEigen.x();
-            bone.globalOffset[1] = globalTranslationEigen.y();
-            bone.globalOffset[2] = globalTranslationEigen.z();
+            const Eigen::Quaternionf globalRotationEigenRhc((parentRotationEigenRhc * localRotationEigen).normalized());
+            const Eigen::Vector3f globalTranslationEigenRhc((parentRotationEigenRhc * localTranslationEigen) + parentTranslationEigenRhc);
 
-            bone.globalRotation.x = globalRotationEigen.x();
-            bone.globalRotation.y = globalRotationEigen.y();
-            bone.globalRotation.z = globalRotationEigen.z();
-            bone.globalRotation.w = globalRotationEigen.w();
+            bone.globalOffset[0] = globalTranslationEigenRhc.x();
+            bone.globalOffset[1] = globalTranslationEigenRhc.y();
+            bone.globalOffset[2] = globalTranslationEigenRhc.z();
+            RhcToLhcCoordinates(bone.globalOffset);
+
+            bone.globalRotation.x = globalRotationEigenRhc.x();
+            bone.globalRotation.y = globalRotationEigenRhc.y();
+            bone.globalRotation.z = globalRotationEigenRhc.z();
+            bone.globalRotation.w = globalRotationEigenRhc.w();
+            RhcToLhcQuaternion(bone.globalRotation);
 
             if (node.children)
             {
                 for (const auto childIndex : *node.children)
                 {
-                    if (!ConvertJoint(jRoot, skin, common, skinBoneOffset, childIndex, commonBoneOffset, bone.globalOffset, bone.globalRotation, bone.scale))
+                    if (!ConvertJoint(
+                            jRoot, skin, common, skinBoneOffset, childIndex, commonBoneOffset, globalTranslationEigenRhc, globalRotationEigenRhc, bone.scale))
                         return false;
                 }
             }
@@ -555,11 +610,15 @@ namespace
             const auto skinBoneOffset = static_cast<unsigned>(common.m_bones.size());
             common.m_bones.resize(skinBoneOffset + skin.joints.size());
 
-            constexpr float defaultTranslation[3]{0.0f, 0.0f, 0.0f};
-            constexpr XModelQuaternion defaultRotation{.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f};
+            const Eigen::Vector3f defaultTranslation(0.0f, 0.0f, 0.0f);
+            const Eigen::Quaternionf defaultRotation(1.0f, 0.0f, 0.0f, 0.0f);
             constexpr float defaultScale[3]{1.0f, 1.0f, 1.0f};
 
-            return ConvertJoint(jRoot, skin, common, skinBoneOffset, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale);
+            if (!ConvertJoint(jRoot, skin, common, skinBoneOffset, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale))
+                return false;
+
+            common.CalculateBoneLocalsFromGlobals();
+            return true;
         }
 
         void ConvertObjects(const JsonRoot& jRoot, XModelCommon& common)

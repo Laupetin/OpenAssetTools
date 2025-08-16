@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <format>
+#include <numbers>
 
 using namespace gltf;
 using namespace nlohmann;
@@ -24,6 +25,50 @@ namespace
         float normal[3];
         float uv[2];
     };
+
+    void LhcToRhcCoordinates(float (&coords)[3])
+    {
+        const float two[3]{coords[0], coords[1], coords[2]};
+
+        coords[0] = two[0];
+        coords[1] = two[2];
+        coords[2] = -two[1];
+    }
+
+    void LhcToRhcQuaternion(float (&quat)[4])
+    {
+        Eigen::Quaternionf eigenQuat(quat[3], quat[0], quat[1], quat[2]);
+        const Eigen::Quaternionf eigenRotationQuat(Eigen::AngleAxisf(-std::numbers::pi_v<float> / 2.f, Eigen::Vector3f::UnitX()));
+
+        eigenQuat = eigenRotationQuat * eigenQuat;
+
+        quat[0] = eigenQuat.x();
+        quat[1] = eigenQuat.y();
+        quat[2] = eigenQuat.z();
+        quat[3] = eigenQuat.w();
+    }
+
+    void LhcToRhcIndices(unsigned short* indices)
+    {
+        const unsigned short two[3]{indices[0], indices[1], indices[2]};
+
+        indices[0] = two[2];
+        indices[1] = two[1];
+        indices[2] = two[0];
+    }
+
+    void LhcToRhcMatrix(Eigen::Matrix4f& matrix)
+    {
+        const Eigen::Matrix4f convertMatrix({
+            {1.0, 0.0,  0.0, 0.0},
+            {0.0, 0.0,  1.0, 0.0},
+            {0.0, -1.0, 0.0, 0.0},
+            {0.0, 0.0,  0.0, 1.0}
+        });
+
+        const auto result = convertMatrix * matrix;
+        matrix = result;
+    }
 
     class GltfWriterImpl final : public gltf::Writer
     {
@@ -238,26 +283,39 @@ namespace
                 JsonNode boneNode;
                 const auto& bone = common.m_bones[boneIndex];
 
-                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
-                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
+                float globalTranslationData[3]{bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]};
+                LhcToRhcCoordinates(globalTranslationData);
+                Eigen::Vector3f translation(globalTranslationData[0], globalTranslationData[1], globalTranslationData[2]);
+
+                float globalRotationData[4]{bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z, bone.globalRotation.w};
+                LhcToRhcQuaternion(globalRotationData);
+                Eigen::Quaternionf rotation(globalRotationData[3], globalRotationData[0], globalRotationData[1], globalRotationData[2]);
+
                 if (bone.parentIndex)
                 {
                     const auto& parentBone = common.m_bones[*bone.parentIndex];
-                    const auto inverseParentRotation =
-                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z)
-                            .normalized()
-                            .inverse()
-                            .normalized();
 
-                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]);
+                    float parentGlobalTranslationData[3]{parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]};
+                    LhcToRhcCoordinates(parentGlobalTranslationData);
+                    const Eigen::Vector3f parentTranslation(parentGlobalTranslationData[0], parentGlobalTranslationData[1], parentGlobalTranslationData[2]);
+
+                    float parentGlobalRotationData[4]{
+                        parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z, parentBone.globalRotation.w};
+                    LhcToRhcQuaternion(parentGlobalRotationData);
+                    const Eigen::Quaternionf parentRotation(
+                        parentGlobalRotationData[3], parentGlobalRotationData[0], parentGlobalRotationData[1], parentGlobalRotationData[2]);
+                    const auto inverseParentRotation = parentRotation.inverse();
+
+                    translation -= parentTranslation;
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
                 }
                 rotation.normalize();
 
                 boneNode.name = bone.name;
-                boneNode.translation = std::to_array({translation.x(), translation.z(), -translation.y()});
-                boneNode.rotation = std::to_array({rotation.x(), rotation.z(), -rotation.y(), rotation.w()});
+
+                boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
+                boneNode.rotation = std::to_array({rotation.x(), rotation.y(), rotation.z(), rotation.w()});
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
@@ -471,8 +529,9 @@ namespace
                 auto* vertex = reinterpret_cast<GltfVertex*>(&bufferData[currentBufferOffset]);
 
                 vertex->coordinates[0] = commonVertex.coordinates[0];
-                vertex->coordinates[1] = commonVertex.coordinates[2];
-                vertex->coordinates[2] = -commonVertex.coordinates[1];
+                vertex->coordinates[1] = commonVertex.coordinates[1];
+                vertex->coordinates[2] = commonVertex.coordinates[2];
+                LhcToRhcCoordinates(vertex->coordinates);
 
                 minPosition[0] = std::min(minPosition[0], vertex->coordinates[0]);
                 minPosition[1] = std::min(minPosition[1], vertex->coordinates[1]);
@@ -482,8 +541,9 @@ namespace
                 maxPosition[2] = std::max(maxPosition[2], vertex->coordinates[2]);
 
                 vertex->normal[0] = commonVertex.normal[0];
-                vertex->normal[1] = commonVertex.normal[2];
-                vertex->normal[2] = -commonVertex.normal[1];
+                vertex->normal[1] = commonVertex.normal[1];
+                vertex->normal[2] = commonVertex.normal[2];
+                LhcToRhcCoordinates(vertex->normal);
 
                 vertex->uv[0] = commonVertex.uv[0];
                 vertex->uv[1] = commonVertex.uv[1];
@@ -531,11 +591,13 @@ namespace
                 auto* inverseBindMatrixData = reinterpret_cast<float*>(&bufferData[currentBufferOffset]);
                 for (const auto& bone : xmodel.m_bones)
                 {
-                    const auto translation = Eigen::Translation3f(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                    const auto rotation = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
+                    const auto translation = Eigen::Translation3f(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
+                    const auto rotation = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
+                    const auto bindMatrixTransform = translation * rotation;
+                    auto bindMatrix = bindMatrixTransform.matrix();
 
-                    const auto bindMatrix = (translation * rotation);
-                    const auto inverseBindMatrix = bindMatrix.matrix().inverse();
+                    LhcToRhcMatrix(bindMatrix);
+                    const auto inverseBindMatrix = bindMatrix.inverse();
 
                     // GLTF matrix is column major
                     inverseBindMatrixData[0] = inverseBindMatrix(0, 0);
@@ -565,9 +627,10 @@ namespace
                 for (const auto& face : object.m_faces)
                 {
                     auto* faceIndices = reinterpret_cast<unsigned short*>(&bufferData[currentBufferOffset]);
-                    faceIndices[0] = static_cast<unsigned short>(face.vertexIndex[2]);
+                    faceIndices[0] = static_cast<unsigned short>(face.vertexIndex[0]);
                     faceIndices[1] = static_cast<unsigned short>(face.vertexIndex[1]);
-                    faceIndices[2] = static_cast<unsigned short>(face.vertexIndex[0]);
+                    faceIndices[2] = static_cast<unsigned short>(face.vertexIndex[2]);
+                    LhcToRhcIndices(faceIndices);
 
                     currentBufferOffset += sizeof(unsigned short) * 3u;
                 }
