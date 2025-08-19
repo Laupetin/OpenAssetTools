@@ -1,40 +1,22 @@
 #pragma once
 
 #include "Cryptography.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/ICapturedDataProvider.h"
 
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
+
+class Salsa20StreamContext
+{
+public:
+    std::unique_ptr<cryptography::IStreamCipher> m_salsa20;
+    std::unique_ptr<cryptography::IHashFunction> m_sha1;
+};
 
 class AbstractSalsa20Processor : public ICapturedDataProvider
 {
-protected:
-    static constexpr int BLOCK_HASHES_COUNT = 200;
-    static constexpr int SHA1_HASH_SIZE = 20;
-    static constexpr int SALSA20_IV_SIZE = 8;
-
-    class StreamContext
-    {
-    public:
-        std::unique_ptr<cryptography::IStreamCipher> m_salsa20;
-        std::unique_ptr<cryptography::IHashFunction> m_sha1;
-    };
-
-    int m_stream_count;
-    std::unique_ptr<StreamContext[]> m_stream_contexts;
-
-    // m_block_hashes[BLOCK_HASHES_COUNT][numStreams][HASH_SIZE]
-    std::unique_ptr<uint8_t[]> m_block_hashes;
-    std::unique_ptr<unsigned int[]> m_stream_block_indices;
-
-    AbstractSalsa20Processor(int streamCount, const std::string& zoneName, const uint8_t* salsa20Key, size_t keySize);
-
-    _NODISCARD uint8_t* GetHashBlock(int streamNumber) const;
-
-    void InitStreams(const std::string& zoneName, const uint8_t* salsa20Key, size_t keySize) const;
-
 public:
     virtual ~AbstractSalsa20Processor() = default;
     AbstractSalsa20Processor(const AbstractSalsa20Processor& other) = delete;
@@ -43,4 +25,21 @@ public:
     AbstractSalsa20Processor& operator=(AbstractSalsa20Processor&& other) noexcept = default;
 
     void GetCapturedData(const uint8_t** pCapturedData, size_t* pSize) override;
+
+protected:
+    static constexpr auto BLOCK_HASHES_COUNT = 200u;
+    static constexpr auto SHA1_HASH_SIZE = 20u;
+    static constexpr auto SALSA20_IV_SIZE = 8u;
+
+    AbstractSalsa20Processor(unsigned streamCount, const std::string& zoneName, const uint8_t* salsa20Key, unsigned keySize);
+    void InitStreams(const std::string& zoneName, const uint8_t* salsa20Key, size_t keySize);
+
+    [[nodiscard]] uint8_t* GetHashBlock(unsigned streamNumber);
+
+    unsigned m_stream_count;
+    std::vector<Salsa20StreamContext> m_stream_contexts;
+
+    // m_block_hashes[BLOCK_HASHES_COUNT][numStreams][SHA1_HASH_SIZE]
+    std::vector<uint8_t> m_block_hashes;
+    std::vector<unsigned int> m_stream_block_indices;
 };

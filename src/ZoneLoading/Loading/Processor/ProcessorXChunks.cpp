@@ -1,11 +1,14 @@
 #include "ProcessorXChunks.h"
 
 #include "Loading/Exception/InvalidChunkSizeException.h"
+#include "Utils/Endianness.h"
 #include "Zone/ZoneTypes.h"
 
 #include <cassert>
 #include <condition_variable>
 #include <cstring>
+#include <format>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -125,8 +128,9 @@ namespace
     class ProcessorXChunks final : public processor::IProcessorXChunks
     {
     public:
-        ProcessorXChunks(const int numStreams, const size_t xChunkSize, const std::optional<size_t> vanillaBufferSize)
+        ProcessorXChunks(const int numStreams, const size_t xChunkSize, const GameEndianness endianness, const std::optional<size_t> vanillaBufferSize)
             : m_chunk_size(xChunkSize),
+              m_endianness(endianness),
               m_vanilla_buffer_size(vanillaBufferSize),
               m_initialized_streams(false),
               m_current_stream(0),
@@ -227,6 +231,11 @@ namespace
                 return;
             }
 
+            if (m_endianness == GameEndianness::LITTLE_ENDIAN)
+                chunkSize = endianness::FromLittleEndian(chunkSize);
+            else
+                chunkSize = endianness::FromBigEndian(chunkSize);
+
             if (chunkSize > m_chunk_size)
             {
                 throw InvalidChunkSizeException(chunkSize, m_chunk_size);
@@ -280,6 +289,7 @@ namespace
 
         std::vector<std::unique_ptr<DbLoadStream>> m_streams;
         size_t m_chunk_size;
+        GameEndianness m_endianness;
         std::optional<size_t> m_vanilla_buffer_size;
         std::vector<std::unique_ptr<IXChunkProcessor>> m_chunk_processors;
 
@@ -297,13 +307,14 @@ namespace
 
 namespace processor
 {
-    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, const size_t xChunkSize)
+    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(unsigned numStreams, const size_t xChunkSize, const GameEndianness endianness)
     {
-        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, std::nullopt);
+        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, endianness, std::nullopt);
     }
 
-    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, const size_t xChunkSize, const size_t vanillaBufferSize)
+    std::unique_ptr<IProcessorXChunks>
+        CreateProcessorXChunks(unsigned numStreams, const size_t xChunkSize, GameEndianness endianness, const size_t vanillaBufferSize)
     {
-        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, vanillaBufferSize);
+        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, endianness, vanillaBufferSize);
     }
 } // namespace processor

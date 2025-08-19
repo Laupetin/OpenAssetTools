@@ -16,6 +16,18 @@ enum class GameId
     COUNT
 };
 
+enum class GameEndianness
+{
+    LITTLE_ENDIAN,
+    BIG_ENDIAN
+};
+
+enum class GameWordSize
+{
+    ARCH_32,
+    ARCH_64
+};
+
 static constexpr const char* GameId_Names[]{
     "IW3",
     "IW4",
