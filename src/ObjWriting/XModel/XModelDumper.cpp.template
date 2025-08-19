@@ -690,7 +690,7 @@ namespace
 
             jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
             jRoot["_type"] = "xmodel";
-            jRoot["_version"] = 1;
+            jRoot["_version"] = 2;
             jRoot["_game"] = GAME_LOWER;
 
             m_stream << std::setw(4) << jRoot << "\n";

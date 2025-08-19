@@ -57,7 +57,8 @@ namespace
     {
     public:
         XModelLoader(MemoryManager& memory, ISearchPath& searchPath, ZoneScriptStrings& scriptStrings)
-            : m_memory(memory),
+            : m_gltf_bad_rotation_formulas(false),
+              m_memory(memory),
               m_search_path(searchPath),
               m_script_strings(scriptStrings)
         {
@@ -97,11 +98,13 @@ namespace
                 jRoot.at("_type").get_to(type);
                 jRoot.at("_version").get_to(version);
 
-                if (type != "xmodel" || version != 1u)
+                if (type != "xmodel" || version < 1u || version > 2u)
                 {
-                    std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1\n", xmodel.name);
+                    std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1 or 2\n", xmodel.name);
                     return false;
                 }
+
+                m_gltf_bad_rotation_formulas = version == 1u;
 
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel, context, registration);
@@ -119,7 +122,7 @@ namespace
             std::cerr << std::format("Cannot load xmodel \"{}\": {}\n", xmodel.name, message);
         }
 
-        static std::unique_ptr<XModelCommon> LoadModelByExtension(std::istream& stream, const std::string& extension)
+        std::unique_ptr<XModelCommon> LoadModelByExtension(std::istream& stream, const std::string& extension) const
         {
             if (extension == ".glb")
             {
@@ -127,7 +130,7 @@ namespace
                 if (!input.ReadGltfData(stream))
                     return nullptr;
 
-                const auto loader = gltf::Loader::CreateLoader(&input);
+                const auto loader = gltf::Loader::CreateLoader(input, m_gltf_bad_rotation_formulas);
                 return loader->Load();
             }
 
@@ -137,7 +140,7 @@ namespace
                 if (!input.ReadGltfData(stream))
                     return nullptr;
 
-                const auto loader = gltf::Loader::CreateLoader(&input);
+                const auto loader = gltf::Loader::CreateLoader(input, m_gltf_bad_rotation_formulas);
                 return loader->Load();
             }
 
@@ -1071,6 +1074,8 @@ namespace
 
             return true;
         }
+
+        bool m_gltf_bad_rotation_formulas;
 
         std::vector<XSurface> m_surfaces;
         std::vector<Material*> m_materials;

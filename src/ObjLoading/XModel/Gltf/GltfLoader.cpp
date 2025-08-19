@@ -138,8 +138,9 @@ namespace
     class GltfLoaderImpl final : public Loader
     {
     public:
-        explicit GltfLoaderImpl(const Input* input)
-            : m_input(input)
+        GltfLoaderImpl(const Input& input, const bool useBadRotationFormulas)
+            : m_input(input),
+              m_bad_rotation_formulas(useBadRotationFormulas)
         {
         }
 
@@ -449,7 +450,7 @@ namespace
             return std::nullopt;
         }
 
-        static void ApplyNodeMatrixTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
+        void ApplyNodeMatrixTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
         {
             const auto matrix = Eigen::Matrix4f({
                 {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
@@ -460,29 +461,45 @@ namespace
             Eigen::Affine3f transform(matrix);
 
             const auto translation = transform.translation();
+
             localOffsetRhc[0] = translation.x();
             localOffsetRhc[1] = translation.y();
             localOffsetRhc[2] = translation.z();
+            if (m_bad_rotation_formulas)
+                RhcToLhcCoordinates(localOffsetRhc);
 
             const auto rotation = transform.rotation();
             const auto rotationQuat = Eigen::Quaternionf(rotation);
-            localRotationRhc[0] = rotationQuat.x();
-            localRotationRhc[1] = rotationQuat.y();
-            localRotationRhc[2] = rotationQuat.z();
-            localRotationRhc[3] = rotationQuat.w();
+            if (!m_bad_rotation_formulas)
+            {
+                localRotationRhc[0] = rotationQuat.x();
+                localRotationRhc[1] = rotationQuat.y();
+                localRotationRhc[2] = rotationQuat.z();
+                localRotationRhc[3] = rotationQuat.w();
+            }
+            else
+            {
+                // Backwards compatibility
+                localRotationRhc[0] = rotationQuat.x();
+                localRotationRhc[1] = -rotationQuat.z();
+                localRotationRhc[2] = rotationQuat.y();
+                localRotationRhc[3] = rotationQuat.w();
+            }
 
             scaleRhc[0] = matrix.block<3, 1>(0, 0).norm();
             scaleRhc[1] = matrix.block<3, 1>(0, 1).norm();
             scaleRhc[2] = matrix.block<3, 1>(0, 2).norm();
         }
 
-        static void ApplyNodeSeparateTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
+        void ApplyNodeSeparateTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
         {
             if (node.translation)
             {
                 localOffsetRhc[0] = (*node.translation)[0];
                 localOffsetRhc[1] = (*node.translation)[1];
                 localOffsetRhc[2] = (*node.translation)[2];
+                if (m_bad_rotation_formulas)
+                    RhcToLhcCoordinates(localOffsetRhc);
             }
             else
             {
@@ -493,10 +510,21 @@ namespace
 
             if (node.rotation)
             {
-                localRotationRhc[0] = (*node.rotation)[0];
-                localRotationRhc[1] = (*node.rotation)[1];
-                localRotationRhc[2] = (*node.rotation)[2];
-                localRotationRhc[3] = (*node.rotation)[3];
+                if (!m_bad_rotation_formulas)
+                {
+                    localRotationRhc[0] = (*node.rotation)[0];
+                    localRotationRhc[1] = (*node.rotation)[1];
+                    localRotationRhc[2] = (*node.rotation)[2];
+                    localRotationRhc[3] = (*node.rotation)[3];
+                }
+                else
+                {
+                    // Backwards compatibility
+                    localRotationRhc[0] = (*node.rotation)[0];
+                    localRotationRhc[1] = -(*node.rotation)[2];
+                    localRotationRhc[2] = (*node.rotation)[1];
+                    localRotationRhc[3] = (*node.rotation)[3];
+                }
             }
             else
             {
@@ -520,15 +548,15 @@ namespace
             }
         }
 
-        static bool ConvertJoint(const JsonRoot& jRoot,
-                                 const JsonSkin& skin,
-                                 XModelCommon& common,
-                                 const unsigned skinBoneOffset,
-                                 const unsigned nodeIndex,
-                                 const std::optional<unsigned> parentIndex,
-                                 const Eigen::Vector3f& parentTranslationEigenRhc,
-                                 const Eigen::Quaternionf& parentRotationEigenRhc,
-                                 const float (&parentScale)[3])
+        bool ConvertJoint(const JsonRoot& jRoot,
+                          const JsonSkin& skin,
+                          XModelCommon& common,
+                          const unsigned skinBoneOffset,
+                          const unsigned nodeIndex,
+                          const std::optional<unsigned> parentIndex,
+                          const Eigen::Vector3f& parentTranslationEigenRhc,
+                          const Eigen::Quaternionf& parentRotationEigenRhc,
+                          const float (&parentScale)[3])
         {
             if (!jRoot.nodes || nodeIndex >= jRoot.nodes->size())
                 return false;
@@ -555,7 +583,8 @@ namespace
             bone.scale[0] = localScaleRhc[0] * parentScale[0];
             bone.scale[1] = localScaleRhc[1] * parentScale[1];
             bone.scale[2] = localScaleRhc[2] * parentScale[2];
-            RhcToLhcScale(bone.scale);
+            if (!m_bad_rotation_formulas)
+                RhcToLhcScale(bone.scale);
 
             const Eigen::Vector3f localTranslationEigen(localOffsetRhc[0], localOffsetRhc[1], localOffsetRhc[2]);
             const Eigen::Quaternionf localRotationEigen(localRotationRhc[3], localRotationRhc[0], localRotationRhc[1], localRotationRhc[2]);
@@ -566,13 +595,15 @@ namespace
             bone.globalOffset[0] = globalTranslationEigenRhc.x();
             bone.globalOffset[1] = globalTranslationEigenRhc.y();
             bone.globalOffset[2] = globalTranslationEigenRhc.z();
-            RhcToLhcCoordinates(bone.globalOffset);
+            if (!m_bad_rotation_formulas)
+                RhcToLhcCoordinates(bone.globalOffset);
 
             bone.globalRotation.x = globalRotationEigenRhc.x();
             bone.globalRotation.y = globalRotationEigenRhc.y();
             bone.globalRotation.z = globalRotationEigenRhc.z();
             bone.globalRotation.w = globalRotationEigenRhc.w();
-            RhcToLhcQuaternion(bone.globalRotation);
+            if (!m_bad_rotation_formulas)
+                RhcToLhcQuaternion(bone.globalRotation);
 
             if (node.children)
             {
@@ -587,7 +618,7 @@ namespace
             return true;
         }
 
-        static bool ConvertSkin(const JsonRoot& jRoot, const JsonSkin& skin, XModelCommon& common)
+        bool ConvertSkin(const JsonRoot& jRoot, const JsonSkin& skin, XModelCommon& common)
         {
             if (skin.joints.empty())
                 return true;
@@ -683,7 +714,7 @@ namespace
                 {
                     const void* embeddedBufferPtr = nullptr;
                     size_t embeddedBufferSize = 0u;
-                    if (!m_input->GetEmbeddedBuffer(embeddedBufferPtr, embeddedBufferSize) || embeddedBufferSize == 0u)
+                    if (!m_input.GetEmbeddedBuffer(embeddedBufferPtr, embeddedBufferSize) || embeddedBufferSize == 0u)
                         throw GltfLoadException("Buffer tried to access embedded data when there is none");
 
                     m_buffers.emplace_back(std::make_unique<EmbeddedBuffer>(embeddedBufferPtr, embeddedBufferSize));
@@ -763,7 +794,7 @@ namespace
             JsonRoot jRoot;
             try
             {
-                jRoot = m_input->GetJson().get<JsonRoot>();
+                jRoot = m_input.GetJson().get<JsonRoot>();
             }
             catch (const nlohmann::json::exception& e)
             {
@@ -793,7 +824,7 @@ namespace
         }
 
     private:
-        const Input* m_input;
+        const Input& m_input;
         std::vector<ObjectToLoad> m_load_objects;
         std::unordered_map<AccessorsForVertex, unsigned> m_vertex_offset_for_accessors;
         std::vector<std::unique_ptr<Accessor>> m_accessors;
@@ -804,7 +835,7 @@ namespace
     };
 } // namespace
 
-std::unique_ptr<Loader> Loader::CreateLoader(const Input* input)
+std::unique_ptr<Loader> Loader::CreateLoader(const Input& input, bool useBadRotationFormulas)
 {
     return std::make_unique<GltfLoaderImpl>(input, useBadRotationFormulas);
 }
