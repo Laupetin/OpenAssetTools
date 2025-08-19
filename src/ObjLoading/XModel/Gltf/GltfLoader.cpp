@@ -150,7 +150,7 @@ namespace
     class GltfLoaderImpl final : public Loader
     {
     public:
-        explicit GltfLoaderImpl(const Input* input)
+        explicit GltfLoaderImpl(const Input& input)
             : m_input(input)
         {
         }
@@ -695,7 +695,7 @@ namespace
                 {
                     const void* embeddedBufferPtr = nullptr;
                     size_t embeddedBufferSize = 0u;
-                    if (!m_input->GetEmbeddedBuffer(embeddedBufferPtr, embeddedBufferSize) || embeddedBufferSize == 0u)
+                    if (!m_input.GetEmbeddedBuffer(embeddedBufferPtr, embeddedBufferSize) || embeddedBufferSize == 0u)
                         throw GltfLoadException("Buffer tried to access embedded data when there is none");
 
                     m_buffers.emplace_back(std::make_unique<EmbeddedBuffer>(embeddedBufferPtr, embeddedBufferSize));
@@ -775,7 +775,7 @@ namespace
             JsonRoot jRoot;
             try
             {
-                jRoot = m_input->GetJson().get<JsonRoot>();
+                jRoot = m_input.GetJson().get<JsonRoot>();
             }
             catch (const nlohmann::json::exception& e)
             {
@@ -805,7 +805,7 @@ namespace
         }
 
     private:
-        const Input* m_input;
+        const Input& m_input;
         std::vector<ObjectToLoad> m_load_objects;
         std::unordered_map<AccessorsForVertex, unsigned> m_vertex_offset_for_accessors;
         std::vector<std::unique_ptr<Accessor>> m_accessors;
@@ -814,7 +814,7 @@ namespace
     };
 } // namespace
 
-std::unique_ptr<Loader> Loader::CreateLoader(const Input* input)
+std::unique_ptr<Loader> Loader::CreateLoader(const Input& input, bool useBadRotationFormulas)
 {
     return std::make_unique<GltfLoaderImpl>(input);
 }
