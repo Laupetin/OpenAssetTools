@@ -16,10 +16,14 @@ enum class GameId
     COUNT
 };
 
+// The full uppercase names are macros in the standard lib
+// So unfortunately not usable as values in the enum
 enum class GameEndianness
 {
-    LITTLE_ENDIAN,
-    BIG_ENDIAN
+    /* Little endian */
+    LE,
+    /* Big endian */
+    BE
 };
 
 enum class GameWordSize

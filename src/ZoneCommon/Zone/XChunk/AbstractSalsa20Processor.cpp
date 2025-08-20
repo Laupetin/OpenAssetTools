@@ -1,8 +1,9 @@
 #include "AbstractSalsa20Processor.h"
 
 #include <cassert>
+#include <cstring>
 
-AbstractSalsa20Processor::AbstractSalsa20Processor(const unsigned streamCount, const std::string& zoneName, const uint8_t* salsa20Key, const unsigned keySize)
+AbstractSalsa20Processor::AbstractSalsa20Processor(const unsigned streamCount, const std::string& zoneName, const uint8_t* salsa20Key, const size_t keySize)
     : m_stream_count(streamCount),
       m_stream_contexts(streamCount),
       m_block_hashes(BLOCK_HASHES_COUNT * streamCount * SHA1_HASH_SIZE),

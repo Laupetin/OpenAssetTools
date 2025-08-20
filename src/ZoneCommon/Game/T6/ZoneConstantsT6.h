@@ -12,15 +12,15 @@ namespace T6
         ZoneConstants() = default;
 
     public:
-        static constexpr const char* MAGIC_SIGNED_PC_TREYARCH = "TAff0100";
-        static constexpr const char* MAGIC_SIGNED_XENON_TREYARCH = "TAffx100";
-        static constexpr const char* MAGIC_SIGNED_PC_OAT = "ABff0100";
+        static constexpr const char* MAGIC_SIGNED_TREYARCH = "TAff0100";
+        static constexpr const char* MAGIC_SIGNED_LZX_TREYARCH = "TAffx100";
+        static constexpr const char* MAGIC_SIGNED_OAT = "ABff0100";
         static constexpr const char* MAGIC_UNSIGNED = "TAffu100";
         static constexpr const char* MAGIC_UNSIGNED_SERVER = "TAsvu100";
 
-        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_PC_TREYARCH) == sizeof(ZoneHeader::m_magic));
-        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_XENON_TREYARCH) == sizeof(ZoneHeader::m_magic));
-        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_PC_OAT) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_TREYARCH) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_LZX_TREYARCH) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED_SERVER) == sizeof(ZoneHeader::m_magic));
 
