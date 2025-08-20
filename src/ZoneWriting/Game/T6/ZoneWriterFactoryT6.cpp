@@ -49,9 +49,9 @@ namespace
         if (isSecure)
         {
             if (isOfficial)
-                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_PC_TREYARCH, sizeof(ZoneHeader::m_magic));
+                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, sizeof(ZoneHeader::m_magic));
             else
-                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_PC_OAT, sizeof(ZoneHeader::m_magic));
+                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, sizeof(ZoneHeader::m_magic));
         }
         else
         {

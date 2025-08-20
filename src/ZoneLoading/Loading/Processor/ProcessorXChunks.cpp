@@ -231,7 +231,7 @@ namespace
                 return;
             }
 
-            if (m_endianness == GameEndianness::LITTLE_ENDIAN)
+            if (m_endianness == GameEndianness::LE)
                 chunkSize = endianness::FromLittleEndian(chunkSize);
             else
                 chunkSize = endianness::FromBigEndian(chunkSize);
