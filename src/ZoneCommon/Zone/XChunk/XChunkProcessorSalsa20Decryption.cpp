@@ -4,9 +4,11 @@
 #include "Cryptography.h"
 
 #include <cassert>
+#include <format>
+#include <iostream>
 
-XChunkProcessorSalsa20Decryption::XChunkProcessorSalsa20Decryption(const int streamCount,
-                                                                   std::string& zoneName,
+XChunkProcessorSalsa20Decryption::XChunkProcessorSalsa20Decryption(const unsigned streamCount,
+                                                                   const std::string& zoneName,
                                                                    const uint8_t* salsa20Key,
                                                                    const size_t keySize)
     : AbstractSalsa20Processor(streamCount, zoneName, salsa20Key, keySize)
@@ -14,9 +16,9 @@ XChunkProcessorSalsa20Decryption::XChunkProcessorSalsa20Decryption(const int str
 }
 
 size_t XChunkProcessorSalsa20Decryption::Process(
-    const int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
+    const unsigned streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
 {
-    assert(streamNumber >= 0 && streamNumber < m_stream_count);
+    assert(streamNumber < m_stream_count);
     assert(input != nullptr);
     assert(output != nullptr);
     assert(inputLength <= outputBufferSize);
