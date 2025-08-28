@@ -14,6 +14,7 @@ function ZoneLoading:link(links)
 	links:linkto(Cryptography)
 	links:linkto(Utils)
 	links:linkto(ZoneCommon)
+	links:linkto(lzx)
 	links:linkto(zlib)
 	
     if os.host() == "linux" then
@@ -55,6 +56,7 @@ function ZoneLoading:project()
         self:include(includes)
         Cryptography:include(includes)
 		Utils:include(includes)
+		lzx:include(includes)
 		zlib:include(includes)
 		ZoneCode:include(includes)
 

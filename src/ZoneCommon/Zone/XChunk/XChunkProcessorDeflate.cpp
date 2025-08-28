@@ -6,7 +6,7 @@
 #include <zlib.h>
 #include <zutil.h>
 
-size_t XChunkProcessorDeflate::Process(int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
+size_t XChunkProcessorDeflate::Process(unsigned streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
 {
     z_stream stream{};
     stream.zalloc = Z_NULL;
