@@ -16,7 +16,7 @@ Precalculated, evenly sized BSPs are much more efficient and smaller compared to
 #include <sstream>
 #include <vector>
 
-#define MAX_AABB_SIZE 512 // maximum size an AABB tree can be before it becomes a node
+#include "CustomMapConsts.h"
 
 enum PlaneAxis
 {

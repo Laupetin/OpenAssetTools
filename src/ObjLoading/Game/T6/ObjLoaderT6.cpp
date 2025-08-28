@@ -16,6 +16,7 @@
 #include "Image/Dx12TextureLoader.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/LoaderImageT6.h"
 #include "Image/Texture.h"
 #include "Leaderboard/JsonLoaderLeaderboardT6.h"
 #include "Localize/LocalizeLoaderT6.h"
@@ -377,7 +378,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepFxTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
-            //collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
+            // collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
         }
 
         void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
@@ -395,6 +396,7 @@ namespace T6
             collection.AddAssetCreator(CreateTechniqueSetLoader(memory, searchPath));
             collection.AddAssetCreator(image::CreateLoaderEmbeddedT6(memory, searchPath));
             collection.AddAssetCreator(image::CreateLoaderExternalT6(memory, searchPath));
+            collection.AddAssetCreator(image::CreateLoadDefLoaderT6(memory, searchPath));
             collection.AddAssetCreator(sound::CreateSoundBankLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));

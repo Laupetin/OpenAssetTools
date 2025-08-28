@@ -1,4 +1,5 @@
 // OBJ_Loader.h - A Single Header OBJ Model Loader
+// modified to work better with OpenAssetTools
 
 #pragma once
 
@@ -16,6 +17,8 @@
 
 // Math.h - STD math Library
 #include <math.h>
+
+#include "SearchPath/ISearchPath.h"
 
 // Print progress to console while loading (large models)
 // #define OBJL_CONSOLE_OUTPUT
@@ -432,15 +435,11 @@ namespace objl
         //
         // If the file is unable to be found
         // or unable to be loaded return false
-        bool LoadFile(std::string Path)
+        bool LoadFile(ISearchPath& searchPath, std::string fileName)
         {
-            // If the file is not an .obj file return false
-            if (Path.substr(Path.size() - 4, 4) != ".obj")
-                return false;
+            auto file = searchPath.Open(fileName);
 
-            std::ifstream file(Path);
-
-            if (!file.is_open())
+            if (!file.IsOpen())
                 return false;
 
             LoadedMeshes.clear();
@@ -467,7 +466,7 @@ namespace objl
 #endif
 
             std::string curline;
-            while (std::getline(file, curline))
+            while (std::getline(*file.m_stream, curline))
             {
 #ifdef OBJL_CONSOLE_OUTPUT
                 if ((outputIndicator = ((outputIndicator + 1) % outputEveryNth)) == 1)
@@ -642,13 +641,13 @@ namespace objl
 
                     // Generate a path to the material file
                     std::vector<std::string> temp;
-                    algorithm::split(Path, temp, "\\"); // update: use windows file seperators
+                    algorithm::split(fileName, temp, "/"); // update: use windows file seperators
 
                     std::string pathtomat = "";
 
                     if (temp.size() != 1)
                     {
-                        for (int i = 0; i < temp.size() - 1; i++)
+                        for (size_t i = 0; i < temp.size() - 1; i++)
                         {
                             pathtomat += temp[i] + "/";
                         }
@@ -661,7 +660,7 @@ namespace objl
 #endif
 
                     // Load Materials
-                    LoadMaterials(pathtomat);
+                    LoadMaterials(searchPath, pathtomat);
                 }
             }
 
@@ -681,16 +680,14 @@ namespace objl
                 LoadedMeshes.push_back(tempMesh);
             }
 
-            file.close();
-
             // Set Materials for each Mesh
-            for (int i = 0; i < MeshMatNames.size(); i++)
+            for (size_t i = 0; i < MeshMatNames.size(); i++)
             {
                 std::string matname = MeshMatNames[i];
 
                 // Find corresponding material name in loaded materials
                 // when found copy material variables into mesh material
-                for (int j = 0; j < LoadedMaterials.size(); j++)
+                for (size_t j = 0; j < LoadedMaterials.size(); j++)
                 {
                     if (LoadedMaterials[j].name == matname)
                     {
@@ -941,7 +938,7 @@ namespace objl
                     }
 
                     // If Vertex is not an interior vertex
-                    float angle = math::AngleBetweenV3(pPrev.Position - pCur.Position, pNext.Position - pCur.Position) * (180 / 3.14159265359);
+                    float angle = math::AngleBetweenV3(pPrev.Position - pCur.Position, pNext.Position - pCur.Position) * (float)(180 / 3.14159265359);
                     if (angle <= 0 && angle >= 180)
                         continue;
 
@@ -996,16 +993,12 @@ namespace objl
         }
 
         // Load Materials from .mtl file
-        bool LoadMaterials(std::string path)
+        bool LoadMaterials(ISearchPath& searchPath, std::string fileName)
         {
-            // If the file is not a material file return false
-            if (path.substr(path.size() - 4, path.size()) != ".mtl")
-                return false;
-
-            std::ifstream file(path);
+            auto file = searchPath.Open(fileName);
 
             // If the file is not found return false
-            if (!file.is_open())
+            if (!file.IsOpen())
                 return false;
 
             Material tempMaterial;
@@ -1014,7 +1007,7 @@ namespace objl
 
             // Go through each line looking for material variables
             std::string curline;
-            while (std::getline(file, curline))
+            while (std::getline(*file.m_stream, curline))
             {
                 // new material and material name
                 if (algorithm::firstToken(curline) == "newmtl")
