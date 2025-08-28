@@ -189,7 +189,7 @@ namespace
         if (isLzxCompressed)
         {
             // Decompress the chunks using lzx
-            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>());
+            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>(ZoneConstants::STREAM_COUNT));
         }
         else
         {

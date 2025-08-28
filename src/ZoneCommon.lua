@@ -20,6 +20,7 @@ function ZoneCommon:link(links)
 	links:linkto(ObjCommon)
 	links:linkto(Parser)
 	links:linkto(Utils)
+	links:linkto(lzx)
 end
 
 function ZoneCommon:use()
@@ -45,5 +46,6 @@ function ZoneCommon:project()
 			path.join(folder, "ZoneCommon/**.cpp") 
 		}
 		
+		lzx:include(includes)
         self:include(includes)
 end
