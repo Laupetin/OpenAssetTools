@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 
 #include "Game/T6/T6.h"
 using namespace T6;
@@ -72,5 +73,51 @@ public:
     static int allignBy128(int size)
     {
         return ((size + 127) & 0xFFFFFF80);
+    }
+
+    static float distBetweenPoints(vec3_t p1, vec3_t p2)
+    {
+        float x = p2.x - p1.x;
+        float y = p2.y - p1.y;
+        float z = p2.z - p1.z;
+        return sqrtf((x * x) + (y * y) + (z * z));
+    }
+
+    // angles are in euler degrees
+    static void convertAnglesToAxis(vec3_t* angles, vec3_t* axis)
+    {
+        float xRadians = angles->x * 0.017453292; // M_PI / 180.0f
+        float yRadians = angles->y * 0.017453292; // M_PI / 180.0f
+        float zRadians = angles->z * 0.017453292; // M_PI / 180.0f
+        
+        float cosX = cos(xRadians);
+        float sinX = sin(xRadians);
+        float cosY = cos(yRadians);
+        float sinY = sin(yRadians);
+        float cosZ = cos(zRadians);
+        float sinZ = sin(zRadians);
+        
+        axis[0].x = cosX * cosY;
+        axis[0].y = cosX * sinY;
+        axis[0].z = -sinX;
+        axis[1].x = (sinZ * sinX * cosY) - (cosZ * sinY);
+        axis[1].y = (sinZ * sinX * sinY) + (cosZ * cosY);
+        axis[1].z = sinZ * cosX;
+        axis[2].x = (cosZ * sinX * cosY) + (sinZ * sinY);
+        axis[2].y = (cosZ * sinX * sinY) - (sinZ * cosY);
+        axis[2].z = cosZ * cosX;
+    }
+
+    static void matrixTranspose3x3(const vec3_t* in, vec3_t* out)
+    {
+        out[0].x = in[0].x;
+        out[0].y = in[1].x;
+        out[0].z = in[2].x;
+        out[1].x = in[0].y;
+        out[1].y = in[1].y;
+        out[1].z = in[2].y;
+        out[2].x = in[0].z;
+        out[2].y = in[1].z;
+        out[2].z = in[2].z;
     }
 };

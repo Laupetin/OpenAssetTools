@@ -158,7 +158,6 @@ namespace T6
 
         AUFT_NUM_FIELD_TYPES,
     };
-
     
     struct customMapVertex
     {
@@ -171,13 +170,27 @@ namespace T6
         unsigned int packedLmapCoord;
     };
 
+    enum CM_MATERIAL_TYPE
+    {
+        NO_COLOUR_OR_TEXTURE,
+        CM_MATERIAL_COLOUR,
+        CM_MATERIAL_TEXTURE
+    };
+
+    struct customMapMaterial
+    {
+        CM_MATERIAL_TYPE materialType;
+        const char* materialName;
+    };
+
     struct worldSurface
     {
         char flags;
-        char lightmapIndex;
-        std::string materialName;
-        char primaryLightIndex;
-        char reflectionProbeIndex;
+        customMapMaterial material;
+
+        //char lightmapIndex;
+        //char primaryLightIndex;
+        //char reflectionProbeIndex;
 
         int triCount;
         int firstVertexIndex;
@@ -196,12 +209,49 @@ namespace T6
         worldSurface* surfaces;
     };
 
+     struct customMapColVertex
+    {
+        vec3_t pos;
+    };
+
+    struct collisionSurface
+    {
+        int triCount;
+        int firstVertexIndex;
+        int firstIndex_Index;
+    };
+
+    struct customMapCol
+    {
+        int vertexCount;
+        customMapColVertex* vertices;
+
+        int indexCount;
+        uint16_t* indices;
+
+        int surfaceCount;
+        collisionSurface* surfaces;
+    };
+
+    struct customMapModel
+    {
+        std::string name;
+
+        vec3_t origin;
+        vec3_t rotation; // euler rotation in degrees
+        float scale;
+    };
+
     struct customMapInfo
     {
         std::string name;
         std::string bspName;
 
         customMapGfx gfxInfo;
+        customMapGfx colInfo;
+        
+        size_t modelCount;
+        customMapModel* models;
     };
 
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;

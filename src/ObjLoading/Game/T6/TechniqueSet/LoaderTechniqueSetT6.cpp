@@ -134,8 +134,8 @@ namespace
                                 printf("ERROR: Cant find pixel shader %s\n", psFileName.c_str());
                                 return AssetCreationResult::Failure();
                             }
-                            currPass->pixelShader->prog.loadDef.programSize = psFile.m_length;
-                            currPass->pixelShader->prog.loadDef.program = new char[psFile.m_length];
+                            currPass->pixelShader->prog.loadDef.programSize = (unsigned int)psFile.m_length;
+                            currPass->pixelShader->prog.loadDef.program = new char[(unsigned int)psFile.m_length];
                             psFile.m_stream->read(currPass->pixelShader->prog.loadDef.program, psFile.m_length);
                         }
 
@@ -158,8 +158,8 @@ namespace
                                 printf("ERROR: Cant find vertex shader %s\n", vsFileName.c_str());
                                 return AssetCreationResult::Failure();
                             }
-                            currPass->vertexShader->prog.loadDef.programSize = vsFile.m_length;
-                            currPass->vertexShader->prog.loadDef.program = new char[vsFile.m_length];
+                            currPass->vertexShader->prog.loadDef.programSize = (unsigned int)vsFile.m_length;
+                            currPass->vertexShader->prog.loadDef.program = new char[(unsigned int)vsFile.m_length];
                             vsFile.m_stream->read(currPass->vertexShader->prog.loadDef.program, vsFile.m_length);
                         }
                     }
