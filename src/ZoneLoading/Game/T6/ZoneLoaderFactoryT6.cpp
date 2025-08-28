@@ -172,8 +172,18 @@ namespace
         AddXChunkProcessor(const bool isBigEndian, const bool isEncrypted, const bool isLzxCompressed, ZoneLoader& zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        auto xChunkProcessor = processor::CreateProcessorXChunks(
-            ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, isBigEndian ? GameEndianness::BE : GameEndianness::LE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        std::unique_ptr<processor::IProcessorXChunks> xChunkProcessor;
+
+        if (isBigEndian)
+        {
+            xChunkProcessor = processor::CreateProcessorXChunks(
+                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::BE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        }
+        else
+        {
+            xChunkProcessor = processor::CreateProcessorXChunks(
+                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::LE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        }
 
         const uint8_t (&salsa20Key)[32] = isBigEndian ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
 
@@ -189,7 +199,7 @@ namespace
         if (isLzxCompressed)
         {
             // Decompress the chunks using lzx
-            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>());
+            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>(ZoneConstants::STREAM_COUNT));
         }
         else
         {

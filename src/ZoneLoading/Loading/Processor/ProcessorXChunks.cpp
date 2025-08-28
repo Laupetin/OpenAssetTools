@@ -223,18 +223,17 @@ namespace
             }
 
             const size_t readSize = m_base_stream->Load(&chunkSize, sizeof(chunkSize));
+            if (m_endianness == GameEndianness::LE)
+                chunkSize = endianness::FromLittleEndian(chunkSize);
+            else
+                chunkSize = endianness::FromBigEndian(chunkSize);
 
-            if (readSize == 0)
+            if (readSize < sizeof(chunkSize) || chunkSize == 0)
             {
                 m_eof_reached = true;
                 m_eof_stream = streamNum;
                 return;
             }
-
-            if (m_endianness == GameEndianness::LE)
-                chunkSize = endianness::FromLittleEndian(chunkSize);
-            else
-                chunkSize = endianness::FromBigEndian(chunkSize);
 
             if (chunkSize > m_chunk_size)
             {
