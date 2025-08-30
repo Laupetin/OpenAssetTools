@@ -15,6 +15,8 @@
 #include <thread>
 #include <vector>
 
+#define XCHUNK_ASYNC 1
+
 namespace
 {
     class DbLoadStream
@@ -44,17 +46,24 @@ namespace
         {
             if (inputSize > 0)
             {
+#ifdef XCHUNK_ASYNC
                 std::unique_lock lock(m_load_mutex);
 
                 if (m_is_loading)
                 {
                     m_loading_finished.wait(lock);
                 }
+#endif
 
                 m_input_size = inputSize;
                 m_is_loading = true;
+
+#ifdef XCHUNK_ASYNC
                 m_load_thread = std::thread(&DbLoadStream::Load, this);
                 m_load_thread.detach();
+#else
+                Load();
+#endif
             }
             else
             {
@@ -80,7 +89,9 @@ namespace
     private:
         void Load()
         {
+#ifdef XCHUNK_ASYNC
             std::lock_guard lock(m_load_mutex);
+#endif
 
             bool firstProcessor = true;
 
@@ -102,7 +113,10 @@ namespace
             }
 
             m_is_loading = false;
+
+#ifdef XCHUNK_ASYNC
             m_loading_finished.notify_all();
+#endif
         }
 
         int m_index;
