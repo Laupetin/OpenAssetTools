@@ -20,7 +20,7 @@ namespace
     {
     public:
         TestContext()
-            : m_zone("test", 0, IGame::GetGameById(GameId::T6)),
+            : m_zone("test", 0, GameId::T6),
               m_zone_states(m_zone),
               m_out_dir()
         {

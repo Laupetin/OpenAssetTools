@@ -4,6 +4,7 @@
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "Game/IW3/GameIW3.h"
 #include "ObjWriting.h"
+#include "Zone/ZoneRegistry.h"
 
 namespace IW3
 {
@@ -199,7 +200,7 @@ namespace IW3
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : IGame::GetGameById(GameId::IW3)->GetZones())
+        for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::IW3)->Zones())
         {
             const auto* assetPools = dynamic_cast<const GameAssetPoolIW3*>(zone->m_pools.get());
             if (!assetPools)

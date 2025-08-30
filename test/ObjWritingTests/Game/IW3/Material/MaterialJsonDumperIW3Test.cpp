@@ -551,7 +551,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW3));
+        Zone zone("MockZone", 0, GameId::IW3);
 
         MemoryManager memory;
         MockSearchPath mockObjPath;
