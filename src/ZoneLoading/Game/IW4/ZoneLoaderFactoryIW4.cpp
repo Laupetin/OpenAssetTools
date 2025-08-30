@@ -175,7 +175,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, IGame::GetGameById(GameId::IW4));
+    auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW4);
     auto* zonePtr = zone.get();
     zone->m_pools = std::make_unique<GameAssetPoolIW4>(zonePtr, 0);
     zone->m_language = GameLanguage::LANGUAGE_NONE;

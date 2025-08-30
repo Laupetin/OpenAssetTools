@@ -10,7 +10,7 @@ bool ZoneWriting::WriteZone(std::ostream& stream, const Zone& zone)
 {
     const auto start = std::chrono::high_resolution_clock::now();
 
-    const auto factory = IZoneWriterFactory::GetZoneWriterFactoryForGame(zone.m_game->GetId());
+    const auto factory = IZoneWriterFactory::GetZoneWriterFactoryForGame(zone.m_game_id);
 
     const auto zoneWriter = factory->CreateWriter(zone);
     if (zoneWriter == nullptr)

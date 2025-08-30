@@ -20,7 +20,7 @@ namespace
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW4));
+        Zone zone("MockZone", 0, GameId::IW4);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

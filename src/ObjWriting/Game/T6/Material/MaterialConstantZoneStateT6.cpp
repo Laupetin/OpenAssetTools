@@ -4,6 +4,7 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "ObjWriting.h"
+#include "Zone/ZoneRegistry.h"
 
 namespace T6
 {
@@ -473,7 +474,7 @@ namespace T6
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : IGame::GetGameById(GameId::T6)->GetZones())
+        for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
         {
             const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
             if (!t6AssetPools)

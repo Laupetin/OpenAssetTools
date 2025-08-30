@@ -9,12 +9,6 @@ namespace IW3
         [[nodiscard]] GameId GetId() const override;
         [[nodiscard]] const std::string& GetFullName() const override;
         [[nodiscard]] const std::string& GetShortName() const override;
-        void AddZone(Zone* zone) override;
-        void RemoveZone(Zone* zone) override;
-        [[nodiscard]] const std::vector<Zone*>& GetZones() const override;
         [[nodiscard]] const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const override;
-
-    private:
-        std::vector<Zone*> m_zones;
     };
 } // namespace IW3

@@ -10,20 +10,12 @@
 #include <memory>
 #include <string>
 
-class IGame;
 class ZoneAssetPools;
 
 class Zone
 {
 public:
-    std::string m_name;
-    zone_priority_t m_priority;
-    GameLanguage m_language;
-    IGame* m_game;
-    ZoneScriptStrings m_script_strings;
-    std::unique_ptr<ZoneAssetPools> m_pools;
-
-    Zone(std::string name, zone_priority_t priority, IGame* game);
+    Zone(std::string name, zone_priority_t priority, GameId gameId);
     ~Zone();
     Zone(const Zone& other) = delete;
     Zone(Zone&& other) noexcept = default;
@@ -33,6 +25,13 @@ public:
     void Register();
 
     [[nodiscard]] ZoneMemory& Memory() const;
+
+    std::string m_name;
+    zone_priority_t m_priority;
+    GameLanguage m_language;
+    GameId m_game_id;
+    ZoneScriptStrings m_script_strings;
+    std::unique_ptr<ZoneAssetPools> m_pools;
 
 private:
     std::unique_ptr<ZoneMemory> m_memory;

@@ -4,6 +4,7 @@
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "ObjWriting.h"
+#include "Zone/ZoneRegistry.h"
 
 namespace IW5
 {
@@ -199,7 +200,7 @@ namespace IW5
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : IGame::GetGameById(GameId::IW5)->GetZones())
+        for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::IW5)->Zones())
         {
             const auto* iw5AssetPools = dynamic_cast<const GameAssetPoolIW5*>(zone->m_pools.get());
             if (!iw5AssetPools)
