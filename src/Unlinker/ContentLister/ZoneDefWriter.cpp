@@ -28,9 +28,10 @@ const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
 void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const UnlinkerArgs& args, const Zone& zone) const
 {
     ZoneDefinitionOutputStream out(stream);
+    const auto* game = IGame::GetGameById(zone.m_game_id);
 
-    out.WriteComment(zone.m_game->GetFullName());
-    out.WriteMetaData(META_DATA_KEY_GAME, zone.m_game->GetShortName());
+    out.WriteComment(game->GetFullName());
+    out.WriteMetaData(META_DATA_KEY_GAME, game->GetShortName());
     out.EmptyLine();
 
     if (args.m_use_gdt)

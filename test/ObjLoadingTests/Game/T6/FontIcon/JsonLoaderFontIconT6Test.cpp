@@ -79,7 +79,7 @@ namespace
     ]
 })FONT_ICON");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::T6));
+        Zone zone("MockZone", 0, GameId::T6);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

@@ -301,7 +301,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW5));
+        Zone zone("MockZone", 0, GameId::IW5);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

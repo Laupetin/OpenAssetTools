@@ -30,7 +30,7 @@ namespace test::game::iw4::menu::parsing::it
 
     public:
         MenuParsingItHelper()
-            : m_zone("MockZone", 0, IGame::GetGameById(GameId::IW4)),
+            : m_zone("MockZone", 0, GameId::IW4),
               m_creator_collection(m_zone),
               m_ignored_asset_lookup(),
               m_context(m_zone, &m_creator_collection, &m_ignored_asset_lookup)

@@ -71,7 +71,7 @@ private:
             return false;
         }
 
-        const auto* zoneDefWriter = IZoneDefWriter::GetZoneDefWriterForGame(zone.m_game->GetId());
+        const auto* zoneDefWriter = IZoneDefWriter::GetZoneDefWriterForGame(zone.m_game_id);
         zoneDefWriter->WriteZoneDef(zoneDefinitionFile, m_args, zone);
 
         zoneDefinitionFile.close();
@@ -186,13 +186,16 @@ private:
                     return false;
                 auto gdt = std::make_unique<GdtOutputStream>(gdtStream);
                 gdt->BeginStream();
-                gdt->WriteVersion(GdtVersion(zone.m_game->GetShortName(), 1));
+
+                const auto* game = IGame::GetGameById(zone.m_game_id);
+                gdt->WriteVersion(GdtVersion(game->GetShortName(), 1));
+
                 context.m_gdt = std::move(gdt);
             }
 
             UpdateAssetIncludesAndExcludes(context);
 
-            const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game->GetId());
+            const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game_id);
 
             auto result = objWriter->DumpZone(context);
 
@@ -237,7 +240,7 @@ private:
 
             if (ShouldLoadObj())
             {
-                const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
                 objLoader->LoadReferencedContainersForZone(*searchPathsForZone, *zone);
             }
 
@@ -258,7 +261,7 @@ private:
 
             if (ShouldLoadObj())
             {
-                const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->m_game->GetId());
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->m_game_id);
                 objLoader->UnloadContainersOfZone(*loadedZone);
             }
 
@@ -299,7 +302,7 @@ private:
             if (m_args.m_verbose)
                 std::cout << std::format("Loaded zone \"{}\"\n", zoneName);
 
-            const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
+            const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
             if (ShouldLoadObj())
                 objLoader->LoadReferencedContainersForZone(*searchPathsForZone, *zone);
 
