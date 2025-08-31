@@ -11,7 +11,8 @@ ContentPrinter::ContentPrinter(const Zone& zone)
 void ContentPrinter::PrintContent() const
 {
     const auto* pools = m_zone.m_pools.get();
-    std::cout << std::format("Zone '{}' ({})\n", m_zone.m_name, m_zone.m_game->GetShortName());
+    const auto* game = IGame::GetGameById(m_zone.m_game_id);
+    std::cout << std::format("Zone '{}' ({})\n", m_zone.m_name, game->GetShortName());
     std::cout << "Content:\n";
 
     for (const auto& asset : *pools)

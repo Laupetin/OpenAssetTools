@@ -7,13 +7,14 @@
 #include "Game/T6/SoundConstantsT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
-#include "nlohmann/json.hpp"
+#include "Zone/ZoneRegistry.h"
 
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
 
@@ -201,7 +202,7 @@ namespace
     public:
         void Initialize()
         {
-            for (const auto& zone : IGame::GetGameById(GameId::T6)->GetZones())
+            for (const auto& zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
             {
                 auto& sndBankPool = *dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get())->m_sound_bank;
                 for (auto* entry : sndBankPool)

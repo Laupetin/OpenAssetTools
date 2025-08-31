@@ -65,7 +65,7 @@ std::unique_ptr<XAssetInfoGeneric> GenericAssetRegistration::CreateXAssetInfo()
 AssetCreationContext::AssetCreationContext(Zone& zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup)
     : ZoneAssetCreationStateContainer(zone),
       m_zone(zone),
-      m_forced_asset_pools(ZoneAssetPools::CreateForGame(zone.m_game->GetId(), &zone, zone.m_priority)),
+      m_forced_asset_pools(ZoneAssetPools::CreateForGame(zone.m_game_id, &zone, zone.m_priority)),
       m_creators(creators),
       m_ignored_asset_lookup(ignoredAssetLookup),
       m_forced_load_depth(0u)
