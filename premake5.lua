@@ -95,6 +95,7 @@ include "thirdparty/catch2.lua"
 include "thirdparty/eigen.lua"
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
+include "thirdparty/lzx.lua"
 include "thirdparty/json.lua"
 include "thirdparty/minilzo.lua"
 include "thirdparty/minizip.lua"
@@ -108,6 +109,7 @@ group "ThirdParty"
     eigen:project()
     libtommath:project()
     libtomcrypt:project()
+    lzx:project()
     json:project()
     minilzo:project()
     minizip:project()

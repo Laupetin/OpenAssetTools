@@ -7,17 +7,18 @@ namespace
     class StepDumpData final : public ILoadingStep
     {
     public:
-        explicit StepDumpData(const size_t dumpCount)
-            : m_dump_count(dumpCount)
+        StepDumpData(std::string fileName, const size_t dumpCount)
+            : m_file_name(std::move(fileName)),
+              m_dump_count(dumpCount)
         {
         }
 
         void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
         {
-            uint8_t tempBuffer[128];
+            uint8_t tempBuffer[0x1000];
             auto dumpedBytes = 0uz;
 
-            std::ofstream tempFile("dump.dat", std::fstream::out | std::fstream::binary);
+            std::ofstream tempFile(m_file_name, std::fstream::out | std::fstream::binary);
 
             while (dumpedBytes < m_dump_count)
             {
@@ -45,14 +46,15 @@ namespace
         }
 
     private:
+        std::string m_file_name;
         size_t m_dump_count;
     };
 } // namespace
 
 namespace step
 {
-    std::unique_ptr<ILoadingStep> CreateStepDumpData(size_t dumpCount)
+    std::unique_ptr<ILoadingStep> CreateStepDumpData(std::string fileName, size_t dumpCount)
     {
-        return std::make_unique<StepDumpData>(dumpCount);
+        return std::make_unique<StepDumpData>(std::move(fileName), dumpCount);
     }
 } // namespace step

@@ -16,6 +16,22 @@ enum class GameId
     COUNT
 };
 
+// The full uppercase names are macros in the standard lib
+// So unfortunately not usable as values in the enum
+enum class GameEndianness
+{
+    /* Little endian */
+    LE,
+    /* Big endian */
+    BE
+};
+
+enum class GameWordSize
+{
+    ARCH_32,
+    ARCH_64
+};
+
 static constexpr const char* GameId_Names[]{
     "IW3",
     "IW4",

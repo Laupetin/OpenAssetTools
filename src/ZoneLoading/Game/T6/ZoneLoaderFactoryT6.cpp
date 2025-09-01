@@ -9,6 +9,7 @@
 #include "Loading/Processor/ProcessorXChunks.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
+#include "Loading/Steps/StepDumpData.h"
 #include "Loading/Steps/StepLoadSignature.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadZoneSizes.h"
@@ -16,16 +17,21 @@
 #include "Loading/Steps/StepVerifyFileName.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
-#include "Utils/ClassUtils.h"
+#include "Utils/Endianness.h"
 #include "Zone/XChunk/XChunkProcessorInflate.h"
+#include "Zone/XChunk/XChunkProcessorLzxDecompress.h"
 #include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
 
 #include <cassert>
+#include <cstdio>
 #include <cstring>
+#include <filesystem>
+#include <format>
 #include <iostream>
 #include <memory>
 
 using namespace T6;
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -44,46 +50,63 @@ namespace
         return GameLanguage::LANGUAGE_NONE;
     }
 
-    bool CanLoad(const ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isEncrypted)
+    bool CanLoad(const ZoneHeader& header, bool& isBigEndian, bool& isSecure, bool& isOfficial, bool& isEncrypted, bool& isLzxCompressed)
     {
-        assert(isSecure != nullptr);
-        assert(isOfficial != nullptr);
-
-        if (header.m_version != ZoneConstants::ZONE_VERSION)
+        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
         {
-            return false;
+            isBigEndian = false;
+            isLzxCompressed = false;
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
+            {
+                isSecure = true;
+                isOfficial = true;
+                isEncrypted = true;
+                return true;
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, 8))
+            {
+                isSecure = true;
+                isOfficial = false;
+                isEncrypted = true;
+                return true;
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
+            {
+                isSecure = false;
+                isOfficial = true;
+                isEncrypted = true;
+                return true;
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
+            {
+                isSecure = false;
+                isOfficial = true;
+                isEncrypted = false;
+                return true;
+            }
         }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
+        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON)
         {
-            *isSecure = true;
-            *isOfficial = true;
-            *isEncrypted = true;
-            return true;
-        }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, 8))
-        {
-            *isSecure = true;
-            *isOfficial = false;
-            *isEncrypted = true;
-            return true;
-        }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
-        {
-            *isSecure = false;
-            *isOfficial = true;
-            *isEncrypted = true;
-            return true;
-        }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
-        {
-            *isSecure = false;
-            *isOfficial = true;
-            *isEncrypted = false;
-            return true;
+            isBigEndian = true;
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
+            {
+                isSecure = true;
+                isOfficial = true;
+                isEncrypted = true;
+                isLzxCompressed = false;
+                return true;
+            }
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_LZX_TREYARCH, 8))
+            {
+                isSecure = true;
+                isOfficial = true;
+                isEncrypted = true;
+                isLzxCompressed = true;
+                return true;
+            }
         }
 
         return false;
@@ -145,22 +168,45 @@ namespace
         return signatureLoadStepPtr;
     }
 
-    ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted, ZoneLoader& zoneLoader, std::string& fileName)
+    ICapturedDataProvider*
+        AddXChunkProcessor(const bool isBigEndian, const bool isEncrypted, const bool isLzxCompressed, ZoneLoader& zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        auto xChunkProcessor = processor::CreateProcessorXChunks(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        std::unique_ptr<processor::IProcessorXChunks> xChunkProcessor;
+
+        if (isBigEndian)
+        {
+            xChunkProcessor = processor::CreateProcessorXChunks(
+                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::BE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        }
+        else
+        {
+            xChunkProcessor = processor::CreateProcessorXChunks(
+                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::LE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        }
+
+        const uint8_t (&salsa20Key)[32] = isBigEndian ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
 
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Decryption>(
-                ZoneConstants::STREAM_COUNT, fileName, ZoneConstants::SALSA20_KEY_TREYARCH, sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
+            auto chunkProcessorSalsa20 =
+                std::make_unique<XChunkProcessorSalsa20Decryption>(ZoneConstants::STREAM_COUNT, fileName, salsa20Key, sizeof(salsa20Key));
             result = chunkProcessorSalsa20.get();
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
-        // Decompress the chunks using zlib
-        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorInflate>());
+        if (isLzxCompressed)
+        {
+            // Decompress the chunks using lzx
+            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>(ZoneConstants::STREAM_COUNT));
+        }
+        else
+        {
+            // Decompress the chunks using zlib
+            xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorInflate>());
+        }
+
         zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
@@ -170,12 +216,10 @@ namespace
 
 std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const
 {
-    bool isSecure;
-    bool isOfficial;
-    bool isEncrypted;
+    bool isBigEndian, isSecure, isOfficial, isEncrypted, isLzxCompressed;
 
     // Check if this file is a supported T6 zone.
-    if (!CanLoad(header, &isSecure, &isOfficial, &isEncrypted))
+    if (!CanLoad(header, isBigEndian, isSecure, isOfficial, isEncrypted, isLzxCompressed))
         return nullptr;
 
     // Create new zone
@@ -196,26 +240,37 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, *zoneLoader, fileName);
 
     // Setup loading XChunks from the zone from this point on.
-    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, *zoneLoader, fileName);
+    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isBigEndian, isEncrypted, isLzxCompressed, *zoneLoader, fileName);
 
-    // Start of the XFile struct
-    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
-
-    // Start of the zone content
-    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
-        [zonePtr](ZoneInputStream& stream)
-        {
-            return std::make_unique<ContentLoader>(*zonePtr, stream);
-        },
-        32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
-        ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory()));
-
-    if (isSecure)
+    if (!isBigEndian)
     {
-        zoneLoader->AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), signatureProvider, signatureDataProvider));
+        // Start of the XFile struct
+        zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+
+        // Start of the zone content
+        zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
+            [zonePtr](ZoneInputStream& stream)
+            {
+                return std::make_unique<ContentLoader>(*zonePtr, stream);
+            },
+            32u,
+            ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+            ZoneConstants::INSERT_BLOCK,
+            zonePtr->Memory()));
+
+        if (isSecure)
+        {
+            zoneLoader->AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), signatureProvider, signatureDataProvider));
+        }
+    }
+    else
+    {
+        fs::path dumpFileNamePath = fs::path(fileName).filename();
+        dumpFileNamePath.replace_extension(".dat");
+        std::string dumpFileName = dumpFileNamePath.string();
+        std::cerr << std::format("Dumping xbox assets is not supported, making a full fastfile data dump to {}\n", dumpFileName);
+        zoneLoader->AddLoadingStep(step::CreateStepDumpData(dumpFileName, 0xFFFFFFFF));
     }
 
     return zoneLoader;
