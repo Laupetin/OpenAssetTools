@@ -19,6 +19,13 @@ namespace gltf
         Loader& operator=(const Loader& other) = default;
         Loader& operator=(Loader&& other) noexcept = default;
 
-        static std::unique_ptr<Loader> CreateLoader(const Input* input);
+        /**
+         * \brief Creates a loader capable of loading gltf-like files
+         * \param input The gltf input
+         * \param useBadRotationFormulas Old versions used bad formulas for converting into gltf space. Set to \c true to use them for loading to preserve
+         * backwards compatibility.
+         * \return
+         */
+        static std::unique_ptr<Loader> CreateLoader(const Input& input, bool useBadRotationFormulas);
     };
 } // namespace gltf

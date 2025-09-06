@@ -54,4 +54,5 @@ function ObjCommon:project()
 		
         self:include(includes)
 		Utils:include(includes)
+		eigen:include(includes)
 end

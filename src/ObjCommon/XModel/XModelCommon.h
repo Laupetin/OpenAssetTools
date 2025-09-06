@@ -111,6 +111,8 @@ struct XModelCommon
     std::vector<XModelVertex> m_vertices;
     std::vector<XModelVertexBoneWeights> m_vertex_bone_weights;
     XModelVertexBoneWeightCollection m_bone_weight_data;
+
+    void CalculateBoneLocalsFromGlobals();
 };
 
 struct VertexMergerPos
