@@ -103,8 +103,12 @@ namespace
                     std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1 or 2\n", xmodel.name);
                     return false;
                 }
-
-                m_gltf_bad_rotation_formulas = version == 1u;
+                
+                if (version == 1u)
+                {
+                    m_gltf_bad_rotation_formulas = true;
+                    std::cerr << std::format("DEPRECATED: XModel {} is version 1 that made use of bad GLTF bone rotations.\n", xmodel.name);
+                }
 
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel, context, registration);
