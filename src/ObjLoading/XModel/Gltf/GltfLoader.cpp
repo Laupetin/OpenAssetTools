@@ -23,23 +23,24 @@ namespace
 {
     struct AccessorsForVertex
     {
-        unsigned positionAccessor;
-        std::optional<unsigned> normalAccessor;
-        std::optional<unsigned> colorAccessor;
-        std::optional<unsigned> uvAccessor;
-        std::optional<unsigned> jointsAccessor;
-        std::optional<unsigned> weightsAccessor;
-
         friend bool operator==(const AccessorsForVertex& lhs, const AccessorsForVertex& rhs)
         {
-            return lhs.positionAccessor == rhs.positionAccessor && lhs.normalAccessor == rhs.normalAccessor && lhs.colorAccessor == rhs.colorAccessor
-                   && lhs.uvAccessor == rhs.uvAccessor && lhs.jointsAccessor == rhs.jointsAccessor && lhs.weightsAccessor == rhs.weightsAccessor;
+            return lhs.m_position_accessor == rhs.m_position_accessor && lhs.m_normal_accessor == rhs.m_normal_accessor
+                   && lhs.m_color_accessor == rhs.m_color_accessor && lhs.m_uv_accessor == rhs.m_uv_accessor && lhs.m_joints_accessor == rhs.m_joints_accessor
+                   && lhs.m_weights_accessor == rhs.m_weights_accessor;
         }
 
         friend bool operator!=(const AccessorsForVertex& lhs, const AccessorsForVertex& rhs)
         {
             return !(lhs == rhs);
         }
+
+        unsigned m_position_accessor;
+        std::optional<unsigned> m_normal_accessor;
+        std::optional<unsigned> m_color_accessor;
+        std::optional<unsigned> m_uv_accessor;
+        std::optional<unsigned> m_joints_accessor;
+        std::optional<unsigned> m_weights_accessor;
     };
 
     void RhcToLhcCoordinates(float (&coords)[3])
@@ -81,19 +82,6 @@ namespace
         indices[1] = two[1];
         indices[2] = two[0];
     }
-
-    void RhcToLhcMatrix(Eigen::Matrix4f& matrix)
-    {
-        const Eigen::Matrix4f convertMatrix({
-            {1.0, 0.0, 0.0,  0.0},
-            {0.0, 0.0, -1.0, 0.0},
-            {0.0, 1.0, 0.0,  0.0},
-            {0.0, 0.0, 0.0,  1.0}
-        });
-
-        const auto result = convertMatrix * matrix;
-        matrix = result;
-    }
 } // namespace
 
 template<> struct std::hash<AccessorsForVertex>
@@ -101,12 +89,12 @@ template<> struct std::hash<AccessorsForVertex>
     std::size_t operator()(const AccessorsForVertex& v) const noexcept
     {
         std::size_t seed = 0x7E42C0E6;
-        seed ^= (seed << 6) + (seed >> 2) + 0x47B15429 + static_cast<std::size_t>(v.positionAccessor);
-        seed ^= (seed << 6) + (seed >> 2) + 0x66847B5C + std::hash<std::optional<unsigned>>()(v.normalAccessor);
-        seed ^= (seed << 6) + (seed >> 2) + 0x77399D60 + std::hash<std::optional<unsigned>>()(v.colorAccessor);
-        seed ^= (seed << 6) + (seed >> 2) + 0x477AF9AB + std::hash<std::optional<unsigned>>()(v.uvAccessor);
-        seed ^= (seed << 6) + (seed >> 2) + 0x4421B4D9 + std::hash<std::optional<unsigned>>()(v.jointsAccessor);
-        seed ^= (seed << 6) + (seed >> 2) + 0x13C2EBA1 + std::hash<std::optional<unsigned>>()(v.weightsAccessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x47B15429 + static_cast<std::size_t>(v.m_position_accessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x66847B5C + std::hash<std::optional<unsigned>>()(v.m_normal_accessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x77399D60 + std::hash<std::optional<unsigned>>()(v.m_color_accessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x477AF9AB + std::hash<std::optional<unsigned>>()(v.m_uv_accessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x4421B4D9 + std::hash<std::optional<unsigned>>()(v.m_joints_accessor);
+        seed ^= (seed << 6) + (seed >> 2) + 0x13C2EBA1 + std::hash<std::optional<unsigned>>()(v.m_weights_accessor);
         return seed;
     }
 };
@@ -137,14 +125,14 @@ namespace
 
     struct ObjectToLoad
     {
-        unsigned meshIndex;
-        std::optional<unsigned> skinIndex;
-
         ObjectToLoad(const unsigned meshIndex, const std::optional<unsigned> skinIndex)
-            : meshIndex(meshIndex),
-              skinIndex(skinIndex)
+            : m_mesh_index(meshIndex),
+              m_skin_index(skinIndex)
         {
         }
+
+        unsigned m_mesh_index;
+        std::optional<unsigned> m_skin_index;
     };
 
     class GltfLoaderImpl final : public Loader
@@ -197,7 +185,7 @@ namespace
                 return;
 
             std::deque<unsigned> nodeQueue;
-            std::vector<unsigned> rootNodes = GetRootNodes(jRoot);
+            const std::vector<unsigned> rootNodes = GetRootNodes(jRoot);
 
             for (const auto rootNode : rootNodes)
                 nodeQueue.emplace_back(rootNode);
@@ -258,9 +246,9 @@ namespace
         unsigned CreateVertices(XModelCommon& common, const AccessorsForVertex& accessorsForVertex)
         {
             // clang-format off
-            auto* positionAccessor = GetAccessorForIndex(
+            const auto* positionAccessor = GetAccessorForIndex(
                 "POSITION",
-                accessorsForVertex.positionAccessor, 
+                accessorsForVertex.m_position_accessor, 
                 {JsonAccessorType::VEC3}, 
                 {JsonAccessorComponentType::FLOAT}
             ).value_or(nullptr);
@@ -271,41 +259,41 @@ namespace
             OnesAccessor onesAccessor(vertexCount);
 
             // clang-format off
-            auto* normalAccessor = GetAccessorForIndex(
+            const auto* normalAccessor = GetAccessorForIndex(
                 "NORMAL",
-                accessorsForVertex.normalAccessor, 
+                accessorsForVertex.m_normal_accessor, 
                 {JsonAccessorType::VEC3}, 
                 {JsonAccessorComponentType::FLOAT}
             ).value_or(&nullAccessor);
             VerifyAccessorVertexCount("NORMAL", normalAccessor, vertexCount);
 
-            auto* uvAccessor = GetAccessorForIndex(
+            const auto* uvAccessor = GetAccessorForIndex(
                 "TEXCOORD_0",
-                accessorsForVertex.uvAccessor,
+                accessorsForVertex.m_uv_accessor,
                 {JsonAccessorType::VEC2},
                 {JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT}
             ).value_or(&nullAccessor);
             VerifyAccessorVertexCount("TEXCOORD_0", uvAccessor, vertexCount);
 
-            auto* colorAccessor = GetAccessorForIndex(
+            const auto* colorAccessor = GetAccessorForIndex(
                 "COLOR_0",
-                accessorsForVertex.colorAccessor,
+                accessorsForVertex.m_color_accessor,
                 {JsonAccessorType::VEC3, JsonAccessorType::VEC4},
                 {JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT}
             ).value_or(&onesAccessor);
             VerifyAccessorVertexCount("COLOR_0", colorAccessor, vertexCount);
 
-            auto* jointsAccessor = GetAccessorForIndex(
+            const auto* jointsAccessor = GetAccessorForIndex(
                 "JOINTS_0",
-                accessorsForVertex.jointsAccessor,
+                accessorsForVertex.m_joints_accessor,
                 {JsonAccessorType::VEC4},
                 {JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT}
             ).value_or(&nullAccessor);
             VerifyAccessorVertexCount("JOINTS_0", jointsAccessor, vertexCount);
 
-            auto* weightsAccessor = GetAccessorForIndex(
+            const auto* weightsAccessor = GetAccessorForIndex(
                 "WEIGHTS_0",
-                accessorsForVertex.weightsAccessor,
+                accessorsForVertex.m_weights_accessor,
                 {JsonAccessorType::VEC4},
                 {JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT}
             ).value_or(&nullAccessor);
@@ -363,13 +351,13 @@ namespace
             if (!primitives.attributes.POSITION)
                 throw GltfLoadException("Requires primitives attribute POSITION");
 
-            AccessorsForVertex accessorsForVertex{
-                .positionAccessor = *primitives.attributes.POSITION,
-                .normalAccessor = primitives.attributes.NORMAL,
-                .colorAccessor = primitives.attributes.COLOR_0,
-                .uvAccessor = primitives.attributes.TEXCOORD_0,
-                .jointsAccessor = primitives.attributes.JOINTS_0,
-                .weightsAccessor = primitives.attributes.WEIGHTS_0,
+            const AccessorsForVertex accessorsForVertex{
+                .m_position_accessor = *primitives.attributes.POSITION,
+                .m_normal_accessor = primitives.attributes.NORMAL,
+                .m_color_accessor = primitives.attributes.COLOR_0,
+                .m_uv_accessor = primitives.attributes.TEXCOORD_0,
+                .m_joints_accessor = primitives.attributes.JOINTS_0,
+                .m_weights_accessor = primitives.attributes.WEIGHTS_0,
             };
 
             const auto existingVertices = m_vertex_offset_for_accessors.find(accessorsForVertex);
@@ -630,26 +618,26 @@ namespace
 
             for (const auto& loadObject : m_load_objects)
             {
-                if (loadObject.skinIndex && jRoot.skins)
+                if (loadObject.m_skin_index && jRoot.skins)
                 {
                     if (alreadyLoadedSkinIndex)
                     {
-                        if (*alreadyLoadedSkinIndex != *loadObject.skinIndex)
+                        if (*alreadyLoadedSkinIndex != *loadObject.m_skin_index)
                             throw GltfLoadException("Only scenes with at most one skin are supported");
 
                         // Do not load already loaded skin
                     }
                     else
                     {
-                        const auto& skin = jRoot.skins.value()[*loadObject.skinIndex];
+                        const auto& skin = jRoot.skins.value()[*loadObject.m_skin_index];
                         if (!ConvertSkin(jRoot, skin, common))
                             return;
 
-                        alreadyLoadedSkinIndex = *loadObject.skinIndex;
+                        alreadyLoadedSkinIndex = *loadObject.m_skin_index;
                     }
                 }
 
-                const auto& mesh = jRoot.meshes.value()[loadObject.meshIndex];
+                const auto& mesh = jRoot.meshes.value()[loadObject.m_mesh_index];
 
                 common.m_objects.reserve(common.m_objects.size() + mesh.primitives.size());
                 for (const auto& primitives : mesh.primitives)
@@ -811,10 +799,12 @@ namespace
         std::vector<std::unique_ptr<Accessor>> m_accessors;
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
         std::vector<std::unique_ptr<Buffer>> m_buffers;
+
+        bool m_bad_rotation_formulas;
     };
 } // namespace
 
 std::unique_ptr<Loader> Loader::CreateLoader(const Input* input)
 {
-    return std::make_unique<GltfLoaderImpl>(input);
+    return std::make_unique<GltfLoaderImpl>(input, useBadRotationFormulas);
 }
