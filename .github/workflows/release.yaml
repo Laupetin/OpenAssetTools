@@ -9,6 +9,9 @@ jobs:
   build-release-linux:
     runs-on: ubuntu-latest
     container: ubuntu:24.04
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Install g++ and multilib
         run: |
@@ -33,7 +36,9 @@ jobs:
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: make -C build -j$(nproc) config=release_x86 all
+        run: |
+          make -C build -j$(nproc) config=release_x86 all
+          chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
