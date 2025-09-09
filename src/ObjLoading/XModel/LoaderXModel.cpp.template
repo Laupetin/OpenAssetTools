@@ -109,6 +109,10 @@ namespace
                     m_gltf_bad_rotation_formulas = true;
                     std::cerr << std::format("DEPRECATED: XModel {} is version 1 that made use of bad GLTF bone rotations.\n", xmodel.name);
                 }
+                else
+                {
+                    m_gltf_bad_rotation_formulas = false;
+                }
 
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel, context, registration);
