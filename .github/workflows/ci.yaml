@@ -15,6 +15,9 @@ jobs:
         build_arch: [x86, x64]
     runs-on: ubuntu-latest
     container: ubuntu:24.04
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Install g++ and multilib
         run: |
@@ -38,7 +41,9 @@ jobs:
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
+        run: |
+          make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
+          chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
