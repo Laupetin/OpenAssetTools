@@ -2,13 +2,17 @@ local BuildSubFolderFolder = "premake"
 local HeaderFileName = "GitVersion.h"
 
 function GetGitVersion()
+    if _OPTIONS["oat-version"] ~= "_" then
+        return _OPTIONS["oat-version"]
+    end
+
     result, errorCode = os.outputof("git describe --tags")
 
     if errorCode == 0 then
         return result
     end
 
-    return "Unknown"
+    return "dev"
 end
 
 function GetVersionHeaderFolder()

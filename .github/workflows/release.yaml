@@ -26,13 +26,12 @@ jobs:
         uses: actions/checkout@v5
         with:
           submodules: recursive
-          fetch-depth: 0
 
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh
+        run: ./generate.sh --oat-version=${{ github.ref_name }}
 
       - name: Build
         working-directory: ${{ github.workspace }}
@@ -62,7 +61,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.bat
+        run: ./generate.bat --oat-version=${{ github.ref_name }}
 
       - name: Build
         working-directory: ${{ github.workspace }}

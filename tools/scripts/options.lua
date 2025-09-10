@@ -1,4 +1,10 @@
 newoption {
+    trigger = "oat-version",
+    description = "Set the OAT version being compiled.",
+    value = "VERSION",
+    default = "_" -- An empty string is not recognized as a default
+}
+newoption {
     trigger = "debug-structureddatadef",
     description = "Activate additional debugging logic for StructuredDataDef assets"
 }
