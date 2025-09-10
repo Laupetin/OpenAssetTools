@@ -2,6 +2,7 @@
 
 #include "Exception/LoadingException.h"
 #include "LoadingFileStream.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -87,7 +88,7 @@ std::unique_ptr<Zone> ZoneLoader::LoadZone(std::istream& stream)
     }
     catch (LoadingException& e)
     {
-        std::cerr << std::format("Loading fastfile failed: {}\n", e.DetailedMessage());
+        con::error("Loading fastfile failed: {}", e.DetailedMessage());
 
         return nullptr;
     }

@@ -1,5 +1,7 @@
 #include "XChunkProcessorLzxDecompress.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <cstring>
 #include <format>
 #include <iostream>
@@ -22,7 +24,7 @@ namespace
 
     void LogErrorHeaderSpace(size_t remainingInputSize)
     {
-        std::cerr << std::format("XMemCompress: Not enough data for header: {}\n", remainingInputSize);
+        con::error("XMemCompress: Not enough data for header: {}", remainingInputSize);
     }
 } // namespace
 
@@ -99,19 +101,19 @@ size_t XChunkProcessorLzxDecompress::Process(
         if (srcSize == 0 || dstSize == 0)
         {
             // Other implementations do not handle this as a failure, game code suggests otherwise though
-            std::cerr << std::format("XMemCompress: EOF: {} {}, {}\n", srcSize, dstSize, curInputSize);
+            con::error("XMemCompress: EOF: {} {}, {}", srcSize, dstSize, curInputSize);
             return curOutputOffset;
         }
 
         if (static_cast<size_t>(srcSize) + suffixSize > curInputSize)
         {
-            std::cerr << std::format("XMemCompress: block size bigger than remaining data: {} > {}\n", srcSize, curInputSize);
+            con::error("XMemCompress: block size bigger than remaining data: {} > {}", srcSize, curInputSize);
             return curOutputOffset;
         }
 
         if (dstSize > curOutputSize)
         {
-            std::cerr << std::format("XMemCompress: output size bigger than remaining data: {} > {}\n", dstSize, curOutputSize);
+            con::error("XMemCompress: output size bigger than remaining data: {} > {}", dstSize, curOutputSize);
             return curOutputOffset;
         }
 
@@ -123,7 +125,7 @@ size_t XChunkProcessorLzxDecompress::Process(
 
         if (ret != DECR_OK)
         {
-            std::cerr << std::format("XMemCompress: lzx decompression failed: {}\n", ret);
+            con::error("XMemCompress: lzx decompression failed: {}", ret);
             return curOutputOffset;
         }
     }

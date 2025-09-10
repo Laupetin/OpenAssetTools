@@ -4,6 +4,7 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Matcher/StateMapExpressionMatchers.h"
 #include "Parsing/StateMapParser.h"
+#include "Utils/Logging/Log.h"
 
 #include <iostream>
 
@@ -22,13 +23,13 @@ bool StateMapReader::IsValidEndState(const StateMapParserState* state) const
 {
     if (state->m_current_rule)
     {
-        std::cerr << "In \"" << m_file_name << "\": Unclosed rule at end of file!\n";
+        con::error("In \"{}\": Unclosed rule at end of file!", m_file_name);
         return false;
     }
 
     if (state->m_in_entry)
     {
-        std::cerr << "In \"" << m_file_name << "\": Unclosed entry at end of file!\n";
+        con::error("In \"{}\": Unclosed entry at end of file!", m_file_name);
         return false;
     }
 
@@ -36,7 +37,7 @@ bool StateMapReader::IsValidEndState(const StateMapParserState* state) const
     {
         if (state->m_definition->m_state_map_entries[i].m_rules.empty())
         {
-            std::cerr << "In \"" << m_file_name << "\": State map must define a rule for \"" << state->m_layout.m_entry_layout.m_entries[i].m_name << "\"!\n";
+            con::error("In \"{}\": State map must define a rule for \"{}\"!", m_file_name, state->m_layout.m_entry_layout.m_entries[i].m_name);
             return false;
         }
     }
@@ -59,7 +60,7 @@ std::unique_ptr<StateMapDefinition> StateMapReader::ReadStateMapDefinition() con
     const auto success = parser->Parse();
     if (!success)
     {
-        std::cout << "Parsing state map file \"" << m_file_name << "\" failed!\n";
+        con::error("Parsing state map file \"{}\" failed!", m_file_name);
         return {};
     }
 

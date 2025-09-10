@@ -6,6 +6,7 @@
 #include "Parsing/Impl/ParserMultiInputStream.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -54,7 +55,7 @@ std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::R
     if (success)
         return parser->GetDefs();
 
-    std::cerr << std::format("Parsing structured data def file \"{}\" failed!\n", m_file_name);
+    con::error("Parsing structured data def file \"{}\" failed!", m_file_name);
 
     return {};
 }

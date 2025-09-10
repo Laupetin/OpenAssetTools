@@ -4,6 +4,7 @@
 #include "Image/DdsLoader.h"
 #include "Image/IwiTypes.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cstring>
@@ -40,7 +41,7 @@ namespace
             const auto texture = dds::LoadDds(*file.m_stream);
             if (!texture)
             {
-                std::cerr << std::format("Failed to load dds file for image asset \"{}\"\n", assetName);
+                con::error("Failed to load dds file for image asset \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

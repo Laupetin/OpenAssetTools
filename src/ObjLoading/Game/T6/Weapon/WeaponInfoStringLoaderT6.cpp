@@ -5,6 +5,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Weapon/WeaponFields.h"
 #include "Game/T6/Weapon/WeaponStrings.h"
+#include "Utils/Logging/Log.h"
 #include "Weapon/AccuracyGraphLoader.h"
 
 #include <cassert>
@@ -126,13 +127,13 @@ namespace
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse hide tags as array\n";
+                con::error("Failed to parse hide tags as array");
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cerr << std::format("Cannot have more than {} hide tags!\n", std::extent_v<decltype(WeaponFullDef::hideTags)>);
+                con::error("Cannot have more than {} hide tags!", std::extent_v<decltype(WeaponFullDef::hideTags)>);
                 return false;
             }
 
@@ -183,13 +184,13 @@ namespace
             std::vector<std::array<std::string, 2>> pairs;
             if (!ParseAsArray(value, pairs))
             {
-                std::cerr << "Failed to parse notetracksoundmap as pairs\n";
+                con::error("Failed to parse notetracksoundmap as pairs");
                 return false;
             }
 
             if (pairs.size() > std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!\n";
+                con::error("Cannot have more than {} notetracksoundmap entries!", std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
                 return false;
             }
 
@@ -239,7 +240,7 @@ namespace
 
             if (camo == nullptr)
             {
-                std::cerr << std::format("Failed to load camo asset \"{}\"\n", value);
+                con::error("Failed to load camo asset \"{}\"", value);
                 return false;
             }
 
@@ -254,7 +255,7 @@ namespace
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse attachments as array\n";
+                con::error("Failed to parse attachments as array");
                 return false;
             }
 
@@ -265,7 +266,7 @@ namespace
                 auto* attachmentAssetInfo = m_context.ForceLoadDependency<AssetAttachment>(attachmentName);
                 if (attachmentAssetInfo == nullptr)
                 {
-                    std::cerr << std::format("Failed to load attachment asset \"{}\"\n", attachmentName);
+                    con::error("Failed to load attachment asset \"{}\"", attachmentName);
                     return false;
                 }
 
@@ -273,17 +274,17 @@ namespace
 
                 if (static_cast<unsigned>(attachmentAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                 {
-                    std::cerr << std::format(
-                        "Invalid attachment type {} for attachment asset \"{}\"\n", static_cast<unsigned>(attachmentAsset->attachmentType), attachmentName);
+                    con::error(
+                        "Invalid attachment type {} for attachment asset \"{}\"", static_cast<unsigned>(attachmentAsset->attachmentType), attachmentName);
                     return false;
                 }
 
                 if (attachments[attachmentAsset->attachmentType] != nullptr)
                 {
-                    std::cerr << std::format("Already loaded attachment with same type {}: \"{}\", \"{}\"\n",
-                                             static_cast<unsigned>(attachmentAsset->attachmentType),
-                                             attachments[attachmentAsset->attachmentType]->szInternalName,
-                                             attachmentName);
+                    con::error("Already loaded attachment with same type {}: \"{}\", \"{}\"",
+                               static_cast<unsigned>(attachmentAsset->attachmentType),
+                               attachments[attachmentAsset->attachmentType]->szInternalName,
+                               attachmentName);
                     return false;
                 }
 
@@ -305,7 +306,7 @@ namespace
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse attachment uniques as array\n";
+                con::error("Failed to parse attachment uniques as array");
                 return false;
             }
 
@@ -317,7 +318,7 @@ namespace
                 auto* attachmentUniqueAssetInfo = m_context.ForceLoadDependency<AssetAttachmentUnique>(attachmentUniqueName);
                 if (attachmentUniqueAssetInfo == nullptr)
                 {
-                    std::cerr << std::format("Failed to load attachment unique asset \"{}\"\n", attachmentUniqueName);
+                    con::error("Failed to load attachment unique asset \"{}\"", attachmentUniqueName);
                     return false;
                 }
 
@@ -327,9 +328,8 @@ namespace
                 {
                     if (attachmentCombinationIndex >= std::extent_v<decltype(WeaponFullDef::attachmentUniques)>)
                     {
-                        std::cerr << std::format(
-                            "Cannot have more than {} combined attachment attachment unique entries!\n",
-                            (std::extent_v<decltype(WeaponFullDef::attachmentUniques)> - std::extent_v<decltype(WeaponFullDef::attachments)>));
+                        con::error("Cannot have more than {} combined attachment attachment unique entries!",
+                                   (std::extent_v<decltype(WeaponFullDef::attachmentUniques)> - std::extent_v<decltype(WeaponFullDef::attachments)>));
                         return false;
                     }
 
@@ -340,18 +340,18 @@ namespace
                 {
                     if (static_cast<unsigned>(attachmentUniqueAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                     {
-                        std::cerr << std::format("Invalid attachment type {} for attachment unique asset \"{}\"\n",
-                                                 static_cast<unsigned>(attachmentUniqueAsset->attachmentType),
-                                                 attachmentUniqueName);
+                        con::error("Invalid attachment type {} for attachment unique asset \"{}\"",
+                                   static_cast<unsigned>(attachmentUniqueAsset->attachmentType),
+                                   attachmentUniqueName);
                         return false;
                     }
 
                     if (attachmentUniques[attachmentUniqueAsset->attachmentType] != nullptr)
                     {
-                        std::cerr << std::format("Already loaded attachment unique with same type {}: \"{}\", \"{}\"\n",
-                                                 static_cast<unsigned>(attachmentUniqueAsset->attachmentType),
-                                                 attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName,
-                                                 attachmentUniqueName);
+                        con::error("Already loaded attachment unique with same type {}: \"{}\", \"{}\"",
+                                   static_cast<unsigned>(attachmentUniqueAsset->attachmentType),
+                                   attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName,
+                                   attachmentUniqueName);
                         return false;
                     }
 
@@ -621,7 +621,7 @@ namespace weapon
             infoString, *weaponFullDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse weapon: \"{}\"\n", assetName);
+            con::error("Failed to parse weapon: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

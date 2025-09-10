@@ -22,6 +22,7 @@
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -84,7 +85,7 @@ namespace
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
             {
-                std::cerr << "Invalid public key for signature checking\n";
+                con::error("Invalid public key for signature checking");
                 return nullptr;
             }
 

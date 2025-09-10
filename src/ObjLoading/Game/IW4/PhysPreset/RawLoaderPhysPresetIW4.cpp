@@ -5,6 +5,7 @@
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysPresetIW4.h"
 #include "PhysPreset/PhysPresetCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -32,7 +33,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
             {
-                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();
             }
 

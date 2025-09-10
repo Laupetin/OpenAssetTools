@@ -1,5 +1,7 @@
 #include "AccuracyGraphWriter.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
 
 namespace
@@ -24,7 +26,7 @@ namespace
         const auto file = context.OpenAssetFile(std::format("accuracy/{}/{}", subFolder, graph.name));
         if (!file)
         {
-            std::cerr << "Failed to open file for accuracy graph: " << subFolder << "/" << graph.name << "\n";
+            con::error("Failed to open file for accuracy graph: {}/{}", subFolder, graph.name);
             return;
         }
 

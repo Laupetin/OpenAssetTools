@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Weapon/AttachmentUniqueFields.h"
 #include "Game/T6/Weapon/WeaponStrings.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -48,13 +49,13 @@ namespace
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse hide tags as array\n";
+                con::error("Failed to parse hide tags as array");
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cerr << std::format("Cannot have more than {} hide tags!\n", std::extent_v<decltype(WeaponFullDef::hideTags)>);
+                con::error("Cannot have more than {} hide tags!", std::extent_v<decltype(WeaponFullDef::hideTags)>);
                 return false;
             }
 
@@ -93,7 +94,7 @@ namespace
 
             if (camo == nullptr)
             {
-                std::cerr << std::format("Failed to load camo asset \"{}\"\n", value);
+                con::error("Failed to load camo asset \"{}\"", value);
                 return false;
             }
 
@@ -143,7 +144,7 @@ namespace
         std::vector<eAttachment> attachmentsFromName;
         if (!attachment_unique::ExtractAttachmentsFromAssetNameT6(assetName, attachmentsFromName))
         {
-            std::cerr << std::format("Failed to determine attachments from attachment unique name \"{}\"\n", assetName);
+            con::error("Failed to determine attachments from attachment unique name \"{}\"", assetName);
             return false;
         }
 
@@ -236,7 +237,7 @@ namespace attachment_unique
                                                         std::extent_v<decltype(attachment_unique_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse attachment unique: \"{}\"\n", assetName);
+            con::error("Failed to parse attachment unique: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderZBarrierT6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read zbarrier gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read zbarrier gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

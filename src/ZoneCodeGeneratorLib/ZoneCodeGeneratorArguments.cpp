@@ -3,6 +3,7 @@
 #include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -136,7 +137,7 @@ void ZoneCodeGeneratorArguments::PrintUsage() const
 
 void ZoneCodeGeneratorArguments::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools ZoneCodeGenerator {}\n", GIT_VERSION);
+    con::info("OpenAssetTools ZoneCodeGenerator {}", GIT_VERSION);
 }
 
 bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -185,7 +186,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one header file must be specified via -h / --header.\n";
+        con::error("At least one header file must be specified via -h / --header.");
         return false;
     }
 
@@ -197,7 +198,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one commands file must be specified via -c / --commands-file.\n";
+        con::error("At least one commands file must be specified via -c / --commands-file.");
         return false;
     }
 
@@ -219,7 +220,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
 
     if (m_task_flags == 0)
     {
-        std::cout << "There was no output task specified.\n";
+        con::warn("There was no output task specified.");
         PrintUsage();
         return false;
     }

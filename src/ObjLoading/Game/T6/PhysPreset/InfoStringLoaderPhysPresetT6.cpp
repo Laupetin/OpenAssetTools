@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/PhysPreset/PhysPresetFields.h"
 #include "Game/T6/T6.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -87,7 +88,7 @@ namespace phys_preset
                                                   std::extent_v<decltype(phys_preset_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse phys preset: \"{}\"\n", assetName);
+            con::error("Failed to parse phys preset: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

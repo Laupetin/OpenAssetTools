@@ -4,6 +4,7 @@
 #include "Parsing/IParser.h"
 #include "Parsing/ParsingException.h"
 #include "Parsing/Sequence/AbstractSequence.h"
+#include "Utils/Logging/Log.h"
 
 #include <iostream>
 #include <vector>
@@ -63,12 +64,12 @@ public:
 
                     if (!line.IsEof())
                     {
-                        std::cerr << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression:\n"
-                                  << line.m_line.substr(pos.m_column - 1) << "\n";
+                        con::error(
+                            "{} L{}:{} Could not parse expression:\n{}", pos.m_filename.get(), pos.m_line, pos.m_column, line.m_line.substr(pos.m_column - 1));
                     }
                     else
                     {
-                        std::cerr << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression.\n";
+                        con::error("{} L{}:{} Could not parse expression.", pos.m_filename.get(), pos.m_line, pos.m_column);
                     }
                     return false;
                 }
@@ -81,11 +82,11 @@ public:
 
             if (!line.IsEof() && line.m_line.size() > static_cast<unsigned>(pos.m_column - 1))
             {
-                std::cerr << "Error: " << e.FullMessage() << "\n" << line.m_line.substr(pos.m_column - 1) << "\n";
+                con::error("{}\n{}", e.FullMessage(), line.m_line.substr(pos.m_column - 1));
             }
             else
             {
-                std::cerr << "Error: " << e.FullMessage() << "\n";
+                con::error(e.FullMessage());
             }
 
             return false;

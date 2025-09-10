@@ -30,6 +30,7 @@
 #include "StringTable/LoaderStringTableT6.h"
 #include "Tracer/GdtLoaderTracerT6.h"
 #include "Tracer/RawLoaderTracerT6.h"
+#include "Utils/Logging/Log.h"
 #include "Vehicle/GdtLoaderVehicleT6.h"
 #include "Vehicle/RawLoaderVehicleT6.h"
 #include "Weapon/AttachmentGdtLoaderT6.h"
@@ -62,14 +63,12 @@ namespace T6
 
     SoundBank* ObjLoader::LoadSoundBankForZone(ISearchPath& searchPath, const std::string& soundBankFileName, Zone& zone)
     {
-        if (ObjLoading::Configuration.Verbose)
-            std::cout << std::format("Trying to load sound bank '{}' for zone '{}'\n", soundBankFileName, zone.m_name);
+        con::debug("Trying to load sound bank '{}' for zone '{}'", soundBankFileName, zone.m_name);
 
         auto* existingSoundBank = SoundBank::Repository.GetContainerByName(soundBankFileName);
         if (existingSoundBank != nullptr)
         {
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Referencing loaded sound bank '{}'.\n", soundBankFileName);
+            con::debug("Referencing loaded sound bank '{}'.", soundBankFileName);
 
             SoundBank::Repository.AddContainerReference(existingSoundBank, &zone);
             return existingSoundBank;
@@ -83,19 +82,18 @@ namespace T6
 
             if (!sndBank->Initialize())
             {
-                std::cerr << std::format("Failed to load sound bank '{}'\n", soundBankFileName);
+                con::error("Failed to load sound bank '{}'", soundBankFileName);
                 return nullptr;
             }
 
             SoundBank::Repository.AddContainer(std::move(sndBank), &zone);
 
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Found and loaded sound bank '{}'\n", soundBankFileName);
+            con::debug("Found and loaded sound bank '{}'", soundBankFileName);
 
             return sndBankPtr;
         }
 
-        std::cerr << std::format("Failed to load sound bank '{}'\n", soundBankFileName);
+        con::error("Failed to load sound bank '{}'", soundBankFileName);
         return nullptr;
     }
 
@@ -113,7 +111,7 @@ namespace T6
             if (soundBank)
             {
                 if (!VerifySoundBankChecksum(*soundBank, sndBankLinkedInfo))
-                    std::cout << std::format("Checksum of sound bank does not match link time checksum for '{}'\n", soundBankFileName);
+                    con::warn("Checksum of sound bank does not match link time checksum for '{}'", soundBankFileName);
 
                 loadedBanksForZone.emplace(soundBankFileName);
 
@@ -163,14 +161,12 @@ namespace T6
 
     void ObjLoader::LoadIPakForZone(ISearchPath& searchPath, const std::string& ipakName, Zone& zone)
     {
-        if (ObjLoading::Configuration.Verbose)
-            std::cout << std::format("Trying to load ipak '{}' for zone '{}'\n", ipakName, zone.m_name);
+        con::debug("Trying to load ipak '{}' for zone '{}'", ipakName, zone.m_name);
 
         auto* existingIPak = IIPak::Repository.GetContainerByName(ipakName);
         if (existingIPak != nullptr)
         {
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Referencing loaded ipak '{}'.\n", ipakName);
+            con::debug("Referencing loaded ipak '{}'.", ipakName);
 
             IIPak::Repository.AddContainerReference(existingIPak, &zone);
             return;
@@ -187,12 +183,11 @@ namespace T6
             {
                 IIPak::Repository.AddContainer(std::move(ipak), &zone);
 
-                if (ObjLoading::Configuration.Verbose)
-                    std::cout << std::format("Found and loaded ipak '{}'.\n", ipakFilename);
+                con::debug("Found and loaded ipak '{}'.", ipakFilename);
             }
             else
             {
-                std::cerr << std::format("Failed to load ipak '{}'!\n", ipakFilename);
+                con::error("Failed to load ipak '{}'!", ipakFilename);
             }
         }
     }
@@ -209,8 +204,7 @@ namespace T6
 
     void ObjLoader::LoadCommonIPaks(ISearchPath& searchPath, Zone& zone)
     {
-        if (ObjLoading::Configuration.Verbose)
-            std::cout << std::format("Loading common ipaks for zone \"{}\"\n", zone.m_name);
+        con::debug("Loading common ipaks for zone \"{}\"", zone.m_name);
 
         LoadIPakForZone(searchPath, "base", zone);
         const auto& languagePrefixes = IGame::GetGameById(GameId::T6)->GetLanguagePrefixes();
@@ -219,23 +213,20 @@ namespace T6
 
         if (IsMpZone(zone))
         {
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Loading multiplayer ipaks for zone \"{}\"\n", zone.m_name);
+            con::debug("Loading multiplayer ipaks for zone \"{}\"", zone.m_name);
 
             LoadIPakForZone(searchPath, "mp", zone);
             LoadIPakForZone(searchPath, "so", zone);
         }
         else if (IsZmZone(zone))
         {
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Loading zombie ipak for zone \"{}\"\n", zone.m_name);
+            con::debug("Loading zombie ipak for zone \"{}\"", zone.m_name);
 
             LoadIPakForZone(searchPath, "zm", zone);
         }
         else
         {
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << std::format("Loading singleplayer ipak for zone \"{}\"\n", zone.m_name);
+            con::debug("Loading singleplayer ipak for zone \"{}\"", zone.m_name);
 
             LoadIPakForZone(searchPath, "sp", zone);
         }

@@ -4,6 +4,7 @@
 #include "GitVersion.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -143,7 +144,7 @@ namespace
             const auto openFile = m_search_path.Open(fileName);
             if (!openFile.IsOpen())
             {
-                std::cerr << std::format("Failed to open file for ipak: {}\n", fileName);
+                con::error("Failed to open file for ipak: {}", fileName);
                 return nullptr;
             }
 
@@ -388,14 +389,14 @@ namespace image
         const auto file = outPath.Open(std::format("{}.ipak", m_name));
         if (!file)
         {
-            std::cerr << std::format("Failed to open file for ipak {}\n", m_name);
+            con::error("Failed to open file for ipak {}", m_name);
             return;
         }
 
         IPakWriter writer(*file, searchPath, m_image_names);
         writer.Write();
 
-        std::cout << std::format("Created ipak {} with {} entries\n", m_name, m_image_names.size());
+        con::info("Created ipak {} with {} entries", m_name, m_image_names.size());
     }
 
     const std::vector<std::string>& IPakToCreate::GetImageNames() const

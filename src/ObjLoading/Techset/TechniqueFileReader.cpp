@@ -4,6 +4,7 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/TechniqueFileParser.h"
+#include "Utils/Logging/Log.h"
 
 #include <iostream>
 
@@ -33,6 +34,6 @@ bool TechniqueFileReader::ReadTechniqueDefinition() const
     if (success)
         return true;
 
-    std::cout << "Parsing technique file \"" << m_file_name << "\" failed!\n";
+    con::error("Parsing technique file \"{}\" failed!", m_file_name);
     return false;
 }

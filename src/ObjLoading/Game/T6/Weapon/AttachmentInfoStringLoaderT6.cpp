@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Weapon/AttachmentFields.h"
 #include "Game/T6/Weapon/WeaponStrings.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -113,7 +114,7 @@ namespace attachment
             infoString, *attachment, m_zone.m_script_strings, m_memory, context, registration, attachment_fields, std::extent_v<decltype(attachment_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse attachment: \"{}\"\n", assetName);
+            con::error("Failed to parse attachment: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

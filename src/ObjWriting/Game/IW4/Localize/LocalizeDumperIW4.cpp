@@ -2,6 +2,7 @@
 
 #include "Dumping/Localize/StringFileDumper.h"
 #include "Localize/LocalizeCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <sstream>
@@ -38,7 +39,7 @@ namespace localize
         }
         else
         {
-            std::cerr << std::format("Could not create string file for dumping localized strings of zone '{}'\n", context.m_zone.m_name);
+            con::error("Could not create string file for dumping localized strings of zone '{}'", context.m_zone.m_name);
         }
     }
 } // namespace localize

@@ -1,5 +1,6 @@
 #include "GltfBinInput.h"
 
+#include "Utils/Logging/Log.h"
 #include "XModel/Gltf/GltfConstants.h"
 
 #include <exception>
@@ -41,7 +42,7 @@ bool BinInput::ReadGltfData(std::istream& stream)
 
     if (magic != GLTF_MAGIC)
     {
-        std::cerr << "Invalid magic when trying to read GLB\n";
+        con::error("Invalid magic when trying to read GLB");
         return false;
     }
 
@@ -51,7 +52,7 @@ bool BinInput::ReadGltfData(std::istream& stream)
 
     if (version != GLTF_VERSION)
     {
-        std::cerr << std::format("Unsupported version {} when trying to read GLB: Expected version {}\n", version, GLTF_VERSION);
+        con::error("Unsupported version {} when trying to read GLB: Expected version {}", version, GLTF_VERSION);
         return false;
     }
 
@@ -82,7 +83,7 @@ bool BinInput::ReadGltfData(std::istream& stream)
             }
             catch (const nlohmann::json::exception& e)
             {
-                std::cerr << std::format("Failed trying to parse JSON of GLB: {}\n", e.what());
+                con::error("Failed trying to parse JSON of GLB: {}", e.what());
                 return false;
             }
         }
@@ -103,7 +104,7 @@ bool BinInput::ReadGltfData(std::istream& stream)
 
     if (!m_json)
     {
-        std::cerr << "Failed to load GLB due to missing JSON\n";
+        con::error("Failed to load GLB due to missing JSON");
         return false;
     }
 
@@ -116,7 +117,7 @@ bool BinInput::Read(std::istream& stream, void* dest, const size_t dataSize, con
     if (stream.gcount() != dataSize)
     {
         if (errorWhenFailed)
-            std::cerr << std::format("Unexpected EOF while reading GLB {}\n", readTypeName);
+            con::error("Unexpected EOF while reading GLB {}", readTypeName);
         return false;
     }
 

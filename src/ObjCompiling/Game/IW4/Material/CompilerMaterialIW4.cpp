@@ -16,6 +16,7 @@
 #include "Techset/TechniqueStateMapCache.h"
 #include "Techset/TechsetCommon.h"
 #include "Techset/TechsetDefinitionCache.h"
+#include "Utils/Logging/Log.h"
 
 #include <cmath>
 #include <cstring>
@@ -248,7 +249,7 @@ namespace
             else
                 throw GdtReadingException("ColorMap may not be blank in particle cloud materials");
 
-            std::cout << std::format("Using particlecloud for \"{}\"\n", m_material.info.name);
+            con::info("Using particlecloud for \"{}\"", m_material.info.name);
         }
 
         void mtl_tools_template()
@@ -1362,7 +1363,7 @@ namespace
             }
             catch (const GdtReadingException& e)
             {
-                std::cerr << std::format("Error while trying to load material from gdt: {} @ GdtEntry \"{}\"\n", e.what(), entry->m_name);
+                con::error("Error while trying to load material from gdt: {} @ GdtEntry \"{}\"", e.what(), entry->m_name);
             }
 
             return AssetCreationResult::Failure();

@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/PathUtils.h"
 
 #include <filesystem>
@@ -150,7 +151,7 @@ void LinkerArgs::PrintUsage() const
 
 void LinkerArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools Linker {}\n", GIT_VERSION);
+    con::info("OpenAssetTools Linker {}", GIT_VERSION);
 }
 
 void LinkerArgs::SetBinFolder()

@@ -3,6 +3,7 @@
 #include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -83,7 +84,7 @@ void RawTemplaterArguments::PrintUsage() const
 
 void RawTemplaterArguments::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools RawTemplater {}\n", GIT_VERSION);
+    con::info("OpenAssetTools RawTemplater {}", GIT_VERSION);
 }
 
 bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)

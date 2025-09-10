@@ -2,6 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 
@@ -123,7 +124,7 @@ namespace
         {
             auto outputFile = this->m_context.OpenAssetFile(filename);
             if (outputFile == nullptr)
-                std::cerr << std::format("Failed to open sound driver globals output file for: \"{}\"\n", filename);
+                con::error("Failed to open sound driver globals output file for: \"{}\"", filename);
 
             return outputFile;
         }

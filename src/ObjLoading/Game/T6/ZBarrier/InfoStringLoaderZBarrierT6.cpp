@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/ZBarrier/ZBarrierFields.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -75,7 +76,7 @@ namespace z_barrier
             infoString, *zbarrier, m_zone.m_script_strings, m_memory, context, registration, zbarrier_fields, std::extent_v<decltype(zbarrier_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse zbarrier: \"{}\"\n", assetName);
+            con::error("Failed to parse zbarrier: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

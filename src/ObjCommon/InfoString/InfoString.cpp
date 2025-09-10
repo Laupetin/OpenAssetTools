@@ -1,5 +1,7 @@
 #include "InfoString.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -172,13 +174,13 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
     std::string readPrefix;
     if (!infoStream.NextField(readPrefix))
     {
-        std::cerr << "Invalid info string: Empty\n";
+        con::error("Invalid info string: Empty");
         return false;
     }
 
     if (prefix != readPrefix)
     {
-        std::cerr << "Invalid info string: Prefix \"" << readPrefix << "\" did not match expected prefix \"" << prefix << "\"\n";
+        con::error("Invalid info string: Prefix \"{}\" did not match expected prefix \"{}\"", readPrefix, prefix);
         return false;
     }
 
@@ -188,9 +190,9 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
         if (key.empty())
         {
             if (m_keys_by_insertion.empty())
-                std::cerr << "Invalid info string: Got empty key at the start of the info string\n";
+                con::error("Invalid info string: Got empty key at the start of the info string");
             else
-                std::cerr << "Invalid info string: Got empty key after key \"" << m_keys_by_insertion[m_keys_by_insertion.size() - 1] << "\"\n";
+                con::error("Invalid info string: Got empty key after key \"{}\"", m_keys_by_insertion[m_keys_by_insertion.size() - 1]);
 
             return false;
         }
@@ -198,7 +200,7 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
         std::string value;
         if (!infoStream.NextField(value))
         {
-            std::cerr << "Invalid info string: Unexpected eof, no value for key \"" << key << "\"\n";
+            con::error("Invalid info string: Unexpected eof, no value for key \"{}\"", key);
             return false;
         }
 

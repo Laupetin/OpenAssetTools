@@ -1,5 +1,7 @@
 #include "UsageInformation.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -105,7 +107,7 @@ void UsageInformation::Print()
         }
     }
 
-    std::cout << str.str() << "\n";
+    con::info(str.str());
 }
 
 void UsageInformation::PrintUsageOverview(std::stringstream& str)

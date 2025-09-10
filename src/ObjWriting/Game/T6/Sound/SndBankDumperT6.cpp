@@ -7,6 +7,7 @@
 #include "Game/T6/SoundConstantsT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
+#include "Utils/Logging/Log.h"
 #include "Zone/ZoneRegistry.h"
 
 #include <algorithm>
@@ -670,7 +671,7 @@ namespace
         const auto outFile = OpenAssetOutputFile(context, assetFileName, ".wav");
         if (!outFile)
         {
-            std::cerr << std::format("Failed to open sound output file: \"{}\"\n", assetFileName);
+            con::error("Failed to open sound output file: \"{}\"", assetFileName);
             return;
         }
 
@@ -700,7 +701,7 @@ namespace
         const auto outFile = OpenAssetOutputFile(context, assetFileName, extension);
         if (!outFile)
         {
-            std::cerr << std::format("Failed to open sound output file: \"{}\"\n", assetFileName);
+            con::error("Failed to open sound output file: \"{}\"", assetFileName);
             return;
         }
 
@@ -737,19 +738,19 @@ namespace
             case SND_ASSET_FORMAT_WMA:
             case SND_ASSET_FORMAT_WIIUADPCM:
             case SND_ASSET_FORMAT_MPC:
-                std::cerr << std::format("Cannot dump sound (Unknown sound format {}): \"{}\"\n", static_cast<unsigned>(format), alias.assetFileName);
+                con::error("Cannot dump sound (Unknown sound format {}): \"{}\"", static_cast<unsigned>(format), alias.assetFileName);
                 break;
 
             default:
                 assert(false);
-                std::cerr << std::format("Cannot dump sound (Unknown sound format {}): \"{}\"\n", static_cast<unsigned>(format), alias.assetFileName);
+                con::error("Cannot dump sound (Unknown sound format {}): \"{}\"", static_cast<unsigned>(format), alias.assetFileName);
                 break;
             }
 
             return format;
         }
 
-        std::cerr << std::format("Could not find data for sound \"{}\"\n", alias.assetFileName);
+        con::warn("Could not find data for sound \"{}\"", alias.assetFileName);
         return {};
     }
 
@@ -760,7 +761,7 @@ namespace
         const auto outFile = OpenAssetOutputFile(context, std::format("soundbank/{}.aliases", sndBank.name), ".csv");
         if (!outFile)
         {
-            std::cerr << std::format("Failed to open sound alias output file: \"\"\n", sndBank.name);
+            con::error("Failed to open sound alias output file: \"\"", sndBank.name);
             return;
         }
 
@@ -804,7 +805,7 @@ namespace
         const auto outFile = OpenAssetOutputFile(context, std::format("soundbank/{}.reverbs", sndBank.name), ".csv");
         if (!outFile)
         {
-            std::cerr << std::format("Failed to open sound reverb output file: \"{}\"\n", sndBank.name);
+            con::error("Failed to open sound reverb output file: \"{}\"", sndBank.name);
             return;
         }
 
@@ -843,7 +844,7 @@ namespace
         const auto outFile = OpenAssetOutputFile(context, std::format("soundbank/{}.ducklist", sndBank.name), ".csv");
         if (!outFile)
         {
-            std::cerr << std::format("Failed to open sound reverb output file: \"{}\"\n", sndBank.name);
+            con::error("Failed to open sound reverb output file: \"{}\"", sndBank.name);
             return;
         }
 
@@ -860,7 +861,7 @@ namespace
             const auto duckFile = OpenAssetOutputFile(context, std::format("soundbank/ducks/{}", duck.name), ".duk");
             if (!outFile)
             {
-                std::cerr << std::format("Failed to open sound duck output file: \"{}\"\n", duck.name);
+                con::error("Failed to open sound duck output file: \"{}\"", duck.name);
                 return;
             }
 

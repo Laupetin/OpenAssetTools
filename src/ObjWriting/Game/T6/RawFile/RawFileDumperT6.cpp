@@ -1,5 +1,7 @@
 #include "RawFileDumperT6.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <filesystem>
 #include <zlib.h>
 #include <zutil.h>
@@ -18,7 +20,7 @@ namespace
 
         if (rawFile->len <= 4)
         {
-            std::cerr << "Invalid len of animtree file \"" << rawFile->name << "\"\n";
+            con::error("Invalid len of animtree file \"{}\"", rawFile->name);
             return;
         }
 
@@ -27,7 +29,7 @@ namespace
 
         if (outLen > ANIMTREE_MAX_SIZE)
         {
-            std::cerr << "Invalid size of animtree file \"" << rawFile->name << "\": " << outLen << "\n";
+            con::error("Invalid size of animtree file \"{}\": {}", rawFile->name, outLen);
             return;
         }
 
@@ -59,7 +61,7 @@ namespace
 
             if (ret < 0)
             {
-                std::cerr << "Inflate failed for dumping animtree file \"" << rawFile->name << "\"\n";
+                con::error("Inflate failed for dumping animtree file \"{}\"", rawFile->name);
                 inflateEnd(&zs);
                 return;
             }

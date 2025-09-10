@@ -2,6 +2,7 @@
 
 #include "GitVersion.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -101,7 +102,7 @@ void ImageConverterArgs::PrintUsage()
 
 void ImageConverterArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools ImageConverter {}\n", GIT_VERSION);
+    con::info("OpenAssetTools ImageConverter {}", GIT_VERSION);
 }
 
 void ImageConverterArgs::SetVerbose(const bool isVerbose)

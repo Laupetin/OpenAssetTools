@@ -2,6 +2,7 @@
 
 #include "SearchPath/IWD.h"
 #include "SearchPath/SearchPathFilesystem.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <filesystem>
@@ -18,7 +19,7 @@ bool UnlinkerPaths::LoadUserPaths(const UnlinkerArgs& args)
 
         if (!fs::is_directory(absolutePath))
         {
-            std::cerr << std::format("Could not find directory of search path: \"{}\"\n", path);
+            con::error("Could not find directory of search path: \"{}\"", path);
             return false;
         }
 
@@ -44,12 +45,12 @@ bool UnlinkerPaths::LoadUserPaths(const UnlinkerArgs& args)
         }
     }
 
-    std::cout << std::format("{} SearchPaths{}\n", m_specified_user_paths.size(), !m_specified_user_paths.empty() ? ":" : "");
+    con::info("{} SearchPaths{}", m_specified_user_paths.size(), !m_specified_user_paths.empty() ? ":" : "");
     for (const auto& absoluteSearchPath : m_specified_user_paths)
-        std::cout << std::format("  \"{}\"\n", absoluteSearchPath);
+        con::info("  \"{}\"", absoluteSearchPath);
 
     if (!m_specified_user_paths.empty())
-        std::cerr << "\n";
+        con::info("");
 
     return true;
 }

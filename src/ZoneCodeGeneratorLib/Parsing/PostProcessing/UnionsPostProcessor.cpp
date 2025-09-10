@@ -1,5 +1,7 @@
 #include "UnionsPostProcessor.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <algorithm>
 #include <format>
 #include <iostream>
@@ -24,7 +26,7 @@ namespace
 
         if (entriesWithoutConditionCount > 1 && !info->m_usages.empty() && !info->m_is_leaf)
         {
-            std::cerr << std::format("Union '{}' has more than one entry without a condition!\n", info->m_definition->GetFullName());
+            con::error("Union '{}' has more than one entry without a condition!", info->m_definition->GetFullName());
             return false;
         }
 

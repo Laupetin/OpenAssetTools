@@ -3,6 +3,7 @@
 #include "Internal/GltfAccessor.h"
 #include "Internal/GltfBuffer.h"
 #include "Internal/GltfBufferView.h"
+#include "Utils/Logging/Log.h"
 
 #pragma warning(push, 0)
 #include <Eigen>
@@ -798,7 +799,7 @@ namespace
             }
             catch (const nlohmann::json::exception& e)
             {
-                std::cerr << std::format("Failed to parse GLTF JSON: {}\n", e.what());
+                con::error("Failed to parse GLTF JSON: {}", e.what());
                 return nullptr;
             }
 
@@ -818,7 +819,7 @@ namespace
             }
             catch (const GltfLoadException& e)
             {
-                std::cerr << std::format("Failed to load GLTF: {}\n", e.Str());
+                con::error("Failed to load GLTF: {}", e.Str());
                 return nullptr;
             }
         }

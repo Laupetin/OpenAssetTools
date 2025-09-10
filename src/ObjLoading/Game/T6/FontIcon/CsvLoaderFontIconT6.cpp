@@ -3,6 +3,7 @@
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <format>
@@ -65,14 +66,14 @@ namespace
 
                 if (currentRow.size() < COL_COUNT_MIN)
                 {
-                    std::cerr << std::format("{} Column count lower than min column count ({})\n", ErrorPrefix(assetName, currentRowIndex), COL_COUNT_MIN);
+                    con::error("{} Column count lower than min column count ({})", ErrorPrefix(assetName, currentRowIndex), COL_COUNT_MIN);
                     return AssetCreationResult::Failure();
                 }
 
                 int index;
                 if (!ParseInt(index, currentRow[ROW_INDEX]) || index < 0)
                 {
-                    std::cerr << std::format("{} Failed to parse index\n", ErrorPrefix(assetName, currentRowIndex));
+                    con::error("{} Failed to parse index", ErrorPrefix(assetName, currentRowIndex));
                     return AssetCreationResult::Failure();
                 }
 
@@ -118,7 +119,7 @@ namespace
                 }
                 else
                 {
-                    std::cerr << std::format("{} Unknown row type \"{}\"\n", ErrorPrefix(assetName, currentRowIndex), currentRow[ROW_TYPE]);
+                    con::error("{} Unknown row type \"{}\"", ErrorPrefix(assetName, currentRowIndex), currentRow[ROW_TYPE]);
                     return AssetCreationResult::Failure();
                 }
             }
@@ -222,26 +223,26 @@ namespace
         {
             if (row.size() < COL_COUNT_ICON)
             {
-                std::cerr << std::format("{} Column count lower than min column count for entries ({})\n", ErrorPrefix(assetName, rowIndex), COL_COUNT_ICON);
+                con::error("{} Column count lower than min column count for entries ({})", ErrorPrefix(assetName, rowIndex), COL_COUNT_ICON);
                 return false;
             }
 
             if (!ParseInt(icon.fontIconSize, row[ROW_ICON_SIZE]))
             {
-                std::cerr << std::format("{} Failed to parse size\n", ErrorPrefix(assetName, rowIndex));
+                con::error("{} Failed to parse size", ErrorPrefix(assetName, rowIndex));
                 return false;
             }
 
             if (!ParseFloat(icon.xScale, row[ROW_ICON_XSCALE]) || !ParseFloat(icon.yScale, row[ROW_ICON_YSCALE]))
             {
-                std::cerr << std::format("{} Failed to parse scale\n", ErrorPrefix(assetName, rowIndex));
+                con::error("{} Failed to parse scale", ErrorPrefix(assetName, rowIndex));
                 return false;
             }
 
             auto* materialDependency = context.LoadDependency<AssetMaterial>(row[ROW_ICON_MATERIAL]);
             if (materialDependency == nullptr)
             {
-                std::cerr << std::format("{} Failed to load material \"{}\"\n", ErrorPrefix(assetName, rowIndex), row[ROW_ICON_MATERIAL]);
+                con::error("{} Failed to load material \"{}\"", ErrorPrefix(assetName, rowIndex), row[ROW_ICON_MATERIAL]);
                 return false;
             }
             registration.AddDependency(materialDependency);
@@ -258,19 +259,19 @@ namespace
         {
             if (row.size() < COL_COUNT_ALIAS)
             {
-                std::cerr << std::format("{} Column count lower than min column count for aliases ({})\n", ErrorPrefix(assetName, rowIndex), COL_COUNT_ALIAS);
+                con::error("{} Column count lower than min column count for aliases ({})", ErrorPrefix(assetName, rowIndex), COL_COUNT_ALIAS);
                 return false;
             }
 
             if (!ParseHashStr(alias.aliasHash, row[ROW_ALIAS_NAME]))
             {
-                std::cerr << std::format("{} Failed to parse alias \"{}\"\n", ErrorPrefix(assetName, rowIndex), row[ROW_ALIAS_NAME]);
+                con::error("{} Failed to parse alias \"{}\"", ErrorPrefix(assetName, rowIndex), row[ROW_ALIAS_NAME]);
                 return false;
             }
 
             if (!ParseHashStr(alias.buttonHash, row[ROW_ALIAS_BUTTON]))
             {
-                std::cerr << std::format("{} Failed to parse button \"{}\"\n", ErrorPrefix(assetName, rowIndex), row[ROW_ALIAS_BUTTON]);
+                con::error("{} Failed to parse button \"{}\"", ErrorPrefix(assetName, rowIndex), row[ROW_ALIAS_BUTTON]);
                 return false;
             }
 

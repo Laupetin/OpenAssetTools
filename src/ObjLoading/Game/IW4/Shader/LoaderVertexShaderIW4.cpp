@@ -2,6 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "Shader/ShaderCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstdint>
 #include <format>
@@ -29,7 +30,7 @@ namespace
 
             if (file.m_length % sizeof(uint32_t) != 0)
             {
-                std::cerr << std::format("Invalid vertex shader \"{}\": Size must be dividable by {}\n", assetName, sizeof(uint32_t));
+                con::error("Invalid vertex shader \"{}\": Size must be dividable by {}", assetName, sizeof(uint32_t));
                 return AssetCreationResult::Failure();
             }
 

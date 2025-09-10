@@ -2,6 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "Game/IGame.h"
+#include "Utils/Logging/Log.h"
 #include "Zone/AssetNameResolver.h"
 
 #include <format>
@@ -35,7 +36,7 @@ namespace
                 const auto maybeType = m_asset_name_resolver->GetAssetTypeByName(typeName);
                 if (!maybeType)
                 {
-                    std::cerr << std::format("Unknown asset type name \"{}\"\n", typeName);
+                    con::error("Unknown asset type name \"{}\"", typeName);
                     if (failure)
                         *failure = true;
                     return false;
@@ -90,7 +91,7 @@ std::optional<AssetList> AssetListReader::ReadAssetList(const std::string& zoneN
             return assetList;
     }
     else if (logMissing)
-        std::cerr << std::format("Failed to open file for assetlist: {}\n", assetListFileName);
+        con::error("Failed to open file for assetlist: {}", assetListFileName);
 
     return std::nullopt;
 }

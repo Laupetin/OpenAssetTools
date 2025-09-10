@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/PhysConstraints/PhysConstraintsFields.h"
 #include "Game/T6/T6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -101,7 +102,7 @@ namespace phys_constraints
                                                        std::extent_v<decltype(phys_constraints_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse phys constraints: \"{}\"\n", assetName);
+            con::error("Failed to parse phys constraints: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

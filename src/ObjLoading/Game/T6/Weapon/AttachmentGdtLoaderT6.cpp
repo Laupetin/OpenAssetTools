@@ -4,6 +4,7 @@
 #include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read attachment gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read attachment gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

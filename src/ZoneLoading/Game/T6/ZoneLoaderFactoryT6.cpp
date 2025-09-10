@@ -18,6 +18,7 @@
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Utils/Endianness.h"
+#include "Utils/Logging/Log.h"
 #include "Zone/XChunk/XChunkProcessorInflate.h"
 #include "Zone/XChunk/XChunkProcessorLzxDecompress.h"
 #include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
@@ -136,7 +137,7 @@ namespace
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH, sizeof(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH)))
             {
-                std::cerr << "Invalid public key for signature checking\n";
+                con::error("Invalid public key for signature checking");
                 return nullptr;
             }
 
@@ -269,7 +270,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
         fs::path dumpFileNamePath = fs::path(fileName).filename();
         dumpFileNamePath.replace_extension(".dat");
         std::string dumpFileName = dumpFileNamePath.string();
-        std::cerr << std::format("Dumping xbox assets is not supported, making a full fastfile data dump to {}\n", dumpFileName);
+        con::warn("Dumping xbox assets is not supported, making a full fastfile data dump to {}", dumpFileName);
         zoneLoader->AddLoadingStep(step::CreateStepDumpData(dumpFileName, 0xFFFFFFFF));
     }
 

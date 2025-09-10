@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Tracer/TracerFields.h"
 #include "Tracer/TracerCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -67,7 +68,7 @@ namespace tracer
             infoString, *tracer, m_zone.m_script_strings, m_memory, context, registration, tracer_fields, std::extent_v<decltype(tracer_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse tracer: \"{}\"\n", assetName);
+            con::error("Failed to parse tracer: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

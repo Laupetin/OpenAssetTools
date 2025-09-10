@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <format>
@@ -167,7 +168,7 @@ void UnlinkerArgs::PrintUsage() const
 
 void UnlinkerArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools Unlinker {}\n", GIT_VERSION);
+    con::info("OpenAssetTools Unlinker {}", GIT_VERSION);
 }
 
 void UnlinkerArgs::SetVerbose(const bool isVerbose)
@@ -195,7 +196,7 @@ bool UnlinkerArgs::SetImageDumpingMode() const
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
-    std::cerr << std::format("Illegal value: \"{}\" is not a valid image output format. Use -? to see usage information.\n", originalValue);
+    con::error("Illegal value: \"{}\" is not a valid image output format. Use -? to see usage information.", originalValue);
     return false;
 }
 
@@ -235,7 +236,7 @@ bool UnlinkerArgs::SetModelDumpingMode() const
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
-    std::cerr << std::format("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.\n", originalValue);
+    con::error("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.", originalValue);
     return false;
 }
 
@@ -358,7 +359,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     // --include-assets
     if (m_argument_parser.IsOptionSpecified(OPTION_EXCLUDE_ASSETS) && m_argument_parser.IsOptionSpecified(OPTION_INCLUDE_ASSETS))
     {
-        std::cout << "You can only asset types to either exclude or include, not both\n";
+        con::error("You can only asset types to either exclude or include, not both");
         return false;
     }
 

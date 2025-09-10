@@ -9,6 +9,7 @@
 #include "Image/IwiWriter8.h"
 #include "Image/Texture.h"
 #include "ImageConverterArgs.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <assert.h>
@@ -61,7 +62,7 @@ namespace image_converter
             else if (extension == EXTENSION_DDS)
                 ConvertDds(filePath);
             else
-                std::cerr << std::format("Unsupported extension {}\n", extension);
+                con::error("Unsupported extension {}", extension);
         }
 
         bool ConvertIwi(const fs::path& iwiPath)
@@ -69,7 +70,7 @@ namespace image_converter
             std::ifstream file(iwiPath, std::ios::in | std::ios::binary);
             if (!file.is_open())
             {
-                std::cerr << std::format("Failed to open input file {}\n", iwiPath.string());
+                con::error("Failed to open input file {}", iwiPath.string());
                 return false;
             }
 
@@ -83,7 +84,7 @@ namespace image_converter
             std::ofstream outFile(outPath, std::ios::out | std::ios::binary);
             if (!outFile.is_open())
             {
-                std::cerr << std::format("Failed to open output file {}\n", outPath.string());
+                con::error("Failed to open output file {}", outPath.string());
                 return false;
             }
 
@@ -96,7 +97,7 @@ namespace image_converter
             std::ifstream file(ddsPath, std::ios::in | std::ios::binary);
             if (!file.is_open())
             {
-                std::cerr << std::format("Failed to open input file {}\n", ddsPath.string());
+                con::error("Failed to open input file {}", ddsPath.string());
                 return false;
             }
 
@@ -113,7 +114,7 @@ namespace image_converter
             std::ofstream outFile(outPath, std::ios::out | std::ios::binary);
             if (!outFile.is_open())
             {
-                std::cerr << std::format("Failed to open output file {}\n", outPath.string());
+                con::error("Failed to open output file {}", outPath.string());
                 return false;
             }
 
@@ -154,12 +155,12 @@ namespace image_converter
 
         bool ShowGameTui()
         {
-            std::cout << "Select the game to convert to:\n";
-            std::cout << "  1 - Call Of Duty 4: Modern Warfare (IW3)\n";
-            std::cout << "  2 - Call Of Duty: Modern Warfare 2 (IW4)\n";
-            std::cout << "  3 - Call Of Duty: Modern Warfare 3 (IW5)\n";
-            std::cout << "  4 - Call Of Duty: Black Ops (T5)\n";
-            std::cout << "  5 - Call Of Duty: Black Ops 2 (T6)\n";
+            con::info("Select the game to convert to:");
+            con::info("  1 - Call Of Duty 4: Modern Warfare (IW3)");
+            con::info("  2 - Call Of Duty: Modern Warfare 2 (IW4)");
+            con::info("  3 - Call Of Duty: Modern Warfare 3 (IW5)");
+            con::info("  4 - Call Of Duty: Black Ops (T5)");
+            con::info("  5 - Call Of Duty: Black Ops 2 (T6)");
 
             unsigned num;
             std::cin >> num;
@@ -182,7 +183,7 @@ namespace image_converter
                 m_game_to_convert_to = Game::T6;
                 break;
             default:
-                std::cerr << "Invalid input\n";
+                con::error("Invalid input");
                 return false;
             }
 

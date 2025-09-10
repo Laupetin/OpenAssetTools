@@ -1,12 +1,13 @@
 #include "SoundBank.h"
 
-#include "zlib.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
 #include <memory>
 #include <sstream>
 #include <vector>
+#include <zlib.h>
 
 ObjContainerRepository<SoundBank, Zone> SoundBank::Repository;
 
@@ -130,50 +131,50 @@ bool SoundBank::ReadHeader()
     m_stream->read(reinterpret_cast<char*>(&m_header), sizeof(m_header));
     if (m_stream->gcount() != sizeof(m_header))
     {
-        std::cerr << "Unexpected eof when trying to load sndbank header.\n";
+        con::error("Unexpected eof when trying to load sndbank header.");
         return false;
     }
 
     if (m_header.magic != MAGIC)
     {
-        std::cerr << std::format("Invalid sndbank magic 0x{:x}\n", m_header.magic);
+        con::error("Invalid sndbank magic 0x{:x}", m_header.magic);
         return false;
     }
 
     if (m_header.version != VERSION)
     {
-        std::cerr << std::format("Unsupported sndbank version {} (should be {})\n", m_header.version, VERSION);
+        con::error("Unsupported sndbank version {} (should be {})", m_header.version, VERSION);
         return false;
     }
 
     if (m_header.entrySize != sizeof(SoundAssetBankEntry))
     {
-        std::cerr << std::format("Invalid sndbank entry size 0x{:x} (should be 0x{:x})\n", m_header.entrySize, sizeof(SoundAssetBankEntry));
+        con::error("Invalid sndbank entry size 0x{:x} (should be 0x{:x})", m_header.entrySize, sizeof(SoundAssetBankEntry));
         return false;
     }
 
     if (m_header.fileSize != m_file_size)
     {
-        std::cerr << std::format("Invalid sndbank {} (header expects {})\n", m_file_size, m_header.fileSize);
+        con::error("Invalid sndbank {} (header expects {})", m_file_size, m_header.fileSize);
         return false;
     }
 
     if (m_header.entryCount
         && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > static_cast<size_t>(m_file_size)))
     {
-        std::cerr << std::format("Invalid sndbank entry offset {} (filesize is {})\n", m_header.entryOffset, m_file_size);
+        con::error("Invalid sndbank entry offset {} (filesize is {})", m_header.entryOffset, m_file_size);
         return false;
     }
 
     if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SoundAssetBankChecksum) * m_header.entryCount > static_cast<size_t>(m_file_size))
     {
-        std::cerr << std::format("Invalid sndbank checksum offset {} (filesize is {})\n", m_header.checksumOffset, m_file_size);
+        con::error("Invalid sndbank checksum offset {} (filesize is {})", m_header.checksumOffset, m_file_size);
         return false;
     }
 
     if (m_header.dependencyCount * m_header.dependencySize > sizeof(SoundAssetBankHeader::dependencies))
     {
-        std::cerr << std::format("Invalid sndbank dependency sizes (count is {}; size is {})\n", m_header.dependencyCount, m_header.dependencySize);
+        con::error("Invalid sndbank dependency sizes (count is {}; size is {})", m_header.dependencyCount, m_header.dependencySize);
         return false;
     }
 
@@ -202,13 +203,13 @@ bool SoundBank::ReadEntries()
 
         if (m_stream->gcount() != sizeof(entry))
         {
-            std::cerr << std::format("Failed to read sound bank entry at index {}\n", i);
+            con::error("Failed to read sound bank entry at index {}", i);
             return false;
         }
 
         if (entry.offset == 0 || entry.offset + entry.size >= m_file_size)
         {
-            std::cerr << std::format("Invalid sound bank entry data offset {} (filesize is {})\n", entry.offset, m_header.fileSize);
+            con::error("Invalid sound bank entry data offset {} (filesize is {})", entry.offset, m_header.fileSize);
             return false;
         }
 
@@ -230,7 +231,7 @@ bool SoundBank::ReadChecksums()
 
         if (m_stream->gcount() != sizeof(checksum))
         {
-            std::cerr << std::format("Failed to read sound bank checksum at index {}\n", i);
+            con::error("Failed to read sound bank checksum at index {}", i);
             return false;
         }
 

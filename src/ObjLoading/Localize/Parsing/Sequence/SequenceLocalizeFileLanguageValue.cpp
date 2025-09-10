@@ -1,6 +1,7 @@
 #include "SequenceLocalizeFileLanguageValue.h"
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Utils/Logging/Log.h"
 
 #include <sstream>
 
@@ -24,9 +25,9 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
     const auto alreadyDefinedLanguage = state->m_current_reference_languages.find(langName);
     if (alreadyDefinedLanguage != state->m_current_reference_languages.end())
     {
-        std::ostringstream str;
-        str << "Value for reference \"" << state->m_current_reference << "\" already defined for language \"" << langToken.IdentifierValue() << "\"";
-        throw ParsingException(langToken.GetPos(), str.str());
+        throw ParsingException(
+            langToken.GetPos(),
+            std::format("Value for reference \"{}\" already defined for language \"{}\"", state->m_current_reference, langToken.IdentifierValue()));
     }
     state->m_current_reference_languages.emplace(langName);
 
@@ -35,7 +36,7 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
         const auto& currentReference = state->m_current_reference;
         if (!state->m_duplication_checker.CheckLocalizeEntryForDuplicates(currentReference))
         {
-            std::cout << "Localize: a value for reference \"" << currentReference << "\" was already defined\n";
+            con::warn("Localize: a value for reference \"{}\" was already defined", currentReference);
         }
 
         state->m_entries.emplace_back(currentReference, valueToken.StringValue());

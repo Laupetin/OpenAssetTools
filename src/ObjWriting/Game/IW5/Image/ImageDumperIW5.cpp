@@ -6,6 +6,7 @@
 #include "Image/IwiLoader.h"
 #include "Image/IwiWriter8.h"
 #include "ObjWriting.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -41,7 +42,7 @@ namespace
         const auto filePathImage = searchPath.Open(imageFileName);
         if (!filePathImage.IsOpen())
         {
-            std::cerr << std::format("Could not find data for image \"{}\"\n", image.name);
+            con::error("Could not find data for image \"{}\"", image.name);
             return nullptr;
         }
 

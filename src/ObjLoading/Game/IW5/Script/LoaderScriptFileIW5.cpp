@@ -2,6 +2,7 @@
 
 #include "Game/IW5/IW5.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <filesystem>
@@ -53,13 +54,13 @@ namespace
 
             if (scriptFile->compressedLen <= 0 || scriptFile->bytecodeLen <= 0)
             {
-                std::cerr << std::format("Error: Invalid length of the buffers in {} specified\n", assetName);
+                con::error("Invalid length of the buffers in {} specified", assetName);
                 return AssetCreationResult::Failure();
             }
 
             if (offset + static_cast<size_t>(scriptFile->compressedLen + scriptFile->bytecodeLen) > static_cast<size_t>(file.m_length))
             {
-                std::cerr << std::format("Error: Specified length in {} GSC BIN structure exceeds the actual file size\n", assetName);
+                con::error("Specified length in {} GSC BIN structure exceeds the actual file size", assetName);
                 return AssetCreationResult::Failure();
             }
 

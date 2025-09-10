@@ -4,6 +4,7 @@
 #include "Game/IW5/ObjConstantsIW5.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderWeaponIW5.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read weapon gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read weapon gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
