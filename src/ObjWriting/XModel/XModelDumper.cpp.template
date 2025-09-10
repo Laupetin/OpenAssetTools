@@ -532,6 +532,12 @@ namespace
         }
     }
 
+    bool CanOmitDefaultArmature()
+    {
+        return ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT
+               && ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
+    }
+
     void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
     {
         DistinctMapper<Material*> materialMapper(model->numsurfs);
@@ -542,8 +548,8 @@ namespace
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
         AddXModelFaces(out, model, lod);
-
-        if (!HasDefaultArmature(model, lod))
+        
+        if (!CanOmitDefaultArmature() || !HasDefaultArmature(model, lod))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
@@ -684,7 +690,7 @@ namespace
 
             jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
             jRoot["_type"] = "xmodel";
-            jRoot["_version"] = 1;
+            jRoot["_version"] = 2;
             jRoot["_game"] = GAME_LOWER;
 
             m_stream << std::setw(4) << jRoot << "\n";
