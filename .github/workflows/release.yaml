@@ -38,7 +38,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           make -C build -j$(nproc) config=release_x86 all
-          chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
+          chmod +x build/bin/Release_x86/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
