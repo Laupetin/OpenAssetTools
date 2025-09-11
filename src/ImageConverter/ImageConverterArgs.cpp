@@ -29,6 +29,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithDescription("Outputs a lot more and more detailed messages.")
     .Build();
 
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
+    .Build();
+
 constexpr auto CATEGORY_GAME = "Game";
 
 const CommandLineOption* const OPTION_GAME_IW3 =
@@ -71,6 +77,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_GAME_IW3,
     OPTION_GAME_IW4,
     OPTION_GAME_IW5,
@@ -142,6 +149,9 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
         con::globalLogLevel = con::LogLevel::DEBUG;
     else
         con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     return true;
 }
