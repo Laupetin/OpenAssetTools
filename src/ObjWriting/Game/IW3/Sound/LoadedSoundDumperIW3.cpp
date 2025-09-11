@@ -2,6 +2,7 @@
 
 #include "Sound/WavTypes.h"
 #include "Sound/WavWriter.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 
@@ -45,7 +46,7 @@ namespace sound
             break;
 
         default:
-            std::cerr << std::format("Unknown format {} for loaded sound: {}\n", loadedSound->sound.info.format, loadedSound->name);
+            con::error("Unknown format {} for loaded sound: {}", loadedSound->sound.info.format, loadedSound->name);
             break;
         }
     }

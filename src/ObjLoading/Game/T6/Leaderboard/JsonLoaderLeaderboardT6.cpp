@@ -4,6 +4,7 @@
 #include "Game/T6/Leaderboard/JsonLeaderboardDef.h"
 #include "Game/T6/T6.h"
 #include "Leaderboard/LeaderboardCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -37,7 +38,7 @@ namespace
 
                 if (type != "leaderboard" || version != 1u)
                 {
-                    std::cerr << std::format("Tried to load leaderboard \"{}\" but did not find expected type leaderboard of version 1\n", leaderboardDef.name);
+                    con::error("Tried to load leaderboard \"{}\" but did not find expected type leaderboard of version 1", leaderboardDef.name);
                     return false;
                 }
 
@@ -46,7 +47,7 @@ namespace
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of leaderboard: {}\n", e.what());
+                con::error("Failed to parse json of leaderboard: {}", e.what());
             }
 
             return false;
@@ -149,7 +150,7 @@ namespace
             const JsonLoader loader(*file.m_stream, m_memory);
             if (!loader.Load(*leaderboardDef))
             {
-                std::cerr << std::format("Failed to load leaderboard \"{}\"\n", assetName);
+                con::error("Failed to load leaderboard \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

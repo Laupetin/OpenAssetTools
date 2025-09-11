@@ -4,6 +4,7 @@
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/FontIcon/JsonFontIconT6.h"
 #include "Game/T6/T6.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <format>
@@ -45,7 +46,7 @@ namespace
 
                 if (type != "font-icon" || version != 1u)
                 {
-                    std::cerr << std::format("Tried to load font icon \"{}\" but did not find expected type font-icon of version 1\n", assetName);
+                    con::error("Tried to load font icon \"{}\" but did not find expected type font-icon of version 1", assetName);
                     return AssetCreationResult::Failure();
                 }
 
@@ -55,7 +56,7 @@ namespace
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of font icon: {}\n", e.what());
+                con::error("Failed to parse json of font icon: {}", e.what());
             }
 
             return AssetCreationResult::Failure();
@@ -114,7 +115,7 @@ namespace
             auto* materialDependency = context.LoadDependency<AssetMaterial>(jFontIconEntry.material);
             if (materialDependency == nullptr)
             {
-                std::cerr << std::format("Failed to load material \"{}\" for font icon entry \"{}\"\n", jFontIconEntry.material, jFontIconEntry.name);
+                con::error("Failed to load material \"{}\" for font icon entry \"{}\"", jFontIconEntry.material, jFontIconEntry.name);
                 return false;
             }
             registration.AddDependency(materialDependency);

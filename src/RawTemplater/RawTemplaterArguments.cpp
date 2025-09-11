@@ -3,6 +3,7 @@
 #include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -27,6 +28,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithShortName("v")
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
+
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
     .Build();
 
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
@@ -58,14 +65,14 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_OUTPUT_FOLDER,
     OPTION_BUILD_LOG,
     OPTION_DEFINE,
 };
 
 RawTemplaterArguments::RawTemplaterArguments()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
-      m_verbose(false)
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -83,7 +90,7 @@ void RawTemplaterArguments::PrintUsage() const
 
 void RawTemplaterArguments::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools RawTemplater {}\n", GIT_VERSION);
+    con::info("OpenAssetTools RawTemplater {}", GIT_VERSION);
 }
 
 bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -119,7 +126,13 @@ bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& s
     }
 
     // -v; --verbose
-    m_verbose = m_argument_parser.IsOptionSpecified(OPTION_VERBOSE);
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     // -o; --output
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))

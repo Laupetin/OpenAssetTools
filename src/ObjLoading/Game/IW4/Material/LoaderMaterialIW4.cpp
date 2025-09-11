@@ -3,6 +3,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/Material/JsonMaterialLoaderIW4.h"
 #include "Material/MaterialCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -32,7 +33,7 @@ namespace
             AssetRegistration<AssetMaterial> registration(assetName, material);
             if (!LoadMaterialAsJson(*file.m_stream, *material, m_memory, context, registration))
             {
-                std::cerr << std::format("Failed to load material \"{}\"\n", assetName);
+                con::error("Failed to load material \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

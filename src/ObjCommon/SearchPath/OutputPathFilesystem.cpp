@@ -1,5 +1,7 @@
 #include "OutputPathFilesystem.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -24,14 +26,14 @@ std::unique_ptr<std::ostream> OutputPathFilesystem::Open(const std::string& file
     fs::create_directories(containingDirectory, ec);
     if (ec)
     {
-        std::cerr << std::format("Failed to create folder '{}' when try to open file '{}'\n", containingDirectory.string(), fileName);
+        con::error("Failed to create folder '{}' when try to open file '{}'", containingDirectory.string(), fileName);
         return nullptr;
     }
 
     std::ofstream stream(fullNewPath, std::ios::binary | std::ios::out);
     if (!stream.is_open())
     {
-        std::cerr << std::format("Failed to open file '{}'\n", fileName);
+        con::error("Failed to open file '{}'", fileName);
         return nullptr;
     }
 

@@ -26,7 +26,6 @@ public:
             GLB
         };
 
-        bool Verbose = false;
         std::vector<bool> AssetTypesToHandleBitfield;
 
         ImageOutputFormat_e ImageOutputFormat = ImageOutputFormat_e::DDS;

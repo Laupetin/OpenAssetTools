@@ -1,5 +1,6 @@
 #include "RawFileDumperT5.h"
 
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <cassert>
@@ -20,7 +21,7 @@ namespace
 
         if (rawFile->len <= 8)
         {
-            std::cout << "Invalid len of gsc file \"" << rawFile->name << "\"\n";
+            con::error("Invalid len of gsc file \"{}\"", rawFile->name);
             return;
         }
 
@@ -31,13 +32,13 @@ namespace
 
         if (inLen > static_cast<unsigned>(rawFile->len - 8) + 1)
         {
-            std::cout << "Invalid compression of gsc file \"" << rawFile->name << "\": " << inLen << "\n";
+            con::error("Invalid compression of gsc file \"{}\": {}", rawFile->name, inLen);
             return;
         }
 
         if (outLen > GSC_MAX_SIZE)
         {
-            std::cout << "Invalid size of gsc file \"" << rawFile->name << "\": " << outLen << "\n";
+            con::error("Invalid size of gsc file \"{}\": {}", rawFile->name, outLen);
             return;
         }
 
@@ -70,7 +71,7 @@ namespace
 
             if (ret < 0)
             {
-                std::cout << "Inflate failed for dumping gsc file \"" << rawFile->name << "\"\n";
+                con::error("Inflate failed for dumping gsc file \"{}\"", rawFile->name);
                 inflateEnd(&zs);
                 return;
             }

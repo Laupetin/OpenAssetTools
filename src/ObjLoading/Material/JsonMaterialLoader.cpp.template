@@ -38,6 +38,7 @@
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
 #include JSON_HEADER
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -72,7 +73,7 @@ namespace
 
                 if (type != "material" || version != 1u)
                 {
-                    std::cerr << std::format("Tried to load material \"{}\" but did not find expected type material of version 1\n", material.info.name);
+                    con::error("Tried to load material \"{}\" but did not find expected type material of version 1", material.info.name);
                     return false;
                 }
             
@@ -81,7 +82,7 @@ namespace
                 jRoot.at("_game").get_to(game);
                 if (game != GAME_LOWER)
                 {
-                    std::cerr << std::format("Tried to load material \"{}\" but \"_game\" did not find expected type value {}\n", material.info.name, GAME_LOWER);
+                    con::error("Tried to load material \"{}\" but \"_game\" did not find expected type value {}", material.info.name, GAME_LOWER);
                     return false;
                 }
 #endif
@@ -91,7 +92,7 @@ namespace
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of material: {}\n", e.what());
+                con::error("Failed to parse json of material: {}", e.what());
             }
 
             return false;
@@ -100,7 +101,7 @@ namespace
     private:
         static void PrintError(const Material& material, const std::string& message)
         {
-            std::cerr << std::format("Cannot load material \"{}\": {}\n", material.info.name, message);
+            con::error("Cannot load material \"{}\": {}", material.info.name, message);
         }
 
 #if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)

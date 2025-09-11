@@ -1,5 +1,6 @@
 #include "ArgumentParser.h"
 
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <filesystem>
@@ -81,7 +82,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
 
             if (matchedOption == nullptr)
             {
-                std::cout << std::format("Unknown option '{}'.\n", arg);
+                con::error("Unknown option '{}'.", arg);
                 return false;
             }
 
@@ -89,7 +90,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
             {
                 if (!matchedOption->m_multi_use)
                 {
-                    std::cout << std::format("Option '{}' already specified.\n", arg);
+                    con::error("Option '{}' already specified.", arg);
                     return false;
                 }
             }
@@ -101,7 +102,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
             const auto parameterCount = static_cast<unsigned>(matchedOption->m_parameters.size());
             if (argIndex + parameterCount >= argCount)
             {
-                std::cout << std::format("Not enough parameters for option '{}'.\n", arg);
+                con::error("Not enough parameters for option '{}'.", arg);
                 return false;
             }
 
@@ -112,7 +113,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
 
                 if (param.compare(0, std::char_traits<char>::length(PREFIX_SHORT), PREFIX_SHORT) == 0)
                 {
-                    std::cout << std::format("Not enough parameters for option '{}'.\n", arg);
+                    con::error("Not enough parameters for option '{}'.", arg);
                     return false;
                 }
 

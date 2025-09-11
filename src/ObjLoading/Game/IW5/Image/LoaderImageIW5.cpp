@@ -3,6 +3,7 @@
 #include "Game/IW5/IW5.h"
 #include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -39,7 +40,7 @@ namespace
             const auto texture = iwi::LoadIwi(ss);
             if (!texture)
             {
-                std::cerr << std::format("Failed to load texture from: {}\n", fileName);
+                con::error("Failed to load texture from: {}", fileName);
                 return AssetCreationResult::Failure();
             }
 

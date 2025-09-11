@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderTracerT6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read tracer gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read tracer gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

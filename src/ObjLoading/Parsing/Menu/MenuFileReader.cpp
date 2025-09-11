@@ -8,6 +8,7 @@
 #include "Parsing/Impl/ParserMultiInputStream.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
+#include "Utils/Logging/Log.h"
 
 using namespace menu;
 
@@ -65,25 +66,25 @@ bool MenuFileReader::IsValidEndState(const MenuFileParserState* state) const
 {
     if (state->m_current_item)
     {
-        std::cerr << "In \"" << m_file_name << "\": Unclosed item at end of file!\n";
+        con::error("In \"{}\": Unclosed item at end of file!", m_file_name);
         return false;
     }
 
     if (state->m_current_menu)
     {
-        std::cerr << "In \"" << m_file_name << "\": Unclosed menu at end of file!\n";
+        con::error("In \"{}\": Unclosed menu at end of file!", m_file_name);
         return false;
     }
 
     if (state->m_current_function)
     {
-        std::cerr << "In \"" << m_file_name << "\": Unclosed function at end of file!\n";
+        con::error("In \"{}\": Unclosed function at end of file!", m_file_name);
         return false;
     }
 
     if (state->m_in_global_scope)
     {
-        std::cerr << "In \"" << m_file_name << "\": Did not close global scope!\n";
+        con::error("In \"{}\": Did not close global scope!", m_file_name);
         return false;
     }
 
@@ -125,11 +126,11 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
 
     if (!parser->Parse())
     {
-        std::cerr << "Parsing menu file failed!\n";
+        con::error("Parsing menu file failed!");
 
         const auto* parserEndState = parser->GetState();
         if (parserEndState->m_current_event_handler_set && !parserEndState->m_permissive_mode)
-            std::cerr << "You can use the --menu-permissive option to try to compile the event handler script anyway.\n";
+            con::error("You can use the --menu-permissive option to try to compile the event handler script anyway.");
         return nullptr;
     }
 

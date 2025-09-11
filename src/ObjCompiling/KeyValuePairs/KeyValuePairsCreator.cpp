@@ -1,5 +1,7 @@
 #include "KeyValuePairsCreator.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <algorithm>
 #include <format>
 #include <iostream>
@@ -41,7 +43,7 @@ namespace key_value_pairs
 
                     if (endPtr != &strValue[strValue.size()])
                     {
-                        std::cerr << std::format("Could not parse metadata key \"{}\" as hash\n", metaData.first);
+                        con::error("Could not parse metadata key \"{}\" as hash", metaData.first);
                         continue;
                     }
 

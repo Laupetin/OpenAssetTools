@@ -13,6 +13,7 @@
 #include "Techset/TechsetDefinitionCache.h"
 #include "Techset/TechsetFileReader.h"
 #include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -103,7 +104,7 @@ namespace
 
             if (shaderSize % sizeof(uint32_t) != 0)
             {
-                std::cerr << std::format("Invalid shader \"{}\": Size must be dividable by {}\n", fileName, sizeof(uint32_t));
+                con::error("Invalid shader \"{}\": Size must be dividable by {}", fileName, sizeof(uint32_t));
                 return nullptr;
             }
 

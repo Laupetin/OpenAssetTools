@@ -1,5 +1,7 @@
 #include "GltfTextInput.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <exception>
 #include <format>
 #include <iostream>
@@ -41,7 +43,7 @@ bool TextInput::ReadGltfData(std::istream& stream)
     }
     catch (nlohmann::json::exception& e)
     {
-        std::cerr << std::format("Failed to parse json of GLTF: {}", e.what());
+        con::error("Failed to parse json of GLTF: {}", e.what());
     }
 
     return false;

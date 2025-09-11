@@ -2,6 +2,7 @@
 
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Weapon/JsonWeaponAttachment.h"
+#include "Utils/Logging/Log.h"
 #include "Weapon/AttachmentCommon.h"
 
 #include <cstring>
@@ -39,7 +40,7 @@ namespace
 
                 if (type != "attachment" || version != 1u)
                 {
-                    std::cerr << "Tried to load attachment \"" << attachment.szInternalName << "\" but did not find expected type attachment of version 1\n";
+                    con::error("Tried to load attachment \"{}\" but did not find expected type attachment of version 1", attachment.szInternalName);
                     return false;
                 }
 
@@ -48,7 +49,7 @@ namespace
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of attachment: {}\n", e.what());
+                con::error("Failed to parse json of attachment: {}", e.what());
             }
 
             return false;
@@ -57,7 +58,7 @@ namespace
     private:
         static void PrintError(const WeaponAttachment& attachment, const std::string& message)
         {
-            std::cerr << "Cannot load attachment \"" << attachment.szInternalName << "\": " << message << "\n";
+            con::error("Cannot load attachment \"{}\": {}", attachment.szInternalName, message);
         }
 
         bool CreateWeaponAttachmentFromJson(const JsonWeaponAttachment& jAttachment, WeaponAttachment& attachment) const
@@ -653,7 +654,7 @@ namespace
             const JsonLoader loader(*file.m_stream, m_memory, context, registration);
             if (!loader.Load(*attachment))
             {
-                std::cerr << std::format("Failed to load attachment \"{}\"\n", assetName);
+                con::error("Failed to load attachment \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

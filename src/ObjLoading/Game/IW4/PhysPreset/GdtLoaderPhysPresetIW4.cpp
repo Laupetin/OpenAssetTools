@@ -4,6 +4,7 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysPresetIW4.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -30,7 +31,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read phys preset gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read phys preset gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

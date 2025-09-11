@@ -17,8 +17,6 @@ public:
     LinkerArgs();
     bool ParseArgs(int argc, const char** argv, bool& shouldContinue);
 
-    bool m_verbose;
-
     std::vector<std::string> m_zones_to_load;
     std::vector<std::string> m_project_specifiers_to_build;
 
@@ -38,7 +36,6 @@ private:
     static void PrintVersion();
 
     void SetBinFolder();
-    void SetVerbose(bool isVerbose);
 
     ArgumentParser m_argument_parser;
 };

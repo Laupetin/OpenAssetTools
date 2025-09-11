@@ -2,6 +2,7 @@
 
 #include "Loading/IZoneLoaderFactory.h"
 #include "Loading/ZoneLoader.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
 
 #include <filesystem>
@@ -18,7 +19,7 @@ std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
 
     if (!file.is_open())
     {
-        std::cerr << std::format("Could not open file '{}'.\n", path);
+        con::error("Could not open file '{}'.", path);
         return nullptr;
     }
 
@@ -26,7 +27,7 @@ std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
     file.read(reinterpret_cast<char*>(&header), sizeof(header));
     if (file.gcount() != sizeof(header))
     {
-        std::cerr << std::format("Failed to read zone header from file '{}'.\n", path);
+        con::error("Failed to read zone header from file '{}'.", path);
         return nullptr;
     }
 
@@ -42,7 +43,7 @@ std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
 
     if (!zoneLoader)
     {
-        std::cerr << std::format("Could not create factory for zone '{}'.\n", zoneName);
+        con::error("Could not create factory for zone '{}'.", zoneName);
         return nullptr;
     }
 

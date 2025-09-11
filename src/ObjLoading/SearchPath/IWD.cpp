@@ -2,6 +2,7 @@
 
 #include "ObjLoading.h"
 #include "Utils/FileToZlibWrapper.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -215,7 +216,7 @@ namespace
 
             if (m_unz_file == nullptr)
             {
-                std::cerr << std::format("Could not open IWD \"{}\"\n", m_path);
+                con::error("Could not open IWD \"{}\"", m_path);
                 return false;
             }
 
@@ -239,7 +240,7 @@ namespace
                 ret = unzGoToNextFile(m_unz_file);
             }
 
-            std::cout << std::format("Loaded IWD \"{}\" with {} entries\n", m_path, m_entry_map.size());
+            con::info("Loaded IWD \"{}\" with {} entries", m_path, m_entry_map.size());
 
             return true;
         }
@@ -261,7 +262,7 @@ namespace
                 assert(!m_has_open_file);
                 if (m_has_open_file)
                 {
-                    std::cerr << "Trying to open new IWD file while last one was not yet closed.\n";
+                    con::error("Trying to open new IWD file while last one was not yet closed.");
                     return SearchPathOpenFile();
                 }
 

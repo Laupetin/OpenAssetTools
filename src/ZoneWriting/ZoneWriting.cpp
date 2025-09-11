@@ -1,5 +1,6 @@
 #include "ZoneWriting.h"
 
+#include "Utils/Logging/Log.h"
 #include "Writing/IZoneWriterFactory.h"
 
 #include <chrono>
@@ -15,7 +16,7 @@ bool ZoneWriting::WriteZone(std::ostream& stream, const Zone& zone)
     const auto zoneWriter = factory->CreateWriter(zone);
     if (zoneWriter == nullptr)
     {
-        std::cerr << std::format("Could not create ZoneWriter for zone \"{}\".\n", zone.m_name);
+        con::error("Could not create ZoneWriter for zone \"{}\".", zone.m_name);
         return false;
     }
 
@@ -23,7 +24,7 @@ bool ZoneWriting::WriteZone(std::ostream& stream, const Zone& zone)
 
     const auto end = std::chrono::high_resolution_clock::now();
 
-    std::cout << std::format("Writing zone \"{}\" took {} ms.\n", zone.m_name, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    con::info("Writing zone \"{}\" took {} ms.", zone.m_name, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     return result;
 }

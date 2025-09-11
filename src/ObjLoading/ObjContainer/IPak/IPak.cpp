@@ -2,13 +2,14 @@
 
 #include "IPakStreamManager.h"
 #include "ObjContainer/IPak/IPakTypes.h"
-#include "zlib.h"
+#include "Utils/Logging/Log.h"
 
 #include <filesystem>
 #include <format>
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <zlib.h>
 
 namespace fs = std::filesystem;
 
@@ -92,7 +93,7 @@ namespace
                 m_stream->read(reinterpret_cast<char*>(&indexEntry), sizeof(indexEntry));
                 if (m_stream->gcount() != sizeof(indexEntry))
                 {
-                    std::cerr << std::format("Unexpected eof when trying to load index entry {}.\n", itemIndex);
+                    con::error("Unexpected eof when trying to load index entry {}.", itemIndex);
                     return false;
                 }
 
@@ -115,7 +116,7 @@ namespace
             m_stream->read(reinterpret_cast<char*>(&section), sizeof(section));
             if (m_stream->gcount() != sizeof(section))
             {
-                std::cerr << "Unexpected eof when trying to load section.\n";
+                con::error("Unexpected eof when trying to load section.");
                 return false;
             }
 
@@ -143,19 +144,19 @@ namespace
             m_stream->read(reinterpret_cast<char*>(&header), sizeof(header));
             if (m_stream->gcount() != sizeof(header))
             {
-                std::cerr << "Unexpected eof when trying to load header.\n";
+                con::error("Unexpected eof when trying to load header.");
                 return false;
             }
 
             if (header.magic != ipak_consts::IPAK_MAGIC)
             {
-                std::cerr << std::format("Invalid ipak magic '{:#x}'.\n", header.magic);
+                con::error("Invalid ipak magic '{:#x}'.", header.magic);
                 return false;
             }
 
             if (header.version != ipak_consts::IPAK_VERSION)
             {
-                std::cerr << std::format("Unsupported ipak version '{}'.\n", header.version);
+                con::error("Unsupported ipak version '{}'.", header.version);
                 return false;
             }
 
@@ -167,13 +168,13 @@ namespace
 
             if (m_index_section == nullptr)
             {
-                std::cerr << "IPak does not contain an index section.\n";
+                con::error("IPak does not contain an index section.");
                 return false;
             }
 
             if (m_data_section == nullptr)
             {
-                std::cerr << "IPak does not contain a data section.\n";
+                con::error("IPak does not contain a data section.");
                 return false;
             }
 

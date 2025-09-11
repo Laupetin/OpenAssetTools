@@ -26,6 +26,7 @@
 #include JSON_HEADER
 
 #include "Asset/AssetRegistration.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/QuatInt16.h"
 #include "Utils/StringUtils.h"
 #include "XModel/Gltf/GltfBinInput.h"
@@ -79,7 +80,7 @@ namespace
             AssetRegistration<AssetXModel> registration(assetName, xmodel);
             if (!LoadFromFile(*file.m_stream, *xmodel, context, registration))
             {
-                std::cerr << std::format("Failed to load xmodel \"{}\"\n", assetName);
+                con::error("Failed to load xmodel \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
@@ -100,14 +101,14 @@ namespace
 
                 if (type != "xmodel" || version < 1u || version > 2u)
                 {
-                    std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1 or 2\n", xmodel.name);
+                    con::error("Tried to load xmodel \"{}\" but did not find expected type material of version 1 or 2", xmodel.name);
                     return false;
                 }
                 
                 if (version == 1u)
                 {
                     m_gltf_bad_rotation_formulas = true;
-                    std::cerr << std::format("DEPRECATED: XModel {} is version 1 that made use of bad GLTF bone rotations.\n", xmodel.name);
+                    con::warn("DEPRECATED: XModel {} is version 1 that made use of bad GLTF bone rotations.", xmodel.name);
                 }
                 else
                 {
@@ -119,7 +120,7 @@ namespace
             }
             catch (const nlohmann::json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of xmodel: {}\n", e.what());
+                con::error("Failed to parse json of xmodel: {}", e.what());
             }
 
             return false;
@@ -127,7 +128,7 @@ namespace
 
         static void PrintError(const XModel& xmodel, const std::string& message)
         {
-            std::cerr << std::format("Cannot load xmodel \"{}\": {}\n", xmodel.name, message);
+            con::error("Cannot load xmodel \"{}\": {}", xmodel.name, message);
         }
 
         std::unique_ptr<XModelCommon> LoadModelByExtension(std::istream& stream, const std::string& extension) const
@@ -694,7 +695,7 @@ namespace
             constexpr auto maxTriCount = std::numeric_limits<decltype(XSurface::triCount)>::max();
             if (commonObject.m_faces.size() > maxTriCount)
             {
-                std::cerr << std::format("Surface cannot have more than {} faces\n", maxTriCount);
+                con::error("Surface cannot have more than {} faces", maxTriCount);
                 return false;
             }
 
@@ -727,7 +728,7 @@ namespace
             constexpr auto maxVertices = std::numeric_limits<decltype(XSurface::vertCount)>::max();
             if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVertices)
             {
-                std::cerr << std::format("Lod exceeds limit of {} vertices\n", maxVertices);
+                con::error("Lod exceeds limit of {} vertices", maxVertices);
                 return false;
             }
 
@@ -764,7 +765,7 @@ namespace
                 }
                 else
                 {
-                    std::cerr << std::format("Models must not have vertices that are influenced by more than {} bones\n",
+                    con::error("Models must not have vertices that are influenced by more than {} bones",
                                              std::extent_v<decltype(XSurfaceVertexInfo::vertCount)> + 1);
                     return false;
                 }

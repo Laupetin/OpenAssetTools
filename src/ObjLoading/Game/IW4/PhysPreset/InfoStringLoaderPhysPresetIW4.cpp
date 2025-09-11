@@ -3,6 +3,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW4/PhysPreset/PhysPresetFields.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -78,7 +79,7 @@ namespace phys_preset
             infoString, &presetInfo, m_zone.m_script_strings, m_memory, context, registration, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse phys preset: \"{}\"\n", assetName);
+            con::error("Failed to parse phys preset: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

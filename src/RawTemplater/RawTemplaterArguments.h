@@ -17,8 +17,6 @@ class RawTemplaterArguments
     static void PrintVersion();
 
 public:
-    bool m_verbose;
-
     std::vector<std::string> m_input_files;
     std::string m_output_directory;
 

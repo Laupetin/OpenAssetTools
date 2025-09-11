@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/PathUtils.h"
 
 #include <filesystem>
@@ -33,6 +34,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithShortName("v")
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
+
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
     .Build();
 
 const CommandLineOption* const OPTION_BASE_FOLDER =
@@ -115,6 +122,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_BASE_FOLDER,
     OPTION_OUTPUT_FOLDER,
     OPTION_ADD_ASSET_SEARCH_PATH,
@@ -128,8 +136,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 LinkerArgs::LinkerArgs()
-    : m_verbose(false),
-      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -150,20 +157,13 @@ void LinkerArgs::PrintUsage() const
 
 void LinkerArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools Linker {}\n", GIT_VERSION);
+    con::info("OpenAssetTools Linker {}", GIT_VERSION);
 }
 
 void LinkerArgs::SetBinFolder()
 {
     const fs::path path(utils::GetExecutablePath());
     m_bin_folder = path.parent_path().string();
-}
-
-void LinkerArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
-    ObjLoading::Configuration.Verbose = isVerbose;
-    ObjWriting::Configuration.Verbose = isVerbose;
 }
 
 bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -202,7 +202,13 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     // b; --base-folder
     if (m_argument_parser.IsOptionSpecified(OPTION_BASE_FOLDER))

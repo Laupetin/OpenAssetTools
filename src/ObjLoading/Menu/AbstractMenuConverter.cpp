@@ -1,5 +1,7 @@
 #include "AbstractMenuConverter.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
 #include <iostream>
 
@@ -15,15 +17,15 @@ AbstractMenuConverter::AbstractMenuConverter(const bool disableOptimizations, IS
 
 void AbstractMenuConverter::PrintConversionExceptionDetails(const MenuConversionException& e)
 {
-    std::cerr << "ERROR while converting menu:\n";
-    std::cerr << std::format("  Menu: {}\n", e.m_menu->m_name);
+    con::error("ERROR while converting menu:");
+    con::error("  Menu: {}", e.m_menu->m_name);
 
     if (e.m_item)
     {
-        std::cerr << std::format("Item: {}\n", e.m_item->m_name);
+        con::error("Item: {}", e.m_item->m_name);
     }
 
-    std::cerr << std::format("  Message: {}\n", e.m_message);
+    con::error("  Message: {}", e.m_message);
 }
 
 const char* AbstractMenuConverter::ConvertString(const std::string& str) const

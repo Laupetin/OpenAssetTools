@@ -12,6 +12,7 @@
 #include "UnlinkerArgs.h"
 #include "UnlinkerPaths.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
 #include "ZoneLoading.h"
 
@@ -67,7 +68,7 @@ private:
         std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
         if (!zoneDefinitionFile.is_open())
         {
-            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone.m_name);
+            con::error("Failed to open file for zone definition file of zone \"{}\".", zone.m_name);
             return false;
         }
 
@@ -92,7 +93,7 @@ private:
         stream = std::ofstream(gdtFilePath, std::fstream::out | std::fstream::binary);
         if (!stream.is_open())
         {
-            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone.m_name);
+            con::error("Failed to open file for zone definition file of zone \"{}\".", zone.m_name);
             return false;
         }
 
@@ -126,16 +127,17 @@ private:
         {
             if (!handledSpecifiedAssets[i])
             {
-                std::cerr << std::format("Unknown asset type \"{}\"\n", m_args.m_specified_asset_types[i]);
+                con::error("Unknown asset type \"{}\"", m_args.m_specified_asset_types[i]);
                 anySpecifiedValueInvalid = true;
             }
         }
 
         if (anySpecifiedValueInvalid)
         {
-            std::cerr << "Valid asset types are:\n";
+            con::error("Valid asset types are:");
 
             auto first = true;
+            std::ostringstream ss;
             for (auto i = 0u; i < assetTypeCount; i++)
             {
                 const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
@@ -143,10 +145,10 @@ private:
                 if (first)
                     first = false;
                 else
-                    std::cerr << ", ";
-                std::cerr << assetTypeName;
+                    ss << ", ";
+                ss << assetTypeName;
             }
-            std::cerr << "\n";
+            con::error(ss.str());
         }
     }
 
@@ -207,7 +209,7 @@ private:
 
             if (!result)
             {
-                std::cerr << "Dumping zone failed!\n";
+                con::error("Dumping zone failed!");
                 return false;
             }
         }
@@ -221,7 +223,7 @@ private:
         {
             if (!fs::is_regular_file(zonePath))
             {
-                std::cerr << std::format("Could not find file \"{}\".\n", zonePath);
+                con::error("Could not find file \"{}\".", zonePath);
                 continue;
             }
 
@@ -231,12 +233,11 @@ private:
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
-                std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
+                con::error("Failed to load zone \"{}\".", zonePath);
                 return false;
             }
 
-            if (m_args.m_verbose)
-                std::cout << std::format("Loaded zone \"{}\"\n", zone->m_name);
+            con::debug("Loaded zone \"{}\"", zone->m_name);
 
             if (ShouldLoadObj())
             {
@@ -267,8 +268,7 @@ private:
 
             loadedZone.reset();
 
-            if (m_args.m_verbose)
-                std::cout << std::format("Unloaded zone \"{}\"\n", zoneName);
+            con::debug("Unloaded zone \"{}\"", zoneName);
         }
         m_loaded_zones.clear();
     }
@@ -279,7 +279,7 @@ private:
         {
             if (!fs::is_regular_file(zonePath))
             {
-                std::cerr << std::format("Could not find file \"{}\".\n", zonePath);
+                con::error("Could not find file \"{}\".", zonePath);
                 continue;
             }
 
@@ -294,13 +294,12 @@ private:
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
-                std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
+                con::error("Failed to load zone \"{}\".", zonePath);
                 return false;
             }
 
             zoneName = zone->m_name;
-            if (m_args.m_verbose)
-                std::cout << std::format("Loaded zone \"{}\"\n", zoneName);
+            con::debug("Loaded zone \"{}\"", zoneName);
 
             const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
             if (ShouldLoadObj())
@@ -313,8 +312,7 @@ private:
                 objLoader->UnloadContainersOfZone(*zone);
 
             zone.reset();
-            if (m_args.m_verbose)
-                std::cout << std::format("Unloaded zone \"{}\"\n", zoneName);
+            con::debug("Unloaded zone \"{}\"", zoneName);
         }
 
         return true;

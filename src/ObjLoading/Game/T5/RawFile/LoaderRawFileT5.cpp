@@ -1,6 +1,7 @@
 #include "LoaderRawFileT5.h"
 
 #include "Game/T5/T5.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <filesystem>
@@ -71,7 +72,7 @@ namespace
 
             if (ret != Z_STREAM_END)
             {
-                std::cerr << std::format("Deflate failed for loading gsc file \"{}\"\n", assetName);
+                con::error("Deflate failed for loading gsc file \"{}\"", assetName);
                 deflateEnd(&zs);
                 return AssetCreationResult::Failure();
             }

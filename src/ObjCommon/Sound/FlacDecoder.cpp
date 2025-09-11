@@ -4,6 +4,7 @@
 #include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <iostream>
@@ -232,7 +233,7 @@ namespace flac
         }
         catch (const FlacReadingException& e)
         {
-            std::cerr << e.what() << "\n";
+            con::error(e.what());
         }
 
         return false;

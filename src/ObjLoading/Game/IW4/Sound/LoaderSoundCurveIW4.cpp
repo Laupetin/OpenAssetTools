@@ -5,6 +5,7 @@
 #include "Parsing/Graph2D/Graph2DReader.h"
 #include "Pool/GlobalAssetPool.h"
 #include "Sound/SoundCurveCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -38,7 +39,7 @@ namespace
 
             if (sndCurveData->knots.size() > std::extent_v<decltype(SndCurve::knots)>)
             {
-                std::cerr << std::format("Failed to load SndCurve \"{}\": Too many knots ({})\n", assetName, sndCurveData->knots.size());
+                con::error("Failed to load SndCurve \"{}\": Too many knots ({})", assetName, sndCurveData->knots.size());
                 return AssetCreationResult::Failure();
             }
 

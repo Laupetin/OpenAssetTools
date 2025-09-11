@@ -7,6 +7,7 @@
 #include "Game/T6/T6.h"
 #include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <cmath>
@@ -96,14 +97,14 @@ namespace
         if (!cell.AsFloat(dbsplValue))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a float\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a float", rowIndex + 1, colName);
             return false;
         }
 
         if (dbsplValue < 0.0f || dbsplValue > 100.0f)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [0.0, 100.0]\n", rowIndex + 1, colName, dbsplValue);
+            con::error("Invalid value for row {} col '{}' - {} [0.0, 100.0]", rowIndex + 1, colName, dbsplValue);
             return false;
         }
 
@@ -121,14 +122,14 @@ namespace
         if (!cell.AsFloat(centsValue))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a float\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a float", rowIndex + 1, colName);
             return false;
         }
 
         if (centsValue < -2400.0f || centsValue > 1200.0f)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centsValue);
+            con::error("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]", rowIndex + 1, colName, centsValue);
             return false;
         }
 
@@ -151,14 +152,14 @@ namespace
         if (!cell.AsUInt32(value32))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a uint\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a uint", rowIndex + 1, colName);
             return false;
         }
 
         if (value32 < min || value32 > max)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [{}, {}]\n", rowIndex + 1, colName, value32, min, max);
+            con::error("Invalid value for row {} col '{}' - {} [{}, {}]", rowIndex + 1, colName, value32, min, max);
             return false;
         }
 
@@ -181,14 +182,14 @@ namespace
         if (!cell.AsInt32(value32))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a int\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a int", rowIndex + 1, colName);
             return false;
         }
 
         if (value32 < min || value32 > max)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [{}, {}]\n", rowIndex + 1, colName, value32, min, max);
+            con::error("Invalid value for row {} col '{}' - {} [{}, {}]", rowIndex + 1, colName, value32, min, max);
             return false;
         }
 
@@ -211,14 +212,14 @@ namespace
         if (!cell.AsUInt32(value32))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a uint\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a uint", rowIndex + 1, colName);
             return false;
         }
 
         if (value32 < min || value32 > max)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [{}, {}]\n", rowIndex + 1, colName, value32, min, max);
+            con::error("Invalid value for row {} col '{}' - {} [{}, {}]", rowIndex + 1, colName, value32, min, max);
             return false;
         }
 
@@ -235,14 +236,14 @@ namespace
         if (!cell.AsFloat(valueFloat))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - Must be a float\n", rowIndex + 1, colName);
+            con::error("Invalid value for row {} col '{}' - Must be a float", rowIndex + 1, colName);
             return false;
         }
 
         if (valueFloat < 0.0f || valueFloat > 1.0f)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [0.0, 1.0]\n", rowIndex + 1, colName, valueFloat);
+            con::error("Invalid value for row {} col '{}' - {} [0.0, 1.0]", rowIndex + 1, colName, valueFloat);
             return false;
         }
 
@@ -290,9 +291,9 @@ namespace
         }
 
         const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-        std::cerr << std::format("Invalid value for row {} col '{}' - {}. Must be one of:\n", rowIndex + 1, colName, cell.m_value);
+        con::error("Invalid value for row {} col '{}' - {}. Must be one of:", rowIndex + 1, colName, cell.m_value);
         for (auto i = 0u; i < enumValueCount; i++)
-            std::cerr << std::format("  {}\n", enumValues[i]);
+            con::error("  {}", enumValues[i]);
 
         return false;
     }
@@ -341,9 +342,9 @@ namespace
             if (!foundValue)
             {
                 const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-                std::cerr << std::format("Invalid value for row {} col '{}' - {}. Must be one of:\n", rowIndex + 1, colName, entry);
+                con::error("Invalid value for row {} col '{}' - {}. Must be one of:", rowIndex + 1, colName, entry);
                 for (auto i = 0u; i < enumValueCount; i++)
-                    std::cerr << std::format("  {}\n", enumValues[i]);
+                    con::error("  {}", enumValues[i]);
                 return false;
             }
         }
@@ -648,7 +649,7 @@ namespace
         SoundAliasHeaders headers;
         if (!headerRow.Read(csv) || !headers.From(headerRow))
         {
-            std::cerr << std::format("Invalid headers for aliases of sound bank {}\n", sndBank->name);
+            con::error("Invalid headers for aliases of sound bank {}", sndBank->name);
             return false;
         }
 
@@ -740,7 +741,7 @@ namespace
 
             if (freeIdx == std::numeric_limits<unsigned short>::max())
             {
-                std::cerr << "Unable to allocate sound bank alias index list\n";
+                con::error("Unable to allocate sound bank alias index list");
                 return false;
             }
 
@@ -807,7 +808,7 @@ namespace
         RadverbHeaders headers;
         if (!csvHeaders.Read(csv) || !headers.From(csvHeaders))
         {
-            std::cerr << std::format("Invalid headers for radverbs of sound bank {}\n", sndBank->name);
+            con::error("Invalid headers for radverbs of sound bank {}", sndBank->name);
             return false;
         }
 
@@ -867,7 +868,7 @@ namespace
         const auto nameRow = headerRow.GetIndexForHeader("name");
         if (!nameRow)
         {
-            std::cerr << std::format("Missing name header for ducks of sound bank {}\n", sndBank->name);
+            con::error("Missing name header for ducks of sound bank {}", sndBank->name);
             return false;
         }
 
@@ -882,7 +883,7 @@ namespace
             const auto duckFile = searchPath.Open(std::format("soundbank/ducks/{}.duk", name));
             if (!duckFile.IsOpen())
             {
-                std::cerr << std::format("Unable to find .duk file for {} in ducklist for sound bank {}\n", name, sndBank->name);
+                con::error("Unable to find .duk file for {} in ducklist for sound bank {}", name, sndBank->name);
                 return false;
             }
 
@@ -944,7 +945,7 @@ namespace
         {
             if (assetName.find('.') == std::string::npos)
             {
-                std::cerr << "A language must be specific in the sound bank asset name! (Ex: mpl_common.all)\n";
+                con::error("A language must be specific in the sound bank asset name! (Ex: mpl_common.all)");
                 return AssetCreationResult::Failure();
             }
 
@@ -969,7 +970,7 @@ namespace
             {
                 if (!LoadSoundRadverbs(m_memory, sndBank, radverbFile))
                 {
-                    std::cerr << std::format("Sound bank reverbs file for {} is invalid\n", assetName);
+                    con::error("Sound bank reverbs file for {} is invalid", assetName);
                     return AssetCreationResult::Failure();
                 }
             }
@@ -979,7 +980,7 @@ namespace
             {
                 if (!LoadSoundDuckList(m_search_path, m_memory, sndBank, duckListFile))
                 {
-                    std::cerr << std::format("Sound bank ducklist file for {} is invalid\n", assetName);
+                    con::error("Sound bank ducklist file for {} is invalid", assetName);
                     return AssetCreationResult::Failure();
                 }
             }
@@ -1051,7 +1052,7 @@ namespace
                 }
                 else
                 {
-                    std::cerr << std::format("Loaded sound bank for {} failed to generate. Please check your build files.\n", assetName);
+                    con::error("Loaded sound bank for {} failed to generate. Please check your build files.", assetName);
                     return AssetCreationResult::Failure();
                 }
             }
@@ -1065,7 +1066,7 @@ namespace
 
                 if (!result)
                 {
-                    std::cerr << std::format("Streamed sound bank for {} failed to generate. Please check your build files.\n", assetName);
+                    con::error("Streamed sound bank for {} failed to generate. Please check your build files.", assetName);
                     return AssetCreationResult::Failure();
                 }
             }

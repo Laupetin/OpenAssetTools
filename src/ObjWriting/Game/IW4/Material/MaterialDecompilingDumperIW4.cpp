@@ -4,6 +4,7 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/Logging/Log.h"
 
 #pragma warning(push, 0)
 #include <Eigen>
@@ -550,7 +551,7 @@ namespace
             }
             else
             {
-                std::cout << "Could not determine material type for material \"" << m_material.info.name << "\"\n";
+                con::error("Could not determine material type for material \"{}\"", m_material.info.name);
             }
         }
 
@@ -937,7 +938,7 @@ namespace
                 else
                 {
                     std::string constantNamePart(constant.name, strnlen(constant.name, std::extent_v<decltype(constant.name)>));
-                    std::cout << "Unknown constant: " << constantNamePart << "\n";
+                    con::error("Unknown constant: {}", constantNamePart);
                 }
             }
         }
@@ -1031,8 +1032,7 @@ namespace
                 if (knownMaterialSourceName == knownTextureMaps.end())
                 {
                     assert(false);
-                    std::cout << "Unknown material texture source name hash: 0x" << std::hex << entry.nameHash << " (" << entry.nameStart << "..."
-                              << entry.nameEnd << ")\n";
+                    con::error("Unknown material texture source name hash: 0x{:x} ({}...{})", entry.nameHash, entry.nameStart, entry.nameEnd);
                     continue;
                 }
 
@@ -1089,7 +1089,7 @@ namespace
                 assert(filter != GdtFilter_e::UNKNOWN);
                 if (filter == GdtFilter_e::UNKNOWN)
                 {
-                    std::cout << std::format("Unknown filter/mipmap combination: {} {}\n", entry.samplerState.filter, entry.samplerState.mipMap);
+                    con::warn("Unknown filter/mipmap combination: {} {}", entry.samplerState.filter, entry.samplerState.mipMap);
                     continue;
                 }
 

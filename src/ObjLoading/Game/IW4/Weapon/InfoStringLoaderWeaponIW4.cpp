@@ -4,6 +4,7 @@
 #include "Game/IW4/InfoString/EnumStrings.h"
 #include "Game/IW4/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW4/Weapon/WeaponFields.h"
+#include "Utils/Logging/Log.h"
 #include "Weapon/AccuracyGraphLoader.h"
 
 #include <cassert>
@@ -23,13 +24,13 @@ namespace
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse hide tags as array\n";
+                con::error("Failed to parse hide tags as array");
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cerr << std::format("Cannot have more than {} hide tags!\n", std::extent_v<decltype(WeaponFullDef::hideTags)>);
+                con::error("Cannot have more than {} hide tags!", std::extent_v<decltype(WeaponFullDef::hideTags)>);
                 return false;
             }
 
@@ -85,14 +86,13 @@ namespace
             std::vector<std::array<std::string, 2>> pairs;
             if (!ParseAsArray(value, pairs))
             {
-                std::cerr << std::format("Failed to parse notetrack{}map as pairs\n", mapName);
+                con::error("Failed to parse notetrack{}map as pairs", mapName);
                 return false;
             }
 
             if (pairs.size() > std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                std::cerr << std::format(
-                    "Cannot have more than {} notetrack{}map entries!\n", std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>, mapName);
+                con::error("Cannot have more than {} notetrack{}map entries!", std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>, mapName);
                 return false;
             }
 
@@ -267,28 +267,27 @@ namespace
     void CheckProjectileValues(const WeaponCompleteDef& weaponCompleteDef, const WeaponDef& weaponDef)
     {
         if (weaponDef.iProjectileSpeed <= 0)
-            std::cerr << std::format("Projectile speed for WeapType {} must be greater than 0.0", weaponCompleteDef.szDisplayName);
+            con::error("Projectile speed for WeapType {} must be greater than 0.0", weaponCompleteDef.szDisplayName);
         if (weaponDef.destabilizationCurvatureMax >= 1000000000.0f || weaponDef.destabilizationCurvatureMax < 0.0f)
-            std::cerr << std::format("Destabilization angle for for WeapType {} must be between 0 and 45 degrees", weaponCompleteDef.szDisplayName);
+            con::error("Destabilization angle for for WeapType {} must be between 0 and 45 degrees", weaponCompleteDef.szDisplayName);
         if (weaponDef.destabilizationRateTime < 0.0f)
-            std::cerr << std::format("Destabilization rate time for for WeapType {} must be non-negative", weaponCompleteDef.szDisplayName);
+            con::error("Destabilization rate time for for WeapType {} must be non-negative", weaponCompleteDef.szDisplayName);
     }
 
     void CheckTurretBarrelSpin(const WeaponCompleteDef& weaponCompleteDef, const WeaponDef& weaponDef)
     {
         if (weaponDef.weapClass != WEAPCLASS_TURRET)
-            std::cerr << std::format("Rotating barrel set for non-turret weapon {}.", weaponCompleteDef.szInternalName);
+            con::error("Rotating barrel set for non-turret weapon {}.", weaponCompleteDef.szInternalName);
 
         if (0.0f == weaponDef.turretBarrelSpinSpeed)
         {
-            std::cerr << std::format(
-                "Rotating barrel spin speed '{}' is invalid for weapon {}.", weaponDef.turretBarrelSpinSpeed, weaponCompleteDef.szInternalName);
+            con::error("Rotating barrel spin speed '{}' is invalid for weapon {}.", weaponDef.turretBarrelSpinSpeed, weaponCompleteDef.szInternalName);
         }
         if (0.0f < weaponDef.turretOverheatUpRate && 0.0f >= weaponDef.turretOverheatDownRate)
         {
-            std::cerr << std::format("Turret overheat Up rate is set, but the down rate '{}' is invalid for weapon {}.",
-                                     weaponDef.turretOverheatDownRate,
-                                     weaponCompleteDef.szInternalName);
+            con::error("Turret overheat Up rate is set, but the down rate '{}' is invalid for weapon {}.",
+                       weaponDef.turretOverheatDownRate,
+                       weaponCompleteDef.szInternalName);
         }
     }
 
@@ -296,18 +295,18 @@ namespace
     {
         if (0.0f != weaponDef.fAdsZoomInFrac)
         {
-            std::cerr << std::format("Weapon {} ({}) has thermal scope set. ADS Zoom In frac should be 0 to prevent zoom-in blur ({}).\n",
-                                     weaponCompleteDef.szInternalName,
-                                     weaponCompleteDef.szDisplayName,
-                                     weaponDef.fAdsZoomInFrac);
+            con::error("Weapon {} ({}) has thermal scope set. ADS Zoom In frac should be 0 to prevent zoom-in blur ({}).",
+                       weaponCompleteDef.szInternalName,
+                       weaponCompleteDef.szDisplayName,
+                       weaponDef.fAdsZoomInFrac);
         }
 
         if (0.0f != weaponDef.fAdsZoomOutFrac)
         {
-            std::cerr << std::format("Weapon {} ({}) has thermal scope set. ADS Zoom Out frac should be 0 to prevent zoom-out blur ({}).\n",
-                                     weaponCompleteDef.szInternalName,
-                                     weaponCompleteDef.szDisplayName,
-                                     weaponDef.fAdsZoomOutFrac);
+            con::error("Weapon {} ({}) has thermal scope set. ADS Zoom Out frac should be 0 to prevent zoom-out blur ({}).",
+                       weaponCompleteDef.szInternalName,
+                       weaponCompleteDef.szDisplayName,
+                       weaponDef.fAdsZoomOutFrac);
         }
     }
 
@@ -337,7 +336,7 @@ namespace
             weaponDef.fMinDamageRange = 999999.12f;
 
         if (weaponDef.enemyCrosshairRange > 15000.0f)
-            std::cerr << std::format("Enemy crosshair ranges should be less than {}\n", 15000.0f);
+            con::error("Enemy crosshair ranges should be less than {}", 15000.0f);
 
         if (weaponDef.weapType == WEAPTYPE_PROJECTILE)
             CheckProjectileValues(weaponCompleteDef, weaponDef);
@@ -350,22 +349,21 @@ namespace
 
         if (weaponDef.offhandClass && !weaponDef.bClipOnly)
         {
-            std::cerr << std::format(
-                "Weapon {} ({}) is an offhand weapon but is not set to clip only, which is not supported since we can't reload the offhand slot.\n",
-                weaponCompleteDef.szInternalName,
-                weaponCompleteDef.szDisplayName);
+            con::error("Weapon {} ({}) is an offhand weapon but is not set to clip only, which is not supported since we can't reload the offhand slot.",
+                       weaponCompleteDef.szInternalName,
+                       weaponCompleteDef.szDisplayName);
         }
 
         if (weaponDef.weapType == WEAPTYPE_BULLET)
         {
             if (weaponDef.bulletExplDmgMult <= 0.0f)
-                std::cerr << std::format("Detected invalid bulletExplDmgMult of '{}' for weapon '{}'; please update weapon settings.\n",
-                                         weaponDef.bulletExplDmgMult,
-                                         weaponCompleteDef.szInternalName);
+                con::error("Detected invalid bulletExplDmgMult of '{}' for weapon '{}'; please update weapon settings.",
+                           weaponDef.bulletExplDmgMult,
+                           weaponCompleteDef.szInternalName);
             if (weaponDef.bulletExplRadiusMult <= 0.0f)
-                std::cerr << std::format("Detected invalid bulletExplRadiusMult of '{}' for weapon '{}'; please update weapon settings.\n",
-                                         weaponDef.bulletExplRadiusMult,
-                                         weaponCompleteDef.szInternalName);
+                con::error("Detected invalid bulletExplRadiusMult of '{}' for weapon '{}'; please update weapon settings.",
+                           weaponDef.bulletExplRadiusMult,
+                           weaponCompleteDef.szInternalName);
         }
     }
 
@@ -448,7 +446,7 @@ namespace weapon
             infoString, *weaponFullDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
         if (!converter.Convert())
         {
-            std::cerr << std::format("Failed to parse weapon: \"{}\"\n", assetName);
+            con::error("Failed to parse weapon: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

@@ -3,6 +3,7 @@
 #include "SearchPath/IWD.h"
 #include "SearchPath/SearchPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <cassert>
@@ -241,11 +242,11 @@ namespace
 
             if (!fs::is_directory(path))
             {
-                std::cout << std::format("Adding {} search path (Not found): {}\n", m_type_name, path);
+                con::debug("Adding {} search path (Not found): {}", m_type_name, path);
                 return false;
             }
 
-            std::cout << std::format("Adding {} search path: {}\n", m_type_name, path);
+            con::debug("Adding {} search path: {}", m_type_name, path);
             searchPaths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(path));
             return true;
         }

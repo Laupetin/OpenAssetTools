@@ -2,6 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "LightDef/LightDefCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -49,7 +50,7 @@ namespace
             auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
             if (!imageDependency)
             {
-                std::cerr << std::format("Could not load GfxLightDef \"{}\" due to missing image \"{}\"\n", assetName, imageName);
+                con::error("Could not load GfxLightDef \"{}\" due to missing image \"{}\"", assetName, imageName);
                 return AssetCreationResult::Failure();
             }
             registration.AddDependency(imageDependency);

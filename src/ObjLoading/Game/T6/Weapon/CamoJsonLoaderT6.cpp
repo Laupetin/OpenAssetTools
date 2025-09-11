@@ -3,6 +3,7 @@
 #include "Game/T6/Json/JsonWeaponCamo.h"
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 #include "Weapon/CamoCommon.h"
 
 #include <cstring>
@@ -40,7 +41,7 @@ namespace
 
                 if (type != "weaponCamo" || version != 1u)
                 {
-                    std::cerr << std::format("Tried to load weapon camo \"{}\" but did not find expected type weaponCamo of version {}\n", weaponCamo.name, 1u);
+                    con::error("Tried to load weapon camo \"{}\" but did not find expected type weaponCamo of version {}", weaponCamo.name, 1u);
                     return false;
                 }
 
@@ -49,7 +50,7 @@ namespace
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of weapon camo: {}\n", e.what());
+                con::error("Failed to parse json of weapon camo: {}", e.what());
             }
 
             return false;
@@ -58,7 +59,7 @@ namespace
     private:
         static void PrintError(const WeaponCamo& weaponCamo, const std::string& message)
         {
-            std::cerr << std::format("Cannot load weapon camo \"{}\": {}\n", weaponCamo.name, message);
+            con::error("Cannot load weapon camo \"{}\": {}", weaponCamo.name, message);
         }
 
         bool CreateWeaponCamoSetFromJson(const JsonWeaponCamoSet& jWeaponCamoSet, WeaponCamoSet& weaponCamoSet, const WeaponCamo& weaponCamo) const
@@ -263,7 +264,7 @@ namespace
             const JsonLoader loader(*file.m_stream, m_memory, context, registration);
             if (!loader.Load(*weaponCamo))
             {
-                std::cerr << std::format("Failed to load weapon camo \"{}\"\n", assetName);
+                con::error("Failed to load weapon camo \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 

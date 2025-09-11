@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <format>
@@ -31,6 +32,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithShortName("v")
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
+
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
     .Build();
 
 const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE =
@@ -124,6 +131,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_MINIMAL_ZONE_FILE,
     OPTION_LOAD,
     OPTION_LIST,
@@ -145,8 +153,7 @@ UnlinkerArgs::UnlinkerArgs()
       m_minimal_zone_def(false),
       m_asset_type_handling(AssetTypeHandling::EXCLUDE),
       m_skip_obj(false),
-      m_use_gdt(false),
-      m_verbose(false)
+      m_use_gdt(false)
 {
 }
 
@@ -167,14 +174,7 @@ void UnlinkerArgs::PrintUsage() const
 
 void UnlinkerArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools Unlinker {}\n", GIT_VERSION);
-}
-
-void UnlinkerArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
-    ObjLoading::Configuration.Verbose = isVerbose;
-    ObjWriting::Configuration.Verbose = isVerbose;
+    con::info("OpenAssetTools Unlinker {}", GIT_VERSION);
 }
 
 bool UnlinkerArgs::SetImageDumpingMode() const
@@ -195,7 +195,7 @@ bool UnlinkerArgs::SetImageDumpingMode() const
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
-    std::cerr << std::format("Illegal value: \"{}\" is not a valid image output format. Use -? to see usage information.\n", originalValue);
+    con::error("Illegal value: \"{}\" is not a valid image output format. Use -? to see usage information.", originalValue);
     return false;
 }
 
@@ -235,7 +235,7 @@ bool UnlinkerArgs::SetModelDumpingMode() const
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
-    std::cerr << std::format("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.\n", originalValue);
+    con::error("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.", originalValue);
     return false;
 }
 
@@ -302,7 +302,13 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     // -min; --minimal-zone
     m_minimal_zone_def = m_argument_parser.IsOptionSpecified(OPTION_MINIMAL_ZONE_FILE);
@@ -358,7 +364,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     // --include-assets
     if (m_argument_parser.IsOptionSpecified(OPTION_EXCLUDE_ASSETS) && m_argument_parser.IsOptionSpecified(OPTION_INCLUDE_ASSETS))
     {
-        std::cout << "You can only asset types to either exclude or include, not both\n";
+        con::error("You can only asset types to either exclude or include, not both");
         return false;
     }
 

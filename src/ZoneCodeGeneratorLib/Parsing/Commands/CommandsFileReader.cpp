@@ -13,6 +13,7 @@
 #include "Parsing/PostProcessing/MemberLeafsPostProcessor.h"
 #include "Parsing/PostProcessing/UnionsPostProcessor.h"
 #include "Parsing/PostProcessing/UsagesPostProcessor.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <chrono>
@@ -37,7 +38,7 @@ bool CommandsFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cerr << "Could not open commands file\n";
+        con::error("Could not open commands file");
         return false;
     }
 
@@ -74,10 +75,7 @@ void CommandsFileReader::SetupPostProcessors()
 
 bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 {
-    if (m_args->m_verbose)
-    {
-        std::cout << std::format("Reading commands file: {}\n", m_filename);
-    }
+    con::debug("Reading commands file: {}", m_filename);
 
     if (!OpenBaseStream())
         return false;
@@ -91,8 +89,7 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
     const auto result = parser->Parse();
     const auto end = std::chrono::steady_clock::now();
 
-    if (m_args->m_verbose)
-        std::cout << std::format("Processing commands took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    con::debug("Processing commands took {}ms", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     if (!result)
         return false;

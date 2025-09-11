@@ -5,9 +5,11 @@
 #include "Pool/GlobalAssetPool.h"
 #include "Shader/D3D9ShaderAnalyser.h"
 #include "Techset/TechsetCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
+#include <format>
 #include <set>
 #include <sstream>
 #include <type_traits>
@@ -266,8 +268,8 @@ namespace IW4
                 {
                     // Cannot dump when shader is referenced due to unknown constant names and unknown version
                     Indent();
-                    std::cerr << "Cannot dump vertex shader " << &vertexShader->name[1] << " due to being a referenced asset\n";
-                    m_stream << "// Cannot dump vertex shader " << &vertexShader->name[1] << " due to being a referenced asset\n";
+                    con::error("Cannot dump vertex shader {} due to being a referenced asset", &vertexShader->name[1]);
+                    m_stream << std::format("// Cannot dump vertex shader {} due to being a referenced asset\n", &vertexShader->name[1]);
                     return;
                 }
                 vertexShader = loadedVertexShaderFromOtherZone->Asset();
@@ -321,8 +323,8 @@ namespace IW4
                 {
                     // Cannot dump when shader is referenced due to unknown constant names and unknown version
                     Indent();
-                    std::cerr << "Cannot dump pixel shader " << &pixelShader->name[1] << " due to being a referenced asset\n";
-                    m_stream << "// Cannot dump pixel shader " << &pixelShader->name[1] << " due to being a referenced asset\n";
+                    con::error("Cannot dump pixel shader {} due to being a referenced asset", &pixelShader->name[1]);
+                    m_stream << std::format("// Cannot dump pixel shader {} due to being a referenced asset\n", &pixelShader->name[1]);
                     return;
                 }
                 pixelShader = loadedPixelShaderFromOtherZone->Asset();
@@ -393,8 +395,8 @@ namespace IW4
                 {
                     // Cannot dump when shader is referenced due to unknown constant names and unknown version
                     Indent();
-                    std::cerr << "Cannot dump vertex decl " << &vertexDecl->name[1] << " due to being a referenced asset\n";
-                    m_stream << "// Cannot dump vertex decl " << &vertexDecl->name[1] << " due to being a referenced asset\n";
+                    con::error("Cannot dump vertex decl {} due to being a referenced asset", &vertexDecl->name[1]);
+                    m_stream << std::format("// Cannot dump vertex decl {} due to being a referenced asset\n", &vertexDecl->name[1]);
                     return;
                 }
                 vertexDecl = loadedVertexDeclFromOtherZone->Asset();

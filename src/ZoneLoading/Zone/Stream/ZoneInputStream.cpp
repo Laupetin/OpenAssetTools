@@ -5,6 +5,7 @@
 #include "Loading/Exception/InvalidOffsetBlockOffsetException.h"
 #include "Loading/Exception/OutOfBlockBoundsException.h"
 #include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -414,8 +415,7 @@ namespace
                 ss << " " << m_block_offsets[block->m_index];
             }
 
-            ss << "\n";
-            std::cout << ss.str();
+            con::debug(ss.str());
         }
 #endif
 

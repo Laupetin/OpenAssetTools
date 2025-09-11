@@ -1,5 +1,7 @@
 #include "RawFileDumperIW4.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
 #include <stdexcept>
 #include <zlib.h>
@@ -52,7 +54,7 @@ namespace raw_file
 
                 if (ret < 0)
                 {
-                    std::cerr << std::format("Inflate failed when attempting to dump rawfile '{}'\n", rawFile->name);
+                    con::error("Inflate failed when attempting to dump rawfile '{}'", rawFile->name);
                     inflateEnd(&zs);
                     return;
                 }

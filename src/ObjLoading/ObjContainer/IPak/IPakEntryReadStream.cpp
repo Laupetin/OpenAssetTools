@@ -1,6 +1,7 @@
 #include "IPakEntryReadStream.h"
 
 #include "ObjContainer/IPak/IPakTypes.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -128,7 +129,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
 {
     if (blockHeader->countAndOffset.count > 31)
     {
-        std::cerr << "IPak block has more than 31 commands: " << blockHeader->countAndOffset.count << " -> Invalid\n";
+        con::error("IPak block has more than 31 commands: {} -> Invalid", blockHeader->countAndOffset.count);
         return false;
     }
 
@@ -142,7 +143,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
             // The game uses IPAK_COMMAND_SKIP as value for compressed when it intends to skip the specified amount of data
             if (blockHeader->commands[currentCommand].compressed == 0 || blockHeader->commands[currentCommand].compressed == 1)
             {
-                std::cerr << "IPak block offset (" << blockHeader->countAndOffset.offset << ") is not the file head (" << m_file_head << ") -> Invalid\n";
+                con::error("IPak block offset ({}) is not the file head ({}) -> Invalid", blockHeader->countAndOffset.offset, m_file_head);
                 return false;
             }
         }
@@ -167,7 +168,7 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(const IPakDataBl
     {
         if (requiredChunkCount > IPAK_CHUNK_COUNT_PER_READ)
         {
-            std::cerr << "IPak block spans over more than " << IPAK_CHUNK_COUNT_PER_READ << " chunks (" << requiredChunkCount << "), which is not supported.\n";
+            con::error("IPak block spans over more than {} chunks ({}), which is not supported.", IPAK_CHUNK_COUNT_PER_READ, requiredChunkCount);
             return false;
         }
 
@@ -221,7 +222,7 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
 
             if (result != LZO_E_OK)
             {
-                std::cerr << "Decompressing block with lzo failed: " << result << "!\n";
+                con::error("Decompressing block with lzo failed: {}!", result);
                 return false;
             }
 

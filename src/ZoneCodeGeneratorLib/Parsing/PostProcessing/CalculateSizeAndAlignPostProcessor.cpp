@@ -2,6 +2,7 @@
 
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstdint>
@@ -189,7 +190,7 @@ namespace
             return true;
         if (structDefinition->m_flags & DefinitionWithMembers::FLAG_FIELDS_CALCULATING)
         {
-            std::cerr << "Detected circular dependency:\n";
+            con::error("Detected circular dependency:");
             return false;
         }
 
@@ -212,7 +213,7 @@ namespace
             return true;
         if (unionDefinition->m_flags & DefinitionWithMembers::FLAG_FIELDS_CALCULATING)
         {
-            std::cerr << "Detected circular dependency:\n";
+            con::error("Detected circular dependency:");
             return false;
         }
 
@@ -257,35 +258,28 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
 {
     if (repository->GetArchitecture() == Architecture::UNKNOWN)
     {
-        std::cerr << "You must set an architecture!\n";
+        con::error("You must set an architecture!");
         return false;
     }
 
     for (auto* structDefinition : repository->GetAllStructs())
     {
         if (!CalculateFields(repository, structDefinition))
-        {
-            std::cout << "\n";
+
             return false;
-        }
     }
 
     for (auto* unionDefinition : repository->GetAllUnions())
     {
         if (!CalculateFields(repository, unionDefinition))
-        {
-            std::cout << "\n";
+
             return false;
-        }
     }
 
     for (auto* typedefDeclaration : repository->GetAllTypedefs())
     {
         if (!CalculateFields(repository, typedefDeclaration->m_type_declaration.get()))
-        {
-            std::cout << "\n";
             return false;
-        }
     }
 
     return true;

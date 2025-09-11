@@ -1,5 +1,6 @@
 #include "SearchPathFilesystem.h"
 
+#include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
 
 #include <filesystem>
@@ -59,6 +60,6 @@ void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const st
     }
     catch (std::filesystem::filesystem_error& e)
     {
-        std::cerr << std::format("Directory Iterator threw error when trying to find files: \"{}\"\n", e.what());
+        con::error("Directory Iterator threw error when trying to find files: \"{}\"", e.what());
     }
 }
