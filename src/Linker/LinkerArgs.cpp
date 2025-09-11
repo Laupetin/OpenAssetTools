@@ -129,8 +129,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 LinkerArgs::LinkerArgs()
-    : m_verbose(false),
-      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -158,13 +157,6 @@ void LinkerArgs::SetBinFolder()
 {
     const fs::path path(utils::GetExecutablePath());
     m_bin_folder = path.parent_path().string();
-}
-
-void LinkerArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
-    ObjLoading::Configuration.Verbose = isVerbose;
-    ObjWriting::Configuration.Verbose = isVerbose;
 }
 
 bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -203,7 +195,10 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
 
     // b; --base-folder
     if (m_argument_parser.IsOptionSpecified(OPTION_BASE_FOLDER))

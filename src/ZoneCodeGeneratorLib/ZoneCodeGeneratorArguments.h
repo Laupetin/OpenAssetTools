@@ -26,8 +26,6 @@ public:
     [[nodiscard]] bool ShouldGenerate() const;
     [[nodiscard]] bool ShouldPrint() const;
 
-    bool m_verbose;
-
     std::vector<std::string> m_header_paths;
     std::vector<std::string> m_command_paths;
     std::string m_output_directory;

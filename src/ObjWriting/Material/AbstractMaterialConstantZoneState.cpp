@@ -26,14 +26,11 @@ void AbstractMaterialConstantZoneState::ExtractNamesFromZone()
 
     const auto end = std::chrono::high_resolution_clock::now();
 
-    if (ObjWriting::Configuration.Verbose)
-    {
-        const auto durationInMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-        con::debug("Built material constant name lookup in {}ms: {} constant names; {} texture def names",
-                   durationInMs.count(),
-                   m_constant_names_from_shaders.size(),
-                   m_texture_def_names_from_shaders.size());
-    }
+    const auto durationInMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    con::debug("Built material constant name lookup in {}ms: {} constant names; {} texture def names",
+               durationInMs.count(),
+               m_constant_names_from_shaders.size(),
+               m_texture_def_names_from_shaders.size());
 }
 
 bool AbstractMaterialConstantZoneState::GetConstantName(const unsigned hash, std::string& constantName) const

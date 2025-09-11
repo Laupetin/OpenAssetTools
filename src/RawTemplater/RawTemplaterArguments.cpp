@@ -65,8 +65,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 RawTemplaterArguments::RawTemplaterArguments()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
-      m_verbose(false)
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -120,7 +119,10 @@ bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& s
     }
 
     // -v; --verbose
-    m_verbose = m_argument_parser.IsOptionSpecified(OPTION_VERBOSE);
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
 
     // -o; --output
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))

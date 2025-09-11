@@ -146,8 +146,7 @@ UnlinkerArgs::UnlinkerArgs()
       m_minimal_zone_def(false),
       m_asset_type_handling(AssetTypeHandling::EXCLUDE),
       m_skip_obj(false),
-      m_use_gdt(false),
-      m_verbose(false)
+      m_use_gdt(false)
 {
 }
 
@@ -169,13 +168,6 @@ void UnlinkerArgs::PrintUsage() const
 void UnlinkerArgs::PrintVersion()
 {
     con::info("OpenAssetTools Unlinker {}", GIT_VERSION);
-}
-
-void UnlinkerArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
-    ObjLoading::Configuration.Verbose = isVerbose;
-    ObjWriting::Configuration.Verbose = isVerbose;
 }
 
 bool UnlinkerArgs::SetImageDumpingMode() const
@@ -303,7 +295,10 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
 
     // -min; --minimal-zone
     m_minimal_zone_def = m_argument_parser.IsOptionSpecified(OPTION_MINIMAL_ZONE_FILE);

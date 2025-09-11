@@ -24,8 +24,6 @@ private:
      */
     void PrintUsage() const;
     static void PrintVersion();
-
-    void SetVerbose(bool isVerbose);
     bool SetImageDumpingMode() const;
     bool SetModelDumpingMode() const;
 
@@ -59,8 +57,6 @@ public:
 
     bool m_skip_obj;
     bool m_use_gdt;
-
-    bool m_verbose;
 
     UnlinkerArgs();
     bool ParseArgs(int argc, const char** argv, bool& shouldContinue);

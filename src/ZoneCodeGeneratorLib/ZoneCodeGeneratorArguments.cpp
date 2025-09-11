@@ -122,7 +122,6 @@ ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
       m_task_flags(0u)
 {
-    m_verbose = false;
 }
 
 void ZoneCodeGeneratorArguments::PrintUsage() const
@@ -166,7 +165,10 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
 
     // -v; --verbose
-    m_verbose = m_argument_parser.IsOptionSpecified(OPTION_VERBOSE);
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
 
     // -p; --print
     if (m_argument_parser.IsOptionSpecified(OPTION_PRINT))

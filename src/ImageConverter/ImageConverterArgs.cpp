@@ -79,8 +79,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 ImageConverterArgs::ImageConverterArgs()
-    : m_verbose(false),
-      m_game_to_convert_to(image_converter::Game::UNKNOWN),
+    : m_game_to_convert_to(image_converter::Game::UNKNOWN),
       m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
@@ -103,11 +102,6 @@ void ImageConverterArgs::PrintUsage()
 void ImageConverterArgs::PrintVersion()
 {
     con::info("OpenAssetTools ImageConverter {}", GIT_VERSION);
-}
-
-void ImageConverterArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
 }
 
 bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -144,7 +138,10 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
 
     return true;
 }
