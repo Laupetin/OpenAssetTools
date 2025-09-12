@@ -1,6 +1,6 @@
 #include "PhysCollmapDumperIW4.h"
 
-#include "Dumping/MapFile/MapFileDumper.h"
+#include "Maps/MapFileDumper.h"
 #include "PhysCollmap/PhysCollmapCommon.h"
 
 #include <cassert>
