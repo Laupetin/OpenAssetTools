@@ -1,7 +1,7 @@
 #include "LocalizeDumperIW3.h"
 
-#include "Dumping/Localize/StringFileDumper.h"
 #include "Localize/LocalizeCommon.h"
+#include "Localize/StringFileDumper.h"
 #include "Utils/Logging/Log.h"
 
 #include <format>
