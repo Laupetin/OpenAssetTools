@@ -150,4 +150,9 @@ namespace xmodel
     {
         return std::format("xmodel/{}.json", assetName);
     }
+
+    std::string GetFileNameForCollMap(const std::string& collMapName)
+    {
+        return std::format("phys_collmaps/{}.map", collMapName);
+    }
 } // namespace xmodel

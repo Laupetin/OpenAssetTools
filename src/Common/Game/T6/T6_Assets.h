@@ -6863,10 +6863,23 @@ namespace T6
         XSurfaceCollisionLeaf* leafs;
     };
 
+    enum PhysicsGeomType : int
+    {
+        PHYS_GEOM_NONE,
+        PHYS_GEOM_BOX,
+        PHYS_GEOM_BRUSH,
+        PHYS_GEOM_CYLINDER,
+        PHYS_GEOM_CYLINDER_LARGE,
+        PHYS_GEOM_CAPSULE,
+        PHYS_GEOM_POINT,
+
+        PHYS_GEOM_COUNT,
+    };
+
     struct PhysGeomInfo
     {
         BrushWrapper* brush;
-        int type;
+        PhysicsGeomType type;
         vec3_t orientation[3];
         vec3_t offset;
         vec3_t halfLengths;

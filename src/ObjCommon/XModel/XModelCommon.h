@@ -133,4 +133,5 @@ typedef DistinctMapper<VertexMergerPos> VertexMerger;
 namespace xmodel
 {
     std::string GetJsonFileNameForAssetName(const std::string& assetName);
+    std::string GetFileNameForCollMap(const std::string& collMapName);
 }

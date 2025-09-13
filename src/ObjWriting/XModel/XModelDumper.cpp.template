@@ -5,6 +5,7 @@
 #set DUMPER_HEADER "\"XModelDumper" + GAME + ".h\""
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
+#set COLL_MAP_DUMPER_HEADER "\"Game/" + GAME + "/XModel/XModelCollMapDumper" + GAME + ".h\""
 
 #if GAME == "IW3"
 #define FEATURE_IW3
@@ -31,6 +32,9 @@
 
 #include COMMON_HEADER
 #include JSON_HEADER
+#ifdef FEATURE_T6
+#include COLL_MAP_DUMPER_HEADER
+#endif
 
 #include "ObjWriting.h"
 #include "Utils/DistinctMapper.h"
@@ -674,6 +678,27 @@ namespace
         }
     }
 
+#ifdef FEATURE_T6
+    void DumpXModelCollMaps(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
+    {
+        const auto* model = asset->Asset();
+
+        if (!model->collmaps)
+            return;
+
+        for (auto currentCollMap = 0u; currentCollMap < model->numCollmaps; currentCollMap++)
+        {
+            std::string collMapName;
+            if (model->numCollmaps > 1)
+                collMapName = std::format("{}_coll{}", model->name, currentCollMap);
+            else
+                collMapName = model->name;
+
+            xmodel::DumpCollMap(collMapName, context, model->collmaps[currentCollMap]);
+        }
+    }
+#endif
+
     class JsonDumper
     {
     public:
@@ -863,5 +888,8 @@ namespace xmodel
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);
+#ifdef FEATURE_T6
+        DumpXModelCollMaps(context, asset);
+#endif
     }
 }
