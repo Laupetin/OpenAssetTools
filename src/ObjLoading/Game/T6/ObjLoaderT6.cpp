@@ -93,7 +93,7 @@ namespace T6
             return sndBankPtr;
         }
 
-        con::error("Failed to load sound bank '{}'", soundBankFileName);
+        con::warn("Could not find sound bank '{}'", soundBankFileName);
         return nullptr;
     }
 
