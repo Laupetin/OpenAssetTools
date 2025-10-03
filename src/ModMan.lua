@@ -39,6 +39,11 @@ function ModMan:project()
 		includedirs {
 			"%{prj.location}"
 		}
+
+		filter { "system:linux", "action:gmake" }
+  			buildoptions { "`pkg-config --cflags gtk4 webkitgtk-6.0`" }
+  			linkoptions { "`pkg-config --libs gtk4 webkitgtk-6.0`" }
+		filter {}
 		
 		self:include(includes)
 		webview:include(includes)
