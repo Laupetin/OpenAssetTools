@@ -53,7 +53,9 @@ int main()
             },
             nullptr);
 
+#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
         edge::InstallCustomProtocolHandler(w);
+#endif
 
         w.navigate("http://modman/index.html");
         w.run();

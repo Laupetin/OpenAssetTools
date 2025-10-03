@@ -11,18 +11,20 @@ end
 
 function webview:link(links)
 
-	links:add("WebView2LoaderStatic")
-	
-    filter "platforms:x86"
-		libdirs {
-			path.join(self:msWebviewDir(), "build/native/x86")
-		}
-    filter {}
-    filter "platforms:x64"
-		libdirs {
-			path.join(self:msWebviewDir(), "build/native/x64")
-		}
-    filter {}
+	if os.host() == "windows" then
+		links:add("WebView2LoaderStatic")
+		
+		filter "platforms:x86"
+			libdirs {
+				path.join(self:msWebviewDir(), "build/native/x86")
+			}
+		filter {}
+		filter "platforms:x64"
+			libdirs {
+				path.join(self:msWebviewDir(), "build/native/x64")
+			}
+		filter {}
+	end
 
 	links:add(self:name())
 end
@@ -58,6 +60,11 @@ function webview:project()
 		if os.host() == "windows" then
 			self:installWebview2()
 		end
+
+		filter { "system:linux", "action:gmake" }
+  			buildoptions { "`pkg-config --cflags gtk4 webkitgtk-6.0`" }
+  			linkoptions { "`pkg-config --libs gtk4 webkitgtk-6.0`" }
+		filter {}
 		
 		self:include(includes)
 
