@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { nativeMethods } from "./native";
 
 const greetMsg = ref("");
 const name = ref("");
 
 async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  // greetMsg.value = await invoke("greet", { name: name.value });
+  greetMsg.value = await nativeMethods.greet(name.value);
 }
 </script>
 
 <template>
   <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
+    <h1>Welcome to Webview + Vue</h1>
 
     <form class="row" @submit.prevent="greet">
       <input id="greet-input" v-model="name" placeholder="Enter a name..." autocomplete="off" />
