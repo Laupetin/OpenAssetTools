@@ -1,8 +1,9 @@
-﻿#include "ui/modmanui.h"
-
-#pragma warning(push, 0)
+﻿#pragma warning(push, 0)
 #include "webview/webview.h"
 #pragma warning(pop)
+
+#include "webview/edge/CustomProtocolHandlerEdge.h"
+#include "webview/gtk/CustomProtocolHandlerGtk.h"
 
 #include <chrono>
 #include <iostream>
@@ -20,8 +21,8 @@ int main()
     {
         long count = 0;
         webview::webview w(true, nullptr);
-        w.set_title("Basic Example");
-        w.set_size(480, 320, WEBVIEW_HINT_NONE);
+        w.set_title("OpenAssetTools ModMan");
+        w.set_size(480, 320, WEBVIEW_HINT_MIN);
 
         // A binding that counts up or down and immediately returns the new value.
         w.bind("count",
@@ -51,7 +52,9 @@ int main()
             },
             nullptr);
 
-        w.set_html(std::string(reinterpret_cast<const char*>(INDEX_HTML), std::extent_v<decltype(INDEX_HTML)>));
+        edge::InstallCustomProtocolHandler(w);
+
+        w.navigate("http://modman/index.html");
         w.run();
     }
     catch (const webview::exception& e)
