@@ -6,6 +6,7 @@
 #include "webview/gtk/CustomProtocolHandlerGtk.h"
 
 #include <chrono>
+#include <format>
 #include <iostream>
 #include <thread>
 
@@ -22,15 +23,15 @@ int main()
         long count = 0;
         webview::webview w(true, nullptr);
         w.set_title("OpenAssetTools ModMan");
+        w.set_size(480, 320, WEBVIEW_HINT_NONE);
         w.set_size(480, 320, WEBVIEW_HINT_MIN);
 
         // A binding that counts up or down and immediately returns the new value.
-        w.bind("count",
+        w.bind("greet",
                [&](const std::string& req) -> std::string
                {
-                   // Imagine that req is properly parsed or use your own JSON parser.
-                   auto direction = std::stol(req.substr(1, req.size() - 1));
-                   return std::to_string(count += direction);
+                   const auto name = req.substr(2, req.size() - 4);
+                   return std::format("\"Hello from C++ {}!\"", name);
                });
 
         // A binding that creates a new thread and returns the result at a later time.
