@@ -2,8 +2,8 @@
 #include "webview/webview.h"
 #pragma warning(pop)
 
-#include "webview/edge/CustomProtocolHandlerEdge.h"
-#include "webview/gtk/CustomProtocolHandlerGtk.h"
+#include "Web/Edge/CustomProtocolHandlerEdge.h"
+#include "Web/Gtk/CustomProtocolHandlerGtk.h"
 
 #include <chrono>
 #include <format>
@@ -57,7 +57,11 @@ int main()
         edge::InstallCustomProtocolHandler(w);
 #endif
 
-        w.navigate("http://modman/index.html");
+#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+        gtk::InstallCustomProtocolHandler(w);
+#endif
+
+        w.navigate("modman://localhost/index.html");
         w.run();
     }
     catch (const webview::exception& e)

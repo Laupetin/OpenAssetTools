@@ -18,7 +18,9 @@
 
 namespace
 {
-    constexpr auto MOD_MAN_URL_PREFIX = "http://modman/";
+    constexpr auto MOD_MAN_URL_PREFIX = "modman://localhost/";
+
+    std::unordered_map<std::string, UiFile> assetLookup;
 
     std::string wide_string_to_string(const std::wstring& wide_string)
     {
@@ -65,6 +67,8 @@ namespace edge
 {
     void InstallCustomProtocolHandler(webview::webview& wv)
     {
+        assetLookup = BuildUiFileLookup();
+
         const auto controller = static_cast<ICoreWebView2Controller*>(wv.browser_controller().value());
         Microsoft::WRL::ComPtr<ICoreWebView2> core;
         if (!SUCCEEDED(controller->get_CoreWebView2(&core)))
@@ -131,8 +135,8 @@ namespace edge
                                                    {
                                                        const auto asset = uri.substr(std::char_traits<char>::length(MOD_MAN_URL_PREFIX));
 
-                                                       const auto foundUiFile = MOD_MAN_UI_FILES.find(asset);
-                                                       if (foundUiFile != MOD_MAN_UI_FILES.end())
+                                                       const auto foundUiFile = assetLookup.find(asset);
+                                                       if (foundUiFile != assetLookup.end())
                                                        {
                                                            Microsoft::WRL::ComPtr<IStream> response_stream = SHCreateMemStream(
                                                                static_cast<const BYTE*>(foundUiFile->second.data), foundUiFile->second.dataSize);

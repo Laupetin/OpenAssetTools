@@ -47,13 +47,10 @@ export function headerTransformationPlugin(): Plugin {
   return {
     name: "header-transformation",
     apply: "build",
-    config(config) {
-      config.base = "http://modman";
-    },
     generateBundle(options: OutputOptions, bundle: OutputBundle, isWrite: boolean) {
       const includesStr: string[] = [`#include "index.html.h"`];
       const uiFilesStr: string[] = [
-        `{ "index.html", { "index.html", INDEX_HTML, std::extent_v<decltype(INDEX_HTML)> } }`,
+        `{ "index.html", INDEX_HTML, std::extent_v<decltype(INDEX_HTML)> }`,
       ];
 
       for (const curBundle of Object.values(bundle)) {
@@ -66,7 +63,7 @@ export function headerTransformationPlugin(): Plugin {
 
         includesStr.push(`#include "${curBundle.fileName}.h"`);
         uiFilesStr.push(
-          `{ "${curBundle.fileName}", { "${curBundle.fileName}", ${varName}, std::extent_v<decltype(${varName})> } }`,
+          `{ "${curBundle.fileName}", ${varName}, std::extent_v<decltype(${varName})> }`,
         );
 
         curBundle.fileName = `${curBundle.fileName}.h`;
@@ -79,8 +76,8 @@ export function headerTransformationPlugin(): Plugin {
 
 ${includesStr.join("\n")}
 
-#include <string>
-#include <unordered_map>
+#include <cstdlib>
+#include <type_traits>
 
 struct UiFile
 {
@@ -89,9 +86,9 @@ struct UiFile
     const size_t dataSize;
 };
 
-static inline const std::unordered_map<std::string, UiFile> MOD_MAN_UI_FILES({
+static inline const UiFile MOD_MAN_UI_FILES[] {
 ${uiFilesStr.join(",\n")}
-});
+};
 `,
       });
     },
@@ -106,7 +103,6 @@ ${uiFilesStr.join(",\n")}
       },
     ) {
       html = html.replaceAll("index.js.h", "index.js");
-      // .replaceAll("http://modman-resource/", "modman-resource://");
 
       html = createTransformedTextSource(createVarName("index.html"), html);
       ctx.filename = `${ctx.filename}.h`;
