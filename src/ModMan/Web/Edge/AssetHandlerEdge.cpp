@@ -1,4 +1,4 @@
-#include "CustomProtocolHandlerEdge.h"
+#include "AssetHandlerEdge.h"
 
 #pragma warning(push, 0)
 #include <webview/macros.h>

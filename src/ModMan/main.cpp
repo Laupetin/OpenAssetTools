@@ -2,13 +2,13 @@
 #include "webview/webview.h"
 #pragma warning(pop)
 
-#include "Web/Edge/CustomProtocolHandlerEdge.h"
-#include "Web/Gtk/CustomProtocolHandlerGtk.h"
+#include "Web/Edge/AssetHandlerEdge.h"
+#include "Web/Gtk/AssetHandlerGtk.h"
 
 #include <chrono>
 #include <format>
-#include <string>
 #include <iostream>
+#include <string>
 #include <thread>
 
 using namespace std::string_literals;

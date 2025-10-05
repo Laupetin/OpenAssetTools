@@ -1,4 +1,4 @@
-#include "CustomProtocolHandlerGtk.h"
+#include "AssetHandlerGtk.h"
 
 #pragma warning(push, 0)
 #include <webview/macros.h>
