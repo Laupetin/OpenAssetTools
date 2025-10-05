@@ -7,8 +7,11 @@
 
 #include <chrono>
 #include <format>
+#include <string>
 #include <iostream>
 #include <thread>
+
+using namespace std::string_literals;
 
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/)
@@ -55,13 +58,12 @@ int main()
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
         edge::InstallCustomProtocolHandler(w);
-#endif
-
-#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+        w.navigate(edge::URL_PREFIX + "index.html"s);
+#elif defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
         gtk::InstallCustomProtocolHandler(w);
+        w.navigate(gtk::URL_PREFIX + "index.html"s);
 #endif
 
-        w.navigate("modman://localhost/index.html");
         w.run();
     }
     catch (const webview::exception& e)

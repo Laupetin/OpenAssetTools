@@ -13,3 +13,19 @@ std::unordered_map<std::string, UiFile> BuildUiFileLookup()
 
     return result;
 }
+
+const char* GetMimeTypeForFileName(const std::string& fileName)
+{
+    const char* mimeType;
+
+    if (fileName.ends_with(".html"))
+        mimeType = "text/html";
+    else if (fileName.ends_with(".js"))
+        mimeType = "text/javascript";
+    else if (fileName.ends_with(".css"))
+        mimeType = "text/css";
+    else
+        mimeType = "application/octet-stream";
+
+    return mimeType;
+}

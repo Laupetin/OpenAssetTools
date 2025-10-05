@@ -12,7 +12,9 @@
 
 namespace gtk
 {
+    constexpr auto URL_PREFIX = "modman://localhost/";
+
     void InstallCustomProtocolHandler(webview::webview& wv);
-}
+} // namespace gtk
 
 #endif

@@ -12,7 +12,9 @@
 
 namespace edge
 {
+    constexpr auto URL_PREFIX = "http://modman.local/";
+
     void InstallCustomProtocolHandler(webview::webview& wv);
-}
+} // namespace edge
 
 #endif

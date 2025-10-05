@@ -7,7 +7,7 @@
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
-#include "ui/modmanui.h"
+#include "Web/UiAssets.h"
 
 #include <Windows.h>
 #include <format>
@@ -18,25 +18,33 @@
 
 namespace
 {
-    constexpr auto MOD_MAN_URL_PREFIX = "modman://localhost/";
-
     std::unordered_map<std::string, UiFile> assetLookup;
 
-    std::string wide_string_to_string(const std::wstring& wide_string)
+    std::string WideStringToString(const std::wstring& wideString)
     {
-        if (wide_string.empty())
-        {
+        if (wideString.empty())
             return "";
-        }
 
-        const auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wide_string.data(), (int)wide_string.size(), nullptr, 0, nullptr, nullptr);
-        if (size_needed <= 0)
-        {
-            throw std::runtime_error("WideCharToMultiByte() failed: " + std::to_string(size_needed));
-        }
+        const auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wideString.data(), static_cast<int>(wideString.size()), nullptr, 0, nullptr, nullptr);
+        if (sizeNeeded <= 0)
+            throw std::runtime_error(std::format("WideCharToMultiByte() failed: {}", sizeNeeded));
 
-        std::string result(size_needed, 0);
-        WideCharToMultiByte(CP_UTF8, 0, wide_string.data(), (int)wide_string.size(), result.data(), size_needed, nullptr, nullptr);
+        std::string result(sizeNeeded, 0);
+        WideCharToMultiByte(CP_UTF8, 0, wideString.data(), static_cast<int>(wideString.size()), result.data(), sizeNeeded, nullptr, nullptr);
+        return result;
+    }
+
+    std::wstring StringToWideString(const std::string& string)
+    {
+        if (string.empty())
+            return L"";
+
+        const auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), nullptr, 0);
+        if (sizeNeeded <= 0)
+            throw std::runtime_error(std::format("MultiByteToWideChar() failed: {}", sizeNeeded));
+
+        std::wstring result(sizeNeeded, 0);
+        MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), result.data(), sizeNeeded);
         return result;
     }
 
@@ -45,21 +53,88 @@ namespace
         std::wstringstream wss;
 
         wss << std::format(L"Content-Length: {}\n", contentLength);
-
-        if (assetName.ends_with(".html"))
-        {
-            wss << L"Content-Type: text/html\n";
-        }
-        else if (assetName.ends_with(".js"))
-        {
-            wss << L"Content-Type: text/javascript\n";
-        }
-        else if (assetName.ends_with(".css"))
-        {
-            wss << L"Content-Type: text/css\n";
-        }
+        wss << L"Content-Type: " << StringToWideString(GetMimeTypeForFileName(assetName));
 
         return wss.str();
+    }
+
+    HRESULT HandleResourceRequested(ICoreWebView2_22* core22, IUnknown* args)
+    {
+        Microsoft::WRL::ComPtr<ICoreWebView2WebResourceRequestedEventArgs2> webResourceRequestArgs;
+        if (SUCCEEDED(args->QueryInterface(IID_PPV_ARGS(&webResourceRequestArgs))))
+        {
+            COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS requestSourceKind = COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL;
+            if (!SUCCEEDED(webResourceRequestArgs->get_RequestedSourceKind(&requestSourceKind)))
+            {
+                std::cerr << "Failed to get requested source kind\n";
+                return S_FALSE;
+            }
+
+            Microsoft::WRL::ComPtr<ICoreWebView2WebResourceRequest> request;
+            if (!SUCCEEDED(webResourceRequestArgs->get_Request(&request)))
+            {
+                std::cerr << "Failed to get request\n";
+                return S_FALSE;
+            }
+
+            LPWSTR wUri;
+            if (!SUCCEEDED(request->get_Uri(&wUri)))
+            {
+                std::cerr << "Failed to get uri\n";
+                return S_FALSE;
+            }
+
+            Microsoft::WRL::ComPtr<ICoreWebView2Environment> environment;
+            if (!SUCCEEDED(core22->get_Environment(&environment)))
+            {
+                std::cerr << "Failed to get environment\n";
+                return S_FALSE;
+            }
+
+            Microsoft::WRL::ComPtr<ICoreWebView2WebResourceResponse> response;
+
+            const auto uri = WideStringToString(wUri);
+            bool fileFound = false;
+            if (uri.starts_with(edge::URL_PREFIX))
+            {
+                const auto asset = uri.substr(std::char_traits<char>::length(edge::URL_PREFIX) - 1);
+
+                const auto foundUiFile = assetLookup.find(asset);
+                if (foundUiFile != assetLookup.end())
+                {
+                    const Microsoft::WRL::ComPtr<IStream> responseStream =
+                        SHCreateMemStream(static_cast<const BYTE*>(foundUiFile->second.data), foundUiFile->second.dataSize);
+
+                    const auto headers = HeadersForAssetName(asset, foundUiFile->second.dataSize);
+                    if (!SUCCEEDED(environment->CreateWebResourceResponse(responseStream.Get(), 200, L"OK", headers.data(), &response)))
+                    {
+                        std::cerr << "Failed to create web resource\n";
+                        return S_FALSE;
+                    }
+
+                    fileFound = true;
+                }
+            }
+
+            if (!fileFound)
+            {
+                if (!SUCCEEDED(environment->CreateWebResourceResponse(nullptr, 404, L"Not found", L"", &response)))
+                {
+                    std::cerr << "Failed to create web resource\n";
+                    return S_FALSE;
+                }
+            }
+
+            if (!SUCCEEDED(webResourceRequestArgs->put_Response(response.Get())))
+            {
+                std::cerr << "Failed to put response\n";
+                return S_FALSE;
+            }
+
+            return S_OK;
+        }
+
+        return S_FALSE;
     }
 } // namespace
 
@@ -92,74 +167,16 @@ namespace edge
         }
 
         EventRegistrationToken token;
-        core->add_WebResourceRequested(Microsoft::WRL::Callback<ICoreWebView2WebResourceRequestedEventHandler>(
-                                           [core22](ICoreWebView2* sender, IUnknown* args) -> HRESULT
-                                           {
-                                               Microsoft::WRL::ComPtr<ICoreWebView2WebResourceRequestedEventArgs2> webResourceRequestArgs;
-                                               if (SUCCEEDED(args->QueryInterface(IID_PPV_ARGS(&webResourceRequestArgs))))
-                                               {
-                                                   COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS requestSourceKind =
-                                                       COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL;
-                                                   if (!SUCCEEDED(webResourceRequestArgs->get_RequestedSourceKind(&requestSourceKind)))
-                                                   {
-                                                       std::cerr << "Failed to get requested source kind\n";
-                                                       return S_FALSE;
-                                                   }
-
-                                                   Microsoft::WRL::ComPtr<ICoreWebView2WebResourceRequest> request;
-                                                   if (!SUCCEEDED(webResourceRequestArgs->get_Request(&request)))
-                                                   {
-                                                       std::cerr << "Failed to get request\n";
-                                                       return S_FALSE;
-                                                   }
-
-                                                   LPWSTR wUri;
-                                                   if (!SUCCEEDED(request->get_Uri(&wUri)))
-                                                   {
-                                                       std::cerr << "Failed to get uri\n";
-                                                       return S_FALSE;
-                                                   }
-
-                                                   Microsoft::WRL::ComPtr<ICoreWebView2Environment> environment;
-                                                   if (!SUCCEEDED(core22->get_Environment(&environment)))
-                                                   {
-                                                       std::cerr << "Failed to get environment\n";
-                                                       return S_FALSE;
-                                                   }
-
-                                                   Microsoft::WRL::ComPtr<ICoreWebView2WebResourceResponse> response;
-
-                                                   const auto uri = wide_string_to_string(wUri);
-                                                   bool fileFound = false;
-                                                   if (uri.starts_with(MOD_MAN_URL_PREFIX))
-                                                   {
-                                                       const auto asset = uri.substr(std::char_traits<char>::length(MOD_MAN_URL_PREFIX));
-
-                                                       const auto foundUiFile = assetLookup.find(asset);
-                                                       if (foundUiFile != assetLookup.end())
-                                                       {
-                                                           Microsoft::WRL::ComPtr<IStream> response_stream = SHCreateMemStream(
-                                                               static_cast<const BYTE*>(foundUiFile->second.data), foundUiFile->second.dataSize);
-
-                                                           const auto headers = HeadersForAssetName(asset, foundUiFile->second.dataSize);
-                                                           environment->CreateWebResourceResponse(response_stream.Get(), 200, L"OK", headers.data(), &response);
-                                                           fileFound = true;
-                                                       }
-                                                   }
-
-                                                   if (!fileFound)
-                                                   {
-                                                       environment->CreateWebResourceResponse(nullptr, 404, L"Not found", L"", &response);
-                                                   }
-
-                                                   webResourceRequestArgs->put_Response(response.Get());
-                                                   return S_OK;
-                                               }
-
-                                               return S_FALSE;
-                                           })
-                                           .Get(),
-                                       &token);
+        if (!SUCCEEDED(core->add_WebResourceRequested(Microsoft::WRL::Callback<ICoreWebView2WebResourceRequestedEventHandler>(
+                                                          [core22](ICoreWebView2* sender, IUnknown* args) -> HRESULT
+                                                          {
+                                                              return HandleResourceRequested(core22.Get(), args);
+                                                          })
+                                                          .Get(),
+                                                      &token)))
+        {
+            std::cerr << "Failed to add resource requested filter\n";
+        }
     }
 } // namespace edge
 
