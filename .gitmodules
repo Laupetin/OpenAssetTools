@@ -21,4 +21,4 @@
 	url = https://github.com/lz4/lz4.git
 [submodule "thirdparty/webview"]
 	path = thirdparty/webview
-	url = https://github.com/webview/webview.git
+	url = https://github.com/Laupetin/webview.git
