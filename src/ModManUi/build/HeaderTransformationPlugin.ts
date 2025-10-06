@@ -1,84 +1,88 @@
-import type { Plugin, ViteDevServer } from "vite";
-import type { OutputOptions, OutputBundle, OutputAsset, OutputChunk } from "rollup";
+import type { Plugin } from "vite";
+import type { OutputAsset, OutputChunk } from "rollup";
 import path from "node:path";
 import fs from "node:fs";
 
-function createTransformedTextSource(varName: string, previousSource: string) {
-  const str = [...previousSource]
-    .map((v) => `0x${v.charCodeAt(0).toString(16).padStart(2, "0")}`)
-    .join(", ");
-  return `#pragma once
-  
-static inline const unsigned char ${varName}[] {
-${str}
-};
-`;
-}
+type MinimalOutputAsset = Pick<OutputAsset, "type" | "fileName" | "source">;
+type MinimalOutputChunk = Pick<OutputChunk, "type" | "fileName" | "code">;
+type MinimalOutputBundle = Record<string, MinimalOutputAsset | MinimalOutputChunk>;
 
 function createVarName(fileName: string) {
   return fileName.replaceAll(".", "_").toUpperCase();
 }
 
-function transformAsset(asset: OutputAsset) {
-  const varName = createVarName(asset.names[0]);
+function transformAsset(asset: MinimalOutputAsset) {
+  const varName = createVarName(asset.fileName);
 
+  let bytes: string;
   if (typeof asset.source === "string") {
-    asset.source = createTransformedTextSource(varName, asset.source);
+    bytes = [...asset.source].map((v) => String(v.charCodeAt(0))).join(",");
   } else {
-    const str = [...asset.source].map((v) => `0x${v.toString(16).padStart(2, "0")}`).join(", ");
-    asset.source = `#pragma once
-  
-static inline const unsigned char ${varName}[] {
-${str}
-};
-`;
+    bytes = [...asset.source].map((v) => String(v)).join(",");
   }
 
-  return varName;
+  return `constexpr const unsigned char ${varName}[] {${bytes}};
+`;
 }
 
-function transformChunk(chunk: OutputChunk) {
+function transformChunk(chunk: MinimalOutputChunk) {
   const varName = createVarName(chunk.fileName);
-  chunk.code = createTransformedTextSource(varName, chunk.code);
-  return varName;
+  const bytes = [...chunk.code].map((v) => String(v.charCodeAt(0))).join(",");
+
+  return `constexpr const unsigned char ${varName}[] {${bytes}};
+`;
 }
 
-export function headerTransformationPlugin(): Plugin {
-  return {
-    name: "header-transformation",
-    apply: "build",
-    generateBundle(options: OutputOptions, bundle: OutputBundle, isWrite: boolean) {
-      const includesStr: string[] = [`#include "index.html.h"`];
-      const uiFilesStr: string[] = [
-        `{ "index.html", INDEX_HTML, std::extent_v<decltype(INDEX_HTML)> }`,
-      ];
+function writeHeader(
+  bundle: MinimalOutputBundle,
+  outputDir?: string,
+  options?: HeaderTransformationPluginOptions,
+  devServerPort?: number,
+) {
+  const outputPath = options?.outputPath ?? path.join(outputDir ?? "dist", "ViteAssets.h");
+  const outputPathParentDir = path.dirname(outputPath);
 
-      for (const curBundle of Object.values(bundle)) {
-        let varName: string;
-        if (curBundle.type === "asset") {
-          varName = transformAsset(curBundle);
-        } else {
-          varName = transformChunk(curBundle);
-        }
+  fs.mkdirSync(outputPathParentDir, { recursive: true });
 
-        includesStr.push(`#include "${curBundle.fileName}.h"`);
-        uiFilesStr.push(
-          `{ "${curBundle.fileName}", ${varName}, std::extent_v<decltype(${varName})> }`,
-        );
+  const fd = fs.openSync(outputPath, "w");
+  const includeFileEnumeration = options?.includeFileEnumeration ?? true;
 
-        curBundle.fileName = `${curBundle.fileName}.h`;
-      }
+  fs.writeSync(
+    fd,
+    `#pragma once
 
-      this.emitFile({
-        type: "asset",
-        fileName: "modmanui.h",
-        source: `#pragma once
+`,
+  );
 
-${includesStr.join("\n")}
-
-#include <cstdlib>
+  if (includeFileEnumeration) {
+    fs.writeSync(
+      fd,
+      `#include <cstdlib>
 #include <type_traits>
 
+`,
+    );
+  }
+
+  fs.writeSync(
+    fd,
+    `constexpr auto VITE_DEV_SERVER = ${devServerPort ? "true" : "false"};
+constexpr auto VITE_DEV_SERVER_PORT = ${devServerPort ? String(devServerPort) : "-1"};
+`,
+  );
+
+  for (const curBundle of Object.values(bundle)) {
+    if (curBundle.type === "asset") {
+      fs.writeSync(fd, transformAsset(curBundle));
+    } else {
+      fs.writeSync(fd, transformChunk(curBundle));
+    }
+  }
+
+  if (includeFileEnumeration) {
+    fs.writeSync(
+      fd,
+      `
 struct UiFile
 {
     const char* filename;
@@ -87,36 +91,81 @@ struct UiFile
 };
 
 static inline const UiFile MOD_MAN_UI_FILES[] {
-${uiFilesStr.join(",\n")}
+`,
+    );
+
+    let index = 0;
+    for (const curBundle of Object.values(bundle)) {
+      const fileName = curBundle.fileName;
+      const varName = createVarName(fileName);
+
+      let prefix = "  ";
+      if (index > 0) {
+        prefix = `,
+  `;
+      }
+
+      fs.writeSync(
+        fd,
+        `${prefix}{ "${fileName}", ${varName}, std::extent_v<decltype(${varName})> }`,
+      );
+      index++;
+    }
+
+    fs.writeSync(
+      fd,
+      `
 };
 `,
+    );
+
+    fs.closeSync(fd);
+  }
+}
+
+export interface HeaderTransformationPluginOptions {
+  outputPath?: string;
+  includeFileEnumeration?: boolean;
+}
+
+export default function headerTransformationPlugin(
+  options?: HeaderTransformationPluginOptions,
+): Plugin {
+  let writeServerActive = false;
+  let writeBundleActive = false;
+
+  return {
+    name: "vite-plugin-header-transformation",
+    enforce: "post",
+    config(_userOptions, env) {
+      if (env.command === "serve") {
+        writeServerActive = true;
+      } else {
+        writeBundleActive = true;
+      }
+    },
+    configureServer(server) {
+      if (!writeServerActive) {
+        return;
+      }
+      server.httpServer?.once("listening", () => {
+        writeHeader(
+          {
+            // We need at least one array entry for MSVC
+            dummyfile: { type: "chunk", fileName: "dummyfile", code: "dummy" },
+          },
+          server.config.build.outDir,
+          options,
+          server.config.server.port,
+        );
       });
     },
-    transformIndexHtml(
-      html: string,
-      ctx: {
-        path: string;
-        filename: string;
-        server?: ViteDevServer;
-        bundle?: OutputBundle;
-        chunk?: OutputChunk;
-      },
-    ) {
-      html = html.replaceAll("index.js.h", "index.js");
-
-      html = createTransformedTextSource(createVarName("index.html"), html);
-      ctx.filename = `${ctx.filename}.h`;
-
-      return html;
-    },
-    writeBundle(options, bundle) {
-      for (const curBundle of Object.values(bundle)) {
-        if (curBundle.fileName === "index.html" && curBundle.type === "asset") {
-          const outputFilePath = path.join(options.dir!, curBundle.fileName);
-          fs.renameSync(outputFilePath, outputFilePath + ".h");
-          curBundle.fileName += ".h";
-        }
+    writeBundle(outputOptions, bundle) {
+      if (!writeBundleActive) {
+        return;
       }
+
+      writeHeader(bundle, outputOptions.dir, options);
     },
   };
 }

@@ -3,12 +3,11 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
-import { headerTransformationPlugin } from "./build/HeaderTransformationPlugin";
+import headerTransformationPlugin from "./build/HeaderTransformationPlugin";
 
 // https://vite.dev/config/
 export default defineConfig({
   build: {
-    outDir: "../../build/src/ModMan/ui",
     copyPublicDir: false,
     emptyOutDir: true,
     rollupOptions: {
@@ -19,14 +18,18 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vue(), vueDevTools(), headerTransformationPlugin()],
+  plugins: [
+    vue(),
+    vueDevTools(),
+    headerTransformationPlugin({
+      outputPath: fileURLToPath(
+        new URL("../../build/src/ModMan/Web/ViteAssets.h", import.meta.url),
+      ),
+    }),
+  ],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
-  },
-  server: {
-    port: 1420,
-    strictPort: true,
   },
 });

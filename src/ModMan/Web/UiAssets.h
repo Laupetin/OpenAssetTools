@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/modmanui.h"
+#include "Web/ViteAssets.h"
 
 #include <string>
 #include <unordered_map>

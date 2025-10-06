@@ -37,7 +37,7 @@ function ModMan:project()
 		}
 
 		includedirs {
-			"%{prj.location}"
+			"%{wks.location}/src/ModMan"
 		}
 
 		filter { "system:linux", "action:gmake" }

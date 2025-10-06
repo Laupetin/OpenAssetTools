@@ -18,6 +18,8 @@
 
 namespace
 {
+    constexpr auto LOCALHOST_PREFIX = "http://localhost:";
+
     std::unordered_map<std::string, UiFile> assetLookup;
 
     std::string WideStringToString(const std::wstring& wideString)
@@ -95,6 +97,13 @@ namespace
 
             const auto uri = WideStringToString(wUri);
             bool fileFound = false;
+
+#ifdef _DEBUG
+            // Allow dev server access
+            if (uri.starts_with(LOCALHOST_PREFIX))
+                return S_OK;
+#endif
+
             if (uri.starts_with(edge::URL_PREFIX))
             {
                 const auto asset = uri.substr(std::char_traits<char>::length(edge::URL_PREFIX) - 1);

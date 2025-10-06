@@ -2,6 +2,7 @@
 #include "webview/webview.h"
 #pragma warning(pop)
 
+#include "Web/ViteAssets.h"
 #include "Web/Edge/AssetHandlerEdge.h"
 #include "Web/Gtk/AssetHandlerGtk.h"
 
@@ -58,12 +59,19 @@ int main()
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
         edge::InstallCustomProtocolHandler(w);
-        w.navigate(edge::URL_PREFIX + "index.html"s);
+        constexpr auto urlPrefix = edge::URL_PREFIX;
 #elif defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
         gtk::InstallCustomProtocolHandler(w);
-        w.navigate(gtk::URL_PREFIX + "index.html"s);
+        constexpr auto urlPrefix = gtk::URL_PREFIX;
+#else
+#error Unsupported platform
 #endif
 
+#ifdef _DEBUG
+        w.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", urlPrefix));
+#else
+        w.navigate(std::format("{}index.html", urlPrefix));
+#endif
         w.run();
     }
     catch (const webview::exception& e)
