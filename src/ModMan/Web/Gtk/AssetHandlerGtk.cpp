@@ -1,20 +1,17 @@
 #include "AssetHandlerGtk.h"
 
-#pragma warning(push, 0)
+#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <webview/macros.h>
 #include <webview/webview.h>
-#pragma warning(pop)
-
-#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+#pragma GCC diagnostic pop
 
 #include "Web/UiAssets.h"
 
 #include <format>
 #include <iostream>
-
-#define G_SPAWN_ERROR g_spawn_error_quark()
-
-G_DEFINE_QUARK(g - spawn - error - quark, g_spawn_error)
 
 namespace
 {

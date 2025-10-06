@@ -1,6 +1,17 @@
-﻿#pragma warning(push, 0)
+﻿#ifdef _MSC_VER
+#pragma warning(push, 0)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #include "webview/webview.h"
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
 
 #include "Web/Edge/AssetHandlerEdge.h"
 #include "Web/Gtk/AssetHandlerGtk.h"
@@ -41,7 +52,13 @@ namespace
     {
         try
         {
-            webview::webview w(true, nullptr);
+            webview::webview w(
+#ifdef _DEBUG
+                true,
+#else
+                false,
+#endif
+                nullptr);
             w.set_title("OpenAssetTools ModMan");
             w.set_size(1280, 640, WEBVIEW_HINT_NONE);
             w.set_size(480, 320, WEBVIEW_HINT_MIN);

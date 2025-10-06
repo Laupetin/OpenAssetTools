@@ -1,11 +1,11 @@
 #include "AssetHandlerEdge.h"
 
+#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
+
 #pragma warning(push, 0)
 #include <webview/macros.h>
 #include <webview/webview.h>
 #pragma warning(pop)
-
-#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
 #include "Web/UiAssets.h"
 
