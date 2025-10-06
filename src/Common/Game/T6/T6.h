@@ -253,9 +253,9 @@ namespace T6
 
     enum CM_MATERIAL_TYPE
     {
-        NO_COLOUR_OR_TEXTURE,
         CM_MATERIAL_COLOUR,
-        CM_MATERIAL_TEXTURE
+        CM_MATERIAL_TEXTURE,
+        CM_MATERIAL_EMPTY
     };
 
     struct customMapMaterial
@@ -266,7 +266,6 @@ namespace T6
 
     struct worldSurface
     {
-        char flags;
         customMapMaterial material;
 
         // char lightmapIndex;

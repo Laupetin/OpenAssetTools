@@ -18,7 +18,7 @@ bool loadFBXMesh(ufbx_node* node)
     ufbx_mesh* mesh = node->mesh;
 
     if (mesh->instances.count != 1)
-        printf("node %s has %i instances, only the 1st instace will be used.\n", node->name.data, mesh->instances.count);
+        printf("mesh %s has %i instances, only the 1st instace will be used.\n", node->name.data, mesh->instances.count);
 
     if (mesh->num_triangles == 0)
     {
@@ -41,12 +41,6 @@ bool loadFBXMesh(ufbx_node* node)
         }
     }
 
-    _ASSERT(mesh->vertex_position.unique_per_vertex == true);
-    _ASSERT(mesh->vertex_color.unique_per_vertex == false);
-    _ASSERT(mesh->vertex_uv.unique_per_vertex == false);
-    _ASSERT(mesh->vertex_normal.unique_per_vertex == false);
-    _ASSERT(mesh->vertex_tangent.unique_per_vertex == false);
-
     if (mesh->vertex_tangent.exists == false)
         hasTangentSpace = false;
 
@@ -60,29 +54,9 @@ bool loadFBXMesh(ufbx_node* node)
     origTransform.scale.z /= 100.0f;
     ufbx_matrix meshMatrix = ufbx_transform_to_matrix(&origTransform);
 
-    CM_MATERIAL_TYPE meshMaterialType;
-    if (mesh->materials.count == 0)
-    {
-        if (!mesh->vertex_color.exists)
-        {
-            printf("mesh with no colour/texture data: %s\n", node->name.data);
-            meshMaterialType = NO_COLOUR_OR_TEXTURE;
-        }
-        else
-        {
-            printf("colour only mesh %s\n", node->name.data);
-            meshMaterialType = CM_MATERIAL_COLOUR;
-        }
-    }
-    else
-    {
-        meshMaterialType = CM_MATERIAL_TEXTURE;
-    }
-
-
     // FBX loading code modified from https://ufbx.github.io/elements/meshes/
     // Seems like I have to use this exact way of loading, otherwise some values become incorrect
-    for (int i = 0; i < mesh->material_parts.count; i++)
+    for (size_t i = 0; i < mesh->material_parts.count; i++)
     {
         ufbx_mesh_part* meshPart = &mesh->material_parts.data[i];
 
@@ -90,26 +64,31 @@ bool loadFBXMesh(ufbx_node* node)
             continue;
 
         worldSurface surface;
-        surface.flags = 0;
         surface.triCount = meshPart->num_triangles;
         surface.firstVertexIndex = vertexVec.size();
         surface.firstIndex_Index = indexVec.size();
 
-        surface.material.materialType = meshMaterialType;
-        switch (meshMaterialType)
+        CM_MATERIAL_TYPE meshMaterialType;
+        if (mesh->materials.count == 0)
         {
-        case CM_MATERIAL_TEXTURE:
-            surface.material.materialName = _strdup(mesh->materials.data[i]->name.data);
-            break;
-
-        case CM_MATERIAL_COLOUR:
-        case NO_COLOUR_OR_TEXTURE:
-            surface.material.materialName = "";
-            break;
-
-        default:
-            _ASSERT(false);
+            meshMaterialType = CM_MATERIAL_EMPTY;
         }
+        //else if (mesh->materials.data[i]->textures.count != 0)
+        //{
+        //    meshMaterialType = CM_MATERIAL_TEXTURE;
+        //    surface.material.materialName = _strdup(mesh->materials.data[i]->name.data);
+        //}
+        //else
+        //{
+        //    meshMaterialType = CM_MATERIAL_COLOUR;
+        //    surface.material.materialName = "";
+        //}
+        else
+        {
+            meshMaterialType = CM_MATERIAL_TEXTURE;
+            surface.material.materialName = _strdup(mesh->materials.data[i]->name.data);
+        }
+        surface.material.materialType = meshMaterialType;
 
         size_t num_triangles = meshPart->num_triangles;
         customMapVertex* vertices = (customMapVertex*)calloc(num_triangles * 3, sizeof(customMapVertex));
@@ -135,31 +114,34 @@ bool loadFBXMesh(ufbx_node* node)
                 customMapVertex* vertex = &vertices[num_vertices++];
 
                 ufbx_vec3 transformedPos = ufbx_transform_position(&meshMatrix, ufbx_get_vertex_vec3(&mesh->vertex_position, index));
-                vertex->pos.x = transformedPos.x;
-                vertex->pos.y = transformedPos.y;
-                vertex->pos.z = transformedPos.z;
+                vertex->pos.x = static_cast<float>(transformedPos.x);
+                vertex->pos.y = static_cast<float>(transformedPos.y);
+                vertex->pos.z = static_cast<float>(transformedPos.z);
 
-                // textured and missing materials are set to white
+                
                 switch (meshMaterialType)
                 {
                 case CM_MATERIAL_TEXTURE:
-                case NO_COLOUR_OR_TEXTURE:
+                case CM_MATERIAL_EMPTY:
                     vertex->color[0] = 1.0f;
                     vertex->color[1] = 1.0f;
                     vertex->color[2] = 1.0f;
                     vertex->color[3] = 1.0f;
                     break;
-
                 case CM_MATERIAL_COLOUR:
-                    vertex->color[0] = ufbx_get_vertex_vec4(&mesh->vertex_color, index).x;
-                    vertex->color[1] = ufbx_get_vertex_vec4(&mesh->vertex_color, index).y;
-                    vertex->color[2] = ufbx_get_vertex_vec4(&mesh->vertex_color, index).z;
-                    vertex->color[3] = ufbx_get_vertex_vec4(&mesh->vertex_color, index).w;
+                {
+                    float factor = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_factor.value_real);
+                    vertex->color[0] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.x * factor);
+                    vertex->color[1] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.y * factor);
+                    vertex->color[2] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.z * factor);
+                    vertex->color[3] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec4.w * factor);
                     break;
+                }
 
                 default:
                     _ASSERT(false);
                 }
+                
 
 
                 // 1.0f - uv.v:
@@ -167,15 +149,15 @@ bool loadFBXMesh(ufbx_node* node)
                 vertex->texCoord[0] = (float)(ufbx_get_vertex_vec2(&mesh->vertex_uv, index).x);
                 vertex->texCoord[1] = (float)(1.0f - ufbx_get_vertex_vec2(&mesh->vertex_uv, index).y);
 
-                vertex->normal.x = ufbx_get_vertex_vec3(&mesh->vertex_normal, index).x;
-                vertex->normal.y = ufbx_get_vertex_vec3(&mesh->vertex_normal, index).y;
-                vertex->normal.z = ufbx_get_vertex_vec3(&mesh->vertex_normal, index).z;
+                vertex->normal.x = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).x);
+                vertex->normal.y = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).y);
+                vertex->normal.z = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).z);
 
                 if (mesh->vertex_tangent.exists)
                 {
-                    vertex->tangent.x = ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).x;
-                    vertex->tangent.y = ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).y;
-                    vertex->tangent.z = ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).z;
+                    vertex->tangent.x = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).x);
+                    vertex->tangent.y = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).y);
+                    vertex->tangent.z = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).z);
                 }
                 else
                 {
@@ -235,13 +217,13 @@ bool loadFBXModel(ufbx_node* node)
     origTransform.scale.z /= 100.0f;
     ufbx_matrix meshMatrix = ufbx_transform_to_matrix(&origTransform);
 
-    model.origin.x = node->local_transform.translation.x / 100.0f;
-    model.origin.y = node->local_transform.translation.y / 100.0f;
-    model.origin.z = node->local_transform.translation.z / 100.0f;
-    model.rotation.x = node->euler_rotation.x;
-    model.rotation.y = node->euler_rotation.y;
-    model.rotation.z = node->euler_rotation.z;
-    model.scale = node->local_transform.scale.x / 100.0f;
+    model.origin.x = static_cast<float>(node->local_transform.translation.x) / 100.0f;
+    model.origin.y = static_cast<float>(node->local_transform.translation.y) / 100.0f;
+    model.origin.z = static_cast<float>(node->local_transform.translation.z) / 100.0f;
+    model.rotation.x = static_cast<float>(node->euler_rotation.x);
+    model.rotation.y = static_cast<float>(node->euler_rotation.y);
+    model.rotation.z = static_cast<float>(node->euler_rotation.z);
+    model.scale = static_cast<float>(node->local_transform.scale.x) / 100.0f;
 
     if (model.scale == 0.0f)
     {
@@ -277,7 +259,7 @@ void parseGFXData(ufbx_scene* scene, customMapInfo* projInfo)
             // loadFBXModel(node);
             break;
         default:
-            printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
+            //printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
             break;
         }
     }
@@ -321,7 +303,7 @@ void parseCollisionData(ufbx_scene* scene, customMapInfo* projInfo)
             // loadFBXModel(node);
             break;
         default:
-            printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
+            //printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
             break;
         }
     }
@@ -355,7 +337,7 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
         return NULL;
     }
 
-    char* gfxMapData = new char[gfxFile.m_length];
+    char* gfxMapData = new char[static_cast<unsigned int>(gfxFile.m_length)];
     gfxFile.m_stream->seekg(0);
     gfxFile.m_stream->read(gfxMapData, gfxFile.m_length);
 
@@ -364,7 +346,7 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
     opts.target_axes = ufbx_axes_right_handed_y_up;
     opts.generate_missing_normals = true;
     opts.allow_missing_vertex_position = false;
-    gfxScene = ufbx_load_memory(gfxMapData, gfxFile.m_length, NULL, &error);
+    gfxScene = ufbx_load_memory(gfxMapData, static_cast<size_t>(gfxFile.m_length), NULL, &error);
     if (!gfxScene) 
     {
         fprintf(stderr, "Failed to load map gfx fbx file: %s\n", error.description.data);
@@ -380,7 +362,7 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
     }
     else
     {
-        char* colMapData = new char[colFile.m_length];
+        char* colMapData = new char[static_cast<unsigned int>(colFile.m_length)];
         colFile.m_stream->seekg(0);
         colFile.m_stream->read(colMapData, colFile.m_length);
 
@@ -389,7 +371,7 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
         opts.target_axes = ufbx_axes_right_handed_y_up;
         opts.generate_missing_normals = true;
         opts.allow_missing_vertex_position = false;
-        colScene = ufbx_load_memory(colMapData, colFile.m_length, NULL, &error);
+        colScene = ufbx_load_memory(colMapData, static_cast<size_t>(colFile.m_length), NULL, &error);
         if (!colScene)
         {
             fprintf(stderr, "Failed to load map collision fbx file: %s\n", error.description.data);

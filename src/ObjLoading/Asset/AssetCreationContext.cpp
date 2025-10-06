@@ -172,6 +172,10 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
 
         con::error(R"(Could not load asset "{}" of type "{}")", assetName, assetTypeName);
     }
+    else if (assetName[0] == ',')
+    {
+        return LoadDefaultAssetDependency(assetType, assetName);
+    }
     else if (required)
     {
         con::error(R"(Missing asset "{}" of type "{}")", assetName, assetTypeName);

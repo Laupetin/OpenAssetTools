@@ -10,6 +10,8 @@
 
 namespace
 {
+    constexpr auto METADATA_CUSTOM_MAP = "custom_map";
+
     constexpr auto METADATA_GAME = "game";
     constexpr auto METADATA_GDT = "gdt";
     constexpr auto METADATA_NAME = "name";
@@ -133,6 +135,10 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
     if (key == METADATA_GAME)
     {
         ProcessMetaDataGame(state, valueToken, value);
+    }
+    else if (key == METADATA_CUSTOM_MAP)
+    {
+        state->SetCustomMap();
     }
     else if (key == METADATA_GDT)
     {
