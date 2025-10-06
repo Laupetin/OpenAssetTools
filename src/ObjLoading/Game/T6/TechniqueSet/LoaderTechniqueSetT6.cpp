@@ -112,6 +112,7 @@ namespace
                             {
                                 currPass->vertexDecl->routing.data[i].source = (unsigned char)passJs["vertexDecl"]["routing"][i]["source"];
                                 currPass->vertexDecl->routing.data[i].dest = (unsigned char)passJs["vertexDecl"]["routing"][i]["dest"];
+                                currPass->vertexDecl->routing.decl[i] = NULL;
                             }
                         }
 

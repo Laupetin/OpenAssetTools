@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Game/T6/Material/JsonMaterialLoaderT6.h"
+
 #include "BinarySpacePartitionTreePreCalc.h"
 #include "TriangleSort.h"
 #include "CustomMapConsts.h"
@@ -26,14 +28,20 @@ public:
     {
         _ASSERT(projInfo != NULL);
 
-        createGfxWorld(projInfo);
+        checkAndAddDefaultRequiredAssets(projInfo);
+        if (hasLinkFailed)
+        {
+            printf("Custom Map link has failed.\n");
+            return false;
+        }
+
+        
         createComWorld(projInfo);
         createMapEnts(projInfo);
         createGameWorldMp(projInfo);
         createSkinnedVerts(projInfo);
+        createGfxWorld(projInfo); // requires mapents asset
         createClipMap(projInfo); // must go last (requires gfx and mapents asset)
-        
-        checkAndAddDefaultRequiredAssets(projInfo);
         
         if (hasLinkFailed)
         {
@@ -45,12 +53,21 @@ public:
     }
 
 private:
+    struct entModelBounds
+    {
+        vec3_t mins;
+        vec3_t maxs;
+    };
+
     MemoryManager& m_memory;
     ISearchPath& m_search_path;
     Zone& m_zone;
     AssetCreationContext& m_context;
 
     bool hasLinkFailed;
+    std::vector<entModelBounds> entityModelList;
+
+    json materialTemplateJson;
 
     // TODO vd1:
     //	used for UVs of sub-textures, when it is set to empty all of them turn a blank colour
@@ -120,6 +137,26 @@ private:
         return surf0.vertexCount > surf1.vertexCount;
     }
 
+    Material* loadImageIntoMaterial(std::string& imageName)
+    {
+        Material* material = new Material;
+        material->info.name = m_memory.Dup(imageName.c_str());
+
+        // parse the template file and replace the image name
+        materialTemplateJson["textures"][1]["image"] = imageName;
+
+        AssetRegistration<AssetMaterial> registration(imageName, material);
+        if (!LoadMaterialAsJson(materialTemplateJson, *material, m_memory, m_context, registration))
+        {
+            printf("WARN: failed to convert image %s to a material.\n", imageName.c_str());
+            return NULL;
+        }
+
+        m_context.AddAsset(std::move(registration));
+
+        return material;
+    }
+
     void overwriteMapSurfaces(customMapInfo* projInfo, GfxWorld* gfxWorld)
     {
         bool overwriteResult = overwriteDrawData(projInfo, gfxWorld);
@@ -138,7 +175,7 @@ private:
             currSurface->primaryLightIndex = DEFAULT_SURFACE_LIGHT;
             currSurface->lightmapIndex = DEFAULT_SURFACE_LIGHTMAP;
             currSurface->reflectionProbeIndex = DEFAULT_SURFACE_REFLECTION_PROBE;
-            currSurface->flags = objSurface->flags;
+            currSurface->flags = DEFAULT_SURFACE_FLAGS;
 
             currSurface->tris.triCount = objSurface->triCount;
             currSurface->tris.baseIndex = objSurface->firstIndex_Index;
@@ -154,25 +191,25 @@ private:
                 break;
 
             case CM_MATERIAL_COLOUR:
-            case NO_COLOUR_OR_TEXTURE:
-                surfMaterialName = colourOnlyMaterialName;
+            case CM_MATERIAL_EMPTY:
+                surfMaterialName = colorOnlyImageName;
                 break;
 
             default:
                 _ASSERT(false);
             }
-            auto* assetInfo = m_context.LoadDependency<AssetMaterial>(surfMaterialName);
-            if (assetInfo == NULL)
+            Material* surfMaterial = loadImageIntoMaterial(surfMaterialName);
+            if (surfMaterial == NULL)
             {
-                assetInfo = m_context.LoadDependency<AssetMaterial>(missingMaterialName);
-                if (assetInfo == NULL)
+                surfMaterial = loadImageIntoMaterial(missingImageName);
+                if (surfMaterial == NULL)
                 {
-                    printf("Error: unable to find the default texture!\n"); 
+                    printf("Error: unable to find the missing image texture!\n"); 
                     hasLinkFailed = true;
                     return;
                 }
             }
-            currSurface->material = assetInfo->Asset();
+            currSurface->material = surfMaterial;
             
             GfxPackedWorldVertex* firstVert = (GfxPackedWorldVertex*)&gfxWorld->draw.vd0.data[currSurface->tris.vertexDataOffset0];
             currSurface->bounds[0].x = firstVert[0].xyz.x;
@@ -441,36 +478,70 @@ private:
         }
     }
 
+    // the lightgrid is used to light models in a dynamic way and is precomputed
     void overwriteLightGrid(GfxWorld* gfxWorld)
     {
+        // there is almost no basis for the values in this code, i chose them based on what feels right and what i could see when RE.
+        // it works and that is all thats needed :)
+
+        // mins and maxs define the range that the lightgrid will work in
+        // idk how these values are calculated, but the below values are larger
+        // than official map values
         gfxWorld->lightGrid.mins[0] = 0;
         gfxWorld->lightGrid.mins[1] = 0;
         gfxWorld->lightGrid.mins[2] = 0;
-        gfxWorld->lightGrid.maxs[0] = 0;
-        gfxWorld->lightGrid.maxs[1] = 0;
-        gfxWorld->lightGrid.maxs[2] = 0;
+        gfxWorld->lightGrid.maxs[0] = 200;
+        gfxWorld->lightGrid.maxs[1] = 200;
+        gfxWorld->lightGrid.maxs[2] = 50;
 
         gfxWorld->lightGrid.rowAxis = 0;              // default value
         gfxWorld->lightGrid.colAxis = 1;              // default value
-        gfxWorld->lightGrid.sunPrimaryLightIndex = SUN_LIGHT_INDEX; // the sun is always index 1
-        gfxWorld->lightGrid.offset = 0.0f;
+        gfxWorld->lightGrid.sunPrimaryLightIndex = SUN_LIGHT_INDEX;
+        gfxWorld->lightGrid.offset = 0.0f; // default value
 
-        // if rowDataStart's first value is -1, it will not look up any lightmap data
-        gfxWorld->lightGrid.rowDataStart = new uint16_t[1];
-        *gfxWorld->lightGrid.rowDataStart = (uint16_t)(-1);
+        // this will make the lookup into rawRowData always return the first row
+        int rowDataStartSize = gfxWorld->lightGrid.maxs[gfxWorld->lightGrid.rowAxis] - gfxWorld->lightGrid.mins[gfxWorld->lightGrid.rowAxis] + 1;
+        gfxWorld->lightGrid.rowDataStart = new uint16_t[rowDataStartSize];
+        memset(gfxWorld->lightGrid.rowDataStart, 0, rowDataStartSize * sizeof(uint16_t));
 
-        gfxWorld->lightGrid.rawRowDataSize = 0;
-        gfxWorld->lightGrid.rawRowData = NULL;
+        gfxWorld->lightGrid.rawRowDataSize = sizeof(GfxLightGridRow);
+        GfxLightGridRow* row = new GfxLightGridRow[1];
+        row->colStart = 0;
+        row->colCount = 0x1000; // 0x1000 as this is large enough for all checks done by the game
+        row->zStart = 0;
+        row->zCount = 0xFF; // 0xFF as this is large enough for all checks done by the game, but small enough not to mess with other checks
+        row->firstEntry = 0;
+        // this unknown part is weird, bo2 code uses up to unk5 and possibly onwards but the dumped rawRowData looks like it has a different structure.
+        // this seems to work though
+        row->unk.unknown1 = 0;
+        row->unk.unknown2 = 0;
+        row->unk.unknown3 = 0;
+        row->unk.unknown4 = 0;
+        row->unk.unknown5 = 0;
+        row->unk.unknown6 = 0;
+        row->unk.unknown7 = 0;
+        row->unk.unknown8 = 0;
+        gfxWorld->lightGrid.rawRowData = (aligned_byte_pointer*)row;
 
-        gfxWorld->lightGrid.colorCount = 0;
-        gfxWorld->lightGrid.colors = NULL;
+        // entries are looked up based on the lightgrid sample pos and data within GfxLightGridRow
+        gfxWorld->lightGrid.entryCount = 60000; // 60000 as it should be enough entries to be indexed by all lightgrid data
+        GfxLightGridEntry* entryArray = new GfxLightGridEntry[gfxWorld->lightGrid.entryCount];
+        for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
+        {
+            entryArray[i].colorsIndex = 0; // always index first colour
+            entryArray[i].primaryLightIndex = SUN_LIGHT_INDEX;
+            entryArray[i].visibility = 0;
+        }
+        gfxWorld->lightGrid.entries = entryArray;
+        
+        // colours are looked up by an entries colourindex
+        gfxWorld->lightGrid.colorCount = 0x1000; //0x1000 as it should be enough to hold every index
+        gfxWorld->lightGrid.colors = new GfxCompressedLightGridColors[gfxWorld->lightGrid.colorCount];
+        memset(gfxWorld->lightGrid.colors, LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
 
+        // we use the colours array instead of coeffs array
         gfxWorld->lightGrid.coeffCount = 0;
         gfxWorld->lightGrid.coeffs = NULL;
-
-        gfxWorld->lightGrid.entryCount = 0;
-        gfxWorld->lightGrid.entries = NULL;
-
         gfxWorld->lightGrid.skyGridVolumeCount = 0;
         gfxWorld->lightGrid.skyGridVolumes = NULL;
     }
@@ -490,14 +561,18 @@ private:
         gfxWorld->cells = new GfxCell[cellCount];
         gfxWorld->cells[0].portalCount = 0;
         gfxWorld->cells[0].portals = NULL;
-        gfxWorld->cells[0].reflectionProbeCount = 0;
-        gfxWorld->cells[0].reflectionProbes = NULL;
         gfxWorld->cells[0].mins.x = gfxWorld->mins.x;
         gfxWorld->cells[0].mins.y = gfxWorld->mins.y;
         gfxWorld->cells[0].mins.z = gfxWorld->mins.z;
         gfxWorld->cells[0].maxs.x = gfxWorld->maxs.x;
         gfxWorld->cells[0].maxs.y = gfxWorld->maxs.y;
         gfxWorld->cells[0].maxs.z = gfxWorld->maxs.z;
+
+        // there is only 1 reflection probe
+        gfxWorld->cells[0].reflectionProbeCount = 1;
+        char* reflectionProbeIndexes = new char[gfxWorld->cells[0].reflectionProbeCount];
+        reflectionProbeIndexes[0] = DEFAULT_SURFACE_REFLECTION_PROBE;
+        gfxWorld->cells[0].reflectionProbes = reflectionProbeIndexes;
 
         // AABB trees are used to detect what should be rendered and what shouldn't
         // Just use the first AABB node to hold all models, no optimisation but all models/surfaces wil lbe drawn
@@ -558,7 +633,7 @@ private:
         // these models are the collision for the entities defined in the mapents asset
         // used for triggers and stuff
 
-        gfxWorld->modelCount = 1;
+        gfxWorld->modelCount = entityModelList.size() + 1;
         gfxWorld->models = new GfxBrushModel[gfxWorld->modelCount];
 
         // first model is always the world model
@@ -572,22 +647,21 @@ private:
         gfxWorld->models[0].bounds[1].z = gfxWorld->maxs.z;
         memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
 
-        // for (int i = 1; i < gfxWorld->modelCount; i++)
-        //{
-        //	auto currEntModel = &gfxWorld->models[i];
-        //	json currEntModelJs = js["entityModels"][i - 1];
-        //
-        //	currEntModel->bounds[0].x = currEntModelJs["mins"]["x"];
-        //	currEntModel->bounds[0].y = currEntModelJs["mins"]["y"];
-        //	currEntModel->bounds[0].z = currEntModelJs["mins"]["z"];
-        //	currEntModel->bounds[1].x = currEntModelJs["maxs"]["x"];
-        //	currEntModel->bounds[1].y = currEntModelJs["maxs"]["y"];
-        //	currEntModel->bounds[1].z = currEntModelJs["maxs"]["z"];
-        //
-        //	currEntModel->surfaceCount = 0;
-        //	currEntModel->startSurfIndex = (unsigned int)(-1);
-        //	memset(&currEntModel->writable, 0, sizeof(GfxBrushModelWritable));
-        // }
+        for (size_t i = 0; i < entityModelList.size(); i++)
+        {
+        	auto currEntModel = &gfxWorld->models[i + 1];
+            entModelBounds currEntModelBounds = entityModelList[i];
+        
+        	currEntModel->startSurfIndex = 0;
+            currEntModel->surfaceCount = -1; // -1 when it doesn't use map surfaces
+            currEntModel->bounds[0].x = currEntModelBounds.mins.x;
+            currEntModel->bounds[0].y = currEntModelBounds.mins.y;
+            currEntModel->bounds[0].z = currEntModelBounds.mins.z;
+            currEntModel->bounds[1].x = currEntModelBounds.maxs.x;
+            currEntModel->bounds[1].y = currEntModelBounds.maxs.y;
+            currEntModel->bounds[1].z = currEntModelBounds.maxs.z;
+            memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
+        }
     }
 
     void updateSunData(GfxWorld* gfxWorld)
@@ -703,14 +777,14 @@ private:
         gfxWorld->draw.lightmaps[0].secondary = secondaryTextureAsset->Asset();
     }
 
-    void overwriteSkyBox(GfxWorld* gfxWorld)
+    void overwriteSkyBox(customMapInfo* projInfo, GfxWorld* gfxWorld)
     {
-        const char* skyBoxName = "skybox_mp_dig";
-        gfxWorld->skyBoxModel = skyBoxName;
+        std::string skyBoxName = "skybox_" + projInfo->name;
+        gfxWorld->skyBoxModel = _strdup(skyBoxName.c_str());
 
         if (m_context.LoadDependency<AssetXModel>(skyBoxName) == NULL)
         {
-            printf("WARN: Unable to find the skybox model %s\n", skyBoxName);
+            printf("WARN: Unable to load the skybox xmodel %s\n", skyBoxName.c_str());
         }
 
         // default skybox values from mp_dig
@@ -722,9 +796,12 @@ private:
 
     void updateDynEntData(GfxWorld* gfxWorld)
     {
-        gfxWorld->dpvsDyn.dynEntClientCount[0] = DYN_ENT_COUNT + 256;
+        gfxWorld->dpvsDyn.dynEntClientCount[0] = DYN_ENT_COUNT + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld->dpvsDyn.dynEntClientCount[1] = 0;
-        gfxWorld->dpvsDyn.dynEntClientWordCount[0] = 1; // needs to be at least 1
+
+        // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue. 
+        // Making the value much larger than required fixes it, but idk what the root cause is
+        gfxWorld->dpvsDyn.dynEntClientWordCount[0] = ((gfxWorld->dpvsDyn.dynEntClientCount[0] + 31) >> 5) + 100;
         gfxWorld->dpvsDyn.dynEntClientWordCount[1] = 0;
         gfxWorld->dpvsDyn.usageCount = 0;
 
@@ -779,7 +856,7 @@ private:
         auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
         if (outdoorImageAsset == NULL)
         {
-            printf("ERROR! unable to find image $outdoor, this will crash your game!\n");
+            printf("ERROR! unable to find image $outdoor!\n");
             hasLinkFailed = true;
             return;
         }
@@ -804,7 +881,7 @@ private:
 
         overwriteLightmapData(gfxWorld);
 
-        overwriteSkyBox(gfxWorld);
+        overwriteSkyBox(projInfo, gfxWorld);
 
         updateReflectionProbeData(gfxWorld);
 
@@ -1386,8 +1463,8 @@ private:
         clipMap->info.brushBounds = NULL;
         clipMap->info.brushContents = NULL;
 
-        clipMap->originalDynEntCount = DYN_ENT_COUNT;
-        clipMap->dynEntCount[0] = clipMap->originalDynEntCount + 256;
+        clipMap->originalDynEntCount = DYN_ENT_COUNT;  
+        clipMap->dynEntCount[0] = clipMap->originalDynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         clipMap->dynEntCount[1] = 0;
         clipMap->dynEntCount[2] = 0;
         clipMap->dynEntCount[3] = 0;
@@ -1413,49 +1490,47 @@ private:
         clipMap->dynEntDefList[0] = new DynEntityDef[clipMap->dynEntCount[0]];
         clipMap->dynEntDefList[1] = NULL;
         memset(clipMap->dynEntDefList[0], 0, sizeof(DynEntityDef) * clipMap->dynEntCount[0]);
-        for (int i = 0; i < clipMap->dynEntCount[0]; i++)
-        {
-            DynEntityDef* currDef = &clipMap->dynEntDefList[0][i];
-            currDef->physConstraints[0] = 0x1FF;
-            currDef->physConstraints[1] = 0x1FF;
-            currDef->physConstraints[2] = 0x1FF;
-            currDef->physConstraints[3] = 0x1FF;
-        }
 
         // cmodels is the collision for mapents
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(projInfo->bspName);
         _ASSERT(gfxWorldAsset != NULL);
         GfxWorld* gfxWorld = gfxWorldAsset->Asset();
-        _ASSERT(gfxWorld->modelCount == 1);
-        clipMap->numSubModels = 1;
+        clipMap->numSubModels = gfxWorld->modelCount;
         clipMap->cmodels = new cmodel_t[clipMap->numSubModels];
-        clipMap->cmodels[0].leaf.firstCollAabbIndex = 0;
-        clipMap->cmodels[0].leaf.collAabbCount = 0;
-        clipMap->cmodels[0].leaf.brushContents = 0;
-        clipMap->cmodels[0].leaf.terrainContents = WORLD_TERRAIN_CONTENTS;
-        clipMap->cmodels[0].leaf.mins.x = 0.0f;
-        clipMap->cmodels[0].leaf.mins.y = 0.0f;
-        clipMap->cmodels[0].leaf.mins.z = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.x = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.y = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.z = 0.0f;
-        clipMap->cmodels[0].leaf.leafBrushNode = 0;
-        clipMap->cmodels[0].leaf.cluster = 0;
-        clipMap->cmodels[0].info = NULL;
-        clipMap->cmodels[0].mins.x = gfxWorld->models[0].bounds[0].x;
-        clipMap->cmodels[0].mins.y = gfxWorld->models[0].bounds[0].y;
-        clipMap->cmodels[0].mins.z = gfxWorld->models[0].bounds[0].z;
-        clipMap->cmodels[0].maxs.x = gfxWorld->models[0].bounds[1].x;
-        clipMap->cmodels[0].maxs.y = gfxWorld->models[0].bounds[1].y;
-        clipMap->cmodels[0].maxs.z = gfxWorld->models[0].bounds[1].z;
-        clipMap->cmodels[0].radius = CMUtil::distBetweenPoints(clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs) / 2;
+        for (unsigned int i = 0; i < clipMap->numSubModels; i++)
+        {
+            // bomb triggers use leafs, not world terrain so that might be an issue
 
+            GfxBrushModel* gfxModel = &gfxWorld->models[i];
+            cmodel_t* cmModel = &clipMap->cmodels[i];
+
+            cmModel->leaf.firstCollAabbIndex = 0;
+            cmModel->leaf.collAabbCount = 0;
+            cmModel->leaf.brushContents = 0;
+            cmModel->leaf.terrainContents = WORLD_TERRAIN_CONTENTS;
+            cmModel->leaf.mins.x = 0.0f;
+            cmModel->leaf.mins.y = 0.0f;
+            cmModel->leaf.mins.z = 0.0f;
+            cmModel->leaf.maxs.x = 0.0f;
+            cmModel->leaf.maxs.y = 0.0f;
+            cmModel->leaf.maxs.z = 0.0f;
+            cmModel->leaf.leafBrushNode = 0;
+            cmModel->leaf.cluster = 0;
+            cmModel->info = NULL;
+            cmModel->mins.x = gfxModel->bounds[0].x;
+            cmModel->mins.y = gfxModel->bounds[0].y;
+            cmModel->mins.z = gfxModel->bounds[0].z;
+            cmModel->maxs.x = gfxModel->bounds[1].x;
+            cmModel->maxs.y = gfxModel->bounds[1].y;
+            cmModel->maxs.z = gfxModel->bounds[1].z;
+            cmModel->radius = CMUtil::distBetweenPoints(cmModel->mins, cmModel->maxs) / 2;
+        }
 
         addXModelsToCollision(projInfo, clipMap);
 
         clipMap->info.numMaterials = 1;
         clipMap->info.materials = new ClipMaterial[clipMap->info.numMaterials];
-        clipMap->info.materials[0].name = _strdup(missingMaterialName.c_str());
+        clipMap->info.materials[0].name = _strdup(missingImageName.c_str());
         clipMap->info.materials[0].contentFlags = MATERIAL_CONTENT_FLAGS;
         clipMap->info.materials[0].surfaceFlags = MATERIAL_SURFACE_FLAGS;
 
@@ -1559,34 +1634,12 @@ private:
         m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
     }
 
-    void createMapEnts(customMapInfo* projInfo)
+    void parseMapEntsJSON(json& entArrayJs, std::string& entityString)
     {
-        MapEnts* mapEnts = new MapEnts;
-
-        mapEnts->name = _strdup(projInfo->bspName.c_str());
-
-        // don't need these
-        mapEnts->trigger.count = 0;
-        mapEnts->trigger.models = NULL;
-        mapEnts->trigger.hullCount = 0;
-        mapEnts->trigger.hulls = NULL;
-        mapEnts->trigger.slabCount = 0;
-        mapEnts->trigger.slabs = NULL;
-
-        const auto file = m_search_path.Open("custom_map/entities.json");
-        if (!file.IsOpen())
-        {
-            printf("WARN: can't find entity json!\n");
-            return;
-        }
-
-        json entJs = json::parse(*file.m_stream);
-
-        std::string entityString;
-        int entityCount = entJs["entityCount"];
+        int entityCount = entArrayJs.size();
         for (int i = 0; i < entityCount; i++)
         {
-            auto currEntity = entJs["entities"][i];
+            auto currEntity = entArrayJs[i];
 
             if (i == 0)
             {
@@ -1610,7 +1663,186 @@ private:
 
             entityString.append("}\n");
         }
-        entityString.pop_back(); // remove newline character from the end of the string
+    }
+
+    void parseSpawnpointJSON(json& entArrayJs, std::string& entityString, std::vector<std::string> spawnpointTypeArray)
+    {
+        int entityCount = entArrayJs.size();
+        for (int i = 0; i < entityCount; i++)
+        {
+            auto currEntity = entArrayJs[i];
+
+            std::string origin = currEntity["origin"];
+            std::string angles = currEntity["angles"];
+
+            for (std::string& spawnType : spawnpointTypeArray)
+            {
+                entityString.append("{\n");
+                entityString.append(std::format("\"origin\" \"{}\"\n", origin));
+                entityString.append(std::format("\"angles\" \"{}\"\n", angles));
+                entityString.append(std::format("\"classname\" \"{}\"\n", spawnType));
+                entityString.append("}\n");
+            }
+        }
+    }
+
+    void parseBombJSON(json& bombJs, std::string& entityString)
+    {
+        // add the bomb model
+        {
+            std::string bombOriginStr = bombJs["sd_bomb"]["origin"];
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"script_model\"\n");
+            entityString.append("\"model\" \"prop_suitcase_bomb\"\n");
+            entityString.append("\"targetname\" \"sd_bomb\"\n");
+            entityString.append("\"script_gameobjectname\" \"sd\"\n");
+            entityString.append("\"spawnflags\" \"4\"\n");
+            entityString.append(std::format("\"origin\" \"{}\"\n", bombOriginStr));
+            entityString.append("}\n");
+        }
+        if (m_context.LoadDependency<AssetXModel>("prop_suitcase_bomb") == NULL)
+        {
+            hasLinkFailed = true;
+            printf("ERROR: unable to find s&d bomb xmodel\n");
+            return;
+        }
+
+        // add the bomb pickup trigger
+        {
+            std::string bombOriginStr = bombJs["sd_bomb"]["origin"];
+            vec3_t bomboriginV3 = CMUtil::convertStringToVec3(bombOriginStr);
+            entModelBounds bounds;
+            bounds.mins.x = bomboriginV3.x - 32.0f; // bounds taken from mp_dig
+            bounds.mins.y = bomboriginV3.y - 32.0f;
+            bounds.mins.z = bomboriginV3.z - 8.0f;
+            bounds.maxs.x = bomboriginV3.x + 32.0f;
+            bounds.maxs.y = bomboriginV3.y + 32.0f;
+            bounds.maxs.z = bomboriginV3.z + 28.0f;
+            int entityModelIndex = entityModelList.size() + 1; // +1 as the first model is always the world model
+            entityModelList.push_back(bounds);
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"trigger_multiple\"\n");
+            entityString.append("\"targetname\" \"sd_bomb_pickup_trig\"\n");
+            entityString.append("\"script_gameobjectname\" \"sd\"\n");
+            entityString.append(std::format("\"origin\" \"{}\"\n", bombOriginStr));
+            entityString.append(std::format("\"model\" \"*{}\"\n", entityModelIndex));
+            entityString.append("}\n");
+        }
+
+        // add A site bomb
+        {
+            std::string siteAPoint1Str = bombJs["sd_bombzone_a"]["point1"];
+            std::string siteAPoint2Str = bombJs["sd_bombzone_a"]["point2"];
+            vec3_t siteAPoint1V3 = CMUtil::convertStringToVec3(siteAPoint1Str);
+            vec3_t siteAPoint2V3 = CMUtil::convertStringToVec3(siteAPoint2Str);
+            entModelBounds bounds;
+            bounds.mins.x = siteAPoint1V3.x;
+            bounds.mins.y = siteAPoint1V3.y;
+            bounds.mins.z = siteAPoint1V3.z;
+            bounds.maxs.x = siteAPoint1V3.x;
+            bounds.maxs.y = siteAPoint1V3.y;
+            bounds.maxs.z = siteAPoint1V3.z;
+            CMUtil::calcNewBoundsWithPoint(&siteAPoint2V3, &bounds.mins, &bounds.mins);
+            int entityModelIndex = entityModelList.size() + 1; // +1 as the first model is always the world model
+            entityModelList.push_back(bounds);
+
+            vec3_t siteAOrigin = CMUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
+            std::string siteAOriginStr = CMUtil::convertVec3ToString(siteAOrigin);
+
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"trigger_use_touch\"\n");
+            entityString.append("\"targetname\" \"bombzone\"\n");
+            entityString.append("\"script_gameobjectname\" \"bombzone\"\n");
+            entityString.append("\"script_bombmode_original\" \"1\"\n");
+            entityString.append("\"script_label\" \"_a\"\n");
+            entityString.append(std::format("\"origin\" \"{}\"\n", siteAOriginStr));
+            entityString.append(std::format("\"model\" \"*{}\"\n", entityModelIndex));
+            entityString.append("}\n");
+        }
+
+        // add B site bomb
+        {
+            std::string siteBPoint1Str = bombJs["sd_bombzone_b"]["point1"];
+            std::string siteBPoint2Str = bombJs["sd_bombzone_b"]["point2"];
+            vec3_t siteBPoint1V3 = CMUtil::convertStringToVec3(siteBPoint1Str);
+            vec3_t siteBPoint2V3 = CMUtil::convertStringToVec3(siteBPoint2Str);
+            entModelBounds bounds;
+            bounds.mins.x = siteBPoint1V3.x;
+            bounds.mins.y = siteBPoint1V3.y;
+            bounds.mins.z = siteBPoint1V3.z;
+            bounds.maxs.x = siteBPoint1V3.x;
+            bounds.maxs.y = siteBPoint1V3.y;
+            bounds.maxs.z = siteBPoint1V3.z;
+            CMUtil::calcNewBoundsWithPoint(&siteBPoint2V3, &bounds.mins, &bounds.mins);
+            int entityModelIndex = entityModelList.size() + 1; // +1 as the first model is always the world model
+            entityModelList.push_back(bounds);
+
+            vec3_t siteAOrigin = CMUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
+            std::string siteAOriginStr = CMUtil::convertVec3ToString(siteAOrigin);
+
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"trigger_use_touch\"\n");
+            entityString.append("\"targetname\" \"bombzone\"\n");
+            entityString.append("\"script_gameobjectname\" \"bombzone\"\n");
+            entityString.append("\"script_bombmode_original\" \"1\"\n");
+            entityString.append("\"script_label\" \"_b\"\n");
+            entityString.append(std::format("\"origin\" \"{}\"\n", siteAOriginStr));
+            entityString.append(std::format("\"model\" \"*{}\"\n", entityModelIndex));
+            entityString.append("}\n");
+        }
+    }
+
+    void createMapEnts(customMapInfo* projInfo)
+    {
+        MapEnts* mapEnts = new MapEnts;
+
+        mapEnts->name = _strdup(projInfo->bspName.c_str());
+
+        // don't need these
+        mapEnts->trigger.count = 0;
+        mapEnts->trigger.models = NULL;
+        mapEnts->trigger.hullCount = 0;
+        mapEnts->trigger.hulls = NULL;
+        mapEnts->trigger.slabCount = 0;
+        mapEnts->trigger.slabs = NULL;
+
+         std::string entityString;
+
+        const auto entFile = m_search_path.Open("entities.json");
+        if (!entFile.IsOpen())
+        {
+            printf("ERROR: can't find entity json!\n");
+            return;
+        }
+        json entJs = json::parse(*entFile.m_stream);
+        parseMapEntsJSON(entJs["entities"], entityString);
+
+        const auto spawnFile = m_search_path.Open("spawns.json");
+        json spawnJs;
+        if (!spawnFile.IsOpen())
+        {
+            printf("WARN: no spawn points given, setting spawns to 0 0 0\n");
+            spawnJs = json::parse(defaultSpawnpointString);
+        }
+        else
+        {
+            spawnJs = json::parse(*spawnFile.m_stream);
+        }
+        
+        parseSpawnpointJSON(spawnJs["attackers"], entityString, spawnpointDefenderTypeArray);
+        parseSpawnpointJSON(spawnJs["defenders"], entityString, spawnpointAttackerTypeArray);
+        parseSpawnpointJSON(spawnJs["FFA"], entityString, spawnpointFFATypeArray);
+
+        //const auto objectiveFile = m_search_path.Open("objectives.json");
+        //if (!spawnFile.IsOpen())
+        //{
+        //    printf("WARN: no objectives given\n");
+        //}
+        //else
+        //{
+        //    json objectiveJs = json::parse(*objectiveFile.m_stream);
+        //    parseBombJSON(objectiveJs, entityString);
+        //}
 
         mapEnts->entityString = _strdup(entityString.c_str());
         mapEnts->numEntityChars = entityString.length() + 1; // numEntityChars includes the null character
@@ -1668,42 +1900,42 @@ private:
 
     void checkAndAddDefaultRequiredAssets(customMapInfo* projectInfo)
     {
-        if (m_context.LoadDependency<AssetScript>("maps/mp/mod.gsc") == NULL)
+        auto templateFile = m_search_path.Open("materials/material_template.json");
+        if (!templateFile.IsOpen())
+        {
+            printf("ERROR: failed to open materials/material_template.json\n");
+            hasLinkFailed = true;
+            return;
+        }
+        materialTemplateJson = json::parse(*templateFile.m_stream);
+
+        if (m_context.LoadDependency<AssetScript>("maps/mp/" + projectInfo->name + ".gsc") == NULL)
         {
             hasLinkFailed = true;
             return;
         }
-        if (m_context.LoadDependency<AssetScript>("maps/mp/mod_amb.gsc") == NULL)
+        if (m_context.LoadDependency<AssetScript>("maps/mp/" + projectInfo->name + "_amb.gsc") == NULL)
         {
             hasLinkFailed = true;
             return;
         }
-        if (m_context.LoadDependency<AssetScript>("maps/mp/mod_fx.gsc") == NULL)
+        if (m_context.LoadDependency<AssetScript>("maps/mp/" + projectInfo->name + "_fx.gsc") == NULL)
         {
             hasLinkFailed = true;
             return;
         }
-        if (m_context.LoadDependency<AssetScript>("maps/mp/createfx/mod_fx.gsc") == NULL)
+
+        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + projectInfo->name + ".csc") == NULL)
         {
             hasLinkFailed = true;
             return;
         }
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/mod.csc") == NULL)
+        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + projectInfo->name + "_amb.csc") == NULL)
         {
             hasLinkFailed = true;
             return;
         }
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/mod_amb.csc") == NULL)
-        {
-            hasLinkFailed = true;
-            return;
-        }
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/mod_fx.csc") == NULL)
-        {
-            hasLinkFailed = true;
-            return;
-        }
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/createfx/mod_fx.csc") == NULL)
+        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + projectInfo->name + "_fx.csc") == NULL)
         {
             hasLinkFailed = true;
             return;
@@ -1715,5 +1947,11 @@ private:
         addEmptyFootstepTableAsset("default_3rd_person_quiet");
         addEmptyFootstepTableAsset("default_3rd_person_loud");
         addEmptyFootstepTableAsset("default_ai");
+
+        if (m_context.LoadDependency<AssetRawFile>("animtrees/fxanim_props.atr") == NULL)
+        {
+            hasLinkFailed = true;
+            return;
+        }
     }
 };

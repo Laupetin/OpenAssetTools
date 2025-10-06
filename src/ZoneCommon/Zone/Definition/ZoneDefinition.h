@@ -69,4 +69,6 @@ public:
     std::vector<std::string> m_gdts;
     std::vector<ZoneDefinitionAsset> m_assets;
     std::vector<ZoneDefinitionObjContainer> m_obj_containers;
+
+    bool is_custom_map = false;
 };

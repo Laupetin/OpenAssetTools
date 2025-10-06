@@ -131,6 +131,9 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
     }
     else
     {
+        if (assetName[0] == ',')
+            return LoadDefaultAssetDependency(assetType, assetName);
+
         std::cerr << std::format("Missing asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
 

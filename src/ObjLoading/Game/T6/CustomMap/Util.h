@@ -70,6 +70,19 @@ public:
             currmaxs->z = point->z;
     }
 
+    static vec3_t calcMiddleOfBounds(vec3_t* mins, vec3_t* maxs)
+    {
+        // Origin is the midpoint: (min + max) / 2
+        vec3_t temp;
+        temp.x = mins->x + maxs->x;
+        temp.y = mins->y + maxs->y;
+        temp.z = mins->z + maxs->z;
+        temp.x *= 0.5f;
+        temp.y *= 0.5f;
+        temp.z *= 0.5f;
+        return temp;
+    }
+
     static int allignBy128(int size)
     {
         return ((size + 127) & 0xFFFFFF80);
@@ -86,9 +99,9 @@ public:
     // angles are in euler degrees
     static void convertAnglesToAxis(vec3_t* angles, vec3_t* axis)
     {
-        float xRadians = angles->x * 0.017453292; // M_PI / 180.0f
-        float yRadians = angles->y * 0.017453292; // M_PI / 180.0f
-        float zRadians = angles->z * 0.017453292; // M_PI / 180.0f
+        float xRadians = angles->x * 0.017453292f; // M_PI / 180.0f
+        float yRadians = angles->y * 0.017453292f; // M_PI / 180.0f
+        float zRadians = angles->z * 0.017453292f; // M_PI / 180.0f
         
         float cosX = cos(xRadians);
         float sinX = sin(xRadians);
@@ -119,5 +132,34 @@ public:
         out[2].x = in[0].z;
         out[2].y = in[1].z;
         out[2].z = in[2].z;
+    }
+
+    static vec3_t convertStringToVec3(std::string str)
+    {
+        std::string v1Str = str;
+
+        int nextValIndex = 0;
+        while (v1Str[nextValIndex] != ' ')
+            nextValIndex++;
+        nextValIndex++; // skip past space
+        std::string v2Str = &v1Str[nextValIndex];
+
+        nextValIndex = 0;
+        while (v2Str[nextValIndex] != ' ')
+            nextValIndex++;
+        nextValIndex++; // skip past space
+        std::string v3Str = &v2Str[nextValIndex];
+
+        vec3_t result;
+        result.x = static_cast<float>(atof(v1Str.c_str()));
+        result.y = static_cast<float>(atof(v2Str.c_str()));
+        result.z = static_cast<float>(atof(v3Str.c_str()));
+        return result;
+    }
+
+    static std::string convertVec3ToString(vec3_t vec) 
+    {
+        std::string result = std::format("{} {} {}", vec.x, vec.y, vec.z);
+        return result;
     }
 };
