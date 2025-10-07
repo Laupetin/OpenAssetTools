@@ -116,8 +116,11 @@ group "ThirdParty"
     minilzo:project()
     minizip:project()
     salsa20:project()
-    webview:project()
     zlib:project()
+    
+    if _OPTIONS["modman"] then
+        webview:project()
+    end
 group ""
 
 -- ========================
@@ -173,9 +176,12 @@ group ""
 -- Tools group: All projects that compile into the final tools
 group "Tools"
     Linker:project()
-    ModMan:project()
     Unlinker:project()
     ImageConverter:project()
+
+    if _OPTIONS["modman"] then
+        ModMan:project()
+    end
 group ""
 
 group "Raw"

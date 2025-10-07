@@ -16,3 +16,7 @@ newoption {
     trigger = "experimental-material-compilation",
     description = "Activate experimental material compilation support"
 }
+newoption {
+    trigger = "modman",
+    description = "Activate experimental compilation of ModMan (OAT GUI)"
+}
