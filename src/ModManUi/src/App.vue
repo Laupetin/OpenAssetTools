@@ -21,7 +21,8 @@ onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
 
 <template>
   <main class="container">
-    <h1>Welcome to Webview + Vue</h1>
+    <h1>Welcome to ModMan</h1>
+    <small>Nothing to see here yet, this is mainly for testing</small>
 
     <form class="row" @submit.prevent="greet">
       <input id="greet-input" v-model="name" placeholder="Enter a name..." autocomplete="off" />
