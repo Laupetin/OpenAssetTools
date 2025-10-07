@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from "vue";
-import { webviewBinds, webViewAddEventListener, webViewRemoveEventListener } from "./native";
+import { webviewBinds, webviewAddEventListener, webviewRemoveEventListener } from "./native";
 
 const greetMsg = ref("");
 const lastPersonGreeted = ref("");
@@ -14,9 +14,9 @@ function onPersonGreeted(person: string) {
   lastPersonGreeted.value = person;
 }
 
-webViewAddEventListener("greeting", onPersonGreeted);
+webviewAddEventListener("greeting", onPersonGreeted);
 
-onUnmounted(() => webViewRemoveEventListener("greeting", onPersonGreeted));
+onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
 </script>
 
 <template>
