@@ -2,11 +2,6 @@
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
-#pragma warning(push, 0)
-#include <webview/macros.h>
-#include <webview/webview.h>
-#pragma warning(pop)
-
 #include "Web/UiAssets.h"
 
 #include <Windows.h>
@@ -55,7 +50,7 @@ namespace
         std::wstringstream wss;
 
         wss << std::format(L"Content-Length: {}\n", contentLength);
-        wss << L"Content-Type: " << StringToWideString(GetMimeTypeForFileName(assetName));
+        wss << L"Content-Type: " << StringToWideString(ui::GetMimeTypeForFileName(assetName));
 
         return wss.str();
     }
@@ -151,7 +146,7 @@ namespace edge
 {
     void InstallCustomProtocolHandler(webview::webview& wv)
     {
-        assetLookup = BuildUiFileLookup();
+        assetLookup = ui::BuildUiFileLookup();
 
         const auto controller = static_cast<ICoreWebView2Controller*>(wv.browser_controller().value());
         Microsoft::WRL::ComPtr<ICoreWebView2> core;

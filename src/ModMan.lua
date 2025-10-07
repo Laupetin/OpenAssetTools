@@ -46,8 +46,11 @@ function ModMan:project()
 		filter {}
 		
 		self:include(includes)
+		Utils:include(includes)
+		json:include(includes)
 		webview:include(includes)
 
+		links:linkto(Utils)
 		links:linkto(webview)
 		links:linkall()
 end

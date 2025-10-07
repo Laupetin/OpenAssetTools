@@ -1,21 +1,9 @@
-﻿#ifdef _MSC_VER
-#pragma warning(push, 0)
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-#include "webview/webview.h"
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#else
-#pragma GCC diagnostic pop
-#endif
-
+﻿#include "GitVersion.h"
 #include "Web/Edge/AssetHandlerEdge.h"
 #include "Web/Gtk/AssetHandlerGtk.h"
+#include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
+#include "Web/WebViewLib.h"
 
 #include <chrono>
 #include <format>
@@ -31,8 +19,10 @@ namespace
 #ifdef _DEBUG
     std::optional<webview::webview> devToolWindow;
 
-    void RunDevToolsWindow(webview::webview& parent)
+    void RunDevToolsWindow()
     {
+        con::debug("Creating dev tools window");
+
         try
         {
             auto& newWindow = devToolWindow.emplace(false, nullptr);
@@ -50,6 +40,8 @@ namespace
 
     int RunMainWindow()
     {
+        con::debug("Creating main window");
+
         try
         {
             webview::webview w(
@@ -64,32 +56,37 @@ namespace
             w.set_size(480, 320, WEBVIEW_HINT_MIN);
 
             // A binding that counts up or down and immediately returns the new value.
-            w.bind("greet",
-                   [&](const std::string& req) -> std::string
-                   {
-                       const auto name = req.substr(2, req.size() - 4);
-                       w.notify("greeting", webview::json_escape(name));
-                       return webview::json_escape(std::format("Hello from C++ {}!", name));
-                   });
+            ui::Bind<std::string, std::string>(w,
+                                               "greet",
+                                               [&w](std::string name) -> std::string
+                                               {
+                                                   ui::Notify(w, "greeting", name);
+                                                   return std::format("Hello from C++ {}!", name);
+                                               });
+
+            // A binding that counts up or down and immediately returns the new value.
+            ui::Bind(w,
+                     "debug",
+                     []()
+                     {
+                         con::info("Debug");
+                     });
 
             // A binding that creates a new thread and returns the result at a later time.
-            w.bind(
-                "compute",
-                [&](const std::string& id, const std::string& req, void* /*arg*/)
-                {
-                    // Create a thread and forget about it for the sake of simplicity.
-                    std::thread(
-                        [&, id, req]
-                        {
-                            // Simulate load.
-                            std::this_thread::sleep_for(std::chrono::seconds(1));
-                            // Imagine that req is properly parsed or use your own JSON parser.
-                            const auto* result = "42";
-                            w.resolve(id, 0, result);
-                        })
-                        .detach();
-                },
-                nullptr);
+            ui::BindAsync(w,
+                          "compute",
+                          [&](const std::string& id)
+                          {
+                              // Create a thread and forget about it for the sake of simplicity.
+                              std::thread(
+                                  [&, id]
+                                  {
+                                      // Simulate load.
+                                      std::this_thread::sleep_for(std::chrono::seconds(5));
+                                      ui::PromiseResolve(w, id, 42);
+                                  })
+                                  .detach();
+                          });
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
             edge::InstallCustomProtocolHandler(w);
@@ -107,9 +104,9 @@ namespace
             if (VITE_DEV_SERVER)
             {
                 w.dispatch(
-                    [&w]
+                    []
                     {
-                        RunDevToolsWindow(w);
+                        RunDevToolsWindow();
                     });
             }
 #else
@@ -134,6 +131,8 @@ int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLi
 int main()
 {
 #endif
+
+    con::info("Starting ModMan " GIT_VERSION);
 
     const auto result = RunMainWindow();
 

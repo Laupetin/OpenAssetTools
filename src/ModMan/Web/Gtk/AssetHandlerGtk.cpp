@@ -2,12 +2,6 @@
 
 #if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <webview/macros.h>
-#include <webview/webview.h>
-#pragma GCC diagnostic pop
-
 #include "Web/UiAssets.h"
 
 #include <format>
@@ -27,7 +21,7 @@ namespace
             gsize stream_length = foundUiFile->second.dataSize;
             GInputStream* stream = g_memory_input_stream_new_from_data(foundUiFile->second.data, foundUiFile->second.dataSize, nullptr);
 
-            webkit_uri_scheme_request_finish(request, stream, stream_length, GetMimeTypeForFileName(foundUiFile->second.filename));
+            webkit_uri_scheme_request_finish(request, stream, stream_length, ui::GetMimeTypeForFileName(foundUiFile->second.filename));
             g_object_unref(stream);
         }
         else
@@ -48,7 +42,7 @@ namespace gtk
         const auto webView = WEBKIT_WEB_VIEW(widget);
         const auto context = webkit_web_view_get_context(webView);
 
-        assetLookup = BuildUiFileLookup();
+        assetLookup = ui::BuildUiFileLookup();
 
         webkit_web_context_register_uri_scheme(context, "modman", ModManUriSchemeRequestCb, NULL, nullptr);
     }

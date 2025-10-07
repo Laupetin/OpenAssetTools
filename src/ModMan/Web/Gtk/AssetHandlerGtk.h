@@ -4,10 +4,7 @@
 
 #if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <webview/webview.h>
-#pragma GCC diagnostic pop
+#include "Web/WebViewLib.h"
 
 namespace gtk
 {

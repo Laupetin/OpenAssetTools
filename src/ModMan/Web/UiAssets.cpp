@@ -2,30 +2,33 @@
 
 #include <format>
 
-std::unordered_map<std::string, UiFile> BuildUiFileLookup()
+namespace ui
 {
-    std::unordered_map<std::string, UiFile> result;
-
-    for (const auto& asset : MOD_MAN_UI_FILES)
+    std::unordered_map<std::string, UiFile> BuildUiFileLookup()
     {
-        result.emplace(std::format("/{}", asset.filename), asset);
+        std::unordered_map<std::string, UiFile> result;
+
+        for (const auto& asset : MOD_MAN_UI_FILES)
+        {
+            result.emplace(std::format("/{}", asset.filename), asset);
+        }
+
+        return result;
     }
 
-    return result;
-}
+    const char* GetMimeTypeForFileName(const std::string& fileName)
+    {
+        const char* mimeType;
 
-const char* GetMimeTypeForFileName(const std::string& fileName)
-{
-    const char* mimeType;
+        if (fileName.ends_with(".html"))
+            mimeType = "text/html";
+        else if (fileName.ends_with(".js"))
+            mimeType = "text/javascript";
+        else if (fileName.ends_with(".css"))
+            mimeType = "text/css";
+        else
+            mimeType = "application/octet-stream";
 
-    if (fileName.ends_with(".html"))
-        mimeType = "text/html";
-    else if (fileName.ends_with(".js"))
-        mimeType = "text/javascript";
-    else if (fileName.ends_with(".css"))
-        mimeType = "text/css";
-    else
-        mimeType = "application/octet-stream";
-
-    return mimeType;
-}
+        return mimeType;
+    }
+} // namespace ui

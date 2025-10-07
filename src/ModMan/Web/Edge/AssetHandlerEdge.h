@@ -4,9 +4,7 @@
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
-#pragma warning(push, 0)
-#include <webview/webview.h>
-#pragma warning(pop)
+#include "Web/WebViewLib.h"
 
 namespace edge
 {
