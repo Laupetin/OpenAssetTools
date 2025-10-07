@@ -68,7 +68,7 @@ namespace
                    [&](const std::string& req) -> std::string
                    {
                        const auto name = req.substr(2, req.size() - 4);
-                       return std::format("\"Hello from C++ {}!\"", name);
+                       return webview::json_escape(std::format("Hello from C++ {}!", name));
                    });
 
             // A binding that creates a new thread and returns the result at a later time.
