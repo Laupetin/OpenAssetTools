@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { nativeMethods } from "./native";
+import { onUnmounted, ref } from "vue";
+import { webviewBinds, webViewAddEventListener, webViewRemoveEventListener } from "./native";
 
 const greetMsg = ref("");
+const lastPersonGreeted = ref("");
 const name = ref("");
 
 async function greet() {
-  greetMsg.value = await nativeMethods.greet(name.value);
+  greetMsg.value = await webviewBinds.greet(name.value);
 }
+
+function onPersonGreeted(person: string) {
+  lastPersonGreeted.value = person;
+}
+
+webViewAddEventListener("greeting", onPersonGreeted);
+
+onUnmounted(() => webViewRemoveEventListener("greeting", onPersonGreeted));
 </script>
 
 <template>
@@ -19,6 +28,7 @@ async function greet() {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
+    <p>The last person greeted is: {{ lastPersonGreeted }}</p>
   </main>
 </template>
 

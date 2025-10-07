@@ -68,6 +68,7 @@ namespace
                    [&](const std::string& req) -> std::string
                    {
                        const auto name = req.substr(2, req.size() - 4);
+                       w.notify("greeting", webview::json_escape(name));
                        return webview::json_escape(std::format("Hello from C++ {}!", name));
                    });
 
