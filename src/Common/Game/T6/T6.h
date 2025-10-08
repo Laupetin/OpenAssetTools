@@ -77,8 +77,6 @@ namespace T6
         ASSET_TYPE_FOOTSTEPFX_TABLE,
         ASSET_TYPE_ZBARRIER,
 
-        ASSET_TYPE_CUSTOM_MAP,
-
         ASSET_TYPE_COUNT
     };
 
@@ -388,8 +386,6 @@ namespace T6
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
-
-    using AssetCustomMap = Asset<ASSET_TYPE_CUSTOM_MAP, customMapInfo>;
 } // namespace T6
 
 DEFINE_ASSET_NAME_ACCESSOR(T6::AssetPhysPreset, name);

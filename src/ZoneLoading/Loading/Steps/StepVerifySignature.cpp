@@ -34,7 +34,7 @@ namespace
 
             if (!m_algorithm->Verify(signatureData, signatureDataSize, signature, signatureSize))
             {
-                //throw InvalidSignatureException();
+                throw InvalidSignatureException();
             }
         }
 
