@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace technique_set
 {
-    std::unique_ptr<AssetCreator<AssetTechniqueSet>> CreateTechniqueSetLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetTechniqueSet>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace technique_set

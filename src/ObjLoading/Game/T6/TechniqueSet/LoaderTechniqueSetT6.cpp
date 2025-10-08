@@ -175,10 +175,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace technique_set
 {
-    std::unique_ptr<AssetCreator<AssetTechniqueSet>> CreateTechniqueSetLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetTechniqueSet>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<TechniqueSetLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace technique_set
