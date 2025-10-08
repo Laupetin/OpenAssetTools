@@ -325,7 +325,6 @@ namespace T6
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepFxTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetZBarrier>>(memory));
-            // custom maps have no default
         }
 
         void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -446,6 +445,7 @@ namespace T6
             collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
             collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
 
+            // The Custom Map Loader uses gfxworld as the starting asset
             collection.AddAssetCreator(CreateCustomMapLoader(memory, searchPath, zone));
         }
     } // namespace

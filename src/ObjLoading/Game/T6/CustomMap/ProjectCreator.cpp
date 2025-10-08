@@ -44,6 +44,8 @@ bool loadFBXMesh(ufbx_node* node)
     if (mesh->vertex_tangent.exists == false)
         hasTangentSpace = false;
 
+    
+    // Fix the target_unit_meters opt not working 
     // UFBX stores the transform data in units that are 100x larger than what blender uses, so this converts them back
     ufbx_transform origTransform = node->local_transform;
     origTransform.translation.x /= 100.0f;
@@ -113,6 +115,11 @@ bool loadFBXMesh(ufbx_node* node)
 
                 customMapVertex* vertex = &vertices[num_vertices++];
 
+                //ufbx_vec3 pos = ufbx_get_vertex_vec3(&mesh->vertex_position, index);
+                //vertex->pos.x = static_cast<float>(pos.x);
+                //vertex->pos.y = static_cast<float>(pos.y);
+                //vertex->pos.z = static_cast<float>(pos.z);
+                //  Fix the target_unit_meters opt not working 
                 ufbx_vec3 transformedPos = ufbx_transform_position(&meshMatrix, ufbx_get_vertex_vec3(&mesh->vertex_position, index));
                 vertex->pos.x = static_cast<float>(transformedPos.x);
                 vertex->pos.y = static_cast<float>(transformedPos.y);
@@ -131,10 +138,11 @@ bool loadFBXMesh(ufbx_node* node)
                 case CM_MATERIAL_COLOUR:
                 {
                     float factor = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_factor.value_real);
-                    vertex->color[0] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.x * factor);
-                    vertex->color[1] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.y * factor);
-                    vertex->color[2] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec3.z * factor);
-                    vertex->color[3] = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_color.value_vec4.w * factor);
+                    ufbx_vec4 diffuse = mesh->materials.data[i]->fbx.diffuse_color.value_vec4;
+                    vertex->color[0] = static_cast<float>(diffuse.x * factor);
+                    vertex->color[1] = static_cast<float>(diffuse.y * factor);
+                    vertex->color[2] = static_cast<float>(diffuse.z * factor);
+                    vertex->color[3] = static_cast<float>(diffuse.w * factor);
                     break;
                 }
 
@@ -144,20 +152,23 @@ bool loadFBXMesh(ufbx_node* node)
                 
 
 
-                // 1.0f - uv.v:
+                // 1.0f - uv.y reason:
                 // https://gamedev.stackexchange.com/questions/92886/fbx-uv-coordinates-is-strange
-                vertex->texCoord[0] = (float)(ufbx_get_vertex_vec2(&mesh->vertex_uv, index).x);
-                vertex->texCoord[1] = (float)(1.0f - ufbx_get_vertex_vec2(&mesh->vertex_uv, index).y);
+                ufbx_vec2 uv = ufbx_get_vertex_vec2(&mesh->vertex_uv, index);
+                vertex->texCoord[0] = (float)(uv.x);
+                vertex->texCoord[1] = (float)(1.0f - uv.y);
 
-                vertex->normal.x = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).x);
-                vertex->normal.y = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).y);
-                vertex->normal.z = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_normal, index).z);
+                ufbx_vec3 normal = ufbx_get_vertex_vec3(&mesh->vertex_normal, index);
+                vertex->normal.x = static_cast<float>(normal.x);
+                vertex->normal.y = static_cast<float>(normal.y);
+                vertex->normal.z = static_cast<float>(normal.z);
 
                 if (mesh->vertex_tangent.exists)
                 {
-                    vertex->tangent.x = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).x);
-                    vertex->tangent.y = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).y);
-                    vertex->tangent.z = static_cast<float>(ufbx_get_vertex_vec3(&mesh->vertex_tangent, index).z);
+                    ufbx_vec3 tangent = ufbx_get_vertex_vec3(&mesh->vertex_tangent, index);
+                    vertex->tangent.x = static_cast<float>(tangent.x);
+                    vertex->tangent.y = static_cast<float>(tangent.y);
+                    vertex->tangent.z = static_cast<float>(tangent.z);
                 }
                 else
                 {
@@ -208,22 +219,13 @@ bool loadFBXModel(ufbx_node* node)
 
     model.name = node->name.data;
 
-    ufbx_transform origTransform = node->local_transform;
-    origTransform.translation.x /= 100.0f;
-    origTransform.translation.y /= 100.0f;
-    origTransform.translation.z /= 100.0f;
-    origTransform.scale.x /= 100.0f;
-    origTransform.scale.y /= 100.0f;
-    origTransform.scale.z /= 100.0f;
-    ufbx_matrix meshMatrix = ufbx_transform_to_matrix(&origTransform);
-
-    model.origin.x = static_cast<float>(node->local_transform.translation.x) / 100.0f;
-    model.origin.y = static_cast<float>(node->local_transform.translation.y) / 100.0f;
-    model.origin.z = static_cast<float>(node->local_transform.translation.z) / 100.0f;
+    model.origin.x = static_cast<float>(node->local_transform.translation.x);
+    model.origin.y = static_cast<float>(node->local_transform.translation.y);
+    model.origin.z = static_cast<float>(node->local_transform.translation.z);
     model.rotation.x = static_cast<float>(node->euler_rotation.x);
     model.rotation.y = static_cast<float>(node->euler_rotation.y);
     model.rotation.z = static_cast<float>(node->euler_rotation.z);
-    model.scale = static_cast<float>(node->local_transform.scale.x) / 100.0f;
+    model.scale = static_cast<float>(node->local_transform.scale.x);
 
     if (model.scale == 0.0f)
     {
@@ -324,7 +326,7 @@ void parseCollisionData(ufbx_scene* scene, customMapInfo* projInfo)
         printf("warning: one or more meshes have no tangent space. Be sure to select the tangent space box when exporting the FBX from blender.\n");
 }
 
-customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISearchPath& searchPath)
+customMapInfo* ProjectCreator::createCustomMapInfo(std::string& projectName, ISearchPath& searchPath)
 {
     ufbx_scene* gfxScene;
     ufbx_scene* colScene;
@@ -342,10 +344,13 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
     gfxFile.m_stream->read(gfxMapData, gfxFile.m_length);
 
     ufbx_error error;
-    ufbx_load_opts opts;
+    ufbx_load_opts opts; // IDK why but opts don't seem to be working correctly, target_unit_meters isn't being used
+    memset(&opts, 0, sizeof(ufbx_load_opts));
     opts.target_axes = ufbx_axes_right_handed_y_up;
     opts.generate_missing_normals = true;
     opts.allow_missing_vertex_position = false;
+    opts.target_unit_meters = 100.0f;
+    //gfxScene = ufbx_load_memory(gfxMapData, static_cast<size_t>(gfxFile.m_length), &opts, &error);
     gfxScene = ufbx_load_memory(gfxMapData, static_cast<size_t>(gfxFile.m_length), NULL, &error);
     if (!gfxScene) 
     {
@@ -366,12 +371,7 @@ customMapInfo* CustomMapInfo::createCustomMapInfo(std::string& projectName, ISea
         colFile.m_stream->seekg(0);
         colFile.m_stream->read(colMapData, colFile.m_length);
 
-        ufbx_error error;
-        ufbx_load_opts opts;
-        opts.target_axes = ufbx_axes_right_handed_y_up;
-        opts.generate_missing_normals = true;
-        opts.allow_missing_vertex_position = false;
-        colScene = ufbx_load_memory(colMapData, static_cast<size_t>(colFile.m_length), NULL, &error);
+        colScene = ufbx_load_memory(colMapData, static_cast<size_t>(colFile.m_length), &opts, &error);
         if (!colScene)
         {
             fprintf(stderr, "Failed to load map collision fbx file: %s\n", error.description.data);
