@@ -1,6 +1,7 @@
 #include "InfoStringToStructConverter.h"
 
 #include "Game/T6/CommonT6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <iostream>
@@ -83,7 +84,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (fx == nullptr)
         {
-            std::cerr << std::format("Failed to load fx asset \"{}\"\n", value);
+            con::error("Failed to load fx asset \"{}\"", value);
             return false;
         }
 
@@ -105,7 +106,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (xmodel == nullptr)
         {
-            std::cerr << std::format("Failed to load xmodel asset \"{}\"\n", value);
+            con::error("Failed to load xmodel asset \"{}\"", value);
             return false;
         }
 
@@ -128,7 +129,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (material == nullptr)
         {
-            std::cerr << std::format("Failed to load material asset \"{}\"\n", value);
+            con::error("Failed to load material asset \"{}\"", value);
             return false;
         }
 
@@ -150,7 +151,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (physPreset == nullptr)
         {
-            std::cerr << std::format("Failed to load physpreset asset \"{}\"\n", value);
+            con::error("Failed to load physpreset asset \"{}\"", value);
             return false;
         }
 
@@ -175,7 +176,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (tracer == nullptr)
         {
-            std::cerr << std::format("Failed to load tracer asset \"{}\"\n", value);
+            con::error("Failed to load tracer asset \"{}\"", value);
             return false;
         }
 
@@ -190,7 +191,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         unsigned int soundAliasHash;
         if (!GetHashValue(value, soundAliasHash))
         {
-            std::cerr << std::format("Failed to parse value \"{}\" as hash\n", value);
+            con::error("Failed to parse value \"{}\" as hash", value);
             return false;
         }
 

@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateGdtWeaponLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<IW4::AssetWeapon>> CreateGdtLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
+} // namespace weapon

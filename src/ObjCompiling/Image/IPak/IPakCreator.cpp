@@ -4,6 +4,7 @@
 #include "GitVersion.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -143,7 +144,7 @@ namespace
             const auto openFile = m_search_path.Open(fileName);
             if (!openFile.IsOpen())
             {
-                std::cerr << std::format("Failed to open file for ipak: {}\n", fileName);
+                con::error("Failed to open file for ipak: {}", fileName);
                 return nullptr;
             }
 
@@ -371,68 +372,71 @@ namespace
     };
 } // namespace
 
-IPakToCreate::IPakToCreate(std::string name)
-    : m_name(std::move(name))
+namespace image
 {
-}
-
-void IPakToCreate::AddImage(std::string imageName)
-{
-    m_image_names.emplace_back(std::move(imageName));
-}
-
-void IPakToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
-{
-    const auto file = outPath.Open(std::format("{}.ipak", m_name));
-    if (!file)
+    IPakToCreate::IPakToCreate(std::string name)
+        : m_name(std::move(name))
     {
-        std::cerr << std::format("Failed to open file for ipak {}\n", m_name);
-        return;
     }
 
-    IPakWriter writer(*file, searchPath, m_image_names);
-    writer.Write();
+    void IPakToCreate::AddImage(std::string imageName)
+    {
+        m_image_names.emplace_back(std::move(imageName));
+    }
 
-    std::cout << std::format("Created ipak {} with {} entries\n", m_name, m_image_names.size());
-}
+    void IPakToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
+    {
+        const auto file = outPath.Open(std::format("{}.ipak", m_name));
+        if (!file)
+        {
+            con::error("Failed to open file for ipak {}", m_name);
+            return;
+        }
 
-const std::vector<std::string>& IPakToCreate::GetImageNames() const
-{
-    return m_image_names;
-}
+        IPakWriter writer(*file, searchPath, m_image_names);
+        writer.Write();
 
-IPakCreator::IPakCreator()
-    : m_kvp_creator(nullptr)
-{
-}
+        con::info("Created ipak {} with {} entries", m_name, m_image_names.size());
+    }
 
-void IPakCreator::Inject(ZoneAssetCreationInjection& inject)
-{
-    m_kvp_creator = &inject.m_zone_states.GetZoneAssetCreationState<KeyValuePairsCreator>();
-}
+    const std::vector<std::string>& IPakToCreate::GetImageNames() const
+    {
+        return m_image_names;
+    }
 
-IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
-{
-    const auto existingIPak = m_ipak_lookup.find(ipakName);
-    if (existingIPak != m_ipak_lookup.end())
-        return existingIPak->second;
+    IPakCreator::IPakCreator()
+        : m_kvp_creator(nullptr)
+    {
+    }
 
-    auto newIPak = std::make_unique<IPakToCreate>(ipakName);
-    auto* result = newIPak.get();
-    m_ipak_lookup.emplace(ipakName, result);
-    m_ipaks.emplace_back(std::move(newIPak));
+    void IPakCreator::Inject(ZoneAssetCreationInjection& inject)
+    {
+        m_kvp_creator = &inject.m_zone_states.GetZoneAssetCreationState<key_value_pairs::Creator>();
+    }
 
-    assert(m_kvp_creator);
-    m_kvp_creator->AddKeyValuePair(CommonKeyValuePair("ipak_read", ipakName));
+    IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
+    {
+        const auto existingIPak = m_ipak_lookup.find(ipakName);
+        if (existingIPak != m_ipak_lookup.end())
+            return existingIPak->second;
 
-    return result;
-}
+        auto newIPak = std::make_unique<IPakToCreate>(ipakName);
+        auto* result = newIPak.get();
+        m_ipak_lookup.emplace(ipakName, result);
+        m_ipaks.emplace_back(std::move(newIPak));
 
-void IPakCreator::Finalize(ISearchPath& searchPath, IOutputPath& outPath)
-{
-    for (const auto& ipakToCreate : m_ipaks)
-        ipakToCreate->Build(searchPath, outPath);
+        assert(m_kvp_creator);
+        m_kvp_creator->AddKeyValuePair(key_value_pairs::CommonKeyValuePair("ipak_read", ipakName));
 
-    m_ipaks.clear();
-    m_ipak_lookup.clear();
-}
+        return result;
+    }
+
+    void IPakCreator::Finalize(ISearchPath& searchPath, IOutputPath& outPath)
+    {
+        for (const auto& ipakToCreate : m_ipaks)
+            ipakToCreate->Build(searchPath, outPath);
+
+        m_ipaks.clear();
+        m_ipak_lookup.clear();
+    }
+} // namespace image

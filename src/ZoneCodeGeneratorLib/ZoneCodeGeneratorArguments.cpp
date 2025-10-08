@@ -3,6 +3,7 @@
 #include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -27,6 +28,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithShortName("v")
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
+
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
     .Build();
 
 constexpr auto CATEGORY_INPUT = "Input";
@@ -86,6 +93,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_HEADER,
     OPTION_COMMANDS_FILE,
     OPTION_OUTPUT_FOLDER,
@@ -121,7 +129,6 @@ ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
       m_task_flags(0u)
 {
-    m_verbose = false;
 }
 
 void ZoneCodeGeneratorArguments::PrintUsage() const
@@ -136,7 +143,7 @@ void ZoneCodeGeneratorArguments::PrintUsage() const
 
 void ZoneCodeGeneratorArguments::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools ZoneCodeGenerator {}\n", GIT_VERSION);
+    con::info("OpenAssetTools ZoneCodeGenerator {}", GIT_VERSION);
 }
 
 bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -165,7 +172,13 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
 
     // -v; --verbose
-    m_verbose = m_argument_parser.IsOptionSpecified(OPTION_VERBOSE);
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     // -p; --print
     if (m_argument_parser.IsOptionSpecified(OPTION_PRINT))
@@ -185,7 +198,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one header file must be specified via -h / --header.\n";
+        con::error("At least one header file must be specified via -h / --header.");
         return false;
     }
 
@@ -197,7 +210,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one commands file must be specified via -c / --commands-file.\n";
+        con::error("At least one commands file must be specified via -c / --commands-file.");
         return false;
     }
 
@@ -219,7 +232,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
 
     if (m_task_flags == 0)
     {
-        std::cout << "There was no output task specified.\n";
+        con::warn("There was no output task specified.");
         PrintUsage();
         return false;
     }

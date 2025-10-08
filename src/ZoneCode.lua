@@ -305,6 +305,7 @@ function ZoneCode:project()
             buildmessage "Generating ZoneCode for game %{file.basename}"
             buildcommands {
                 '"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('ZoneCodeGenerator') .. '"' 
+                    .. ' --no-color'
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'

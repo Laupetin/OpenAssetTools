@@ -44,7 +44,7 @@ namespace
     ZoneHeader CreateHeaderForParams(const bool isSecure, const bool isOfficial, const bool isEncrypted)
     {
         ZoneHeader header{};
-        header.m_version = ZoneConstants::ZONE_VERSION;
+        header.m_version = ZoneConstants::ZONE_VERSION_PC;
 
         if (isSecure)
         {
@@ -82,7 +82,7 @@ namespace
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
             auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Encryption>(
-                ZoneConstants::STREAM_COUNT, zone.m_name, ZoneConstants::SALSA20_KEY_TREYARCH, sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
+                ZoneConstants::STREAM_COUNT, zone.m_name, ZoneConstants::SALSA20_KEY_TREYARCH_PC, sizeof(ZoneConstants::SALSA20_KEY_TREYARCH_PC));
 
             // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
             if (dataToSignProviderPtr)

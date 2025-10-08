@@ -97,6 +97,8 @@ namespace IW3
     struct RawFile;
     struct StringTable;
 
+    typedef unsigned short ScriptString;
+
     union XAssetHeader
     {
         // XModelPieces *xmodelPieces; // NOT AN ASSET
@@ -215,7 +217,7 @@ namespace IW3
 
     struct XAnimNotifyInfo
     {
-        uint16_t name;
+        ScriptString name;
         float time;
     };
 
@@ -309,7 +311,7 @@ namespace IW3
         unsigned int indexCount;
         float framerate;
         float frequency;
-        uint16_t* names;
+        ScriptString* names;
         char* dataByte;
         int16_t* dataShort;
         int* dataInt;
@@ -329,8 +331,8 @@ namespace IW3
 
     struct DObjAnimMat
     {
-        float quat[4];
-        float trans[3];
+        vec4_t quat;
+        vec3_t trans;
         float transWeight;
     };
 
@@ -390,7 +392,7 @@ namespace IW3
 
     struct type_align(16) GfxPackedVertex
     {
-        float xyz[3];
+        vec3_t xyz;
         float binormalSign;
         GfxColor color;
         PackedTexCoords texCoord;
@@ -404,7 +406,12 @@ namespace IW3
         uint16_t* vertsBlend;
     };
 
-    typedef tdef_align32(16) uint16_t r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -415,7 +422,7 @@ namespace IW3
         char zoneHandle;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t (*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         unsigned int vertListCount;
@@ -455,8 +462,8 @@ namespace IW3
 
     struct XBoneInfo
     {
-        float bounds[2][3];
-        float offset[3];
+        vec3_t bounds[2];
+        vec3_t offset;
         float radiusSquared;
     };
 
@@ -520,6 +527,11 @@ namespace IW3
         char pad;
     };
 
+    struct XModelQuat
+    {
+        int16_t v[4];
+    };
+
     struct XModel
     {
         const char* name;
@@ -527,11 +539,11 @@ namespace IW3
         unsigned char numRootBones;
         unsigned char numsurfs;
         char lodRampType;
-        uint16_t* boneNames;
-        char* parentList;
-        int16_t (*quats)[4];
-        float (*trans)[4];
-        char* partClassification;
+        ScriptString* boneNames;
+        unsigned char* parentList;
+        XModelQuat* quats;
+        float* trans;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
         Material** materialHandles;
@@ -541,10 +553,10 @@ namespace IW3
         int contents;
         XBoneInfo* boneInfo;
         float radius;
-        float mins[3];
-        float maxs[3];
+        vec3_t mins;
+        vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
         char flags;
@@ -566,7 +578,8 @@ namespace IW3
         GFXS_BLEND_INVDESTALPHA = 0x8,
         GFXS_BLEND_DESTCOLOR = 0x9,
         GFXS_BLEND_INVDESTCOLOR = 0xA,
-        GFXS_BLEND_MASK = 0xF,
+
+        GFXS_BLEND_COUNT
     };
 
     enum GfxBlendOp
@@ -577,7 +590,40 @@ namespace IW3
         GFXS_BLENDOP_REVSUBTRACT = 0x3,
         GFXS_BLENDOP_MIN = 0x4,
         GFXS_BLENDOP_MAX = 0x5,
-        GFXS_BLENDOP_MASK = 0x7,
+
+        GFXS_BLENDOP_COUNT
+    };
+
+    enum GfxAlphaTest_e
+    {
+        GFXS_ALPHA_TEST_GT_0 = 1,
+        GFXS_ALPHA_TEST_LT_128 = 2,
+        GFXS_ALPHA_TEST_GE_128 = 3,
+
+        GFXS_ALPHA_TEST_COUNT
+    };
+
+    enum GfxCullFace_e
+    {
+        GFXS_CULL_NONE = 1,
+        GFXS_CULL_BACK = 2,
+        GFXS_CULL_FRONT = 3,
+    };
+
+    enum GfxDepthTest_e
+    {
+        GFXS_DEPTHTEST_ALWAYS = 0,
+        GFXS_DEPTHTEST_LESS = 1,
+        GFXS_DEPTHTEST_EQUAL = 2,
+        GFXS_DEPTHTEST_LESSEQUAL = 3
+    };
+
+    enum GfxPolygonOffset_e
+    {
+        GFXS_POLYGON_OFFSET_0 = 0,
+        GFXS_POLYGON_OFFSET_1 = 1,
+        GFXS_POLYGON_OFFSET_2 = 2,
+        GFXS_POLYGON_OFFSET_SHADOWMAP = 3
     };
 
     enum GfxStencilOp
@@ -589,10 +635,19 @@ namespace IW3
         GFXS_STENCILOP_DECRSAT = 0x4,
         GFXS_STENCILOP_INVERT = 0x5,
         GFXS_STENCILOP_INCR = 0x6,
-        GFXS_STENCILOP_DECR = 0x7,
+        GFXS_STENCILOP_DECR = 0x7
+    };
 
-        GFXS_STENCILOP_COUNT,
-        GFXS_STENCILOP_MASK = 0x7
+    enum GfxStencilFunc
+    {
+        GFXS_STENCILFUNC_NEVER = 0x0,
+        GFXS_STENCILFUNC_LESS = 0x1,
+        GFXS_STENCILFUNC_EQUAL = 0x2,
+        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
+        GFXS_STENCILFUNC_GREATER = 0x4,
+        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
+        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
+        GFXS_STENCILFUNC_ALWAYS = 0x7
     };
 
     enum GfxStateBitsEnum : unsigned int
@@ -613,10 +668,10 @@ namespace IW3
         GFXS0_ATEST_GE_128 = 0x3000,
         GFXS0_ATEST_MASK = 0x3000,
 
-        GFXS0_CULL_SHIFT = 0xE,
         GFXS0_CULL_NONE = 0x4000,
         GFXS0_CULL_BACK = 0x8000,
         GFXS0_CULL_FRONT = 0xC000,
+        GFXS0_CULL_SHIFT = 0xE,
         GFXS0_CULL_MASK = 0xC000,
 
         GFXS0_SRCBLEND_ALPHA_SHIFT = 0x10,
@@ -638,18 +693,18 @@ namespace IW3
         GFXS1_DEPTHWRITE = 0x1,
 
         GFXS1_DEPTHTEST_DISABLE = 0x2,
-        GFXS1_DEPTHTEST_SHIFT = 0x2,
         GFXS1_DEPTHTEST_ALWAYS = 0x0,
         GFXS1_DEPTHTEST_LESS = 0x4,
         GFXS1_DEPTHTEST_EQUAL = 0x8,
         GFXS1_DEPTHTEST_LESSEQUAL = 0xC,
+        GFXS1_DEPTHTEST_SHIFT = 0x2,
         GFXS1_DEPTHTEST_MASK = 0xC,
 
-        GFXS1_POLYGON_OFFSET_SHIFT = 0x4,
         GFXS1_POLYGON_OFFSET_0 = 0x0,
         GFXS1_POLYGON_OFFSET_1 = 0x10,
         GFXS1_POLYGON_OFFSET_2 = 0x20,
         GFXS1_POLYGON_OFFSET_SHADOWMAP = 0x30,
+        GFXS1_POLYGON_OFFSET_SHIFT = 0x4,
         GFXS1_POLYGON_OFFSET_MASK = 0x30,
 
         GFXS1_STENCIL_FRONT_ENABLE = 0x40,
@@ -672,16 +727,61 @@ namespace IW3
         GFXS1_STENCILOP_FRONTBACK_MASK = 0x1FF1FF00,
     };
 
+    struct GfxStateBitsLoadBitsStructured
+    {
+        // Byte 0
+        unsigned int srcBlendRgb : 4;       // 0-3
+        unsigned int dstBlendRgb : 4;       // 4-7
+        unsigned int blendOpRgb : 3;        // 8-10
+        unsigned int alphaTestDisabled : 1; // 11
+        unsigned int alphaTest : 2;         // 12-13
+        unsigned int cullFace : 2;          // 14-15
+        unsigned int srcBlendAlpha : 4;     // 16-19
+        unsigned int dstBlendAlpha : 4;     // 20-23
+        unsigned int blendOpAlpha : 3;      // 24-26
+        unsigned int colorWriteRgb : 1;     // 27
+        unsigned int colorWriteAlpha : 1;   // 28
+        unsigned int unused1 : 2;           // 29-30
+        unsigned int polymodeLine : 1;      // 31
+
+        // Byte 1
+        unsigned int depthWrite : 1;          // 0
+        unsigned int depthTestDisabled : 1;   // 1
+        unsigned int depthTest : 2;           // 2-3
+        unsigned int polygonOffset : 2;       // 4-5
+        unsigned int stencilFrontEnabled : 1; // 6
+        unsigned int stencilBackEnabled : 1;  // 7
+        unsigned int stencilFrontPass : 3;    // 8-10
+        unsigned int stencilFrontFail : 3;    // 11-13
+        unsigned int stencilFrontZFail : 3;   // 14-16
+        unsigned int stencilFrontFunc : 3;    // 17-19
+        unsigned int stencilBackPass : 3;     // 20-22
+        unsigned int stencilBackFail : 3;     // 23-25
+        unsigned int stencilBackZFail : 3;    // 26-28
+        unsigned int stencilBackFunc : 3;     // 29-31
+    };
+
+    union GfxStateBitsLoadBits
+    {
+        unsigned int raw[2];
+        GfxStateBitsLoadBitsStructured structured;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(GfxStateBitsLoadBits) == 8);
+    static_assert(sizeof(GfxStateBitsLoadBitsStructured) == 8);
+#endif
+
     struct GfxStateBits
     {
-        unsigned int loadBits[2];
+        GfxStateBitsLoadBits loadBits;
     };
 
     struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
-        float literal[4];
+        vec4_t literal;
     };
 
     struct complex_s
@@ -718,6 +818,26 @@ namespace IW3
         water_t* water;
     };
 
+    enum TextureFilter
+    {
+        TEXTURE_FILTER_DISABLED = 0x0,
+        TEXTURE_FILTER_NEAREST = 0x1,
+        TEXTURE_FILTER_LINEAR = 0x2,
+        TEXTURE_FILTER_ANISO2X = 0x3,
+        TEXTURE_FILTER_ANISO4X = 0x4,
+
+        TEXTURE_FILTER_COUNT
+    };
+
+    enum SamplerStateBitsMipMap_e
+    {
+        SAMPLER_MIPMAP_ENUM_DISABLED,
+        SAMPLER_MIPMAP_ENUM_NEAREST,
+        SAMPLER_MIPMAP_ENUM_LINEAR,
+
+        SAMPLER_MIPMAP_ENUM_COUNT
+    };
+
     enum SamplerStateBits_e
     {
         SAMPLER_FILTER_SHIFT = 0x0,
@@ -743,13 +863,26 @@ namespace IW3
         SAMPLER_CLAMP_MASK = 0xE0,
     };
 
+    struct MaterialTextureDefSamplerState
+    {
+        unsigned char filter : 3;
+        unsigned char mipMap : 2;
+        unsigned char clampU : 1;
+        unsigned char clampV : 1;
+        unsigned char clampW : 1;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(MaterialTextureDefSamplerState) == 1u);
+#endif
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        unsigned char samplerState; // SamplerStateBits_e
-        unsigned char semantic;     // TextureSemantic
+        MaterialTextureDefSamplerState samplerState; // SamplerStateBits_e
+        unsigned char semantic;                      // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -842,8 +975,9 @@ namespace IW3
         CAMERA_REGION_LIT = 0x0,
         CAMERA_REGION_DECAL = 0x1,
         CAMERA_REGION_EMISSIVE = 0x2,
-        CAMERA_REGION_COUNT = 0x3,
-        CAMERA_REGION_NONE = 0x3,
+
+        CAMERA_REGION_COUNT,
+        CAMERA_REGION_NONE = CAMERA_REGION_COUNT,
     };
 
     enum MaterialStateFlags
@@ -2797,6 +2931,30 @@ namespace IW3
         MISSILE_GUIDANCE_HELLFIRE = 0x2,
         MISSILE_GUIDANCE_JAVELIN = 0x3,
         MISSILE_GUIDANCE_COUNT = 0x4,
+    };
+
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+
+        HITLOC_COUNT,
     };
 
     struct snd_alias_list_name

@@ -1,16 +1,21 @@
 #include "ProcessorXChunks.h"
 
 #include "Loading/Exception/InvalidChunkSizeException.h"
+#include "Utils/Endianness.h"
 #include "Zone/ZoneTypes.h"
 
 #include <cassert>
 #include <condition_variable>
 #include <cstring>
+#include <format>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <thread>
 #include <vector>
+
+#define XCHUNK_ASYNC 1
 
 namespace
 {
@@ -41,17 +46,24 @@ namespace
         {
             if (inputSize > 0)
             {
+#ifdef XCHUNK_ASYNC
                 std::unique_lock lock(m_load_mutex);
 
                 if (m_is_loading)
                 {
                     m_loading_finished.wait(lock);
                 }
+#endif
 
                 m_input_size = inputSize;
                 m_is_loading = true;
+
+#ifdef XCHUNK_ASYNC
                 m_load_thread = std::thread(&DbLoadStream::Load, this);
                 m_load_thread.detach();
+#else
+                Load();
+#endif
             }
             else
             {
@@ -77,7 +89,9 @@ namespace
     private:
         void Load()
         {
+#ifdef XCHUNK_ASYNC
             std::lock_guard lock(m_load_mutex);
+#endif
 
             bool firstProcessor = true;
 
@@ -99,7 +113,10 @@ namespace
             }
 
             m_is_loading = false;
+
+#ifdef XCHUNK_ASYNC
             m_loading_finished.notify_all();
+#endif
         }
 
         int m_index;
@@ -125,8 +142,9 @@ namespace
     class ProcessorXChunks final : public processor::IProcessorXChunks
     {
     public:
-        ProcessorXChunks(const int numStreams, const size_t xChunkSize, const std::optional<size_t> vanillaBufferSize)
+        ProcessorXChunks(const int numStreams, const size_t xChunkSize, const GameEndianness endianness, const std::optional<size_t> vanillaBufferSize)
             : m_chunk_size(xChunkSize),
+              m_endianness(endianness),
               m_vanilla_buffer_size(vanillaBufferSize),
               m_initialized_streams(false),
               m_current_stream(0),
@@ -219,8 +237,12 @@ namespace
             }
 
             const size_t readSize = m_base_stream->Load(&chunkSize, sizeof(chunkSize));
+            if (m_endianness == GameEndianness::LE)
+                chunkSize = endianness::FromLittleEndian(chunkSize);
+            else
+                chunkSize = endianness::FromBigEndian(chunkSize);
 
-            if (readSize == 0)
+            if (readSize < sizeof(chunkSize) || chunkSize == 0)
             {
                 m_eof_reached = true;
                 m_eof_stream = streamNum;
@@ -280,6 +302,7 @@ namespace
 
         std::vector<std::unique_ptr<DbLoadStream>> m_streams;
         size_t m_chunk_size;
+        GameEndianness m_endianness;
         std::optional<size_t> m_vanilla_buffer_size;
         std::vector<std::unique_ptr<IXChunkProcessor>> m_chunk_processors;
 
@@ -297,13 +320,14 @@ namespace
 
 namespace processor
 {
-    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, const size_t xChunkSize)
+    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(unsigned numStreams, const size_t xChunkSize, const GameEndianness endianness)
     {
-        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, std::nullopt);
+        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, endianness, std::nullopt);
     }
 
-    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, const size_t xChunkSize, const size_t vanillaBufferSize)
+    std::unique_ptr<IProcessorXChunks>
+        CreateProcessorXChunks(unsigned numStreams, const size_t xChunkSize, GameEndianness endianness, const size_t vanillaBufferSize)
     {
-        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, vanillaBufferSize);
+        return std::make_unique<ProcessorXChunks>(numStreams, xChunkSize, endianness, vanillaBufferSize);
     }
 } // namespace processor

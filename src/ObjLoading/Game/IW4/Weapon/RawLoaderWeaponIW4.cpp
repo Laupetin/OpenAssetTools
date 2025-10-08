@@ -4,6 +4,8 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderWeaponIW4.h"
+#include "Utils/Logging/Log.h"
+#include "Weapon/WeaponCommon.h"
 
 #include <cstring>
 #include <format>
@@ -24,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("weapons/{}", assetName);
+            const auto fileName = weapon::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -32,7 +34,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_WEAPON, *file.m_stream))
             {
-                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();
             }
 
@@ -41,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderWeapon m_info_string_loader;
+        weapon::InfoStringLoaderIW4 m_info_string_loader;
     };
 } // namespace
 
-namespace IW4
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawWeaponLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderWeapon>(memory, searchPath, zone);
     }
-} // namespace IW4
+} // namespace weapon

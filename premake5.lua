@@ -95,25 +95,32 @@ include "thirdparty/catch2.lua"
 include "thirdparty/eigen.lua"
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
+include "thirdparty/lz4.lua"
+include "thirdparty/lzx.lua"
 include "thirdparty/json.lua"
 include "thirdparty/minilzo.lua"
 include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
+include "thirdparty/webview.lua"
 include "thirdparty/zlib.lua"
-include "thirdparty/lz4.lua"
 
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
     catch2:project()
     eigen:project()
-    libtommath:project()
     libtomcrypt:project()
+    libtommath:project()
+    lz4:project()
+    lzx:project()
     json:project()
     minilzo:project()
     minizip:project()
     salsa20:project()
     zlib:project()
-    lz4:project()
+    
+    if _OPTIONS["modman"] then
+        webview:project()
+    end
 group ""
 
 -- ========================
@@ -123,6 +130,7 @@ include "src/Common.lua"
 include "src/Cryptography.lua"
 include "src/ImageConverter.lua"
 include "src/Linker.lua"
+include "src/ModMan.lua"
 include "src/Parser.lua"
 include "src/RawTemplater.lua"
 include "src/Unlinker.lua"
@@ -170,6 +178,10 @@ group "Tools"
     Linker:project()
     Unlinker:project()
     ImageConverter:project()
+
+    if _OPTIONS["modman"] then
+        ModMan:project()
+    end
 group ""
 
 group "Raw"

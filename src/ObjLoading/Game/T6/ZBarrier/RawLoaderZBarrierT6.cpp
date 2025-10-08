@@ -4,6 +4,8 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderZBarrierT6.h"
+#include "Utils/Logging/Log.h"
+#include "ZBarrier/ZBarrierCommon.h"
 
 #include <cstring>
 #include <format>
@@ -24,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("zbarrier/{}", assetName);
+            const auto fileName = z_barrier::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -32,7 +34,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, *file.m_stream))
             {
-                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();
             }
 
@@ -41,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderZBarrier m_info_string_loader;
+        z_barrier::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace z_barrier
 {
-    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateRawZBarrierLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderZBarrier>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace z_barrier

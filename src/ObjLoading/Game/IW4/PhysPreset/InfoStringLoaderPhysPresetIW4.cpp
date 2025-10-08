@@ -3,6 +3,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW4/PhysPreset/PhysPresetFields.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -58,30 +59,33 @@ namespace
     }
 } // namespace
 
-InfoStringLoaderPhysPreset::InfoStringLoaderPhysPreset(MemoryManager& memory, Zone& zone)
-    : m_memory(memory),
-      m_zone(zone)
+namespace phys_preset
 {
-}
-
-AssetCreationResult InfoStringLoaderPhysPreset::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
-{
-    PhysPresetInfo presetInfo;
-    std::memset(&presetInfo, 0, sizeof(presetInfo));
-
-    auto* physPreset = m_memory.Alloc<PhysPreset>();
-    AssetRegistration<AssetPhysPreset> registration(assetName, physPreset);
-
-    InfoStringToPhysPresetConverter converter(
-        infoString, &presetInfo, m_zone.m_script_strings, m_memory, context, registration, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
-    if (!converter.Convert())
+    InfoStringLoaderIW4::InfoStringLoaderIW4(MemoryManager& memory, Zone& zone)
+        : m_memory(memory),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse phys preset: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    CopyFromPhysPresetInfo(presetInfo, *physPreset);
-    physPreset->name = m_memory.Dup(assetName.c_str());
+    AssetCreationResult InfoStringLoaderIW4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        PhysPresetInfo presetInfo;
+        std::memset(&presetInfo, 0, sizeof(presetInfo));
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+        auto* physPreset = m_memory.Alloc<PhysPreset>();
+        AssetRegistration<AssetPhysPreset> registration(assetName, physPreset);
+
+        InfoStringToPhysPresetConverter converter(
+            infoString, &presetInfo, m_zone.m_script_strings, m_memory, context, registration, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
+        if (!converter.Convert())
+        {
+            con::error("Failed to parse phys preset: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        CopyFromPhysPresetInfo(presetInfo, *physPreset);
+        physPreset->name = m_memory.Dup(assetName.c_str());
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace phys_preset

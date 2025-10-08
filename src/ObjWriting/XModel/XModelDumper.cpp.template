@@ -1,4 +1,4 @@
-#options GAME (IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".cpp"
 
@@ -6,7 +6,13 @@
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "IW5"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
 #define FEATURE_IW5
 #define GAME_LOWER "iw5"
 #elif GAME == "T5"
@@ -42,6 +48,8 @@
 
 using namespace GAME;
 
+#set CLASS_NAME "Dumper" + GAME
+
 namespace
 {
     std::string GetFileNameForLod(const std::string& modelName, const unsigned lod, const std::string& extension)
@@ -66,7 +74,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#ifdef FEATURE_IW5            
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -155,7 +163,7 @@ namespace
 
     bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
             return false;
 
@@ -276,7 +284,7 @@ namespace
 
     void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel* model)
     {
-        for (auto surfaceMaterialNum = 0; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
+        for (auto surfaceMaterialNum = 0u; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
         {
             Material* material = model->materialHandles[surfaceMaterialNum];
             if (materialMapper.Add(material))
@@ -524,6 +532,12 @@ namespace
         }
     }
 
+    bool CanOmitDefaultArmature()
+    {
+        return ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT
+               && ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
+    }
+
     void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
     {
         DistinctMapper<Material*> materialMapper(model->numsurfs);
@@ -534,8 +548,8 @@ namespace
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
         AddXModelFaces(out, model, lod);
-
-        if (!HasDefaultArmature(model, lod))
+        
+        if (!CanOmitDefaultArmature() || !HasDefaultArmature(model, lod))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
@@ -554,7 +568,8 @@ namespace
         if (!mtlFile)
             return;
 
-        const auto writer = obj::CreateMtlWriter(*mtlFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+        const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
+        const auto writer = obj::CreateMtlWriter(*mtlFile, game->GetShortName(), context.m_zone.m_name);
         DistinctMapper<Material*> materialMapper(model->numsurfs);
 
         writer->Write(common);
@@ -568,8 +583,9 @@ namespace
         if (!assetFile)
             return;
 
+        const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
         const auto writer =
-            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), game->GetShortName(), context.m_zone.m_name);
         DistinctMapper<Material*> materialMapper(model->numsurfs);
 
         writer->Write(common);
@@ -583,7 +599,8 @@ namespace
         if (!assetFile)
             return;
 
-        const auto writer = xmodel_export::CreateWriterForVersion6(*assetFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+        const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
+        const auto writer = xmodel_export::CreateWriterForVersion6(*assetFile, game->GetShortName(), context.m_zone.m_name);
         writer->Write(common);
     }
 
@@ -595,7 +612,8 @@ namespace
         if (!assetFile)
             return;
 
-        const auto writer = xmodel_bin::CreateWriterForVersion7(*assetFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+        const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
+        const auto writer = xmodel_bin::CreateWriterForVersion7(*assetFile, game->GetShortName(), context.m_zone.m_name);
         writer->Write(common);
     }
 
@@ -609,8 +627,9 @@ namespace
         if (!assetFile)
             return;
 
+        const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
         const auto output = std::make_unique<T>(*assetFile);
-        const auto writer = gltf::Writer::CreateWriter(output.get(), context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+        const auto writer = gltf::Writer::CreateWriter(output.get(), game->GetShortName(), context.m_zone.m_name);
 
         writer->Write(common);
     }
@@ -669,8 +688,9 @@ namespace
             CreateJsonXModel(jsonXModel, *xmodel);
             nlohmann::json jRoot = jsonXModel;
 
+            jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
             jRoot["_type"] = "xmodel";
-            jRoot["_version"] = 1;
+            jRoot["_version"] = 2;
             jRoot["_game"] = GAME_LOWER;
 
             m_stream << std::setw(4) << jRoot << "\n";
@@ -705,10 +725,86 @@ namespace
             }
         }
 
+        static bool IsAnimated(const XModel& xmodel)
+        {
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            for (auto i = 0u; i < xmodel.numLods; i++)
+            {
+                const auto& lod = xmodel.lodInfo[i];
+                if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
+                    continue;
+
+                for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
+                {
+                    const auto& surf = xmodel.lodInfo[i].modelSurfs->surfs[j];
+                    if (surf.vertInfo.vertsBlend)
+                        return true;
+                }
+            }
+#else
+            for (auto i = 0u; i < xmodel.numsurfs; i++)
+            {
+                const auto& surf = xmodel.surfs[i];
+                if (surf.vertInfo.vertsBlend)
+                    return true;
+            }
+#endif
+
+            return false;
+        }
+
+        static bool HasNulledTrans(const XModel& xmodel)
+        {
+            if (xmodel.trans == nullptr)
+                return true;
+
+            const auto transCount = (xmodel.numBones - xmodel.numRootBones) * 3u;
+            for (auto i = 0u; i < transCount; i++)
+            {
+                if (xmodel.trans[i] != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
+        static bool HasNonNullBoneInfoTrans(const XModel& xmodel)
+        {
+            if (xmodel.boneInfo == nullptr)
+                return false;
+
+            for (auto i = 0u; i < xmodel.numBones; i++)
+            {
+                const auto& boneInfo = xmodel.boneInfo[i];
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+                if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
+                    return true;
+#else
+                if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
+                    return true;
+#endif
+            }
+
+            return false;
+        }
+
+        static JsonXModelType GetType(const XModel& xmodel)
+        {
+            if (!IsAnimated(xmodel))
+                return JsonXModelType::RIGID;
+
+            if (HasNulledTrans(xmodel) && HasNonNullBoneInfoTrans(xmodel))
+                return JsonXModelType::VIEWHANDS;
+
+            return JsonXModelType::ANIMATED;
+        }
+
         static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
         {
             if (xmodel.collLod >= 0)
                 jXModel.collLod = xmodel.collLod;
+
+            jXModel.type = GetType(xmodel);
 
             for (auto lodNumber = 0u; lodNumber < xmodel.numLods; lodNumber++)
             {
@@ -722,7 +818,7 @@ namespace
             if (xmodel.physPreset && xmodel.physPreset->name)
                 jXModel.physPreset = AssetName(xmodel.physPreset->name);
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (xmodel.physCollmap && xmodel.physCollmap->name)
                 jXModel.physCollmap = AssetName(xmodel.physCollmap->name);
 #endif
@@ -747,7 +843,7 @@ namespace
 
     void DumpXModelJson(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
-        const auto assetFile = context.OpenAssetFile(std::format("xmodel/{}.json", asset->m_name));
+        const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset->m_name));
         if (!assetFile)
             return;
 
@@ -756,11 +852,16 @@ namespace
     }
 } // namespace
 
-namespace GAME
+namespace xmodel
 {
-    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    bool CLASS_NAME::ShouldDump(XAssetInfo<XModel>* asset)
+    {
+        return !asset->m_name.empty() && asset->m_name[0] != ',';
+    }
+
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);
     }
-} // namespace GAME
+}

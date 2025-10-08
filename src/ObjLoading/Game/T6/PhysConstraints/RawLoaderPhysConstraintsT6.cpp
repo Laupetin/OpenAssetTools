@@ -4,6 +4,8 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysConstraintsT6.h"
+#include "PhysConstraints/PhysConstraintsCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -24,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("physconstraints/{}", assetName);
+            const auto fileName = phys_constraints::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -32,7 +34,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, *file.m_stream))
             {
-                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();
             }
 
@@ -41,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderPhysConstraints m_info_string_loader;
+        phys_constraints::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace phys_constraints
 {
-    std::unique_ptr<AssetCreator<AssetPhysConstraints>> CreateRawPhysConstraintsLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetPhysConstraints>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderPhysConstraints>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace phys_constraints

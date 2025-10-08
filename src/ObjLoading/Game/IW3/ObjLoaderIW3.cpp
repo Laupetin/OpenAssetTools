@@ -3,8 +3,10 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
+#include "Game/IW3/XModel/LoaderXModelIW3.h"
 #include "Image/AssetLoaderImageIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
+#include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
@@ -89,10 +91,10 @@ namespace
 
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
+        collection.AddAssetCreator(xmodel::CreateLoaderIW3(memory, searchPath, zone));
+        collection.AddAssetCreator(material::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-        collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
+        collection.AddAssetCreator(image::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
@@ -106,13 +108,13 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-        collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
+        collection.AddAssetCreator(localize::CreateLoaderIW3(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
+        collection.AddAssetCreator(raw_file::CreateLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(string_table::CreateLoaderIW3(memory, searchPath));
     }
 } // namespace
 

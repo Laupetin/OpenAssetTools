@@ -10,6 +10,7 @@
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
 #include "Parsing/PostProcessing/IPostProcessor.h"
+#include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <chrono>
@@ -36,7 +37,7 @@ bool HeaderFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cerr << "Could not open header file\n";
+        con::error("Could not open header file");
         return false;
     }
 
@@ -71,8 +72,7 @@ void HeaderFileReader::SetupPostProcessors()
 
 bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
 {
-    if (m_args->m_verbose)
-        std::cout << std::format("Reading header file: {}\n", m_filename);
+    con::debug("Reading header file: {}", m_filename);
 
     if (!OpenBaseStream())
         return false;
@@ -88,8 +88,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
         result = parser->SaveToRepository(repository);
     const auto end = std::chrono::steady_clock::now();
 
-    if (m_args->m_verbose)
-        std::cout << std::format("Processing header took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    con::debug("Processing header took {}ms", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     if (!result)
         return false;

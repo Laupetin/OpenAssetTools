@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderTracerT6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read tracer gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read tracer gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
@@ -40,14 +41,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        InfoStringLoaderTracer m_info_string_loader;
+        tracer::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace tracer
 {
-    std::unique_ptr<AssetCreator<AssetTracer>> CreateGdtTracerLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetTracer>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderTracer>(memory, searchPath, gdt, zone);
     }
-} // namespace T6
+} // namespace tracer

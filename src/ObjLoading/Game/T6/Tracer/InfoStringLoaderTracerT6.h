@@ -4,12 +4,12 @@
 #include "Asset/AssetCreationResult.h"
 #include "InfoString/InfoString.h"
 
-namespace T6
+namespace tracer
 {
-    class InfoStringLoaderTracer
+    class InfoStringLoaderT6
     {
     public:
-        InfoStringLoaderTracer(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+        InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
@@ -18,4 +18,4 @@ namespace T6
         ISearchPath& m_search_path;
         Zone& m_zone;
     };
-} // namespace T6
+} // namespace tracer

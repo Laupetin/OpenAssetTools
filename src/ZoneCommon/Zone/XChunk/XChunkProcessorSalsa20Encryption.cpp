@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const int streamCount,
+XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const unsigned streamCount,
                                                                    const std::string& zoneName,
                                                                    const uint8_t* salsa20Key,
                                                                    const size_t keySize)
@@ -11,14 +11,14 @@ XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const int str
 }
 
 size_t XChunkProcessorSalsa20Encryption::Process(
-    const int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
+    const unsigned streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
 {
-    assert(streamNumber >= 0 && streamNumber < m_stream_count);
+    assert(streamNumber < m_stream_count);
     assert(input != nullptr);
     assert(output != nullptr);
     assert(inputLength <= outputBufferSize);
 
-    auto& streamContext = m_stream_contexts[streamNumber];
+    const auto& streamContext = m_stream_contexts[streamNumber];
 
     // Hash not yet encrypted XChunk
     uint8_t blockSha1Hash[SHA1_HASH_SIZE];

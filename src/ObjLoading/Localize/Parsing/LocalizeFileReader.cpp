@@ -3,6 +3,7 @@
 #include "LocalizeFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
+#include "Utils/Logging/Log.h"
 
 LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, ILocalizeFileDuplicationChecker& duplicationChecker)
     : m_file_name(std::move(fileName)),
@@ -46,6 +47,6 @@ bool LocalizeFileReader::ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entr
         return true;
     }
 
-    std::cerr << "Parsing localization file failed!\n";
+    con::error("Parsing localization file failed!");
     return false;
 }

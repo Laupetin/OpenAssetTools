@@ -6,6 +6,7 @@
 #include "ObjWriting.h"
 #include "SearchPath/OutputPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/AssetList/AssetListReader.h"
@@ -165,7 +166,7 @@ class LinkerImpl final : public Linker
             if (!definitionStream.IsOpen())
             {
                 if (logMissing)
-                    std::cerr << std::format("Could not find zone definition file for target \"{}\".\n", targetName);
+                    con::error("Could not find zone definition file for target \"{}\".", targetName);
                 return nullptr;
             }
 
@@ -175,7 +176,7 @@ class LinkerImpl final : public Linker
 
         if (!zoneDefinition)
         {
-            std::cerr << std::format("Failed to read zone definition file for target \"{}\".\n", targetName);
+            con::error("Failed to read zone definition file for target \"{}\".", targetName);
             return nullptr;
         }
 
@@ -225,7 +226,7 @@ class LinkerImpl final : public Linker
 
             if (!ReadIgnoreEntries(paths, ignore, context.m_definition->m_game, context.m_ignored_assets))
             {
-                std::cerr << std::format("Failed to read asset listing for ignoring assets of project \"{}\".\n", ignore);
+                con::error("Failed to read asset listing for ignoring assets of project \"{}\".", ignore);
                 return false;
             }
         }
@@ -239,7 +240,7 @@ class LinkerImpl final : public Linker
             const auto gdtFile = gdtSearchPath->Open(std::format("{}.gdt", gdtName));
             if (!gdtFile.IsOpen())
             {
-                std::cerr << std::format("Failed to open file for gdt \"{}\"\n", gdtName);
+                con::error("Failed to open file for gdt \"{}\"", gdtName);
                 return false;
             }
 
@@ -247,7 +248,7 @@ class LinkerImpl final : public Linker
             auto gdt = std::make_unique<Gdt>();
             if (!gdtReader.Read(*gdt))
             {
-                std::cerr << std::format("Failed to read gdt file \"{}\"\n", gdtName);
+                con::error("Failed to read gdt file \"{}\"", gdtName);
                 return false;
             }
 
@@ -274,19 +275,19 @@ class LinkerImpl final : public Linker
         const auto stream = outPath.Open(std::format("{}.ff", zone.m_name));
         if (!stream)
         {
-            std::cerr << std::format("Failed to open file for zone: {}\n", zone.m_name);
+            con::error("Failed to open file for zone: {}", zone.m_name);
             return false;
         }
 
-        std::cout << std::format("Building zone \"{}\"\n", zone.m_name);
+        con::info("Building zone \"{}\"", zone.m_name);
 
         if (!ZoneWriting::WriteZone(*stream, zone))
         {
-            std::cerr << "Writing zone failed.\n";
+            con::error("Writing zone failed.");
             return false;
         }
 
-        std::cout << std::format("Created zone \"{}\"\n", zone.m_name);
+        con::info("Created zone \"{}\"", zone.m_name);
 
         return true;
     }
@@ -339,7 +340,7 @@ class LinkerImpl final : public Linker
                     if (alreadyBuiltTargets.find(referencedTarget) == alreadyBuiltTargets.end())
                     {
                         targetsToBuild.emplace_back(referencedTarget);
-                        std::cout << std::format("Building referenced target \"{}\"\n", referencedTarget);
+                        con::info("Building referenced target \"{}\"", referencedTarget);
                     }
                 }
             }
@@ -354,7 +355,7 @@ class LinkerImpl final : public Linker
         {
             if (!fs::is_regular_file(zonePath))
             {
-                std::cerr << std::format("Could not find zone file to load \"{}\".\n", zonePath);
+                con::error("Could not find zone file to load \"{}\".", zonePath);
                 return false;
             }
 
@@ -366,14 +367,11 @@ class LinkerImpl final : public Linker
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (!zone)
             {
-                std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
+                con::error("Failed to load zone \"{}\".", zonePath);
                 return false;
             }
 
-            if (m_args.m_verbose)
-            {
-                std::cout << std::format("Load zone \"{}\"\n", zone->m_name);
-            }
+            con::debug("Load zone \"{}\"", zone->m_name);
 
             m_loaded_zones.emplace_back(std::move(zone));
         }
@@ -390,8 +388,7 @@ class LinkerImpl final : public Linker
 
             loadedZone.reset();
 
-            if (m_args.m_verbose)
-                std::cout << std::format("Unloaded zone \"{}\"\n", zoneName);
+            con::debug("Unloaded zone \"{}\"", zoneName);
         }
         m_loaded_zones.clear();
     }
@@ -406,7 +403,7 @@ class LinkerImpl final : public Linker
         }
         else if (projectSpecifier.find_first_of('/', targetNameSeparatorIndex + 1) != std::string::npos)
         {
-            std::cerr << std::format("Project specifier cannot have more than one target name: \"{}\"\n", projectSpecifier);
+            con::error("Project specifier cannot have more than one target name: \"{}\"", projectSpecifier);
             return false;
         }
         else
@@ -417,13 +414,13 @@ class LinkerImpl final : public Linker
 
         if (projectName.empty())
         {
-            std::cerr << std::format("Project name cannot be empty: \"{}\"\n", projectSpecifier);
+            con::error("Project name cannot be empty: \"{}\"", projectSpecifier);
             return false;
         }
 
         if (targetName.empty())
         {
-            std::cerr << std::format("Target name cannot be empty: \"{}\"\n", projectSpecifier);
+            con::error("Target name cannot be empty: \"{}\"", projectSpecifier);
             return false;
         }
 

@@ -1,6 +1,7 @@
 #include "LoaderRawFileIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <filesystem>
@@ -58,7 +59,7 @@ namespace
 
             if (ret != Z_STREAM_END)
             {
-                std::cerr << std::format("Deflate failed for loading rawfile \"{}\"\n", assetName);
+                con::error("Deflate failed for loading rawfile \"{}\"", assetName);
                 deflateEnd(&zs);
                 return AssetCreationResult::Failure();
             }
@@ -82,10 +83,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateRawFileLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<RawFileLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace raw_file

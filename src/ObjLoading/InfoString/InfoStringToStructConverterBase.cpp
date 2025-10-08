@@ -1,5 +1,7 @@
 #include "InfoStringToStructConverterBase.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <cstring>
 #include <format>
 #include <iostream>
@@ -66,7 +68,7 @@ bool InfoStringToStructConverterBase::ConvertInt(const std::string& value, const
 
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as int\n", value);
+        con::error("Failed to parse value \"{}\" as int", value);
         return false;
     }
 
@@ -80,7 +82,7 @@ bool InfoStringToStructConverterBase::ConvertUint(const std::string& value, cons
 
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as uint\n", value);
+        con::error("Failed to parse value \"{}\" as uint", value);
         return false;
     }
 
@@ -95,7 +97,7 @@ bool InfoStringToStructConverterBase::ConvertBool(const std::string& value, cons
     *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0;
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as bool\n", value);
+        con::error("Failed to parse value \"{}\" as bool", value);
         return false;
     }
 
@@ -110,7 +112,7 @@ bool InfoStringToStructConverterBase::ConvertQBoolean(const std::string& value, 
     *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0 ? 1 : 0;
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as qboolean\n", value);
+        con::error("Failed to parse value \"{}\" as qboolean", value);
         return false;
     }
 
@@ -124,7 +126,7 @@ bool InfoStringToStructConverterBase::ConvertFloat(const std::string& value, con
 
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as float\n", value);
+        con::error("Failed to parse value \"{}\" as float", value);
         return false;
     }
 
@@ -138,7 +140,7 @@ bool InfoStringToStructConverterBase::ConvertMilliseconds(const std::string& val
 
     if (endPtr != &value[value.size()])
     {
-        std::cerr << std::format("Failed to parse value \"{}\" as milliseconds\n", value);
+        con::error("Failed to parse value \"{}\" as milliseconds", value);
         return false;
     }
 
@@ -176,8 +178,7 @@ bool InfoStringToStructConverterBase::ConvertEnumInt(
         ss << '"' << enumValues[i] << '"';
     }
 
-    ss << '\n';
-    std::cerr << ss.str();
+    con::error(ss.str());
 
     return false;
 }

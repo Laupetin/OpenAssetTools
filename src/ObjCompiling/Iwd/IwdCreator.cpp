@@ -1,6 +1,7 @@
 #include "IwdCreator.h"
 
 #include "Utils/FileToZlibWrapper.h"
+#include "Utils/Logging/Log.h"
 
 #include <chrono>
 #include <format>
@@ -24,7 +25,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
     const auto file = outPath.Open(fileName);
     if (!file)
     {
-        std::cerr << std::format("Failed to open file for iwd {}\n", m_name);
+        con::error("Failed to open file for iwd {}", m_name);
         return;
     }
 
@@ -33,7 +34,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
     const auto zipFile = zipOpen2(fileName.c_str(), APPEND_STATUS_CREATE, nullptr, &functions);
     if (!zipFile)
     {
-        std::cerr << std::format("Failed to open file as zip for iwd {}\n", m_name);
+        con::error("Failed to open file as zip for iwd {}", m_name);
         return;
     }
 
@@ -42,7 +43,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
         auto readFile = searchPath.Open(filePath);
         if (!readFile.IsOpen())
         {
-            std::cerr << std::format("Failed to open file for iwd: {}\n", filePath);
+            con::error("Failed to open file for iwd: {}", filePath);
             continue;
         }
 
@@ -76,7 +77,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
 
     zipClose(zipFile, nullptr);
 
-    std::cout << std::format("Created iwd {} with {} entries\n", m_name, m_file_paths.size());
+    con::info("Created iwd {} with {} entries", m_name, m_file_paths.size());
 }
 
 const std::vector<std::string>& IwdToCreate::GetFilePaths() const
@@ -100,7 +101,7 @@ IwdToCreate* IwdCreator::GetOrAddIwd(const std::string& iwdName)
 
 void IwdCreator::Finalize(ISearchPath& searchPath, IOutputPath& outPath)
 {
-    std::cout << std::format("Writing {} iwd files to disk\n", m_iwds.size());
+    con::info("Writing {} iwd files to disk", m_iwds.size());
     for (const auto& iwdToCreate : m_iwds)
         iwdToCreate->Build(searchPath, outPath);
 

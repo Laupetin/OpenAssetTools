@@ -4,6 +4,7 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
+#include "Utils/Logging/Log.h"
 #include "Zone/Definition/Parsing/ZoneDefinitionLexer.h"
 #include "Zone/Definition/Parsing/ZoneDefinitionParser.h"
 
@@ -44,7 +45,7 @@ void ZoneDefinitionInputStream::SetPreviouslySetGame(GameId game)
 
 std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
 {
-    std::cout << std::format("Reading zone definition file: {}\n", m_file_name);
+    con::info("Reading zone definition file: {}", m_file_name);
 
     const auto lexer = std::make_unique<ZoneDefinitionLexer>(m_stream);
     const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get(), m_target_name, m_search_path, *m_stream, m_previously_set_game);
@@ -55,7 +56,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
         definition = parser->GetParsedValue();
     const auto end = std::chrono::steady_clock::now();
 
-    std::cout << std::format("Processing zone definition took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    con::info("Processing zone definition took {}ms", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     return std::move(definition);
 }

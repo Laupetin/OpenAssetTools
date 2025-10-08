@@ -2,6 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,28 +32,28 @@ namespace
             {
                 if (decl->streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
                 {
-                    std::cerr << std::format("Failed to add vertex decl stream. Too many abbreviations: {}\n", assetName);
+                    con::error("Failed to add vertex decl stream. Too many abbreviations: {}", assetName);
                     return AssetCreationResult::Failure();
                 }
 
                 std::string destinationAbbreviation;
                 if (!NextAbbreviation(assetName, destinationAbbreviation, currentOffset))
                 {
-                    std::cerr << std::format("Failed to detect vertex decl destination abbreviation: {}\n", assetName);
+                    con::error("Failed to detect vertex decl destination abbreviation: {}", assetName);
                     return AssetCreationResult::Failure();
                 }
 
                 const auto foundSourceAbbreviation = std::ranges::find(materialStreamSourceAbbreviation, sourceAbbreviation);
                 if (foundSourceAbbreviation == std::end(materialStreamSourceAbbreviation))
                 {
-                    std::cerr << std::format("Unknown vertex decl source abbreviation: {}\n", sourceAbbreviation);
+                    con::error("Unknown vertex decl source abbreviation: {}", sourceAbbreviation);
                     return AssetCreationResult::Failure();
                 }
 
                 const auto foundDestinationAbbreviation = std::ranges::find(materialStreamDestinationAbbreviation, destinationAbbreviation);
                 if (foundDestinationAbbreviation == std::end(materialStreamDestinationAbbreviation))
                 {
-                    std::cerr << std::format("Unknown vertex decl destination abbreviation: {}\n", destinationAbbreviation);
+                    con::error("Unknown vertex decl destination abbreviation: {}", destinationAbbreviation);
                     return AssetCreationResult::Failure();
                 }
 
@@ -92,10 +93,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace vertex_decl
 {
-    std::unique_ptr<AssetCreator<AssetVertexDecl>> CreateVertexDeclLoader(MemoryManager& memory)
+    std::unique_ptr<AssetCreator<AssetVertexDecl>> CreateLoaderIW4(MemoryManager& memory)
     {
         return std::make_unique<LoaderVertexDecl>(memory);
     }
-} // namespace IW4
+} // namespace vertex_decl

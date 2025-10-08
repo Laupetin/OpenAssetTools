@@ -3,6 +3,7 @@
 #include "Image/DdsTypes.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/FileUtils.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -41,13 +42,13 @@ namespace dds
             m_stream.read(reinterpret_cast<char*>(&magic), sizeof(magic));
             if (m_stream.gcount() != sizeof(magic))
             {
-                std::cerr << "Failed to read dds data\n";
+                con::error("Failed to read dds data");
                 return false;
             }
 
             if (magic != DDS_MAGIC)
             {
-                std::cerr << "Invalid magic for dds\n";
+                con::error("Invalid magic for dds");
                 return false;
             }
 
@@ -60,7 +61,7 @@ namespace dds
             m_stream.read(reinterpret_cast<char*>(&headerDx10), sizeof(headerDx10));
             if (m_stream.gcount() != sizeof(headerDx10))
             {
-                std::cerr << "Failed to read dds data\n";
+                con::error("Failed to read dds data");
                 return false;
             }
 
@@ -81,7 +82,7 @@ namespace dds
             }
             else
             {
-                std::cerr << std::format("Unsupported dds resourceDimension {}\n", static_cast<unsigned>(headerDx10.resourceDimension));
+                con::error("Unsupported dds resourceDimension {}", static_cast<unsigned>(headerDx10.resourceDimension));
                 return false;
             }
 
@@ -94,7 +95,7 @@ namespace dds
                 }
             }
 
-            std::cerr << std::format("Unsupported dds dxgi format {}\n", static_cast<unsigned>(headerDx10.dxgiFormat));
+            con::error("Unsupported dds dxgi format {}", static_cast<unsigned>(headerDx10.dxgiFormat));
             return false;
         }
 
@@ -118,7 +119,7 @@ namespace dds
                 return ReadDxt10Header();
 
             default:
-                std::cerr << std::format("Unknown dds FourCC {}\n", pf.dwFourCC);
+                con::error("Unknown dds FourCC {}", pf.dwFourCC);
                 return false;
             }
         }
@@ -169,8 +170,7 @@ namespace dds
                 }
             }
 
-            std::cerr << std::format(
-                "Failed to find dds pixel format: R={:#x} G={:#x} B={:#x} A={:#x}\n", pf.dwRBitMask, pf.dwGBitMask, pf.dwBBitMask, pf.dwABitMask);
+            con::error("Failed to find dds pixel format: R={:#x} G={:#x} B={:#x} A={:#x}", pf.dwRBitMask, pf.dwGBitMask, pf.dwBBitMask, pf.dwABitMask);
 
             return false;
         }
@@ -189,7 +189,7 @@ namespace dds
             m_stream.read(reinterpret_cast<char*>(&header), sizeof(header));
             if (m_stream.gcount() != sizeof(header))
             {
-                std::cerr << "Failed to read dds data\n";
+                con::error("Failed to read dds data");
                 return false;
             }
 
@@ -249,7 +249,7 @@ namespace dds
 
                     if (m_stream.gcount() != mipSize)
                     {
-                        std::cerr << "Failed to read texture data from dds\n";
+                        con::error("Failed to read texture data from dds");
                         return nullptr;
                     }
                 }

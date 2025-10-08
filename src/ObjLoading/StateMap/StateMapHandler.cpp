@@ -1,5 +1,7 @@
 #include "StateMapHandler.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -76,7 +78,7 @@ StateMapVars StateMapHandler::BuildVars(const uint32_t* baseStateBits) const
         if (matchingValue != var.m_values.end())
             result.AddValue(var.m_name, matchingValue->m_name);
         else
-            std::cerr << "Could not find base value for state map var \"" << var.m_name << "\"\n";
+            con::error("Could not find base value for state map var \"{}\"", var.m_name);
     }
 
     return result;

@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/Vehicle/VehicleFields.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -37,7 +38,7 @@ namespace
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cerr << std::format("Failed to parse value \"{}\" as mph\n", value);
+                    con::error("Failed to parse value \"{}\" as mph", value);
                     return false;
                 }
 
@@ -51,7 +52,7 @@ namespace
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cerr << std::format("Failed to parse value \"{}\" as pounds\n", value);
+                    con::error("Failed to parse value \"{}\" as pounds", value);
                     return false;
                 }
 
@@ -79,7 +80,7 @@ namespace
                 }
 
                 *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = TEAM_BAD;
-                std::cerr << std::format("Failed to parse value \"{}\" as team\n", value);
+                con::error("Failed to parse value \"{}\" as team", value);
                 return false;
             }
 
@@ -107,27 +108,30 @@ namespace
     };
 } // namespace
 
-InfoStringLoaderVehicle::InfoStringLoaderVehicle(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace vehicle
 {
-}
-
-AssetCreationResult InfoStringLoaderVehicle::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
-{
-    auto* vehicleDef = m_memory.Alloc<VehicleDef>();
-    vehicleDef->name = m_memory.Dup(assetName.c_str());
-
-    AssetRegistration<AssetVehicle> registration(assetName, vehicleDef);
-
-    InfoStringToVehicleConverter converter(
-        infoString, *vehicleDef, m_zone.m_script_strings, m_memory, context, registration, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
-    if (!converter.Convert())
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse vehicle: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* vehicleDef = m_memory.Alloc<VehicleDef>();
+        vehicleDef->name = m_memory.Dup(assetName.c_str());
+
+        AssetRegistration<AssetVehicle> registration(assetName, vehicleDef);
+
+        InfoStringToVehicleConverter converter(
+            infoString, *vehicleDef, m_zone.m_script_strings, m_memory, context, registration, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
+        if (!converter.Convert())
+        {
+            con::error("Failed to parse vehicle: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace vehicle

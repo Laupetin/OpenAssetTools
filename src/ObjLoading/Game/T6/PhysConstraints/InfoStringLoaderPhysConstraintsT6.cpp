@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/PhysConstraints/PhysConstraintsFields.h"
 #include "Game/T6/T6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -76,35 +77,38 @@ namespace
     }
 } // namespace
 
-InfoStringLoaderPhysConstraints::InfoStringLoaderPhysConstraints(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace phys_constraints
 {
-}
-
-AssetCreationResult InfoStringLoaderPhysConstraints::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
-{
-    auto* physConstraints = m_memory.Alloc<PhysConstraints>();
-    physConstraints->name = m_memory.Dup(assetName.c_str());
-
-    AssetRegistration<AssetPhysConstraints> registration(assetName, physConstraints);
-    InfoStringToPhysConstraintsConverter converter(infoString,
-                                                   *physConstraints,
-                                                   m_zone.m_script_strings,
-                                                   m_memory,
-                                                   context,
-                                                   registration,
-                                                   phys_constraints_fields,
-                                                   std::extent_v<decltype(phys_constraints_fields)>);
-    if (!converter.Convert())
+    InfoStringLoaderT6::InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse phys constraints: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    CalculatePhysConstraintsFields(*physConstraints, m_zone.m_script_strings);
-    registration.AddScriptString(m_zone.m_script_strings.AddOrGetScriptString(""));
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* physConstraints = m_memory.Alloc<PhysConstraints>();
+        physConstraints->name = m_memory.Dup(assetName.c_str());
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+        AssetRegistration<AssetPhysConstraints> registration(assetName, physConstraints);
+        InfoStringToPhysConstraintsConverter converter(infoString,
+                                                       *physConstraints,
+                                                       m_zone.m_script_strings,
+                                                       m_memory,
+                                                       context,
+                                                       registration,
+                                                       phys_constraints_fields,
+                                                       std::extent_v<decltype(phys_constraints_fields)>);
+        if (!converter.Convert())
+        {
+            con::error("Failed to parse phys constraints: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        CalculatePhysConstraintsFields(*physConstraints, m_zone.m_script_strings);
+        registration.AddScriptString(m_zone.m_script_strings.AddOrGetScriptString(""));
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace phys_constraints

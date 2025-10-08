@@ -2,6 +2,7 @@
 
 #include "Game/IW5/IW5.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <filesystem>
@@ -57,7 +58,7 @@ namespace
 
             if (ret != Z_STREAM_END)
             {
-                std::cerr << std::format("Deflate failed for loading rawfile \"{}\"\n", assetName);
+                con::error("Deflate failed for loading rawfile \"{}\"", assetName);
                 deflateEnd(&zs);
                 return AssetCreationResult::Failure();
             }
@@ -81,10 +82,10 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateRawFileLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<RawFileLoader>(memory, searchPath);
     }
-} // namespace IW5
+} // namespace raw_file

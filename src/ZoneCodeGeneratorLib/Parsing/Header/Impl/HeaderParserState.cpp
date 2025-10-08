@@ -2,6 +2,7 @@
 
 #include "Domain/Definition/EnumDefinition.h"
 #include "Parsing/Header/Block/HeaderBlockNone.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -97,7 +98,7 @@ bool HeaderParserState::ResolveForwardDeclarations()
 
         if (dataDefinition == nullptr)
         {
-            std::cerr << std::format("Forward declaration \"{}\" was not defined\n", forwardDeclaration->GetFullName());
+            con::error("Forward declaration \"{}\" was not defined", forwardDeclaration->GetFullName());
             return false;
         }
 

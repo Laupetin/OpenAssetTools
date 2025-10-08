@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace slug
 {
-    std::unique_ptr<AssetCreator<AssetSlug>> CreateSlugLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetSlug>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace slug

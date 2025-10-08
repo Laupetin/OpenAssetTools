@@ -38,10 +38,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderStringTable>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace string_table

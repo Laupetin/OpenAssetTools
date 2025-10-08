@@ -13,20 +13,24 @@ namespace T6
 
     public:
         static constexpr const char* MAGIC_SIGNED_TREYARCH = "TAff0100";
+        static constexpr const char* MAGIC_SIGNED_LZX_TREYARCH = "TAffx100";
         static constexpr const char* MAGIC_SIGNED_OAT = "ABff0100";
         static constexpr const char* MAGIC_UNSIGNED = "TAffu100";
         static constexpr const char* MAGIC_UNSIGNED_SERVER = "TAsvu100";
 
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_TREYARCH) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_LZX_TREYARCH) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED_SERVER) == sizeof(ZoneHeader::m_magic));
 
-        static constexpr int ZONE_VERSION = 147;
-        static constexpr int STREAM_COUNT = 4;
-        static constexpr int XCHUNK_SIZE = 0x8000;
-        static constexpr int XCHUNK_MAX_WRITE_SIZE = XCHUNK_SIZE - 0x40;
-        static constexpr int VANILLA_BUFFER_SIZE = 0x80000;
+        static constexpr unsigned ZONE_VERSION_PC = 147;
+        static constexpr unsigned ZONE_VERSION_XENON = 146;
+
+        static constexpr unsigned STREAM_COUNT = 4;
+        static constexpr unsigned XCHUNK_SIZE = 0x8000;
+        static constexpr unsigned XCHUNK_MAX_WRITE_SIZE = XCHUNK_SIZE - 0x40;
+        static constexpr unsigned VANILLA_BUFFER_SIZE = 0x80000;
         static constexpr unsigned OFFSET_BLOCK_BIT_COUNT = 3u;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
 
@@ -34,9 +38,13 @@ namespace T6
         static constexpr size_t FILE_SUFFIX_ZERO_ALIGN = 0x40;
 
         static constexpr const char* MAGIC_AUTH_HEADER = "PHEEBs71";
-        inline static const uint8_t SALSA20_KEY_TREYARCH[]{
+        inline static const uint8_t SALSA20_KEY_TREYARCH_PC[]{
             0x64, 0x1D, 0x8A, 0x2F, 0xE3, 0x1D, 0x3A, 0xA6, 0x36, 0x22, 0xBB, 0xC9, 0xCE, 0x85, 0x87, 0x22,
             0x9D, 0x42, 0xB0, 0xF8, 0xED, 0x9B, 0x92, 0x41, 0x30, 0xBF, 0x88, 0xB6, 0x5E, 0xDC, 0x50, 0xBE,
+        };
+        inline static const uint8_t SALSA20_KEY_TREYARCH_XENON[]{
+            0x0E, 0x50, 0xF4, 0x9F, 0x41, 0x23, 0x17, 0x09, 0x60, 0x38, 0x66, 0x56, 0x22, 0xDD, 0x09, 0x13,
+            0x32, 0xA2, 0x09, 0xBA, 0x0A, 0x05, 0xA0, 0x0E, 0x13, 0x77, 0xCE, 0xDB, 0x0A, 0x3C, 0xB1, 0xD3,
         };
 
         inline static const uint8_t RSA_PUBLIC_KEY_TREYARCH[]{

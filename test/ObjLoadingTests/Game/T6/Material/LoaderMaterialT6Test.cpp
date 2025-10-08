@@ -62,9 +62,7 @@ namespace
         "10",
         "CASTS_SHADOW"
     ],
-    "hashIndex": 0,
     "layeredSurfaceTypes": 536870925,
-    "probeMipBits": 0,
     "sortKey": 4,
     "stateBits": [
         {
@@ -243,7 +241,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::T6));
+        Zone zone("MockZone", 0, GameId::T6);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
@@ -255,7 +253,7 @@ namespace
         GivenImage("~-gmetal_ac_duct_c", context, memory);
         GivenTechset("wpc_lit_sm_r0c0n0s0_1zzj1138", context, memory);
 
-        auto loader = CreateMaterialLoader(memory, searchPath);
+        auto loader = material::CreateLoaderT6(memory, searchPath);
         auto result = loader->CreateAsset("wpc/metal_ac_duct", context);
         REQUIRE(result.HasBeenSuccessful());
 

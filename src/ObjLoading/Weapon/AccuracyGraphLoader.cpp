@@ -1,6 +1,7 @@
 #include "AccuracyGraphLoader.h"
 
 #include "Parsing/Graph2D/Graph2DReader.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -13,7 +14,7 @@ namespace
         const auto file = searchPath.Open(fileName);
         if (!file.IsOpen())
         {
-            std::cerr << std::format("Failed to open file for accuracy graph: {}/{}\n", subFolder, graphName);
+            con::error("Failed to open file for accuracy graph: {}/{}", subFolder, graphName);
             return nullptr;
         }
 

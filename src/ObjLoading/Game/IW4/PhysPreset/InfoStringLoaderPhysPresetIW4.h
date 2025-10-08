@@ -4,12 +4,12 @@
 #include "Asset/AssetCreationResult.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4
+namespace phys_preset
 {
-    class InfoStringLoaderPhysPreset
+    class InfoStringLoaderIW4
     {
     public:
-        InfoStringLoaderPhysPreset(MemoryManager& memory, Zone& zone);
+        InfoStringLoaderIW4(MemoryManager& memory, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
@@ -17,4 +17,4 @@ namespace IW4
         MemoryManager& m_memory;
         Zone& m_zone;
     };
-} // namespace IW4
+} // namespace phys_preset

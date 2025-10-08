@@ -1,8 +1,12 @@
-#options GAME (IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define HAS_WATER
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #define HAS_WATER
 #define GAME_LOWER "iw4"
@@ -10,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "T5"
+#define FEATURE_T5
+#define HAS_WATER
+#define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
 #define GAME_LOWER "t6"
@@ -25,14 +33,18 @@
 #ifdef HAS_WATER
 #include "Base64.h"
 #endif
+
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
 #include JSON_HEADER
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
+#include <nlohmann/json.hpp>
 
+using namespace nlohmann;
 using namespace GAME;
 
 namespace
@@ -40,45 +52,47 @@ namespace
     class JsonLoader
     {
     public:
-        JsonLoader(MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-            : m_memory(memory),
+        JsonLoader(std::istream& stream, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+            : m_stream(stream),
+              m_memory(memory),
               m_context(context),
               m_registration(registration)
         {
         }
 
-        bool Load(json& jRoot, Material& material) const
-		{
-			std::string type;
-			unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "material" || version != 1u)
-            {
-                std::cerr << std::format("Tried to load material \"{}\" but did not find expected type material of version 1\n", material.info.name);
-                return false;
-            }
-            
-#ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
-            std::string game;
-            jRoot.at("_game").get_to(game);
-            if (game != GAME_LOWER)
-            {
-                std::cerr << std::format("Tried to load material \"{}\" but \"_game\" did not find expected type value {}\n", material.info.name, GAME_LOWER);
-                return false;
-            }
-#endif
-
+        bool Load(Material& material) const
+        {
             try
             {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "material" || version != 1u)
+                {
+                    con::error("Tried to load material \"{}\" but did not find expected type material of version 1", material.info.name);
+                    return false;
+                }
+            
+#ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
+                std::string game;
+                jRoot.at("_game").get_to(game);
+                if (game != GAME_LOWER)
+                {
+                    con::error("Tried to load material \"{}\" but \"_game\" did not find expected type value {}", material.info.name, GAME_LOWER);
+                    return false;
+                }
+#endif
+
                 const auto jMaterial = jRoot.get<JsonMaterial>();
                 return CreateMaterialFromJson(jMaterial, material);
             }
             catch (const json::exception& e)
             {
-                std::cerr << std::format("Failed to parse json of material: {}\n", e.what());
+                con::error("Failed to parse json of material: {}", e.what());
             }
 
             return false;
@@ -87,12 +101,12 @@ namespace
     private:
         static void PrintError(const Material& material, const std::string& message)
         {
-            std::cerr << std::format("Cannot load material \"{}\": {}\n", material.info.name, message);
+            con::error("Cannot load material \"{}\": {}", material.info.name, message);
         }
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
-#elif defined(FEATURE_T6)
+#elif defined(FEATURE_T5) || defined(FEATURE_T6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
 #endif
         {
@@ -193,7 +207,7 @@ namespace
             CreateSamplerStateFromJson(jTexture.samplerState, textureDef.samplerState);
 
             textureDef.semantic = jTexture.semantic;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             textureDef.isMatureContent = jTexture.isMatureContent;
 #endif
 
@@ -300,11 +314,17 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_GT_0;
             }
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::LT128)
             {
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_LT_128;
+            }
+#elif defined(FEATURE_T5)
+            else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::GE255)
+            {
+                structured.alphaTestDisabled = 0;
+                structured.alphaTest = GFXS_ALPHA_TEST_GE_255;
             }
 #endif
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::GE128)
@@ -399,9 +419,10 @@ namespace
             }
 
             material.info.surfaceTypeBits = jMaterial.surfaceTypeBits;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             material.info.layeredSurfaceTypes = jMaterial.layeredSurfaceTypes;
-            material.info.hashIndex = static_cast<uint16_t>(jMaterial.hashIndex);
+#endif
+#if defined(FEATURE_T6)
             material.info.surfaceFlags = jMaterial.surfaceFlags;
             material.info.contents = jMaterial.contents;
 #endif
@@ -416,9 +437,6 @@ namespace
 
             material.stateFlags = static_cast<unsigned char>(jMaterial.stateFlags);
             material.cameraRegion = jMaterial.cameraRegion;
-#ifdef FEATURE_T6
-            material.probeMipBits = jMaterial.probeMipBits;
-#endif
 
             auto* techniqueSet = m_context.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
             if (!techniqueSet)
@@ -501,6 +519,7 @@ namespace
             return true;
         }
 
+        std::istream& m_stream;
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         AssetRegistration<AssetMaterial>& m_registration;
@@ -510,20 +529,10 @@ namespace
 namespace GAME
 {
     bool LoadMaterialAsJson(
-		std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-	{
-		const JsonLoader loader(memory, context, registration);
-	
-		auto jRoot = json::parse(stream);
-	
-		return loader.Load(jRoot, material);
-	}
-	
-	bool LoadMaterialAsJson(
-		json& json, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-	{
-		const JsonLoader loader(memory, context, registration);
-	
-		return loader.Load(json, material);
-	}
+        std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+    {
+        const JsonLoader loader(stream, memory, context, registration);
+
+        return loader.Load(material);
+    }
 } // namespace GAME

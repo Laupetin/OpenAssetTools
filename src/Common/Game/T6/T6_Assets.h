@@ -700,6 +700,8 @@ namespace T6
         MTL_GAMEFLAG_400 = 0x400,
         MTL_GAMEFLAG_800 = 0x800,
         MTL_GAMEFLAG_1000 = 0x1000,
+        MTL_GAMEFLAG_2000 = 0x2000,
+        MTL_GAMEFLAG_4000 = 0x4000,
     };
 
     struct type_align32(8) MaterialInfo
@@ -2763,6 +2765,14 @@ namespace T6
         vec4_t quat;
         vec3_t trans;
         float transWeight;
+    };
+
+    enum XSurfaceFlag
+    {
+        XSURFACE_FLAG_QUANTIZED = 0x1,
+        XSURFACE_FLAG_SKINNED = 0x2,
+        XSURFACE_FLAG_CONSTANT_COLOR = 0x4,
+        XSURFACE_FLAG_DEFORMED = 0x80,
     };
 
     struct XSurfaceVertexInfo

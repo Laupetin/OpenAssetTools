@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetMaterial>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace material

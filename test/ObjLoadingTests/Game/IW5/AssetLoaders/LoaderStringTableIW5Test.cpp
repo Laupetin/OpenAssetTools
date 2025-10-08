@@ -19,14 +19,14 @@ namespace
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW5));
+        Zone zone("MockZone", 0, GameId::IW5);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
         IgnoredAssetLookup ignoredAssetLookup;
         AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
 
-        auto loader = CreateStringTableLoader(memory, searchPath);
+        auto loader = string_table::CreateLoaderIW5(memory, searchPath);
         auto result = loader->CreateAsset("mp/cooltable.csv", context);
         REQUIRE(result.HasBeenSuccessful());
 

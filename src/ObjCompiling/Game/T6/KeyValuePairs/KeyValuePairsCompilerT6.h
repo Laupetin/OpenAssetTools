@@ -9,8 +9,8 @@
 
 #include <memory>
 
-namespace T6
+namespace key_value_pairs
 {
     std::unique_ptr<IAssetCreator>
-        CreateKeyValuePairsCompiler(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates);
-} // namespace T6
+        CreateCompilerT6(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates);
+} // namespace key_value_pairs

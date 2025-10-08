@@ -2,6 +2,7 @@
 
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <filesystem>
@@ -73,7 +74,7 @@ namespace
 
             if (ret != Z_STREAM_END)
             {
-                std::cerr << std::format("Deflate failed for loading animtree file \"{}\"\n", assetName);
+                con::error("Deflate failed for loading animtree file \"{}\"", assetName);
                 deflateEnd(&zs);
                 return AssetCreationResult::Failure();
             }
@@ -114,10 +115,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateRawFileLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetRawFile>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<RawFileLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace raw_file

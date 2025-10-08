@@ -1,5 +1,7 @@
 #include "GdtStream.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -14,7 +16,7 @@ public:
 
 void GdtReader::PrintError(const std::string& message) const
 {
-    std::cout << "GDT Error at line " << m_line << ": " << message << "\n";
+    con::error("GDT Error at line {}: {}", m_line, message);
 }
 
 int GdtReader::PeekChar()

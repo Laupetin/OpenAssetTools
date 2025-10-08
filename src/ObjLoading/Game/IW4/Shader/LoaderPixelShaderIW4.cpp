@@ -1,6 +1,8 @@
 #include "LoaderPixelShaderIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Shader/ShaderCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstdint>
 #include <format>
@@ -21,14 +23,14 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetPixelShaderFileName(assetName);
+            const auto fileName = shader::GetFileNameForPixelShaderAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
             if (file.m_length % sizeof(uint32_t) != 0)
             {
-                std::cerr << std::format("Invalid pixel shader \"{}\": Size must be dividable by {}\n", assetName, sizeof(uint32_t));
+                con::error("Invalid pixel shader \"{}\": Size must be dividable by {}", assetName, sizeof(uint32_t));
                 return AssetCreationResult::Failure();
             }
 
@@ -53,15 +55,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace shader
 {
-    std::string GetPixelShaderFileName(const std::string& pixelShaderAssetName)
-    {
-        return std::format("shader_bin/ps_{}.cso", pixelShaderAssetName);
-    }
-
-    std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<PixelShaderLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace shader

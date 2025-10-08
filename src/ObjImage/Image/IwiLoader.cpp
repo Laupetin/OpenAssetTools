@@ -1,6 +1,7 @@
 #include "IwiLoader.h"
 
 #include "Image/IwiTypes.h"
+#include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <format>
@@ -36,10 +37,10 @@ namespace iwi
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
-            std::cerr << std::format("Unsupported IWI format: {}\n", format);
+            con::error("Unsupported IWI format: {}", format);
             break;
         default:
-            std::cerr << std::format("Unknown IWI format: {}\n", format);
+            con::error("Unknown IWI format: {}", format);
             break;
         }
 
@@ -84,14 +85,14 @@ namespace iwi
             if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi6::IwiHeader::fileSizeForPicmip)>)
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
-                std::cerr << std::format("Iwi has invalid file size for picmip {}\n", currentMipLevel);
+                con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
                 return nullptr;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
-                std::cerr << std::format("Unexpected eof of iwi in mip level {}\n", currentMipLevel);
+                con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
                 return nullptr;
             }
         }
@@ -134,10 +135,10 @@ namespace iwi
         case iwi8::IwiFormat::IMG_FORMAT_DXN_AS_LUMINANCE_ALPHA:
         case iwi8::IwiFormat::IMG_FORMAT_DXT1_AS_LUMINANCE:
         case iwi8::IwiFormat::IMG_FORMAT_DXT1_AS_ALPHA:
-            std::cerr << std::format("Unsupported IWI format: {}\n", format);
+            con::error("Unsupported IWI format: {}", format);
             break;
         default:
-            std::cerr << std::format("Unknown IWI format: {}\n", format);
+            con::error("Unknown IWI format: {}", format);
             break;
         }
 
@@ -176,12 +177,12 @@ namespace iwi
         }
         else if ((header.flags & iwi8::IwiFlags::IMG_FLAG_MAPTYPE_MASK) == iwi8::IwiFlags::IMG_FLAG_MAPTYPE_1D)
         {
-            std::cerr << "Iwi has unsupported map type 1D\n";
+            con::error("Iwi has unsupported map type 1D");
             return nullptr;
         }
         else
         {
-            std::cerr << "Iwi has unsupported map type\n";
+            con::error("Iwi has unsupported map type");
             return nullptr;
         }
 
@@ -198,14 +199,14 @@ namespace iwi
             if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi8::IwiHeader::fileSizeForPicmip)>)
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
-                std::cerr << std::format("Iwi has invalid file size for picmip {}\n", currentMipLevel);
+                con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
                 return nullptr;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
-                std::cerr << std::format("Unexpected eof of iwi in mip level {}\n", currentMipLevel);
+                con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
                 return nullptr;
             }
         }
@@ -245,10 +246,10 @@ namespace iwi
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_C8:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA8:
         case iwi13::IwiFormat::IMG_FORMAT_A16B16G16R16F:
-            std::cerr << std::format("Unsupported IWI format: {}\n", format);
+            con::error("Unsupported IWI format: {}", format);
             break;
         default:
-            std::cerr << std::format("Unknown IWI format: {}\n", format);
+            con::error("Unknown IWI format: {}", format);
             break;
         }
 
@@ -293,14 +294,14 @@ namespace iwi
             if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi13::IwiHeader::fileSizeForPicmip)>)
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
-                std::cerr << std::format("Iwi has invalid file size for picmip {}\n", currentMipLevel);
+                con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
                 return nullptr;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
-                std::cerr << std::format("Unexpected eof of iwi in mip level {}\n", currentMipLevel);
+                con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
                 return nullptr;
             }
         }
@@ -342,10 +343,10 @@ namespace iwi
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGB5A3:
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_C8:
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGBA8:
-            std::cerr << std::format("Unsupported IWI format: {}\n", format);
+            con::error("Unsupported IWI format: {}", format);
             break;
         default:
-            std::cerr << std::format("Unknown IWI format: {}\n", format);
+            con::error("Unknown IWI format: {}", format);
             break;
         }
 
@@ -390,14 +391,14 @@ namespace iwi
             if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>)
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
-                std::cerr << std::format("Iwi has invalid file size for picmip {}\n", currentMipLevel);
+                con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
                 return nullptr;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
-                std::cerr << std::format("Unexpected eof of iwi in mip level {}\n", currentMipLevel);
+                con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
                 return nullptr;
             }
         }
@@ -415,7 +416,7 @@ namespace iwi
 
         if (iwiVersion.tag[0] != 'I' || iwiVersion.tag[1] != 'W' || iwiVersion.tag[2] != 'i')
         {
-            std::cerr << "Invalid IWI magic\n";
+            con::error("Invalid IWI magic");
             return nullptr;
         }
 
@@ -437,7 +438,7 @@ namespace iwi
             break;
         }
 
-        std::cerr << std::format("Unknown IWI version {}\n", iwiVersion.version);
+        con::error("Unknown IWI version {}", iwiVersion.version);
         return nullptr;
     }
 } // namespace iwi

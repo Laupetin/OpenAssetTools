@@ -8,6 +8,7 @@
 #include "SetDefineStreamProxy.h"
 #include "TemplatingStreamProxy.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/Logging/Log.h"
 
 #include <filesystem>
 #include <fstream>
@@ -219,7 +220,7 @@ namespace templating
             {
                 if (!m_active_variations.empty())
                 {
-                    std::cerr << "Template with variations must specify a filename\n";
+                    con::error("Template with variations must specify a filename");
                     return false;
                 }
 
@@ -231,7 +232,7 @@ namespace templating
                     m_output_stream << cachedData;
             }
 
-            std::cout << "Templated file \"" << m_output_file << "\"\n";
+            con::info("Templated file \"{}\"", m_output_file);
 
             if (buildLogFile)
                 *buildLogFile << "Templated file \"" << m_output_file << "\"\n";
@@ -276,7 +277,7 @@ namespace templating
                 const auto isValidRedefinition = existingVariation->second->GetVariationType() == TemplatingVariationType::SWITCH;
 
                 if (!isValidRedefinition)
-                    std::cerr << "Redefinition of \"" << switchName << "\" as switch is invalid\n";
+                    con::error("Redefinition of \"{}\" as switch is invalid", switchName);
 
                 return isValidRedefinition;
             }
@@ -299,7 +300,7 @@ namespace templating
                 const auto isValidRedefinition = existingVariation->second->GetVariationType() == TemplatingVariationType::OPTIONS;
 
                 if (!isValidRedefinition)
-                    std::cerr << "Redefinition of \"" << optionsName << "\" as options is invalid\n";
+                    con::error("Redefinition of \"{}\" as options is invalid", optionsName);
 
                 return isValidRedefinition;
             }
@@ -337,7 +338,7 @@ namespace templating
         {
             if (m_write_output_to_file)
             {
-                std::cerr << "Cannot skip when already writing to file\n";
+                con::error("Cannot skip when already writing to file");
                 return false;
             }
 
@@ -355,7 +356,7 @@ namespace templating
             m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
             if (!m_output_stream.is_open())
             {
-                std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
+                con::error("Failed to open output file \"{}\"", m_output_file);
                 return false;
             }
 
@@ -412,7 +413,7 @@ bool Templater::TemplateToDirectory(const std::string& outputDirectory) const
     }
     catch (ParsingException& e)
     {
-        std::cerr << "Error: " << e.FullMessage() << "\n";
+        con::error(e.FullMessage());
 
         return false;
     }

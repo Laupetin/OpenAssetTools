@@ -1,4 +1,4 @@
-#options GAME (IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".h"
 
@@ -13,7 +13,9 @@
 
 #include <memory>
 
-namespace GAME
+#set CREATE_LOADER_METHOD "CreateLoader" + GAME
+
+namespace xmodel
 {
-    std::unique_ptr<AssetCreator<AssetXModel>> CreateXModelLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+    std::unique_ptr<AssetCreator<GAME::AssetXModel>> CREATE_LOADER_METHOD (MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 } // namespace GAME

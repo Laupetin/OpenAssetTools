@@ -9,6 +9,9 @@ jobs:
   build-release-linux:
     runs-on: ubuntu-latest
     container: ubuntu:24.04
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Install g++ and multilib
         run: |
@@ -20,7 +23,7 @@ jobs:
           update-alternatives --set g++ /usr/bin/g++-13
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -28,11 +31,13 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh
+        run: ./generate.sh --oat-version=${{ github.ref_name }}
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: make -C build -j$(nproc) config=release_x86 all
+        run: |
+          make -C build -j$(nproc) config=release_x86 all
+          chmod +x build/bin/Release_x86/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -45,7 +50,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -56,7 +61,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.bat
+        run: ./generate.bat --oat-version=${{ github.ref_name }}
 
       - name: Build
         working-directory: ${{ github.workspace }}
@@ -78,7 +83,7 @@ jobs:
       actions: read
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
       - name: Zip artifacts
         run: |
           7z a oat-linux.tar ./oat-linux/*

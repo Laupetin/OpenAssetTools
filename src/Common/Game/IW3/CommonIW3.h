@@ -21,6 +21,11 @@ namespace IW3
             return result;
         }
 
+        static constexpr uint32_t R_HashString(const char* string)
+        {
+            return R_HashString(string, 0u);
+        }
+
         static PackedTexCoords Vec2PackTexCoords(const float (&in)[2]);
         static PackedUnitVec Vec3PackUnitVec(const float (&in)[3]);
         static GfxColor Vec4PackGfxColor(const float (&in)[4]);

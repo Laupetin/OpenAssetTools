@@ -1,5 +1,7 @@
 #include "ContentPrinter.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
 #include <iostream>
 
@@ -11,11 +13,12 @@ ContentPrinter::ContentPrinter(const Zone& zone)
 void ContentPrinter::PrintContent() const
 {
     const auto* pools = m_zone.m_pools.get();
-    std::cout << std::format("Zone '{}' ({})\n", m_zone.m_name, m_zone.m_game->GetShortName());
-    std::cout << "Content:\n";
+    const auto* game = IGame::GetGameById(m_zone.m_game_id);
+    con::info("Zone '{}' ({})", m_zone.m_name, game->GetShortName());
+    con::info("Content:");
 
     for (const auto& asset : *pools)
-        std::cout << std::format("{}, {}\n", *pools->GetAssetTypeName(asset->m_type), asset->m_name);
+        con::info("{}, {}", *pools->GetAssetTypeName(asset->m_type), asset->m_name);
 
-    std::cout << "\n";
+    con::info("");
 }

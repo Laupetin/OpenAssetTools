@@ -2,6 +2,7 @@
 
 #include "GitVersion.h"
 #include "Utils/Arguments/UsageInformation.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -26,6 +27,12 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithShortName("v")
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
+
+const CommandLineOption* const OPTION_NO_COLOR =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-color")
+    .WithDescription("Disables colored terminal output.")
     .Build();
 
 constexpr auto CATEGORY_GAME = "Game";
@@ -70,6 +77,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_NO_COLOR,
     OPTION_GAME_IW3,
     OPTION_GAME_IW4,
     OPTION_GAME_IW5,
@@ -78,8 +86,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 ImageConverterArgs::ImageConverterArgs()
-    : m_verbose(false),
-      m_game_to_convert_to(image_converter::Game::UNKNOWN),
+    : m_game_to_convert_to(image_converter::Game::UNKNOWN),
       m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
@@ -101,12 +108,7 @@ void ImageConverterArgs::PrintUsage()
 
 void ImageConverterArgs::PrintVersion()
 {
-    std::cout << std::format("OpenAssetTools ImageConverter {}\n", GIT_VERSION);
-}
-
-void ImageConverterArgs::SetVerbose(const bool isVerbose)
-{
-    m_verbose = isVerbose;
+    con::info("OpenAssetTools ImageConverter {}", GIT_VERSION);
 }
 
 bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -143,7 +145,13 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
     }
 
     // -v; --verbose
-    SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
+        con::globalLogLevel = con::LogLevel::DEBUG;
+    else
+        con::globalLogLevel = con::LogLevel::INFO;
+
+    // --no-color
+    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
 
     return true;
 }

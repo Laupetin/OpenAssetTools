@@ -3,6 +3,7 @@
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Material/JsonMaterialLoaderIW5.h"
 #include "Material/MaterialCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -32,7 +33,7 @@ namespace
             AssetRegistration<AssetMaterial> registration(assetName, material);
             if (!LoadMaterialAsJson(*file.m_stream, *material, m_memory, context, registration))
             {
-                std::cerr << std::format("Failed to load material \"{}\"\n", assetName);
+                con::error("Failed to load material \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
@@ -45,10 +46,10 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath);
     }
-} // namespace IW5
+} // namespace material

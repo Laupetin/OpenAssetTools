@@ -2,6 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "ObjLoading.h"
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <format>
@@ -17,13 +18,12 @@ bool PartClassificationState::Load(const char** hitLocNames, const size_t hitLoc
     if (m_loaded)
         return true;
 
-    if (ObjLoading::Configuration.Verbose)
-        std::cout << "Loading part classification...\n";
+    con::debug("Loading part classification...");
 
     const auto file = searchPath.Open(PART_CLASSIFICATION_FILE);
     if (!file.IsOpen())
     {
-        std::cerr << std::format("Could not load part classification: Failed to open {}\n", PART_CLASSIFICATION_FILE);
+        con::error("Could not load part classification: Failed to open {}", PART_CLASSIFICATION_FILE);
         return false;
     }
 
@@ -58,7 +58,7 @@ bool PartClassificationState::LoadRow(const char** hitLocStart, const char** hit
 
     if (row.size() != 2)
     {
-        std::cerr << "Could not load part classification: Invalid row\n";
+        con::error("Could not load part classification: Invalid row");
         return false;
     }
 
@@ -68,7 +68,7 @@ bool PartClassificationState::LoadRow(const char** hitLocStart, const char** hit
     const auto foundHitLoc = std::find(hitLocStart, hitLocEnd, row[1]);
     if (foundHitLoc == hitLocEnd)
     {
-        std::cerr << std::format("Invalid hitloc name in row {}: {}\n", rowIndex + 1, row[1]);
+        con::error("Invalid hitloc name in row {}: {}", rowIndex + 1, row[1]);
         return false;
     }
 

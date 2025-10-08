@@ -3,6 +3,7 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/TechsetFileParser.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
 #include <iostream>
@@ -34,6 +35,6 @@ std::unique_ptr<techset::TechsetDefinition> TechsetFileReader::ReadTechsetDefini
     if (success)
         return parser->GetTechsetDefinition();
 
-    std::cerr << std::format("Parsing techset file \"{}\" failed!\n", m_file_name);
+    con::error("Parsing techset file \"{}\" failed!", m_file_name);
     return nullptr;
 }

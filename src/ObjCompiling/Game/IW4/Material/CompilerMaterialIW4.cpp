@@ -14,7 +14,9 @@
 #include "StateMap/StateMapHandler.h"
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechniqueStateMapCache.h"
+#include "Techset/TechsetCommon.h"
 #include "Techset/TechsetDefinitionCache.h"
+#include "Utils/Logging/Log.h"
 
 #include <cmath>
 #include <cstring>
@@ -45,9 +47,9 @@ namespace
               m_search_path(searchPath),
               m_context(context),
               m_registration(registration),
-              m_state_map_cache(context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>()),
+              m_state_map_cache(context.GetZoneAssetCreationState<::techset::TechniqueStateMapCache>()),
               m_base_state_bits{},
-              m_techset_creator(CreateTechsetLoader(memory, searchPath))
+              m_techset_creator(techset::CreateLoaderIW4(memory, searchPath))
         {
         }
 
@@ -247,7 +249,7 @@ namespace
             else
                 throw GdtReadingException("ColorMap may not be blank in particle cloud materials");
 
-            std::cout << std::format("Using particlecloud for \"{}\"\n", m_material.info.name);
+            con::info("Using particlecloud for \"{}\"", m_material.info.name);
         }
 
         void mtl_tools_template()
@@ -793,7 +795,7 @@ namespace
             m_registration.AddDependency(techset);
             m_material.techniqueSet = techset->Asset();
 
-            auto& definitionCache = m_context.GetZoneAssetCreationState<techset::TechsetDefinitionCache>();
+            auto& definitionCache = m_context.GetZoneAssetCreationState<::techset::TechsetDefinitionCache>();
 
             bool failure = false;
             const auto* techsetDefinition = m_techset_creator->LoadTechsetDefinition(techsetName, m_context, failure);
@@ -806,7 +808,7 @@ namespace
             SetTechniqueSetCameraRegion(techsetDefinition);
         }
 
-        void SetTechniqueSetStateBits(const techset::TechsetDefinition* techsetDefinition)
+        void SetTechniqueSetStateBits(const ::techset::TechsetDefinition* techsetDefinition)
         {
             for (auto i = 0; i < TECHNIQUE_COUNT; i++)
             {
@@ -854,19 +856,19 @@ namespace
             return stateBits;
         }
 
-        _NODISCARD const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const
+        [[nodiscard]] const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const
         {
             const auto* preloadedStateMap = m_state_map_cache.GetStateMapForTechnique(techniqueName);
             if (preloadedStateMap)
                 return preloadedStateMap;
 
-            const auto techniqueFileName = GetTechniqueFileName(techniqueName);
+            const auto techniqueFileName = ::techset::GetFileNameForTechniqueName(techniqueName);
             const auto file = m_search_path.Open(techniqueFileName);
             if (!file.IsOpen())
                 return nullptr;
 
             state_map::StateMapFromTechniqueExtractor extractor;
-            const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
+            const ::techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
             if (!reader.ReadTechniqueDefinition())
             {
                 m_state_map_cache.SetTechniqueUsesStateMap(techniqueName, nullptr);
@@ -890,7 +892,7 @@ namespace
             return outBits;
         }
 
-        void SetTechniqueSetCameraRegion(const techset::TechsetDefinition* techsetDefinition) const
+        void SetTechniqueSetCameraRegion(const ::techset::TechsetDefinition* techsetDefinition) const
         {
             std::string tempName;
             if (techsetDefinition->GetTechniqueByIndex(TECHNIQUE_LIT, tempName))
@@ -1316,7 +1318,7 @@ namespace
         AssetCreationContext& m_context;
         AssetRegistration<AssetMaterial>& m_registration;
 
-        techset::TechniqueStateMapCache& m_state_map_cache;
+        ::techset::TechniqueStateMapCache& m_state_map_cache;
         std::unordered_map<const state_map::StateMapDefinition*, GfxStateBits> m_state_bits_per_state_map;
 
         GfxStateBits m_base_state_bits;
@@ -1324,7 +1326,7 @@ namespace
         std::vector<MaterialTextureDef> m_textures;
         std::vector<MaterialConstantDef> m_constants;
 
-        std::unique_ptr<ITechsetCreator> m_techset_creator;
+        std::unique_ptr<techset::ICreatorIW4> m_techset_creator;
     };
 
     class MaterialLoader final : public AssetCreator<AssetMaterial>
@@ -1361,7 +1363,7 @@ namespace
             }
             catch (const GdtReadingException& e)
             {
-                std::cerr << std::format("Error while trying to load material from gdt: {} @ GdtEntry \"{}\"\n", e.what(), entry->m_name);
+                con::error("Error while trying to load material from gdt: {} @ GdtEntry \"{}\"", e.what(), entry->m_name);
             }
 
             return AssetCreationResult::Failure();
@@ -1374,10 +1376,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialCompiler(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateCompilerIW4(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath, gdt);
     }
-} // namespace IW4
+} // namespace material

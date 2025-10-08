@@ -4,6 +4,8 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysPresetT6.h"
+#include "PhysPreset/PhysPresetCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -18,13 +20,13 @@ namespace
     public:
         RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
             : m_search_path(searchPath),
-              m_info_string_loader(memory, searchPath, zone)
+              m_info_string_loader(memory, zone)
         {
         }
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("physic/{}", assetName);
+            const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -32,7 +34,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
             {
-                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();
             }
 
@@ -41,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderPhysPreset m_info_string_loader;
+        phys_preset::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawPhysPresetLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace phys_preset

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace raw_file
 {
-    std::unique_ptr<AssetCreator<AssetRawFile>> CreateRawFileLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetRawFile>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace raw_file

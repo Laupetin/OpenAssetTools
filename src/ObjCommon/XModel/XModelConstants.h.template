@@ -1,0 +1,59 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See JsonXModel.h.template.
+// Do not modify, changes will be lost.
+#pragma once
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+namespace GAME
+{
+    inline const char* HITLOC_NAMES[]{
+        "none",
+        "helmet",
+        "head",
+        "neck",
+        "torso_upper",
+#if defined(FEATURE_T6)
+        "torso_middle",
+#endif
+        "torso_lower",
+        "right_arm_upper",
+        "left_arm_upper",
+        "right_arm_lower",
+        "left_arm_lower",
+        "right_hand",
+        "left_hand",
+        "right_leg_upper",
+        "left_leg_upper",
+        "right_leg_lower",
+        "left_leg_lower",
+        "right_foot",
+        "left_foot",
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5) || defined(FEATURE_T6)
+        "gun",
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T6)
+        "shield",
+#endif
+#endif
+    };
+    static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
+} // namespace GAME

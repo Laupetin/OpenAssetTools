@@ -4,6 +4,7 @@
 #include "Game/IW5/ObjConstantsIW5.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderWeaponIW5.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read weapon gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read weapon gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
@@ -40,14 +41,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        InfoStringLoaderWeapon m_info_string_loader;
+        weapon::InfoStringLoaderIW5 m_info_string_loader;
     };
 } // namespace
 
-namespace IW5
+namespace weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateGdtWeaponLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetWeapon>> CreateGdtLoaderIW5(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderWeapon>(memory, searchPath, gdt, zone);
     }
-} // namespace IW5
+} // namespace weapon

@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysConstraintsT6.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -31,7 +32,7 @@ namespace
             InfoString infoString;
             if (!infoString.FromGdtProperties(*gdtEntry))
             {
-                std::cerr << std::format("Failed to read phys constraints gdt entry: \"{}\"\n", assetName);
+                con::error("Failed to read phys constraints gdt entry: \"{}\"", assetName);
                 return AssetCreationResult::Failure();
             }
 
@@ -40,15 +41,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        InfoStringLoaderPhysConstraints m_info_string_loader;
+        phys_constraints::InfoStringLoaderT6 m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace phys_constraints
 {
-    std::unique_ptr<AssetCreator<AssetPhysConstraints>>
-        CreateGdtPhysConstraintsLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetPhysConstraints>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderPhysConstraints>(memory, searchPath, gdt, zone);
     }
-} // namespace T6
+} // namespace phys_constraints

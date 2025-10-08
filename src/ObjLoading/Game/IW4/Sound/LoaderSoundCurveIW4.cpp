@@ -4,6 +4,8 @@
 #include "ObjLoading.h"
 #include "Parsing/Graph2D/Graph2DReader.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Sound/SoundCurveCommon.h"
+#include "Utils/Logging/Log.h"
 
 #include <cstring>
 #include <format>
@@ -25,7 +27,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("soundaliases/{}.vfcurve", assetName);
+            const auto fileName = sound_curve::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -37,7 +39,7 @@ namespace
 
             if (sndCurveData->knots.size() > std::extent_v<decltype(SndCurve::knots)>)
             {
-                std::cerr << std::format("Failed to load SndCurve \"{}\": Too many knots ({})\n", assetName, sndCurveData->knots.size());
+                con::error("Failed to load SndCurve \"{}\": Too many knots ({})", assetName, sndCurveData->knots.size());
                 return AssetCreationResult::Failure();
             }
 
@@ -69,10 +71,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace sound_curve
 {
-    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateSoundCurveLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderSoundCurve>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace sound_curve

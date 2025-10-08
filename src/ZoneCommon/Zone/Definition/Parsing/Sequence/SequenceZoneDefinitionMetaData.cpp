@@ -1,5 +1,6 @@
 #include "SequenceZoneDefinitionMetaData.h"
 
+#include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 #include "Zone/Definition/Parsing/Matcher/ZoneDefinitionMatcherFactory.h"
 
@@ -114,11 +115,11 @@ namespace
         }
 
         const auto keyPos = keyToken.GetPos();
-        std::cerr << std::format("Warning: {} L{}: Zone definition \">type,{}\" is deprecated and should be removed. {}\n",
-                                 keyPos.m_filename.get(),
-                                 keyPos.m_line,
-                                 keyToken.FieldValue(),
-                                 deprecationSuggestedAction);
+        con::error("Warning: {} L{}: Zone definition \">type,{}\" is deprecated and should be removed. {}",
+                   keyPos.m_filename.get(),
+                   keyPos.m_line,
+                   keyToken.FieldValue(),
+                   deprecationSuggestedAction);
     }
 } // namespace
 

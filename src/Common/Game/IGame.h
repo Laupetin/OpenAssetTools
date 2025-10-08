@@ -1,10 +1,9 @@
 #pragma once
+
 #include "GameLanguage.h"
 
 #include <type_traits>
 #include <vector>
-
-class Zone;
 
 enum class GameId
 {
@@ -15,6 +14,22 @@ enum class GameId
     T6,
 
     COUNT
+};
+
+// The full uppercase names are macros in the standard lib
+// So unfortunately not usable as values in the enum
+enum class GameEndianness
+{
+    /* Little endian */
+    LE,
+    /* Big endian */
+    BE
+};
+
+enum class GameWordSize
+{
+    ARCH_32,
+    ARCH_64
 };
 
 static constexpr const char* GameId_Names[]{
@@ -39,9 +54,6 @@ public:
     [[nodiscard]] virtual GameId GetId() const = 0;
     [[nodiscard]] virtual const std::string& GetFullName() const = 0;
     [[nodiscard]] virtual const std::string& GetShortName() const = 0;
-    virtual void AddZone(Zone* zone) = 0;
-    virtual void RemoveZone(Zone* zone) = 0;
-    [[nodiscard]] virtual const std::vector<Zone*>& GetZones() const = 0;
     [[nodiscard]] virtual const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const = 0;
 
     static IGame* GetGameById(GameId gameId);

@@ -8,8 +8,7 @@
 
 #include <memory>
 
-namespace T6
+namespace phys_constraints
 {
-    std::unique_ptr<AssetCreator<AssetPhysConstraints>>
-        CreateGdtPhysConstraintsLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetPhysConstraints>> CreateGdtLoaderT6(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
+} // namespace phys_constraints
