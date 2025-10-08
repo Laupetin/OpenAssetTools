@@ -1,16 +1,15 @@
 #pragma once
 
-#include "Game/T6/Material/JsonMaterialLoaderT6.h"
-
 #include "BinarySpacePartitionTreePreCalc.h"
-#include "TriangleSort.h"
 #include "CustomMapConsts.h"
+#include "CustomMapOptions.h"
 #include "Util.h"
+
+#include "Game/T6/Material/JsonMaterialLoaderT6.h"
 #include "Utils/Pack.h"
-#include <float.h>
 
 #include <nlohmann/json.hpp>
-using json = nlohmann::json;
+using namespace nlohmann;
 
 class CustomMapLinker
 {

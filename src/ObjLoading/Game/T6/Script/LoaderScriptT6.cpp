@@ -44,10 +44,10 @@ namespace
     };
 } // namespace
 
-namespace script
+namespace T6
 {
-    std::unique_ptr<AssetCreator<AssetScript>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetScript>> CreateScriptLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ScriptLoader>(memory, searchPath);
     }
-} // namespace script
+} // namespace T6

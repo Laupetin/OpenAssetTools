@@ -1,46 +1,26 @@
 #pragma once
 
-
 #include <string>
 
+// do not change any values in this header file
+
 #define DYN_ENT_COUNT 0
-
-// the clipMap->cmodels[0].leaf.terrainContents takes precendence over leaf and material terrain contents
-
-// material flags determine the features of the surface
-// unsure which flag type changes what right now
-// -1 results in: no running, water splashes all the time, low friction, slanted angles make you slide very fast
-// 1 results in: normal surface features, grenades work, seems normal
-#define MATERIAL_SURFACE_FLAGS 1
-#define MATERIAL_CONTENT_FLAGS 1
-
-// terrain/world flags: does not change the type of terrain or what features they have
-// from testing, as long at it isn't 0 things will work correctly
-#define LEAF_TERRAIN_CONTENTS 1 
-#define WORLD_TERRAIN_CONTENTS 1
 
 std::string missingImageName = "missing_image";
 std::string colorOnlyImageName = "color_only_image";
 
-#define MAX_AABB_SIZE 512 // maximum size a BSP node can be before it becomes a leaf
 
-#define LIGHTGRID_COLOUR 128 // global lighting colour
-
-// do not change
 #define MAX_COL_VERTS (UINT16_MAX - 1) // max amount of collision verts a map can have
 
-// do not change
 #define DEFAULT_LIGHT_INDEX 0
 #define SUN_LIGHT_INDEX 1
 
-// do not change
 enum SMODEL_FLAGS
 {
     SMODEL_FLAG_NO_SHADOW = 1,
     SMODEL_FLAG_IS_LIT = 2
 };
 
-// do not change
 enum GFX_SURFACE_FLAGS
 {
     GFX_SURFACE_CASTS_SUN_SHADOW = 0x1,

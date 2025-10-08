@@ -5,7 +5,7 @@
 #include "Game/T6/T6.h"
 using namespace T6;
 
-class CustomMapInfo
+class ProjectCreator
 {
 public:
     static customMapInfo* createCustomMapInfo(std::string& projectName, ISearchPath& searchPath);

@@ -22,25 +22,19 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
+            // custom maps must have a map_gfx file
             auto mapGfxFile = m_search_path.Open("custom_map/map_gfx.fbx");
             if (!mapGfxFile.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            printf("Loading map data...\n");
-
-            // create map info from the obj file
-            customMapInfo* mapInfo = CustomMapInfo::createCustomMapInfo(m_zone.m_name, m_search_path);
+            // create map info from the fbx file
+            customMapInfo* mapInfo = ProjectCreator::createCustomMapInfo(m_zone.m_name, m_search_path);
             if (mapInfo == NULL)
                 return AssetCreationResult::Failure();
-
-            printf("Creating map from data...\n");
             
             // linker will add all the assets needed
             CustomMapLinker* linker = new CustomMapLinker(m_memory, m_search_path, m_zone, context);
             bool result = linker->linkCustomMap(mapInfo);
-
-            //auto gfxWorldAsset = context.LoadDependency<AssetFootstepTable>("default_1st_person");
-            //return AssetCreationResult::Success(gfxWorldAsset);
 
             if (result)
             {

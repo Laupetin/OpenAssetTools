@@ -5,7 +5,7 @@ Heavily modified version of https://github.com/sudeshnapal12/Space-Partitioning-
 Credit to sudeshnapal12
 
 
-Precalculated, evenly sized BSPs are much more efficient and smaller compared to dynamically creating them
+BSP leaf sizes are precalculated, evenly sized BSPs are much more efficient and smaller compared to dynamically creating them
 */
 
 #include <algorithm>
@@ -16,7 +16,7 @@ Precalculated, evenly sized BSPs are much more efficient and smaller compared to
 #include <sstream>
 #include <vector>
 
-#include "CustomMapConsts.h"
+#define MAX_AABB_SIZE 512 // maximum size a BSP node can be before it becomes a leaf
 
 enum PlaneAxis
 {

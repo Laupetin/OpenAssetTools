@@ -336,7 +336,6 @@ namespace T6
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepFxTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetZBarrier>>(memory));
-            // custom maps have no default
         }
 
         void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -389,7 +388,6 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepFxTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
-            //collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
         }
 
         void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
@@ -451,6 +449,7 @@ namespace T6
             collection.AddAssetCreator(CreateRawZBarrierLoader(memory, searchPath, zone));
             collection.AddAssetCreator(CreateGdtZBarrierLoader(memory, searchPath, gdt, zone));
 
+            // The Custom Map Loader uses gfxworld as the starting asset
             collection.AddAssetCreator(CreateCustomMapLoader(memory, searchPath, zone));
         }
     } // namespace
