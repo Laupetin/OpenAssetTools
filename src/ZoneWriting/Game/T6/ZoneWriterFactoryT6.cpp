@@ -14,7 +14,6 @@
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
-#include "Writing/Steps/StepWriteZoneRSA.h"
 #include "Writing/Steps/StepWriteZoneSizes.h"
 #include "Zone/XChunk/XChunkProcessorDeflate.h"
 #include "Zone/XChunk/XChunkProcessorSalsa20Encryption.h"
@@ -100,9 +99,9 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) co
 {
     auto writer = std::make_unique<ZoneWriter>();
 
-    bool isSecure = true;
+    // TODO Support signed fastfiles
+    bool isSecure = false;
     bool isEncrypted = true;
-    bool isOfficial = true;
 
     SetupBlocks(*writer);
 
@@ -112,11 +111,7 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) co
     writer->AddWritingStep(std::move(contentInMemory));
 
     // Write zone header
-    writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, isOfficial, isEncrypted)));
-
-    // write RSA
-    if (isSecure)
-        writer->AddWritingStep(std::make_unique<StepWriteZoneRSA>(zone.m_name));
+    writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, false, isEncrypted)));
 
     // Setup loading XChunks from the zone from this point on.
     ICapturedDataProvider* dataToSignProvider;

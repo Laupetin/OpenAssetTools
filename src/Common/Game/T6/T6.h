@@ -302,7 +302,6 @@ namespace T6
     using AssetFootstepTable = Asset<ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef>;
     using AssetFootstepFxTable = Asset<ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef>;
     using AssetZBarrier = Asset<ASSET_TYPE_ZBARRIER, ZBarrierDef>;
-    using AssetCustomMap = Asset<ASSET_TYPE_CUSTOM_MAP, customMapInfo>;
 } // namespace T6
 
 DEFINE_ASSET_NAME_ACCESSOR(T6::AssetPhysPreset, name);

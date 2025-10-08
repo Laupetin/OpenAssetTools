@@ -304,8 +304,6 @@ namespace T6
         ASSET_TYPE_REPORT = 0x3E,
         ASSET_TYPE_DEPEND = 0x3F,
         ASSET_TYPE_FULL_COUNT = 0x40,
-
-        ASSET_TYPE_CUSTOM_MAP = 0x41
     };
 
     enum XFileBlock

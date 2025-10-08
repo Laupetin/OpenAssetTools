@@ -19,6 +19,3 @@
 [submodule "thirdparty/lz4"]
 	path = thirdparty/lz4
 	url = https://github.com/lz4/lz4.git
-[submodule "thirdparty/gsc-tool"]
-	path = thirdparty/gsc-tool
-	url = https://github.com/xensik/gsc-tool.git
