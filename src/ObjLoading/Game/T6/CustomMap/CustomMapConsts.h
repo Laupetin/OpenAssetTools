@@ -61,7 +61,7 @@ enum GFX_SURFACE_FLAGS
 #define DEFAULT_SURFACE_LIGHT 1
 #define DEFAULT_SURFACE_LIGHTMAP 0
 #define DEFAULT_SURFACE_REFLECTION_PROBE 0
-#define DEFAULT_SURFACE_FLAGS 0
+#define DEFAULT_SURFACE_FLAGS (GFX_SURFACE_CASTS_SUN_SHADOW | GFX_SURFACE_CASTS_SHADOW)
 
 const std::vector<std::string> spawnpointDefenderTypeArray = {
     "mp_ctf_spawn_allies",
