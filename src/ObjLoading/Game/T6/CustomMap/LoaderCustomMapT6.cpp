@@ -53,10 +53,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace custom_map
 {
-    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<CustomMapLoader>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace custom_map

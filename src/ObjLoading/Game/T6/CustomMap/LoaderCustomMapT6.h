@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace custom_map
 {
-    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<T6::AssetGfxWorld>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace custom_map
