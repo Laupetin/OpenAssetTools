@@ -258,19 +258,8 @@ private:
         memset(gfxWorld->dpvs.surfaceVisData[1], 0, surfaceCount);
         memset(gfxWorld->dpvs.surfaceVisData[2], 0, surfaceCount);
         memset(gfxWorld->dpvs.surfaceVisDataCameraSaved, 0, surfaceCount);
-
-        for (unsigned int i = 0; i < surfaceCount; i++)
-        {
-            if ((gfxWorld->dpvs.surfaces[i].flags & GFX_SURFACE_CASTS_SHADOW) == 0)
-                gfxWorld->dpvs.surfaceCastsShadow[i] = 0;
-            else
-                gfxWorld->dpvs.surfaceCastsShadow[i] = 1;
-
-            if ((gfxWorld->dpvs.surfaces[i].flags & GFX_SURFACE_CASTS_SUN_SHADOW) == 0)
-                gfxWorld->dpvs.surfaceCastsSunShadow[i] = 0;
-            else
-                gfxWorld->dpvs.surfaceCastsSunShadow[i] = 1;
-        }
+        memset(gfxWorld->dpvs.surfaceCastsShadow, 0, surfaceCount);
+        memset(gfxWorld->dpvs.surfaceCastsSunShadow, 0, surfaceCount);
 
         gfxWorld->dpvs.litSurfsBegin = 0;
         gfxWorld->dpvs.litSurfsEnd = surfaceCount;
@@ -465,9 +454,10 @@ private:
         for (unsigned int i = 0; i < gfxWorld->primaryLightCount; i++)
         {
             gfxWorld->shadowGeom[i].smodelCount = 0;
-            gfxWorld->shadowGeom[i].surfaceCount = gfxWorld->surfaceCount;
+            gfxWorld->shadowGeom[i].surfaceCount = 0;
             gfxWorld->shadowGeom[i].smodelIndex = NULL;
-            gfxWorld->shadowGeom[i].sortedSurfIndex = gfxWorld->dpvs.sortedSurfIndex;
+            gfxWorld->shadowGeom[i].sortedSurfIndex = new uint16_t[gfxWorld->surfaceCount];
+            memset(gfxWorld->shadowGeom[i].sortedSurfIndex, 0, sizeof(uint16_t) * gfxWorld->surfaceCount);
         }
 
         gfxWorld->lightRegion = new GfxLightRegion[gfxWorld->primaryLightCount];
