@@ -32,9 +32,7 @@
 
 #include <format>
 #include <iostream>
-#include <nlohmann/json.hpp>
 
-using namespace nlohmann;
 using namespace GAME;
 
 namespace
@@ -42,19 +40,17 @@ namespace
     class JsonLoader
     {
     public:
-        JsonLoader(std::istream& stream, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-            : m_stream(stream),
-              m_memory(memory),
+        JsonLoader(MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+            : m_memory(memory),
               m_context(context),
               m_registration(registration)
         {
         }
 
-        bool Load(Material& material) const
-        {
-            const auto jRoot = json::parse(m_stream);
-            std::string type;
-            unsigned version;
+        bool Load(json& jRoot, Material& material) const
+		{
+			std::string type;
+			unsigned version;
 
             jRoot.at("_type").get_to(type);
             jRoot.at("_version").get_to(version);
@@ -505,7 +501,6 @@ namespace
             return true;
         }
 
-        std::istream& m_stream;
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         AssetRegistration<AssetMaterial>& m_registration;
@@ -515,10 +510,20 @@ namespace
 namespace GAME
 {
     bool LoadMaterialAsJson(
-        std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-    {
-        const JsonLoader loader(stream, memory, context, registration);
-
-        return loader.Load(material);
-    }
+		std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+	{
+		const JsonLoader loader(memory, context, registration);
+	
+		auto jRoot = json::parse(stream);
+	
+		return loader.Load(jRoot, material);
+	}
+	
+	bool LoadMaterialAsJson(
+		json& json, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+	{
+		const JsonLoader loader(memory, context, registration);
+	
+		return loader.Load(json, material);
+	}
 } // namespace GAME
