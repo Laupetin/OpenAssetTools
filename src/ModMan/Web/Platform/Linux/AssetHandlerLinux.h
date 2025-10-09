@@ -1,16 +1,18 @@
 #pragma once
 
+#include "Web/Platform/Platform.h"
+
 #include <webview/macros.h>
 
 #if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
 
 #include "Web/WebViewLib.h"
 
-namespace gtk
+namespace PLATFORM_NAMESPACE_LINUX
 {
     constexpr auto URL_PREFIX = "modman://localhost/";
 
-    void InstallCustomProtocolHandler(webview::webview& wv);
-} // namespace gtk
+    void InstallAssetHandler(webview::webview& wv);
+} // namespace PLATFORM_NAMESPACE_LINUX
 
 #endif

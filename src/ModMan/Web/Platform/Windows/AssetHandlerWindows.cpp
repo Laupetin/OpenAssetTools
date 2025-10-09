@@ -1,7 +1,8 @@
-#include "AssetHandlerEdge.h"
+#include "AssetHandlerWindows.h"
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
+#include "PlatformUtilsWindows.h"
 #include "Web/UiAssets.h"
 
 #include <Windows.h>
@@ -11,39 +12,13 @@
 #include <webview/detail/backends/win32_edge.hh>
 #include <wrl/event.h>
 
+using namespace PLATFORM_NAMESPACE_WINDOWS;
+
 namespace
 {
     constexpr auto LOCALHOST_PREFIX = "http://localhost:";
 
     std::unordered_map<std::string, UiFile> assetLookup;
-
-    std::string WideStringToString(const std::wstring& wideString)
-    {
-        if (wideString.empty())
-            return "";
-
-        const auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wideString.data(), static_cast<int>(wideString.size()), nullptr, 0, nullptr, nullptr);
-        if (sizeNeeded <= 0)
-            throw std::runtime_error(std::format("WideCharToMultiByte() failed: {}", sizeNeeded));
-
-        std::string result(sizeNeeded, 0);
-        WideCharToMultiByte(CP_UTF8, 0, wideString.data(), static_cast<int>(wideString.size()), result.data(), sizeNeeded, nullptr, nullptr);
-        return result;
-    }
-
-    std::wstring StringToWideString(const std::string& string)
-    {
-        if (string.empty())
-            return L"";
-
-        const auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), nullptr, 0);
-        if (sizeNeeded <= 0)
-            throw std::runtime_error(std::format("MultiByteToWideChar() failed: {}", sizeNeeded));
-
-        std::wstring result(sizeNeeded, 0);
-        MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), result.data(), sizeNeeded);
-        return result;
-    }
 
     std::wstring HeadersForAssetName(const std::string& assetName, const size_t contentLength)
     {
@@ -99,9 +74,9 @@ namespace
                 return S_OK;
 #endif
 
-            if (uri.starts_with(edge::URL_PREFIX))
+            if (uri.starts_with(URL_PREFIX))
             {
-                const auto asset = uri.substr(std::char_traits<char>::length(edge::URL_PREFIX) - 1);
+                const auto asset = uri.substr(std::char_traits<char>::length(URL_PREFIX) - 1);
 
                 const auto foundUiFile = assetLookup.find(asset);
                 if (foundUiFile != assetLookup.end())
@@ -142,9 +117,9 @@ namespace
     }
 } // namespace
 
-namespace edge
+namespace PLATFORM_NAMESPACE_WINDOWS
 {
-    void InstallCustomProtocolHandler(webview::webview& wv)
+    void InstallAssetHandler(webview::webview& wv)
     {
         assetLookup = ui::BuildUiFileLookup();
 
@@ -182,6 +157,6 @@ namespace edge
             std::cerr << "Failed to add resource requested filter\n";
         }
     }
-} // namespace edge
+} // namespace PLATFORM_NAMESPACE_WINDOWS
 
 #endif

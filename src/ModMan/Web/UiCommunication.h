@@ -42,7 +42,6 @@ namespace ui
                     }
 
                     fn(std::move(param));
-
                     return "";
                 });
     }
@@ -81,7 +80,6 @@ namespace ui
                     }
 
                     auto result = fn(std::move(param));
-
                     return nlohmann::json(result).dump();
                 });
     }
@@ -121,6 +119,7 @@ namespace ui
                 }
 
                 fn(id, std::move(param));
+                return "";
             },
             nullptr);
     }

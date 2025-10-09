@@ -1,7 +1,7 @@
 ﻿#include "GitVersion.h"
-#include "Web/Edge/AssetHandlerEdge.h"
-#include "Web/Gtk/AssetHandlerGtk.h"
+#include "Web/Platform/AssetHandler.h"
 #include "Web/UiCommunication.h"
+#include "Web/Binds/DialogBinds.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
 
@@ -13,6 +13,7 @@
 #include <thread>
 
 using namespace std::string_literals;
+using namespace PLATFORM_NAMESPACE;
 
 namespace
 {
@@ -55,6 +56,8 @@ namespace
             w.set_size(1280, 640, WEBVIEW_HINT_NONE);
             w.set_size(480, 320, WEBVIEW_HINT_MIN);
 
+            ui::RegisterDialogHandlerBinds(w);
+
             // A binding that counts up or down and immediately returns the new value.
             ui::Bind<std::string, std::string>(w,
                                                "greet",
@@ -64,36 +67,12 @@ namespace
                                                    return std::format("Hello from C++ {}!", name);
                                                });
 
-            // A binding that counts up or down and immediately returns the new value.
-            ui::Bind(w,
-                     "debug",
-                     []()
-                     {
-                         con::info("Debug");
-                     });
-
-            // A binding that creates a new thread and returns the result at a later time.
-            ui::BindAsync(w,
-                          "compute",
-                          [&](const std::string& id)
-                          {
-                              // Create a thread and forget about it for the sake of simplicity.
-                              std::thread(
-                                  [&, id]
-                                  {
-                                      // Simulate load.
-                                      std::this_thread::sleep_for(std::chrono::seconds(5));
-                                      ui::PromiseResolve(w, id, 42);
-                                  })
-                                  .detach();
-                          });
-
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
-            edge::InstallCustomProtocolHandler(w);
-            constexpr auto urlPrefix = edge::URL_PREFIX;
+            InstallAssetHandler(w);
+            constexpr auto urlPrefix = URL_PREFIX;
 #elif defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
-            gtk::InstallCustomProtocolHandler(w);
-            constexpr auto urlPrefix = gtk::URL_PREFIX;
+            InstallAssetHandler(w);
+            constexpr auto urlPrefix = URL_PREFIX;
 #else
 #error Unsupported platform
 #endif
