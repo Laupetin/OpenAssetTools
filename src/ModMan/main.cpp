@@ -1,7 +1,7 @@
 ﻿#include "GitVersion.h"
+#include "Web/Binds/DialogBinds.h"
 #include "Web/Platform/AssetHandler.h"
 #include "Web/UiCommunication.h"
-#include "Web/Binds/DialogBinds.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
 

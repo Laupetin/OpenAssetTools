@@ -2,9 +2,9 @@
 
 #ifdef _WIN32
 
+#include <Windows.h>
 #include <exception>
 #include <format>
-#include <Windows.h>
 
 namespace PLATFORM_NAMESPACE_WINDOWS
 {
