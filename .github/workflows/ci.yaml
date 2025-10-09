@@ -50,18 +50,19 @@ jobs:
           PREMAKE_NO_PROMPT: 1
         run: ./generate.sh ${{ matrix.premake_flags }}
 
+      - name: Build UI
+        working-directory: ${{ github.workspace }}
+        if: ${{ matrix.build_arch == 'x64' }}
+        run: |
+          npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run lint
+          npm --prefix src/ModManUi run build
+
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
-          npm --prefix src/ModManUi install
-          npm --prefix src/ModManUi run build
           make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
           chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
-
-      - name: Lint
-        working-directory: ${{ github.workspace }}
-        run: |
-          npm --prefix src/ModManUi run lint
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
@@ -105,17 +106,17 @@ jobs:
           PREMAKE_NO_PROMPT: 1
         run: ./generate.bat --modman
 
-      - name: Build
+      - name: Build UI
         working-directory: ${{ github.workspace }}
         run: |
           npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run lint
           npm --prefix src/ModManUi run build
-          msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
-      - name: Lint
+      - name: Build
         working-directory: ${{ github.workspace }}
         run: |
-          npm --prefix src/ModManUi run lint
+          msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
