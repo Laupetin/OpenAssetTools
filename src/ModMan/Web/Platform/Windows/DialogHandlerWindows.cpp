@@ -1,4 +1,4 @@
-#include "DialogHandlerWindows.h"
+#include "Web/Platform/DialogHandler.h"
 
 #ifdef _WIN32
 
@@ -12,7 +12,7 @@ using namespace PLATFORM_NAMESPACE_WINDOWS;
 
 namespace
 {
-    bool SetFilters(IFileDialog* pFileOpen, const std::vector<FileDialogFilter>& filters)
+    bool SetFilters(IFileDialog* pFileOpen, const std::vector<ui::FileDialogFilter>& filters)
     {
         if (filters.empty())
             return true;
@@ -48,9 +48,9 @@ namespace
         return SUCCEEDED(result);
     }
 
-    DialogCallbackResultType ShowFileDialog(IFileDialog* pFileDialog, std::optional<std::string>& result)
+    ui::DialogCallbackResultType ShowFileDialog(IFileDialog* pFileDialog, std::optional<std::string>& result)
     {
-        DialogCallbackResultType resultType = FAILED;
+        auto resultType = ui::DialogCallbackResultType::FAILED;
 
         auto hr = pFileDialog->Show(nullptr);
         if (SUCCEEDED(hr))
@@ -68,42 +68,22 @@ namespace
                     result = WideStringToString(pszFilePath);
                     CoTaskMemFree(pszFilePath);
 
-                    resultType = SUCCESSFUL;
+                    resultType = ui::DialogCallbackResultType::SUCCESSFUL;
                 }
                 pItem->Release();
             }
         }
         else if (HRESULT_FROM_WIN32(ERROR_CANCELLED) == hr)
         {
-            resultType = CANCELLED;
+            resultType = ui::DialogCallbackResultType::CANCELLED;
         }
 
         return resultType;
     }
 } // namespace
 
-namespace PLATFORM_NAMESPACE_WINDOWS
+namespace ui
 {
-    DialogWithCallback::DialogWithCallback() = default;
-
-    void DialogWithCallback::SetCallback(callback_t callback)
-    {
-        m_callback = std::move(callback);
-    }
-
-    FileDialogFilter::FileDialogFilter(std::string name, std::string filter)
-        : m_name(std::move(name)),
-          m_filter(std::move(filter))
-    {
-    }
-
-    FileDialog::FileDialog() = default;
-
-    void FileDialog::AddFilter(std::string name, std::string filter)
-    {
-        m_filters.emplace_back(std::move(name), std::move(filter));
-    }
-
     OpenFileDialog::OpenFileDialog() = default;
 
     void OpenFileDialog::OpenAsync()
@@ -119,11 +99,11 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 const auto initResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
                 if (!SUCCEEDED(initResult))
                 {
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
-                DialogCallbackResultType resultType = FAILED;
+                auto resultType = DialogCallbackResultType::FAILED;
                 std::optional<std::string> result = std::nullopt;
                 IFileOpenDialog* pFileOpen;
 
@@ -157,11 +137,11 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 const auto initResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
                 if (!SUCCEEDED(initResult))
                 {
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
-                DialogCallbackResultType resultType = FAILED;
+                auto resultType = DialogCallbackResultType::FAILED;
                 std::optional<std::string> result = std::nullopt;
                 IFileSaveDialog* pFileSave;
 
@@ -194,7 +174,7 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 const auto initResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
                 if (!SUCCEEDED(initResult))
                 {
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
@@ -205,7 +185,7 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 if (!SUCCEEDED(hr))
                 {
                     CoUninitialize();
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
@@ -214,7 +194,7 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 {
                     pFileOpen->Release();
                     CoUninitialize();
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
@@ -222,7 +202,7 @@ namespace PLATFORM_NAMESPACE_WINDOWS
                 {
                     pFileOpen->Release();
                     CoUninitialize();
-                    callback(FAILED, std::nullopt);
+                    callback(DialogCallbackResultType::FAILED, std::nullopt);
                     return;
                 }
 
@@ -235,5 +215,5 @@ namespace PLATFORM_NAMESPACE_WINDOWS
             })
             .detach();
     }
-} // namespace PLATFORM_NAMESPACE_WINDOWS
+} // namespace ui
 #endif

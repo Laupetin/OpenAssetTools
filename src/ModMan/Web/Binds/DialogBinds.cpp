@@ -5,8 +5,6 @@
 
 #include "Json/JsonExtension.h"
 
-using namespace PLATFORM_NAMESPACE;
-
 namespace
 {
     class FileDialogFilterDto
@@ -34,9 +32,12 @@ namespace
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(SaveFileDialogDto, filters);
 
-    void ReplyWithDialogResult(webview::webview& wv, const std::string& id, const DialogCallbackResultType resultType, const std::optional<std::string>& result)
+    void ReplyWithDialogResult(webview::webview& wv,
+                               const std::string& id,
+                               const ui::DialogCallbackResultType resultType,
+                               const std::optional<std::string>& result)
     {
-        if (resultType == FAILED)
+        if (resultType == ui::DialogCallbackResultType::FAILED)
             ui::PromiseReject(wv, id, result);
         else
             ui::PromiseResolve(wv, id, result);
@@ -44,9 +45,9 @@ namespace
 
     void OpenFileDialogBind(webview::webview& wv, const std::string& id, const std::optional<OpenFileDialogDto>& dto)
     {
-        OpenFileDialog dialog;
+        ui::OpenFileDialog dialog;
         dialog.SetCallback(
-            [&wv, id](const DialogCallbackResultType resultType, const std::optional<std::string>& result)
+            [&wv, id](const ui::DialogCallbackResultType resultType, const std::optional<std::string>& result)
             {
                 ReplyWithDialogResult(wv, id, resultType, result);
             });
@@ -64,9 +65,9 @@ namespace
 
     void SaveFileDialogBind(webview::webview& wv, const std::string& id, const std::optional<SaveFileDialogDto>& dto)
     {
-        SaveFileDialog dialog;
+        ui::SaveFileDialog dialog;
         dialog.SetCallback(
-            [&wv, id](const DialogCallbackResultType resultType, const std::optional<std::string>& result)
+            [&wv, id](const ui::DialogCallbackResultType resultType, const std::optional<std::string>& result)
             {
                 ReplyWithDialogResult(wv, id, resultType, result);
             });
@@ -84,9 +85,9 @@ namespace
 
     void FolderSelectDialogBind(webview::webview& wv, const std::string& id)
     {
-        FolderSelectDialog dialog;
+        ui::FolderSelectDialog dialog;
         dialog.SetCallback(
-            [&wv, id](const DialogCallbackResultType resultType, const std::optional<std::string>& result)
+            [&wv, id](const ui::DialogCallbackResultType resultType, const std::optional<std::string>& result)
             {
                 ReplyWithDialogResult(wv, id, resultType, result);
             });
