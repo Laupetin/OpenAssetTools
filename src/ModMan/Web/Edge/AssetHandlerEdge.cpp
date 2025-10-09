@@ -107,7 +107,7 @@ namespace
                 if (foundUiFile != assetLookup.end())
                 {
                     const Microsoft::WRL::ComPtr<IStream> responseStream =
-                        SHCreateMemStream(static_cast<const BYTE*>(foundUiFile->second.data), foundUiFile->second.dataSize);
+                        SHCreateMemStream(static_cast<const BYTE*>(foundUiFile->second.data), static_cast<UINT>(foundUiFile->second.dataSize));
 
                     const auto headers = HeadersForAssetName(asset, foundUiFile->second.dataSize);
                     if (!SUCCEEDED(environment->CreateWebResourceResponse(responseStream.Get(), 200, L"OK", headers.data(), &response)))
