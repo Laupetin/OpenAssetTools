@@ -33,7 +33,11 @@ namespace ui
                             con::error("Webview params are not an array: {}", req);
                             return "";
                         }
-                        param = json.at(0).get<TInput>();
+
+                        if (json.empty())
+                            param = nlohmann::json().get<TInput>();
+                        else
+                            param = json.at(0).get<TInput>();
                     }
                     catch (const nlohmann::json::exception& e)
                     {
@@ -71,7 +75,11 @@ namespace ui
                             con::error("Webview params are not an array: {}", req);
                             return "";
                         }
-                        param = json.at(0).get<TInput>();
+
+                        if (json.empty())
+                            param = nlohmann::json().get<TInput>();
+                        else
+                            param = json.at(0).get<TInput>();
                     }
                     catch (const nlohmann::json::exception& e)
                     {
@@ -110,7 +118,11 @@ namespace ui
                         con::error("Webview params are not an array: {}", req);
                         return "";
                     }
-                    param = json.at(0).get<TInput>();
+
+                    if (json.empty())
+                        param = nlohmann::json().get<TInput>();
+                    else
+                        param = json.at(0).get<TInput>();
                 }
                 catch (const nlohmann::json::exception& e)
                 {
