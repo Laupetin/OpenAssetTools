@@ -57,6 +57,13 @@ jobs:
           make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
           chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
 
+      - name: Lint
+        working-directory: ${{ github.workspace }}
+        run: |
+          export NVM_DIR=/root/.nvm
+          source $NVM_DIR/nvm.sh
+          npm --prefix src/ModManUi run lint
+
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
         run: |
