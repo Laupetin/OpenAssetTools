@@ -39,7 +39,7 @@ namespace
         }
 
         COMDLG_FILTERSPEC wildCardSpec;
-        wildCardSpec.pszName = L"*.*";
+        wildCardSpec.pszName = L"All files";
         wildCardSpec.pszSpec = L"*.*";
         filterSpecs.emplace_back(wildCardSpec);
 

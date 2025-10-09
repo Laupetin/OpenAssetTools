@@ -55,6 +55,12 @@ namespace
             g_object_unref(fileFilter);
         }
 
+        auto* wildcardFilter = gtk_file_filter_new();
+        gtk_file_filter_set_name(wildcardFilter, "All files");
+        gtk_file_filter_add_pattern(wildcardFilter, "*.*");
+        g_list_store_append(listStore, wildcardFilter);
+        g_object_unref(wildcardFilter);
+
         gtk_file_dialog_set_filters(pDialog, G_LIST_MODEL(listStore));
         g_object_unref(listStore);
     }
