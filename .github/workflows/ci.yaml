@@ -22,11 +22,19 @@ jobs:
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y wget tar git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
+          apt-get install -y wget tar git make curl gcc-13 g++-13 gcc-13-multilib g++-13-multilib libgtk-4-dev libwebkitgtk-6.0-dev
           update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
           update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
           update-alternatives --set gcc /usr/bin/gcc-13
           update-alternatives --set g++ /usr/bin/g++-13
+
+      - name: Install node
+        run: |
+          export NVM_DIR=/root/.nvm
+          export NODE_VERSION=22
+          mkdir -p $NVM_DIR
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/refs/heads/master/install.sh | bash
+          source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION
 
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -37,11 +45,15 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh
+        run: ./generate.sh --modman
 
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
+          export NVM_DIR=/root/.nvm
+          source $NVM_DIR/nvm.sh
+          npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run build
           make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
           chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
 
@@ -79,11 +91,14 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.bat
+        run: ./generate.bat --modman
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
+        run: |
+          npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run build
+          msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
