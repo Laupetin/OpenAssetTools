@@ -1,6 +1,9 @@
-export interface NativeMethods {
-  greet: (name: string) => Promise<string>;
-}
+import type { DialogBinds } from "./DialogBinds";
+
+
+export type NativeMethods = {
+  greet(name: string): Promise<string>;
+} & DialogBinds;
 
 interface NativeEventMap {
   greeting: string;

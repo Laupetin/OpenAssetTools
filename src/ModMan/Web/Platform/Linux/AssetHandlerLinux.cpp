@@ -1,4 +1,4 @@
-#include "AssetHandlerGtk.h"
+#include "AssetHandlerLinux.h"
 
 #if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
 
@@ -6,6 +6,9 @@
 
 #include <format>
 #include <iostream>
+#include <unordered_map>
+
+using namespace PLATFORM_NAMESPACE_LINUX;
 
 namespace
 {
@@ -34,9 +37,9 @@ namespace
     }
 } // namespace
 
-namespace gtk
+namespace PLATFORM_NAMESPACE_LINUX
 {
-    void InstallCustomProtocolHandler(webview::webview& wv)
+    void InstallAssetHandler(webview::webview& wv)
     {
         const auto widget = static_cast<GtkWidget*>(wv.browser_controller().value());
         const auto webView = WEBKIT_WEB_VIEW(widget);
@@ -46,6 +49,6 @@ namespace gtk
 
         webkit_web_context_register_uri_scheme(context, "modman", ModManUriSchemeRequestCb, NULL, nullptr);
     }
-} // namespace gtk
+} // namespace PLATFORM_NAMESPACE_LINUX
 
 #endif

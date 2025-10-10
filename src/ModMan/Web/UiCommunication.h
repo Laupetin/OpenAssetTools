@@ -33,7 +33,11 @@ namespace ui
                             con::error("Webview params are not an array: {}", req);
                             return "";
                         }
-                        param = json.at(0).get<TInput>();
+
+                        if (json.empty())
+                            param = nlohmann::json().get<TInput>();
+                        else
+                            param = json.at(0).get<TInput>();
                     }
                     catch (const nlohmann::json::exception& e)
                     {
@@ -42,7 +46,6 @@ namespace ui
                     }
 
                     fn(std::move(param));
-
                     return "";
                 });
     }
@@ -72,7 +75,11 @@ namespace ui
                             con::error("Webview params are not an array: {}", req);
                             return "";
                         }
-                        param = json.at(0).get<TInput>();
+
+                        if (json.empty())
+                            param = nlohmann::json().get<TInput>();
+                        else
+                            param = json.at(0).get<TInput>();
                     }
                     catch (const nlohmann::json::exception& e)
                     {
@@ -81,7 +88,6 @@ namespace ui
                     }
 
                     auto result = fn(std::move(param));
-
                     return nlohmann::json(result).dump();
                 });
     }
@@ -112,7 +118,11 @@ namespace ui
                         con::error("Webview params are not an array: {}", req);
                         return "";
                     }
-                    param = json.at(0).get<TInput>();
+
+                    if (json.empty())
+                        param = nlohmann::json().get<TInput>();
+                    else
+                        param = json.at(0).get<TInput>();
                 }
                 catch (const nlohmann::json::exception& e)
                 {
@@ -121,6 +131,7 @@ namespace ui
                 }
 
                 fn(id, std::move(param));
+                return "";
             },
             nullptr);
     }
