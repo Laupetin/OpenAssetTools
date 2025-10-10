@@ -1,12 +1,10 @@
 import type { DialogBinds } from "./DialogBinds";
 
 
-export type NativeMethods = {
-  greet(name: string): Promise<string>;
-} & DialogBinds;
+export type NativeMethods = DialogBinds;
 
 interface NativeEventMap {
-  greeting: string;
+  
 }
 
 type WebViewExtensions = {

@@ -1,28 +1,13 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from "vue";
-import { webviewBinds, webviewAddEventListener, webviewRemoveEventListener } from "./native";
+import { ref } from "vue";
+import { webviewBinds } from "./native";
 
-const greetMsg = ref("");
-const lastPersonGreeted = ref("");
 const lastPath = ref("");
-const name = ref("");
-
-async function greet() {
-  greetMsg.value = await webviewBinds.greet(name.value);
-}
-
-function onPersonGreeted(person: string) {
-  lastPersonGreeted.value = person;
-}
 
 async function onOpenFastfileClick() {
   lastPath.value =
     (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
 }
-
-webviewAddEventListener("greeting", onPersonGreeted);
-
-onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
 </script>
 
 <template>
@@ -30,12 +15,6 @@ onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
     <h1>Welcome to ModMan</h1>
     <small>Nothing to see here yet, this is mainly for testing</small>
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." autocomplete="off" />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-    <p>The last person greeted is: {{ lastPersonGreeted }}</p>
     <p>
       <button @click="onOpenFastfileClick">Open fastfile</button>
       <span>The last path: {{ lastPath }}</span>
