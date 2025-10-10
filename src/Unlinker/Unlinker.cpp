@@ -1,19 +1,17 @@
 #include "Unlinker.h"
 
 #include "ContentLister/ContentPrinter.h"
-#include "ContentLister/ZoneDefWriter.h"
 #include "IObjLoader.h"
 #include "IObjWriter.h"
 #include "ObjWriting.h"
 #include "SearchPath/IWD.h"
 #include "SearchPath/OutputPathFilesystem.h"
-#include "SearchPath/SearchPathFilesystem.h"
-#include "SearchPath/SearchPaths.h"
 #include "UnlinkerArgs.h"
 #include "UnlinkerPaths.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
+#include "Zone/Definition/ZoneDefWriter.h"
 #include "ZoneLoading.h"
 
 #include <cassert>
@@ -21,7 +19,6 @@
 #include <format>
 #include <fstream>
 #include <regex>
-#include <set>
 
 namespace fs = std::filesystem;
 
@@ -54,12 +51,12 @@ public:
     }
 
 private:
-    _NODISCARD bool ShouldLoadObj() const
+    [[nodiscard]] bool ShouldLoadObj() const
     {
         return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST && !m_args.m_skip_obj;
     }
 
-    bool WriteZoneDefinitionFile(const Zone& zone, const fs::path& zoneDefinitionFileFolder) const
+    [[nodiscard]] bool WriteZoneDefinitionFile(const Zone& zone, const fs::path& zoneDefinitionFileFolder) const
     {
         auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
         zoneDefinitionFilePath.append(zone.m_name);
@@ -73,7 +70,7 @@ private:
         }
 
         const auto* zoneDefWriter = IZoneDefWriter::GetZoneDefWriterForGame(zone.m_game_id);
-        zoneDefWriter->WriteZoneDef(zoneDefinitionFile, m_args, zone);
+        zoneDefWriter->WriteZoneDef(zoneDefinitionFile, zone, m_args.m_use_gdt);
 
         zoneDefinitionFile.close();
 
