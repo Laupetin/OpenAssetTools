@@ -5,12 +5,15 @@
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
 
-#include <chrono>
 #include <format>
 #include <iostream>
 #include <optional>
 #include <string>
 #include <thread>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 using namespace std::string_literals;
 using namespace PLATFORM_NAMESPACE;
@@ -105,10 +108,23 @@ namespace
 
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/)
-{
 #else
 int main()
+#endif
 {
+#ifdef _WIN32
+    // Attach console if possible on Windows for stdout/stderr in console
+    if (AttachConsole(-1))
+    {
+        FILE* fDummy;
+        (void)freopen_s(&fDummy, "CONOUT$", "w", stdout);
+        (void)freopen_s(&fDummy, "CONOUT$", "w", stderr);
+        (void)freopen_s(&fDummy, "CONIN$", "r", stdin);
+        std::cout.clear();
+        std::clog.clear();
+        std::cerr.clear();
+        std::cin.clear();
+    }
 #endif
 
     con::info("Starting ModMan " GIT_VERSION);
