@@ -1,16 +1,18 @@
 #pragma once
 
+#include "Web/Platform/Platform.h"
+
 #include <webview/macros.h>
 
 #if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
 
 #include "Web/WebViewLib.h"
 
-namespace edge
+namespace PLATFORM_NAMESPACE_WINDOWS
 {
     constexpr auto URL_PREFIX = "http://modman.local/";
 
-    void InstallCustomProtocolHandler(webview::webview& wv);
-} // namespace edge
+    void InstallAssetHandler(webview::webview& wv);
+} // namespace PLATFORM_NAMESPACE_WINDOWS
 
 #endif

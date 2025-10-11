@@ -1,0 +1,10 @@
+#pragma once
+
+#define PLATFORM_NAMESPACE_WINDOWS windows
+#define PLATFORM_NAMESPACE_LINUX linux
+
+#ifdef _WIN32
+#define PLATFORM_NAMESPACE PLATFORM_NAMESPACE_WINDOWS
+#elif defined(__linux__)
+#define PLATFORM_NAMESPACE PLATFORM_NAMESPACE_LINUX
+#endif

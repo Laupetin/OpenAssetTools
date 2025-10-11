@@ -13,6 +13,12 @@ jobs:
     strategy:
       matrix:
         build_arch: [x86, x64]
+        include:
+          - build_arch: x86
+            additional_packages: gcc-13-multilib g++-13-multilib
+          - build_arch: x64
+            premake_flags: --modman
+    name: Build-Test Linux ${{ matrix.build_arch }}
     runs-on: ubuntu-latest
     container: ubuntu:24.04
     defaults:
@@ -22,11 +28,16 @@ jobs:
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y wget tar git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
+          apt-get install -y wget tar git make curl gcc-13 g++-13 libgtk-4-dev libwebkitgtk-6.0-dev ${{ matrix.additional_packages }}
           update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
           update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
           update-alternatives --set gcc /usr/bin/gcc-13
           update-alternatives --set g++ /usr/bin/g++-13
+
+      - name: Install node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
 
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -37,7 +48,15 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh
+        run: ./generate.sh ${{ matrix.premake_flags }}
+
+      - name: Build UI
+        working-directory: ${{ github.workspace }}
+        if: ${{ matrix.build_arch == 'x64' }}
+        run: |
+          npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run lint
+          npm --prefix src/ModManUi run build
 
       - name: Build
         working-directory: ${{ github.workspace }}
@@ -65,25 +84,39 @@ jobs:
             msbuild_config: Win32
           - build_arch: x64
             msbuild_config: x64
+    name: Build-Test Windows ${{ matrix.build_arch }}
     runs-on: windows-latest
     steps:
+      - name: Install node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2.0.0
+
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2.0.0
-
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.bat
+        run: ./generate.bat --modman
+
+      - name: Build UI
+        working-directory: ${{ github.workspace }}
+        run: |
+          npm --prefix src/ModManUi install
+          npm --prefix src/ModManUi run lint
+          npm --prefix src/ModManUi run build
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
+        run: |
+          msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests

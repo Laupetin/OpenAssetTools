@@ -4,6 +4,7 @@ import { webviewBinds, webviewAddEventListener, webviewRemoveEventListener } fro
 
 const greetMsg = ref("");
 const lastPersonGreeted = ref("");
+const lastPath = ref("");
 const name = ref("");
 
 async function greet() {
@@ -12,6 +13,11 @@ async function greet() {
 
 function onPersonGreeted(person: string) {
   lastPersonGreeted.value = person;
+}
+
+async function onOpenFastfileClick() {
+  lastPath.value =
+    (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
 }
 
 webviewAddEventListener("greeting", onPersonGreeted);
@@ -30,6 +36,10 @@ onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
     </form>
     <p>{{ greetMsg }}</p>
     <p>The last person greeted is: {{ lastPersonGreeted }}</p>
+    <p>
+      <button @click="onOpenFastfileClick">Open fastfile</button>
+      <span>The last path: {{ lastPath }}</span>
+    </p>
   </main>
 </template>
 

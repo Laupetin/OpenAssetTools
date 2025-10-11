@@ -3,7 +3,12 @@
 // Credits to
 // https://www.kdab.com/jsonify-with-nlohmann-json/
 
+#ifdef HAS_NLOHMANN_JSON
+
+#pragma warning(push, 0)
 #include <nlohmann/json.hpp>
+#pragma warning(pop)
+
 #include <optional>
 
 // partial specialization (full specialization works too)
@@ -56,3 +61,5 @@ namespace nlohmann
     {                                                                                                                                                          \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_FROM, __VA_ARGS__))                                                                               \
     }
+
+#endif
