@@ -10,7 +10,7 @@ namespace
         ModManContext::Get().m_db_thread.Dispatch(
             [&wv, id, path]
             {
-                const auto maybeZone = ModManContext::Get().m_fast_file.LoadFastFile(path);
+                auto maybeZone = ModManContext::Get().m_fast_file.LoadFastFile(path);
 
                 if (maybeZone)
                 {
@@ -19,8 +19,8 @@ namespace
                 }
                 else
                 {
-                    con::warn("Failed to load zone \"{}\"", path);
-                    ui::PromiseReject(wv, id, false);
+                    con::warn("Failed to load zone \"{}\": {}", path, maybeZone.error());
+                    ui::PromiseReject(wv, id, std::move(maybeZone).error());
                 }
             });
     }

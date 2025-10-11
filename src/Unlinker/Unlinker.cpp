@@ -227,12 +227,14 @@ private:
             auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
-            auto zone = ZoneLoading::LoadZone(zonePath);
-            if (zone == nullptr)
+            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            if (!maybeZone)
             {
-                con::error("Failed to load zone \"{}\".", zonePath);
+                con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());
                 return false;
             }
+
+            auto zone = std::move(*maybeZone);
 
             con::debug("Loaded zone \"{}\"", zone->m_name);
 
@@ -287,16 +289,16 @@ private:
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
 
-            std::string zoneName;
-            auto zone = ZoneLoading::LoadZone(zonePath);
-            if (zone == nullptr)
+            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            if (!maybeZone)
             {
-                con::error("Failed to load zone \"{}\".", zonePath);
+                con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());
                 return false;
             }
 
-            zoneName = zone->m_name;
-            con::debug("Loaded zone \"{}\"", zoneName);
+            auto zone = std::move(*maybeZone);
+
+            con::debug("Loaded zone \"{}\"", zone->m_name);
 
             const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
             if (ShouldLoadObj())
@@ -308,6 +310,8 @@ private:
             if (ShouldLoadObj())
                 objLoader->UnloadContainersOfZone(*zone);
 
+            // Copy zone name for using it after freeing the zone
+            std::string zoneName = zone->m_name;
             zone.reset();
             con::debug("Unloaded zone \"{}\"", zoneName);
         }

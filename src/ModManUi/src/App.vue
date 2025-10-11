@@ -12,8 +12,8 @@ async function onOpenFastfileClick() {
   loadingFastFile.value = true;
 
   webviewBinds.loadFastFile(lastPath.value)
-  .catch((e) => {
-    console.error("Failed to load fastfile", e);
+  .catch((e: string) => {
+    console.error("Failed to load fastfile:", e);
   })
   .finally(() => {
     loadingFastFile.value = false;

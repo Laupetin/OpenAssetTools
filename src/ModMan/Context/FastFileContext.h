@@ -1,14 +1,15 @@
 #pragma once
+
+#include "Utils/Result.h"
 #include "Zone/Zone.h"
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 class FastFileContext
 {
 public:
-    std::optional<Zone*> LoadFastFile(const std::string& path);
+    result::Expected<Zone*, std::string> LoadFastFile(const std::string& path);
 
     std::vector<std::unique_ptr<Zone>> m_loaded_zones;
 };
