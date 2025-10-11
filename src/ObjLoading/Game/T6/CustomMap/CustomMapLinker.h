@@ -138,6 +138,14 @@ private:
 
     Material* loadImageIntoMaterial(std::string& imageName)
     {
+        std::string imagePath = std::format("images/{}.iwi", imageName);
+        auto imageFile = m_search_path.Open(imagePath);
+        if (!imageFile.IsOpen())
+        {
+            printf("WARN: failed to find image %s.\n", imageName.c_str());
+            return NULL;
+        }
+
         Material* material = new Material;
         material->info.name = m_memory.Dup(imageName.c_str());
 
@@ -1808,7 +1816,7 @@ private:
 
          std::string entityString;
 
-        const auto entFile = m_search_path.Open("entities.json");
+        const auto entFile = m_search_path.Open("custom_map/entities.json");
         if (!entFile.IsOpen())
         {
             printf("ERROR: can't find entity json!\n");
@@ -1817,7 +1825,7 @@ private:
         json entJs = json::parse(*entFile.m_stream);
         parseMapEntsJSON(entJs["entities"], entityString);
 
-        const auto spawnFile = m_search_path.Open("spawns.json");
+        const auto spawnFile = m_search_path.Open("custom_map/spawns.json");
         json spawnJs;
         if (!spawnFile.IsOpen())
         {

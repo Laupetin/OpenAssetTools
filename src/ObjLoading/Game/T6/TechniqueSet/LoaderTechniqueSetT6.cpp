@@ -1,5 +1,6 @@
 #include "Game/T6/T6.h"
 #include "LoaderTechniqueSetT6.h"
+#include "Shader/ShaderCommon.h"
 
 #include <cstring>
 #include <format>
@@ -128,7 +129,7 @@ namespace
                             currPass->pixelShader->name = _strdup(pixelName.c_str());
                             currPass->pixelShader->prog.ps = NULL;
 
-                            const auto psFileName = std::format("techniquesets/shader_bin/ps_{}", pixelName);
+                            const auto psFileName = shader::GetFileNameForPixelShaderAssetName(pixelName);
                             const auto psFile = m_search_path.Open(psFileName);
                             if (!psFile.IsOpen())
                             {
@@ -152,7 +153,7 @@ namespace
                             currPass->vertexShader->name = _strdup(vertexName.c_str());
                             currPass->vertexShader->prog.vs = NULL;
 
-                            const auto vsFileName = std::format("techniquesets/shader_bin/vs_{}", vertexName);
+                            const auto vsFileName = shader::GetFileNameForVertexShaderAssetName(vertexName);
                             const auto vsFile = m_search_path.Open(vsFileName);
                             if (!vsFile.IsOpen())
                             {
