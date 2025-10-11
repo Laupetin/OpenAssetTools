@@ -116,7 +116,11 @@ int main()
 
     con::info("Starting ModMan " GIT_VERSION);
 
+    ModManContext::Get().Startup();
+
     const auto result = SpawnMainWindow();
+
+    ModManContext::Get().Destroy();
 
     return result;
 }

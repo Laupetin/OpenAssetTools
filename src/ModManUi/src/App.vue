@@ -3,10 +3,15 @@ import { ref } from "vue";
 import { webviewBinds } from "./native";
 
 const lastPath = ref("");
+const loadingFastFile = ref(false);
 
 async function onOpenFastfileClick() {
   lastPath.value =
     (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
+
+    loadingFastFile.value = true;
+    await webviewBinds.loadFastFile(lastPath.value);
+    loadingFastFile.value = false;
 }
 </script>
 
@@ -18,6 +23,7 @@ async function onOpenFastfileClick() {
     <p>
       <button @click="onOpenFastfileClick">Open fastfile</button>
       <span>The last path: {{ lastPath }}</span>
+      <span>Loading: {{ loadingFastFile }}</span>
     </p>
   </main>
 </template>

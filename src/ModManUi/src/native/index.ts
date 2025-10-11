@@ -1,7 +1,8 @@
 import type { DialogBinds } from "./DialogBinds";
+import type { FastFileBinds } from "./FastFileBinds";
 
 
-export type NativeMethods = DialogBinds;
+export type NativeMethods = DialogBinds & FastFileBinds;
 
 interface NativeEventMap {
   
