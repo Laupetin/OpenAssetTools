@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { webviewBinds } from "@/native";
 import { useZoneStore } from "@/stores/ZoneStore";
+import SpinningLoader from "@/components/SpinningLoader.vue";
 
 const zoneStore = useZoneStore();
 const lastPath = ref("");
@@ -36,25 +37,35 @@ function onUnloadClicked(zoneName: string) {
     <small>Nothing to see here yet, this is mainly for testing</small>
 
     <p>
-      <button @click="onOpenFastfileClick">Open fastfile</button>
-      <span>Loading: {{ loadingFastFile }}</span>
+      <button :disabled="loadingFastFile" @click="onOpenFastfileClick">
+        <SpinningLoader v-if="loadingFastFile" class="loading" />
+        <span>Load fastfile</span>
+      </button>
     </p>
     <div>
       <h3>Loaded zones:</h3>
-      <div v-for="zone in zoneStore.loadedZones" :key="zone">
-        <span>{{ zone }}</span>
-        <button @click="onUnloadClicked(zone)">Unload</button>
+      <div class="zone-list">
+        <div v-for="zone in zoneStore.loadedZones" :key="zone" class="zone">
+          <span>{{ zone }}</span>
+          <button @click="onUnloadClicked(zone)">Unload</button>
+        </div>
       </div>
     </div>
   </main>
 </template>
 
 <style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+.loading {
+  margin-right: 0.2em;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+.zone-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5em;
+}
+
+.zone > button {
+  margin-left: 0.5em;
 }
 </style>
