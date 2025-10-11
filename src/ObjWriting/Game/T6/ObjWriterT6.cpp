@@ -1,6 +1,5 @@
 #include "ObjWriterT6.h"
 
-#include "AssetDumpers/AssetDumperTechniqueSet.h"
 #include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/Material/MaterialJsonDumperT6.h"
 #include "Game/T6/Techset/TechsetDumperT6.h"
@@ -18,6 +17,7 @@
 #include "Sound/SndBankDumperT6.h"
 #include "Sound/SndDriverGlobalsDumperT6.h"
 #include "StringTable/StringTableDumperT6.h"
+#include "Techset/AssetDumperTechniqueSet.h"
 #include "Tracer/TracerDumperT6.h"
 #include "Vehicle/VehicleDumperT6.h"
 #include "Weapon/AttachmentDumperT6.h"
