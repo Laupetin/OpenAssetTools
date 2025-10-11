@@ -1,9 +1,9 @@
 import type { DialogBinds } from "./DialogBinds";
-import type { FastFileBinds, FastFileEventMap } from "./FastFileBinds";
+import type { ZoneBinds, ZoneEventMap } from "./ZoneBinds";
 
-export type NativeMethods = DialogBinds & FastFileBinds;
+export type NativeMethods = DialogBinds & ZoneBinds;
 
-type NativeEventMap = FastFileEventMap;
+type NativeEventMap = ZoneEventMap;
 
 type WebViewExtensions = {
   webviewBinds: NativeMethods;

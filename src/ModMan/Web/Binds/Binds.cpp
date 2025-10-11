@@ -1,7 +1,7 @@
 #include "Binds.h"
 
-#include "FastFileBinds.h"
 #include "Web/Binds/DialogBinds.h"
+#include "ZoneBinds.h"
 
 namespace ui
 {

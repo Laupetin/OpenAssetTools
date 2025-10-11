@@ -1,4 +1,4 @@
-#include "FastFileBinds.h"
+#include "ZoneBinds.h"
 
 #include "Context/ModManContext.h"
 #include "Web/UiCommunication.h"

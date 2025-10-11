@@ -1,6 +1,6 @@
 #include "FastFileContext.h"
 
-#include "Web/Binds/FastFileBinds.h"
+#include "Web/Binds/ZoneBinds.h"
 #include "Web/UiCommunication.h"
 #include "ZoneLoading.h"
 
