@@ -19,6 +19,27 @@ void ZoneDefinitionParserState::SetGame(const GameId game)
     m_asset_name_resolver = IAssetNameResolver::GetResolverForGame(game);
 }
 
+void ZoneDefinitionParserState::SetCustomMap()
+{
+    if (m_definition->is_custom_map == false)
+    {
+        m_definition->is_custom_map = true;
+        if (m_definition->m_game != GameId::T6)
+        {
+            printf("ERROR: Custom map linking is only supported on BO2 (T6).\n");
+            return;
+        }
+
+        printf("Processing zone as a custom map zone.\n");
+        const auto gfxWorldAssetType = m_asset_name_resolver->GetAssetTypeByName("gfxworld");
+        _ASSERT(gfxWorldAssetType);
+
+        m_definition->m_assets.emplace_back(*gfxWorldAssetType, "gfxworld", false);
+    }
+
+    
+}
+
 namespace
 {
     void AddCurrentObjContainerToDefinitionIfNecessary(ZoneDefinition& zoneDefinition, std::optional<ZoneDefinitionObjContainer>& maybeObjContainer)

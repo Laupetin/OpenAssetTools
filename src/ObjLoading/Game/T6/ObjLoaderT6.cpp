@@ -42,6 +42,8 @@
 #include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
+#include "CustomMap/LoaderCustomMapT6.h"
+#include "TechniqueSet/LoaderTechniqueSetT6.h"
 
 #include <format>
 #include <memory>
@@ -392,7 +394,7 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
             collection.AddAssetCreator(xmodel::CreateLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(material::CreateLoaderT6(memory, searchPath));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
+            collection.AddAssetCreator(technique_set::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(image::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(sound::CreateSoundBankLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
@@ -439,6 +441,8 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
             collection.AddAssetCreator(z_barrier::CreateRawLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(z_barrier::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
+
+            collection.AddAssetCreator(custom_map::CreateLoaderT6(memory, searchPath, zone));
         }
     } // namespace
 
