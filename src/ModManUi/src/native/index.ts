@@ -1,12 +1,9 @@
 import type { DialogBinds } from "./DialogBinds";
-import type { FastFileBinds } from "./FastFileBinds";
-
+import type { FastFileBinds, FastFileEventMap } from "./FastFileBinds";
 
 export type NativeMethods = DialogBinds & FastFileBinds;
 
-interface NativeEventMap {
-  
-}
+type NativeEventMap = FastFileEventMap;
 
 type WebViewExtensions = {
   webviewBinds: NativeMethods;

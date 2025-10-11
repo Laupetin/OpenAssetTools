@@ -13,5 +13,6 @@ void ModManContext::Startup()
 
 void ModManContext::Destroy()
 {
+    m_fast_file.Destroy();
     m_db_thread.Terminate();
 }
