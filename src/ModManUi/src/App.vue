@@ -9,9 +9,15 @@ async function onOpenFastfileClick() {
   lastPath.value =
     (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
 
-    loadingFastFile.value = true;
-    await webviewBinds.loadFastFile(lastPath.value);
+  loadingFastFile.value = true;
+
+  webviewBinds.loadFastFile(lastPath.value)
+  .catch((e) => {
+    console.error("Failed to load fastfile", e);
+  })
+  .finally(() => {
     loadingFastFile.value = false;
+  });
 }
 </script>
 
