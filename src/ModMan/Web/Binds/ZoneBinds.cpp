@@ -33,7 +33,12 @@ namespace
 
                 if (maybeZone)
                 {
-                    ui::PromiseResolve(wv, id, true);
+                    ui::PromiseResolve(wv,
+                                       id,
+                                       ZoneLoadedDto{
+                                           .zoneName = maybeZone.value()->m_name,
+                                           .filePath = path,
+                                       });
                     con::debug("Loaded zone \"{}\"", maybeZone.value()->m_name);
                 }
                 else

@@ -8,7 +8,7 @@ export interface ZoneUnloadedDto {
 }
 
 export interface ZoneBinds {
-  loadFastFile(path: string): Promise<void>;
+  loadFastFile(path: string): Promise<ZoneLoadedDto>;
   unloadZone(zoneName: string): Promise<void>;
 }
 

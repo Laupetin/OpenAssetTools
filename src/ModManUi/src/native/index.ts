@@ -1,7 +1,8 @@
 import type { DialogBinds } from "./DialogBinds";
+import type { UnlinkingBinds } from "./UnlinkingBinds";
 import type { ZoneBinds, ZoneEventMap } from "./ZoneBinds";
 
-export type NativeMethods = DialogBinds & ZoneBinds;
+export type NativeMethods = DialogBinds & UnlinkingBinds & ZoneBinds;
 
 type NativeEventMap = ZoneEventMap;
 
