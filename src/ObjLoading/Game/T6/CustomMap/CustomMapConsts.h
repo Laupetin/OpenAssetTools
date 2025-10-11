@@ -104,3 +104,20 @@ const std::string defaultSpawnpointString = "{"
     "}";
 
 
+const std::string defaultMapEntsString = "{"
+    "\"entities\": ["
+        "{"
+            "\"classname\": \"worldspawn\""
+        "},"
+        "{"
+            "\"angles\": \"0 0 0\","
+            "\"classname\": \"info_player_start\","
+            "\"origin\": \"0 0 0\""
+        "},"
+        "{"
+            "\"angles\": \"0 0 0\","
+            "\"classname\": \"mp_global_intermission\","
+            "\"origin\": \"0 0 0\""
+        "}"
+    "]"
+"}";

@@ -1817,19 +1817,23 @@ private:
          std::string entityString;
 
         const auto entFile = m_search_path.Open("custom_map/entities.json");
+        json entJs;
         if (!entFile.IsOpen())
         {
-            printf("ERROR: can't find entity json!\n");
-            return;
+            printf("WARN: can't find entity json custom_map/entities.json, using default entities\n");
+            entJs = json::parse(defaultMapEntsString);
         }
-        json entJs = json::parse(*entFile.m_stream);
+        else
+        {
+            entJs = json::parse(*entFile.m_stream);
+        }
         parseMapEntsJSON(entJs["entities"], entityString);
 
         const auto spawnFile = m_search_path.Open("custom_map/spawns.json");
         json spawnJs;
         if (!spawnFile.IsOpen())
         {
-            printf("WARN: no spawn points given, setting spawns to 0 0 0\n");
+            printf("WARN: cant find custom_map/spawns.json, setting spawns to 0 0 0\n");
             spawnJs = json::parse(defaultSpawnpointString);
         }
         else
