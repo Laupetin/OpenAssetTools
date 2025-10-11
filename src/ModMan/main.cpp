@@ -1,5 +1,6 @@
 ﻿#include "Context/ModManContext.h"
 #include "GitVersion.h"
+#include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
 #include "Web/UiCommunication.h"
@@ -94,9 +95,13 @@ namespace
 } // namespace
 
 #ifdef _WIN32
+#define MODMAN_ARGC __argc
+#define MODMAN_ARGV const_cast<const char**>(__argv)
 int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/)
 #else
-int main()
+#define MODMAN_ARGC argc
+#define MODMAN_ARGV argv
+int main(int argc, const char** argv)
 #endif
 {
 #ifdef _WIN32
@@ -113,6 +118,14 @@ int main()
         std::cin.clear();
     }
 #endif
+
+    ModManArgs args;
+    auto shouldContinue = true;
+    if (!args.ParseArgs(MODMAN_ARGC, MODMAN_ARGV, shouldContinue))
+        return false;
+
+    if (!shouldContinue)
+        return true;
 
     con::info("Starting ModMan " GIT_VERSION);
 
