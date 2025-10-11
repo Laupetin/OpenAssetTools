@@ -48,7 +48,7 @@ namespace
     }
 } // namespace
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
     const auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
     if (assetPoolT6 && !assetPoolT6->m_key_value_pairs->m_asset_lookup.empty())
@@ -64,7 +64,7 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Unli
     }
 }
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
     const auto* pools = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
 

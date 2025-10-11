@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Utils/Result.h"
 #include "Zone/Zone.h"
 
 #include <string>
@@ -6,5 +8,5 @@
 class ZoneLoading
 {
 public:
-    static std::unique_ptr<Zone> LoadZone(const std::string& path);
+    static result::Expected<std::unique_ptr<Zone>, std::string> LoadZone(const std::string& path);
 };
