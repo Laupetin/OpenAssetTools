@@ -119,6 +119,11 @@ int main(int argc, const char** argv)
     }
 #endif
 
+#ifdef __linux__
+    g_set_prgname("OpenAssetTools-ModMan");
+    g_set_application_name("OpenAssetTools ModMan");
+#endif
+
     ModManArgs args;
     auto shouldContinue = true;
     if (!args.ParseArgs(MODMAN_ARGC, MODMAN_ARGV, shouldContinue))
