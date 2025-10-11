@@ -12,7 +12,7 @@ export interface SaveFileDialogDto {
 }
 
 export interface DialogBinds {
-  openFileDialog(options?: OpenFileDialogDto): string | null;
-  saveFileDialog(options?: SaveFileDialogDto): string | null;
-  folderSelectDialog(): string | null;
+  openFileDialog(options?: OpenFileDialogDto): Promise<string | null>;
+  saveFileDialog(options?: SaveFileDialogDto): Promise<string | null>;
+  folderSelectDialog(): Promise<string | null>;
 }

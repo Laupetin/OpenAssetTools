@@ -364,14 +364,16 @@ class LinkerImpl final : public Linker
                 zoneDirectory = fs::current_path();
             auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
-            auto zone = ZoneLoading::LoadZone(zonePath);
-            if (!zone)
+            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            if (!maybeZone)
             {
-                con::error("Failed to load zone \"{}\".", zonePath);
+                con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());
                 return false;
             }
 
-            con::debug("Load zone \"{}\"", zone->m_name);
+            auto zone = std::move(*maybeZone);
+
+            con::debug("Loaded zone \"{}\"", zone->m_name);
 
             m_loaded_zones.emplace_back(std::move(zone));
         }

@@ -1,16 +1,16 @@
-#include "ZoneDefWriterIW3.h"
+#include "ZoneDefWriterIW5.h"
 
-#include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW5/GameAssetPoolIW5.h"
 
 #include <cassert>
 
-using namespace IW3;
+using namespace IW5;
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const {}
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const {}
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
-    const auto* pools = dynamic_cast<GameAssetPoolIW3*>(zone.m_pools.get());
+    const auto* pools = dynamic_cast<GameAssetPoolIW5*>(zone.m_pools.get());
 
     assert(pools);
     if (!pools)

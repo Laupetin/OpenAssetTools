@@ -1,28 +1,72 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from "vue";
-import { webviewBinds, webviewAddEventListener, webviewRemoveEventListener } from "./native";
+import { computed, ref } from "vue";
+import { webviewBinds } from "@/native";
+import { useZoneStore } from "@/stores/ZoneStore";
+import SpinningLoader from "@/components/SpinningLoader.vue";
 
-const greetMsg = ref("");
-const lastPersonGreeted = ref("");
-const lastPath = ref("");
-const name = ref("");
+const zoneStore = useZoneStore();
+const loadingFastFile = ref(false);
+const unlinkingFastFile = ref(false);
 
-async function greet() {
-  greetMsg.value = await webviewBinds.greet(name.value);
+const performingAction = computed<boolean>(() => loadingFastFile.value || unlinkingFastFile.value);
+
+async function openFastFileSelect() {
+  return await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] });
 }
 
-function onPersonGreeted(person: string) {
-  lastPersonGreeted.value = person;
+async function onOpenFastFileClick() {
+  if (performingAction.value) return;
+
+  const fastFilePath = await openFastFileSelect();
+  if (!fastFilePath) return;
+
+  loadingFastFile.value = true;
+
+  webviewBinds
+    .loadFastFile(fastFilePath)
+    .catch((e: string) => {
+      console.error("Failed to load fastfile:", e);
+    })
+    .finally(() => {
+      loadingFastFile.value = false;
+    });
 }
 
-async function onOpenFastfileClick() {
-  lastPath.value =
-    (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
+async function onUnlinkFastFileClick() {
+  if (performingAction.value) return;
+
+  const fastFilePath = await openFastFileSelect();
+  if (!fastFilePath) return;
+
+  try {
+    unlinkingFastFile.value = true;
+
+    let loadedZoneName: string;
+    try {
+      loadedZoneName = (await webviewBinds.loadFastFile(fastFilePath)).zoneName;
+    } catch (e: unknown) {
+      console.error("Failed to load fastfile:", e as string);
+      return;
+    }
+
+    try {
+      await webviewBinds.unlinkZone(loadedZoneName);
+    } catch (e: unknown) {
+      console.error("Failed to unlink fastfile:", e as string);
+      return;
+    } finally {
+      webviewBinds.unloadZone(loadedZoneName);
+    }
+  } finally {
+    unlinkingFastFile.value = false;
+  }
 }
 
-webviewAddEventListener("greeting", onPersonGreeted);
-
-onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
+function onUnloadClicked(zoneName: string) {
+  webviewBinds.unloadZone(zoneName).catch((e: string) => {
+    console.error("Failed to unload zone:", e);
+  });
+}
 </script>
 
 <template>
@@ -30,25 +74,47 @@ onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
     <h1>Welcome to ModMan</h1>
     <small>Nothing to see here yet, this is mainly for testing</small>
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." autocomplete="off" />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-    <p>The last person greeted is: {{ lastPersonGreeted }}</p>
-    <p>
-      <button @click="onOpenFastfileClick">Open fastfile</button>
-      <span>The last path: {{ lastPath }}</span>
-    </p>
+    <div class="actions">
+      <button :disabled="performingAction" @click="onOpenFastFileClick">
+        <SpinningLoader v-if="loadingFastFile" class="loading" />
+        <span>Load fastfile</span>
+      </button>
+      <button :disabled="performingAction" @click="onUnlinkFastFileClick">
+        <SpinningLoader v-if="unlinkingFastFile" class="loading" />
+        <span>Unlink fastfile</span>
+      </button>
+    </div>
+
+    <div>
+      <h3>Loaded zones:</h3>
+      <div class="zone-list">
+        <div v-for="zone in zoneStore.loadedZones" :key="zone" class="zone">
+          <span>{{ zone }}</span>
+          <button :disabled="performingAction" @click="onUnloadClicked(zone)">Unload</button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+.actions {
+  display: flex;
+  justify-content: center;
+  column-gap: 0.5em;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+.loading {
+  margin-right: 0.2em;
+}
+
+.zone-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5em;
+}
+
+.zone > button {
+  margin-left: 0.5em;
 }
 </style>

@@ -1,16 +1,20 @@
-﻿#include "GitVersion.h"
-#include "Web/Binds/DialogBinds.h"
+﻿#include "Context/ModManContext.h"
+#include "GitVersion.h"
+#include "ModManArgs.h"
+#include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
 
-#include <chrono>
 #include <format>
 #include <iostream>
-#include <optional>
 #include <string>
 #include <thread>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 using namespace std::string_literals;
 using namespace PLATFORM_NAMESPACE;
@@ -18,15 +22,17 @@ using namespace PLATFORM_NAMESPACE;
 namespace
 {
 #ifdef _DEBUG
-    std::optional<webview::webview> devToolWindow;
-
-    void RunDevToolsWindow()
+    void SpawnDevToolsWindow()
     {
         con::debug("Creating dev tools window");
 
+        auto& context = ModManContext::Get();
+
         try
         {
-            auto& newWindow = devToolWindow.emplace(false, nullptr);
+            context.m_dev_tools_webview = std::make_unique<webview::webview>(false, nullptr);
+            auto& newWindow = *context.m_dev_tools_webview;
+
             newWindow.set_title("Devtools");
             newWindow.set_size(640, 480, WEBVIEW_HINT_NONE);
             newWindow.set_size(480, 320, WEBVIEW_HINT_MIN);
@@ -39,59 +45,44 @@ namespace
     }
 #endif
 
-    int RunMainWindow()
+    int SpawnMainWindow()
     {
         con::debug("Creating main window");
 
+        auto& context = ModManContext::Get();
         try
         {
-            webview::webview w(
+            context.m_main_webview = std::make_unique<webview::webview>(
 #ifdef _DEBUG
                 true,
 #else
                 false,
 #endif
                 nullptr);
-            w.set_title("OpenAssetTools ModMan");
-            w.set_size(1280, 640, WEBVIEW_HINT_NONE);
-            w.set_size(480, 320, WEBVIEW_HINT_MIN);
+            auto& newWindow = *context.m_main_webview;
 
-            ui::RegisterDialogHandlerBinds(w);
+            newWindow.set_title("OpenAssetTools ModMan");
+            newWindow.set_size(1280, 640, WEBVIEW_HINT_NONE);
+            newWindow.set_size(480, 320, WEBVIEW_HINT_MIN);
 
-            // A binding that counts up or down and immediately returns the new value.
-            ui::Bind<std::string, std::string>(w,
-                                               "greet",
-                                               [&w](std::string name) -> std::string
-                                               {
-                                                   ui::Notify(w, "greeting", name);
-                                                   return std::format("Hello from C++ {}!", name);
-                                               });
-
-#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
-            InstallAssetHandler(w);
-            constexpr auto urlPrefix = URL_PREFIX;
-#elif defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
-            InstallAssetHandler(w);
-            constexpr auto urlPrefix = URL_PREFIX;
-#else
-#error Unsupported platform
-#endif
+            InstallAssetHandler(newWindow);
+            ui::RegisterAllBinds(newWindow);
 
 #ifdef _DEBUG
-            w.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", urlPrefix));
+            newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", URL_PREFIX));
 
             if (VITE_DEV_SERVER)
             {
-                w.dispatch(
+                newWindow.dispatch(
                     []
                     {
-                        RunDevToolsWindow();
+                        SpawnDevToolsWindow();
                     });
             }
 #else
-            w.navigate(std::format("{}index.html", urlPrefix));
+            newWindow.navigate(std::format("{}index.html", URL_PREFIX));
 #endif
-            w.run();
+            newWindow.run();
         }
         catch (const webview::exception& e)
         {
@@ -104,16 +95,50 @@ namespace
 } // namespace
 
 #ifdef _WIN32
+#define MODMAN_ARGC __argc
+#define MODMAN_ARGV const_cast<const char**>(__argv)
 int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/)
-{
 #else
-int main()
-{
+#define MODMAN_ARGC argc
+#define MODMAN_ARGV argv
+int main(int argc, const char** argv)
 #endif
+{
+#ifdef _WIN32
+    // Attach console if possible on Windows for stdout/stderr in console
+    if (AttachConsole(-1))
+    {
+        FILE* fDummy;
+        (void)freopen_s(&fDummy, "CONOUT$", "w", stdout);
+        (void)freopen_s(&fDummy, "CONOUT$", "w", stderr);
+        (void)freopen_s(&fDummy, "CONIN$", "r", stdin);
+        std::cout.clear();
+        std::clog.clear();
+        std::cerr.clear();
+        std::cin.clear();
+    }
+#endif
+
+#ifdef __linux__
+    g_set_prgname("OpenAssetTools-ModMan");
+    g_set_application_name("OpenAssetTools ModMan");
+#endif
+
+    ModManArgs args;
+    auto shouldContinue = true;
+    if (!args.ParseArgs(MODMAN_ARGC, MODMAN_ARGV, shouldContinue))
+        return false;
+
+    if (!shouldContinue)
+        return true;
 
     con::info("Starting ModMan " GIT_VERSION);
 
-    const auto result = RunMainWindow();
+    ModManContext::Get().Startup();
+
+    const auto result = SpawnMainWindow();
+
+    ModManContext::Get().Destroy();
 
     return result;
 }
