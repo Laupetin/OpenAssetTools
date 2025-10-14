@@ -28,10 +28,11 @@ result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const
     for (auto game = 0u; game < static_cast<unsigned>(GameId::COUNT); game++)
     {
         const auto* factory = IZoneLoaderFactory::GetZoneLoaderFactoryForGame(static_cast<GameId>(game));
-        zoneLoader = factory->CreateLoaderForHeader(header, zoneName, std::move(progressCallback));
-
-        if (zoneLoader)
+        if (factory->InspectZoneHeader(header))
+        {
+            zoneLoader = factory->CreateLoaderForHeader(header, zoneName, std::move(progressCallback));
             break;
+        }
     }
 
     if (!zoneLoader)

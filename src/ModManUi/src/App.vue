@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { webviewBinds } from "@/native";
+import { webviewAddEventListener, webviewBinds } from "@/native";
 import { useZoneStore } from "@/stores/ZoneStore";
 import SpinningLoader from "@/components/SpinningLoader.vue";
 
 const zoneStore = useZoneStore();
 const loadingFastFile = ref(false);
 const unlinkingFastFile = ref(false);
+const lastPercentage = ref<number>(0);
 
 const performingAction = computed<boolean>(() => loadingFastFile.value || unlinkingFastFile.value);
+const progressBarWidth = computed<string>(() => `${lastPercentage.value * 100}%`);
 
 async function openFastFileSelect() {
   return await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] });
@@ -21,6 +23,7 @@ async function onOpenFastFileClick() {
   if (!fastFilePath) return;
 
   loadingFastFile.value = true;
+  lastPercentage.value = 0;
 
   webviewBinds
     .loadFastFile(fastFilePath)
@@ -29,6 +32,7 @@ async function onOpenFastFileClick() {
     })
     .finally(() => {
       loadingFastFile.value = false;
+      lastPercentage.value = 1;
     });
 }
 
@@ -43,6 +47,7 @@ async function onUnlinkFastFileClick() {
 
     let loadedZoneName: string;
     try {
+      lastPercentage.value = 0;
       loadedZoneName = (await webviewBinds.loadFastFile(fastFilePath)).zoneName;
     } catch (e: unknown) {
       console.error("Failed to load fastfile:", e as string);
@@ -50,6 +55,7 @@ async function onUnlinkFastFileClick() {
     }
 
     try {
+      lastPercentage.value = 0;
       await webviewBinds.unlinkZone(loadedZoneName);
     } catch (e: unknown) {
       console.error("Failed to unlink fastfile:", e as string);
@@ -59,6 +65,7 @@ async function onUnlinkFastFileClick() {
     }
   } finally {
     unlinkingFastFile.value = false;
+    lastPercentage.value = 1;
   }
 }
 
@@ -67,6 +74,11 @@ function onUnloadClicked(zoneName: string) {
     console.error("Failed to unload zone:", e);
   });
 }
+
+webviewAddEventListener("zoneLoadProgress", (dto) => {
+  console.log(dto);
+  lastPercentage.value = dto.percentage;
+});
 </script>
 
 <template>
@@ -94,10 +106,18 @@ function onUnloadClicked(zoneName: string) {
         </div>
       </div>
     </div>
+
+    <div class="progressbar-wrapper">
+      <div
+        class="progressbar"
+        :class="{ visible: performingAction }"
+        :style="{ width: progressBarWidth }"
+      ></div>
+    </div>
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .actions {
   display: flex;
   justify-content: center;
@@ -116,5 +136,25 @@ function onUnloadClicked(zoneName: string) {
 
 .zone > button {
   margin-left: 0.5em;
+}
+
+.progressbar-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.35rem 0.4rem;
+}
+
+.progressbar {
+  opacity: 0;
+  height: 0.4rem;
+  border-radius: 2.5rem;
+  background-color: #b9772c;
+  transition: opacity 0.2s ease-in-out;
+
+  &.visible {
+    opacity: 1;
+  }
 }
 </style>

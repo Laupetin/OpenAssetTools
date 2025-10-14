@@ -1,3 +1,8 @@
+export interface ZoneLoadProgressDto {
+  zoneName: string;
+  percentage: number;
+}
+
 export interface ZoneLoadedDto {
   zoneName: string;
   filePath: string;
@@ -13,6 +18,7 @@ export interface ZoneBinds {
 }
 
 export interface ZoneEventMap {
+  zoneLoadProgress: ZoneLoadProgressDto;
   zoneLoaded: ZoneLoadedDto;
   zoneUnloaded: ZoneUnloadedDto;
 }

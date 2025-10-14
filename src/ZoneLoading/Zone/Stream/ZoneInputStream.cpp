@@ -60,8 +60,6 @@ namespace
               m_block_shift(pointerBitCount - blockBitCount),
               m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
               m_last_fill_size(0),
-              m_has_progress_callback(progressCallback.has_value()),
-              m_progress_callback(std::move(progressCallback).value_or(nullptr)),
               m_progress_current_size(0uz),
               m_progress_total_size(0uz)
         {
@@ -74,7 +72,12 @@ namespace
 
             m_insert_block = blocks[insertBlock];
 
-            m_progress_total_size = CalculateTotalSize();
+            if (progressCallback)
+            {
+                m_has_progress_callback = true;
+                m_progress_callback = *std::move(progressCallback);
+                m_progress_total_size = CalculateTotalSize();
+            }
         }
 
         [[nodiscard]] unsigned GetPointerBitCount() const override
@@ -452,7 +455,8 @@ namespace
         {
             m_block_offsets[block.m_index] += size;
 
-            if (m_has_progress_callback)
+            // We cannot know the full size of the temp block
+            if (m_has_progress_callback && block.m_type != XBlockType::BLOCK_TYPE_TEMP)
             {
                 m_progress_current_size += size;
                 m_progress_callback->OnProgress(m_progress_current_size, m_progress_total_size);
@@ -473,7 +477,11 @@ namespace
             size_t result = 0uz;
 
             for (const auto& block : m_blocks)
-                result += block->m_buffer_size;
+            {
+                // We cannot know the full size of the temp block
+                if (block->m_type != XBlockType::BLOCK_TYPE_TEMP)
+                    result += block->m_buffer_size;
+            }
 
             return result;
         }

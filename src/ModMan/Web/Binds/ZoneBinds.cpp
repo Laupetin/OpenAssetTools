@@ -7,6 +7,15 @@
 
 namespace
 {
+    class ZoneLoadProgressDto
+    {
+    public:
+        std::string zoneName;
+        double percentage;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneLoadProgressDto, zoneName, percentage);
+
     class ZoneLoadedDto
     {
     public:
@@ -71,6 +80,15 @@ namespace
 
 namespace ui
 {
+    void NotifyZoneLoadProgress(std::string zoneName, const double percentage)
+    {
+        const ZoneLoadProgressDto dto{
+            .zoneName = std::move(zoneName),
+            .percentage = percentage,
+        };
+        Notify(*ModManContext::Get().m_main_webview, "zoneLoadProgress", dto);
+    }
+
     void NotifyZoneLoaded(std::string zoneName, std::string fastFilePath)
     {
         const ZoneLoadedDto dto{
