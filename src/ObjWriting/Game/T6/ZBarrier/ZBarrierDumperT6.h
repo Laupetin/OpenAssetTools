@@ -9,7 +9,6 @@ namespace z_barrier
     class DumperT6 final : public AbstractAssetDumper<T6::ZBarrierDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::ZBarrierDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::ZBarrierDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::ZBarrierDef>& asset) override;
     };
 } // namespace z_barrier

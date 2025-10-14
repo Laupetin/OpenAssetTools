@@ -6,15 +6,10 @@ using namespace IW4;
 
 namespace shader
 {
-    bool VertexShaderDumperIW4::ShouldDump(XAssetInfo<IW4::MaterialVertexShader>* asset)
+    void VertexShaderDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MaterialVertexShader>& asset)
     {
-        return true;
-    }
-
-    void VertexShaderDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialVertexShader>* asset)
-    {
-        const auto* vertexShader = asset->Asset();
-        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForVertexShaderAssetName(asset->m_name));
+        const auto* vertexShader = asset.Asset();
+        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForVertexShaderAssetName(asset.m_name));
 
         if (!shaderFile)
             return;

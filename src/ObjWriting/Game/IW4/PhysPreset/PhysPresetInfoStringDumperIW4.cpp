@@ -57,21 +57,21 @@ namespace
         physPresetInfo->perSurfaceSndAlias = physPreset->perSurfaceSndAlias ? 1 : 0;
     }
 
-    InfoString CreateInfoString(XAssetInfo<PhysPreset>* asset)
+    InfoString CreateInfoString(const XAssetInfo<PhysPreset>& asset)
     {
         auto* physPresetInfo = new PhysPresetInfo;
-        CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
+        CopyToPhysPresetInfo(asset.Asset(), physPresetInfo);
 
         InfoStringFromPhysPresetConverter converter(physPresetInfo,
                                                     phys_preset_fields,
                                                     std::extent_v<decltype(phys_preset_fields)>,
                                                     [asset](const scr_string_t scrStr) -> std::string
                                                     {
-                                                        assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                        if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                        assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                        if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                             return "";
 
-                                                        return asset->m_zone->m_script_strings[scrStr];
+                                                        return asset.m_zone->m_script_strings[scrStr];
                                                     });
 
         return converter.Convert();
@@ -80,24 +80,19 @@ namespace
 
 namespace phys_preset
 {
-    bool InfoStringDumperIW4::ShouldDump(XAssetInfo<IW4::PhysPreset>* asset)
-    {
-        return true;
-    }
-
-    void InfoStringDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::PhysPreset>* asset)
+    void InfoStringDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<PhysPreset>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;

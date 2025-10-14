@@ -8,7 +8,6 @@ namespace weapon
     class DumperT6 final : public AbstractAssetDumper<T6::WeaponVariantDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::WeaponVariantDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::WeaponVariantDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::WeaponVariantDef>& asset) override;
     };
 } // namespace weapon

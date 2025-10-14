@@ -41,6 +41,32 @@ public:
         }
     };
 
+    class CIterator
+    {
+        typename std::map<std::string, XAssetInfo<T>*>::const_iterator m_iterator;
+
+    public:
+        explicit CIterator(typename std::map<std::string, XAssetInfo<T>*>::const_iterator i)
+        {
+            m_iterator = i;
+        }
+
+        bool operator!=(CIterator rhs)
+        {
+            return m_iterator != rhs.m_iterator;
+        }
+
+        const XAssetInfo<T>* operator*()
+        {
+            return m_iterator.operator*().second;
+        }
+
+        void operator++()
+        {
+            ++m_iterator;
+        }
+    };
+
     AssetPool()
     {
         m_asset_lookup = std::map<std::string, XAssetInfo<T>*>();
@@ -69,5 +95,15 @@ public:
     Iterator end()
     {
         return Iterator(m_asset_lookup.end());
+    }
+
+    CIterator begin() const
+    {
+        return CIterator(m_asset_lookup.cbegin());
+    }
+
+    CIterator end() const
+    {
+        return CIterator(m_asset_lookup.cend());
     }
 };

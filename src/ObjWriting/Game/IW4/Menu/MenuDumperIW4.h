@@ -9,7 +9,6 @@ namespace menu
     class MenuDumperIW4 final : public AbstractAssetDumper<IW4::menuDef_t>
     {
     protected:
-        bool ShouldDump(XAssetInfo<IW4::menuDef_t>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::menuDef_t>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::menuDef_t>& asset) override;
     };
 } // namespace menu

@@ -108,9 +108,9 @@ namespace
         {
         }
 
-        void DumpPool(AssetPool<SndDriverGlobals>* pool)
+        void DumpPool(const AssetPool<SndDriverGlobals>& pool)
         {
-            for (const auto* assetInfo : *pool)
+            for (const auto* assetInfo : pool)
             {
                 if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
                     continue;
@@ -385,9 +385,16 @@ namespace
 
 namespace sound
 {
-    void SndDriverGlobalsDumperT6::DumpPool(AssetDumpingContext& context, AssetPool<SndDriverGlobals>* pool)
+    size_t SndDriverGlobalsDumperT6::GetProgressTotalCount(const AssetPool<T6::SndDriverGlobals>& pool) const
+    {
+        return pool.m_asset_lookup.empty() ? 0uz : 1uz;
+    }
+
+    void SndDriverGlobalsDumperT6::DumpPool(AssetDumpingContext& context, const AssetPool<SndDriverGlobals>& pool)
     {
         Internal internal(context);
         internal.DumpPool(pool);
+
+        context.IncrementProgress();
     }
 } // namespace sound

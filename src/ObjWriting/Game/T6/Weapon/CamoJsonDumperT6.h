@@ -8,7 +8,6 @@ namespace camo
     class JsonDumperT6 final : public AbstractAssetDumper<T6::WeaponCamo>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::WeaponCamo>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::WeaponCamo>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::WeaponCamo>& asset) override;
     };
 } // namespace camo

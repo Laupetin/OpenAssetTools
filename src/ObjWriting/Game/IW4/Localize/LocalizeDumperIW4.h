@@ -8,6 +8,7 @@ namespace localize
     class DumperIW4 final : public IAssetDumper<IW4::LocalizeEntry>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<IW4::LocalizeEntry>* pool) override;
+        [[nodiscard]] size_t GetProgressTotalCount(const AssetPool<IW4::LocalizeEntry>& pool) const override;
+        void DumpPool(AssetDumpingContext& context, const AssetPool<IW4::LocalizeEntry>& pool) override;
     };
 } // namespace localize

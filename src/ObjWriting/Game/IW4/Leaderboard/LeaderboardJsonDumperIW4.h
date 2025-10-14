@@ -8,7 +8,6 @@ namespace leaderboard
     class JsonDumperIW4 final : public AbstractAssetDumper<IW4::LeaderboardDef>
     {
     protected:
-        [[nodiscard]] bool ShouldDump(XAssetInfo<IW4::LeaderboardDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::LeaderboardDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::LeaderboardDef>& asset) override;
     };
 } // namespace leaderboard

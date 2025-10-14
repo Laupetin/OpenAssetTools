@@ -17,10 +17,19 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
     {                                                                                                                                                          \
         dumperType dumper;                                                                                                                                     \
-        dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
+        totalProgress += dumper.GetProgressTotalCount(*assetPools->poolName);                                                                                  \
+        dumpingFunctions.emplace_back(                                                                                                                         \
+            [](AssetDumpingContext& funcContext, const GameAssetPoolT5* funcPools)                                                                             \
+            {                                                                                                                                                  \
+                dumperType dumper;                                                                                                                             \
+                dumper.DumpPool(funcContext, *funcPools->poolName);                                                                                            \
+            });                                                                                                                                                \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolT5*>(context.m_zone.m_pools.get());
+
+    size_t totalProgress = 0uz;
+    std::vector<std::function<void(AssetDumpingContext & context, const GameAssetPoolT5*)>> dumpingFunctions;
 
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
     // DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints, ASSET_TYPE_PHYSCONSTRAINTS)
@@ -54,6 +63,10 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperDDLRoot, m_ddl, ASSET_TYPE_DDL)
     // DUMP_ASSET_POOL(AssetDumperGlasses, m_glasses, ASSET_TYPE_GLASSES)
     // DUMP_ASSET_POOL(AssetDumperEmblemSet, m_emblem_set, ASSET_TYPE_EMBLEMSET)
+
+    context.SetTotalProgress(totalProgress);
+    for (const auto& func : dumpingFunctions)
+        func(context, assetPools);
 
     return true;
 

@@ -11,9 +11,14 @@ using namespace T6;
 
 namespace localize
 {
-    void DumperT6::DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool)
+    size_t DumperT6::GetProgressTotalCount(const AssetPool<T6::LocalizeEntry>& pool) const
     {
-        if (pool->m_asset_lookup.empty())
+        return pool.m_asset_lookup.empty() ? 0uz : 1uz;
+    }
+
+    void DumperT6::DumpPool(AssetDumpingContext& context, const AssetPool<LocalizeEntry>& pool)
+    {
+        if (pool.m_asset_lookup.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -30,7 +35,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (auto* localizeEntry : *pool)
+            for (const auto* localizeEntry : pool)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }
@@ -41,5 +46,7 @@ namespace localize
         {
             con::error("Could not create string file for dumping localized strings of zone '{}'", context.m_zone.m_name);
         }
+
+        context.IncrementProgress();
     }
 } // namespace localize

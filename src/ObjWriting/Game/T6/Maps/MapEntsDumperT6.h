@@ -8,7 +8,6 @@ namespace map_ents
     class DumperT6 final : public AbstractAssetDumper<T6::MapEnts>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::MapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::MapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::MapEnts>& asset) override;
     };
 } // namespace map_ents

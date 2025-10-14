@@ -914,16 +914,23 @@ namespace
 
 namespace sound
 {
-    void SndBankDumperT6::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
+    size_t SndBankDumperT6::GetProgressTotalCount(const AssetPool<SndBank>& pool) const
+    {
+        return pool.m_asset_lookup.size();
+    }
+
+    void SndBankDumperT6::DumpPool(AssetDumpingContext& context, const AssetPool<SndBank>& pool)
     {
         LoadedSoundBankHashes soundBankHashes;
         soundBankHashes.Initialize();
-        for (const auto* assetInfo : *pool)
+        for (const auto* assetInfo : pool)
         {
             if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
                 continue;
 
             DumpSndBank(context, soundBankHashes, *assetInfo);
+
+            context.IncrementProgress();
         }
     }
 } // namespace sound

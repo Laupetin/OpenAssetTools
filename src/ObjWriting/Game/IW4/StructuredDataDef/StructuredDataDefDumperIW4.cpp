@@ -185,15 +185,10 @@ namespace
 
 namespace structured_data_def
 {
-    bool DumperIW4::ShouldDump(XAssetInfo<StructuredDataDefSet>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<StructuredDataDefSet>& asset)
     {
-        return true;
-    }
-
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<StructuredDataDefSet>* asset)
-    {
-        const auto* set = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* set = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile || set->defs == nullptr)
             return;

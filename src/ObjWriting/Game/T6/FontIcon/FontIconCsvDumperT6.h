@@ -8,7 +8,6 @@ namespace font_icon
     class CsvDumperT6 final : public AbstractAssetDumper<T6::FontIcon>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::FontIcon>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::FontIcon>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::FontIcon>& asset) override;
     };
 } // namespace font_icon

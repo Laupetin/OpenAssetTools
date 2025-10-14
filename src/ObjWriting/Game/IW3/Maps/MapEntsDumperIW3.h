@@ -8,7 +8,6 @@ namespace map_ents
     class DumperIW3 final : public AbstractAssetDumper<IW3::MapEnts>
     {
     protected:
-        bool ShouldDump(XAssetInfo<IW3::MapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW3::MapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::MapEnts>& asset) override;
     };
 } // namespace map_ents

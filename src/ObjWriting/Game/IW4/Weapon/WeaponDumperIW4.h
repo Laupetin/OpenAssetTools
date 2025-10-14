@@ -9,7 +9,6 @@ namespace weapon
     class DumperIW4 final : public AbstractAssetDumper<IW4::WeaponCompleteDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<IW4::WeaponCompleteDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::WeaponCompleteDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::WeaponCompleteDef>& asset) override;
     };
 } // namespace weapon

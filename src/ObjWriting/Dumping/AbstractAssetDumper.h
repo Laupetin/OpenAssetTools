@@ -4,25 +4,32 @@
 
 template<class T> class AbstractAssetDumper : public IAssetDumper<T>
 {
+public:
+    [[nodiscard]] size_t GetProgressTotalCount(const AssetPool<T>& pool) const override
+    {
+        return pool.m_asset_lookup.size();
+    }
+
+    void DumpPool(AssetDumpingContext& context, const AssetPool<T>& pool) override
+    {
+        for (const auto* assetInfo : pool)
+        {
+            if (assetInfo->m_name[0] == ',' || !ShouldDump(*assetInfo))
+            {
+                context.IncrementProgress();
+                continue;
+            }
+
+            DumpAsset(context, *assetInfo);
+            context.IncrementProgress();
+        }
+    }
+
 protected:
-    virtual bool ShouldDump(XAssetInfo<T>* asset)
+    virtual bool ShouldDump(const XAssetInfo<T>& asset)
     {
         return true;
     }
 
-    virtual void DumpAsset(AssetDumpingContext& context, XAssetInfo<T>* asset) = 0;
-
-public:
-    void DumpPool(AssetDumpingContext& context, AssetPool<T>* pool) override
-    {
-        for (auto assetInfo : *pool)
-        {
-            if (assetInfo->m_name[0] == ',' || !ShouldDump(assetInfo))
-            {
-                continue;
-            }
-
-            DumpAsset(context, assetInfo);
-        }
-    }
+    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T>& asset) = 0;
 };

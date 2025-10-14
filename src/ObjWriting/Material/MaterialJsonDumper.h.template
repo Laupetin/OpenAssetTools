@@ -20,10 +20,9 @@ namespace material
     class CLASS_NAME final : public AbstractAssetDumper<GAME::Material>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<GAME::Material>* pool) override;
+        void DumpPool(AssetDumpingContext& context, const AssetPool<GAME::Material>& pool) override;
         
     protected:
-        [[nodiscard]] bool ShouldDump(XAssetInfo<GAME::Material>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::Material>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::Material>& asset) override;
     };
 } // namespace material

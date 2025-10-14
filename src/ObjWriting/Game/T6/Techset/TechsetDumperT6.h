@@ -8,7 +8,6 @@ namespace techset
     class DumperT6 final : public AbstractAssetDumper<T6::MaterialTechniqueSet>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::MaterialTechniqueSet>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::MaterialTechniqueSet>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::MaterialTechniqueSet>& asset) override;
     };
 } // namespace techset

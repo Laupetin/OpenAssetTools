@@ -590,14 +590,14 @@ namespace
         MemoryManager memory;
         MockSearchPath mockObjPath;
         MockOutputPath mockOutput;
-        AssetDumpingContext context(zone, "", mockOutput, mockObjPath);
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
         AssetPoolDynamic<Material> materialPool(0);
 
         GivenMaterial("wc/me_metal_rust_02", materialPool, memory);
 
         material::JsonDumperIW5 dumper;
-        dumper.DumpPool(context, &materialPool);
+        dumper.DumpPool(context, materialPool);
 
         const auto* file = mockOutput.GetMockedFile("materials/wc/me_metal_rust_02.json");
         REQUIRE(file);

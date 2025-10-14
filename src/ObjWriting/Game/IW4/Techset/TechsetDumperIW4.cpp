@@ -536,14 +536,9 @@ namespace IW4
 
 namespace techset
 {
-    bool DumperIW4::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MaterialTechniqueSet>& asset)
     {
-        return true;
-    }
-
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
-    {
-        const auto* techset = asset->Asset();
+        const auto* techset = asset.Asset();
 
         const auto techsetFile = context.OpenAssetFile(GetFileNameForTechsetName(techset->name));
 

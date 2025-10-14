@@ -14,8 +14,7 @@ namespace image
         DumperT6();
 
     protected:
-        bool ShouldDump(XAssetInfo<T6::GfxImage>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::GfxImage>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::GfxImage>& asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;

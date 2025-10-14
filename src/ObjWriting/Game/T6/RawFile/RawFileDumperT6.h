@@ -8,7 +8,6 @@ namespace raw_file
     class DumperT6 final : public AbstractAssetDumper<T6::RawFile>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::RawFile>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::RawFile>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::RawFile>& asset) override;
     };
 } // namespace raw_file

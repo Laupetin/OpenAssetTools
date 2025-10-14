@@ -15,9 +15,9 @@ namespace
 {
     constexpr static size_t GSC_MAX_SIZE = 0xC000000;
 
-    void DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
+    void DumpGsc(AssetDumpingContext& context, const XAssetInfo<RawFile>& asset, std::ostream& stream)
     {
-        const auto* rawFile = asset->Asset();
+        const auto* rawFile = asset.Asset();
 
         if (rawFile->len <= 8)
         {
@@ -96,15 +96,10 @@ namespace
 
 namespace raw_file
 {
-    bool DumperT5::ShouldDump(XAssetInfo<RawFile>* asset)
+    void DumperT5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<RawFile>& asset)
     {
-        return true;
-    }
-
-    void DumperT5::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
-    {
-        const auto* rawFile = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* rawFile = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

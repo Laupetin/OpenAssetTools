@@ -146,13 +146,13 @@ namespace
         MemoryManager memory;
         MockSearchPath mockObjPath;
         MockOutputPath mockOutput;
-        AssetDumpingContext context(zone, "", mockOutput, mockObjPath);
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
         AssetPoolDynamic<FontIcon> fontIconPool(0);
         GivenFontIcon("fonticon/test.csv", fontIconPool, memory);
 
         font_icon::JsonDumperT6 dumper;
-        dumper.DumpPool(context, &fontIconPool);
+        dumper.DumpPool(context, fontIconPool);
 
         const auto* file = mockOutput.GetMockedFile("fonticon/test.json");
         REQUIRE(file);

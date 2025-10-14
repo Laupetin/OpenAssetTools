@@ -9,7 +9,6 @@ namespace phys_preset
     class InfoStringDumperIW4 final : public AbstractAssetDumper<IW4::PhysPreset>
     {
     protected:
-        bool ShouldDump(XAssetInfo<IW4::PhysPreset>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::PhysPreset>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::PhysPreset>& asset) override;
     };
 } // namespace phys_preset

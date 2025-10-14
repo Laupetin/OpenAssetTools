@@ -9,7 +9,6 @@ namespace tracer
     class DumperT6 final : public AbstractAssetDumper<T6::TracerDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::TracerDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::TracerDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::TracerDef>& asset) override;
     };
 } // namespace tracer

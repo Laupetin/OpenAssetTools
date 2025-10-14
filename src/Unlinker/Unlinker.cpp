@@ -176,7 +176,7 @@ private:
                 return false;
 
             OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
-            AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath);
+            AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath, std::nullopt);
 
             std::ofstream gdtStream;
             if (m_args.m_use_gdt)

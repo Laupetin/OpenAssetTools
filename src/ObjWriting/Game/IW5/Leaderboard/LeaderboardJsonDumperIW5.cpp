@@ -94,19 +94,14 @@ namespace
 
 namespace leaderboard
 {
-    bool JsonDumperIW5::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
+    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LeaderboardDef>& asset)
     {
-        return true;
-    }
-
-    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
-    {
-        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset.m_name));
 
         if (!assetFile)
             return;
 
         Dumper dumper(*assetFile);
-        dumper.Dump(*asset->Asset());
+        dumper.Dump(*asset.Asset());
     }
 } // namespace leaderboard

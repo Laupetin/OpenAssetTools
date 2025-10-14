@@ -6,14 +6,9 @@ using namespace T6;
 
 namespace map_ents
 {
-    bool DumperT6::ShouldDump(XAssetInfo<MapEnts>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
     {
-        return true;
-    }
-
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
-    {
-        const auto* mapEnts = asset->Asset();
+        const auto* mapEnts = asset.Asset();
 
         const auto mapEntsFile = context.OpenAssetFile(std::format("{}.ents", mapEnts->name));
 

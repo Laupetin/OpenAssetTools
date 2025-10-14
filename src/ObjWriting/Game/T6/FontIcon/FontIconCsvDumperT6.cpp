@@ -133,19 +133,14 @@ namespace
 
 namespace font_icon
 {
-    bool CsvDumperT6::ShouldDump(XAssetInfo<FontIcon>* asset)
+    void CsvDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<FontIcon>& asset)
     {
-        return true;
-    }
-
-    void CsvDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
-    {
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;
 
         Dumper dumper(*assetFile);
-        dumper.Dump(*asset->Asset());
+        dumper.Dump(*asset.Asset());
     }
 } // namespace font_icon

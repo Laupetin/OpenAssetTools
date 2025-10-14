@@ -8,7 +8,6 @@ namespace string_table
     class DumperT6 final : public AbstractAssetDumper<T6::StringTable>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::StringTable>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::StringTable>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::StringTable>& asset) override;
     };
 } // namespace string_table

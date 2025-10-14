@@ -8,6 +8,7 @@ namespace sound
     class SndBankDumperT6 final : public IAssetDumper<T6::SndBank>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<T6::SndBank>* pool) override;
+        [[nodiscard]] size_t GetProgressTotalCount(const AssetPool<T6::SndBank>& pool) const override;
+        void DumpPool(AssetDumpingContext& context, const AssetPool<T6::SndBank>& pool) override;
     };
 } // namespace sound

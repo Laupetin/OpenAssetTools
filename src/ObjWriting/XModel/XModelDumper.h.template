@@ -20,7 +20,6 @@ namespace xmodel
     class CLASS_NAME final : public AbstractAssetDumper<GAME::XModel>
     {
     protected:
-        bool ShouldDump(XAssetInfo<GAME::XModel>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::XModel>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::XModel>& asset) override;
     };
 } // namespace xmodel

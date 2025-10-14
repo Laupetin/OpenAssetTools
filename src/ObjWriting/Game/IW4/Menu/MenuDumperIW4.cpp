@@ -13,12 +13,12 @@ using namespace IW4;
 
 namespace
 {
-    std::string GetPathForMenu(menu::MenuDumpingZoneState* zoneState, XAssetInfo<menuDef_t>* asset)
+    std::string GetPathForMenu(menu::MenuDumpingZoneState* zoneState, const XAssetInfo<menuDef_t>& asset)
     {
-        const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(asset->Asset());
+        const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(asset.Asset());
 
         if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
-            return "ui_mp/" + std::string(asset->Asset()->window.name) + ".menu";
+            return "ui_mp/" + std::string(asset.Asset()->window.name) + ".menu";
 
         return menuDumpingState->second.m_path;
     }
@@ -26,20 +26,15 @@ namespace
 
 namespace menu
 {
-    bool MenuDumperIW4::ShouldDump(XAssetInfo<menuDef_t>* asset)
+    void MenuDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<menuDef_t>& asset)
     {
-        return true;
-    }
-
-    void MenuDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
-    {
-        const auto* menu = asset->Asset();
+        const auto* menu = asset.Asset();
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
         if (!ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
         {
             // Make sure menu paths based on menu lists are created
-            const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW4*>(asset->m_zone->m_pools.get());
+            const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW4*>(asset.m_zone->m_pools.get());
             for (auto* menuListAsset : *gameAssetPool->m_menu_list)
                 CreateDumpingStateForMenuListIW4(zoneState, menuListAsset->Asset());
         }

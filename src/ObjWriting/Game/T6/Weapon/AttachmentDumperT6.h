@@ -9,7 +9,6 @@ namespace attachment
     class DumperT6 final : public AbstractAssetDumper<T6::WeaponAttachment>
     {
     protected:
-        bool ShouldDump(XAssetInfo<T6::WeaponAttachment>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::WeaponAttachment>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::WeaponAttachment>& asset) override;
     };
 } // namespace attachment

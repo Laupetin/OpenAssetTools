@@ -9,7 +9,6 @@ namespace vehicle
     class DumperIW4 final : public AbstractAssetDumper<IW4::VehicleDef>
     {
     protected:
-        bool ShouldDump(XAssetInfo<IW4::VehicleDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::VehicleDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::VehicleDef>& asset) override;
     };
 } // namespace vehicle

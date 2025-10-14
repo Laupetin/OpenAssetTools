@@ -12,10 +12,10 @@ namespace
 {
     constexpr double MIN_PROGRESS_TO_REPORT = 0.005;
 
-    class EventProgressReporter : public ProgressCallback
+    class LoadingEventProgressReporter : public ProgressCallback
     {
     public:
-        explicit EventProgressReporter(std::string zoneName)
+        explicit LoadingEventProgressReporter(std::string zoneName)
             : m_zone_name(std::move(zoneName)),
               m_last_progress(0)
         {
@@ -46,7 +46,7 @@ void FastFileContext::Destroy()
 
 result::Expected<Zone*, std::string> FastFileContext::LoadFastFile(const std::string& path)
 {
-    auto zone = ZoneLoading::LoadZone(path, std::make_unique<EventProgressReporter>(fs::path(path).filename().replace_extension().string()));
+    auto zone = ZoneLoading::LoadZone(path, std::make_unique<LoadingEventProgressReporter>(fs::path(path).filename().replace_extension().string()));
     if (!zone)
         return result::Unexpected(std::move(zone.error()));
 

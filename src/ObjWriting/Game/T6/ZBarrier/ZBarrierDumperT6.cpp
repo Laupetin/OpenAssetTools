@@ -30,18 +30,18 @@ namespace
         }
     };
 
-    InfoString CreateInfoString(XAssetInfo<ZBarrierDef>* asset)
+    InfoString CreateInfoString(const XAssetInfo<ZBarrierDef>& asset)
     {
-        InfoStringFromZBarrierConverter converter(asset->Asset(),
+        InfoStringFromZBarrierConverter converter(asset.Asset(),
                                                   zbarrier_fields,
                                                   std::extent_v<decltype(zbarrier_fields)>,
                                                   [asset](const scr_string_t scrStr) -> std::string
                                                   {
-                                                      assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                      if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                      assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                      if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                           return "";
 
-                                                      return asset->m_zone->m_script_strings[scrStr];
+                                                      return asset.m_zone->m_script_strings[scrStr];
                                                   });
 
         return converter.Convert();
@@ -50,24 +50,19 @@ namespace
 
 namespace z_barrier
 {
-    bool DumperT6::ShouldDump(XAssetInfo<ZBarrierDef>* asset)
-    {
-        return true;
-    }
-
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<ZBarrierDef>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_ZBARRIER);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_ZBARRIER);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;

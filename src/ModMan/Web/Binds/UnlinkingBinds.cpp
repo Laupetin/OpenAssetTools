@@ -14,22 +14,41 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    class ZoneLoadedDto
+    class ZoneUnlinkProgressDto
     {
     public:
         std::string zoneName;
-        std::string filePath;
+        double percentage;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneLoadedDto, zoneName, filePath);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneUnlinkProgressDto, zoneName, percentage);
 
-    class ZoneUnloadedDto
+    constexpr double MIN_PROGRESS_TO_REPORT = 0.005;
+
+    class UnlinkingEventProgressReporter : public ProgressCallback
     {
     public:
-        std::string zoneName;
-    };
+        explicit UnlinkingEventProgressReporter(std::string zoneName)
+            : m_zone_name(std::move(zoneName)),
+              m_last_progress(0)
+        {
+        }
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneUnloadedDto, zoneName);
+        void OnProgress(const size_t current, const size_t total) override
+        {
+            const double percentage = static_cast<double>(current) / static_cast<double>(total);
+
+            if (percentage - m_last_progress >= MIN_PROGRESS_TO_REPORT)
+            {
+                m_last_progress = percentage;
+                ui::NotifyZoneUnlinkProgress(m_zone_name, percentage);
+            }
+        }
+
+    private:
+        std::string m_zone_name;
+        double m_last_progress;
+    };
 
     result::Expected<NoResult, std::string> UnlinkZoneInDbThread(const std::string& zoneName)
     {
@@ -52,7 +71,8 @@ namespace
 
         OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
         SearchPaths searchPaths;
-        AssetDumpingContext dumpingContext(zone, outputFolderPathStr, outputFolderOutputPath, searchPaths);
+        AssetDumpingContext dumpingContext(
+            zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
         objWriter->DumpZone(dumpingContext);
 
         return NoResult();
@@ -81,6 +101,15 @@ namespace
 
 namespace ui
 {
+    void NotifyZoneUnlinkProgress(std::string zoneName, const double percentage)
+    {
+        const ZoneUnlinkProgressDto dto{
+            .zoneName = std::move(zoneName),
+            .percentage = percentage,
+        };
+        Notify(*ModManContext::Get().m_main_webview, "zoneUnlinkProgress", dto);
+    }
+
     void RegisterUnlinkingBinds(webview::webview& wv)
     {
         BindAsync<std::string>(wv,

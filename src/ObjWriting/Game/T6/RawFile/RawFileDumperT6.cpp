@@ -14,9 +14,9 @@ namespace
 {
     constexpr size_t ANIMTREE_MAX_SIZE = 0xC000000;
 
-    void DumpAnimtree(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
+    void DumpAnimtree(AssetDumpingContext& context, const XAssetInfo<RawFile>& asset, std::ostream& stream)
     {
-        const auto* rawFile = asset->Asset();
+        const auto* rawFile = asset.Asset();
 
         if (rawFile->len <= 4)
         {
@@ -77,15 +77,10 @@ namespace
 
 namespace raw_file
 {
-    bool DumperT6::ShouldDump(XAssetInfo<RawFile>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<RawFile>& asset)
     {
-        return true;
-    }
-
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
-    {
-        const auto* rawFile = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* rawFile = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

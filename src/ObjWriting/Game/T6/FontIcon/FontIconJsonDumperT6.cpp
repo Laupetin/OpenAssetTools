@@ -78,18 +78,13 @@ namespace
 
 namespace font_icon
 {
-    bool JsonDumperT6::ShouldDump(XAssetInfo<FontIcon>* asset)
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<FontIcon>& asset)
     {
-        return true;
-    }
-
-    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
-    {
-        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset.m_name));
 
         if (!assetFile)
             return;
 
-        DumpFontIcon(*assetFile, *asset->Asset());
+        DumpFontIcon(*assetFile, *asset.Asset());
     }
 } // namespace font_icon

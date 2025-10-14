@@ -14,8 +14,7 @@ namespace image
         DumperIW3();
 
     protected:
-        bool ShouldDump(XAssetInfo<IW3::GfxImage>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW3::GfxImage>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::GfxImage>& asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;

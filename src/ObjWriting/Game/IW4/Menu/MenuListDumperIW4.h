@@ -11,11 +11,10 @@ namespace menu
 
     class MenuListDumperIW4 final : public AbstractAssetDumper<IW4::MenuList>
     {
-    protected:
-        bool ShouldDump(XAssetInfo<IW4::MenuList>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MenuList>* asset) override;
-
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<IW4::MenuList>* pool) override;
+        void DumpPool(AssetDumpingContext& context, const AssetPool<IW4::MenuList>& pool) override;
+
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::MenuList>& asset) override;
     };
 } // namespace menu

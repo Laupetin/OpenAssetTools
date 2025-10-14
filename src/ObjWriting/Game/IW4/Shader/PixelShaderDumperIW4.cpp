@@ -6,15 +6,10 @@ using namespace IW4;
 
 namespace shader
 {
-    bool PixelShaderDumperIW4::ShouldDump(XAssetInfo<IW4::MaterialPixelShader>* asset)
+    void PixelShaderDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MaterialPixelShader>& asset)
     {
-        return true;
-    }
-
-    void PixelShaderDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialPixelShader>* asset)
-    {
-        const auto* pixelShader = asset->Asset();
-        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForPixelShaderAssetName(asset->m_name));
+        const auto* pixelShader = asset.Asset();
+        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForPixelShaderAssetName(asset.m_name));
 
         if (!shaderFile)
             return;
