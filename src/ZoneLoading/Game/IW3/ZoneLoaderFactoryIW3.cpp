@@ -11,7 +11,6 @@
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadZoneSizes.h"
-#include "Loading/Steps/StepSkipBytes.h"
 #include "Utils/ClassUtils.h"
 
 #include <cassert>
@@ -22,24 +21,6 @@ using namespace IW3;
 
 namespace
 {
-    bool CanLoad(const ZoneHeader& header, bool* isSecure, bool* isOfficial)
-    {
-        assert(isSecure != nullptr);
-        assert(isOfficial != nullptr);
-
-        if (header.m_version != ZoneConstants::ZONE_VERSION)
-            return false;
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
-        {
-            *isSecure = false;
-            *isOfficial = true;
-            return true;
-        }
-
-        return false;
-    }
-
     void SetupBlock(ZoneLoader& zoneLoader)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
@@ -58,13 +39,33 @@ namespace
     }
 } // namespace
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
 {
-    bool isSecure;
-    bool isOfficial;
+    if (header.m_version != ZoneConstants::ZONE_VERSION)
+        return std::nullopt;
 
-    // Check if this file is a supported IW4 zone.
-    if (!CanLoad(header, &isSecure, &isOfficial))
+    if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
+    {
+        return ZoneLoaderInspectionResult{
+            .m_game_id = GameId::IW3,
+            .m_endianness = GameEndianness::LE,
+            .m_word_size = GameWordSize::ARCH_32,
+            .m_platform = GamePlatform::PC,
+            .m_is_official = true,
+            .m_is_signed = false,
+            .m_is_encrypted = false,
+        };
+    }
+
+    return std::nullopt;
+}
+
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+                                                                     const std::string& fileName,
+                                                                     std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
+{
+    const auto inspectResult = InspectZoneHeader(header);
+    if (!inspectResult)
         return nullptr;
 
     // Create new zone
@@ -93,7 +94,8 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
         32u,
         ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory()));
+        zonePtr->Memory(),
+        std::move(progressCallback)));
 
     return zoneLoader;
 }

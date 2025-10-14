@@ -227,7 +227,7 @@ private:
             auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
-            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
             if (!maybeZone)
             {
                 con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());
@@ -289,7 +289,7 @@ private:
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
 
-            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
             if (!maybeZone)
             {
                 con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());

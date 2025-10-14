@@ -12,7 +12,7 @@ void FastFileContext::Destroy()
 
 result::Expected<Zone*, std::string> FastFileContext::LoadFastFile(const std::string& path)
 {
-    auto zone = ZoneLoading::LoadZone(path);
+    auto zone = ZoneLoading::LoadZone(path, std::nullopt);
     if (!zone)
         return result::Unexpected(std::move(zone.error()));
 

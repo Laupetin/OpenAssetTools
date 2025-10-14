@@ -7,11 +7,11 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iostream>
 
 namespace fs = std::filesystem;
 
-result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const std::string& path)
+result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const std::string& path,
+                                                                           std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
 {
     auto zoneName = fs::path(path).filename().replace_extension().string();
     std::ifstream file(path, std::fstream::in | std::fstream::binary);
@@ -28,7 +28,7 @@ result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const
     for (auto game = 0u; game < static_cast<unsigned>(GameId::COUNT); game++)
     {
         const auto* factory = IZoneLoaderFactory::GetZoneLoaderFactoryForGame(static_cast<GameId>(game));
-        zoneLoader = factory->CreateLoaderForHeader(header, zoneName);
+        zoneLoader = factory->CreateLoaderForHeader(header, zoneName, std::move(progressCallback));
 
         if (zoneLoader)
             break;
