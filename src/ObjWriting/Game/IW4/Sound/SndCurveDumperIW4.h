@@ -5,10 +5,12 @@
 
 namespace sound_curve
 {
-    class DumperIW4 final : public AbstractAssetDumper<IW4::SndCurve>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::AssetSoundCurve>
     {
+    public:
+        explicit DumperIW4(const AssetPool<IW4::AssetSoundCurve::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW4::SndCurve>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::SndCurve>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetSoundCurve::Type>& asset) override;
     };
 } // namespace sound_curve

@@ -59,21 +59,21 @@ namespace
         physPresetInfo->buoyancyBoxMax = physPreset->buoyancyBoxMax;
     }
 
-    InfoString CreateInfoString(XAssetInfo<PhysPreset>* asset)
+    InfoString CreateInfoString(const XAssetInfo<PhysPreset>& asset)
     {
         auto* physPresetInfo = new PhysPresetInfo;
-        CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
+        CopyToPhysPresetInfo(asset.Asset(), physPresetInfo);
 
         InfoStringFromPhysPresetConverter converter(physPresetInfo,
                                                     phys_preset_fields,
                                                     std::extent_v<decltype(phys_preset_fields)>,
                                                     [asset](const scr_string_t scrStr) -> std::string
                                                     {
-                                                        assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                        if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                        assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                        if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                             return "";
 
-                                                        return asset->m_zone->m_script_strings[scrStr];
+                                                        return asset.m_zone->m_script_strings[scrStr];
                                                     });
 
         return converter.Convert();
@@ -82,24 +82,24 @@ namespace
 
 namespace phys_preset
 {
-    bool InfoStringDumperT6::ShouldDump(XAssetInfo<PhysPreset>* asset)
+    InfoStringDumperT6::InfoStringDumperT6(const AssetPool<AssetPhysPreset::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
+    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysPreset::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;

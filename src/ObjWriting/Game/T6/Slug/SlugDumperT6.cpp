@@ -4,15 +4,15 @@ using namespace T6;
 
 namespace slug
 {
-    bool DumperT6::ShouldDump(XAssetInfo<Slug>* asset)
+    DumperT6::DumperT6(const AssetPool<AssetSlug::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<Slug>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSlug::Type>& asset)
     {
-        const auto* slug = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* slug = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

@@ -3,6 +3,7 @@
 #include "Loading/Exception/InvalidLookupPositionException.h"
 #include "Loading/ILoadingStream.h"
 #include "Utils/MemoryManager.h"
+#include "Utils/ProgressCallback.h"
 #include "Zone/Stream/IZoneStream.h"
 #include "Zone/XBlock.h"
 
@@ -10,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <optional>
 #include <type_traits>
 #include <vector>
 
@@ -238,6 +240,11 @@ public:
     virtual void DebugOffsets(size_t assetIndex) const = 0;
 #endif
 
-    static std::unique_ptr<ZoneInputStream> Create(
-        unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream, MemoryManager& memory);
+    static std::unique_ptr<ZoneInputStream> Create(unsigned pointerBitCount,
+                                                   unsigned blockBitCount,
+                                                   std::vector<XBlock*>& blocks,
+                                                   block_t insertBlock,
+                                                   ILoadingStream& stream,
+                                                   MemoryManager& memory,
+                                                   std::optional<std::unique_ptr<ProgressCallback>> progressCallback);
 };

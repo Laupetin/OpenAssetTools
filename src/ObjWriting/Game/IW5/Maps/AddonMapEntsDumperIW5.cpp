@@ -7,15 +7,15 @@ using namespace IW5;
 
 namespace addon_map_ents
 {
-    bool DumperIW5::ShouldDump(XAssetInfo<AddonMapEnts>* asset)
+    DumperIW5::DumperIW5(const AssetPool<AssetAddonMapEnts::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset)
+    void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAddonMapEnts::Type>& asset)
     {
-        const auto* addonMapEnts = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* addonMapEnts = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

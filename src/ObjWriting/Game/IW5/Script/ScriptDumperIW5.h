@@ -5,10 +5,12 @@
 
 namespace script
 {
-    class DumperIW5 final : public AbstractAssetDumper<IW5::ScriptFile>
+    class DumperIW5 final : public AbstractAssetDumper<IW5::AssetScript>
     {
+    public:
+        explicit DumperIW5(const AssetPool<IW5::AssetScript::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW5::ScriptFile>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::ScriptFile>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetScript::Type>& asset) override;
     };
 } // namespace script

@@ -5,9 +5,11 @@
 
 namespace localize
 {
-    class DumperT6 final : public IAssetDumper<T6::LocalizeEntry>
+    class DumperT6 final : public AbstractSingleProgressAssetDumper<T6::AssetLocalize>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<T6::LocalizeEntry>* pool) override;
+        explicit DumperT6(const AssetPool<T6::AssetLocalize::Type>& pool);
+
+        void Dump(AssetDumpingContext& context) override;
     };
 } // namespace localize

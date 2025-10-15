@@ -2,21 +2,19 @@
 
 #include "LightDef/LightDefCommon.h"
 
-#include <sstream>
-
 using namespace IW4;
 
 namespace light_def
 {
-    bool DumperIW4::ShouldDump(XAssetInfo<GfxLightDef>* asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetLightDef::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxLightDef>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLightDef::Type>& asset)
     {
-        const auto* lightDef = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset->m_name));
+        const auto* lightDef = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
 
         if (!assetFile || lightDef->attenuation.image == nullptr || lightDef->attenuation.image->name == nullptr)
             return;

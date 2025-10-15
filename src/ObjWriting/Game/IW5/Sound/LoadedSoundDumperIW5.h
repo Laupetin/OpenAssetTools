@@ -5,10 +5,12 @@
 
 namespace sound
 {
-    class LoadedSoundDumperIW5 final : public AbstractAssetDumper<IW5::LoadedSound>
+    class LoadedSoundDumperIW5 final : public AbstractAssetDumper<IW5::AssetLoadedSound>
     {
+    public:
+        explicit LoadedSoundDumperIW5(const AssetPool<IW5::AssetLoadedSound::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW5::LoadedSound>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::LoadedSound>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetLoadedSound::Type>& asset) override;
     };
 } // namespace sound

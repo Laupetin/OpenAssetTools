@@ -5,10 +5,12 @@
 
 namespace string_table
 {
-    class DumperT6 final : public AbstractAssetDumper<T6::StringTable>
+    class DumperT6 final : public AbstractAssetDumper<T6::AssetStringTable>
     {
+    public:
+        explicit DumperT6(const AssetPool<T6::AssetStringTable::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<T6::StringTable>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::StringTable>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetStringTable::Type>& asset) override;
     };
 } // namespace string_table

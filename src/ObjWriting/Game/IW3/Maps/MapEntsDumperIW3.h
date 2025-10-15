@@ -5,10 +5,12 @@
 
 namespace map_ents
 {
-    class DumperIW3 final : public AbstractAssetDumper<IW3::MapEnts>
+    class DumperIW3 final : public AbstractAssetDumper<IW3::AssetMapEnts>
     {
+    public:
+        explicit DumperIW3(const AssetPool<IW3::AssetMapEnts::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW3::MapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW3::MapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::MapEnts>& asset) override;
     };
 } // namespace map_ents

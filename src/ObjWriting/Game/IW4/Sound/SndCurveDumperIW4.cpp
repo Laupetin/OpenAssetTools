@@ -3,20 +3,18 @@
 #include "Sound/SndCurveDumper.h"
 #include "Sound/SoundCurveCommon.h"
 
-#include <sstream>
-
 using namespace IW4;
 
 namespace sound_curve
 {
-    bool DumperIW4::ShouldDump(XAssetInfo<SndCurve>* asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetSoundCurve::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<SndCurve>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSoundCurve::Type>& asset)
     {
-        const auto* sndCurve = asset->Asset();
+        const auto* sndCurve = asset.Asset();
 
         const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(sndCurve->filename));
 

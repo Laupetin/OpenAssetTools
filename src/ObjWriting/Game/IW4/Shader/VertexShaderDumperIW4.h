@@ -5,10 +5,12 @@
 
 namespace shader
 {
-    class VertexShaderDumperIW4 final : public AbstractAssetDumper<IW4::MaterialVertexShader>
+    class VertexShaderDumperIW4 final : public AbstractAssetDumper<IW4::AssetVertexShader>
     {
+    public:
+        explicit VertexShaderDumperIW4(const AssetPool<IW4::AssetVertexShader::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW4::MaterialVertexShader>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::MaterialVertexShader>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetVertexShader::Type>& asset) override;
     };
 } // namespace shader

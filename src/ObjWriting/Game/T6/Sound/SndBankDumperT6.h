@@ -5,9 +5,13 @@
 
 namespace sound
 {
-    class SndBankDumperT6 final : public IAssetDumper<T6::SndBank>
+    class SndBankDumperT6 final : public AbstractAssetDumper<T6::AssetSoundBank>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<T6::SndBank>* pool) override;
+        explicit SndBankDumperT6(const AssetPool<T6::AssetSoundBank::Type>& pool);
+        void Dump(AssetDumpingContext& context) override;
+
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<Asset<9, T6::SndBank>::Type>& asset) override;
     };
 } // namespace sound

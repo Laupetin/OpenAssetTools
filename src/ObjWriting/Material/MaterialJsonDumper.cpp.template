@@ -361,27 +361,27 @@ namespace
 
 namespace material
 {
-    void CLASS_NAME::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
+    CLASS_NAME::CLASS_NAME (const AssetPool<GAME::AssetMaterial::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void CLASS_NAME::Dump(AssetDumpingContext& context)
     {
         auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
         materialConstantState->ExtractNamesFromZone();
 
-        AbstractAssetDumper::DumpPool(context, pool);
+        AbstractAssetDumper::Dump(context);
     }
 
-    bool CLASS_NAME::ShouldDump(XAssetInfo<Material>* asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMaterial::Type>& asset)
     {
-        return true;
-    }
-
-    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
-    {
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
         if (!assetFile)
             return;
 
-        const auto* material = asset->Asset();
+        const auto* material = asset.Asset();
 #if defined(FEATURE_T5)
         assert(material->info.gameFlags < 0x400);
         assert(material->maxStreamedMips == 0);

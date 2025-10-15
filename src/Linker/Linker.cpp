@@ -364,7 +364,7 @@ class LinkerImpl final : public Linker
                 zoneDirectory = fs::current_path();
             auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
-            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
             if (!maybeZone)
             {
                 con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());

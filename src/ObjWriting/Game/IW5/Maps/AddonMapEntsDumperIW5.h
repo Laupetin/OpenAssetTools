@@ -5,10 +5,12 @@
 
 namespace addon_map_ents
 {
-    class DumperIW5 final : public AbstractAssetDumper<IW5::AddonMapEnts>
+    class DumperIW5 final : public AbstractAssetDumper<IW5::AssetAddonMapEnts>
     {
+    public:
+        explicit DumperIW5(const AssetPool<IW5::AssetAddonMapEnts::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW5::AddonMapEnts>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::AddonMapEnts>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetAddonMapEnts::Type>& asset) override;
     };
 } // namespace addon_map_ents

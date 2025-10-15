@@ -198,7 +198,7 @@ namespace
 
     constexpr auto FORMATTING_RETRIES = 5;
 
-    class LoadedSoundBankHashes
+    class LoadedSoundBankHashes : public IZoneAssetDumperState
     {
     public:
         void Initialize()
@@ -901,29 +901,30 @@ namespace
             *duckFile << duckObj.dump(4) << "\n";
         }
     }
-
-    void DumpSndBank(const AssetDumpingContext& context, const LoadedSoundBankHashes& hashes, const XAssetInfo<SndBank>& sndBankInfo)
-    {
-        const auto* sndBank = sndBankInfo.Asset();
-
-        DumpSndBankAliases(context, hashes, *sndBank);
-        DumpSoundRadverb(context, *sndBank);
-        DumpSoundDucks(context, *sndBank);
-    }
 } // namespace
 
 namespace sound
 {
-    void SndBankDumperT6::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
+    SndBankDumperT6::SndBankDumperT6(const AssetPool<AssetSoundBank::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        LoadedSoundBankHashes soundBankHashes;
-        soundBankHashes.Initialize();
-        for (const auto* assetInfo : *pool)
-        {
-            if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
-                continue;
+    }
 
-            DumpSndBank(context, soundBankHashes, *assetInfo);
-        }
+    void SndBankDumperT6::Dump(AssetDumpingContext& context)
+    {
+        auto* hashes = context.GetZoneAssetDumperState<LoadedSoundBankHashes>();
+        hashes->Initialize();
+
+        AbstractAssetDumper::Dump(context);
+    }
+
+    void SndBankDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSoundBank::Type>& asset)
+    {
+        const auto* sndBank = asset.Asset();
+        const auto* hashes = context.GetZoneAssetDumperState<LoadedSoundBankHashes>();
+
+        DumpSndBankAliases(context, *hashes, *sndBank);
+        DumpSoundRadverb(context, *sndBank);
+        DumpSoundDucks(context, *sndBank);
     }
 } // namespace sound

@@ -176,7 +176,7 @@ private:
                 return false;
 
             OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
-            AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath);
+            AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath, std::nullopt);
 
             std::ofstream gdtStream;
             if (m_args.m_use_gdt)
@@ -227,7 +227,7 @@ private:
             auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
-            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
             if (!maybeZone)
             {
                 con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());
@@ -289,7 +289,7 @@ private:
 
             auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
 
-            auto maybeZone = ZoneLoading::LoadZone(zonePath);
+            auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
             if (!maybeZone)
             {
                 con::error("Failed to load zone \"{}\": {}", zonePath, maybeZone.error());

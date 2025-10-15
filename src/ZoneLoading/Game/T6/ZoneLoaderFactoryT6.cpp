@@ -24,11 +24,10 @@
 #include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
 
 #include <cassert>
-#include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <format>
-#include <iostream>
 #include <memory>
 
 using namespace T6;
@@ -36,6 +35,130 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    enum class ZoneCompressionTypeT6 : std::uint8_t
+    {
+        DEFLATE,
+        LZX
+    };
+
+    struct ZoneLoaderInspectionResultT6
+    {
+        ZoneLoaderInspectionResult m_generic_result;
+        ZoneCompressionTypeT6 m_compression_type;
+    };
+
+    std::optional<ZoneLoaderInspectionResultT6> InspectZoneHeaderT6(const ZoneHeader& header)
+    {
+        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
+        {
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PC,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = true,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PC,
+                                                   .m_is_official = false,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = true,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PC,
+                                                   .m_is_official = false,
+                                                   .m_is_signed = false,
+                                                   .m_is_encrypted = true,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PC,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = false,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+        }
+        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON)
+        {
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::BE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::XBOX,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = true,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_LZX_TREYARCH, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::BE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::XBOX,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = true,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::LZX,
+                };
+            }
+        }
+
+        return std::nullopt;
+    }
+
     GameLanguage GetZoneLanguage(const std::string& zoneName)
     {
         const auto& languagePrefixes = IGame::GetGameById(GameId::T6)->GetLanguagePrefixes();
@@ -49,68 +172,6 @@ namespace
         }
 
         return GameLanguage::LANGUAGE_NONE;
-    }
-
-    bool CanLoad(const ZoneHeader& header, bool& isBigEndian, bool& isSecure, bool& isOfficial, bool& isEncrypted, bool& isLzxCompressed)
-    {
-        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
-        {
-            isBigEndian = false;
-            isLzxCompressed = false;
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
-            {
-                isSecure = true;
-                isOfficial = true;
-                isEncrypted = true;
-                return true;
-            }
-
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, 8))
-            {
-                isSecure = true;
-                isOfficial = false;
-                isEncrypted = true;
-                return true;
-            }
-
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
-            {
-                isSecure = false;
-                isOfficial = true;
-                isEncrypted = true;
-                return true;
-            }
-
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
-            {
-                isSecure = false;
-                isOfficial = true;
-                isEncrypted = false;
-                return true;
-            }
-        }
-        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON)
-        {
-            isBigEndian = true;
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
-            {
-                isSecure = true;
-                isOfficial = true;
-                isEncrypted = true;
-                isLzxCompressed = false;
-                return true;
-            }
-            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_LZX_TREYARCH, 8))
-            {
-                isSecure = true;
-                isOfficial = true;
-                isEncrypted = true;
-                isLzxCompressed = true;
-                return true;
-            }
-        }
-
-        return false;
     }
 
     void SetupBlock(ZoneLoader& zoneLoader)
@@ -169,26 +230,16 @@ namespace
         return signatureLoadStepPtr;
     }
 
-    ICapturedDataProvider*
-        AddXChunkProcessor(const bool isBigEndian, const bool isEncrypted, const bool isLzxCompressed, ZoneLoader& zoneLoader, std::string& fileName)
+    ICapturedDataProvider* AddXChunkProcessor(const ZoneLoaderInspectionResultT6& inspectResult, ZoneLoader& zoneLoader, const std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        std::unique_ptr<processor::IProcessorXChunks> xChunkProcessor;
+        auto xChunkProcessor = processor::CreateProcessorXChunks(
+            ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, inspectResult.m_generic_result.m_endianness, ZoneConstants::VANILLA_BUFFER_SIZE);
 
-        if (isBigEndian)
-        {
-            xChunkProcessor = processor::CreateProcessorXChunks(
-                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::BE, ZoneConstants::VANILLA_BUFFER_SIZE);
-        }
-        else
-        {
-            xChunkProcessor = processor::CreateProcessorXChunks(
-                ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, GameEndianness::LE, ZoneConstants::VANILLA_BUFFER_SIZE);
-        }
+        const uint8_t (&salsa20Key)[32] = inspectResult.m_generic_result.m_platform == GamePlatform::XBOX ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON
+                                                                                                          : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
 
-        const uint8_t (&salsa20Key)[32] = isBigEndian ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
-
-        if (isEncrypted)
+        if (inspectResult.m_generic_result.m_is_encrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
             auto chunkProcessorSalsa20 =
@@ -197,7 +248,7 @@ namespace
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
-        if (isLzxCompressed)
+        if (inspectResult.m_compression_type == ZoneCompressionTypeT6::LZX)
         {
             // Decompress the chunks using lzx
             xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorLzxDecompress>(ZoneConstants::STREAM_COUNT));
@@ -215,12 +266,21 @@ namespace
     }
 } // namespace
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
 {
-    bool isBigEndian, isSecure, isOfficial, isEncrypted, isLzxCompressed;
+    auto resultT6 = InspectZoneHeaderT6(header);
+    if (!resultT6)
+        return std::nullopt;
 
-    // Check if this file is a supported T6 zone.
-    if (!CanLoad(header, isBigEndian, isSecure, isOfficial, isEncrypted, isLzxCompressed))
+    return resultT6->m_generic_result;
+}
+
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+                                                                     const std::string& fileName,
+                                                                     std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
+{
+    const auto inspectResult = InspectZoneHeaderT6(header);
+    if (!inspectResult)
         return nullptr;
 
     // Create new zone
@@ -235,15 +295,15 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     SetupBlock(*zoneLoader);
 
     // If file is signed setup a RSA instance.
-    auto rsa = isSecure ? SetupRsa(isOfficial) : nullptr;
+    auto rsa = inspectResult->m_generic_result.m_is_signed ? SetupRsa(inspectResult->m_generic_result.m_is_official) : nullptr;
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
-    ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, *zoneLoader, fileName);
+    ISignatureProvider* signatureProvider = AddAuthHeaderSteps(inspectResult->m_generic_result.m_is_signed, *zoneLoader, fileName);
 
     // Setup loading XChunks from the zone from this point on.
-    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isBigEndian, isEncrypted, isLzxCompressed, *zoneLoader, fileName);
+    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(*inspectResult, *zoneLoader, fileName);
 
-    if (!isBigEndian)
+    if (inspectResult->m_generic_result.m_endianness == GameEndianness::LE)
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
@@ -258,12 +318,11 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
             32u,
             ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
-            zonePtr->Memory()));
+            zonePtr->Memory(),
+            std::move(progressCallback)));
 
-        if (isSecure)
-        {
+        if (inspectResult->m_generic_result.m_is_signed)
             zoneLoader->AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), signatureProvider, signatureDataProvider));
-        }
     }
     else
     {

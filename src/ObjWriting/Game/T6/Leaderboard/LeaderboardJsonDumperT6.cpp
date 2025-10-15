@@ -98,19 +98,19 @@ namespace
 
 namespace leaderboard
 {
-    bool JsonDumperT6::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
+    JsonDumperT6::JsonDumperT6(const AssetPool<AssetLeaderboard::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLeaderboard::Type>& asset)
     {
-        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset.m_name));
 
         if (!assetFile)
             return;
 
         Dumper dumper(*assetFile);
-        dumper.Dump(*asset->Asset());
+        dumper.Dump(*asset.Asset());
     }
 } // namespace leaderboard

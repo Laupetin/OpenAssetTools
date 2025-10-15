@@ -104,20 +104,20 @@ namespace
 
 namespace camo
 {
-    bool JsonDumperT6::ShouldDump(XAssetInfo<WeaponCamo>* asset)
+    JsonDumperT6::JsonDumperT6(const AssetPool<AssetWeaponCamo::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCamo>* asset)
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeaponCamo::Type>& asset)
     {
-        const auto fileName = GetJsonFileNameForAssetName(asset->m_name);
+        const auto fileName = GetJsonFileNameForAssetName(asset.m_name);
         const auto assetFile = context.OpenAssetFile(fileName);
 
         if (!assetFile)
             return;
 
         const JsonDumperImpl dumper(*assetFile);
-        dumper.Dump(asset->Asset());
+        dumper.Dump(asset.Asset());
     }
 } // namespace camo

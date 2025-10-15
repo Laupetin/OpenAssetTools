@@ -50,7 +50,8 @@ namespace
                           std::vector<XBlock*>& blocks,
                           const block_t insertBlock,
                           ILoadingStream& stream,
-                          MemoryManager& memory)
+                          MemoryManager& memory,
+                          std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
             : m_blocks(blocks),
               m_stream(stream),
               m_memory(memory),
@@ -58,7 +59,10 @@ namespace
               m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount)) << (pointerBitCount - blockBitCount)),
               m_block_shift(pointerBitCount - blockBitCount),
               m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
-              m_last_fill_size(0)
+              m_last_fill_size(0),
+              m_has_progress_callback(false),
+              m_progress_current_size(0uz),
+              m_progress_total_size(0uz)
         {
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
@@ -68,6 +72,13 @@ namespace
             std::memset(m_block_offsets.get(), 0, sizeof(size_t) * blockCount);
 
             m_insert_block = blocks[insertBlock];
+
+            if (progressCallback)
+            {
+                m_has_progress_callback = true;
+                m_progress_callback = *std::move(progressCallback);
+                m_progress_total_size = CalculateTotalSize();
+            }
         }
 
         [[nodiscard]] unsigned GetPointerBitCount() const override
@@ -444,6 +455,13 @@ namespace
         void IncBlockPos(const XBlock& block, const size_t size)
         {
             m_block_offsets[block.m_index] += size;
+
+            // We cannot know the full size of the temp block
+            if (m_has_progress_callback && block.m_type != XBlockType::BLOCK_TYPE_TEMP)
+            {
+                m_progress_current_size += size;
+                m_progress_callback->OnProgress(m_progress_current_size, m_progress_total_size);
+            }
         }
 
         void Align(const XBlock& block, const unsigned align)
@@ -453,6 +471,20 @@ namespace
                 const auto blockIndex = block.m_index;
                 m_block_offsets[blockIndex] = utils::Align(m_block_offsets[blockIndex], static_cast<size_t>(align));
             }
+        }
+
+        [[nodiscard]] size_t CalculateTotalSize() const
+        {
+            size_t result = 0uz;
+
+            for (const auto& block : m_blocks)
+            {
+                // We cannot know the full size of the temp block
+                if (block->m_type != XBlockType::BLOCK_TYPE_TEMP)
+                    result += block->m_buffer_size;
+            }
+
+            return result;
         }
 
         std::vector<XBlock*>& m_blocks;
@@ -475,6 +507,11 @@ namespace
         // These lookups map a block offset to a pointer in case of a platform mismatch
         std::unordered_map<uintptr_t, void*> m_pointer_redirect_lookup;
         std::unordered_map<uintptr_t, void*> m_alias_redirect_lookup;
+
+        bool m_has_progress_callback;
+        std::unique_ptr<ProgressCallback> m_progress_callback;
+        size_t m_progress_current_size;
+        size_t m_progress_total_size;
     };
 } // namespace
 
@@ -483,7 +520,8 @@ std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(const unsigned pointerB
                                                          std::vector<XBlock*>& blocks,
                                                          const block_t insertBlock,
                                                          ILoadingStream& stream,
-                                                         MemoryManager& memory)
+                                                         MemoryManager& memory,
+                                                         std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
 {
-    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory);
+    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory, std::move(progressCallback));
 }

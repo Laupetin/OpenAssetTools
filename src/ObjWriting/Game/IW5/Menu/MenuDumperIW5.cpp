@@ -15,10 +15,10 @@ using namespace IW5;
 
 namespace
 {
-    const MenuList* GetParentMenuList(XAssetInfo<menuDef_t>* asset)
+    const MenuList* GetParentMenuList(const XAssetInfo<menuDef_t>& asset)
     {
-        const auto* menu = asset->Asset();
-        const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW5*>(asset->m_zone->m_pools.get());
+        const auto* menu = asset.Asset();
+        const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW5*>(asset.m_zone->m_pools.get());
         for (const auto* menuList : *gameAssetPool->m_menu_list)
         {
             const auto* menuListAsset = menuList->Asset();
@@ -33,32 +33,32 @@ namespace
         return nullptr;
     }
 
-    std::string GetPathForMenu(XAssetInfo<menuDef_t>* asset)
+    std::string GetPathForMenu(const XAssetInfo<menuDef_t>& asset)
     {
         const auto* list = GetParentMenuList(asset);
 
         if (!list)
-            return std::format("ui_mp/{}.menu", asset->Asset()->window.name);
+            return std::format("ui_mp/{}.menu", asset.Asset()->window.name);
 
         const fs::path p(list->name);
         std::string parentPath;
         if (p.has_parent_path())
             parentPath = p.parent_path().string() + "/";
 
-        return std::format("{}{}.menu", parentPath, asset->Asset()->window.name);
+        return std::format("{}{}.menu", parentPath, asset.Asset()->window.name);
     }
 } // namespace
 
 namespace menu
 {
-    bool MenuDumperIW5::ShouldDump(XAssetInfo<menuDef_t>* asset)
+    MenuDumperIW5::MenuDumperIW5(const AssetPool<AssetMenu::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
+    void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
-        const auto* menu = asset->Asset();
+        const auto* menu = asset.Asset();
         const auto menuFilePath = GetPathForMenu(asset);
 
         if (ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))

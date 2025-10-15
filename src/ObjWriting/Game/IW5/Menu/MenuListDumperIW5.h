@@ -5,10 +5,12 @@
 
 namespace menu
 {
-    class MenuListDumperIW5 final : public AbstractAssetDumper<IW5::MenuList>
+    class MenuListDumperIW5 final : public AbstractAssetDumper<IW5::AssetMenuList>
     {
+    public:
+        explicit MenuListDumperIW5(const AssetPool<IW5::AssetMenuList::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW5::MenuList>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW5::MenuList>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetMenuList::Type>& asset) override;
     };
 } // namespace menu

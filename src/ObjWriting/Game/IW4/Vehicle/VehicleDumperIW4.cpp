@@ -73,18 +73,18 @@ namespace
         }
     };
 
-    InfoString CreateInfoString(XAssetInfo<VehicleDef>* asset)
+    InfoString CreateInfoString(const XAssetInfo<VehicleDef>& asset)
     {
-        InfoStringFromVehicleConverter converter(asset->Asset(),
+        InfoStringFromVehicleConverter converter(asset.Asset(),
                                                  vehicle_fields,
                                                  std::extent_v<decltype(vehicle_fields)>,
                                                  [asset](const scr_string_t scrStr) -> std::string
                                                  {
-                                                     assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                     if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                     assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                     if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                          return "";
 
-                                                     return asset->m_zone->m_script_strings[scrStr];
+                                                     return asset.m_zone->m_script_strings[scrStr];
                                                  });
 
         return converter.Convert();
@@ -93,24 +93,24 @@ namespace
 
 namespace vehicle
 {
-    bool DumperIW4::ShouldDump(XAssetInfo<VehicleDef>* asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetVehicle::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetVehicle::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_VEHICLE);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_VEHICLE);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;
