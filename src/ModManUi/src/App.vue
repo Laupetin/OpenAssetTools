@@ -81,7 +81,6 @@ webviewAddEventListener("zoneLoadProgress", (dto) => {
 
 webviewAddEventListener("zoneUnlinkProgress", (dto) => {
   lastPercentage.value = dto.percentage;
-  console.log("unlink", dto);
 });
 </script>
 
