@@ -198,7 +198,7 @@ namespace
 
     constexpr auto FORMATTING_RETRIES = 5;
 
-    class LoadedSoundBankHashes
+    class LoadedSoundBankHashes : public IZoneAssetDumperState
     {
     public:
         void Initialize()
@@ -901,36 +901,30 @@ namespace
             *duckFile << duckObj.dump(4) << "\n";
         }
     }
-
-    void DumpSndBank(const AssetDumpingContext& context, const LoadedSoundBankHashes& hashes, const XAssetInfo<SndBank>& sndBankInfo)
-    {
-        const auto* sndBank = sndBankInfo.Asset();
-
-        DumpSndBankAliases(context, hashes, *sndBank);
-        DumpSoundRadverb(context, *sndBank);
-        DumpSoundDucks(context, *sndBank);
-    }
 } // namespace
 
 namespace sound
 {
-    size_t SndBankDumperT6::GetProgressTotalCount(const AssetPool<SndBank>& pool) const
+    SndBankDumperT6::SndBankDumperT6(const AssetPool<AssetSoundBank::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return pool.m_asset_lookup.size();
     }
 
-    void SndBankDumperT6::DumpPool(AssetDumpingContext& context, const AssetPool<SndBank>& pool)
+    void SndBankDumperT6::Dump(AssetDumpingContext& context)
     {
-        LoadedSoundBankHashes soundBankHashes;
-        soundBankHashes.Initialize();
-        for (const auto* assetInfo : pool)
-        {
-            if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
-                continue;
+        auto* hashes = context.GetZoneAssetDumperState<LoadedSoundBankHashes>();
+        hashes->Initialize();
 
-            DumpSndBank(context, soundBankHashes, *assetInfo);
+        AbstractAssetDumper::Dump(context);
+    }
 
-            context.IncrementProgress();
-        }
+    void SndBankDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSoundBank::Type>& asset)
+    {
+        const auto* sndBank = asset.Asset();
+        const auto* hashes = context.GetZoneAssetDumperState<LoadedSoundBankHashes>();
+
+        DumpSndBankAliases(context, *hashes, *sndBank);
+        DumpSoundRadverb(context, *sndBank);
+        DumpSoundDucks(context, *sndBank);
     }
 } // namespace sound

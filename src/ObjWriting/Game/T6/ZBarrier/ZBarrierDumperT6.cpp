@@ -50,7 +50,12 @@ namespace
 
 namespace z_barrier
 {
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<ZBarrierDef>& asset)
+    DumperT6::DumperT6(const AssetPool<AssetZBarrier::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetZBarrier::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

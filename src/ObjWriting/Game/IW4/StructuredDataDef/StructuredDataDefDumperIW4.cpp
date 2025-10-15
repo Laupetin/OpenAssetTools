@@ -1,9 +1,11 @@
 #include "StructuredDataDefDumperIW4.h"
 
+#include "StructuredDataDef/CommonStructuredDataDef.h"
 #include "StructuredDataDef/StructuredDataDefDumper.h"
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <sstream>
 
 using namespace IW4;
@@ -185,7 +187,12 @@ namespace
 
 namespace structured_data_def
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<StructuredDataDefSet>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetStructuredDataDef::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetStructuredDataDef::Type>& asset)
     {
         const auto* set = asset.Asset();
         const auto assetFile = context.OpenAssetFile(asset.m_name);

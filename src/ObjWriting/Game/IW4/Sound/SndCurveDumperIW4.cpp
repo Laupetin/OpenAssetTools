@@ -7,7 +7,12 @@ using namespace IW4;
 
 namespace sound_curve
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<SndCurve>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetSoundCurve::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSoundCurve::Type>& asset)
     {
         const auto* sndCurve = asset.Asset();
 

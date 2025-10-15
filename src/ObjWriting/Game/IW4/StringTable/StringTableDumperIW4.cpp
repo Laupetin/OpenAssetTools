@@ -6,7 +6,12 @@ using namespace IW4;
 
 namespace string_table
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<StringTable>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetStringTable::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetStringTable::Type>& asset)
     {
         const auto* stringTable = asset.Asset();
         const auto assetFile = context.OpenAssetFile(asset.m_name);

@@ -106,7 +106,12 @@ namespace
 
 namespace menu
 {
-    void MenuListDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MenuList>& asset)
+    MenuListDumperIW5::MenuListDumperIW5(const AssetPool<AssetMenuList::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void MenuListDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenuList::Type>& asset)
     {
         const auto* menuList = asset.Asset();
         const auto assetFile = context.OpenAssetFile(asset.m_name);

@@ -536,7 +536,12 @@ namespace IW4
 
 namespace techset
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MaterialTechniqueSet>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetTechniqueSet::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
         const auto* techset = asset.Asset();
 

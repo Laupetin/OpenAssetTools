@@ -625,8 +625,8 @@ namespace
 
         GivenMaterial("mc/ch_rubble01", materialPool, memory);
 
-        material::JsonDumperT5 dumper;
-        dumper.DumpPool(context, materialPool);
+        material::JsonDumperT5 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/mc/ch_rubble01.json");
         REQUIRE(file);

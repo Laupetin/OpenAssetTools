@@ -78,7 +78,12 @@ namespace
 
 namespace font_icon
 {
-    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<FontIcon>& asset)
+    JsonDumperT6::JsonDumperT6(const AssetPool<AssetFontIcon::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetFontIcon::Type>& asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset.m_name));
 

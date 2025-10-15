@@ -5,9 +5,12 @@
 
 namespace map_ents
 {
-    class DumperT6 final : public AbstractAssetDumper<T6::MapEnts>
+    class DumperT6 final : public AbstractAssetDumper<T6::AssetMapEnts>
     {
+    public:
+        explicit DumperT6(const AssetPool<T6::AssetMapEnts::Type>& pool);
+
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::MapEnts>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetMapEnts::Type>& asset) override;
     };
 } // namespace map_ents

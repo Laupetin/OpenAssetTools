@@ -77,7 +77,8 @@ namespace
 
 namespace image
 {
-    DumperT6::DumperT6()
+    DumperT6::DumperT6(const AssetPool<AssetImage::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
@@ -94,7 +95,7 @@ namespace image
         }
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<GfxImage>& asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
         const auto* image = asset.Asset();
         const auto texture = LoadImageData(context.m_obj_search_path, *image);

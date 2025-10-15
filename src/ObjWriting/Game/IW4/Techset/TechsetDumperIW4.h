@@ -5,9 +5,12 @@
 
 namespace techset
 {
-    class DumperIW4 final : public AbstractAssetDumper<IW4::MaterialTechniqueSet>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::AssetTechniqueSet>
     {
+    public:
+        explicit DumperIW4(const AssetPool<IW4::AssetTechniqueSet::Type>& pool);
+
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::MaterialTechniqueSet>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetTechniqueSet::Type>& asset) override;
     };
 } // namespace techset

@@ -67,7 +67,12 @@ namespace
 
 namespace attachment
 {
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<WeaponAttachment>& asset)
+    DumperT6::DumperT6(const AssetPool<AssetAttachment::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAttachment::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

@@ -98,7 +98,12 @@ namespace
 
 namespace leaderboard
 {
-    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LeaderboardDef>& asset)
+    JsonDumperT6::JsonDumperT6(const AssetPool<AssetLeaderboard::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLeaderboard::Type>& asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset.m_name));
 

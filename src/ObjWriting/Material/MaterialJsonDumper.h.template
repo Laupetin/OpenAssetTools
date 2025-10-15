@@ -17,12 +17,13 @@
 
 namespace material
 {
-    class CLASS_NAME final : public AbstractAssetDumper<GAME::Material>
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetMaterial>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, const AssetPool<GAME::Material>& pool) override;
+        explicit CLASS_NAME (const AssetPool<GAME::AssetMaterial::Type>& pool);
+        void Dump(AssetDumpingContext& context) override;
         
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::Material>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetMaterial::Type>& asset) override;
     };
 } // namespace material

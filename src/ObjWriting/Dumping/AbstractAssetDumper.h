@@ -1,18 +1,24 @@
 #pragma once
 
+#include "Game/IAsset.h"
 #include "IAssetDumper.h"
+#include "Pool/AssetPool.h"
 
-template<class T> class AbstractAssetDumper : public IAssetDumper<T>
+template<class AssetType> class AbstractAssetDumper : public IAssetDumper
 {
+    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
 public:
-    [[nodiscard]] size_t GetProgressTotalCount(const AssetPool<T>& pool) const override
+    using AssetType_t = AssetType;
+
+    [[nodiscard]] size_t GetProgressTotalCount() const override
     {
-        return pool.m_asset_lookup.size();
+        return m_pool.m_asset_lookup.size();
     }
 
-    void DumpPool(AssetDumpingContext& context, const AssetPool<T>& pool) override
+    void Dump(AssetDumpingContext& context) override
     {
-        for (const auto* assetInfo : pool)
+        for (const auto* assetInfo : m_pool)
         {
             if (assetInfo->m_name[0] == ',' || !ShouldDump(*assetInfo))
             {
@@ -26,10 +32,38 @@ public:
     }
 
 protected:
-    virtual bool ShouldDump(const XAssetInfo<T>& asset)
+    explicit AbstractAssetDumper(const AssetPool<typename AssetType::Type>& pool)
+        : m_pool(pool)
+    {
+    }
+
+    virtual bool ShouldDump(const XAssetInfo<typename AssetType::Type>& asset)
     {
         return true;
     }
 
-    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T>& asset) = 0;
+    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<typename AssetType::Type>& asset) = 0;
+
+    const AssetPool<typename AssetType::Type>& m_pool;
+};
+
+template<class AssetType> class AbstractSingleProgressAssetDumper : public IAssetDumper
+{
+    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+public:
+    using AssetType_t = AssetType;
+
+    [[nodiscard]] size_t GetProgressTotalCount() const override
+    {
+        return m_pool.m_asset_lookup.empty() ? 0uz : 1uz;
+    }
+
+protected:
+    explicit AbstractSingleProgressAssetDumper(const AssetPool<typename AssetType::Type>& pool)
+        : m_pool(pool)
+    {
+    }
+
+    const AssetPool<typename AssetType::Type>& m_pool;
 };

@@ -30,68 +30,67 @@ using namespace IW4;
 
 bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 {
-#define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
-    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+#define REGISTER_DUMPER(dumperType, poolName)                                                                                                       \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(dumperType::AssetType_t::EnumEntry))                                                         \
     {                                                                                                                                                          \
-        dumperType dumper;                                                                                                                                     \
-        totalProgress += dumper.GetProgressTotalCount(*assetPools->poolName);                                                                                  \
-        dumpingFunctions.emplace_back(                                                                                                                         \
-            [](AssetDumpingContext& funcContext, const GameAssetPoolIW4* funcPools)                                                                             \
-            {                                                                                                                                                  \
-                dumperType dumper;                                                                                                                             \
-                dumper.DumpPool(funcContext, *funcPools->poolName);                                                                                            \
-            });                                                                                                                                                \
+        dumpers.emplace_back(std::make_unique<dumperType>(*assetPools->poolName));                                                                             \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(context.m_zone.m_pools.get());
+    std::vector<std::unique_ptr<IAssetDumper>> dumpers;
 
-    size_t totalProgress = 0uz;
-    std::vector<std::function<void(AssetDumpingContext & context, const GameAssetPoolIW4*)>> dumpingFunctions;
-
-    DUMP_ASSET_POOL(phys_preset::InfoStringDumperIW4, m_phys_preset, ASSET_TYPE_PHYSPRESET)
-    DUMP_ASSET_POOL(phys_collmap::DumperIW4, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
-    // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
-    DUMP_ASSET_POOL(xmodel::DumperIW4, m_xmodel, ASSET_TYPE_XMODEL)
-    DUMP_ASSET_POOL(material::JsonDumperIW4, m_material, ASSET_TYPE_MATERIAL)
+    REGISTER_DUMPER(phys_preset::InfoStringDumperIW4, m_phys_preset)
+    REGISTER_DUMPER(phys_collmap::DumperIW4, m_phys_collmap)
+    // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
+    REGISTER_DUMPER(xmodel::DumperIW4, m_xmodel)
+    REGISTER_DUMPER(material::JsonDumperIW4, m_material)
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
-    DUMP_ASSET_POOL(material::DecompilingGdtDumperIW4, m_material, ASSET_TYPE_MATERIAL)
+    DUMP_ASSET_POOL(material::DecompilingGdtDumperIW4, m_material)
 #endif
-    DUMP_ASSET_POOL(shader::PixelShaderDumperIW4, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
-    DUMP_ASSET_POOL(shader::VertexShaderDumperIW4, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
-    DUMP_ASSET_POOL(techset::DumperIW4, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
-    DUMP_ASSET_POOL(image::DumperIW4, m_image, ASSET_TYPE_IMAGE)
-    // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
-    DUMP_ASSET_POOL(sound_curve::DumperIW4, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
-    DUMP_ASSET_POOL(sound::LoadedSoundDumperIW4, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
-    // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map, ASSET_TYPE_CLIPMAP_MP)
-    // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)
-    // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp, ASSET_TYPE_GAMEWORLD_SP)
-    // DUMP_ASSET_POOL(AssetDumperGameWorldMp, m_game_world_mp, ASSET_TYPE_GAMEWORLD_MP)
-    // DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents, ASSET_TYPE_MAP_ENTS)
-    // DUMP_ASSET_POOL(AssetDumperFxWorld, m_fx_world, ASSET_TYPE_FXWORLD)
-    // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
-    DUMP_ASSET_POOL(light_def::DumperIW4, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
-    // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
-    DUMP_ASSET_POOL(menu::MenuListDumperIW4, m_menu_list, ASSET_TYPE_MENULIST)
-    DUMP_ASSET_POOL(menu::MenuDumperIW4, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(localize::DumperIW4, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
-    DUMP_ASSET_POOL(weapon::DumperIW4, m_weapon, ASSET_TYPE_WEAPON)
-    // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
-    // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
-    // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
-    DUMP_ASSET_POOL(raw_file::DumperIW4, m_raw_file, ASSET_TYPE_RAWFILE)
-    DUMP_ASSET_POOL(string_table::DumperIW4, m_string_table, ASSET_TYPE_STRINGTABLE)
-    DUMP_ASSET_POOL(leaderboard::JsonDumperIW4, m_leaderboard, ASSET_TYPE_LEADERBOARD)
-    DUMP_ASSET_POOL(structured_data_def::DumperIW4, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
-    DUMP_ASSET_POOL(tracer::DumperIW4, m_tracer, ASSET_TYPE_TRACER)
-    DUMP_ASSET_POOL(vehicle::DumperIW4, m_vehicle, ASSET_TYPE_VEHICLE)
-    DUMP_ASSET_POOL(addon_map_ents::DumperIW4, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
+    REGISTER_DUMPER(shader::PixelShaderDumperIW4, m_material_pixel_shader)
+    REGISTER_DUMPER(shader::VertexShaderDumperIW4, m_material_vertex_shader)
+    REGISTER_DUMPER(techset::DumperIW4, m_technique_set)
+    REGISTER_DUMPER(image::DumperIW4, m_image)
+    // REGISTER_DUMPER(AssetDumpersnd_alias_list_t, m_sound)
+    REGISTER_DUMPER(sound_curve::DumperIW4, m_sound_curve)
+    REGISTER_DUMPER(sound::LoadedSoundDumperIW4, m_loaded_sound)
+    // REGISTER_DUMPER(AssetDumperClipMap, m_clip_map)
+    // REGISTER_DUMPER(AssetDumperComWorld, m_com_world)
+    // REGISTER_DUMPER(AssetDumperGameWorldSp, m_game_world_sp)
+    // REGISTER_DUMPER(AssetDumperGameWorldMp, m_game_world_mp)
+    // REGISTER_DUMPER(AssetDumperMapEnts, m_map_ents)
+    // REGISTER_DUMPER(AssetDumperFxWorld, m_fx_world)
+    // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
+    REGISTER_DUMPER(light_def::DumperIW4, m_gfx_light_def)
+    // REGISTER_DUMPER(AssetDumperFont_s, m_font)
+    REGISTER_DUMPER(menu::MenuListDumperIW4, m_menu_list)
+    REGISTER_DUMPER(menu::MenuDumperIW4, m_menu_def)
+    REGISTER_DUMPER(localize::DumperIW4, m_localize)
+    REGISTER_DUMPER(weapon::DumperIW4, m_weapon)
+    // REGISTER_DUMPER(AssetDumperSndDriverGlobals, m_snd_driver_globals)
+    // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
+    // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
+    REGISTER_DUMPER(raw_file::DumperIW4, m_raw_file)
+    REGISTER_DUMPER(string_table::DumperIW4, m_string_table)
+    REGISTER_DUMPER(leaderboard::JsonDumperIW4, m_leaderboard)
+    REGISTER_DUMPER(structured_data_def::DumperIW4, m_structed_data_def_set)
+    REGISTER_DUMPER(tracer::DumperIW4, m_tracer)
+    REGISTER_DUMPER(vehicle::DumperIW4, m_vehicle)
+    REGISTER_DUMPER(addon_map_ents::DumperIW4, m_addon_map_ents)
 
-    context.SetTotalProgress(totalProgress);
-    for (const auto& func : dumpingFunctions)
-        func(context, assetPools);
+    if (context.ShouldTrackProgress())
+    {
+        size_t totalProgress = 0uz;
+        for (const auto& dumper : dumpers)
+            totalProgress += dumper->GetProgressTotalCount();
+
+        context.SetTotalProgress(totalProgress);
+    }
+
+    for (const auto& dumper : dumpers)
+        dumper->Dump(context);
 
     return true;
 
-#undef DUMP_ASSET_POOL
+#undef REGISTER_DUMPER
 }

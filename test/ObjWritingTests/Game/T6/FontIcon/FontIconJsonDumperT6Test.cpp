@@ -151,8 +151,8 @@ namespace
         AssetPoolDynamic<FontIcon> fontIconPool(0);
         GivenFontIcon("fonticon/test.csv", fontIconPool, memory);
 
-        font_icon::JsonDumperT6 dumper;
-        dumper.DumpPool(context, fontIconPool);
+        font_icon::JsonDumperT6 dumper(fontIconPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("fonticon/test.json");
         REQUIRE(file);

@@ -361,15 +361,20 @@ namespace
 
 namespace material
 {
-    void CLASS_NAME::DumpPool(AssetDumpingContext& context, const AssetPool<Material>& pool)
+    CLASS_NAME::CLASS_NAME (const AssetPool<GAME::AssetMaterial::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void CLASS_NAME::Dump(AssetDumpingContext& context)
     {
         auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
         materialConstantState->ExtractNamesFromZone();
 
-        AbstractAssetDumper::DumpPool(context, pool);
+        AbstractAssetDumper::Dump(context);
     }
 
-    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<Material>& asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMaterial::Type>& asset)
     {
         const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 

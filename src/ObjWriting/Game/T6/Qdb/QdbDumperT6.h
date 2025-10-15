@@ -5,9 +5,12 @@
 
 namespace qdb
 {
-    class DumperT6 final : public AbstractAssetDumper<T6::Qdb>
+    class DumperT6 final : public AbstractAssetDumper<T6::AssetQdb>
     {
+    public:
+        explicit DumperT6(const AssetPool<T6::AssetQdb::Type>& pool);
+
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::Qdb>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetQdb::Type>& asset) override;
     };
 } // namespace qdb

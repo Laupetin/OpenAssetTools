@@ -93,7 +93,12 @@ namespace
 
 namespace vehicle
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<VehicleDef>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetVehicle::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetVehicle::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

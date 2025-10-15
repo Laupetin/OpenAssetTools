@@ -5,10 +5,11 @@
 
 namespace localize
 {
-    class DumperIW5 final : public IAssetDumper<IW5::LocalizeEntry>
+    class DumperIW5 final : public AbstractSingleProgressAssetDumper<IW5::AssetLocalize>
     {
     public:
-        [[nodiscard]] size_t GetProgressTotalCount(const AssetPool<IW5::LocalizeEntry>& pool) const override;
-        void DumpPool(AssetDumpingContext& context, const AssetPool<IW5::LocalizeEntry>& pool) override;
+        explicit DumperIW5(const AssetPool<IW5::AssetLocalize::Type>& pool);
+
+        void Dump(AssetDumpingContext& context) override;
     };
 } // namespace localize

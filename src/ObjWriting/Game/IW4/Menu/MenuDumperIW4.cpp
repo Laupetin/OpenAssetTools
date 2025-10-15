@@ -1,7 +1,6 @@
 #include "MenuDumperIW4.h"
 
 #include "Game/IW4/GameAssetPoolIW4.h"
-#include "Game/IW4/Menu/MenuDumperIW4.h"
 #include "MenuListDumperIW4.h"
 #include "MenuWriterIW4.h"
 #include "ObjWriting.h"
@@ -26,7 +25,12 @@ namespace
 
 namespace menu
 {
-    void MenuDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<menuDef_t>& asset)
+    MenuDumperIW4::MenuDumperIW4(const AssetPool<AssetMenu::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void MenuDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
         const auto* menu = asset.Asset();
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();

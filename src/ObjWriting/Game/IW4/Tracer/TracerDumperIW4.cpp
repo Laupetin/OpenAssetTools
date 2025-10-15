@@ -52,7 +52,12 @@ namespace
 
 namespace tracer
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<TracerDef>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetTracer::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTracer::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

@@ -733,7 +733,12 @@ namespace
 
 namespace weapon
 {
-    void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<WeaponCompleteDef>& asset)
+    DumperIW5::DumperIW5(const AssetPool<AssetWeapon::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeapon::Type>& asset)
     {
         // TODO: only dump infostring fields when non-default
 

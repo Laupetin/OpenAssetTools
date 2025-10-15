@@ -385,15 +385,15 @@ namespace
 
 namespace sound
 {
-    size_t SndDriverGlobalsDumperT6::GetProgressTotalCount(const AssetPool<T6::SndDriverGlobals>& pool) const
+    SndDriverGlobalsDumperT6::SndDriverGlobalsDumperT6(const AssetPool<AssetSoundDriverGlobals::Type>& pool)
+        : AbstractSingleProgressAssetDumper(pool)
     {
-        return pool.m_asset_lookup.empty() ? 0uz : 1uz;
     }
 
-    void SndDriverGlobalsDumperT6::DumpPool(AssetDumpingContext& context, const AssetPool<SndDriverGlobals>& pool)
+    void SndDriverGlobalsDumperT6::Dump(AssetDumpingContext& context)
     {
         Internal internal(context);
-        internal.DumpPool(pool);
+        internal.DumpPool(m_pool);
 
         context.IncrementProgress();
     }

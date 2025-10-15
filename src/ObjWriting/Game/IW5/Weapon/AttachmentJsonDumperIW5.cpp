@@ -395,7 +395,12 @@ namespace
 
 namespace attachment
 {
-    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<WeaponAttachment>& asset)
+    JsonDumperIW5::JsonDumperIW5(const AssetPool<AssetAttachment::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAttachment::Type>& asset)
     {
         const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset.m_name));
 

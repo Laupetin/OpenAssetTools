@@ -4,7 +4,12 @@ using namespace T6;
 
 namespace script
 {
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<ScriptParseTree>& asset)
+    DumperT6::DumperT6(const AssetPool<AssetScript::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetScript::Type>& asset)
     {
         const auto* scriptParseTree = asset.Asset();
         const auto assetFile = context.OpenAssetFile(asset.m_name);

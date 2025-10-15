@@ -562,8 +562,8 @@ namespace
 
         GivenMaterial("wc/ch_plasterwall_long", materialPool, memory);
 
-        material::JsonDumperIW3 dumper;
-        dumper.DumpPool(context, materialPool);
+        material::JsonDumperIW3 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wc/ch_plasterwall_long.json");
         REQUIRE(file);

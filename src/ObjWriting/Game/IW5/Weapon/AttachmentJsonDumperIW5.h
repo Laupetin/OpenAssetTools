@@ -5,9 +5,12 @@
 
 namespace attachment
 {
-    class JsonDumperIW5 final : public AbstractAssetDumper<IW5::WeaponAttachment>
+    class JsonDumperIW5 final : public AbstractAssetDumper<IW5::AssetAttachment>
     {
+    public:
+        explicit JsonDumperIW5(const AssetPool<IW5::AssetAttachment::Type>& pool);
+
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::WeaponAttachment>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetAttachment::Type>& asset) override;
     };
 } // namespace attachment

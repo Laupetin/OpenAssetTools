@@ -472,8 +472,8 @@ namespace
         AssetPoolDynamic<Material> materialPool(0);
         GivenMaterial("wpc/metal_ac_duct", materialPool, memory);
 
-        material::JsonDumperT6 dumper;
-        dumper.DumpPool(context, materialPool);
+        material::JsonDumperT6 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wpc/metal_ac_duct.json");
         REQUIRE(file);

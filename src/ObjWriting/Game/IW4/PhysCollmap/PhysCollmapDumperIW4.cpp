@@ -10,7 +10,12 @@ using namespace IW4;
 
 namespace phys_collmap
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<PhysCollmap>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetPhysCollMap::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysCollMap::Type>& asset)
     {
         const auto* physCollmap = asset.Asset();
         const auto assetFile = context.OpenAssetFile(phys_collmap::GetFileNameForAssetName(asset.m_name));

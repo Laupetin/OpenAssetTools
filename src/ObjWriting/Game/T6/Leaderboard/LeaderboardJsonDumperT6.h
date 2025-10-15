@@ -5,9 +5,12 @@
 
 namespace leaderboard
 {
-    class JsonDumperT6 final : public AbstractAssetDumper<T6::LeaderboardDef>
+    class JsonDumperT6 final : public AbstractAssetDumper<T6::AssetLeaderboard>
     {
+    public:
+        explicit JsonDumperT6(const AssetPool<T6::AssetLeaderboard::Type>& pool);
+
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::LeaderboardDef>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetLeaderboard::Type>& asset) override;
     };
 } // namespace leaderboard

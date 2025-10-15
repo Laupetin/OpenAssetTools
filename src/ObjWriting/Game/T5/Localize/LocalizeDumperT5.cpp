@@ -11,14 +11,14 @@ using namespace T5;
 
 namespace localize
 {
-    size_t DumperT5::GetProgressTotalCount(const AssetPool<T5::LocalizeEntry>& pool) const
+    DumperT5::DumperT5(const AssetPool<AssetLocalize::Type>& pool)
+        : AbstractSingleProgressAssetDumper(pool)
     {
-        return pool.m_asset_lookup.empty() ? 0uz : 1uz;
     }
 
-    void DumperT5::DumpPool(AssetDumpingContext& context, const AssetPool<LocalizeEntry>& pool)
+    void DumperT5::Dump(AssetDumpingContext& context)
     {
-        if (pool.m_asset_lookup.empty())
+        if (m_pool.m_asset_lookup.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -35,7 +35,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (const auto* localizeEntry : pool)
+            for (const auto* localizeEntry : m_pool)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }

@@ -61,7 +61,12 @@ namespace
 
 namespace phys_constraints
 {
-    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<PhysConstraints>& asset)
+    InfoStringDumperT6::InfoStringDumperT6(const AssetPool<AssetPhysConstraints::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysConstraints::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

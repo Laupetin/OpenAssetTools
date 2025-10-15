@@ -8,13 +8,13 @@
 
 namespace image
 {
-    class DumperT5 final : public AbstractAssetDumper<T5::GfxImage>
+    class DumperT5 final : public AbstractAssetDumper<T5::AssetImage>
     {
     public:
-        DumperT5();
+        explicit DumperT5(const AssetPool<T5::AssetImage::Type>& pool);
 
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T5::GfxImage>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T5::AssetImage::Type>& asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;

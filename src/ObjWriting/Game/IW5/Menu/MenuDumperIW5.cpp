@@ -51,7 +51,12 @@ namespace
 
 namespace menu
 {
-    void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<menuDef_t>& asset)
+    MenuDumperIW5::MenuDumperIW5(const AssetPool<AssetMenu::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
         const auto* menu = asset.Asset();
         const auto menuFilePath = GetPathForMenu(asset);

@@ -11,14 +11,19 @@ using namespace IW3;
 
 namespace localize
 {
-    size_t DumperIW3::GetProgressTotalCount(const AssetPool<IW3::LocalizeEntry>& pool) const
+    DumperIW3::DumperIW3(const AssetPool<IW3::AssetLocalize::Type>& pool)
+        : AbstractSingleProgressAssetDumper(pool)
     {
-        return pool.m_asset_lookup.empty() ? 0uz : 1uz;
     }
 
-    void DumperIW3::DumpPool(AssetDumpingContext& context, const AssetPool<LocalizeEntry>& pool)
+    size_t DumperIW3::GetProgressTotalCount() const
     {
-        if (pool.m_asset_lookup.empty())
+        return m_pool.m_asset_lookup.empty() ? 0uz : 1uz;
+    }
+
+    void DumperIW3::Dump(AssetDumpingContext& context)
+    {
+        if (m_pool.m_asset_lookup.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -35,7 +40,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (const auto* localizeEntry : pool)
+            for (const auto* localizeEntry : m_pool)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }

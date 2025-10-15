@@ -596,8 +596,8 @@ namespace
 
         GivenMaterial("wc/me_metal_rust_02", materialPool, memory);
 
-        material::JsonDumperIW5 dumper;
-        dumper.DumpPool(context, materialPool);
+        material::JsonDumperIW5 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wc/me_metal_rust_02.json");
         REQUIRE(file);

@@ -6,7 +6,12 @@ using namespace IW4;
 
 namespace light_def
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<GfxLightDef>& asset)
+    DumperIW4::DumperIW4(const AssetPool<AssetLightDef::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLightDef::Type>& asset)
     {
         const auto* lightDef = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));

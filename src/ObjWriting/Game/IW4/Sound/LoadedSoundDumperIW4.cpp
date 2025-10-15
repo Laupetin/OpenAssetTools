@@ -25,7 +25,12 @@ namespace
 
 namespace sound
 {
-    void LoadedSoundDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LoadedSound>& asset)
+    LoadedSoundDumperIW4::LoadedSoundDumperIW4(const AssetPool<AssetLoadedSound::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void LoadedSoundDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLoadedSound::Type>& asset)
     {
         const auto* loadedSound = asset.Asset();
         const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset.m_name));
