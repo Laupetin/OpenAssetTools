@@ -60,6 +60,7 @@ namespace
               m_block_shift(pointerBitCount - blockBitCount),
               m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
               m_last_fill_size(0),
+              m_has_progress_callback(false),
               m_progress_current_size(0uz),
               m_progress_total_size(0uz)
         {

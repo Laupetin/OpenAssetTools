@@ -30,7 +30,7 @@ using namespace IW4;
 
 bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 {
-#define REGISTER_DUMPER(dumperType, poolName)                                                                                                       \
+#define REGISTER_DUMPER(dumperType, poolName)                                                                                                                  \
     if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(dumperType::AssetType_t::EnumEntry))                                                         \
     {                                                                                                                                                          \
         dumpers.emplace_back(std::make_unique<dumperType>(*assetPools->poolName));                                                                             \
