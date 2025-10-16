@@ -23,7 +23,7 @@ namespace
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneUnlinkProgressDto, zoneName, percentage);
 
-    constexpr double MIN_PROGRESS_TO_REPORT = 0.005;
+    constexpr double MIN_PROGRESS_TO_REPORT = 0.5;
 
     class UnlinkingEventProgressReporter : public ProgressCallback
     {
@@ -36,7 +36,7 @@ namespace
 
         void OnProgress(const size_t current, const size_t total) override
         {
-            const double percentage = static_cast<double>(current) / static_cast<double>(total);
+            const double percentage = static_cast<double>(current) / static_cast<double>(total) * 100.0;
 
             if (percentage - m_last_progress >= MIN_PROGRESS_TO_REPORT)
             {
@@ -54,17 +54,17 @@ namespace
     {
         const auto& context = ModManContext::Get().m_fast_file;
         const auto existingZone = std::ranges::find_if(context.m_loaded_zones,
-                                                       [&zoneName](const std::unique_ptr<Zone>& zone)
+                                                       [&zoneName](const std::unique_ptr<LoadedZone>& loadedZone)
                                                        {
-                                                           return zone->m_name == zoneName;
+                                                           return loadedZone->m_zone->m_name == zoneName;
                                                        });
 
         if (existingZone == context.m_loaded_zones.end())
             return result::Unexpected(std::format("No zone with name {} loaded", zoneName));
 
-        const auto& zone = *existingZone->get();
+        const auto& loadedZone = *existingZone->get();
 
-        const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game_id);
+        const auto* objWriter = IObjWriter::GetObjWriterForGame(loadedZone.m_zone->m_game_id);
 
         const auto outputFolderPath = fs::path(utils::GetExecutablePath()).parent_path() / "zone_dump" / zoneName;
         const auto outputFolderPathStr = outputFolderPath.string();
@@ -72,7 +72,7 @@ namespace
         OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
         SearchPaths searchPaths;
         AssetDumpingContext dumpingContext(
-            zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
+            *loadedZone.m_zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
         objWriter->DumpZone(dumpingContext);
 
         return NoResult();
