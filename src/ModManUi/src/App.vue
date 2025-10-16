@@ -1,16 +1,15 @@
 <script setup lang="ts">
+import Button from "primevue/button";
 import { computed, ref } from "vue";
 import { webviewAddEventListener, webviewBinds } from "@/native";
-import { useZoneStore } from "@/stores/ZoneStore";
-import SpinningLoader from "@/components/SpinningLoader.vue";
+import ProgressBar from "primevue/progressbar";
+import ZoneSelector from "./components/ZoneSelector.vue";
 
-const zoneStore = useZoneStore();
 const loadingFastFile = ref(false);
 const unlinkingFastFile = ref(false);
 const lastPercentage = ref<number>(0);
 
 const performingAction = computed<boolean>(() => loadingFastFile.value || unlinkingFastFile.value);
-const progressBarWidth = computed<string>(() => `${lastPercentage.value * 100}%`);
 
 async function openFastFileSelect() {
   return await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] });
@@ -32,7 +31,7 @@ async function onOpenFastFileClick() {
     })
     .finally(() => {
       loadingFastFile.value = false;
-      lastPercentage.value = 1;
+      lastPercentage.value = 100;
     });
 }
 
@@ -65,22 +64,16 @@ async function onUnlinkFastFileClick() {
     }
   } finally {
     unlinkingFastFile.value = false;
-    lastPercentage.value = 1;
+    lastPercentage.value = 100;
   }
 }
 
-function onUnloadClicked(zoneName: string) {
-  webviewBinds.unloadZone(zoneName).catch((e: string) => {
-    console.error("Failed to unload zone:", e);
-  });
-}
-
 webviewAddEventListener("zoneLoadProgress", (dto) => {
-  lastPercentage.value = dto.percentage;
+  lastPercentage.value = Math.floor(dto.percentage * 1000) / 10;
 });
 
 webviewAddEventListener("zoneUnlinkProgress", (dto) => {
-  lastPercentage.value = dto.percentage;
+  lastPercentage.value = Math.floor(dto.percentage * 1000) / 10;
 });
 </script>
 
@@ -90,33 +83,28 @@ webviewAddEventListener("zoneUnlinkProgress", (dto) => {
     <small>Nothing to see here yet, this is mainly for testing</small>
 
     <div class="actions">
-      <button :disabled="performingAction" @click="onOpenFastFileClick">
-        <SpinningLoader v-if="loadingFastFile" class="loading" />
-        <span>Load fastfile</span>
-      </button>
-      <button :disabled="performingAction" @click="onUnlinkFastFileClick">
-        <SpinningLoader v-if="unlinkingFastFile" class="loading" />
-        <span>Unlink fastfile</span>
-      </button>
+      <Button
+        label="Load fastfile"
+        :disabled="performingAction"
+        :loading="loadingFastFile"
+        @click="onOpenFastFileClick"
+      />
+      <Button
+        label="Unlink fastfile"
+        :disabled="performingAction"
+        :loading="unlinkingFastFile"
+        @click="onUnlinkFastFileClick"
+      />
     </div>
 
-    <div>
-      <h3>Loaded zones:</h3>
-      <div class="zone-list">
-        <div v-for="zone in zoneStore.loadedZones" :key="zone" class="zone">
-          <span>{{ zone }}</span>
-          <button :disabled="performingAction" @click="onUnloadClicked(zone)">Unload</button>
-        </div>
-      </div>
-    </div>
+    <ZoneSelector />
 
-    <div class="progressbar-wrapper">
-      <div
-        class="progressbar"
-        :class="{ visible: performingAction }"
-        :style="{ width: progressBarWidth }"
-      ></div>
-    </div>
+    <ProgressBar
+      v-if="performingAction"
+      class="progressbar"
+      :show-value="false"
+      :value="lastPercentage"
+    />
   </main>
 </template>
 
@@ -125,10 +113,6 @@ webviewAddEventListener("zoneUnlinkProgress", (dto) => {
   display: flex;
   justify-content: center;
   column-gap: 0.5em;
-}
-
-.loading {
-  margin-right: 0.2em;
 }
 
 .zone-list {
@@ -141,23 +125,21 @@ webviewAddEventListener("zoneUnlinkProgress", (dto) => {
   margin-left: 0.5em;
 }
 
-.progressbar-wrapper {
+@starting-style {
+  .progressbar {
+    opacity: 0;
+  }
+}
+
+.progressbar {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 0.35rem 0.4rem;
-}
 
-.progressbar {
-  opacity: 0;
   height: 0.4rem;
-  border-radius: 2.5rem;
-  background-color: #b9772c;
-  transition: opacity 0.2s ease-in-out;
 
-  &.visible {
-    opacity: 1;
-  }
+  transition: opacity 0.2s ease-in-out;
+  opacity: 1;
 }
 </style>

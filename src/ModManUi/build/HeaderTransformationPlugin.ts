@@ -8,7 +8,7 @@ type MinimalOutputChunk = Pick<OutputChunk, "type" | "fileName" | "code">;
 type MinimalOutputBundle = Record<string, MinimalOutputAsset | MinimalOutputChunk>;
 
 function createVarName(fileName: string) {
-  return fileName.replaceAll(".", "_").toUpperCase();
+  return fileName.replaceAll(/[\.-]/g, "_").toUpperCase();
 }
 
 function transformAsset(asset: MinimalOutputAsset) {

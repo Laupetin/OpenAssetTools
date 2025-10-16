@@ -1,4 +1,4 @@
-import { readonly, ref } from "vue";
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import { webviewAddEventListener } from "@/native";
 
@@ -16,5 +16,5 @@ export const useZoneStore = defineStore("zone", () => {
     }
   });
 
-  return { loadedZones: readonly(loadedZones) };
+  return { loadedZones };
 });
