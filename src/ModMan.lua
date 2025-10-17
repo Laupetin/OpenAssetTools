@@ -36,6 +36,12 @@ function ModMan:project()
 			path.join(folder, "ModMan/**.cpp") 
 		}
 
+		filter { "system:windows" }
+			files {
+				path.join(folder, "ModMan/**.rc")
+			}
+		filter {}
+
 		includedirs {
 			"%{wks.location}/src/ModMan"
 		}
