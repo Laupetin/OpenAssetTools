@@ -1,5 +1,7 @@
+#include "Game/T6/Maps/CustomMaps.h"
+
 #include "LoaderCustomMapT6.h"
-#include "ProjectCreator.h"
+#include "BSPCreator.h"
 #include "CustomMapLinker.h"
 
 #include "Game/T6/T6.h"
@@ -27,18 +29,16 @@ namespace
             if (!mapGfxFile.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            // create map info from the fbx file
-            customMapInfo* mapInfo = ProjectCreator::createCustomMapInfo(m_zone.m_name, m_search_path);
-            if (mapInfo == NULL)
+            CustomMapBSP* mapBSP = BSPCreator::createCustomMapBSP(m_zone.m_name, m_search_path);
+            if (mapBSP == NULL)
                 return AssetCreationResult::Failure();
             
-            // linker will add all the assets needed
             CustomMapLinker* linker = new CustomMapLinker(m_memory, m_search_path, m_zone, context);
-            bool result = linker->linkCustomMap(mapInfo);
+            bool result = linker->linkCustomMap(mapBSP);
 
             if (result)
             {
-                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(mapInfo->bspName);
+                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(mapBSP->bspName);
                 _ASSERT(gfxWorldAsset != NULL);
                 return AssetCreationResult::Success(gfxWorldAsset);
             }
