@@ -1278,29 +1278,15 @@ namespace T6
     typedef tdef_align32(4) char aligned_byte_pointer;
     typedef tdef_align32(4) GfxCompressedLightGridCoeffs GfxCompressedLightGridCoeffs_align4;
 
-    struct GfxLightGridUnk
-    {
-        char unknown1;
-        char unknown2;
-        char unknown3;
-        char unknown4;
-        char unknown5;
-        char unknown6;
-        char unknown7;
-        char unknown8;
-    };
-
-
     struct GfxLightGridRow
     {
-        unsigned __int16 colStart;
-        unsigned __int16 colCount;
-        unsigned __int16 zStart;
-        unsigned __int16 zCount;
+        uint16_t colStart;
+        uint16_t colCount;
+        uint16_t zStart;
+        uint16_t zCount;
         unsigned int firstEntry;
-        GfxLightGridUnk unk;
+        char lookupTable[1]; // The lookup table has a variable length
     };
-
 
     struct GfxLightGrid
     {

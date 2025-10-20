@@ -1,22 +1,12 @@
 #pragma once
 
-/*
-Heavily modified version of https://github.com/sudeshnapal12/Space-Partitioning-Algorithms BSP implementation
-Credit to sudeshnapal12
-
-
-BSP leaf sizes are precalculated, evenly sized BSPs are much more efficient and smaller compared to dynamically creating them
-*/
-
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <iostream>
-#include <map>
-#include <sstream>
 #include <vector>
+#include <memory>
 
-#define MAX_AABB_SIZE 512 // maximum size a BSP node can be before it becomes a leaf
+#include "Game/T6/T6.h"
+using namespace T6;
+
+constexpr int MAX_NODE_SIZE = 512; // maximum size a BSP node can be before it becomes a leaf
 
 enum PlaneAxis
 {
@@ -28,55 +18,49 @@ enum PlaneAxis
 class Object
 {
 public:
-    double low[3];
-    double high[3];
+    vec3_t min;
+    vec3_t max;
 
-    // custom data
-    int partitionIndex; // index of the partition the object is based on (custom)
+    int partitionIndex; // index of the partition the object is contained in
 
-    Object(double min_x, double min_y, double min_z, double max_x, double max_y, double max_z, int partition_Index)
+    Object(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex)
     {
-        low[0] = min_x;
-        low[1] = min_y, low[2] = min_z;
-        high[0] = max_x;
-        high[1] = max_y;
-        high[2] = max_z;
-        partitionIndex = partition_Index;
+        min.x = xMin;
+        min.y = yMin;
+        min.z = zMin;
+        max.x = xMax;
+        max.y = yMax;
+        max.z = zMax;
+        partitionIndex = objPartitionIndex;
     }
 };
 
-union u_BSPNode;
+union u_BSPNode
+{
+    BSPLeaf* leaf;
+    BSPNode* node;
+};
 class BSPTree;
 
 class BSPLeaf
 {
 private:
-    std::vector<Object*> objectList;
+    std::vector<std::unique_ptr<Object>> objectList;
 
 public:
-    BSPLeaf()
+    void addObject(std::unique_ptr<Object> object)
     {
-        objectList = std::vector<Object*>();
+        objectList.push_back(std::move(object));
     }
 
-    ~BSPLeaf()
+    std::unique_ptr<Object> getObject(int index)
     {
-        objectList.clear();
-    }
-
-    void addToList(Object* object)
-    {
-        objectList.push_back(object);
+        return std::move(objectList.at(index));
     }
 
     int getObjectCount()
     {
         return objectList.size();
-    }
-
-    Object* getObject(int index)
-    {
-        return objectList.at(index);
     }
 };
 
@@ -106,25 +90,23 @@ public:
 
     objectPlaneSide objectIsInfront(Object* object)
     {
-        double minCoord, maxCoord;
+        float minCoord, maxCoord;
 
         // Select the relevant coordinate based on the plane's axis
-        switch (axis)
+        if (axis == AXIS_X)
         {
-        case AXIS_X:
-            minCoord = object->low[0];
-            maxCoord = object->high[0];
-            break;
-        case AXIS_Y:
-            minCoord = object->low[1];
-            maxCoord = object->high[1];
-            break;
-        case AXIS_Z:
-            minCoord = object->low[2];
-            maxCoord = object->high[2];
-            break;
-        default:
-            _ASSERT(false); // this should never be executed
+            minCoord = object->min.x;
+            maxCoord = object->max.x;
+        }
+        else if (axis == AXIS_Y)
+        {
+            minCoord = object->min.y;
+            maxCoord = object->max.y;
+        }
+        else // axis == AXIS_Z
+        {
+            minCoord = object->min.z;
+            maxCoord = object->max.z;
         }
 
         // Compare with the plane's distance
@@ -141,12 +123,6 @@ public:
             return SIDE_INTERSECTS;
         }
     }
-};
-
-union u_BSPNode
-{
-    BSPLeaf* leaf;
-    BSPNode* node;
 };
 
 class BSPTree
@@ -178,7 +154,7 @@ public:
         BSPTree* back;
         double halfLength;
 
-        if (high[0] - low[0] > MAX_AABB_SIZE)
+        if (high[0] - low[0] > MAX_NODE_SIZE)
         {
             // split along the x axis
             halfLength = (low[0] + high[0]) * 0.5f;
@@ -188,7 +164,7 @@ public:
             isLeaf = false;
             u.node = new BSPNode(front, back, AXIS_X, halfLength);
         }
-        else if (high[2] - low[2] > MAX_AABB_SIZE)
+        else if (high[2] - low[2] > MAX_NODE_SIZE)
         {
             // split along the z axis
             halfLength = (low[2] + high[2]) * 0.5f;

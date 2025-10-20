@@ -1,14 +1,14 @@
-#include "ProjectCreator.h"
+#include "BSPCreator.h"
 
 #include "fbx/ufbx.h"
+#include "Game/T6/T6.h"
+using namespace T6;
 
-std::vector<customMapVertex> vertexVec;
-std::vector<uint16_t> indexVec;
-std::vector<worldSurface> surfaceVec;
-std::vector<customMapModel> modelVec;
-bool hasTangentSpace = true;
-
-bool loadFBXMesh(ufbx_node* node)
+bool addFBXMeshToWorld(ufbx_node* node, 
+    std::vector<CustomMapSurface>& surfaceVec,
+    std::vector<CustomMapVertex>& vertexVec,
+    std::vector<uint16_t>& indexVec, 
+    bool& hasTangentSpace)
 {
     if (node->attrib_type != UFBX_ELEMENT_MESH)
     {
@@ -65,15 +65,15 @@ bool loadFBXMesh(ufbx_node* node)
         if (meshPart->num_faces == 0)
             continue;
 
-        worldSurface surface;
+        CustomMapSurface surface;
         surface.triCount = meshPart->num_triangles;
-        surface.firstVertexIndex = vertexVec.size();
-        surface.firstIndex_Index = indexVec.size();
+        surface.indexOfFirstVertex = vertexVec.size();
+        surface.indexOfFirstIndex = indexVec.size();
 
-        CM_MATERIAL_TYPE meshMaterialType;
+        CustomMapMaterialType meshMaterialType;
         if (mesh->materials.count == 0)
         {
-            meshMaterialType = CM_MATERIAL_EMPTY;
+            meshMaterialType = MATERIAL_TYPE_EMPTY;
         }
         //else if (mesh->materials.data[i]->textures.count != 0)
         //{
@@ -87,13 +87,13 @@ bool loadFBXMesh(ufbx_node* node)
         //}
         else
         {
-            meshMaterialType = CM_MATERIAL_TEXTURE;
+            meshMaterialType = MATERIAL_TYPE_TEXTURE;
             surface.material.materialName = _strdup(mesh->materials.data[i]->name.data);
         }
         surface.material.materialType = meshMaterialType;
 
         size_t num_triangles = meshPart->num_triangles;
-        customMapVertex* vertices = (customMapVertex*)calloc(num_triangles * 3, sizeof(customMapVertex));
+        CustomMapVertex* vertices = (CustomMapVertex*)calloc(num_triangles * 3, sizeof(CustomMapVertex));
         size_t num_vertices = 0;
 
         // Reserve space for the maximum triangle indices.
@@ -113,7 +113,7 @@ bool loadFBXMesh(ufbx_node* node)
             {
                 uint32_t index = tri_indices[q];
 
-                customMapVertex* vertex = &vertices[num_vertices++];
+                CustomMapVertex* vertex = &vertices[num_vertices++];
 
                 //ufbx_vec3 pos = ufbx_get_vertex_vec3(&mesh->vertex_position, index);
                 //vertex->pos.x = static_cast<float>(pos.x);
@@ -128,21 +128,21 @@ bool loadFBXMesh(ufbx_node* node)
                 
                 switch (meshMaterialType)
                 {
-                case CM_MATERIAL_TEXTURE:
-                case CM_MATERIAL_EMPTY:
-                    vertex->color[0] = 1.0f;
-                    vertex->color[1] = 1.0f;
-                    vertex->color[2] = 1.0f;
-                    vertex->color[3] = 1.0f;
+                case MATERIAL_TYPE_TEXTURE:
+                case MATERIAL_TYPE_EMPTY:
+                    vertex->color.x = 1.0f;
+                    vertex->color.y = 1.0f;
+                    vertex->color.z = 1.0f;
+                    vertex->color.w = 1.0f;
                     break;
-                case CM_MATERIAL_COLOUR:
+                case MATERIAL_TYPE_COLOUR:
                 {
                     float factor = static_cast<float>(mesh->materials.data[i]->fbx.diffuse_factor.value_real);
                     ufbx_vec4 diffuse = mesh->materials.data[i]->fbx.diffuse_color.value_vec4;
-                    vertex->color[0] = static_cast<float>(diffuse.x * factor);
-                    vertex->color[1] = static_cast<float>(diffuse.y * factor);
-                    vertex->color[2] = static_cast<float>(diffuse.z * factor);
-                    vertex->color[3] = static_cast<float>(diffuse.w * factor);
+                    vertex->color.x = static_cast<float>(diffuse.x * factor);
+                    vertex->color.y = static_cast<float>(diffuse.y * factor);
+                    vertex->color.z = static_cast<float>(diffuse.z * factor);
+                    vertex->color.w = static_cast<float>(diffuse.w * factor);
                     break;
                 }
 
@@ -155,8 +155,8 @@ bool loadFBXMesh(ufbx_node* node)
                 // 1.0f - uv.y reason:
                 // https://gamedev.stackexchange.com/questions/92886/fbx-uv-coordinates-is-strange
                 ufbx_vec2 uv = ufbx_get_vertex_vec2(&mesh->vertex_uv, index);
-                vertex->texCoord[0] = (float)(uv.x);
-                vertex->texCoord[1] = (float)(1.0f - uv.y);
+                vertex->texCoord.x = (float)(uv.x);
+                vertex->texCoord.y = (float)(1.0f - uv.y);
 
                 ufbx_vec3 normal = ufbx_get_vertex_vec3(&mesh->vertex_normal, index);
                 vertex->normal.x = static_cast<float>(normal.x);
@@ -176,11 +176,6 @@ bool loadFBXMesh(ufbx_node* node)
                     vertex->tangent.y = 0.0f;
                     vertex->tangent.z = 0.0f;
                 }
-
-                vertex->packedLmapCoord = 0;
-
-                // possibly bitangent, unsure what the sign part means though
-                vertex->binormalSign = 0.0f;
             }
         }
 
@@ -188,7 +183,7 @@ bool loadFBXMesh(ufbx_node* node)
 
         // Generate the index buffer.
         ufbx_vertex_stream streams[1] = {
-            {vertices, num_vertices, sizeof(customMapVertex)},
+            {vertices, num_vertices, sizeof(CustomMapVertex)},
         };
         size_t num_indices = num_triangles * 3;
         uint32_t* indices = (uint32_t*)calloc(num_indices, sizeof(uint32_t));
@@ -213,120 +208,32 @@ bool loadFBXMesh(ufbx_node* node)
     return true;
 }
 
-bool loadFBXModel(ufbx_node* node)
+void loadWorldData(ufbx_scene* scene, CustomMapBSP* bsp, bool isGfxData)
 {
-    customMapModel model;
-
-    model.name = node->name.data;
-
-    model.origin.x = static_cast<float>(node->local_transform.translation.x);
-    model.origin.y = static_cast<float>(node->local_transform.translation.y);
-    model.origin.z = static_cast<float>(node->local_transform.translation.z);
-    model.rotation.x = static_cast<float>(node->euler_rotation.x);
-    model.rotation.y = static_cast<float>(node->euler_rotation.y);
-    model.rotation.z = static_cast<float>(node->euler_rotation.z);
-    model.scale = static_cast<float>(node->local_transform.scale.x);
-
-    if (model.scale == 0.0f)
-    {
-        printf("WARN: Ignoring model %s: has a scale of 0!\n", node->name.data);
-        return false;
-    }
-
-    if (node->local_transform.scale.x != node->local_transform.scale.y || node->local_transform.scale.x != node->local_transform.scale.z)
-        printf("WARNING: model %s uses non-uniform scaling! Only the X axis will be used for the scale value.\n", node->name.data);
-    modelVec.push_back(model);
-
-    return true;
-}
-
-void parseGFXData(ufbx_scene* scene, customMapInfo* projInfo)
-{
-    vertexVec.clear();
-    indexVec.clear();
-    surfaceVec.clear();
-    modelVec.clear();
-    hasTangentSpace = true;
+    bool hasTangentSpace = true;
 
     for (size_t i = 0; i < scene->nodes.count; i++)
     {
         ufbx_node* node = scene->nodes.data[i];
 
-        switch (node->attrib_type)
+        if (node->attrib_type == UFBX_ELEMENT_MESH)
         {
-        case UFBX_ELEMENT_MESH:
-            loadFBXMesh(node);
-            break;
-        case UFBX_ELEMENT_EMPTY:
-            // loadFBXModel(node);
-            break;
-        default:
+            if (isGfxData)
+                addFBXMeshToWorld(node, bsp->gfxWorld.surfaces, bsp->gfxWorld.vertices, bsp->gfxWorld.indices, hasTangentSpace);
+            else
+                addFBXMeshToWorld(node, bsp->colWorld.surfaces, bsp->colWorld.vertices, bsp->colWorld.indices, hasTangentSpace);
+        }
+        else
+        {
             //printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
-            break;
         }
     }
-    projInfo->gfxInfo.surfaceCount = surfaceVec.size();
-    projInfo->gfxInfo.vertexCount = vertexVec.size();
-    projInfo->gfxInfo.indexCount = indexVec.size();
-    projInfo->modelCount = modelVec.size();
-    projInfo->gfxInfo.surfaces = new worldSurface[surfaceVec.size()];
-    projInfo->gfxInfo.vertices = new customMapVertex[vertexVec.size()];
-    projInfo->gfxInfo.indices = new uint16_t[indexVec.size()];
-    projInfo->models = new customMapModel[modelVec.size()];
-    memcpy(projInfo->gfxInfo.surfaces, &surfaceVec[0], surfaceVec.size() * sizeof(worldSurface));
-    memcpy(projInfo->gfxInfo.vertices, &vertexVec[0], vertexVec.size() * sizeof(customMapVertex));
-    memcpy(projInfo->gfxInfo.indices, &indexVec[0], indexVec.size() * sizeof(uint16_t));
-    // memcpy(projInfo->models, &modelVec[0], modelVec.size() * sizeof(customMapModel));
 
     if (hasTangentSpace == false)
         printf("warning: one or more meshes have no tangent space. Be sure to select the tangent space box when exporting the FBX from blender.\n");
 }
 
-void parseCollisionData(ufbx_scene* scene, customMapInfo* projInfo)
-{
-    // hack: cbf changing the code for collision data, so just load collision dada as if it was gfx data
-
-    vertexVec.clear();
-    indexVec.clear();
-    surfaceVec.clear();
-    modelVec.clear();
-    hasTangentSpace = true;
-
-    for (size_t i = 0; i < scene->nodes.count; i++)
-    {
-        ufbx_node* node = scene->nodes.data[i];
-
-        switch (node->attrib_type)
-        {
-        case UFBX_ELEMENT_MESH:
-            loadFBXMesh(node);
-            break;
-        case UFBX_ELEMENT_EMPTY:
-            // loadFBXModel(node);
-            break;
-        default:
-            //printf("ignoring node type %i: %s\n", node->attrib_type, node->name.data);
-            break;
-        }
-    }
-    projInfo->colInfo.surfaceCount = surfaceVec.size();
-    projInfo->colInfo.vertexCount = vertexVec.size();
-    projInfo->colInfo.indexCount = indexVec.size();
-    projInfo->modelCount = modelVec.size();
-    projInfo->colInfo.surfaces = new worldSurface[surfaceVec.size()];
-    projInfo->colInfo.vertices = new customMapVertex[vertexVec.size()];
-    projInfo->colInfo.indices = new uint16_t[indexVec.size()];
-    projInfo->models = new customMapModel[modelVec.size()];
-    memcpy(projInfo->colInfo.surfaces, &surfaceVec[0], surfaceVec.size() * sizeof(worldSurface));
-    memcpy(projInfo->colInfo.vertices, &vertexVec[0], vertexVec.size() * sizeof(customMapVertex));
-    memcpy(projInfo->colInfo.indices, &indexVec[0], indexVec.size() * sizeof(uint16_t));
-    // memcpy(projInfo->models, &modelVec[0], modelVec.size() * sizeof(customMapModel));
-
-    if (hasTangentSpace == false)
-        printf("warning: one or more meshes have no tangent space. Be sure to select the tangent space box when exporting the FBX from blender.\n");
-}
-
-customMapInfo* ProjectCreator::createCustomMapInfo(std::string& projectName, ISearchPath& searchPath)
+CustomMapBSP* BSPCreator::createCustomMapBSP(std::string& mapName, ISearchPath& searchPath)
 {
     ufbx_scene* gfxScene;
     ufbx_scene* colScene;
@@ -379,13 +286,13 @@ customMapInfo* ProjectCreator::createCustomMapInfo(std::string& projectName, ISe
         }
     }
 
-    customMapInfo* projInfo = new customMapInfo;
+    CustomMapBSP* projInfo = new CustomMapBSP;
 
-    projInfo->name = projectName;
-    projInfo->bspName = "maps/mp/" + projectName + ".d3dbsp";
+    projInfo->name = mapName;
+    projInfo->bspName = "maps/mp/" + mapName + ".d3dbsp";
 
-    parseGFXData(gfxScene, projInfo);
-    parseCollisionData(colScene, projInfo);
+    loadWorldData(gfxScene, projInfo, true);
+    loadWorldData(colScene, projInfo, false);
 
     ufbx_free_scene(gfxScene);
     if (gfxScene != colScene)
