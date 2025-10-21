@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BinarySpacePartitionTreePreCalc.h"
+#include "BinarySpacePartitionTree.h"
 #include "CustomMapConsts.h"
 #include "CustomMapOptions.h"
 #include "Util.h"
@@ -23,7 +23,7 @@ public:
         hasLinkFailed = false;
     }
 
-    bool linkCustomMap(customMapInfo* projInfo)
+    bool linkCustomMap(CustomMapBSP* projInfo)
     {
         _ASSERT(projInfo != NULL);
 
@@ -72,27 +72,24 @@ private:
     //	used for UVs of sub-textures, when it is set to empty all of them turn a blank colour
     //	could fix by removing sub textures or figure out how they are created and redo that
     //	its not an important issue though
-    bool overwriteDrawData(customMapInfo* projInfo, GfxWorld* gfxWorld)
+    bool overwriteDrawData(CustomMapBSP* projInfo, GfxWorld* gfxWorld)
     {
-        int vertexCount = projInfo->gfxInfo.vertexCount;
-        customMapVertex* worldVertices = projInfo->gfxInfo.vertices;
+        int vertexCount = projInfo->gfxWorld.vertices.size();
 
         gfxWorld->draw.vertexCount = vertexCount;
         gfxWorld->draw.vertexDataSize0 = vertexCount * sizeof(GfxPackedWorldVertex);
         GfxPackedWorldVertex* vertexBuffer = new GfxPackedWorldVertex[vertexCount];
         for (int i = 0; i < vertexCount; i++)
         {
-            customMapVertex* WorldVertex = &worldVertices[i];
+            CustomMapVertex* WorldVertex = &projInfo->gfxWorld.vertices[i];
             GfxPackedWorldVertex* GfxVertex = &vertexBuffer[i];
 
             GfxVertex->xyz = CMUtil::convertToBO2Coords(WorldVertex->pos);
             //GfxVertex->xyz = WorldVertex->pos;
 
-            GfxVertex->binormalSign = WorldVertex->binormalSign;
+            GfxVertex->color.packed = pack32::Vec4PackGfxColor(WorldVertex->color.v);
 
-            GfxVertex->color.packed = pack32::Vec4PackGfxColor(WorldVertex->color);
-
-            GfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(WorldVertex->texCoord);
+            GfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(WorldVertex->texCoord.v);
 
             GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(CMUtil::convertToBO2Coords(WorldVertex->normal).v);
             //GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->normal.v);
@@ -100,7 +97,11 @@ private:
             GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(CMUtil::convertToBO2Coords(WorldVertex->tangent).v);
             //GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->tangent.v);
 
-            GfxVertex->lmapCoord.packed = WorldVertex->packedLmapCoord;
+            // unknown use variables
+            // binormalSign may be bitangent of the vertex
+            // lmapCoord may be the lightmap coordinate of the vertex
+            GfxVertex->binormalSign = 0.0f;
+            GfxVertex->lmapCoord.packed = 0;
         }
         gfxWorld->draw.vd0.data = (char*)vertexBuffer;
 
@@ -110,16 +111,16 @@ private:
         gfxWorld->draw.vd1.data = new char[gfxWorld->draw.vertexDataSize1];
         memset(gfxWorld->draw.vd1.data, 0, gfxWorld->draw.vertexDataSize1);
 
-        int indexCount = projInfo->gfxInfo.indexCount;
+        int indexCount = projInfo->gfxWorld.indices.size();
         _ASSERT(indexCount % 3 == 0);
         gfxWorld->draw.indexCount = indexCount;
         gfxWorld->draw.indices = new uint16_t[indexCount];
         for (int i = 0; i < indexCount; i += 3)
         {
             // the editor orders their vertices opposite to bo2, so its converted here
-            gfxWorld->draw.indices[i + 2] = projInfo->gfxInfo.indices[i + 0];
-            gfxWorld->draw.indices[i + 1] = projInfo->gfxInfo.indices[i + 1];
-            gfxWorld->draw.indices[i + 0] = projInfo->gfxInfo.indices[i + 2];
+            gfxWorld->draw.indices[i + 2] = projInfo->gfxWorld.indices[i + 0];
+            gfxWorld->draw.indices[i + 1] = projInfo->gfxWorld.indices[i + 1];
+            gfxWorld->draw.indices[i + 0] = projInfo->gfxWorld.indices[i + 2];
         }
 
         return true;
@@ -164,20 +165,20 @@ private:
         return material;
     }
 
-    void overwriteMapSurfaces(customMapInfo* projInfo, GfxWorld* gfxWorld)
+    void overwriteMapSurfaces(CustomMapBSP* projInfo, GfxWorld* gfxWorld)
     {
         bool overwriteResult = overwriteDrawData(projInfo, gfxWorld);
         if (!overwriteResult)
             return;
 
-        unsigned int surfaceCount = projInfo->gfxInfo.surfaceCount;
+        unsigned int surfaceCount = projInfo->gfxWorld.surfaces.size();
         gfxWorld->surfaceCount = surfaceCount;
         gfxWorld->dpvs.staticSurfaceCount = surfaceCount;
         gfxWorld->dpvs.surfaces = new GfxSurface[surfaceCount];
         for (unsigned int i = 0; i < surfaceCount; i++)
         {
             auto currSurface = &gfxWorld->dpvs.surfaces[i];
-            auto objSurface = &projInfo->gfxInfo.surfaces[i];
+            auto objSurface = &projInfo->gfxWorld.surfaces[i];
 
             currSurface->primaryLightIndex = DEFAULT_SURFACE_LIGHT;
             currSurface->lightmapIndex = DEFAULT_SURFACE_LIGHTMAP;
@@ -185,20 +186,20 @@ private:
             currSurface->flags = DEFAULT_SURFACE_FLAGS;
 
             currSurface->tris.triCount = objSurface->triCount;
-            currSurface->tris.baseIndex = objSurface->firstIndex_Index;
+            currSurface->tris.baseIndex = objSurface->indexOfFirstIndex;
 
-            currSurface->tris.vertexDataOffset0 = objSurface->firstVertexIndex * sizeof(GfxPackedWorldVertex);
+            currSurface->tris.vertexDataOffset0 = objSurface->indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
             currSurface->tris.vertexDataOffset1 = 0;
 
             std::string surfMaterialName;
             switch (objSurface->material.materialType)
             {
-            case CM_MATERIAL_TEXTURE:
+            case MATERIAL_TYPE_TEXTURE:
                 surfMaterialName = objSurface->material.materialName;
                 break;
 
-            case CM_MATERIAL_COLOUR:
-            case CM_MATERIAL_EMPTY:
+            case MATERIAL_TYPE_COLOUR:
+            case MATERIAL_TYPE_EMPTY:
                 surfMaterialName = colorOnlyImageName;
                 break;
 
@@ -278,78 +279,92 @@ private:
         gfxWorld->dpvs.litTransSurfsEnd = surfaceCount;
     }
 
-    void overwriteMapSModels(customMapInfo* projInfo, GfxWorld* gfxWorld)
+    void overwriteMapSModels(CustomMapBSP* projInfo, GfxWorld* gfxWorld)
     {
-        unsigned int modelCount = projInfo->modelCount;
+        /*
+        Models are unsupported right now
+        Code is left in in case it is supported later on
+        */
+        //unsigned int modelCount = projInfo->modelCount;
+        //gfxWorld->dpvs.smodelCount = modelCount;
+        //gfxWorld->dpvs.smodelInsts = new GfxStaticModelInst[modelCount];
+        //gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
+        //
+        //for (unsigned int i = 0; i < modelCount; i++)
+        //{
+        //        auto currModel = &gfxWorld->dpvs.smodelDrawInsts[i];
+        //        auto currModelInst = &gfxWorld->dpvs.smodelInsts[i];
+        //        customMapModel* inModel = &projInfo->models[i];
+        //
+        //        auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
+        //        if (xModelAsset == NULL)
+        //        {
+        //            printf("XModel %s not found!\n", inModel->name.c_str());
+        //            currModel->model = NULL;
+        //        }
+        //        else
+        //            currModel->model = (XModel*)xModelAsset->Asset();
+        //
+        //        currModel->placement.origin.x = inModel->origin.x;
+        //        currModel->placement.origin.y = inModel->origin.y;
+        //        currModel->placement.origin.z = inModel->origin.z;
+        //        currModel->placement.origin = CMUtil::convertToBO2Coords(currModel->placement.origin);
+        //        currModel->placement.scale = inModel->scale;
+        //
+        //        CMUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
+        //
+        //        // mins and maxs are calculated in world space not local space
+        //        // TODO: this does not account for model rotation or scale
+        //        currModelInst->mins.x = currModel->model->mins.x + currModel->placement.origin.x;
+        //        currModelInst->mins.y = currModel->model->mins.y + currModel->placement.origin.y;
+        //        currModelInst->mins.z = currModel->model->mins.z + currModel->placement.origin.z;
+        //        currModelInst->maxs.x = currModel->model->maxs.x + currModel->placement.origin.x;
+        //        currModelInst->maxs.y = currModel->model->maxs.y + currModel->placement.origin.y;
+        //        currModelInst->maxs.z = currModel->model->maxs.z + currModel->placement.origin.z;
+        //
+        //        currModel->cullDist = DEFAULT_SMODEL_CULL_DIST;
+        //        currModel->flags = DEFAULT_SMODEL_FLAGS;
+        //        currModel->primaryLightIndex = DEFAULT_SMODEL_LIGHT;
+        //        currModel->reflectionProbeIndex = DEFAULT_SMODEL_REFLECTION_PROBE;
+        //
+        //        // unknown use / unused
+        //        currModel->smid = i;
+        //        memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
+        //        currModel->invScaleSq = 0.0f;
+        //        currModel->lightingHandle = 0;
+        //        currModel->colorsIndex = 0;
+        //        currModel->visibility = 0;
+        //
+        //        // setting these to NULL makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
+        //        // TODO: calculate lighting and store it here
+        //        currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
+        //        currModel->lmapVertexInfo[0].lmapVertexColors = NULL;
+        //        currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
+        //        currModel->lmapVertexInfo[1].lmapVertexColors = NULL;
+        //        currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
+        //        currModel->lmapVertexInfo[2].lmapVertexColors = NULL;
+        //        currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
+        //        currModel->lmapVertexInfo[3].lmapVertexColors = NULL;
+        //}
+
+        unsigned int modelCount = 0;
         gfxWorld->dpvs.smodelCount = modelCount;
         gfxWorld->dpvs.smodelInsts = new GfxStaticModelInst[modelCount];
         gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
-        
-        for (unsigned int i = 0; i < modelCount; i++)
-        {
-                auto currModel = &gfxWorld->dpvs.smodelDrawInsts[i];
-                auto currModelInst = &gfxWorld->dpvs.smodelInsts[i];
-                customMapModel* inModel = &projInfo->models[i];
-
-                auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
-                if (xModelAsset == NULL)
-                {
-                    printf("XModel %s not found!\n", inModel->name.c_str());
-                    currModel->model = NULL;
-                }
-                else
-                    currModel->model = (XModel*)xModelAsset->Asset();
-
-                currModel->placement.origin.x = inModel->origin.x;
-                currModel->placement.origin.y = inModel->origin.y;
-                currModel->placement.origin.z = inModel->origin.z;
-                currModel->placement.origin = CMUtil::convertToBO2Coords(currModel->placement.origin);
-                currModel->placement.scale = inModel->scale;
-
-                CMUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
-
-                // mins and maxs are calculated in world space not local space
-                // TODO: this does not account for model rotation or scale
-                currModelInst->mins.x = currModel->model->mins.x + currModel->placement.origin.x;
-                currModelInst->mins.y = currModel->model->mins.y + currModel->placement.origin.y;
-                currModelInst->mins.z = currModel->model->mins.z + currModel->placement.origin.z;
-                currModelInst->maxs.x = currModel->model->maxs.x + currModel->placement.origin.x;
-                currModelInst->maxs.y = currModel->model->maxs.y + currModel->placement.origin.y;
-                currModelInst->maxs.z = currModel->model->maxs.z + currModel->placement.origin.z;
-
-                currModel->cullDist = DEFAULT_SMODEL_CULL_DIST;
-                currModel->flags = DEFAULT_SMODEL_FLAGS;
-                currModel->primaryLightIndex = DEFAULT_SMODEL_LIGHT;
-                currModel->reflectionProbeIndex = DEFAULT_SMODEL_REFLECTION_PROBE;
-
-                // unknown use / unused
-                currModel->smid = i;
-                memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
-                currModel->invScaleSq = 0.0f;
-                currModel->lightingHandle = 0;
-                currModel->colorsIndex = 0;
-                currModel->visibility = 0;
-
-                // setting these to NULL makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
-                // TODO: calculate lighting and store it here
-                currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[0].lmapVertexColors = NULL;
-                currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[1].lmapVertexColors = NULL;
-                currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[2].lmapVertexColors = NULL;
-                currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[3].lmapVertexColors = NULL;
-        }
-        
 
         // all visdata is alligned by 128
-        gfxWorld->dpvs.smodelVisDataCount = CMUtil::allignBy128(modelCount);
-        gfxWorld->dpvs.smodelVisData[0] = new char[modelCount];
-        gfxWorld->dpvs.smodelVisData[1] = new char[modelCount];
-        gfxWorld->dpvs.smodelVisData[2] = new char[modelCount];
-        gfxWorld->dpvs.smodelVisDataCameraSaved = new char[modelCount];
-        gfxWorld->dpvs.smodelCastsShadow = new char[modelCount];
+        int allignedModelCount = CMUtil::allignBy128(modelCount);
+        gfxWorld->dpvs.smodelVisDataCount = allignedModelCount;
+        gfxWorld->dpvs.smodelVisData[0] = new char[allignedModelCount];
+        gfxWorld->dpvs.smodelVisData[1] = new char[allignedModelCount];
+        gfxWorld->dpvs.smodelVisData[2] = new char[allignedModelCount];
+        gfxWorld->dpvs.smodelVisDataCameraSaved = new char[allignedModelCount];
+        gfxWorld->dpvs.smodelCastsShadow = new char[allignedModelCount];
+        memset(gfxWorld->dpvs.smodelVisData[0], 0, allignedModelCount);
+        memset(gfxWorld->dpvs.smodelVisData[1], 0, allignedModelCount);
+        memset(gfxWorld->dpvs.smodelVisData[2], 0, allignedModelCount);
+        memset(gfxWorld->dpvs.smodelVisDataCameraSaved, 0, allignedModelCount);
+        memset(gfxWorld->dpvs.smodelCastsShadow, 0, allignedModelCount);
         for (unsigned int i = 0; i < modelCount; i++)
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & SMODEL_FLAG_NO_SHADOW) == 0)
@@ -357,16 +372,14 @@ private:
             else
                 gfxWorld->dpvs.smodelCastsShadow[i] = 0;
         }
-        memset(gfxWorld->dpvs.smodelVisData[0], 0, modelCount);
-        memset(gfxWorld->dpvs.smodelVisData[1], 0, modelCount);
-        memset(gfxWorld->dpvs.smodelVisData[2], 0, modelCount);
-        memset(gfxWorld->dpvs.smodelVisDataCameraSaved, 0, modelCount);
-
+        
+        // always set to 0
         gfxWorld->dpvs.usageCount = 0;
     }
 
     void cleanGfxWorld(GfxWorld* gfxWorld)
     {
+        // checksum is generated by the game
         gfxWorld->checksum = 0;
 
         // Remove Coronas
@@ -513,22 +526,16 @@ private:
         memset(gfxWorld->lightGrid.rowDataStart, 0, rowDataStartSize * sizeof(uint16_t));
 
         gfxWorld->lightGrid.rawRowDataSize = sizeof(GfxLightGridRow);
-        GfxLightGridRow* row = new GfxLightGridRow[1];
+        GfxLightGridRow* row = (GfxLightGridRow*)m_memory.AllocRaw(sizeof(GfxLightGridRow) + 0x10);
         row->colStart = 0;
         row->colCount = 0x1000; // 0x1000 as this is large enough for all checks done by the game
         row->zStart = 0;
         row->zCount = 0xFF; // 0xFF as this is large enough for all checks done by the game, but small enough not to mess with other checks
         row->firstEntry = 0;
-        // this unknown part is weird, bo2 code uses up to unk5 and possibly onwards but the dumped rawRowData looks like it has a different structure.
-        // this seems to work though
-        row->unk.unknown1 = 0;
-        row->unk.unknown2 = 0;
-        row->unk.unknown3 = 0;
-        row->unk.unknown4 = 0;
-        row->unk.unknown5 = 0;
-        row->unk.unknown6 = 0;
-        row->unk.unknown7 = 0;
-        row->unk.unknown8 = 0;
+        for (int i = 0; i < 0x11; i++) // set the lookup table to all 0
+        {
+            row->lookupTable[i] = 0;
+        }
         gfxWorld->lightGrid.rawRowData = (aligned_byte_pointer*)row;
 
         // entries are looked up based on the lightgrid sample pos and data within GfxLightGridRow
@@ -785,7 +792,7 @@ private:
         gfxWorld->draw.lightmaps[0].secondary = secondaryTextureAsset->Asset();
     }
 
-    void overwriteSkyBox(customMapInfo* projInfo, GfxWorld* gfxWorld)
+    void overwriteSkyBox(CustomMapBSP* projInfo, GfxWorld* gfxWorld)
     {
         std::string skyBoxName = "skybox_" + projInfo->name;
         gfxWorld->skyBoxModel = _strdup(skyBoxName.c_str());
@@ -871,7 +878,7 @@ private:
         gfxWorld->outdoorImage = outdoorImageAsset->Asset();
     }
 
-    void createGfxWorld(customMapInfo* projInfo)
+    void createGfxWorld(CustomMapBSP* projInfo)
     {
         GfxWorld* gfxWorld = new GfxWorld;
         gfxWorld->baseName = _strdup(projInfo->name.c_str());
@@ -915,7 +922,7 @@ private:
         m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
     }
 
-    void addXModelsToCollision(customMapInfo* projInfo, clipMap_t* clipMap)
+    void addXModelsToCollision(CustomMapBSP* projInfo, clipMap_t* clipMap)
     {
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(projInfo->bspName);
         _ASSERT(gfxWorldAsset != NULL);
@@ -992,20 +999,20 @@ private:
         {
             (*numLeafs)++;
             // there won't be an AABB tree when objectList is empty
-            if (node->u.leaf->getObjectCount() > 0)
+            if (node->leaf->getObjectCount() > 0)
             {
-                *numAABBTrees += node->u.leaf->getObjectCount() + 1;
+                *numAABBTrees += node->leaf->getObjectCount() + 1;
 
-                if (node->u.leaf->getObjectCount() > *maxObjsPerLeaf)
-                    *maxObjsPerLeaf = node->u.leaf->getObjectCount();
+                if (node->leaf->getObjectCount() > *maxObjsPerLeaf)
+                    *maxObjsPerLeaf = node->leaf->getObjectCount();
             }
         }
         else
         {
             (*numPlanes)++;
             (*numNodes)++;
-            traverseBSPTreeForCounts(node->u.node->front, numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
-            traverseBSPTreeForCounts(node->u.node->back, numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
+            traverseBSPTreeForCounts(node->node->front.get(), numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
+            traverseBSPTreeForCounts(node->node->back.get(), numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
         }
     }
 
@@ -1022,14 +1029,14 @@ private:
     {
         _ASSERT(node->isLeaf);
 
-        int objectCount = node->u.leaf->getObjectCount();
+        int objectCount = node->leaf->getObjectCount();
         int firstAABBIndex = currAABBCount;
         currAABBCount += objectCount + 1;
 
         // calculate root AABB node mins and maxs
         // cannot convert mins and maxs coord to BO2 directly as this will result in incorrect mins and maxs
         // so we have to recompute every min and max, not hard just tedious
-        int firstPartitionIndex = node->u.leaf->getObject(0)->partitionIndex;
+        int firstPartitionIndex = node->leaf->getObject(0)->partitionIndex;
         auto firstPartition = &clipMap->partitions[firstPartitionIndex];
         uint16_t* firstTri = clipMap->triIndices[firstPartition->firstTri];
         vec3_t* firstVert = &clipMap->verts[firstTri[0]];
@@ -1043,7 +1050,7 @@ private:
         aabbMaxs.z = firstVert->z;
         for (int i = 0; i < objectCount; i++)
         {
-            int currPartitionIndex = node->u.leaf->getObject(i)->partitionIndex;
+            int currPartitionIndex = node->leaf->getObject(i)->partitionIndex;
             auto currPartition = &clipMap->partitions[currPartitionIndex];
 
             for (int k = 0; k < currPartition->triCount; k++)
@@ -1067,7 +1074,7 @@ private:
         for (int i = 0; i < objectCount; i++)
         {
             CollisionAabbTree* currAabbTree = &clipMap->aabbTrees[rootAABB->u.firstChildIndex + i];
-            int currPartitionIndex = node->u.leaf->getObject(i)->partitionIndex;
+            int currPartitionIndex = node->leaf->getObject(i)->partitionIndex;
 
             currAabbTree->materialIndex = 0;
             currAabbTree->childCount = 0;
@@ -1126,7 +1133,7 @@ private:
             currLeaf->maxs.z = 0.0f;
             currLeaf->leafBrushNode = 0;
 
-            if (node->u.leaf->getObjectCount() > 0)
+            if (node->leaf->getObjectCount() > 0)
             {
                 currLeaf->firstCollAabbIndex = addAABBTreeFromLeaf(node, clipMap);
                 currLeaf->collAabbCount = 1;
@@ -1144,14 +1151,14 @@ private:
             cplane_s* currPlane = &clipMap->info.planes[currPlaneCount];
             currPlaneCount++;
 
-            if (node->u.node->axis == AXIS_X)
+            if (node->node->axis == AXIS_X)
             {
                 // X is unchanged when going from OGL x -> BO2 x
                 currPlane->normal = normalX;
 
                 // converting OGL -> BO2 X coords doesn't change the x coords at all, so
                 // the dist stays the same
-                currPlane->dist = (float)node->u.node->distance;
+                currPlane->dist = (float)node->node->distance;
             }
             else
             {
@@ -1163,7 +1170,7 @@ private:
 
                 // converting OGL -> BO2 Z coords negates the z coords and sets it to the y coord.
                 // just negate it here as it is just the distance from the orgin along the axis
-                currPlane->dist = (float)(-node->u.node->distance);
+                currPlane->dist = (float)(-node->node->distance);
             }
 
             bool foundType = false;
@@ -1211,13 +1218,13 @@ private:
             // Do the OGL -> Bo2 coord change on paper and it will make sense
             if (currPlane->type == 1)
             {
-                currNode->children[1] = populateBSPTree_r(clipMap, node->u.node->front);
-                currNode->children[0] = populateBSPTree_r(clipMap, node->u.node->back);
+                currNode->children[1] = populateBSPTree_r(clipMap, node->node->front.get());
+                currNode->children[0] = populateBSPTree_r(clipMap, node->node->back.get());
             }
             else
             {
-                currNode->children[0] = populateBSPTree_r(clipMap, node->u.node->front);
-                currNode->children[1] = populateBSPTree_r(clipMap, node->u.node->back);
+                currNode->children[0] = populateBSPTree_r(clipMap, node->node->front.get());
+                currNode->children[1] = populateBSPTree_r(clipMap, node->node->back.get());
             }
 
             return currNodeIndex;
@@ -1263,14 +1270,14 @@ private:
         _ASSERT(clipMap->aabbTreeCount == currAABBCount);
     }
 
-    void createPartitions(customMapInfo* projInfo, clipMap_t* clipMap)
+    void createPartitions(CustomMapBSP* projInfo, clipMap_t* clipMap)
     {
-        int collisionVertexCount = projInfo->colInfo.vertexCount;
+        int collisionVertexCount = projInfo->colWorld.vertices.size();
         std::vector<vec3_t> collisionVertVec;
         for (int i = 0; i < collisionVertexCount; i++)
         {
-            collisionVertVec.push_back(CMUtil::convertToBO2Coords(projInfo->colInfo.vertices[i].pos));
-            //collisionVertVec.push_back(projInfo->colInfo.vertices[i].pos);
+            collisionVertVec.push_back(CMUtil::convertToBO2Coords(projInfo->colWorld.vertices[i].pos));
+            //collisionVertVec.push_back(projInfo->colWorld.vertices[i].pos);
         }
         clipMap->vertCount = collisionVertexCount;
         clipMap->verts = new vec3_t[collisionVertexCount];
@@ -1286,21 +1293,21 @@ private:
         }
         
         std::vector<uint16_t> triIndexVec;
-        for (int i = 0; i < projInfo->colInfo.surfaceCount; i++)
+        for (size_t i = 0; i < projInfo->colWorld.surfaces.size(); i++)
         {
-            worldSurface* currSurface = &projInfo->colInfo.surfaces[i];
+            CustomMapSurface* currSurface = &projInfo->colWorld.surfaces[i];
             int triCount = currSurface->triCount;
 
             for (int k = 0; k < triCount * 3; k += 3)
             {
-                int firstIndex_Index = currSurface->firstIndex_Index;
-                int firstVertexIndex = currSurface->firstVertexIndex;
+                int firstIndex_Index = currSurface->indexOfFirstIndex;
+                int firstVertexIndex = currSurface->indexOfFirstVertex;
 
                 // gfx index bufer starts at 0 for each new mesh, while the clipmap index buffer indexes the entire
                 // clipmap verts buffer, so this code updates the indexes to follow that.
-                int triIndex0 = projInfo->colInfo.indices[firstIndex_Index + (k + 0)] + firstVertexIndex;
-                int triIndex1 = projInfo->colInfo.indices[firstIndex_Index + (k + 1)] + firstVertexIndex;
-                int triIndex2 = projInfo->colInfo.indices[firstIndex_Index + (k + 2)] + firstVertexIndex;
+                int triIndex0 = projInfo->colWorld.indices[firstIndex_Index + (k + 0)] + firstVertexIndex;
+                int triIndex1 = projInfo->colWorld.indices[firstIndex_Index + (k + 1)] + firstVertexIndex;
+                int triIndex2 = projInfo->colWorld.indices[firstIndex_Index + (k + 2)] + firstVertexIndex;
 
                 // triangle index ordering is opposite to blenders, so its converted here
                 triIndexVec.push_back(triIndex2);
@@ -1317,10 +1324,10 @@ private:
         // one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
         // so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
         std::vector<CollisionPartition> partitionVec;
-        for (int i = 0; i < projInfo->colInfo.surfaceCount; i++)
+        for (size_t i = 0; i < projInfo->colWorld.surfaces.size(); i++)
         {
-            int triCount = projInfo->colInfo.surfaces[i].triCount;
-            int firstTriIndex = projInfo->colInfo.surfaces[i].firstIndex_Index / 3;
+            int triCount = projInfo->colWorld.surfaces[i].triCount;
+            int firstTriIndex = projInfo->colWorld.surfaces[i].indexOfFirstIndex / 3;
             for (int k = 0; k < triCount; k++)
             {
                 CollisionPartition newPartition;
@@ -1375,7 +1382,7 @@ private:
         memcpy(clipMap->info.uinds, &uindVec[0], sizeof(uint16_t) * totalUindCount);
     }
 
-    void createClipMap(customMapInfo* projInfo)
+    void createClipMap(CustomMapBSP* projInfo)
     {
         clipMap_t* clipMap = new clipMap_t;
 
@@ -1605,9 +1612,9 @@ private:
                 }
             }
 
-            Object* currObject = new Object(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, i);
+            std::shared_ptr<Object> currObject = std::make_shared<Object>(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, i);
 
-            tree->addObject(currObject);
+            tree->addObjectToTree(std::move(currObject));
         }
 
         populateBSPTree(clipMap, tree);
@@ -1615,7 +1622,7 @@ private:
         m_context.AddAsset<AssetClipMapPvs>(clipMap->name, clipMap);
     }
 
-    void createComWorld(customMapInfo* projInfo)
+    void createComWorld(CustomMapBSP* projInfo)
     {
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = new ComWorld;
@@ -1800,7 +1807,7 @@ private:
         }
     }
 
-    void createMapEnts(customMapInfo* projInfo)
+    void createMapEnts(CustomMapBSP* projInfo)
     {
         MapEnts* mapEnts = new MapEnts;
 
@@ -1862,7 +1869,7 @@ private:
         m_context.AddAsset<AssetMapEnts>(mapEnts->name, mapEnts);
     }
 
-    void createGameWorldMp(customMapInfo* projInfo)
+    void createGameWorldMp(CustomMapBSP* projInfo)
     {
         GameWorldMp* gameWorldMp = new GameWorldMp;
 
@@ -1887,11 +1894,13 @@ private:
         m_context.AddAsset<AssetGameWorldMp>(gameWorldMp->name, gameWorldMp);
     }
 
-    void createSkinnedVerts(customMapInfo* projInfo)
+    void createSkinnedVerts(CustomMapBSP* projInfo)
     {
         SkinnedVertsDef* skinnedVerts = new SkinnedVertsDef;
         skinnedVerts->name = "skinnedverts";
-        skinnedVerts->maxSkinnedVerts = projInfo->gfxInfo.vertexCount;
+        skinnedVerts->maxSkinnedVerts = projInfo->gfxWorld.vertices.size();
+        // I'm pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
+        // But setting it to the world vertex count seems to work
 
         m_context.AddAsset<AssetSkinnedVerts>("skinnedverts", skinnedVerts);
     }
@@ -1910,7 +1919,7 @@ private:
         return footstepTable;
     }
 
-    void checkAndAddDefaultRequiredAssets(customMapInfo* projectInfo)
+    void checkAndAddDefaultRequiredAssets(CustomMapBSP* projectInfo)
     {
         auto templateFile = m_search_path.Open("materials/material_template.json");
         if (!templateFile.IsOpen())

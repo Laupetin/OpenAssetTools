@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <format>
 
 #include "Game/T6/T6.h"
 using namespace T6;
