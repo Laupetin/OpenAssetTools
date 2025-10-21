@@ -1,7 +1,7 @@
-#include "BinarySpacePartitionTree.h"
+#include "BSPCalculation.h"
 
 
-Object::Object(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex)
+BSPObject::BSPObject(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex)
 {
     min.x = xMin;
     min.y = yMin;
@@ -12,12 +12,12 @@ Object::Object(float xMin, float yMin, float zMin, float xMax, float yMax, float
     partitionIndex = objPartitionIndex;
 }
 
-void BSPLeaf::addObject(std::shared_ptr<Object> object)
+void BSPLeaf::addObject(std::shared_ptr<BSPObject> object)
 {
     objectList.emplace_back(std::move(object));
 }
 
-Object* BSPLeaf::getObject(int index)
+BSPObject* BSPLeaf::getObject(int index)
 {
     return objectList.at(index).get();
 }
@@ -35,7 +35,7 @@ BSPNode::BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> ba
     distance = nodeDistance;
 }
 
-PlaneSide BSPNode::objectIsInfront(Object* object)
+PlaneSide BSPNode::objectIsInfront(BSPObject* object)
 {
     float minCoord, maxCoord;
 
@@ -121,7 +121,7 @@ void BSPTree::splitTree()
     }
 }
 
-void BSPTree::addObjectToTree(std::shared_ptr<Object> object)
+void BSPTree::addObjectToTree(std::shared_ptr<BSPObject> object)
 {
     if (isLeaf)
     {

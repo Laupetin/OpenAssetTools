@@ -1,9 +1,8 @@
 #pragma once
 
-#include "BinarySpacePartitionTree.h"
-#include "CustomMapConsts.h"
-#include "CustomMapOptions.h"
-#include "Util.h"
+#include "BSPCalculation.h"
+#include "BSPConstants.h"
+#include "BSPUtil.h"
 
 #include "Game/T6/Material/JsonMaterialLoaderT6.h"
 #include "Utils/Pack.h"
@@ -84,17 +83,17 @@ private:
             CustomMapVertex* WorldVertex = &projInfo->gfxWorld.vertices[i];
             GfxPackedWorldVertex* GfxVertex = &vertexBuffer[i];
 
-            GfxVertex->xyz = CMUtil::convertToBO2Coords(WorldVertex->pos);
+            GfxVertex->xyz = BSPUtil::convertToBO2Coords(WorldVertex->pos);
             //GfxVertex->xyz = WorldVertex->pos;
 
             GfxVertex->color.packed = pack32::Vec4PackGfxColor(WorldVertex->color.v);
 
             GfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(WorldVertex->texCoord.v);
 
-            GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(CMUtil::convertToBO2Coords(WorldVertex->normal).v);
+            GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(BSPUtil::convertToBO2Coords(WorldVertex->normal).v);
             //GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->normal.v);
 
-            GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(CMUtil::convertToBO2Coords(WorldVertex->tangent).v);
+            GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(BSPUtil::convertToBO2Coords(WorldVertex->tangent).v);
             //GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->tangent.v);
 
             // unknown use variables
@@ -180,10 +179,10 @@ private:
             auto currSurface = &gfxWorld->dpvs.surfaces[i];
             auto objSurface = &projInfo->gfxWorld.surfaces[i];
 
-            currSurface->primaryLightIndex = DEFAULT_SURFACE_LIGHT;
-            currSurface->lightmapIndex = DEFAULT_SURFACE_LIGHTMAP;
-            currSurface->reflectionProbeIndex = DEFAULT_SURFACE_REFLECTION_PROBE;
-            currSurface->flags = DEFAULT_SURFACE_FLAGS;
+            currSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
+            currSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
+            currSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
+            currSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
 
             currSurface->tris.triCount = objSurface->triCount;
             currSurface->tris.baseIndex = objSurface->indexOfFirstIndex;
@@ -200,7 +199,7 @@ private:
 
             case MATERIAL_TYPE_COLOUR:
             case MATERIAL_TYPE_EMPTY:
-                surfMaterialName = colorOnlyImageName;
+                surfMaterialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
                 break;
 
             default:
@@ -209,6 +208,7 @@ private:
             Material* surfMaterial = loadImageIntoMaterial(surfMaterialName);
             if (surfMaterial == NULL)
             {
+                std::string missingImageName = std::string(BSPLinkingConstants::MISSING_IMAGE_NAME);
                 surfMaterial = loadImageIntoMaterial(missingImageName);
                 if (surfMaterial == NULL)
                 {
@@ -229,7 +229,7 @@ private:
             for (int k = 0; k < currSurface->tris.triCount * 3; k++)
             {
                 uint16_t vertIndex = gfxWorld->draw.indices[currSurface->tris.baseIndex + k];
-                CMUtil::calcNewBoundsWithPoint(&firstVert[vertIndex].xyz, &currSurface->bounds[0], &currSurface->bounds[1]);
+                BSPUtil::calcNewBoundsWithPoint(&firstVert[vertIndex].xyz, &currSurface->bounds[0], &currSurface->bounds[1]);
             }
 
             // unused values
@@ -255,7 +255,7 @@ private:
         memset(gfxWorld->dpvs.surfaceMaterials, 0, sizeof(GfxDrawSurf_align4) * surfaceCount);
 
         // all visdata is alligned by 128
-        gfxWorld->dpvs.surfaceVisDataCount = CMUtil::allignBy128(surfaceCount);
+        gfxWorld->dpvs.surfaceVisDataCount = BSPUtil::allignBy128(surfaceCount);
         gfxWorld->dpvs.surfaceVisData[0] = new char[surfaceCount];
         gfxWorld->dpvs.surfaceVisData[1] = new char[surfaceCount];
         gfxWorld->dpvs.surfaceVisData[2] = new char[surfaceCount];
@@ -308,10 +308,10 @@ private:
         //        currModel->placement.origin.x = inModel->origin.x;
         //        currModel->placement.origin.y = inModel->origin.y;
         //        currModel->placement.origin.z = inModel->origin.z;
-        //        currModel->placement.origin = CMUtil::convertToBO2Coords(currModel->placement.origin);
+        //        currModel->placement.origin = BSPUtil::convertToBO2Coords(currModel->placement.origin);
         //        currModel->placement.scale = inModel->scale;
         //
-        //        CMUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
+        //        BSPUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
         //
         //        // mins and maxs are calculated in world space not local space
         //        // TODO: this does not account for model rotation or scale
@@ -353,7 +353,7 @@ private:
         gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
 
         // all visdata is alligned by 128
-        int allignedModelCount = CMUtil::allignBy128(modelCount);
+        int allignedModelCount = BSPUtil::allignBy128(modelCount);
         gfxWorld->dpvs.smodelVisDataCount = allignedModelCount;
         gfxWorld->dpvs.smodelVisData[0] = new char[allignedModelCount];
         gfxWorld->dpvs.smodelVisData[1] = new char[allignedModelCount];
@@ -367,7 +367,7 @@ private:
         memset(gfxWorld->dpvs.smodelCastsShadow, 0, allignedModelCount);
         for (unsigned int i = 0; i < modelCount; i++)
         {
-            if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & SMODEL_FLAG_NO_SHADOW) == 0)
+            if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & STATIC_MODEL_FLAG_NO_SHADOW) == 0)
                 gfxWorld->dpvs.smodelCastsShadow[i] = 1;
             else
                 gfxWorld->dpvs.smodelCastsShadow[i] = 0;
@@ -468,7 +468,7 @@ private:
     {
         // there must be 2 or more lights, first is the default light and second is the sun
         gfxWorld->primaryLightCount = 2;
-        gfxWorld->sunPrimaryLightIndex = SUN_LIGHT_INDEX; // the sun is always index 1
+        gfxWorld->sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
 
         gfxWorld->shadowGeom = new GfxShadowGeometry[gfxWorld->primaryLightCount];
         for (unsigned int i = 0; i < gfxWorld->primaryLightCount; i++)
@@ -517,7 +517,7 @@ private:
 
         gfxWorld->lightGrid.rowAxis = 0;              // default value
         gfxWorld->lightGrid.colAxis = 1;              // default value
-        gfxWorld->lightGrid.sunPrimaryLightIndex = SUN_LIGHT_INDEX;
+        gfxWorld->lightGrid.sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
         gfxWorld->lightGrid.offset = 0.0f; // default value
 
         // this will make the lookup into rawRowData always return the first row
@@ -544,7 +544,7 @@ private:
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
             entryArray[i].colorsIndex = 0; // always index first colour
-            entryArray[i].primaryLightIndex = SUN_LIGHT_INDEX;
+            entryArray[i].primaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
             entryArray[i].visibility = 0;
         }
         gfxWorld->lightGrid.entries = entryArray;
@@ -552,7 +552,7 @@ private:
         // colours are looked up by an entries colourindex
         gfxWorld->lightGrid.colorCount = 0x1000; //0x1000 as it should be enough to hold every index
         gfxWorld->lightGrid.colors = new GfxCompressedLightGridColors[gfxWorld->lightGrid.colorCount];
-        memset(gfxWorld->lightGrid.colors, LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
+        memset(gfxWorld->lightGrid.colors, BSPEditableConstants::LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
 
         // we use the colours array instead of coeffs array
         gfxWorld->lightGrid.coeffCount = 0;
@@ -586,7 +586,7 @@ private:
         // there is only 1 reflection probe
         gfxWorld->cells[0].reflectionProbeCount = 1;
         char* reflectionProbeIndexes = new char[gfxWorld->cells[0].reflectionProbeCount];
-        reflectionProbeIndexes[0] = DEFAULT_SURFACE_REFLECTION_PROBE;
+        reflectionProbeIndexes[0] = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
         gfxWorld->cells[0].reflectionProbes = reflectionProbeIndexes;
 
         // AABB trees are used to detect what should be rendered and what shouldn't
@@ -639,7 +639,7 @@ private:
 
         for (int i = 0; i < gfxWorld->surfaceCount; i++)
         {
-            CMUtil::calcNewBounds(&gfxWorld->dpvs.surfaces[i].bounds[0], &gfxWorld->dpvs.surfaces[i].bounds[1], &gfxWorld->mins, &gfxWorld->maxs);
+            BSPUtil::calcNewBounds(&gfxWorld->dpvs.surfaces[i].bounds[0], &gfxWorld->dpvs.surfaces[i].bounds[1], &gfxWorld->mins, &gfxWorld->maxs);
         }
     }
 
@@ -811,7 +811,8 @@ private:
 
     void updateDynEntData(GfxWorld* gfxWorld)
     {
-        gfxWorld->dpvsDyn.dynEntClientCount[0] = DYN_ENT_COUNT + 256; // the game allocs 256 empty dynents, as they may be used ingame
+        int dynEntCount = 0;
+        gfxWorld->dpvsDyn.dynEntClientCount[0] = dynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld->dpvsDyn.dynEntClientCount[1] = 0;
 
         // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue. 
@@ -952,7 +953,7 @@ private:
             currModel->absmax.y = gfxModelInst->maxs.y;
             currModel->absmax.z = gfxModelInst->maxs.z;
 
-            CMUtil::matrixTranspose3x3(gfxModelDrawInst->placement.axis, currModel->invScaledAxis);
+            BSPUtil::matrixTranspose3x3(gfxModelDrawInst->placement.axis, currModel->invScaledAxis);
             currModel->invScaledAxis[0].x = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].x;
             currModel->invScaledAxis[0].y = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].y;
             currModel->invScaledAxis[0].z = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].z;
@@ -1060,7 +1061,7 @@ private:
                 {
                     uint16_t vertIndex = tri[l];
                     vec3_t vertCoord = clipMap->verts[vertIndex];
-                    CMUtil::calcNewBoundsWithPoint(&vertCoord, &aabbMins, &aabbMaxs);
+                    BSPUtil::calcNewBoundsWithPoint(&vertCoord, &aabbMins, &aabbMaxs);
                 }
             }
         }
@@ -1097,7 +1098,7 @@ private:
                 uint16_t currUind = clipMap->info.uinds[aabbPartition->fuind + i];
                 vec3_t* currVertex = &clipMap->verts[currUind];
 
-                CMUtil::calcNewBoundsWithPoint(currVertex, &mins, &maxs);
+                BSPUtil::calcNewBoundsWithPoint(currVertex, &mins, &maxs);
             }
 
             aabbCalcOriginAndHalfSize(&mins, &maxs, &currAabbTree->origin, &currAabbTree->halfSize);
@@ -1122,7 +1123,7 @@ private:
 
             currLeaf->cluster = 0;
             currLeaf->brushContents = 0;                       // no brushes used so contents is 0
-            currLeaf->terrainContents = LEAF_TERRAIN_CONTENTS; // clipMap->cmodels[0].leaf.terrainContents takes prescedence
+            currLeaf->terrainContents = BSPEditableConstants::LEAF_TERRAIN_CONTENTS; // clipMap->cmodels[0].leaf.terrainContents takes prescedence
 
             // unused when leafBrushNode == 0
             currLeaf->mins.x = 0.0f;
@@ -1276,7 +1277,7 @@ private:
         std::vector<vec3_t> collisionVertVec;
         for (int i = 0; i < collisionVertexCount; i++)
         {
-            collisionVertVec.push_back(CMUtil::convertToBO2Coords(projInfo->colWorld.vertices[i].pos));
+            collisionVertVec.push_back(BSPUtil::convertToBO2Coords(projInfo->colWorld.vertices[i].pos));
             //collisionVertVec.push_back(projInfo->colWorld.vertices[i].pos);
         }
         clipMap->vertCount = collisionVertexCount;
@@ -1285,9 +1286,9 @@ private:
 
         // due to tris using uint16_t as the type for indexing the vert array,
         // any vertex count over the uint16_t max means the vertices above it can't be indexed
-        if (collisionVertexCount > MAX_COL_VERTS)
+        if (collisionVertexCount > BSPGameConstants::MAX_COLLISION_VERTS)
         {
-            printf("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", collisionVertexCount, MAX_COL_VERTS);
+            printf("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", collisionVertexCount, BSPGameConstants::MAX_COLLISION_VERTS);
             hasLinkFailed = true;
             return;
         }
@@ -1478,7 +1479,8 @@ private:
         clipMap->info.brushBounds = NULL;
         clipMap->info.brushContents = NULL;
 
-        clipMap->originalDynEntCount = DYN_ENT_COUNT;  
+        int dynEntCount = 0;
+        clipMap->originalDynEntCount = dynEntCount;
         clipMap->dynEntCount[0] = clipMap->originalDynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         clipMap->dynEntCount[1] = 0;
         clipMap->dynEntCount[2] = 0;
@@ -1522,7 +1524,7 @@ private:
             cmModel->leaf.firstCollAabbIndex = 0;
             cmModel->leaf.collAabbCount = 0;
             cmModel->leaf.brushContents = 0;
-            cmModel->leaf.terrainContents = WORLD_TERRAIN_CONTENTS;
+            cmModel->leaf.terrainContents = BSPEditableConstants::WORLD_TERRAIN_CONTENTS;
             cmModel->leaf.mins.x = 0.0f;
             cmModel->leaf.mins.y = 0.0f;
             cmModel->leaf.mins.z = 0.0f;
@@ -1538,16 +1540,16 @@ private:
             cmModel->maxs.x = gfxModel->bounds[1].x;
             cmModel->maxs.y = gfxModel->bounds[1].y;
             cmModel->maxs.z = gfxModel->bounds[1].z;
-            cmModel->radius = CMUtil::distBetweenPoints(cmModel->mins, cmModel->maxs) / 2;
+            cmModel->radius = BSPUtil::distBetweenPoints(cmModel->mins, cmModel->maxs) / 2;
         }
 
         addXModelsToCollision(projInfo, clipMap);
 
         clipMap->info.numMaterials = 1;
         clipMap->info.materials = new ClipMaterial[clipMap->info.numMaterials];
-        clipMap->info.materials[0].name = _strdup(missingImageName.c_str());
-        clipMap->info.materials[0].contentFlags = MATERIAL_CONTENT_FLAGS;
-        clipMap->info.materials[0].surfaceFlags = MATERIAL_SURFACE_FLAGS;
+        clipMap->info.materials[0].name = _strdup(BSPLinkingConstants::MISSING_IMAGE_NAME);
+        clipMap->info.materials[0].contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
+        clipMap->info.materials[0].surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
 
         // set all edges to walkable (all walkable edge bits are set to 1, see isEdgeWalkable) until changing it is a possiblility
         // might do weird stuff on walls, but from testing doesnt seem to do much
@@ -1573,12 +1575,12 @@ private:
         clipMaxs.x = firstVert->x;
         clipMaxs.y = firstVert->y;
         clipMaxs.z = firstVert->z;
-        clipMins = CMUtil::convertFromBO2Coords(clipMins);
-        clipMaxs = CMUtil::convertFromBO2Coords(clipMaxs);
+        clipMins = BSPUtil::convertFromBO2Coords(clipMins);
+        clipMaxs = BSPUtil::convertFromBO2Coords(clipMaxs);
         for (unsigned int i = 1; i < clipMap->vertCount; i++)
         {
-            vec3_t vertCoord = CMUtil::convertFromBO2Coords(clipMap->verts[i]);
-            CMUtil::calcNewBoundsWithPoint(&vertCoord, &clipMins, &clipMaxs);
+            vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[i]);
+            BSPUtil::calcNewBoundsWithPoint(&vertCoord, &clipMins, &clipMaxs);
         }
 
         BSPTree* tree = new BSPTree(clipMins.x, clipMins.y, clipMins.z, clipMaxs.x, clipMaxs.y, clipMaxs.z, 0);
@@ -1599,20 +1601,20 @@ private:
             maxs.x = firstVert->x;
             maxs.y = firstVert->y;
             maxs.z = firstVert->z;
-            mins = CMUtil::convertFromBO2Coords(mins);
-            maxs = CMUtil::convertFromBO2Coords(maxs);
+            mins = BSPUtil::convertFromBO2Coords(mins);
+            maxs = BSPUtil::convertFromBO2Coords(maxs);
             for (int k = 0; k < currPartition->triCount; k++)
             {
                 uint16_t* tri = clipMap->triIndices[currPartition->firstTri + k];
                 for (int l = 0; l < 3; l++)
                 {
                     uint16_t vertIndex = tri[l];
-                    vec3_t vertCoord = CMUtil::convertFromBO2Coords(clipMap->verts[vertIndex]);
-                    CMUtil::calcNewBoundsWithPoint(&vertCoord, &mins, &maxs);
+                    vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[vertIndex]);
+                    BSPUtil::calcNewBoundsWithPoint(&vertCoord, &mins, &maxs);
                 }
             }
 
-            std::shared_ptr<Object> currObject = std::make_shared<Object>(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, i);
+            std::shared_ptr<BSPObject> currObject = std::make_shared<BSPObject>(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, i);
 
             tree->addObjectToTree(std::move(currObject));
         }
@@ -1680,7 +1682,7 @@ private:
         }
     }
 
-    void parseSpawnpointJSON(json& entArrayJs, std::string& entityString, std::vector<std::string> spawnpointTypeArray)
+    void parseSpawnpointJSON(json& entArrayJs, std::string& entityString, const char* spawnpointNames[], int nameCount)
     {
         int entityCount = entArrayJs.size();
         for (int i = 0; i < entityCount; i++)
@@ -1690,12 +1692,12 @@ private:
             std::string origin = currEntity["origin"];
             std::string angles = currEntity["angles"];
 
-            for (std::string& spawnType : spawnpointTypeArray)
+            for (int k = 0; k < nameCount; k++)
             {
                 entityString.append("{\n");
                 entityString.append(std::format("\"origin\" \"{}\"\n", origin));
                 entityString.append(std::format("\"angles\" \"{}\"\n", angles));
-                entityString.append(std::format("\"classname\" \"{}\"\n", spawnType));
+                entityString.append(std::format("\"classname\" \"{}\"\n", spawnpointNames[k]));
                 entityString.append("}\n");
             }
         }
@@ -1725,7 +1727,7 @@ private:
         // add the bomb pickup trigger
         {
             std::string bombOriginStr = bombJs["sd_bomb"]["origin"];
-            vec3_t bomboriginV3 = CMUtil::convertStringToVec3(bombOriginStr);
+            vec3_t bomboriginV3 = BSPUtil::convertStringToVec3(bombOriginStr);
             entModelBounds bounds;
             bounds.mins.x = bomboriginV3.x - 32.0f; // bounds taken from mp_dig
             bounds.mins.y = bomboriginV3.y - 32.0f;
@@ -1748,8 +1750,8 @@ private:
         {
             std::string siteAPoint1Str = bombJs["sd_bombzone_a"]["point1"];
             std::string siteAPoint2Str = bombJs["sd_bombzone_a"]["point2"];
-            vec3_t siteAPoint1V3 = CMUtil::convertStringToVec3(siteAPoint1Str);
-            vec3_t siteAPoint2V3 = CMUtil::convertStringToVec3(siteAPoint2Str);
+            vec3_t siteAPoint1V3 = BSPUtil::convertStringToVec3(siteAPoint1Str);
+            vec3_t siteAPoint2V3 = BSPUtil::convertStringToVec3(siteAPoint2Str);
             entModelBounds bounds;
             bounds.mins.x = siteAPoint1V3.x;
             bounds.mins.y = siteAPoint1V3.y;
@@ -1757,12 +1759,12 @@ private:
             bounds.maxs.x = siteAPoint1V3.x;
             bounds.maxs.y = siteAPoint1V3.y;
             bounds.maxs.z = siteAPoint1V3.z;
-            CMUtil::calcNewBoundsWithPoint(&siteAPoint2V3, &bounds.mins, &bounds.mins);
+            BSPUtil::calcNewBoundsWithPoint(&siteAPoint2V3, &bounds.mins, &bounds.mins);
             int entityModelIndex = entityModelList.size() + 1; // +1 as the first model is always the world model
             entityModelList.push_back(bounds);
 
-            vec3_t siteAOrigin = CMUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
-            std::string siteAOriginStr = CMUtil::convertVec3ToString(siteAOrigin);
+            vec3_t siteAOrigin = BSPUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
+            std::string siteAOriginStr = BSPUtil::convertVec3ToString(siteAOrigin);
 
             entityString.append("{\n");
             entityString.append("\"classname\" \"trigger_use_touch\"\n");
@@ -1779,8 +1781,8 @@ private:
         {
             std::string siteBPoint1Str = bombJs["sd_bombzone_b"]["point1"];
             std::string siteBPoint2Str = bombJs["sd_bombzone_b"]["point2"];
-            vec3_t siteBPoint1V3 = CMUtil::convertStringToVec3(siteBPoint1Str);
-            vec3_t siteBPoint2V3 = CMUtil::convertStringToVec3(siteBPoint2Str);
+            vec3_t siteBPoint1V3 = BSPUtil::convertStringToVec3(siteBPoint1Str);
+            vec3_t siteBPoint2V3 = BSPUtil::convertStringToVec3(siteBPoint2Str);
             entModelBounds bounds;
             bounds.mins.x = siteBPoint1V3.x;
             bounds.mins.y = siteBPoint1V3.y;
@@ -1788,12 +1790,12 @@ private:
             bounds.maxs.x = siteBPoint1V3.x;
             bounds.maxs.y = siteBPoint1V3.y;
             bounds.maxs.z = siteBPoint1V3.z;
-            CMUtil::calcNewBoundsWithPoint(&siteBPoint2V3, &bounds.mins, &bounds.mins);
+            BSPUtil::calcNewBoundsWithPoint(&siteBPoint2V3, &bounds.mins, &bounds.mins);
             int entityModelIndex = entityModelList.size() + 1; // +1 as the first model is always the world model
             entityModelList.push_back(bounds);
 
-            vec3_t siteAOrigin = CMUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
-            std::string siteAOriginStr = CMUtil::convertVec3ToString(siteAOrigin);
+            vec3_t siteAOrigin = BSPUtil::calcMiddleOfBounds(&bounds.mins, &bounds.mins);
+            std::string siteAOriginStr = BSPUtil::convertVec3ToString(siteAOrigin);
 
             entityString.append("{\n");
             entityString.append("\"classname\" \"trigger_use_touch\"\n");
@@ -1828,7 +1830,7 @@ private:
         if (!entFile.IsOpen())
         {
             printf("WARN: can't find entity json custom_map/entities.json, using default entities\n");
-            entJs = json::parse(defaultMapEntsString);
+            entJs = json::parse(BSPLinkingConstants::DEFAULT_MAP_ENTS_STRING);
         }
         else
         {
@@ -1841,16 +1843,19 @@ private:
         if (!spawnFile.IsOpen())
         {
             printf("WARN: cant find custom_map/spawns.json, setting spawns to 0 0 0\n");
-            spawnJs = json::parse(defaultSpawnpointString);
+            spawnJs = json::parse(BSPLinkingConstants::DEFAULT_SPAWN_POINT_STRING);
         }
         else
         {
             spawnJs = json::parse(*spawnFile.m_stream);
         }
         
-        parseSpawnpointJSON(spawnJs["attackers"], entityString, spawnpointDefenderTypeArray);
-        parseSpawnpointJSON(spawnJs["defenders"], entityString, spawnpointAttackerTypeArray);
-        parseSpawnpointJSON(spawnJs["FFA"], entityString, spawnpointFFATypeArray);
+        int defenderNameCount = std::extent<decltype(BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES)>::value;
+        int attackerNameCount = std::extent<decltype(BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES)>::value;
+        int ffaNameCount = std::extent<decltype(BSPGameConstants::FFA_SPAWN_POINT_NAMES)>::value;
+        parseSpawnpointJSON(spawnJs["attackers"], entityString, BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES, defenderNameCount);
+        parseSpawnpointJSON(spawnJs["defenders"], entityString, BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES, attackerNameCount);
+        parseSpawnpointJSON(spawnJs["FFA"], entityString, BSPGameConstants::FFA_SPAWN_POINT_NAMES, ffaNameCount);
 
         //const auto objectiveFile = m_search_path.Open("objectives.json");
         //if (!spawnFile.IsOpen())

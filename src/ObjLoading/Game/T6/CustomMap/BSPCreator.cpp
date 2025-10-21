@@ -43,7 +43,6 @@ bool addFBXMeshToWorld(ufbx_node* node,
 
     if (mesh->vertex_tangent.exists == false)
         hasTangentSpace = false;
-
     
     // Fix the target_unit_meters opt not working 
     // UFBX stores the transform data in units that are 100x larger than what blender uses, so this converts them back
