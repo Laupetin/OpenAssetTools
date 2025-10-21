@@ -1,5 +1,5 @@
 #pragma once
-#include "Utils/ClassUtils.h"
+
 #include "XAssetInfo.h"
 #include "Zone/Zone.h"
 #include "Zone/ZoneTypes.h"
@@ -33,16 +33,16 @@ public:
                                 std::vector<XAssetInfoGeneric*> dependencies,
                                 std::vector<scr_string_t> usedScriptStrings,
                                 std::vector<IndirectAssetReference> indirectAssetReferences);
-    _NODISCARD virtual XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const = 0;
-    _NODISCARD virtual XAssetInfoGeneric* GetAssetOrAssetReference(asset_type_t type, const std::string& name) const;
+    [[nodiscard]] virtual XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const = 0;
+    [[nodiscard]] virtual XAssetInfoGeneric* GetAssetOrAssetReference(asset_type_t type, const std::string& name) const;
 
-    _NODISCARD virtual asset_type_t GetAssetTypeCount() const = 0;
-    _NODISCARD virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
+    [[nodiscard]] virtual asset_type_t GetAssetTypeCount() const = 0;
+    [[nodiscard]] virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
 
-    _NODISCARD size_t GetTotalAssetCount() const;
+    [[nodiscard]] size_t GetTotalAssetCount() const;
 
-    _NODISCARD iterator begin() const;
-    _NODISCARD iterator end() const;
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
 
     static std::unique_ptr<ZoneAssetPools> CreateForGame(GameId game, Zone* zone, zone_priority_t priority);
 
