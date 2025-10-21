@@ -20,7 +20,7 @@ namespace
     {
     public:
         TestContext()
-            : m_zone("test", 0, GameId::T6),
+            : m_zone("test", 0, GameId::T6, GamePlatform::PC),
               m_zone_definition(),
               m_zone_definition_context(m_zone_definition),
               m_zone_states(m_zone),
