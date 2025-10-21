@@ -45,7 +45,7 @@ enum class CommonAssetType : std::uint8_t
     // IW3, IW4, IW5, T5, T6
     FONT,
     // IW3, IW4, IW5, T5, T6
-    MENULIST,
+    MENU_LIST,
     // IW3, IW4, IW5, T5, T6
     MENU,
     // IW3, IW4, IW5, T5, T6

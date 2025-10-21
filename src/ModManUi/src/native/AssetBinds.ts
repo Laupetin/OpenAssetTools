@@ -17,7 +17,7 @@ export enum CommonAssetType {
   LIGHT_DEF = "LIGHT_DEF",
   UI_MAP = "UI_MAP",
   FONT = "FONT",
-  MENULIST = "MENULIST",
+  MENU_LIST = "MENU_LIST",
   MENU = "MENU",
   LOCALIZE_ENTRY = "LOCALIZE_ENTRY",
   WEAPON = "WEAPON",

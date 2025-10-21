@@ -11,7 +11,7 @@ namespace
 {
     std::unique_ptr<Zone> CreateZone(const ZoneCreationContext& context, const GameId gameId)
     {
-        return std::make_unique<Zone>(context.m_definition->m_name, 0, gameId);
+        return std::make_unique<Zone>(context.m_definition->m_name, 0, gameId, GamePlatform::PC);
     }
 
     std::vector<Gdt*> CreateGdtList(const ZoneCreationContext& context)

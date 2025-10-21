@@ -5,6 +5,22 @@
 
 #include "Json/JsonExtension.h"
 
+NLOHMANN_JSON_SERIALIZE_ENUM(GameId,
+                             {
+                                 {GameId::IW3, "IW3"},
+                                 {GameId::IW4, "IW4"},
+                                 {GameId::IW5, "IW5"},
+                                 {GameId::T5,  "T5" },
+                                 {GameId::T6,  "T6" },
+});
+
+NLOHMANN_JSON_SERIALIZE_ENUM(GamePlatform,
+                             {
+                                 {GamePlatform::PC,   "PC"  },
+                                 {GamePlatform::XBOX, "XBOX"},
+                                 {GamePlatform::PS3,  "PS3" },
+});
+
 namespace
 {
     class ZoneDto
@@ -12,9 +28,11 @@ namespace
     public:
         std::string name;
         std::string filePath;
+        GameId game;
+        GamePlatform platform;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneDto, name, filePath);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneDto, name, filePath, game, platform);
 
     class ZoneLoadProgressDto
     {
@@ -46,6 +64,8 @@ namespace
         return ZoneDto{
             .name = loadedZone.m_zone->m_name,
             .filePath = loadedZone.m_file_path,
+            .game = loadedZone.m_zone->m_game_id,
+            .platform = loadedZone.m_zone->m_platform,
         };
     }
 
