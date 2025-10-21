@@ -99,29 +99,47 @@ namespace
     {
     public:
         std::vector<AssetDto> assets;
+        std::vector<AssetDto> references;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneAssetsDto, assets);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneAssetsDto, assets, references);
 
     ZoneAssetsDto CreateZoneAssetsDto(const Zone& zone)
     {
         std::vector<AssetDto> assets;
+        std::vector<AssetDto> references;
+
+        // Reserve some entries already. Numbers are arbitrary.
+        const auto assetCount = zone.m_pools->GetTotalAssetCount();
+        assets.reserve(assetCount / 2);
+        references.reserve(assetCount / 8);
 
         const auto& assetTypeMapper = *ICommonAssetTypeMapper::GetCommonAssetMapperByGame(zone.m_game_id);
         for (const auto& asset : *zone.m_pools)
         {
-            assets.emplace_back(AssetDto{
-                .type = assetTypeMapper.GameToCommonAssetType(asset->m_type),
-                .name = asset->m_name,
-            });
+            if (asset->IsReference())
+            {
+                references.emplace_back(AssetDto{
+                    .type = assetTypeMapper.GameToCommonAssetType(asset->m_type),
+                    .name = asset->ReferencedAssetName(),
+                });
+            }
+            else
+            {
+                assets.emplace_back(AssetDto{
+                    .type = assetTypeMapper.GameToCommonAssetType(asset->m_type),
+                    .name = asset->m_name,
+                });
+            }
         }
 
         return ZoneAssetsDto{
             .assets = std::move(assets),
+            .references = std::move(references),
         };
     }
 
-    ZoneAssetsDto GetZonesForZone(const std::string& zoneName)
+    std::optional<ZoneAssetsDto> GetZonesForZone(const std::string& zoneName)
     {
         auto& context = ModManContext::Get().m_fast_file;
 
@@ -138,7 +156,7 @@ namespace
             }
         }
 
-        return ZoneAssetsDto{.assets = std::vector<AssetDto>()};
+        return std::nullopt;
     }
 } // namespace
 
@@ -146,11 +164,11 @@ namespace ui
 {
     void RegisterAssetBinds(webview::webview& wv)
     {
-        Bind<std::string, ZoneAssetsDto>(wv,
-                                         "getAssetsForZone",
-                                         [](const std::string& zoneName)
-                                         {
-                                             return GetZonesForZone(zoneName);
-                                         });
+        Bind<std::string, std::optional<ZoneAssetsDto>>(wv,
+                                                        "getAssetsForZone",
+                                                        [](const std::string& zoneName)
+                                                        {
+                                                            return GetZonesForZone(zoneName);
+                                                        });
     }
 } // namespace ui

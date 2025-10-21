@@ -63,7 +63,7 @@ namespace
 
             newWindow.set_title("OpenAssetTools ModMan");
             newWindow.set_size(1280, 640, WEBVIEW_HINT_NONE);
-            newWindow.set_size(480, 320, WEBVIEW_HINT_MIN);
+            newWindow.set_size(640, 480, WEBVIEW_HINT_MIN);
 
             InstallAssetHandler(newWindow);
             ui::RegisterAllBinds(newWindow);
