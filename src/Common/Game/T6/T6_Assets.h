@@ -3908,6 +3908,17 @@ namespace T6
         int baseIndex;
     };
 
+    enum GfxSurfaceFlags
+    {
+        GFX_SURFACE_CASTS_SUN_SHADOW = 0x1,
+        GFX_SURFACE_HAS_PRIMARY_LIGHT_CONFLICT = 0x2,
+        GFX_SURFACE_IS_SKY = 0x4,
+        GFX_SURFACE_NO_DRAW = 0x8,
+        GFX_SURFACE_CASTS_SHADOW = 0x10,
+        GFX_SURFACE_QUANTIZED = 0x20,
+        GFX_SURFACE_NO_COLOR = 0x40
+    };
+
     struct type_align32(16) GfxSurface
     {
         srfTriangles_t tris;
@@ -3938,6 +3949,12 @@ namespace T6
         unsigned int* lmapVertexColors;
         void /*ID3D11Buffer*/* lmapVertexColorsVB;
         uint16_t numLmapVertexColors;
+    };
+
+    enum StaticModelFlag
+    {
+        STATIC_MODEL_FLAG_NO_SHADOW = 0x1,
+        STATIC_MODEL_FLAG_LIGHTMAP_VC = 0x2,
     };
 
     struct GfxStaticModelDrawInst

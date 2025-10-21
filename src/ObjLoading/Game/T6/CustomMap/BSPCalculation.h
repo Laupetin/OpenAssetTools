@@ -22,24 +22,24 @@ enum PlaneSide
     SIDE_INTERSECTS
 };
 
-class Object
+class BSPObject
 {
 public:
     vec3_t min;
     vec3_t max;
     int partitionIndex; // index of the partition the object is contained in
 
-    Object(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex);
+    BSPObject(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex);
 };
 
 
 class BSPLeaf
 {
 public:
-    std::vector<std::shared_ptr<Object>> objectList;
+    std::vector<std::shared_ptr<BSPObject>> objectList;
 
-    void addObject(std::shared_ptr<Object> object);
-    Object* getObject(int index);
+    void addObject(std::shared_ptr<BSPObject> object);
+    BSPObject* getObject(int index);
     int getObjectCount();
 };
 
@@ -55,7 +55,7 @@ public:
     float distance; // distance from the origin (0, 0, 0) to the plane
 
     BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, PlaneAxis nodeAxis, float nodeDistance);
-    PlaneSide objectIsInfront(Object* object);
+    PlaneSide objectIsInfront(BSPObject* object);
 };
 
 class BSPTree
@@ -71,5 +71,5 @@ public:
 
     BSPTree(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int treeLevel);
     void splitTree();
-    void addObjectToTree(std::shared_ptr<Object> object);
+    void addObjectToTree(std::shared_ptr<BSPObject> object);
 };
