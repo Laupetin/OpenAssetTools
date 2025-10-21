@@ -15,7 +15,7 @@ class ZoneAssetPools;
 class Zone
 {
 public:
-    Zone(std::string name, zone_priority_t priority, GameId gameId);
+    Zone(std::string name, zone_priority_t priority, GameId gameId, GamePlatform platform);
     ~Zone();
     Zone(const Zone& other) = delete;
     Zone(Zone&& other) noexcept = default;
@@ -30,6 +30,7 @@ public:
     zone_priority_t m_priority;
     GameLanguage m_language;
     GameId m_game_id;
+    GamePlatform m_platform;
     ZoneScriptStrings m_script_strings;
     std::unique_ptr<ZoneAssetPools> m_pools;
 

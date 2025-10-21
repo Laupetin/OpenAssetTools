@@ -31,7 +31,7 @@ namespace IW3
             CommonAssetType::LIGHT_DEF,            // ASSET_TYPE_LIGHT_DEF
             CommonAssetType::UI_MAP,               // ASSET_TYPE_UI_MAP
             CommonAssetType::FONT,                 // ASSET_TYPE_FONT
-            CommonAssetType::MENULIST,             // ASSET_TYPE_MENULIST
+            CommonAssetType::MENU_LIST,            // ASSET_TYPE_MENULIST
             CommonAssetType::MENU,                 // ASSET_TYPE_MENU
             CommonAssetType::LOCALIZE_ENTRY,       // ASSET_TYPE_LOCALIZE_ENTRY
             CommonAssetType::WEAPON,               // ASSET_TYPE_WEAPON
@@ -77,7 +77,7 @@ namespace IW3
             MAP_COMMON(CommonAssetType::LIGHT_DEF, ASSET_TYPE_LIGHT_DEF)
             MAP_COMMON(CommonAssetType::UI_MAP, ASSET_TYPE_UI_MAP)
             MAP_COMMON(CommonAssetType::FONT, ASSET_TYPE_FONT)
-            MAP_COMMON(CommonAssetType::MENULIST, ASSET_TYPE_MENULIST)
+            MAP_COMMON(CommonAssetType::MENU_LIST, ASSET_TYPE_MENULIST)
             MAP_COMMON(CommonAssetType::MENU, ASSET_TYPE_MENU)
             MAP_COMMON(CommonAssetType::LOCALIZE_ENTRY, ASSET_TYPE_LOCALIZE_ENTRY)
             MAP_COMMON(CommonAssetType::WEAPON, ASSET_TYPE_WEAPON)

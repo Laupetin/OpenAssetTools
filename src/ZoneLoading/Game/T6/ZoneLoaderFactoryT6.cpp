@@ -284,7 +284,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T6);
+    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T6, inspectResult->m_generic_result.m_platform);
     auto* zonePtr = zone.get();
     zone->m_pools = std::make_unique<GameAssetPoolT6>(zonePtr, 0);
     zone->m_language = GetZoneLanguage(fileName);

@@ -1,6 +1,22 @@
+export enum GameId {
+  IW3 = "IW3",
+  IW4 = "IW4",
+  IW5 = "IW5",
+  T5 = "T5",
+  T6 = "T6",
+}
+
+export enum GamePlatform {
+  PC = "PC",
+  XBOX = "XBOX",
+  PS3 = "PS3",
+}
+
 export interface ZoneDto {
   name: string;
   filePath: string;
+  game: GameId;
+  platform: GamePlatform;
 }
 
 export interface ZoneLoadProgressDto {
