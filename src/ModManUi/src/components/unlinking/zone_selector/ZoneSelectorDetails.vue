@@ -131,6 +131,10 @@ watch(
 
 .asset-meter {
   padding-top: 0.5em;
+  font-size: 0.8em;
+  line-height: 1.25;
+  --p-metergroup-gap: 1em;
+  --p-metergroup-label-list-horizontal-gap: 0.8em;
 }
 
 .count-skeleton {
