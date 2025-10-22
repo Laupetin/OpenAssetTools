@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace custom_map
+namespace BSP
 {
     std::unique_ptr<AssetCreator<T6::AssetGfxWorld>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace custom_map
+} // namespace BSP

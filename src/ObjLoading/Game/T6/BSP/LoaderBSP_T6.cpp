@@ -1,21 +1,15 @@
-#include "Game/T6/Maps/CustomMaps.h"
-
-#include "LoaderCustomMapT6.h"
+#include "LoaderBSP_T6.h"
 #include "BSPCreator.h"
 #include "CustomMapLinker.h"
 
-#include "Game/T6/T6.h"
-
-#include <cstring>
-
-using namespace T6;
-
 namespace
 {
-    class CustomMapLoader final : public AssetCreator<AssetGfxWorld>
+    using namespace BSP;
+
+    class BSPLoader final : public AssetCreator<AssetGfxWorld>
     {
     public:
-        CustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        BSPLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
             : m_memory(memory),
               m_search_path(searchPath),
               m_zone(zone)
@@ -25,21 +19,21 @@ namespace
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
             // custom maps must have a map_gfx file
-            auto mapGfxFile = m_search_path.Open("custom_map/map_gfx.fbx");
+            auto mapGfxFile = m_search_path.Open("BSP/map_gfx.fbx");
             if (!mapGfxFile.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            CustomMapBSP* mapBSP = BSPCreator::createCustomMapBSP(m_zone.m_name, m_search_path);
-            if (mapBSP == NULL)
+            BSPData* BSP = BSP::createBSPData(m_zone.m_name, m_search_path);
+            if (BSP == nullptr)
                 return AssetCreationResult::Failure();
             
-            CustomMapLinker* linker = new CustomMapLinker(m_memory, m_search_path, m_zone, context);
-            bool result = linker->linkCustomMap(mapBSP);
+            CustomMapLinker linker(m_memory, m_search_path, m_zone, context);
+            bool result = linker.linkCustomMap(BSP);
 
             if (result)
             {
-                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(mapBSP->bspName);
-                _ASSERT(gfxWorldAsset != NULL);
+                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(BSP->bspName);
+                _ASSERT(gfxWorldAsset != nullptr);
                 return AssetCreationResult::Success(gfxWorldAsset);
             }
             else
@@ -53,10 +47,10 @@ namespace
     };
 } // namespace
 
-namespace custom_map
+namespace BSP
 {
     std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
-        return std::make_unique<CustomMapLoader>(memory, searchPath, zone);
+        return std::make_unique<BSPLoader>(memory, searchPath, zone);
     }
-} // namespace custom_map
+} // namespace BSP
