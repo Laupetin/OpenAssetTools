@@ -1,4 +1,5 @@
 #include "BSPCreator.h"
+#include "BSPUtil.h"
 #include "fbx/ufbx.h"
 
 namespace
@@ -192,7 +193,7 @@ namespace BSP
 {
     std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
     {
-        std::string gfxFbxPath = "BSP/map_gfx.fbx";
+        std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset("map_gfx.fbx");
         auto gfxFile = searchPath.Open(gfxFbxPath);
         if (!gfxFile.IsOpen())
         {
@@ -221,7 +222,7 @@ namespace BSP
         }
 
         ufbx_scene* colScene;
-        std::string colFbxPath = "BSP/map_col.fbx";
+        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset("map_col.fbx");
         auto colFile = searchPath.Open(colFbxPath);
         if (!colFile.IsOpen())
         {
@@ -252,7 +253,7 @@ namespace BSP
             }
         }
 
-        std::unique_ptr<BSPData> bsp;
+        std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
 
         bsp->name = mapName;
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";

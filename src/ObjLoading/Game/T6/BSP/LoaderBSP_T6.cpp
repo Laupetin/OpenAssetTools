@@ -19,20 +19,20 @@ namespace
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
             // custom maps must have a map_gfx file
-            auto mapGfxFile = m_search_path.Open("BSP/map_gfx.fbx");
+            auto mapGfxFile = m_search_path.Open(BSPUtil::getFileNameForBSPAsset("map_gfx.fbx"));
             if (!mapGfxFile.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            BSPData* BSP = BSP::createBSPData(m_zone.m_name, m_search_path);
-            if (BSP == nullptr)
+            std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
+            if (bsp == nullptr)
                 return AssetCreationResult::Failure();
             
             CustomMapLinker linker(m_memory, m_search_path, m_zone, context);
-            bool result = linker.linkCustomMap(BSP);
+            bool result = linker.linkCustomMap(bsp.get());
 
             if (result)
             {
-                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(BSP->bspName);
+                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(bsp->bspName);
                 _ASSERT(gfxWorldAsset != nullptr);
                 return AssetCreationResult::Success(gfxWorldAsset);
             }

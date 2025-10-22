@@ -5,6 +5,11 @@
 
 #include "BSPUtil.h"
 
+std::string BSPUtil::getFileNameForBSPAsset(std::string assetName)
+{
+    return std::format("BSP/{}", assetName);
+}
+
 // BO2 uses a different coordinate system, so this converts it back from OpenGLs default
 vec3_t BSPUtil::convertToBO2Coords(vec3_t OGL_coordinate)
 {
