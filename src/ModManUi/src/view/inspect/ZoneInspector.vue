@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useZoneStore } from "@/stores/ZoneStore";
-import ZoneSelectorDetails from "./ZoneSelectorDetails.vue";
-import ZoneSelectorZoneList from "./ZoneSelectorZoneList.vue";
+import ZoneInspectorDetails from "./ZoneInspectorDetails.vue";
+import ZoneInspectorZoneList from "./ZoneInspectorZoneList.vue";
 
 const zoneStore = useZoneStore();
 const selectedZone = ref<string | null>(null);
@@ -20,15 +20,14 @@ watch(
 </script>
 
 <template>
-  <div class="zone-selector">
-    <ZoneSelectorZoneList v-model:selected-zone="selectedZone" />
-
-    <ZoneSelectorDetails :selected-zone="selectedZone" />
+  <div class="zone-inspector">
+    <ZoneInspectorZoneList v-model:selected-zone="selectedZone" />
+    <ZoneInspectorDetails :selected-zone="selectedZone" />
   </div>
 </template>
 
 <style lang="scss" scoped>
-.zone-selector {
+.zone-inspector {
   display: flex;
   flex-direction: row;
   width: 100%;
