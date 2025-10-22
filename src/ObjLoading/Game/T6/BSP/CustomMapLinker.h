@@ -1168,7 +1168,7 @@ namespace BSP
                     // converting OGL -> BO2 Z coords negates the z coords and sets it to the y coord.
                     // convert the z normal to the y normal, but don't negate it. Negative normals don't do
                     // what is expected when the game uses them
-                    _ASSERT(node->u.node->axis == AXIS_Z);
+                    _ASSERT(node->node->axis == AXIS_Z);
                     currPlane->normal = normalY;
 
                     // converting OGL -> BO2 Z coords negates the z coords and sets it to the y coord.
