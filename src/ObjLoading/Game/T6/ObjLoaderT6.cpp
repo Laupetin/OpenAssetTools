@@ -48,7 +48,7 @@
 #include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
-#include "CustomMap/LoaderCustomMapT6.h"
+#include "BSP/LoaderBSP_T6.h"
 #include "TechniqueSet/LoaderTechniqueSetT6.h"
 
 #include <format>
@@ -447,7 +447,7 @@ namespace T6
             collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
             collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
 
-            collection.AddAssetCreator(custom_map::CreateLoaderT6(memory, searchPath, zone));
+            collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
         }
     } // namespace
 

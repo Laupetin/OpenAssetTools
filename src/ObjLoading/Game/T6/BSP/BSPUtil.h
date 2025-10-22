@@ -1,9 +1,7 @@
 #pragma once
 
-#include <string>
+#include "BSP.h"
 
-#include "Game/T6/T6.h"
-using namespace T6;
 
 class BSPUtil
 {
