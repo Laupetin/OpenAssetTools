@@ -48,6 +48,8 @@ namespace BSP
 
         if (m_context.LoadDependency<AssetRawFile>("animtrees/fxanim_props.atr") == nullptr)
             return false;
+
+        return true;
     }
 
 	BSPLinker::BSPLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context) 
@@ -69,12 +71,27 @@ namespace BSP
         MapEntsLinker mapEntsLinker(m_memory, m_search_path, m_context);
         SkinnedVertsLinker skinnedVertsLinker(m_memory, m_search_path, m_context);
 
-        comWorldLinker.linkComWorld(bsp);
-        mapEntsLinker.linkMapEnts(bsp);
+        if (comWorldLinker.linkComWorld(bsp).HasFailed())
+            return AssetCreationResult::Failure();
+
+        if (mapEntsLinker.linkMapEnts(bsp).HasFailed())
+            return AssetCreationResult::Failure();
+
         gameWorldMpLinker.linkGameWorldMp(bsp);
-        skinnedVertsLinker.linkSkinnedVerts(bsp);
-        gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
-        clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
+        if (gameWorldMpLinker.linkGameWorldMp(bsp).HasFailed())
+            return AssetCreationResult::Failure();
+
+        if (skinnedVertsLinker.linkSkinnedVerts(bsp).HasFailed())
+            return AssetCreationResult::Failure();
+
+        auto result = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
+        if (result.HasFailed())
+            return AssetCreationResult::Failure();
+
+        if (clipMapLinker.linkClipMap(bsp).HasFailed()) // requires gfxworld and mapents asset
+            return AssetCreationResult::Failure();
+
+        return result;
 	}
 }
 
