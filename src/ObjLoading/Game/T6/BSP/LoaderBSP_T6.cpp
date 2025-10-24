@@ -1,6 +1,8 @@
 #include "LoaderBSP_T6.h"
 #include "BSPCreator.h"
-#include "CustomMapLinker.h"
+#include "BSPUtil.h"
+#include "Linker/BSPLinker.h"
+//#include "CustomMapLinker.h"
 
 namespace
 {
@@ -27,17 +29,8 @@ namespace
             if (bsp == nullptr)
                 return AssetCreationResult::Failure();
             
-            CustomMapLinker linker(m_memory, m_search_path, m_zone, context);
-            bool result = linker.linkCustomMap(bsp.get());
-
-            if (result)
-            {
-                auto gfxWorldAsset = context.LoadDependency<AssetGfxWorld>(bsp->bspName);
-                _ASSERT(gfxWorldAsset != nullptr);
-                return AssetCreationResult::Success(gfxWorldAsset);
-            }
-            else
-                return AssetCreationResult::Failure();
+            BSPLinker linker(m_memory, m_search_path, context);
+            return linker.linkBSP(bsp.get());
         }
 
     private:
