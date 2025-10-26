@@ -1,5 +1,8 @@
 export const PAGE = {
   HOME: "Home",
-  INSPECT_ZONE: "Inspect zone",
+  INSPECT: {
+    SELECT_ZONE: "Inspect zone",
+    ZONE_DETAILS: "Zone details",
+  },
   OPTIONS: "Options",
 };

@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import IconArrowLeft from "./icons/IconArrowLeft.vue";
 import IconGear from "./icons/IconGear.vue";
 
 const route = useRoute();
+const router = useRouter();
+
+function onClickBack() {
+  router.back();
+}
 </script>
 
 <template>
   <header class="header">
     <div class="header-section left">
-      <Button variant="text" severity="secondary" aria-label="Back">
+      <Button variant="text" severity="secondary" aria-label="Back" @click="onClickBack">
         <template #icon>
           <IconArrowLeft class="icon" />
         </template>

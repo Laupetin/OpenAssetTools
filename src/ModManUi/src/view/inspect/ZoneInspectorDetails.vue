@@ -10,6 +10,8 @@ import { computed, ref, watch } from "vue";
 import type { CommonAssetType, ZoneAssetsDto } from "@/native/AssetBinds";
 import { webviewBinds } from "@/native";
 import { getAssetTypeNameCapitalized } from "@/utils/AssetTypeName";
+import { useRouter } from "vue-router";
+import { PAGE } from "@/router/Page";
 
 const zoneStore = useZoneStore();
 
@@ -77,6 +79,18 @@ const selectedZoneDetails = computed<ZoneDto | null>(
   () => zoneStore.loadedZones.find((zone) => zone.name === props.selectedZone) ?? null,
 );
 
+const router = useRouter();
+function onClickShowAssets() {
+  if (!props.selectedZone) return;
+
+  router.push({
+    name: PAGE.INSPECT.ZONE_DETAILS,
+    params: {
+      zoneName: props.selectedZone,
+    },
+  });
+}
+
 watch(
   () => props.selectedZone,
   (newValue) => {
@@ -95,7 +109,7 @@ watch(
 <template>
   <div class="zone-details">
     <h2>{{ selectedZone ?? "No zone selected" }}</h2>
-    <Button label="Show assets" :disabled="!selectedZone" />
+    <Button label="Show assets" :disabled="!selectedZone" @click="onClickShowAssets" />
     <div v-if="selectedZoneDetails" class="zone-tags">
       <Tag :value="selectedZoneDetails.game" />
       <Tag :value="selectedZoneDetails.platform" />
