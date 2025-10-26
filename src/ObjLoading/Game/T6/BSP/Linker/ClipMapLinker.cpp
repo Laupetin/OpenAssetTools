@@ -27,7 +27,6 @@ namespace BSP
         
         clipMap->dynEntClientList[0] = m_memory.Alloc<DynEntityClient>(clipMap->dynEntCount[0]);
         clipMap->dynEntClientList[1] = nullptr;
-        memset(clipMap->dynEntClientList[0], 0, sizeof(DynEntityClient) * clipMap->dynEntCount[0]);
 
         clipMap->dynEntServerList[0] = nullptr;
         clipMap->dynEntServerList[1] = nullptr;
@@ -36,15 +35,12 @@ namespace BSP
         clipMap->dynEntCollList[1] = nullptr;
         clipMap->dynEntCollList[2] = nullptr;
         clipMap->dynEntCollList[3] = nullptr;
-        memset(clipMap->dynEntCollList[0], 0, sizeof(DynEntityColl) * clipMap->dynEntCount[0]);
 
         clipMap->dynEntPoseList[0] = m_memory.Alloc<DynEntityPose>(clipMap->dynEntCount[0]);
         clipMap->dynEntPoseList[1] = nullptr;
-        memset(clipMap->dynEntPoseList[0], 0, sizeof(DynEntityPose) * clipMap->dynEntCount[0]);
 
         clipMap->dynEntDefList[0] = m_memory.Alloc<DynEntityDef>(clipMap->dynEntCount[0]);
         clipMap->dynEntDefList[1] = nullptr;
-        memset(clipMap->dynEntDefList[0], 0, sizeof(DynEntityDef) * clipMap->dynEntCount[0]);
     }
 
     void ClipMapLinker::loadVisibility(clipMap_t* clipMap)
@@ -122,19 +118,18 @@ namespace BSP
     void ClipMapLinker::loadRopesAndConstraints(clipMap_t* clipMap)
     {
         clipMap->num_constraints = 0; // max 511
-        clipMap->constraints = NULL;
+        clipMap->constraints = nullptr;
 
         // The game allocates 32 empty ropes
         clipMap->max_ropes = 32; // max 300
         clipMap->ropes = m_memory.Alloc <rope_t> (clipMap->max_ropes);
-        memset(clipMap->ropes, 0, sizeof(rope_t) * clipMap->max_ropes);
     }
 
     void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp->bspName);
-        assert(gfxWorldAsset != NULL);
+        assert(gfxWorldAsset != nullptr);
         GfxWorld* gfxWorld = gfxWorldAsset->Asset();
 
         // Right now there is only one submodel, the world sub model
@@ -166,7 +161,7 @@ namespace BSP
         clipMap->cmodels[0].leaf.leafBrushNode = 0;
         clipMap->cmodels[0].leaf.cluster = 0;
 
-        clipMap->cmodels[0].info = NULL; // always set to 0
+        clipMap->cmodels[0].info = nullptr; // always set to 0
     }
 
     void ClipMapLinker::loadXModelCollision(clipMap_t* clipMap)
@@ -178,7 +173,7 @@ namespace BSP
         // WIP code left in for future support
         /*
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp->bspName);
-        assert(gfxWorldAsset != NULL);
+        assert(gfxWorldAsset != nullptr);
         GfxWorld* gfxWorld = gfxWorldAsset->Asset();
 
         clipMap->numStaticModels = gfxWorld->dpvs.smodelCount;
@@ -306,7 +301,7 @@ namespace BSP
                 {
                     uint16_t vertIndex = tri[l];
                     vec3_t vertCoord = clipMap->verts[vertIndex];
-                    BSPUtil::calcNewBoundsWithPoint(&vertCoord, &aabbMins, &aabbMaxs);
+                    BSPUtil::updateAABBWithpoint(&vertCoord, &aabbMins, &aabbMaxs);
                 }
             }
         }
@@ -343,7 +338,7 @@ namespace BSP
                 uint16_t currUind = clipMap->info.uinds[aabbPartition->fuind + i];
                 vec3_t* currVertex = &clipMap->verts[currUind];
 
-                BSPUtil::calcNewBoundsWithPoint(currVertex, &mins, &maxs);
+                BSPUtil::updateAABBWithpoint(currVertex, &mins, &maxs);
             }
 
             aabbCalcOriginAndHalfSize(&mins, &maxs, &currAabbTree->origin, &currAabbTree->halfSize);
@@ -631,17 +626,17 @@ namespace BSP
     {
         // No support for brushes, only tris right now
         clipMap->info.numBrushSides = 0;
-        clipMap->info.brushsides = NULL;
+        clipMap->info.brushsides = nullptr;
         clipMap->info.leafbrushNodesCount = 0;
-        clipMap->info.leafbrushNodes = NULL;
+        clipMap->info.leafbrushNodes = nullptr;
         clipMap->info.numLeafBrushes = 0;
-        clipMap->info.leafbrushes = NULL;
+        clipMap->info.leafbrushes = nullptr;
         clipMap->info.numBrushVerts = 0;
-        clipMap->info.brushVerts = NULL;
-        clipMap->info.numBrushes = NULL;
-        clipMap->info.brushes = NULL;
-        clipMap->info.brushBounds = NULL;
-        clipMap->info.brushContents = NULL;
+        clipMap->info.brushVerts = nullptr;
+        clipMap->info.numBrushes = 0;
+        clipMap->info.brushes = nullptr;
+        clipMap->info.brushBounds = nullptr;
+        clipMap->info.brushContents = nullptr;
 
         // clipmap BSP creation must go last as it depends on unids, tris and verts already being populated
         // HACK:
@@ -667,7 +662,7 @@ namespace BSP
         for (unsigned int i = 1; i < clipMap->vertCount; i++)
         {
             vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[i]);
-            BSPUtil::calcNewBoundsWithPoint(&vertCoord, &clipMins, &clipMaxs);
+            BSPUtil::updateAABBWithpoint(&vertCoord, &clipMins, &clipMaxs);
         }
 
         BSPTree* tree = new BSPTree(clipMins.x, clipMins.y, clipMins.z, clipMaxs.x, clipMaxs.y, clipMaxs.z, 0);
@@ -697,7 +692,7 @@ namespace BSP
                 {
                     uint16_t vertIndex = tri[l];
                     vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[vertIndex]);
-                    BSPUtil::calcNewBoundsWithPoint(&vertCoord, &mins, &maxs);
+                    BSPUtil::updateAABBWithpoint(&vertCoord, &mins, &maxs);
                 }
             }
 

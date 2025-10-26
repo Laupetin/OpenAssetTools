@@ -64,8 +64,12 @@ namespace BSP
     {
         constexpr int MAX_COLLISION_VERTS = UINT16_MAX;
 
-        constexpr int STATIC_LIGHT_INDEX = 0;
-        constexpr int SUN_LIGHT_INDEX = 1;
+        enum BSPDefaultLights
+        {
+            STATIC_LIGHT_INDEX = 0,
+            SUN_LIGHT_INDEX = 1,
+            BSP_DEFAULT_LIGHT_COUNT = 2
+        };
 
         inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {
             "mp_ctf_spawn_allies",
@@ -182,5 +186,9 @@ namespace BSP
         // lightgrid (global) lighting colour
         // since lightgrids are not well understood, this colour is used for the R, G and B values right now
         constexpr unsigned char LIGHTGRID_COLOUR = 128;
+
+        // Sunlight values
+        constexpr vec4_t SUNLIGHT_COLOR = { 0.75f, 0.75f, 0.75f, 1.0f };
+        constexpr vec3_t SUNLIGHT_DIRECTION = { 0.0f, 0.0f, 0.0f };
     };
 }

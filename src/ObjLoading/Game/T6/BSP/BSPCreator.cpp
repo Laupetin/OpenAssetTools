@@ -59,87 +59,85 @@ namespace
             if (meshPart.num_faces == 0)
                 continue;
             
-            surfaceVec.emplace_back();
-            BSPSurface* surface = &surfaceVec[surfaceVec.size() - 1];
-            
+            BSPSurface surface;
             size_t partTriangleNum = meshPart.num_triangles;
-            surface->triCount = static_cast<int>(partTriangleNum);
-            surface->indexOfFirstVertex = vertexVec.size();
-            surface->indexOfFirstIndex = indexVec.size();
+            surface.triCount = static_cast<int>(partTriangleNum);
+            surface.indexOfFirstVertex = static_cast<int>(vertexVec.size());
+            surface.indexOfFirstIndex = static_cast<int>(indexVec.size());
 
             if (mesh->materials.count == 0)
             {
-                surface->material.materialType = MATERIAL_TYPE_EMPTY;
-                surface->material.materialName = "";
+                surface.material.materialType = MATERIAL_TYPE_EMPTY;
+                surface.material.materialName = "";
             }
             else
             {
-                surface->material.materialType = MATERIAL_TYPE_TEXTURE;
-                surface->material.materialName = mesh->materials.data[meshPart.index]->name.data;
+                surface.material.materialType = MATERIAL_TYPE_TEXTURE;
+                surface.material.materialName = mesh->materials.data[meshPart.index]->name.data;
             }
 
-            std::vector<BSPVertex> vertices;
-            std::vector<uint32_t> indices;
-            indices.resize(mesh->max_face_triangles * 3);
+            std::vector<BSPVertex> tempVertices;
+            std::vector<uint32_t> tempIndices;
+            tempIndices.resize(mesh->max_face_triangles * 3);
             for (uint32_t faceIndex : meshPart.face_indices)
             {
                 ufbx_face* face = &mesh->faces.data[faceIndex];
 
                 // Triangulate the face into the indices vector
-                uint32_t triangluatedTriCount = ufbx_triangulate_face(indices.data(), indices.size(), mesh, *face);
+                uint32_t triangluatedTriCount = ufbx_triangulate_face(tempIndices.data(), tempIndices.size(), mesh, *face);
 
-                // Iterate over each triangle corner contiguously.
                 for (uint32_t idxOfIndex = 0; idxOfIndex < triangluatedTriCount * 3; idxOfIndex++)
                 {
-                    vertices.emplace_back();
-                    BSPVertex* vertex = &vertices[vertices.size() - 1];
-                    uint32_t index = indices[idxOfIndex];
+                    BSPVertex vertex;
+                    uint32_t index = tempIndices[idxOfIndex];
 
                     ufbx_vec3 transformedPos = ufbx_transform_position(&meshMatrix, ufbx_get_vertex_vec3(&mesh->vertex_position, index));
-                    vertex->pos.x = static_cast<float>(transformedPos.x);
-                    vertex->pos.y = static_cast<float>(transformedPos.y);
-                    vertex->pos.z = static_cast<float>(transformedPos.z);
+                    vertex.pos.x = static_cast<float>(transformedPos.x);
+                    vertex.pos.y = static_cast<float>(transformedPos.y);
+                    vertex.pos.z = static_cast<float>(transformedPos.z);
 
-                    if (surface->material.materialType == MATERIAL_TYPE_TEXTURE || surface->material.materialType == MATERIAL_TYPE_EMPTY)
+                    if (surface.material.materialType == MATERIAL_TYPE_TEXTURE || surface.material.materialType == MATERIAL_TYPE_EMPTY)
                     {
-                        vertex->color.x = 1.0f;
-                        vertex->color.y = 1.0f;
-                        vertex->color.z = 1.0f;
-                        vertex->color.w = 1.0f;
+                        vertex.color.x = 1.0f;
+                        vertex.color.y = 1.0f;
+                        vertex.color.z = 1.0f;
+                        vertex.color.w = 1.0f;
                     }
                     else // surface->material.materialType == MATERIAL_TYPE_COLOUR
                     {
                         float factor = static_cast<float>(mesh->materials.data[meshPart.index]->fbx.diffuse_factor.value_real);
                         ufbx_vec4 diffuse = mesh->materials.data[meshPart.index]->fbx.diffuse_color.value_vec4;
-                        vertex->color.x = static_cast<float>(diffuse.x * factor);
-                        vertex->color.y = static_cast<float>(diffuse.y * factor);
-                        vertex->color.z = static_cast<float>(diffuse.z * factor);
-                        vertex->color.w = static_cast<float>(diffuse.w * factor);
+                        vertex.color.x = static_cast<float>(diffuse.x * factor);
+                        vertex.color.y = static_cast<float>(diffuse.y * factor);
+                        vertex.color.z = static_cast<float>(diffuse.z * factor);
+                        vertex.color.w = static_cast<float>(diffuse.w * factor);
                     }
 
                     // 1.0f - uv.y reason: https://gamedev.stackexchange.com/questions/92886/fbx-uv-coordinates-is-strange
                     ufbx_vec2 uv = ufbx_get_vertex_vec2(&mesh->vertex_uv, index);
-                    vertex->texCoord.x = static_cast<float>(uv.x);
-                    vertex->texCoord.y = static_cast<float>(1.0f - uv.y);
+                    vertex.texCoord.x = static_cast<float>(uv.x);
+                    vertex.texCoord.y = static_cast<float>(1.0f - uv.y);
 
                     ufbx_vec3 normal = ufbx_get_vertex_vec3(&mesh->vertex_normal, index);
-                    vertex->normal.x = static_cast<float>(normal.x);
-                    vertex->normal.y = static_cast<float>(normal.y);
-                    vertex->normal.z = static_cast<float>(normal.z);
+                    vertex.normal.x = static_cast<float>(normal.x);
+                    vertex.normal.y = static_cast<float>(normal.y);
+                    vertex.normal.z = static_cast<float>(normal.z);
 
                     if (mesh->vertex_tangent.exists)
                     {
                         ufbx_vec3 tangent = ufbx_get_vertex_vec3(&mesh->vertex_tangent, index);
-                        vertex->tangent.x = static_cast<float>(tangent.x);
-                        vertex->tangent.y = static_cast<float>(tangent.y);
-                        vertex->tangent.z = static_cast<float>(tangent.z);
+                        vertex.tangent.x = static_cast<float>(tangent.x);
+                        vertex.tangent.y = static_cast<float>(tangent.y);
+                        vertex.tangent.z = static_cast<float>(tangent.z);
                     }
                     else
                     {
-                        vertex->tangent.x = 0.0f;
-                        vertex->tangent.y = 0.0f;
-                        vertex->tangent.z = 0.0f;
+                        vertex.tangent.x = 0.0f;
+                        vertex.tangent.y = 0.0f;
+                        vertex.tangent.z = 0.0f;
                     }
+
+                    tempVertices.emplace_back(vertex);
                 }
             }
 
@@ -147,7 +145,7 @@ namespace
             // ufbx_generate_indices will deduplicate vertices, modifying the arrays passed in streams,
             // indices are written to outIndices and the number of unique vertices is returned.
             ufbx_vertex_stream streams[1] = {
-                {vertices.data(), vertices.size(), sizeof(BSPVertex)},
+                {tempVertices.data(), tempVertices.size(), sizeof(BSPVertex)},
             };
             std::vector<uint32_t> outIndices;
             outIndices.resize(partTriangleNum * 3);
@@ -155,14 +153,16 @@ namespace
             assert(numGeneratedVertices != 0);
 
             // trim non-unique vertexes and add to the world vertex vector
-            vertices.resize(numGeneratedVertices);
-            vertexVec.insert(vertexVec.end(), vertices.begin(), vertices.end());
+            tempVertices.resize(numGeneratedVertices);
+            vertexVec.insert(vertexVec.end(), tempVertices.begin(), tempVertices.end());
 
             // T6 uses unsigned shorts as their index type so we have to loop and convert them from an unsigned int
             for (size_t idx = 0; idx < outIndices.size(); idx++)
             {
                 indexVec.emplace_back(static_cast<uint16_t>(outIndices[idx]));
             }
+
+            surfaceVec.emplace_back(surface);
         }
     }
 

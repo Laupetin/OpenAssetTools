@@ -15,23 +15,22 @@ namespace BSP
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
         comWorld->name = m_memory.Dup(bsp->bspName.c_str());
         comWorld->isInUse = 1;
-        comWorld->primaryLightCount = 2;
+        comWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
         comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(comWorld->primaryLightCount);
 
-        // static light is always empty
-        ComPrimaryLight* staticLight = &comWorld->primaryLights[0];
-        memset(staticLight, 0, sizeof(ComPrimaryLight));
-
+        // first (static) light is always empty
+        
         ComPrimaryLight* sunLight = &comWorld->primaryLights[1];
-        memset(sunLight, 0, sizeof(ComPrimaryLight));
-        sunLight->type = 1;
-        sunLight->diffuseColor.r = 0.75f;
-        sunLight->diffuseColor.g = 0.75f;
-        sunLight->diffuseColor.b = 0.75f;
-        sunLight->diffuseColor.a = 1.0f;
-        sunLight->dir.x = 0.0f;
-        sunLight->dir.y = 0.0f;
-        sunLight->dir.z = 0.0f;
+        const vec4_t sunLightColor = BSPEditableConstants::SUNLIGHT_COLOR;
+        const vec3_t sunLightDirection = BSPEditableConstants::SUNLIGHT_DIRECTION;
+        sunLight->type = GFX_LIGHT_TYPE_DIR;
+        sunLight->diffuseColor.r = sunLightColor.r;
+        sunLight->diffuseColor.g = sunLightColor.g;
+        sunLight->diffuseColor.b = sunLightColor.b;
+        sunLight->diffuseColor.a = sunLightColor.a;
+        sunLight->dir.x = sunLightDirection.x;
+        sunLight->dir.y = sunLightDirection.y;
+        sunLight->dir.z = sunLightDirection.z;
 
         auto comWorldAsset = m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
         return AssetCreationResult::Success(comWorldAsset);
