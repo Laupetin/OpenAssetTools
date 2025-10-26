@@ -10,79 +10,73 @@ std::string BSPUtil::getFileNameForBSPAsset(std::string assetName)
     return std::format("BSP/{}", assetName);
 }
 
-// BO2 uses a different coordinate system, so this converts it back from OpenGLs default
-vec3_t BSPUtil::convertToBO2Coords(vec3_t OGL_coordinate)
+vec3_t BSPUtil::convertToBO2Coords(vec3_t coordinate)
 {
     vec3_t result;
-    result.x = OGL_coordinate.x;
-    result.y = -OGL_coordinate.z;
-    result.z = OGL_coordinate.y;
+    result.x = coordinate.x;
+    result.y = -coordinate.z;
+    result.z = coordinate.y;
     return result;
 }
 
-// BO2 uses a weird coordinate system, so this converts it to OpenGLs default
-vec3_t BSPUtil::convertFromBO2Coords(vec3_t bo2_coordinate)
+vec3_t BSPUtil::convertFromBO2Coords(vec3_t coordinate)
 {
     vec3_t result;
-    result.x = bo2_coordinate.x;
-    result.y = bo2_coordinate.z;
-    result.z = -bo2_coordinate.y;
+    result.x = coordinate.x;
+    result.y = coordinate.z;
+    result.z = -coordinate.y;
     return result;
 }
 
-void BSPUtil::calcNewBounds(vec3_t* newmins, vec3_t* newmaxs, vec3_t* currmins, vec3_t* currmaxs)
+void BSPUtil::updateAABB(vec3_t* newAABBMins, vec3_t* newAABBMaxs, vec3_t* AABBMins, vec3_t* AABBMaxs)
 {
-    if (currmins->x > newmins->x)
-        currmins->x = newmins->x;
+    if (AABBMins->x > newAABBMins->x)
+        AABBMins->x = newAABBMins->x;
 
-    if (newmaxs->x > currmaxs->x)
-        currmaxs->x = newmaxs->x;
+    if (newAABBMaxs->x > AABBMaxs->x)
+        AABBMaxs->x = newAABBMaxs->x;
 
-    if (currmins->y > newmins->y)
-        currmins->y = newmins->y;
+    if (AABBMins->y > newAABBMins->y)
+        AABBMins->y = newAABBMins->y;
 
-    if (newmaxs->y > currmaxs->y)
-        currmaxs->y = newmaxs->y;
+    if (newAABBMaxs->y > AABBMaxs->y)
+        AABBMaxs->y = newAABBMaxs->y;
 
-    if (currmins->z > newmins->z)
-        currmins->z = newmins->z;
+    if (AABBMins->z > newAABBMins->z)
+        AABBMins->z = newAABBMins->z;
 
-    if (newmaxs->z > currmaxs->z)
-        currmaxs->z = newmaxs->z;
+    if (newAABBMaxs->z > AABBMaxs->z)
+        AABBMaxs->z = newAABBMaxs->z;
 }
 
-void BSPUtil::calcNewBoundsWithPoint(vec3_t* point, vec3_t* currmins, vec3_t* currmaxs)
+void BSPUtil::updateAABBWithpoint(vec3_t* point, vec3_t* AABBMins, vec3_t* AABBMaxs)
 {
-    if (currmins->x > point->x)
-        currmins->x = point->x;
+    if (AABBMins->x > point->x)
+        AABBMins->x = point->x;
 
-    if (point->x > currmaxs->x)
-        currmaxs->x = point->x;
+    if (point->x > AABBMaxs->x)
+        AABBMaxs->x = point->x;
 
-    if (currmins->y > point->y)
-        currmins->y = point->y;
+    if (AABBMins->y > point->y)
+        AABBMins->y = point->y;
 
-    if (point->y > currmaxs->y)
-        currmaxs->y = point->y;
+    if (point->y > AABBMaxs->y)
+        AABBMaxs->y = point->y;
 
-    if (currmins->z > point->z)
-        currmins->z = point->z;
+    if (AABBMins->z > point->z)
+        AABBMins->z = point->z;
 
-    if (point->z > currmaxs->z)
-        currmaxs->z = point->z;
+    if (point->z > AABBMaxs->z)
+        AABBMaxs->z = point->z;
 }
 
 vec3_t BSPUtil::calcMiddleOfBounds(vec3_t* mins, vec3_t* maxs)
 {
-    // Origin is the midpoint: (min + max) / 2
-    vec3_t temp;
-    temp.x = mins->x + maxs->x;
-    temp.y = mins->y + maxs->y;
-    temp.z = mins->z + maxs->z;
-    temp.x *= 0.5f;
-    temp.y *= 0.5f;
-    temp.z *= 0.5f;
-    return temp;
+    vec3_t result;
+    result.x = (mins->x + maxs->x) * 0.5f;
+    result.y = (mins->y + maxs->y) * 0.5f;
+    result.z = (mins->z + maxs->z) * 0.5f;
+    return result;
 }
 
 int BSPUtil::allignBy128(int size)

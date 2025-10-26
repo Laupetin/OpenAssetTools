@@ -7096,6 +7096,23 @@ namespace T6
         char* stringValue;
     };
 
+    enum GfxLightType
+    {
+        GFX_LIGHT_TYPE_NONE = 0x0,
+        GFX_LIGHT_TYPE_DIR = 0x1,
+        GFX_LIGHT_TYPE_SPOT = 0x2,
+        GFX_LIGHT_TYPE_SPOT_SQUARE = 0x3,
+        GFX_LIGHT_TYPE_SPOT_ROUND = 0x4,
+        GFX_LIGHT_TYPE_OMNI = 0x5,
+        GFX_LIGHT_TYPE_COUNT = 0x6,
+        GFX_LIGHT_TYPE_DIR_SHADOWMAP = 0x6,
+        GFX_LIGHT_TYPE_SPOT_SHADOWMAP = 0x7,
+        GFX_LIGHT_TYPE_SPOT_SQUARE_SHADOWMAP = 0x8,
+        GFX_LIGHT_TYPE_SPOT_ROUND_SHADOWMAP = 0x9,
+        GFX_LIGHT_TYPE_OMNI_SHADOWMAP = 0xA,
+        GFX_LIGHT_TYPE_COUNT_WITH_SHADOWMAP_VERSIONS = 0xB,
+    };
+
 #ifndef __zonecodegenerator
 } // namespace T6
 #endif

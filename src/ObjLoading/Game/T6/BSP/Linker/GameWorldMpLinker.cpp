@@ -21,12 +21,10 @@ namespace BSP
         gameWorldMp->path.smoothBytes = 0;
         gameWorldMp->path.nodeTreeCount = 0;
 
-        int nodeCount = gameWorldMp->path.nodeCount + 128;
-        gameWorldMp->path.nodes = m_memory.Alloc<pathnode_t>(nodeCount);
-        gameWorldMp->path.basenodes = m_memory.Alloc<pathbasenode_t>(nodeCount);
-        memset(gameWorldMp->path.nodes, 0, nodeCount * sizeof(pathnode_t));
-        memset(gameWorldMp->path.basenodes, 0, nodeCount * sizeof(pathbasenode_t));
-
+        // The game has 128 empty nodes allocated
+        int extraNodeCount = gameWorldMp->path.nodeCount + 128;
+        gameWorldMp->path.nodes = m_memory.Alloc<pathnode_t>(extraNodeCount);
+        gameWorldMp->path.basenodes = m_memory.Alloc<pathbasenode_t>(extraNodeCount);
         gameWorldMp->path.pathVis = nullptr;
         gameWorldMp->path.smoothCache = nullptr;
         gameWorldMp->path.nodeTree = nullptr;
