@@ -79,7 +79,8 @@ namespace BSP
         try
         {
             json entJs;
-            std::string entityFilePath = BSPUtil::getFileNameForBSPAsset("entities.json");
+            std::string entityFileName = "entities.json";
+            std::string entityFilePath = BSPUtil::getFileNameForBSPAsset(entityFileName);
             const auto entFile = m_search_path.Open(entityFilePath);
             if (!entFile.IsOpen())
             {
@@ -95,7 +96,8 @@ namespace BSP
                 return AssetCreationResult::Failure();
 
             json spawnJs;
-            std::string spawnFilePath = BSPUtil::getFileNameForBSPAsset("spawns.json");
+            std::string spawnFileName = "spawns.json";
+            std::string spawnFilePath = BSPUtil::getFileNameForBSPAsset(spawnFileName);
             const auto spawnFile = m_search_path.Open(spawnFilePath);
             if (!spawnFile.IsOpen())
             {

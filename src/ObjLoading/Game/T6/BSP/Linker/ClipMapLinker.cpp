@@ -1,12 +1,6 @@
 #include "ClipMapLinker.h"
 #include "../BSPUtil.h"
 
-
-namespace
-{
-
-}
-
 namespace BSP
 {
     ClipMapLinker::ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
@@ -122,7 +116,7 @@ namespace BSP
 
         // The game allocates 32 empty ropes
         clipMap->max_ropes = 32; // max 300
-        clipMap->ropes = m_memory.Alloc <rope_t> (clipMap->max_ropes);
+        clipMap->ropes = m_memory.Alloc<rope_t>(clipMap->max_ropes);
     }
 
     void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
@@ -214,374 +208,334 @@ namespace BSP
         */
     }
 
-    void aabbCalcOriginAndHalfSize(vec3_t* mins, vec3_t* maxs, vec3_t* out_origin, vec3_t* out_halfSize)
-    {
-        // Origin is the midpoint: (min + max) / 2
-        vec3_t temp;
-        temp.x = mins->x + maxs->x;
-        temp.y = mins->y + maxs->y;
-        temp.z = mins->z + maxs->z;
-        out_origin->x = temp.x * 0.5f;
-        out_origin->y = temp.y * 0.5f;
-        out_origin->z = temp.z * 0.5f;
-
-        // Half-size is half the difference: (max - min) / 2
-        temp.x = maxs->x - mins->x;
-        temp.y = maxs->y - mins->y;
-        temp.z = maxs->z - mins->z;
-        out_halfSize->x = temp.x * 0.5f;
-        out_halfSize->y = temp.y * 0.5f;
-        out_halfSize->z = temp.z * 0.5f;
-    }
-
-    void traverseBSPTreeForCounts(BSPTree* node, size_t* numPlanes, size_t* numNodes, size_t* numLeafs, size_t* numAABBTrees, size_t* maxObjsPerLeaf)
-    {
-        if (node->isLeaf)
-        {
-            (*numLeafs)++;
-            // there won't be an AABB tree when objectList is empty
-            if (node->leaf->getObjectCount() > 0)
-            {
-                *numAABBTrees += node->leaf->getObjectCount() + 1;
-
-                if (node->leaf->getObjectCount() > *maxObjsPerLeaf)
-                    *maxObjsPerLeaf = node->leaf->getObjectCount();
-            }
-        }
-        else
-        {
-            (*numPlanes)++;
-            (*numNodes)++;
-            traverseBSPTreeForCounts(node->node->front.get(), numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
-            traverseBSPTreeForCounts(node->node->back.get(), numPlanes, numNodes, numLeafs, numAABBTrees, maxObjsPerLeaf);
-        }
-    }
-
-    vec3_t normalX = { 1.0f, 0.0f, 0.0f };
-    vec3_t normalY = { 0.0f, 1.0f, 0.0f };
-    vec3_t normalZ = { 0.0f, 0.0f, 1.0f };
-
-    int currPlaneCount = 0;
-    int currNodeCount = 0;
-    int currLeafCount = 0;
-    int currAABBCount = 0;
-
-    int addAABBTreeFromLeaf(BSPTree* node, clipMap_t* clipMap)
+    int ClipMapLinker::addAABBTreeFromLeaf(BSPTree* node, clipMap_t* clipMap)
     {
         assert(node->isLeaf);
 
-        int objectCount = node->leaf->getObjectCount();
-        int firstAABBIndex = currAABBCount;
-        currAABBCount += objectCount + 1;
+        size_t objectCount = node->leaf->getObjectCount();
+        size_t parentAABBIndex = AABBTreeVec.size();
 
-        // calculate root AABB node mins and maxs
-        // cannot convert mins and maxs coord to BO2 directly as this will result in incorrect mins and maxs
-        // so we have to recompute every min and max, not hard just tedious
-        int firstPartitionIndex = node->leaf->getObject(0)->partitionIndex;
-        auto firstPartition = &clipMap->partitions[firstPartitionIndex];
-        uint16_t* firstTri = clipMap->triIndices[firstPartition->firstTri];
-        vec3_t* firstVert = &clipMap->verts[firstTri[0]];
-        vec3_t aabbMins;
-        vec3_t aabbMaxs;
-        aabbMins.x = firstVert->x;
-        aabbMins.y = firstVert->y;
-        aabbMins.z = firstVert->z;
-        aabbMaxs.x = firstVert->x;
-        aabbMaxs.y = firstVert->y;
-        aabbMaxs.z = firstVert->z;
-        for (int i = 0; i < objectCount; i++)
+        assert(objectCount > 0);
+
+        // add the parent AABB node
+        vec3_t parentMins;
+        vec3_t parentMaxs;
+        for (size_t objectIdx = 0; objectIdx < objectCount; objectIdx++)
         {
-            int currPartitionIndex = node->leaf->getObject(i)->partitionIndex;
-            auto currPartition = &clipMap->partitions[currPartitionIndex];
-
-            for (int k = 0; k < currPartition->triCount; k++)
+            int partitionIndex = node->leaf->getObject(objectIdx)->partitionIndex;
+            CollisionPartition* partition = &clipMap->partitions[partitionIndex];
+            for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
             {
-                uint16_t* tri = clipMap->triIndices[currPartition->firstTri + k];
-                for (int l = 0; l < 3; l++)
+                uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
+                vec3_t vert = clipMap->verts[uind];
+
+                // initalise the parent AABB with the first vertex
+                if (objectIdx == 0 && uindIdx == 0)
                 {
-                    uint16_t vertIndex = tri[l];
-                    vec3_t vertCoord = clipMap->verts[vertIndex];
-                    BSPUtil::updateAABBWithpoint(&vertCoord, &aabbMins, &aabbMaxs);
+                    parentMins = vert;
+                    parentMaxs = vert;
                 }
+
+                BSPUtil::updateAABBWithPoint(vert, parentMins, parentMaxs);
             }
         }
-        CollisionAabbTree* rootAABB = &clipMap->aabbTrees[firstAABBIndex];
-        aabbCalcOriginAndHalfSize(&aabbMins, &aabbMaxs, &rootAABB->origin, &rootAABB->halfSize);
-        rootAABB->materialIndex = 0;
-        rootAABB->childCount = objectCount;
-        rootAABB->u.firstChildIndex = firstAABBIndex + 1;
 
-        // populate child AABB nodes
-        for (int i = 0; i < objectCount; i++)
+        CollisionAabbTree parentAABB;
+        parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
+        parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
+        parentAABB.materialIndex = 0; // always use the first material
+        parentAABB.childCount = static_cast<uint16_t>(objectCount);
+        parentAABB.u.firstChildIndex = static_cast<int>(parentAABBIndex + 1);
+        AABBTreeVec.emplace_back(parentAABB);
+
+        // add child AABB nodes
+        for (size_t objectIdx = 0; objectIdx < objectCount; objectIdx++)
         {
-            CollisionAabbTree* currAabbTree = &clipMap->aabbTrees[rootAABB->u.firstChildIndex + i];
-            int currPartitionIndex = node->leaf->getObject(i)->partitionIndex;
-
-            currAabbTree->materialIndex = 0;
-            currAabbTree->childCount = 0;
-            currAabbTree->u.partitionIndex = currPartitionIndex;
-
-            // calculate partition origin and half size
-            CollisionPartition* aabbPartition = &clipMap->partitions[currPartitionIndex];
-            uint16_t firstUind = clipMap->info.uinds[aabbPartition->fuind];
-            vec3_t* firstVertex = &clipMap->verts[firstUind];
-            vec3_t mins;
-            vec3_t maxs;
-            mins.x = firstVertex->x;
-            mins.y = firstVertex->y;
-            mins.z = firstVertex->z;
-            maxs.x = firstVertex->x;
-            maxs.y = firstVertex->y;
-            maxs.z = firstVertex->z;
-            for (int i = 1; i < aabbPartition->nuinds; i++)
+            int partitionIndex = node->leaf->getObject(objectIdx)->partitionIndex;
+            CollisionPartition* partition = &clipMap->partitions[partitionIndex];
+            vec3_t childMins;
+            vec3_t childMaxs;
+            for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
             {
-                uint16_t currUind = clipMap->info.uinds[aabbPartition->fuind + i];
-                vec3_t* currVertex = &clipMap->verts[currUind];
+                uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
+                vec3_t vert = clipMap->verts[uind];
 
-                BSPUtil::updateAABBWithpoint(currVertex, &mins, &maxs);
+                // initalise the child AABB with the first vertex
+                if (uindIdx == 0)
+                {
+                    childMins = vert;
+                    childMaxs = vert;
+                }
+
+                BSPUtil::updateAABBWithPoint(vert, childMins, childMaxs);
             }
 
-            aabbCalcOriginAndHalfSize(&mins, &maxs, &currAabbTree->origin, &currAabbTree->halfSize);
+            CollisionAabbTree childAABBTree;
+            childAABBTree.materialIndex = 0; // always use the first material
+            childAABBTree.childCount = 0;
+            childAABBTree.u.partitionIndex = partitionIndex;
+            childAABBTree.origin = BSPUtil::calcMiddleOfAABB(childMins, childMaxs);
+            childAABBTree.halfSize = BSPUtil::calcHalfSizeOfAABB(childMins, childMaxs);
+            AABBTreeVec.emplace_back(childAABBTree);
         }
 
-        return firstAABBIndex;
+        return static_cast<int>(parentAABBIndex);
     }
 
-    // returns the index corresponding to the BSPTree* node parsed
-    int16_t populateBSPTree_r(clipMap_t* clipMap, BSPTree* node)
-    {
-        if (node->isLeaf)
-        {
-            int currLeafIndex = currLeafCount;
-            currLeafCount++;
-            cLeaf_s* currLeaf = &clipMap->leafs[currLeafIndex];
+    constexpr vec3_t normalX = { 1.0f, 0.0f, 0.0f };
+    constexpr vec3_t normalY = { 0.0f, 1.0f, 0.0f };
+    constexpr vec3_t normalZ = { 0.0f, 0.0f, 1.0f };
 
-            currLeaf->cluster = 0;
-            currLeaf->brushContents = 0;                       // no brushes used so contents is 0
-            currLeaf->terrainContents = BSPEditableConstants::LEAF_TERRAIN_CONTENTS; // clipMap->cmodels[0].leaf.terrainContents takes prescedence
+    // returns the index of the node/leaf parsed by the function
+    // Nodes are indexed by their index in the node array
+    // Leafs are indexed by (-1 - <leaf index>)
+    // See https://developer.valvesoftware.com/wiki/BSP_(Source)
+    int16_t ClipMapLinker::loadBSPNode(clipMap_t* clipMap, BSPTree* tree)
+    {
+        if (tree->isLeaf)
+        {
+            cLeaf_s leaf;
+
+            leaf.cluster = 0; // always use cluster 0
+            leaf.brushContents = 0; // no brushes used so contents is 0
+            leaf.terrainContents = BSPEditableConstants::LEAF_TERRAIN_CONTENTS;
 
             // unused when leafBrushNode == 0
-            currLeaf->mins.x = 0.0f;
-            currLeaf->mins.y = 0.0f;
-            currLeaf->mins.z = 0.0f;
-            currLeaf->maxs.x = 0.0f;
-            currLeaf->maxs.y = 0.0f;
-            currLeaf->maxs.z = 0.0f;
-            currLeaf->leafBrushNode = 0;
+            leaf.mins.x = 0.0f;
+            leaf.mins.y = 0.0f;
+            leaf.mins.z = 0.0f;
+            leaf.maxs.x = 0.0f;
+            leaf.maxs.y = 0.0f;
+            leaf.maxs.z = 0.0f;
+            leaf.leafBrushNode = 0;
 
-            if (node->leaf->getObjectCount() > 0)
+            if (tree->leaf->getObjectCount() > 0)
             {
-                currLeaf->firstCollAabbIndex = addAABBTreeFromLeaf(node, clipMap);
-                currLeaf->collAabbCount = 1;
+                leaf.firstCollAabbIndex = addAABBTreeFromLeaf(tree, clipMap);
+                leaf.collAabbCount = 1; // 1 as it is the parent of all object AABBs
             }
             else
             {
-                currLeaf->firstCollAabbIndex = 0;
-                currLeaf->collAabbCount = 0;
+                leaf.firstCollAabbIndex = 0;
+                leaf.collAabbCount = 0;
             }
 
-            return -1 - currLeafIndex;
+            uint16_t leafIndex = static_cast<uint16_t>(leafVec.size());
+            leafVec.emplace_back(leaf);
+
+            return -1 - leafIndex;
         }
         else
         {
-            cplane_s* currPlane = &clipMap->info.planes[currPlaneCount];
-            currPlaneCount++;
+            cplane_s plane;
 
-            if (node->node->axis == AXIS_X)
+            if (tree->node->axis == AXIS_X)
             {
-                // X is unchanged when going from OGL x -> BO2 x
-                currPlane->normal = normalX;
-
-                // converting OGL -> BO2 X coords doesn't change the x coords at all, so
-                // the dist stays the same
-                currPlane->dist = (float)node->node->distance;
+                plane.normal = normalX;
+                plane.dist = tree->node->distance;
             }
             else
             {
-                // converting OGL -> BO2 Z coords negates the z coords and sets it to the y coord.
-                // convert the z normal to the y normal, but don't negate it. Negative normals don't do
-                // what is expected when the game uses them
-                assert(node->node->axis == AXIS_Z);
-                currPlane->normal = normalY;
-
-                // converting OGL -> BO2 Z coords negates the z coords and sets it to the y coord.
-                // just negate it here as it is just the distance from the orgin along the axis
-                currPlane->dist = (float)(-node->node->distance);
+                // converting Z coords to BO2 negates the z coords and sets it to the y coord.
+                assert(tree->node->axis == AXIS_Z);
+                plane.normal = normalY;
+                plane.dist = -tree->node->distance;
             }
 
-            bool foundType = false;
-            if (currPlane->normal.x == 1.0f)
-            {
-                assert(!foundType);
-                foundType = true;
-                currPlane->type = 0;
-            }
-            else if (currPlane->normal.y == 1.0f)
-            {
-                assert(!foundType);
-                foundType = true;
-                currPlane->type = 1;
-            }
-            else if (currPlane->normal.z == 1.0f)
-            {
-                assert(!foundType);
-                foundType = true;
-                currPlane->type = 2;
-            }
+            if (plane.normal.x == 1.0f)
+                plane.type = 0;
+            else if (plane.normal.y == 1.0f)
+                plane.type = 1;
             else
-                assert(foundType);
-
-            currPlane->signbits = 0;
-            if (currPlane->normal.x < 0.0f)
-                currPlane->signbits |= 1;
-            if (currPlane->normal.y < 0.0f)
-                currPlane->signbits |= 2;
-            if (currPlane->normal.z < 0.0f)
-                currPlane->signbits |= 4;
-
-            currPlane->pad[0] = 0;
-            currPlane->pad[1] = 0;
-
-            int currNodeIndex = currNodeCount;
-            currNodeCount++;
-            cNode_t* currNode = &clipMap->nodes[currNodeIndex];
-
-            currNode->plane = currPlane;
-            // Reason for the front and back flip (due to the hacky nature of making the mins and maxs work (see createClipMap)):
-            // after converting between OGL and BO2 coords and when and updating the normal from Z -> Y,
-            // the normal vector flips and objects behind the plane are now in front, and vise versa
-            // so the back node now represents the front, and the front node represents the back.
-            // Do the OGL -> Bo2 coord change on paper and it will make sense
-            if (currPlane->type == 1)
             {
-                currNode->children[1] = populateBSPTree_r(clipMap, node->node->front.get());
-                currNode->children[0] = populateBSPTree_r(clipMap, node->node->back.get());
+                assert(plane.normal.z == 1.0f);
+                plane.type = 2;
+            }
+
+            plane.signbits = 0;
+            if (plane.normal.x < 0.0f)
+                plane.signbits |= 1;
+            if (plane.normal.y < 0.0f)
+                plane.signbits |= 2;
+            if (plane.normal.z < 0.0f)
+                plane.signbits |= 4;
+
+            plane.pad[0] = 0;
+            plane.pad[1] = 0;
+
+            planeVec.emplace_back(plane);
+
+            // The recursion of adding the children means the node needs to be added before the chilren are loaded
+            size_t nodeIndex = nodeVec.size();
+            nodeVec.emplace_back();
+
+            cNode_t node;
+            node.plane = nullptr; // initalised after the BSP tree has been loaded
+            if (plane.type == 1)
+            {
+                // Due to the plane normal going from Z to Y, objects behind the plane are now in front and objects in front are now behind
+                node.children[1] = loadBSPNode(clipMap, tree->node->front.get());
+                node.children[0] = loadBSPNode(clipMap, tree->node->back.get());
             }
             else
             {
-                currNode->children[0] = populateBSPTree_r(clipMap, node->node->front.get());
-                currNode->children[1] = populateBSPTree_r(clipMap, node->node->back.get());
+                node.children[0] = loadBSPNode(clipMap, tree->node->front.get());
+                node.children[1] = loadBSPNode(clipMap, tree->node->back.get());
             }
 
-            return currNodeIndex;
+            nodeVec.at(nodeIndex) = node;
+
+            return static_cast<uint16_t>(nodeIndex);
         }
     }
 
-    void ClipMapLinker::populateBSPTree(clipMap_t* clipMap, BSPTree* tree)
+    void ClipMapLinker::loadBSPTree(clipMap_t* clipMap, BSPData* bsp)
     {
-        size_t numPlanes = 0;
-        size_t numNodes = 0;
-        size_t numLeafs = 0;
-        size_t numAABBTrees = 0;
-        size_t maxObjsPerLeaf = 0;
+        // HACK:
+        //  the BSP tree creation does not work when BO2's coordinate system is used for mins and maxs.
+        //  Workaround is to convert every BO2 coordinate before it is added into the BSP tree.
 
-        traverseBSPTreeForCounts(tree, &numPlanes, &numNodes, &numLeafs, &numAABBTrees, &maxObjsPerLeaf);
-
-        printf("Max Objects per leaf: %i\n", maxObjsPerLeaf);
-
-        clipMap->info.planeCount = numPlanes;
-        clipMap->info.planes = m_memory.Alloc<cplane_s>(clipMap->info.planeCount);
-        clipMap->numNodes = numNodes;
-        clipMap->nodes = m_memory.Alloc<cNode_t>(clipMap->numNodes);
-        // aabb trees: each leaf will have their own AABB tree of the objects within it, and the root aabb node will be the parent of every other aabb node.
-        // therefore, each aabb tree will be of size (numObjects + 1) as the tree needs a root aabb node to reference it's children.
-        clipMap->aabbTreeCount = numAABBTrees;
-        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(clipMap->aabbTreeCount);
-
-        currPlaneCount = 0;
-        currNodeCount = 0;
-        currAABBCount = 0;
-
-        // first leaf is always empty
-        clipMap->numLeafs = numLeafs + 1;
-        clipMap->leafs = m_memory.Alloc<cLeaf_s>(clipMap->numLeafs);
-        memset(&clipMap->leafs[0], 0, sizeof(cLeaf_s));
-        currLeafCount = 1;
-
-        populateBSPTree_r(clipMap, tree);
-
-        assert(clipMap->info.planeCount == currPlaneCount);
-        assert(clipMap->numNodes == currNodeCount);
-        assert(clipMap->numLeafs == currLeafCount);
-        assert(clipMap->aabbTreeCount == currAABBCount);
-    }
-
-    bool ClipMapLinker::createPartitions(clipMap_t* clipMap, BSPData* bsp)
-    {
-        int collisionVertexCount = bsp->colWorld.vertices.size();
-        std::vector<vec3_t> collisionVertVec;
-        for (int i = 0; i < collisionVertexCount; i++)
+        vec3_t worldMins;
+        vec3_t worldMaxs;
+        for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
         {
-            collisionVertVec.push_back(BSPUtil::convertToBO2Coords(bsp->colWorld.vertices[i].pos));
-            //collisionVertVec.push_back(bsp->colWorld.vertices[i].pos);
+            vec3_t vertex = BSPUtil::convertFromBO2Coords(clipMap->verts[vertIdx]);
+            // initalise AABB with the first vertex
+            if (vertIdx == 0)
+            {
+                worldMins = vertex;
+                worldMaxs = vertex;
+            }
+            BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
-        clipMap->vertCount = collisionVertexCount;
-        clipMap->verts = m_memory.Alloc<vec3_t>(collisionVertexCount);
-        memcpy(clipMap->verts, &collisionVertVec[0], sizeof(vec3_t) * collisionVertexCount);
+        std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
+        assert(!tree->isLeaf);
 
+        for (int partitionIdx = 0; partitionIdx < clipMap->partitionCount; partitionIdx++)
+        {
+            vec3_t partitionMins;
+            vec3_t partitionMaxs;
+            CollisionPartition* partition = &clipMap->partitions[partitionIdx];
+            for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
+            {
+                uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
+                vec3_t vert = BSPUtil::convertFromBO2Coords(clipMap->verts[uind]);
+                // initalise the AABB with the first vertex
+                if (uindIdx == 0)
+                {
+                    partitionMins = vert;
+                    partitionMaxs = vert;
+                }
+                BSPUtil::updateAABBWithPoint(vert, partitionMins, partitionMaxs);
+            }
+            std::shared_ptr<BSPObject> currObject = std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
+            tree->addObjectToTree(std::move(currObject));
+        }
+
+        // load planes, nodes, leafs, and AABB trees
+        loadBSPNode(clipMap, tree.get());
+
+        clipMap->info.planeCount = static_cast<int>(planeVec.size());
+        clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
+        memcpy(clipMap->info.planes, planeVec.data(), sizeof(cplane_s) * planeVec.size());
+
+        clipMap->numNodes = static_cast<unsigned int>(nodeVec.size());
+        clipMap->nodes = m_memory.Alloc<cNode_t>(nodeVec.size());
+        memcpy(clipMap->nodes, nodeVec.data(), sizeof(cNode_t) * nodeVec.size());
+
+        clipMap->numLeafs = static_cast<unsigned int>(leafVec.size());
+        clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
+        memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
+
+        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
+        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
+        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
+
+        // The plane of each node have the same index
+        for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
+            clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
+    }
+
+    bool ClipMapLinker::loadPartitions(clipMap_t* clipMap, BSPData* bsp)
+    {
         // due to tris using uint16_t as the type for indexing the vert array,
-        // any vertex count over the uint16_t max means the vertices above it can't be indexed
-        if (collisionVertexCount > BSPGameConstants::MAX_COLLISION_VERTS)
+        //  any vertex count over the uint16_t max means the vertices above the uint16_t max can't be indexed
+        if (static_cast<unsigned int>(bsp->colWorld.vertices.size()) > BSPGameConstants::MAX_COLLISION_VERTS)
         {
-            printf("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", collisionVertexCount, BSPGameConstants::MAX_COLLISION_VERTS);
+            printf("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", clipMap->vertCount, BSPGameConstants::MAX_COLLISION_VERTS);
             return false;
         }
 
+        clipMap->vertCount = static_cast<unsigned int>(bsp->colWorld.vertices.size());
+        clipMap->verts = m_memory.Alloc<vec3_t>(clipMap->vertCount);
+        for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
+            clipMap->verts[vertIdx] = BSPUtil::convertToBO2Coords(bsp->colWorld.vertices[vertIdx].pos);
+
+        // The clipmap index buffer has a unique index for each vertex in the world, compared to the gfxworld's
+        //  index buffer having a unique index for each vertex on a surface. This code converts gfxworld indices to clipmap indices.
         std::vector<uint16_t> triIndexVec;
-        for (size_t i = 0; i < bsp->colWorld.surfaces.size(); i++)
+        for (BSPSurface& surface : bsp->colWorld.surfaces)
         {
-            BSPSurface* currSurface = &bsp->colWorld.surfaces[i];
-            int triCount = currSurface->triCount;
-
-            for (int k = 0; k < triCount * 3; k += 3)
+            int indexOfFirstIndex = surface.indexOfFirstIndex;
+            int indexOfFirstVertex = surface.indexOfFirstVertex;
+            for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx += 3)
             {
-                int firstIndex_Index = currSurface->indexOfFirstIndex;
-                int firstVertexIndex = currSurface->indexOfFirstVertex;
-
-                // gfx index bufer starts at 0 for each new mesh, while the clipmap index buffer indexes the entire
-                // clipmap verts buffer, so this code updates the indexes to follow that.
-                int triIndex0 = bsp->colWorld.indices[firstIndex_Index + (k + 0)] + firstVertexIndex;
-                int triIndex1 = bsp->colWorld.indices[firstIndex_Index + (k + 1)] + firstVertexIndex;
-                int triIndex2 = bsp->colWorld.indices[firstIndex_Index + (k + 2)] + firstVertexIndex;
+                int firstTriIndex = indexOfFirstIndex + indexIdx;
+                int triIndex0 = bsp->colWorld.indices[firstTriIndex + 0] + indexOfFirstVertex;
+                int triIndex1 = bsp->colWorld.indices[firstTriIndex + 1] + indexOfFirstVertex;
+                int triIndex2 = bsp->colWorld.indices[firstTriIndex + 2] + indexOfFirstVertex;
 
                 // triangle index ordering is opposite to blenders, so its converted here
-                triIndexVec.push_back(triIndex2);
-                triIndexVec.push_back(triIndex1);
-                triIndexVec.push_back(triIndex0);
+                triIndexVec.emplace_back(triIndex2);
+                triIndexVec.emplace_back(triIndex1);
+                triIndexVec.emplace_back(triIndex0);
             }
         }
-        assert(triIndexVec.size() % 3 == 0);
-
-        // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies,
-        //  and static_cast can't safely do the conversion
-        clipMap->triCount = triIndexVec.size() / 3;
+        // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
+        clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
         clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
         memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
 
-        // partitions are made for each triangle, not one for each surface.
-        // one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
-        // so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
+        // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
         std::vector<CollisionPartition> partitionVec;
-        for (size_t i = 0; i < bsp->colWorld.surfaces.size(); i++)
+        std::vector<uint16_t> uniqueIndicesVec;
+        for (BSPSurface& surface : bsp->colWorld.surfaces)
         {
-            int triCount = bsp->colWorld.surfaces[i].triCount;
-            int firstTriIndex = bsp->colWorld.surfaces[i].indexOfFirstIndex / 3;
-            for (int k = 0; k < triCount; k++)
+            // partitions are made for each triangle, not one for each surface. 
+            //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
+            //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
+            int indexOfFirstTri = surface.indexOfFirstIndex / 3;
+            int indexOfFirstVertex = surface.indexOfFirstVertex;
+            for (int triIdx = 0; triIdx < surface.triCount; triIdx++)
             {
-                CollisionPartition newPartition;
-                newPartition.nuinds = 0; // initialised later
-                newPartition.fuind = 0;  // initialised later
-                newPartition.triCount = 1;
-                newPartition.firstTri = firstTriIndex;
-                firstTriIndex += 1;
+                CollisionPartition partition;
+                partition.triCount = 1;
+                partition.firstTri = indexOfFirstTri + triIdx;
 
-                partitionVec.push_back(newPartition);
+                partition.nuinds = 3;
+                partition.fuind = static_cast<int>(uniqueIndicesVec.size());
+
+                // All tri indices are unique since there is only one tri per partition
+                uint16_t* tri = clipMap->triIndices[partition.firstTri];
+                uniqueIndicesVec.emplace_back(tri[0]);
+                uniqueIndicesVec.emplace_back(tri[1]);
+                uniqueIndicesVec.emplace_back(tri[2]);
+
+                partitionVec.emplace_back(partition);
             }
         }
-        clipMap->partitionCount = partitionVec.size();
+        clipMap->partitionCount = static_cast<int>(partitionVec.size());
         clipMap->partitions = m_memory.Alloc<CollisionPartition>(clipMap->partitionCount);
-        memcpy(clipMap->partitions, &partitionVec[0], sizeof(CollisionPartition) * clipMap->partitionCount);
+        memcpy(clipMap->partitions, partitionVec.data(), sizeof(CollisionPartition) * partitionVec.size());
 
+        clipMap->info.nuinds = static_cast<int>(uniqueIndicesVec.size());
+        clipMap->info.uinds = m_memory.Alloc<uint16_t>(uniqueIndicesVec.size());
+        memcpy(clipMap->info.uinds, uniqueIndicesVec.data(), sizeof(uint16_t) * uniqueIndicesVec.size());
+
+        return true;
+
+        /*
+        // Proper unique index creation code kept for future use
         int totalUindCount = 0;
         std::vector<uint16_t> uindVec;
         for (int i = 0; i < clipMap->partitionCount; i++)
@@ -606,7 +560,7 @@ namespace BSP
                     }
 
                     if (isVertexIndexUnique)
-                        uniqueVertVec.push_back(vertIndex);
+                        uniqueVertVec.emplace_back(vertIndex);
                 }
             }
 
@@ -618,11 +572,10 @@ namespace BSP
         clipMap->info.nuinds = totalUindCount;
         clipMap->info.uinds = m_memory.Alloc<uint16_t>(totalUindCount);
         memcpy(clipMap->info.uinds, &uindVec[0], sizeof(uint16_t) * totalUindCount);
-
-        return true;
+        */
     }
 
-    bool ClipMapLinker::loadBrushCollision(clipMap_t* clipMap, BSPData* bsp)
+    bool ClipMapLinker::loadWorldCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // No support for brushes, only tris right now
         clipMap->info.numBrushSides = 0;
@@ -638,70 +591,11 @@ namespace BSP
         clipMap->info.brushBounds = nullptr;
         clipMap->info.brushContents = nullptr;
 
-        // clipmap BSP creation must go last as it depends on unids, tris and verts already being populated
-        // HACK:
-        // the BSP tree creation does not work when BO2's coordinate system is used for mins and maxs.
-        // Workaround is to convert every BO2 coordinate to OGL's before it is added into the BSP tree,
-        // and then convert them back when it is being parsed into the clipmap. Requires some hacky
-        // logic, check populateBSPTree_r and addAABBTreeFromLeaf
-
-        if (!createPartitions(clipMap, bsp))
+        // load verts, tris, uinds and partitions
+        if (!loadPartitions(clipMap, bsp))
             return false;
 
-        vec3_t* firstVert = &clipMap->verts[0];
-        vec3_t clipMins;
-        vec3_t clipMaxs;
-        clipMins.x = firstVert->x;
-        clipMins.y = firstVert->y;
-        clipMins.z = firstVert->z;
-        clipMaxs.x = firstVert->x;
-        clipMaxs.y = firstVert->y;
-        clipMaxs.z = firstVert->z;
-        clipMins = BSPUtil::convertFromBO2Coords(clipMins);
-        clipMaxs = BSPUtil::convertFromBO2Coords(clipMaxs);
-        for (unsigned int i = 1; i < clipMap->vertCount; i++)
-        {
-            vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[i]);
-            BSPUtil::updateAABBWithpoint(&vertCoord, &clipMins, &clipMaxs);
-        }
-
-        BSPTree* tree = new BSPTree(clipMins.x, clipMins.y, clipMins.z, clipMaxs.x, clipMaxs.y, clipMaxs.z, 0);
-
-        assert(!tree->isLeaf);
-
-        for (int i = 0; i < clipMap->partitionCount; i++)
-        {
-            auto currPartition = &clipMap->partitions[i];
-
-            uint16_t* firstTri = clipMap->triIndices[currPartition->firstTri];
-            vec3_t* firstVert = &clipMap->verts[firstTri[0]];
-            vec3_t mins;
-            vec3_t maxs;
-            mins.x = firstVert->x;
-            mins.y = firstVert->y;
-            mins.z = firstVert->z;
-            maxs.x = firstVert->x;
-            maxs.y = firstVert->y;
-            maxs.z = firstVert->z;
-            mins = BSPUtil::convertFromBO2Coords(mins);
-            maxs = BSPUtil::convertFromBO2Coords(maxs);
-            for (int k = 0; k < currPartition->triCount; k++)
-            {
-                uint16_t* tri = clipMap->triIndices[currPartition->firstTri + k];
-                for (int l = 0; l < 3; l++)
-                {
-                    uint16_t vertIndex = tri[l];
-                    vec3_t vertCoord = BSPUtil::convertFromBO2Coords(clipMap->verts[vertIndex]);
-                    BSPUtil::updateAABBWithpoint(&vertCoord, &mins, &maxs);
-                }
-            }
-
-            std::shared_ptr<BSPObject> currObject = std::make_shared<BSPObject>(mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, i);
-
-            tree->addObjectToTree(std::move(currObject));
-        }
-
-        populateBSPTree(clipMap, tree);
+        loadBSPTree(clipMap, bsp);
 
         return true;
     }
@@ -746,7 +640,7 @@ namespace BSP
         clipMap->triEdgeIsWalkable = new char[walkableEdgeSize];
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
 
-        if (!loadBrushCollision(clipMap, bsp))
+        if (!loadWorldCollision(clipMap, bsp))
             return AssetCreationResult::Failure();
 
         m_context.AddAsset<AssetClipMapPvs>(clipMap->name, clipMap);

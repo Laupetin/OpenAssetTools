@@ -193,7 +193,8 @@ namespace BSP
 {
     std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
     {
-        std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset("map_gfx.fbx");
+        std::string gfxFbxFileName = "map_gfx.fbx";
+        std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset(gfxFbxFileName);
         auto gfxFile = searchPath.Open(gfxFbxPath);
         if (!gfxFile.IsOpen())
         {
@@ -222,7 +223,8 @@ namespace BSP
         }
 
         ufbx_scene* colScene;
-        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset("map_col.fbx");
+        std::string colFbxFileName = "map_col.fbx";
+        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset(colFbxFileName);
         auto colFile = searchPath.Open(colFbxPath);
         if (!colFile.IsOpen())
         {

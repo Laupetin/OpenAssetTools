@@ -130,7 +130,7 @@ namespace BSP
             for (int k = 0; k < currSurface->tris.triCount * 3; k++)
             {
                 uint16_t vertIndex = gfxWorld->draw.indices[currSurface->tris.baseIndex + k];
-                BSPUtil::updateAABBWithpoint(&firstVert[vertIndex].xyz, &currSurface->bounds[0], &currSurface->bounds[1]);
+                BSPUtil::updateAABBWithPoint(firstVert[vertIndex].xyz, currSurface->bounds[0], currSurface->bounds[1]);
             }
 
             // unused values
@@ -547,7 +547,7 @@ namespace BSP
 
         for (int i = 0; i < gfxWorld->surfaceCount; i++)
         {
-            BSPUtil::updateAABB(&gfxWorld->dpvs.surfaces[i].bounds[0], &gfxWorld->dpvs.surfaces[i].bounds[1], &gfxWorld->mins, &gfxWorld->maxs);
+            BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[i].bounds[0], gfxWorld->dpvs.surfaces[i].bounds[1], gfxWorld->mins, gfxWorld->maxs);
         }
     }
 

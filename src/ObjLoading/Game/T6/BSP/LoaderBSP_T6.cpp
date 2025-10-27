@@ -21,7 +21,8 @@ namespace
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
             // custom maps must have a map_gfx file
-            auto mapGfxFile = m_search_path.Open(BSPUtil::getFileNameForBSPAsset("map_gfx.fbx"));
+            std::string mapGfxFileName = "map_gfx.fbx";
+            auto mapGfxFile = m_search_path.Open(BSPUtil::getFileNameForBSPAsset(mapGfxFileName));
             if (!mapGfxFile.IsOpen())
                 return AssetCreationResult::NoAction();
 

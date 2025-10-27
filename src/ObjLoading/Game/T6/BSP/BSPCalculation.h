@@ -35,7 +35,7 @@ namespace BSP
         std::vector<std::shared_ptr<BSPObject>> objectList;
 
         void addObject(std::shared_ptr<BSPObject> object);
-        BSPObject* getObject(int index);
+        BSPObject* getObject(size_t index);
         size_t getObjectCount();
     };
 
