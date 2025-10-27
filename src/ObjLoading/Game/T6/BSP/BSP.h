@@ -1,13 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <memory>
-#include <cassert>
-
+#include "Game/T6/T6.h"
 #include "Utils/Logging/Log.h"
 
-#include "Game/T6/T6.h"
+#include <cassert>
+#include <memory>
+#include <string>
+#include <vector>
 using namespace T6;
 
 namespace BSP
@@ -71,40 +70,32 @@ namespace BSP
             BSP_DEFAULT_LIGHT_COUNT = 2
         };
 
-        inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {
-            "mp_ctf_spawn_allies",
-            "mp_ctf_spawn_allies_start",
-            "mp_sd_spawn_defender",
-            "mp_dom_spawn_allies_start",
-            "mp_dem_spawn_defender_start",
-            "mp_dem_spawn_defenderOT_start",
-            "mp_dem_spawn_defender",
-            "mp_tdm_spawn_allies_start",
-            "mp_tdm_spawn_team1_start",
-            "mp_tdm_spawn_team2_start",
-            "mp_tdm_spawn_team3_start"
-        };
+        inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_allies",
+                                                           "mp_ctf_spawn_allies_start",
+                                                           "mp_sd_spawn_defender",
+                                                           "mp_dom_spawn_allies_start",
+                                                           "mp_dem_spawn_defender_start",
+                                                           "mp_dem_spawn_defenderOT_start",
+                                                           "mp_dem_spawn_defender",
+                                                           "mp_tdm_spawn_allies_start",
+                                                           "mp_tdm_spawn_team1_start",
+                                                           "mp_tdm_spawn_team2_start",
+                                                           "mp_tdm_spawn_team3_start"};
 
-        inline const char* ATTACKER_SPAWN_POINT_NAMES[] = {
-            "mp_ctf_spawn_axis",
-            "mp_ctf_spawn_axis_start",
-            "mp_sd_spawn_attacker",
-            "mp_dom_spawn_axis_start",
-            "mp_dem_spawn_attacker_start",
-            "mp_dem_spawn_attackerOT_start",
-            "mp_dem_spawn_defender",
-            "mp_tdm_spawn_axis_start",
-            "mp_tdm_spawn_team4_start",
-            "mp_tdm_spawn_team5_start",
-            "mp_tdm_spawn_team6_start"
-        };
+        inline const char* ATTACKER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_axis",
+                                                           "mp_ctf_spawn_axis_start",
+                                                           "mp_sd_spawn_attacker",
+                                                           "mp_dom_spawn_axis_start",
+                                                           "mp_dem_spawn_attacker_start",
+                                                           "mp_dem_spawn_attackerOT_start",
+                                                           "mp_dem_spawn_defender",
+                                                           "mp_tdm_spawn_axis_start",
+                                                           "mp_tdm_spawn_team4_start",
+                                                           "mp_tdm_spawn_team5_start",
+                                                           "mp_tdm_spawn_team6_start"};
 
-        inline const char* FFA_SPAWN_POINT_NAMES[] = {
-            "mp_tdm_spawn",
-            "mp_dm_spawn",
-            "mp_dom_spawn"
-        };
-    }
+        inline const char* FFA_SPAWN_POINT_NAMES[] = {"mp_tdm_spawn", "mp_dm_spawn", "mp_dom_spawn"};
+    } // namespace BSPGameConstants
 
     // BSPLinkingConstants:
     // These values are BSP linking constants that are required for the link to be successful
@@ -134,7 +125,6 @@ namespace BSP
 	]
     })";
 
-
         constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
     "entities": [
         {
@@ -152,7 +142,7 @@ namespace BSP
         }
     ]
     })";
-    }
+    } // namespace BSPLinkingConstants
 
     // BSPEditableConstants:
     // These values are BSP constants that can be edited and may not break the linker/game if changed
@@ -188,7 +178,7 @@ namespace BSP
         constexpr unsigned char LIGHTGRID_COLOUR = 128;
 
         // Sunlight values
-        constexpr vec4_t SUNLIGHT_COLOR = { 0.75f, 0.75f, 0.75f, 1.0f };
-        constexpr vec3_t SUNLIGHT_DIRECTION = { 0.0f, 0.0f, 0.0f };
-    };
-}
+        constexpr vec4_t SUNLIGHT_COLOR = {0.75f, 0.75f, 0.75f, 1.0f};
+        constexpr vec3_t SUNLIGHT_DIRECTION = {0.0f, 0.0f, 0.0f};
+    }; // namespace BSPEditableConstants
+} // namespace BSP

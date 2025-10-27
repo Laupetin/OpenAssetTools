@@ -1,7 +1,6 @@
 #include "BSPLinker.h"
-
-#include "ComWorldLinker.h"
 #include "ClipMapLinker.h"
+#include "ComWorldLinker.h"
 #include "GameWorldMpLinker.h"
 #include "GfxWorldLinker.h"
 #include "MapEntsLinker.h"
@@ -52,15 +51,15 @@ namespace BSP
         return true;
     }
 
-	BSPLinker::BSPLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context) 
-		: m_memory(memory),
-		  m_search_path(searchPath),
-		  m_context(context)
-	{
-	}
+    BSPLinker::BSPLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_context(context)
+    {
+    }
 
-	AssetCreationResult BSPLinker::linkBSP(BSPData* bsp)
-	{
+    AssetCreationResult BSPLinker::linkBSP(BSPData* bsp)
+    {
         if (!addDefaultRequiredAssets(bsp))
             return AssetCreationResult::Failure();
 
@@ -92,6 +91,5 @@ namespace BSP
             return AssetCreationResult::Failure();
 
         return result;
-	}
-}
-
+    }
+} // namespace BSP

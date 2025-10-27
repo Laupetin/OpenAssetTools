@@ -1,5 +1,5 @@
-#include "MapEntsLinker.h"
 #include "../BSPUtil.h"
+#include "MapEntsLinker.h"
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
@@ -59,18 +59,15 @@ namespace
         }
     }
 
-    std::string loadMapEnts()
-    {
-
-    }
-}
+    std::string loadMapEnts() {}
+} // namespace
 
 namespace BSP
 {
     MapEntsLinker::MapEntsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
         : m_memory(memory),
-        m_search_path(searchPath),
-        m_context(context)
+          m_search_path(searchPath),
+          m_context(context)
     {
     }
 
@@ -138,5 +135,4 @@ namespace BSP
             return AssetCreationResult::Failure();
         }
     }
-}
-
+} // namespace BSP

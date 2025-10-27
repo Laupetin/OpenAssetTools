@@ -7,15 +7,15 @@
 
 namespace BSP
 {
-	class GameWorldMpLinker
-	{
-	public:
-		GameWorldMpLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-		AssetCreationResult linkGameWorldMp(BSPData* bsp);
+    class GameWorldMpLinker
+    {
+    public:
+        GameWorldMpLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
+        AssetCreationResult linkGameWorldMp(BSPData* bsp);
 
-	private:
-		MemoryManager& m_memory;
-		ISearchPath& m_search_path;
-		AssetCreationContext& m_context;
-	};
-}
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+        AssetCreationContext& m_context;
+    };
+} // namespace BSP
