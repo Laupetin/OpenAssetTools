@@ -2,8 +2,24 @@ import type { App } from "vue";
 import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
+import type { ColorScale } from "@primeuix/styled";
 
 const ModManTheme = definePreset(Aura, {
+  primitive: {
+    brand: {
+      50: "var(--color-brand-50)",
+      100: "var(--color-brand-100)",
+      200: "var(--color-brand-200)",
+      300: "var(--color-brand-300)",
+      400: "var(--color-brand-400)",
+      500: "var(--color-brand-500)",
+      600: "var(--color-brand-600)",
+      700: "var(--color-brand-700)",
+      800: "var(--color-brand-800)",
+      900: "var(--color-brand-900)",
+      950: "var(--color-brand-950)",
+    } satisfies ColorScale,
+  },
   semantic: {
     primary: {
       50: "{orange.50}",
@@ -26,10 +42,10 @@ export function configurePrimeVue(app: App) {
     theme: {
       preset: ModManTheme,
       options: {
-        darkModeSelector: ".dark-mode",
+        darkModeSelector: ".dark",
       },
     },
   });
   // Always make dark mode for now
-  document.documentElement.classList.add("dark-mode");
+  document.documentElement.classList.add("dark");
 }

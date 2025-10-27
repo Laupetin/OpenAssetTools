@@ -1,4 +1,6 @@
-﻿@use "utils.scss";
+﻿@use "colors";
+@use "css_vars";
+@use "utils.scss";
 
 @import "@fontsource/inter/latin-300.css";
 @import "@fontsource/inter/latin-300-italic.css";
@@ -15,8 +17,8 @@
   line-height: 24px;
   font-weight: 400;
 
-  color: var(--p-text-color);
-  background-color: var(--p-content-background);
+  color: colors.$COLOR_TEXT;
+  background-color: colors.$COLOR_CONTENT_BACKGROUND;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
