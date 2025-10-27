@@ -1,31 +1,36 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import IconArrowLeft from "./icons/IconArrowLeft.vue";
 import IconGear from "./icons/IconGear.vue";
-import { computed } from "vue";
-import { getNameForRoute } from "@/router/RouteMeta";
+import { useRouteMeta } from "@/router/RouteMeta";
 
-const route = useRoute();
+const { routeDisplayName, routeNavigateBackTo } = useRouteMeta();
 const router = useRouter();
 
-const routeName = computed<string>(() => getNameForRoute(route));
-
 function onClickBack() {
-  router.back();
+  if (!routeNavigateBackTo.value) return;
+
+  router.push({ name: routeNavigateBackTo.value });
 }
 </script>
 
 <template>
   <header class="header">
     <div class="header-section left">
-      <Button variant="text" severity="secondary" aria-label="Back" @click="onClickBack">
+      <Button
+        v-if="routeNavigateBackTo"
+        variant="text"
+        severity="secondary"
+        aria-label="Back"
+        @click="onClickBack"
+      >
         <template #icon>
           <IconArrowLeft class="icon" />
         </template>
       </Button>
     </div>
-    <h1 class="title">{{ routeName }}</h1>
+    <h1 class="title">{{ routeDisplayName }}</h1>
     <div class="header-section right">
       <Button variant="text" severity="secondary" aria-label="Settings">
         <template #icon>

@@ -18,6 +18,7 @@ const ROUTES: RouteRecordRaw[] = [
         name: PAGE.INSPECT.ZONE_DETAILS,
         component: InspectDetails,
         meta: {
+          backTo: PAGE.INSPECT.SELECT_ZONE,
           nameFunc: (route) => `Zone details: ${route.params["zoneName"]}`,
         } satisfies RouteMeta,
         props: true,
