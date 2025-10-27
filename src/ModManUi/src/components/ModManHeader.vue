@@ -3,9 +3,13 @@ import Button from "primevue/button";
 import { useRoute, useRouter } from "vue-router";
 import IconArrowLeft from "./icons/IconArrowLeft.vue";
 import IconGear from "./icons/IconGear.vue";
+import { computed } from "vue";
+import { getNameForRoute } from "@/router/RouteMeta";
 
 const route = useRoute();
 const router = useRouter();
+
+const routeName = computed<string>(() => getNameForRoute(route));
 
 function onClickBack() {
   router.back();
@@ -21,7 +25,7 @@ function onClickBack() {
         </template>
       </Button>
     </div>
-    <h1 class="title">{{ route.name }}</h1>
+    <h1 class="title">{{ routeName }}</h1>
     <div class="header-section right">
       <Button variant="text" severity="secondary" aria-label="Settings">
         <template #icon>

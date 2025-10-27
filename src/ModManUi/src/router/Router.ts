@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from "vue-rou
 import { PAGE } from "./Page";
 import ZoneInspector from "@/view/inspect/ZoneInspector.vue";
 import InspectDetails from "@/view/inspect_details/InspectDetails.vue";
+import type { RouteMeta } from "./RouteMeta";
 
 const ROUTES: RouteRecordRaw[] = [
   {
@@ -16,6 +17,9 @@ const ROUTES: RouteRecordRaw[] = [
         path: ":zoneName",
         name: PAGE.INSPECT.ZONE_DETAILS,
         component: InspectDetails,
+        meta: {
+          nameFunc: (route) => `Zone details: ${route.params["zoneName"]}`,
+        } satisfies RouteMeta,
         props: true,
       },
     ],
