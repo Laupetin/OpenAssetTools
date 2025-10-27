@@ -462,7 +462,7 @@ namespace BSP
         //  any vertex count over the uint16_t max means the vertices above the uint16_t max can't be indexed
         if (static_cast<unsigned int>(bsp->colWorld.vertices.size()) > BSPGameConstants::MAX_COLLISION_VERTS)
         {
-            printf("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", clipMap->vertCount, BSPGameConstants::MAX_COLLISION_VERTS);
+            con::error("ERROR: collision vertex count %i exceeds the maximum number: %i!\n", clipMap->vertCount, BSPGameConstants::MAX_COLLISION_VERTS);
             return false;
         }
 

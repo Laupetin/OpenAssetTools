@@ -13,7 +13,7 @@ public:
     static void updateAABBWithPoint(vec3_t& point, vec3_t& AABBMins, vec3_t& AABBMaxs);
     static vec3_t calcMiddleOfAABB(vec3_t& mins, vec3_t& maxs);
     static vec3_t calcHalfSizeOfAABB(vec3_t& mins, vec3_t& maxs);
-    static int allignBy128(int size);
+    static size_t allignBy128(size_t size);
     static float distBetweenPoints(vec3_t& p1, vec3_t& p2);
     static void convertAnglesToAxis(vec3_t* angles, vec3_t* axis);
     static void matrixTranspose3x3(const vec3_t* in, vec3_t* out);

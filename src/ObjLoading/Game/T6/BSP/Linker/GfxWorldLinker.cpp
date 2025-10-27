@@ -130,18 +130,18 @@ namespace BSP
 
         // set all surface types to lit opaque
         gfxWorld->dpvs.litSurfsBegin = 0;
-        gfxWorld->dpvs.litSurfsEnd = surfaceCount;
-        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = surfaceCount;
-        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = surfaceCount;
-        gfxWorld->dpvs.emissiveTransSurfsBegin = surfaceCount;
-        gfxWorld->dpvs.emissiveTransSurfsEnd = surfaceCount;
-        gfxWorld->dpvs.litTransSurfsBegin = surfaceCount;
-        gfxWorld->dpvs.litTransSurfsEnd = surfaceCount;
+        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
 
         // visdata is written to by the game
         // all visdata is alligned by 128
-        unsigned int allignedSurfaceCount = BSPUtil::allignBy128(surfaceCount);
-        gfxWorld->dpvs.surfaceVisDataCount = allignedSurfaceCount;
+        size_t allignedSurfaceCount = BSPUtil::allignBy128(surfaceCount);
+        gfxWorld->dpvs.surfaceVisDataCount = static_cast<unsigned int>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceVisData[0] = m_memory.Alloc<char>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceVisData[1] = m_memory.Alloc<char>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceVisData[2] = m_memory.Alloc<char>(allignedSurfaceCount);
@@ -228,8 +228,8 @@ namespace BSP
 
         // visdata is written to by the game
         // all visdata is alligned by 128
-        int allignedModelCount = BSPUtil::allignBy128(modelCount);
-        gfxWorld->dpvs.smodelVisDataCount = allignedModelCount;
+        size_t allignedModelCount = BSPUtil::allignBy128(modelCount);
+        gfxWorld->dpvs.smodelVisDataCount = static_cast<unsigned int>(allignedModelCount);
         gfxWorld->dpvs.smodelVisData[0] = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelVisData[1] = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelVisData[2] = m_memory.Alloc<char>(allignedModelCount);

@@ -2,7 +2,6 @@
 #include "BSPCreator.h"
 #include "BSPUtil.h"
 #include "Linker/BSPLinker.h"
-//#include "CustomMapLinker.h"
 
 namespace
 {
