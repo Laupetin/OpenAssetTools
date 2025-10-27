@@ -5,12 +5,12 @@
 
 #include "BSPUtil.h"
 
-std::string BSPUtil::getFileNameForBSPAsset(std::string assetName)
+std::string BSPUtil::getFileNameForBSPAsset(std::string& assetName)
 {
     return std::format("BSP/{}", assetName);
 }
 
-vec3_t BSPUtil::convertToBO2Coords(vec3_t coordinate)
+vec3_t BSPUtil::convertToBO2Coords(vec3_t& coordinate)
 {
     vec3_t result;
     result.x = coordinate.x;
@@ -19,7 +19,7 @@ vec3_t BSPUtil::convertToBO2Coords(vec3_t coordinate)
     return result;
 }
 
-vec3_t BSPUtil::convertFromBO2Coords(vec3_t coordinate)
+vec3_t BSPUtil::convertFromBO2Coords(vec3_t& coordinate)
 {
     vec3_t result;
     result.x = coordinate.x;
@@ -28,54 +28,63 @@ vec3_t BSPUtil::convertFromBO2Coords(vec3_t coordinate)
     return result;
 }
 
-void BSPUtil::updateAABB(vec3_t* newAABBMins, vec3_t* newAABBMaxs, vec3_t* AABBMins, vec3_t* AABBMaxs)
+void BSPUtil::updateAABB(vec3_t& newAABBMins, vec3_t& newAABBMaxs, vec3_t& AABBMins, vec3_t& AABBMaxs)
 {
-    if (AABBMins->x > newAABBMins->x)
-        AABBMins->x = newAABBMins->x;
+    if (AABBMins.x > newAABBMins.x)
+        AABBMins.x = newAABBMins.x;
 
-    if (newAABBMaxs->x > AABBMaxs->x)
-        AABBMaxs->x = newAABBMaxs->x;
+    if (newAABBMaxs.x > AABBMaxs.x)
+        AABBMaxs.x = newAABBMaxs.x;
 
-    if (AABBMins->y > newAABBMins->y)
-        AABBMins->y = newAABBMins->y;
+    if (AABBMins.y > newAABBMins.y)
+        AABBMins.y = newAABBMins.y;
 
-    if (newAABBMaxs->y > AABBMaxs->y)
-        AABBMaxs->y = newAABBMaxs->y;
+    if (newAABBMaxs.y > AABBMaxs.y)
+        AABBMaxs.y = newAABBMaxs.y;
 
-    if (AABBMins->z > newAABBMins->z)
-        AABBMins->z = newAABBMins->z;
+    if (AABBMins.z > newAABBMins.z)
+        AABBMins.z = newAABBMins.z;
 
-    if (newAABBMaxs->z > AABBMaxs->z)
-        AABBMaxs->z = newAABBMaxs->z;
+    if (newAABBMaxs.z > AABBMaxs.z)
+        AABBMaxs.z = newAABBMaxs.z;
 }
 
-void BSPUtil::updateAABBWithpoint(vec3_t* point, vec3_t* AABBMins, vec3_t* AABBMaxs)
+void BSPUtil::updateAABBWithPoint(vec3_t& point, vec3_t& AABBMins, vec3_t& AABBMaxs)
 {
-    if (AABBMins->x > point->x)
-        AABBMins->x = point->x;
+    if (AABBMins.x > point.x)
+        AABBMins.x = point.x;
 
-    if (point->x > AABBMaxs->x)
-        AABBMaxs->x = point->x;
+    if (point.x > AABBMaxs.x)
+        AABBMaxs.x = point.x;
 
-    if (AABBMins->y > point->y)
-        AABBMins->y = point->y;
+    if (AABBMins.y > point.y)
+        AABBMins.y = point.y;
 
-    if (point->y > AABBMaxs->y)
-        AABBMaxs->y = point->y;
+    if (point.y > AABBMaxs.y)
+        AABBMaxs.y = point.y;
 
-    if (AABBMins->z > point->z)
-        AABBMins->z = point->z;
+    if (AABBMins.z > point.z)
+        AABBMins.z = point.z;
 
-    if (point->z > AABBMaxs->z)
-        AABBMaxs->z = point->z;
+    if (point.z > AABBMaxs.z)
+        AABBMaxs.z = point.z;
 }
 
-vec3_t BSPUtil::calcMiddleOfBounds(vec3_t* mins, vec3_t* maxs)
+vec3_t BSPUtil::calcMiddleOfAABB(vec3_t& mins, vec3_t& maxs)
 {
     vec3_t result;
-    result.x = (mins->x + maxs->x) * 0.5f;
-    result.y = (mins->y + maxs->y) * 0.5f;
-    result.z = (mins->z + maxs->z) * 0.5f;
+    result.x = (mins.x + maxs.x) * 0.5f;
+    result.y = (mins.y + maxs.y) * 0.5f;
+    result.z = (mins.z + maxs.z) * 0.5f;
+    return result;
+}
+
+vec3_t BSPUtil::calcHalfSizeOfAABB(vec3_t& mins, vec3_t& maxs)
+{
+    vec3_t result;
+    result.x = (maxs.x - mins.x) * 0.5f;
+    result.y = (maxs.y - mins.y) * 0.5f;
+    result.z = (maxs.z - mins.z) * 0.5f;
     return result;
 }
 
@@ -84,7 +93,7 @@ int BSPUtil::allignBy128(int size)
     return ((size + 127) & 0xFFFFFF80);
 }
 
-float BSPUtil::distBetweenPoints(vec3_t p1, vec3_t p2)
+float BSPUtil::distBetweenPoints(vec3_t& p1, vec3_t& p2)
 {
     float x = p2.x - p1.x;
     float y = p2.y - p1.y;
@@ -130,7 +139,7 @@ void BSPUtil::matrixTranspose3x3(const vec3_t* in, vec3_t* out)
     out[2].z = in[2].z;
 }
 
-vec3_t BSPUtil::convertStringToVec3(std::string str)
+vec3_t BSPUtil::convertStringToVec3(std::string& str)
 {
     std::string v1Str = str;
 
@@ -153,7 +162,7 @@ vec3_t BSPUtil::convertStringToVec3(std::string str)
     return result;
 }
 
-std::string BSPUtil::convertVec3ToString(vec3_t vec)
+std::string BSPUtil::convertVec3ToString(vec3_t& vec)
 {
     std::string result = std::format("{} {} {}", vec.x, vec.y, vec.z);
     return result;

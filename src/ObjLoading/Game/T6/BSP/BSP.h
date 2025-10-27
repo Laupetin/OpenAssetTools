@@ -62,7 +62,7 @@ namespace BSP
     // These values are hardcoded ingame and will break the map if they are changed
     namespace BSPGameConstants
     {
-        constexpr int MAX_COLLISION_VERTS = UINT16_MAX;
+        constexpr unsigned int MAX_COLLISION_VERTS = UINT16_MAX;
 
         enum BSPDefaultLights
         {

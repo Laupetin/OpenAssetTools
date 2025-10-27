@@ -20,7 +20,7 @@ namespace BSP
         objectList.emplace_back(std::move(object));
     }
 
-    BSPObject* BSPLeaf::getObject(int index)
+    BSPObject* BSPLeaf::getObject(size_t index)
     {
         return objectList.at(index).get();
     }
