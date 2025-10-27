@@ -119,7 +119,7 @@ namespace BSP
             mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
 
             mapEnts->entityString = m_memory.Dup(entityString.c_str());
-            mapEnts->numEntityChars = entityString.length() + 1; // numEntityChars includes the null character
+            mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character
 
             // don't need these
             mapEnts->trigger.count = 0;

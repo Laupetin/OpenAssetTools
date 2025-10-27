@@ -88,7 +88,7 @@ vec3_t BSPUtil::calcHalfSizeOfAABB(vec3_t& mins, vec3_t& maxs)
     return result;
 }
 
-int BSPUtil::allignBy128(int size)
+size_t BSPUtil::allignBy128(size_t size)
 {
     return ((size + 127) & 0xFFFFFF80);
 }
