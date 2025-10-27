@@ -10,151 +10,123 @@ namespace BSP
         m_context(context)
     {
     }
-
-    // TODO vd1:
-    //	used for UVs of sub-textures, when it is set to empty all of them turn a blank colour
-    //	could fix by removing sub textures or figure out how they are created and redo that
-    //	its not an important issue though
-    void GfxWorldLinker::overwriteDrawData(BSPData* projInfo, GfxWorld* gfxWorld)
+    
+    void GfxWorldLinker::loadDrawData(BSPData* bsp, GfxWorld* gfxWorld)
     {
-        int vertexCount = projInfo->gfxWorld.vertices.size();
-
-        gfxWorld->draw.vertexCount = vertexCount;
-        gfxWorld->draw.vertexDataSize0 = vertexCount * sizeof(GfxPackedWorldVertex);
+        size_t vertexCount = bsp->gfxWorld.vertices.size();
+        gfxWorld->draw.vertexCount = static_cast<unsigned int>(vertexCount);
+        gfxWorld->draw.vertexDataSize0 = static_cast<unsigned int>(vertexCount * sizeof(GfxPackedWorldVertex));
         GfxPackedWorldVertex* vertexBuffer = m_memory.Alloc<GfxPackedWorldVertex>(vertexCount);
-        for (int i = 0; i < vertexCount; i++)
+        for (size_t vertIdx = 0; vertIdx < vertexCount; vertIdx++)
         {
-            BSPVertex* WorldVertex = &projInfo->gfxWorld.vertices[i];
-            GfxPackedWorldVertex* GfxVertex = &vertexBuffer[i];
+            BSPVertex& bspVertex = bsp->gfxWorld.vertices.at(vertIdx);
+            GfxPackedWorldVertex* gfxVertex = &vertexBuffer[vertIdx];
 
-            GfxVertex->xyz = BSPUtil::convertToBO2Coords(WorldVertex->pos);
-            //GfxVertex->xyz = WorldVertex->pos;
+            gfxVertex->xyz = BSPUtil::convertToBO2Coords(bspVertex.pos);
+            gfxVertex->color.packed = pack32::Vec4PackGfxColor(bspVertex.color.v);
+            gfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(bspVertex.texCoord.v);
+            gfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.normal.v);
+            gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
 
-            GfxVertex->color.packed = pack32::Vec4PackGfxColor(WorldVertex->color.v);
-
-            GfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(WorldVertex->texCoord.v);
-
-            GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(BSPUtil::convertToBO2Coords(WorldVertex->normal).v);
-            //GfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->normal.v);
-
-            GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(BSPUtil::convertToBO2Coords(WorldVertex->tangent).v);
-            //GfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(WorldVertex->tangent.v);
-
-            // unknown use variables
-            // binormalSign may be bitangent of the vertex
-            // lmapCoord may be the lightmap coordinate of the vertex
-            GfxVertex->binormalSign = 0.0f;
-            GfxVertex->lmapCoord.packed = 0;
+            // unimplemented variables
+            gfxVertex->binormalSign = 0.0f;
+            gfxVertex->lmapCoord.packed = 0;
         }
-        gfxWorld->draw.vd0.data = (char*)vertexBuffer;
+        gfxWorld->draw.vd0.data = reinterpret_cast<char*>(vertexBuffer);
 
-        // we don't use vd1 but still needs to be initialised
+        // vd1 is unused but still needs to be initialised
         // the data type varies and 0x20 is enough for all types
         gfxWorld->draw.vertexDataSize1 = 0x20;
         gfxWorld->draw.vd1.data = m_memory.Alloc<char>(gfxWorld->draw.vertexDataSize1);
-        memset(gfxWorld->draw.vd1.data, 0, gfxWorld->draw.vertexDataSize1);
 
-        int indexCount = projInfo->gfxWorld.indices.size();
+        size_t indexCount = bsp->gfxWorld.indices.size();
         assert(indexCount % 3 == 0);
-        gfxWorld->draw.indexCount = indexCount;
+        gfxWorld->draw.indexCount = static_cast<int>(indexCount);
         gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount);
-        for (int i = 0; i < indexCount; i += 3)
+        for (size_t indexIdx = 0; indexIdx < indexCount; indexIdx += 3)
         {
             // the editor orders their vertices opposite to bo2, so its converted here
-            gfxWorld->draw.indices[i + 2] = projInfo->gfxWorld.indices[i + 0];
-            gfxWorld->draw.indices[i + 1] = projInfo->gfxWorld.indices[i + 1];
-            gfxWorld->draw.indices[i + 0] = projInfo->gfxWorld.indices[i + 2];
+            gfxWorld->draw.indices[indexIdx + 2] = bsp->gfxWorld.indices.at(indexIdx + 0);
+            gfxWorld->draw.indices[indexIdx + 1] = bsp->gfxWorld.indices.at(indexIdx + 1);
+            gfxWorld->draw.indices[indexIdx + 0] = bsp->gfxWorld.indices.at(indexIdx + 2);
         }
     }
 
-    bool GfxWorldLinker::overwriteMapSurfaces(BSPData* projInfo, GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadMapSurfaces(BSPData* bsp, GfxWorld* gfxWorld)
     {
-        overwriteDrawData(projInfo, gfxWorld);
+        loadDrawData(bsp, gfxWorld);
 
-        unsigned int surfaceCount = projInfo->gfxWorld.surfaces.size();
-        gfxWorld->surfaceCount = surfaceCount;
-        gfxWorld->dpvs.staticSurfaceCount = surfaceCount;
+        size_t surfaceCount = bsp->gfxWorld.surfaces.size();
+        gfxWorld->surfaceCount = static_cast<int>(surfaceCount);
+        gfxWorld->dpvs.staticSurfaceCount = static_cast<unsigned int>(surfaceCount);
         gfxWorld->dpvs.surfaces = m_memory.Alloc<GfxSurface>(surfaceCount);
-        for (unsigned int i = 0; i < surfaceCount; i++)
+        for (size_t surfIdx = 0; surfIdx < surfaceCount; surfIdx++)
         {
-            auto currSurface = &gfxWorld->dpvs.surfaces[i];
-            auto objSurface = &projInfo->gfxWorld.surfaces[i];
+            BSPSurface& bspSurface = bsp->gfxWorld.surfaces.at(surfIdx);
+            GfxSurface* gfxSurface = &gfxWorld->dpvs.surfaces[surfIdx];
 
-            currSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
-            currSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
-            currSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
-            currSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
+            gfxSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
+            gfxSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
+            gfxSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
+            gfxSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
 
-            currSurface->tris.triCount = objSurface->triCount;
-            currSurface->tris.baseIndex = objSurface->indexOfFirstIndex;
+            gfxSurface->tris.triCount = static_cast<uint16_t>(bspSurface.triCount);
+            gfxSurface->tris.baseIndex = bspSurface.indexOfFirstIndex;
 
-            currSurface->tris.vertexDataOffset0 = objSurface->indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
-            currSurface->tris.vertexDataOffset1 = 0;
+            gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
+            gfxSurface->tris.vertexDataOffset1 = 0;
 
             std::string surfMaterialName;
-            switch (objSurface->material.materialType)
-            {
-            case MATERIAL_TYPE_TEXTURE:
-                surfMaterialName = objSurface->material.materialName;
-                break;
-
-            case MATERIAL_TYPE_COLOUR:
-            case MATERIAL_TYPE_EMPTY:
+            if (bspSurface.material.materialType == MATERIAL_TYPE_TEXTURE)
+                surfMaterialName = bspSurface.material.materialName;
+            else // MATERIAL_TYPE_COLOUR || MATERIAL_TYPE_EMPTY
                 surfMaterialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
-                break;
-
-            default:
-                assert(false);
-            }
 
             auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(surfMaterialName);
-            if (surfMaterialAsset == NULL)
+            if (surfMaterialAsset == nullptr)
             {
                 std::string missingImageName = BSPLinkingConstants::MISSING_IMAGE_NAME;
                 surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(missingImageName);
-                if (surfMaterialAsset == NULL)
+                if (surfMaterialAsset == nullptr)
                 {
                     con::error("unable to find the missing image texture!");
                     return false;
                 }
             }
-            currSurface->material = surfMaterialAsset->Asset();
+            gfxSurface->material = surfMaterialAsset->Asset();
 
-            GfxPackedWorldVertex* firstVert = (GfxPackedWorldVertex*)&gfxWorld->draw.vd0.data[currSurface->tris.vertexDataOffset0];
-            currSurface->bounds[0].x = firstVert[0].xyz.x;
-            currSurface->bounds[0].y = firstVert[0].xyz.y;
-            currSurface->bounds[0].z = firstVert[0].xyz.z;
-            currSurface->bounds[1].x = firstVert[0].xyz.x;
-            currSurface->bounds[1].y = firstVert[0].xyz.y;
-            currSurface->bounds[1].z = firstVert[0].xyz.z;
-            for (int k = 0; k < currSurface->tris.triCount * 3; k++)
+            GfxPackedWorldVertex* firstVert = reinterpret_cast<GfxPackedWorldVertex*>(&gfxWorld->draw.vd0.data[gfxSurface->tris.vertexDataOffset0]);
+            gfxSurface->bounds[0].x = firstVert[0].xyz.x;
+            gfxSurface->bounds[0].y = firstVert[0].xyz.y;
+            gfxSurface->bounds[0].z = firstVert[0].xyz.z;
+            gfxSurface->bounds[1].x = firstVert[0].xyz.x;
+            gfxSurface->bounds[1].y = firstVert[0].xyz.y;
+            gfxSurface->bounds[1].z = firstVert[0].xyz.z;
+            for (size_t indexIdx = 0; indexIdx < static_cast<size_t>(gfxSurface->tris.triCount * 3); indexIdx++)
             {
-                uint16_t vertIndex = gfxWorld->draw.indices[currSurface->tris.baseIndex + k];
-                BSPUtil::updateAABBWithPoint(firstVert[vertIndex].xyz, currSurface->bounds[0], currSurface->bounds[1]);
+                uint16_t vertIndex = gfxWorld->draw.indices[gfxSurface->tris.baseIndex + indexIdx];
+                BSPUtil::updateAABBWithPoint(firstVert[vertIndex].xyz, gfxSurface->bounds[0], gfxSurface->bounds[1]);
             }
 
             // unused values
-            currSurface->tris.mins.x = 0.0f;
-            currSurface->tris.mins.y = 0.0f;
-            currSurface->tris.mins.z = 0.0f;
-            currSurface->tris.maxs.x = 0.0f;
-            currSurface->tris.maxs.y = 0.0f;
-            currSurface->tris.maxs.z = 0.0f;
-            currSurface->tris.himipRadiusInvSq = 0.0f;
-            currSurface->tris.vertexCount = 0;
-            currSurface->tris.firstVertex = 0;
+            gfxSurface->tris.mins.x = 0.0f;
+            gfxSurface->tris.mins.y = 0.0f;
+            gfxSurface->tris.mins.z = 0.0f;
+            gfxSurface->tris.maxs.x = 0.0f;
+            gfxSurface->tris.maxs.y = 0.0f;
+            gfxSurface->tris.maxs.z = 0.0f;
+            gfxSurface->tris.himipRadiusInvSq = 0.0f;
+            gfxSurface->tris.vertexCount = 0;
+            gfxSurface->tris.firstVertex = 0;
         }
 
         // doesn't seem to matter what order the sorted surfs go in
         gfxWorld->dpvs.sortedSurfIndex = m_memory.Alloc<uint16_t>(surfaceCount);
-        for (unsigned int i = 0; i < surfaceCount; i++)
-        {
-            gfxWorld->dpvs.sortedSurfIndex[i] = i;
-        }
+        for (size_t surfIdx = 0; surfIdx < surfaceCount; surfIdx++)
+            gfxWorld->dpvs.sortedSurfIndex[surfIdx] = static_cast<uint16_t>(surfIdx);
 
         // surface materials are written to by the game
         gfxWorld->dpvs.surfaceMaterials = m_memory.Alloc<GfxDrawSurf_align4>(surfaceCount);
-        memset(gfxWorld->dpvs.surfaceMaterials, 0, sizeof(GfxDrawSurf_align4) * surfaceCount);
 
         // set all surface types to lit opaque
         gfxWorld->dpvs.litSurfsBegin = 0;
@@ -176,17 +148,11 @@ namespace BSP
         gfxWorld->dpvs.surfaceVisDataCameraSaved = m_memory.Alloc<char>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceCastsShadow = m_memory.Alloc<char>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceCastsSunShadow = m_memory.Alloc<char>(allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceVisData[0], 0, allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceVisData[1], 0, allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceVisData[2], 0, allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceVisDataCameraSaved, 0, allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceCastsShadow, 0, allignedSurfaceCount);
-        memset(gfxWorld->dpvs.surfaceCastsSunShadow, 0, allignedSurfaceCount);
 
         return true;
     }
 
-    void GfxWorldLinker::overwriteMapSModels(BSPData* projInfo, GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadXModels(BSPData* bsp, GfxWorld* gfxWorld)
     {
         /*
         Models are unsupported right now
@@ -204,10 +170,10 @@ namespace BSP
                 customMapModel* inModel = &projInfo->models[i];
         
                 auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
-                if (xModelAsset == NULL)
+                if (xModelAsset == nullptr)
                 {
                     printf("XModel %s not found!\n", inModel->name.c_str());
-                    currModel->model = NULL;
+                    currModel->model = nullptr;
                 }
                 else
                     currModel->model = (XModel*)xModelAsset->Asset();
@@ -242,16 +208,16 @@ namespace BSP
                 currModel->colorsIndex = 0;
                 currModel->visibility = 0;
         
-                // setting these to NULL makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
+                // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
                 // TODO: calculate lighting and store it here
                 currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[0].lmapVertexColors = NULL;
+                currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
                 currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[1].lmapVertexColors = NULL;
+                currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
                 currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[2].lmapVertexColors = NULL;
+                currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
                 currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[3].lmapVertexColors = NULL;
+                currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
         }
         */
 
@@ -269,11 +235,6 @@ namespace BSP
         gfxWorld->dpvs.smodelVisData[2] = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelVisDataCameraSaved = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelCastsShadow = m_memory.Alloc<char>(allignedModelCount);
-        memset(gfxWorld->dpvs.smodelVisData[0], 0, allignedModelCount);
-        memset(gfxWorld->dpvs.smodelVisData[1], 0, allignedModelCount);
-        memset(gfxWorld->dpvs.smodelVisData[2], 0, allignedModelCount);
-        memset(gfxWorld->dpvs.smodelVisDataCameraSaved, 0, allignedModelCount);
-        memset(gfxWorld->dpvs.smodelCastsShadow, 0, allignedModelCount);
         for (unsigned int i = 0; i < modelCount; i++)
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & STATIC_MODEL_FLAG_NO_SHADOW) == 0)
@@ -293,55 +254,55 @@ namespace BSP
 
         // Remove Coronas
         gfxWorld->coronaCount = 0;
-        gfxWorld->coronas = NULL;
+        gfxWorld->coronas = nullptr;
 
         // Remove exposure volumes
         gfxWorld->exposureVolumeCount = 0;
-        gfxWorld->exposureVolumes = NULL;
+        gfxWorld->exposureVolumes = nullptr;
         gfxWorld->exposureVolumePlaneCount = 0;
-        gfxWorld->exposureVolumePlanes = NULL;
+        gfxWorld->exposureVolumePlanes = nullptr;
 
         // Remove hero lights
         gfxWorld->heroLightCount = 0;
-        gfxWorld->heroLights = NULL;
+        gfxWorld->heroLights = nullptr;
         gfxWorld->heroLightTreeCount = 0;
-        gfxWorld->heroLightTree = NULL;
+        gfxWorld->heroLightTree = nullptr;
 
         // remove LUT data
         gfxWorld->lutVolumeCount = 0;
-        gfxWorld->lutVolumes = NULL;
+        gfxWorld->lutVolumes = nullptr;
         gfxWorld->lutVolumePlaneCount = 0;
-        gfxWorld->lutVolumePlanes = NULL;
+        gfxWorld->lutVolumePlanes = nullptr;
 
         // remove occluders
         gfxWorld->numOccluders = 0;
-        gfxWorld->occluders = NULL;
+        gfxWorld->occluders = nullptr;
 
         // remove Siege Skins
         gfxWorld->numSiegeSkinInsts = 0;
-        gfxWorld->siegeSkinInsts = NULL;
+        gfxWorld->siegeSkinInsts = nullptr;
 
         // remove outdoor bounds
         gfxWorld->numOutdoorBounds = 0;
-        gfxWorld->outdoorBounds = NULL;
+        gfxWorld->outdoorBounds = nullptr;
 
         // remove materials
-        gfxWorld->ropeMaterial = NULL;
-        gfxWorld->lutMaterial = NULL;
-        gfxWorld->waterMaterial = NULL;
-        gfxWorld->coronaMaterial = NULL;
+        gfxWorld->ropeMaterial = nullptr;
+        gfxWorld->lutMaterial = nullptr;
+        gfxWorld->waterMaterial = nullptr;
+        gfxWorld->coronaMaterial = nullptr;
 
         // remove shadow maps
         gfxWorld->shadowMapVolumeCount = 0;
-        gfxWorld->shadowMapVolumes = NULL;
+        gfxWorld->shadowMapVolumes = nullptr;
         gfxWorld->shadowMapVolumePlaneCount = 0;
-        gfxWorld->shadowMapVolumePlanes = NULL;
+        gfxWorld->shadowMapVolumePlanes = nullptr;
 
         // remove stream info
         gfxWorld->streamInfo.aabbTreeCount = 0;
-        gfxWorld->streamInfo.aabbTrees = NULL;
+        gfxWorld->streamInfo.aabbTrees = nullptr;
         gfxWorld->streamInfo.leafRefCount = 0;
-        gfxWorld->streamInfo.leafRefs = NULL;
+        gfxWorld->streamInfo.leafRefs = nullptr;
 
         // remove sun data
         memset(&gfxWorld->sun, 0, sizeof(sunflare_t));
@@ -349,72 +310,64 @@ namespace BSP
 
         // Remove Water
         gfxWorld->waterDirection = 0.0f;
-        gfxWorld->waterBuffers[0].buffer = NULL;
-        gfxWorld->waterBuffers[0].bufferSize = NULL;
-        gfxWorld->waterBuffers[1].buffer = NULL;
-        gfxWorld->waterBuffers[1].bufferSize = NULL;
+        gfxWorld->waterBuffers[0].bufferSize = 0;
+        gfxWorld->waterBuffers[0].buffer = nullptr;
+        gfxWorld->waterBuffers[1].bufferSize = 0;
+        gfxWorld->waterBuffers[1].buffer = nullptr;
 
         // Remove Fog
         gfxWorld->worldFogModifierVolumeCount = 0;
-        gfxWorld->worldFogModifierVolumes = NULL;
+        gfxWorld->worldFogModifierVolumes = nullptr;
         gfxWorld->worldFogModifierVolumePlaneCount = 0;
-        gfxWorld->worldFogModifierVolumePlanes = NULL;
+        gfxWorld->worldFogModifierVolumePlanes = nullptr;
         gfxWorld->worldFogVolumeCount = 0;
-        gfxWorld->worldFogVolumes = NULL;
+        gfxWorld->worldFogVolumes = nullptr;
         gfxWorld->worldFogVolumePlaneCount = 0;
-        gfxWorld->worldFogVolumePlanes = NULL;
+        gfxWorld->worldFogVolumePlanes = nullptr;
 
         // materialMemory is unused
         gfxWorld->materialMemoryCount = 0;
-        gfxWorld->materialMemory = NULL;
+        gfxWorld->materialMemory = nullptr;
 
         // sunLight is overwritten by the game, just needs to be a valid pointer
         gfxWorld->sunLight = m_memory.Alloc<GfxLight>();
-        memset(gfxWorld->sunLight, 0, sizeof(GfxLight));
     }
 
-    void GfxWorldLinker::overwriteGfxLights(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadGfxLights(GfxWorld* gfxWorld)
     {
-        // there must be 2 or more lights, first is the default light and second is the sun
-        gfxWorld->primaryLightCount = 2;
+        // there must be 2 or more lights, first is the static light and second is the sun light
+        gfxWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
         gfxWorld->sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
 
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
-        for (unsigned int i = 0; i < gfxWorld->primaryLightCount; i++)
+        for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
         {
-            gfxWorld->shadowGeom[i].smodelCount = 0;
-            gfxWorld->shadowGeom[i].surfaceCount = 0;
-            gfxWorld->shadowGeom[i].smodelIndex = NULL;
-            gfxWorld->shadowGeom[i].sortedSurfIndex = NULL;
+            gfxWorld->shadowGeom[lightIdx].smodelCount = 0;
+            gfxWorld->shadowGeom[lightIdx].surfaceCount = 0;
+            gfxWorld->shadowGeom[lightIdx].smodelIndex = nullptr;
+            gfxWorld->shadowGeom[lightIdx].sortedSurfIndex = nullptr;
         }
 
         gfxWorld->lightRegion = m_memory.Alloc<GfxLightRegion>(gfxWorld->primaryLightCount);
-        for (unsigned int i = 0; i < gfxWorld->primaryLightCount; i++)
+        for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
         {
-            gfxWorld->lightRegion[i].hullCount = 0;
-            gfxWorld->lightRegion[i].hulls = NULL;
+            gfxWorld->lightRegion[lightIdx].hullCount = 0;
+            gfxWorld->lightRegion[lightIdx].hulls = nullptr;
         }
 
-        int lightEntShadowVisSize = (gfxWorld->primaryLightCount - gfxWorld->sunPrimaryLightIndex - 1) * 8192;
+        unsigned int lightEntShadowVisSize = (gfxWorld->primaryLightCount - gfxWorld->sunPrimaryLightIndex - 1) * 8192;
         if (lightEntShadowVisSize != 0)
-        {
             gfxWorld->primaryLightEntityShadowVis = m_memory.Alloc<unsigned int>(lightEntShadowVisSize);
-            memset(gfxWorld->primaryLightEntityShadowVis, 0, lightEntShadowVisSize * sizeof(unsigned int));
-        }
         else
-        {
-            gfxWorld->primaryLightEntityShadowVis = NULL;
-        }
+            gfxWorld->primaryLightEntityShadowVis = nullptr;
     }
 
-    // the lightgrid is used to light models in a dynamic way and is precomputed
-    void GfxWorldLinker::overwriteLightGrid(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadLightGrid(GfxWorld* gfxWorld)
     {
-        // there is almost no basis for the values in this code, i chose them based on what feels right and what i could see when RE.
-        // it works and that is all thats needed :)
+        // there is almost no basis for the values in this code, they were chosen based on what looks correct when reverse engineering.
 
-        // mins and maxs define the range that the lightgrid will work in
-        // idk how these values are calculated, but the below values are larger
+        // mins and maxs define the range that the lightgrid will work in.
+        // unknown how these values are calculated, but the below values are larger
         // than official map values
         gfxWorld->lightGrid.mins[0] = 0;
         gfxWorld->lightGrid.mins[1] = 0;
@@ -428,26 +381,24 @@ namespace BSP
         gfxWorld->lightGrid.sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
         gfxWorld->lightGrid.offset = 0.0f; // default value
 
-        // this will make the lookup into rawRowData always return the first row
+        // setting all rowDataStart indexes to 0 will always index the first row in rawRowData
         int rowDataStartSize = gfxWorld->lightGrid.maxs[gfxWorld->lightGrid.rowAxis] - gfxWorld->lightGrid.mins[gfxWorld->lightGrid.rowAxis] + 1;
         gfxWorld->lightGrid.rowDataStart = m_memory.Alloc<uint16_t>(rowDataStartSize);
-        memset(gfxWorld->lightGrid.rowDataStart, 0, rowDataStartSize * sizeof(uint16_t));
 
-        gfxWorld->lightGrid.rawRowDataSize = sizeof(GfxLightGridRow) + 0x10;
-        GfxLightGridRow* row = (GfxLightGridRow*)m_memory.AllocRaw(sizeof(GfxLightGridRow) + 0x10);
+        // Adding 0x0F so the lookup table will be 0x10 bytes in size
+        gfxWorld->lightGrid.rawRowDataSize = static_cast<unsigned int>(sizeof(GfxLightGridRow) + 0x0F);
+        GfxLightGridRow* row = static_cast<GfxLightGridRow*>(m_memory.AllocRaw(gfxWorld->lightGrid.rawRowDataSize));
         row->colStart = 0;
         row->colCount = 0x1000; // 0x1000 as this is large enough for all checks done by the game
         row->zStart = 0;
         row->zCount = 0xFF; // 0xFF as this is large enough for all checks done by the game, but small enough not to mess with other checks
         row->firstEntry = 0;
-        for (int i = 0; i < 0x11; i++) // set the lookup table to all 0
-        {
+        for (int i = 0; i < 0x10; i++) // set the lookup table to all 0
             row->lookupTable[i] = 0;
-        }
-        gfxWorld->lightGrid.rawRowData = (aligned_byte_pointer*)row;
+        gfxWorld->lightGrid.rawRowData = reinterpret_cast<aligned_byte_pointer*>(row);
 
         // entries are looked up based on the lightgrid sample pos (given ingame) and the lightgrid lookup table
-        gfxWorld->lightGrid.entryCount = 60000; // 60000 as it should be enough entries to be indexed by all lightgrid data
+        gfxWorld->lightGrid.entryCount = 60000; // 60000 as it should be enough entries to be indexed by all lightgrid sample positions
         GfxLightGridEntry* entryArray = m_memory.Alloc<GfxLightGridEntry>(gfxWorld->lightGrid.entryCount);
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
@@ -457,33 +408,36 @@ namespace BSP
         }
         gfxWorld->lightGrid.entries = entryArray;
 
-        // colours are looked up by an entries colourindex
+        // colours are looked up with a lightgrid entries colorsIndex
         gfxWorld->lightGrid.colorCount = 0x1000; //0x1000 as it should be enough to hold every index
         gfxWorld->lightGrid.colors = m_memory.Alloc<GfxCompressedLightGridColors>(gfxWorld->lightGrid.colorCount);
         memset(gfxWorld->lightGrid.colors, BSPEditableConstants::LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
 
         // we use the colours array instead of coeffs array
         gfxWorld->lightGrid.coeffCount = 0;
-        gfxWorld->lightGrid.coeffs = NULL;
+        gfxWorld->lightGrid.coeffs = nullptr;
         gfxWorld->lightGrid.skyGridVolumeCount = 0;
-        gfxWorld->lightGrid.skyGridVolumes = NULL;
+        gfxWorld->lightGrid.skyGridVolumes = nullptr;
     }
 
-    void GfxWorldLinker::updateGfxCells(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadGfxCells(GfxWorld* gfxWorld)
     {
         // Cells are basically data used to determine what can be seen and what cant be seen
         // Right now custom maps have no optimisation so there is only 1 cell
         int cellCount = 1;
 
+        gfxWorld->dpvsPlanes.cellCount = cellCount;
         gfxWorld->cellBitsCount = ((cellCount + 127) >> 3) & 0x1FFFFFF0;
 
         int cellCasterBitsCount = cellCount * ((cellCount + 31) / 32);
         gfxWorld->cellCasterBits = m_memory.Alloc<unsigned int>(cellCasterBitsCount);
-        memset(gfxWorld->cellCasterBits, 0x00, cellCasterBitsCount * sizeof(unsigned int));
+
+        int sceneEntCellBitsCount = cellCount * 512;
+        gfxWorld->dpvsPlanes.sceneEntCellBits = m_memory.Alloc<unsigned int>(sceneEntCellBitsCount);
 
         gfxWorld->cells = m_memory.Alloc<GfxCell>(cellCount);
         gfxWorld->cells[0].portalCount = 0;
-        gfxWorld->cells[0].portals = NULL;
+        gfxWorld->cells[0].portals = nullptr;
         gfxWorld->cells[0].mins.x = gfxWorld->mins.x;
         gfxWorld->cells[0].mins.y = gfxWorld->mins.y;
         gfxWorld->cells[0].mins.z = gfxWorld->mins.z;
@@ -493,9 +447,8 @@ namespace BSP
 
         // there is only 1 reflection probe
         gfxWorld->cells[0].reflectionProbeCount = 1;
-        char* reflectionProbeIndexes = m_memory.Alloc<char>(gfxWorld->cells[0].reflectionProbeCount);
-        reflectionProbeIndexes[0] = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
-        gfxWorld->cells[0].reflectionProbes = reflectionProbeIndexes;
+        gfxWorld->cells[0].reflectionProbes = m_memory.Alloc<char>(gfxWorld->cells[0].reflectionProbeCount);
+        gfxWorld->cells[0].reflectionProbes[0] = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
 
         // AABB trees are used to detect what should be rendered and what shouldn't
         // Just use the first AABB node to hold all models, no optimisation but all models/surfaces wil lbe drawn
@@ -504,12 +457,12 @@ namespace BSP
         gfxWorld->cells[0].aabbTree[0].childCount = 0;
         gfxWorld->cells[0].aabbTree[0].childrenOffset = 0;
         gfxWorld->cells[0].aabbTree[0].startSurfIndex = 0;
-        gfxWorld->cells[0].aabbTree[0].surfaceCount = gfxWorld->surfaceCount;
-        gfxWorld->cells[0].aabbTree[0].smodelIndexCount = gfxWorld->dpvs.smodelCount;
+        gfxWorld->cells[0].aabbTree[0].surfaceCount = static_cast<uint16_t>(gfxWorld->surfaceCount);
+        gfxWorld->cells[0].aabbTree[0].smodelIndexCount = static_cast<uint16_t>(gfxWorld->dpvs.smodelCount);
         gfxWorld->cells[0].aabbTree[0].smodelIndexes = m_memory.Alloc<unsigned short>(gfxWorld->dpvs.smodelCount);
-        for (unsigned short i = 0; i < gfxWorld->dpvs.smodelCount; i++)
+        for (unsigned short smodelIdx = 0; smodelIdx < gfxWorld->dpvs.smodelCount; smodelIdx++)
         {
-            gfxWorld->cells[0].aabbTree[0].smodelIndexes[i] = i;
+            gfxWorld->cells[0].aabbTree[0].smodelIndexes[smodelIdx] = smodelIdx;
         }
         gfxWorld->cells[0].aabbTree[0].mins.x = gfxWorld->mins.x;
         gfxWorld->cells[0].aabbTree[0].mins.y = gfxWorld->mins.y;
@@ -518,25 +471,20 @@ namespace BSP
         gfxWorld->cells[0].aabbTree[0].maxs.y = gfxWorld->maxs.y;
         gfxWorld->cells[0].aabbTree[0].maxs.z = gfxWorld->maxs.z;
 
-        gfxWorld->dpvsPlanes.cellCount = cellCount;
-
-        int sceneEntCellBitsCount = cellCount * 512;
-        gfxWorld->dpvsPlanes.sceneEntCellBits = m_memory.Alloc<unsigned int>(sceneEntCellBitsCount);
-        memset(gfxWorld->dpvsPlanes.sceneEntCellBits, 0x00, sceneEntCellBitsCount * sizeof(unsigned int));
-
-        // nodes have the struct mnode_t, and there must be at least 1 node
+        // nodes have the struct mnode_t, and there must be at least 1 node (similar to BSP nodes)
         // Nodes mnode_t.cellIndex indexes gfxWorld->cells
         // and (mnode_t.cellIndex - (world->dpvsPlanes.cellCount + 1) indexes world->dpvsPlanes.planes
+        // Use only one node as there is no optimisation in custom maps
         gfxWorld->nodeCount = 1;
         gfxWorld->dpvsPlanes.nodes = m_memory.Alloc<uint16_t>(gfxWorld->nodeCount);
         gfxWorld->dpvsPlanes.nodes[0] = 1; // nodes reference cells by index + 1
 
         // planes are overwritten by the clipmap loading code ingame
         gfxWorld->planeCount = 0;
-        gfxWorld->dpvsPlanes.planes = NULL;
+        gfxWorld->dpvsPlanes.planes = nullptr;
     }
 
-    void updateWorldBounds(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadWorldBounds(GfxWorld* gfxWorld)
     {
         gfxWorld->mins.x = 0.0f;
         gfxWorld->mins.y = 0.0f;
@@ -545,13 +493,13 @@ namespace BSP
         gfxWorld->maxs.y = 0.0f;
         gfxWorld->maxs.z = 0.0f;
 
-        for (int i = 0; i < gfxWorld->surfaceCount; i++)
+        for (int surfIdx = 0; surfIdx < gfxWorld->surfaceCount; surfIdx++)
         {
-            BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[i].bounds[0], gfxWorld->dpvs.surfaces[i].bounds[1], gfxWorld->mins, gfxWorld->maxs);
+            BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[surfIdx].bounds[0], gfxWorld->dpvs.surfaces[surfIdx].bounds[1], gfxWorld->mins, gfxWorld->maxs);
         }
     }
 
-    void GfxWorldLinker::overwriteModels(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadModels(GfxWorld* gfxWorld)
     {
         // Models (Submodels in the clipmap code) are used for the world and map ent collision (triggers, bomb zones, etc)
         // Right now there is only one submodel, the world sub model
@@ -560,7 +508,7 @@ namespace BSP
 
         // first model is always the world model
         gfxWorld->models[0].startSurfIndex = 0;
-        gfxWorld->models[0].surfaceCount = gfxWorld->surfaceCount;
+        gfxWorld->models[0].surfaceCount = static_cast<unsigned int>(gfxWorld->surfaceCount);
         gfxWorld->models[0].bounds[0].x = gfxWorld->mins.x;
         gfxWorld->models[0].bounds[0].y = gfxWorld->mins.y;
         gfxWorld->models[0].bounds[0].z = gfxWorld->mins.z;
@@ -588,10 +536,10 @@ namespace BSP
         //}
     }
 
-    void updateSunData(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadSunData(GfxWorld* gfxWorld)
     {
         // default values taken from mp_dig
-        gfxWorld->sunParse.fogTransitionTime = (float)0.001;
+        gfxWorld->sunParse.fogTransitionTime = 0.001f;
         gfxWorld->sunParse.name[0] = 0x00;
 
         gfxWorld->sunParse.initWorldSun->control = 0;
@@ -634,22 +582,18 @@ namespace BSP
         gfxWorld->sunParse.initWorldFog->sunFogYaw = 254.0f;
     }
 
-    bool GfxWorldLinker::updateReflectionProbeData(GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadReflectionProbeData(GfxWorld* gfxWorld)
     {
         gfxWorld->draw.reflectionProbeCount = 1;
 
         gfxWorld->draw.reflectionProbeTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.reflectionProbeCount);
-        memset(gfxWorld->draw.reflectionProbeTextures, 0, sizeof(GfxTexture) * gfxWorld->draw.reflectionProbeCount);
-
-        gfxWorld->draw.reflectionProbes = m_memory.Alloc<GfxReflectionProbe>(gfxWorld->draw.reflectionProbeCount);
 
         // default values taken from mp_dig
+        gfxWorld->draw.reflectionProbes = m_memory.Alloc<GfxReflectionProbe>(gfxWorld->draw.reflectionProbeCount);
         gfxWorld->draw.reflectionProbes[0].mipLodBias = -8.0;
-
         gfxWorld->draw.reflectionProbes[0].origin.x = 0.0f;
         gfxWorld->draw.reflectionProbes[0].origin.y = 0.0f;
         gfxWorld->draw.reflectionProbes[0].origin.z = 0.0f;
-
         gfxWorld->draw.reflectionProbes[0].lightingSH.V0.x = 0.0f;
         gfxWorld->draw.reflectionProbes[0].lightingSH.V0.y = 0.0f;
         gfxWorld->draw.reflectionProbes[0].lightingSH.V0.z = 0.0f;
@@ -664,11 +608,11 @@ namespace BSP
         gfxWorld->draw.reflectionProbes[0].lightingSH.V2.w = 0.0f;
 
         gfxWorld->draw.reflectionProbes[0].probeVolumeCount = 0;
-        gfxWorld->draw.reflectionProbes[0].probeVolumes = NULL;
+        gfxWorld->draw.reflectionProbes[0].probeVolumes = nullptr;
 
         std::string probeImageName = "reflection_probe0";
         auto probeImageAsset = m_context.LoadDependency<AssetImage>(probeImageName);
-        if (probeImageAsset == NULL)
+        if (probeImageAsset == nullptr)
         {
             con::error("ERROR! unable to find reflection probe image {}!", probeImageName);
             return false;
@@ -678,37 +622,33 @@ namespace BSP
         return true;
     }
 
-    bool GfxWorldLinker::overwriteLightmapData(GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadLightmapData(GfxWorld* gfxWorld)
     {
         gfxWorld->draw.lightmapCount = 1;
 
         gfxWorld->draw.lightmapPrimaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
         gfxWorld->draw.lightmapSecondaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
-        gfxWorld->draw.lightmaps = m_memory.Alloc<GfxLightmapArray>(gfxWorld->draw.lightmapCount);
-
-        // always set to 0
-        memset(gfxWorld->draw.lightmapPrimaryTextures, 0, sizeof(GfxTexture) * gfxWorld->draw.lightmapCount);
-        memset(gfxWorld->draw.lightmapSecondaryTextures, 0, sizeof(GfxTexture) * gfxWorld->draw.lightmapCount);
 
         std::string secondaryTexture = "lightmap0_secondary";
         auto secondaryTextureAsset = m_context.LoadDependency<AssetImage>(secondaryTexture);
-        if (secondaryTextureAsset == NULL)
+        if (secondaryTextureAsset == nullptr)
         {
             con::error("ERROR! unable to find lightmap image {}!", secondaryTexture);
             return false;
         }
-        gfxWorld->draw.lightmaps[0].primary = NULL; // always NULL
+        gfxWorld->draw.lightmaps = m_memory.Alloc<GfxLightmapArray>(gfxWorld->draw.lightmapCount);
+        gfxWorld->draw.lightmaps[0].primary = nullptr; // always nullptr
         gfxWorld->draw.lightmaps[0].secondary = secondaryTextureAsset->Asset();
 
         return true;
     }
 
-    void GfxWorldLinker::overwriteSkyBox(BSPData* projInfo, GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld)
     {
         std::string skyBoxName = "skybox_" + projInfo->name;
         gfxWorld->skyBoxModel = m_memory.Dup(skyBoxName.c_str());
 
-        if (m_context.LoadDependency<AssetXModel>(skyBoxName) == NULL)
+        if (m_context.LoadDependency<AssetXModel>(skyBoxName) == nullptr)
         {
             con::warn("WARN: Unable to load the skybox xmodel {}!", skyBoxName);
         }
@@ -720,45 +660,39 @@ namespace BSP
         gfxWorld->skyDynIntensity.factor1 = 1.0f;
     }
 
-    void GfxWorldLinker::updateDynEntData(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadDynEntData(GfxWorld* gfxWorld)
     {
         int dynEntCount = 0;
         gfxWorld->dpvsDyn.dynEntClientCount[0] = dynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld->dpvsDyn.dynEntClientCount[1] = 0;
 
         // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue. 
-        // Making the value much larger than required fixes it, but idk what the root cause is
+        // Making the value much larger than required fixes it, but unsure what the root cause is
         gfxWorld->dpvsDyn.dynEntClientWordCount[0] = ((gfxWorld->dpvsDyn.dynEntClientCount[0] + 31) >> 5) + 100;
         gfxWorld->dpvsDyn.dynEntClientWordCount[1] = 0;
         gfxWorld->dpvsDyn.usageCount = 0;
 
         int dynEntCellBitsSize = gfxWorld->dpvsDyn.dynEntClientWordCount[0] * gfxWorld->dpvsPlanes.cellCount;
         gfxWorld->dpvsDyn.dynEntCellBits[0] = m_memory.Alloc<unsigned int>(dynEntCellBitsSize);
-        gfxWorld->dpvsDyn.dynEntCellBits[1] = NULL;
-        memset(gfxWorld->dpvsDyn.dynEntCellBits[0], 0, sizeof(unsigned int) * dynEntCellBitsSize);
+        gfxWorld->dpvsDyn.dynEntCellBits[1] = nullptr;
 
         int dynEntVisData0Size = gfxWorld->dpvsDyn.dynEntClientWordCount[0] * 32;
         gfxWorld->dpvsDyn.dynEntVisData[0][0] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld->dpvsDyn.dynEntVisData[0][1] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld->dpvsDyn.dynEntVisData[0][2] = m_memory.Alloc<char>(dynEntVisData0Size);
-        gfxWorld->dpvsDyn.dynEntVisData[1][0] = NULL;
-        gfxWorld->dpvsDyn.dynEntVisData[1][1] = NULL;
-        gfxWorld->dpvsDyn.dynEntVisData[1][2] = NULL;
-        memset(gfxWorld->dpvsDyn.dynEntVisData[0][0], 0, dynEntVisData0Size);
-        memset(gfxWorld->dpvsDyn.dynEntVisData[0][1], 0, dynEntVisData0Size);
-        memset(gfxWorld->dpvsDyn.dynEntVisData[0][2], 0, dynEntVisData0Size);
+        gfxWorld->dpvsDyn.dynEntVisData[1][0] = nullptr;
+        gfxWorld->dpvsDyn.dynEntVisData[1][1] = nullptr;
+        gfxWorld->dpvsDyn.dynEntVisData[1][2] = nullptr;
 
-        int dynEntShadowVisCount = gfxWorld->dpvsDyn.dynEntClientCount[0] * (gfxWorld->primaryLightCount - gfxWorld->sunPrimaryLightIndex - 1);
+        unsigned int dynEntShadowVisCount = gfxWorld->dpvsDyn.dynEntClientCount[0] * (gfxWorld->primaryLightCount - gfxWorld->sunPrimaryLightIndex - 1);
         gfxWorld->primaryLightDynEntShadowVis[0] = m_memory.Alloc<unsigned int>(dynEntShadowVisCount);
-        gfxWorld->primaryLightDynEntShadowVis[1] = NULL;
-        memset(gfxWorld->primaryLightDynEntShadowVis[0], 0, sizeof(unsigned int) * dynEntShadowVisCount);
+        gfxWorld->primaryLightDynEntShadowVis[1] = nullptr;
 
         gfxWorld->sceneDynModel = m_memory.Alloc<GfxSceneDynModel>(gfxWorld->dpvsDyn.dynEntClientCount[0]);
-        gfxWorld->sceneDynBrush = NULL;
-        memset(gfxWorld->sceneDynModel, 0, sizeof(GfxSceneDynModel) * gfxWorld->dpvsDyn.dynEntClientCount[0]);
+        gfxWorld->sceneDynBrush = nullptr;
     }
 
-    bool GfxWorldLinker::updateOutdoors(GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadOutdoors(GfxWorld* gfxWorld)
     {
         float xRecip = 1.0f / (gfxWorld->maxs.x - gfxWorld->mins.x);
         float xScale = -(xRecip * gfxWorld->mins.x);
@@ -781,7 +715,7 @@ namespace BSP
 
         std::string outdoorImageName = std::string("$outdoor");
         auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
-        if (outdoorImageAsset == NULL)
+        if (outdoorImageAsset == nullptr)
         {
             con::error("ERROR! unable to find outdoor image $outdoor!");
             return false;
@@ -803,38 +737,37 @@ namespace BSP
 
         cleanGfxWorld(gfxWorld);
 
-        if (!overwriteMapSurfaces(bsp, gfxWorld))
+        if (!loadMapSurfaces(bsp, gfxWorld))
             return AssetCreationResult::Failure();
 
-        overwriteMapSModels(bsp, gfxWorld);
+        loadXModels(bsp, gfxWorld);
 
-        if (!overwriteLightmapData(gfxWorld))
+        if (!loadLightmapData(gfxWorld))
             return AssetCreationResult::Failure();
 
-        overwriteSkyBox(bsp, gfxWorld);
+        loadSkyBox(bsp, gfxWorld);
 
-        if (!updateReflectionProbeData(gfxWorld))
+        if (!loadReflectionProbeData(gfxWorld))
             return AssetCreationResult::Failure();
 
-        // world bounds are based on surface mins/maxs
-        // Other update functions depend on the bounds being set first
-        updateWorldBounds(gfxWorld);
+        // world bounds are based on loaded surface mins/maxs
+        loadWorldBounds(gfxWorld);
 
-        if (!updateOutdoors(gfxWorld))
+        if (!loadOutdoors(gfxWorld))
             return AssetCreationResult::Failure();
 
         // gfx cells depend on surface/smodel count
-        updateGfxCells(gfxWorld);
+        loadGfxCells(gfxWorld);
 
-        overwriteLightGrid(gfxWorld);
+        loadLightGrid(gfxWorld);
 
-        overwriteGfxLights(gfxWorld);
+        loadGfxLights(gfxWorld);
 
-        overwriteModels(gfxWorld);
+        loadModels(gfxWorld);
 
-        updateSunData(gfxWorld);
+        loadSunData(gfxWorld);
 
-        updateDynEntData(gfxWorld);
+        loadDynEntData(gfxWorld);
 
         auto gfxWorldAsset = m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
         return AssetCreationResult::Success(gfxWorldAsset);

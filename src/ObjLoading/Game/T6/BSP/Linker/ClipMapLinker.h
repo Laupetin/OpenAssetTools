@@ -32,10 +32,8 @@ namespace BSP
 		std::vector<CollisionAabbTree> AABBTreeVec;
 		int addAABBTreeFromLeaf(BSPTree* node, clipMap_t* clipMap);
 		int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree);
-
 		void loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
-		bool loadWorldCollision(clipMap_t* clipMap, BSPData* bsp);
-		void populateBSPTree(clipMap_t* clipMap, BSPTree* tree);
 		bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
+		bool loadWorldCollision(clipMap_t* clipMap, BSPData* bsp);
 	};
 }

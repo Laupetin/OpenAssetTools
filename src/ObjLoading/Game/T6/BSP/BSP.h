@@ -155,7 +155,7 @@ namespace BSP
     }
 
     // BSPEditableConstants:
-    // These values are BSP constants that can be edited and won't break the linker/game if changed
+    // These values are BSP constants that can be edited and may not break the linker/game if changed
     namespace BSPEditableConstants
     {
         // Default xmodel values
