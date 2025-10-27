@@ -4,8 +4,8 @@ namespace BSP
 {
     ComWorldLinker::ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
         : m_memory(memory),
-        m_search_path(searchPath),
-        m_context(context)
+          m_search_path(searchPath),
+          m_context(context)
     {
     }
 
@@ -19,7 +19,7 @@ namespace BSP
         comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(comWorld->primaryLightCount);
 
         // first (static) light is always empty
-        
+
         ComPrimaryLight* sunLight = &comWorld->primaryLights[1];
         const vec4_t sunLightColor = BSPEditableConstants::SUNLIGHT_COLOR;
         const vec3_t sunLightDirection = BSPEditableConstants::SUNLIGHT_DIRECTION;
@@ -35,5 +35,4 @@ namespace BSP
         auto comWorldAsset = m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
         return AssetCreationResult::Success(comWorldAsset);
     }
-}
-
+} // namespace BSP

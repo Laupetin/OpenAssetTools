@@ -1,7 +1,7 @@
-#include "LoaderBSP_T6.h"
 #include "BSPCreator.h"
 #include "BSPUtil.h"
 #include "Linker/BSPLinker.h"
+#include "LoaderBSP_T6.h"
 
 namespace
 {
@@ -28,7 +28,7 @@ namespace
             std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
             if (bsp == nullptr)
                 return AssetCreationResult::Failure();
-            
+
             BSPLinker linker(m_memory, m_search_path, context);
             return linker.linkBSP(bsp.get());
         }

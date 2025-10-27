@@ -1,16 +1,16 @@
-#include "GfxWorldLinker.h"
 #include "../BSPUtil.h"
+#include "GfxWorldLinker.h"
 #include "Utils/Pack.h"
 
 namespace BSP
 {
     GfxWorldLinker::GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
         : m_memory(memory),
-        m_search_path(searchPath),
-        m_context(context)
+          m_search_path(searchPath),
+          m_context(context)
     {
     }
-    
+
     void GfxWorldLinker::loadDrawData(BSPData* bsp, GfxWorld* gfxWorld)
     {
         size_t vertexCount = bsp->gfxWorld.vertices.size();
@@ -157,18 +157,18 @@ namespace BSP
         /*
         Models are unsupported right now
         Code is left in in case it is supported later on
-        
+
         unsigned int modelCount = projInfo->modelCount;
         gfxWorld->dpvs.smodelCount = modelCount;
         gfxWorld->dpvs.smodelInsts = new GfxStaticModelInst[modelCount];
         gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
-        
+
         for (unsigned int i = 0; i < modelCount; i++)
         {
                 auto currModel = &gfxWorld->dpvs.smodelDrawInsts[i];
                 auto currModelInst = &gfxWorld->dpvs.smodelInsts[i];
                 customMapModel* inModel = &projInfo->models[i];
-        
+
                 auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
                 if (xModelAsset == nullptr)
                 {
@@ -177,15 +177,15 @@ namespace BSP
                 }
                 else
                     currModel->model = (XModel*)xModelAsset->Asset();
-        
+
                 currModel->placement.origin.x = inModel->origin.x;
                 currModel->placement.origin.y = inModel->origin.y;
                 currModel->placement.origin.z = inModel->origin.z;
                 currModel->placement.origin = BSPUtil::convertToBO2Coords(currModel->placement.origin);
                 currModel->placement.scale = inModel->scale;
-        
+
                 BSPUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
-        
+
                 // mins and maxs are calculated in world space not local space
                 // TODO: this does not account for model rotation or scale
                 currModelInst->mins.x = currModel->model->mins.x + currModel->placement.origin.x;
@@ -194,12 +194,12 @@ namespace BSP
                 currModelInst->maxs.x = currModel->model->maxs.x + currModel->placement.origin.x;
                 currModelInst->maxs.y = currModel->model->maxs.y + currModel->placement.origin.y;
                 currModelInst->maxs.z = currModel->model->maxs.z + currModel->placement.origin.z;
-        
+
                 currModel->cullDist = DEFAULT_SMODEL_CULL_DIST;
                 currModel->flags = DEFAULT_SMODEL_FLAGS;
                 currModel->primaryLightIndex = DEFAULT_SMODEL_LIGHT;
                 currModel->reflectionProbeIndex = DEFAULT_SMODEL_REFLECTION_PROBE;
-        
+
                 // unknown use / unused
                 currModel->smid = i;
                 memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
@@ -207,7 +207,7 @@ namespace BSP
                 currModel->lightingHandle = 0;
                 currModel->colorsIndex = 0;
                 currModel->visibility = 0;
-        
+
                 // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
                 // TODO: calculate lighting and store it here
                 currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
@@ -376,8 +376,8 @@ namespace BSP
         gfxWorld->lightGrid.maxs[1] = 200;
         gfxWorld->lightGrid.maxs[2] = 50;
 
-        gfxWorld->lightGrid.rowAxis = 0;              // default value
-        gfxWorld->lightGrid.colAxis = 1;              // default value
+        gfxWorld->lightGrid.rowAxis = 0; // default value
+        gfxWorld->lightGrid.colAxis = 1; // default value
         gfxWorld->lightGrid.sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
         gfxWorld->lightGrid.offset = 0.0f; // default value
 
@@ -409,7 +409,7 @@ namespace BSP
         gfxWorld->lightGrid.entries = entryArray;
 
         // colours are looked up with a lightgrid entries colorsIndex
-        gfxWorld->lightGrid.colorCount = 0x1000; //0x1000 as it should be enough to hold every index
+        gfxWorld->lightGrid.colorCount = 0x1000; // 0x1000 as it should be enough to hold every index
         gfxWorld->lightGrid.colors = m_memory.Alloc<GfxCompressedLightGridColors>(gfxWorld->lightGrid.colorCount);
         memset(gfxWorld->lightGrid.colors, BSPEditableConstants::LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
 
@@ -519,7 +519,7 @@ namespace BSP
 
         // Other models aren't implemented yet
         // Code kept for future use
-        //for (size_t i = 0; i < entityModelList.size(); i++)
+        // for (size_t i = 0; i < entityModelList.size(); i++)
         //{
         //    auto currEntModel = &gfxWorld->models[i + 1];
         //    entModelBounds currEntModelBounds = entityModelList[i];
@@ -666,7 +666,7 @@ namespace BSP
         gfxWorld->dpvsDyn.dynEntClientCount[0] = dynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld->dpvsDyn.dynEntClientCount[1] = 0;
 
-        // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue. 
+        // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue.
         // Making the value much larger than required fixes it, but unsure what the root cause is
         gfxWorld->dpvsDyn.dynEntClientWordCount[0] = ((gfxWorld->dpvsDyn.dynEntClientCount[0] + 31) >> 5) + 100;
         gfxWorld->dpvsDyn.dynEntClientWordCount[1] = 0;
@@ -772,5 +772,4 @@ namespace BSP
         auto gfxWorldAsset = m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
         return AssetCreationResult::Success(gfxWorldAsset);
     }
-}
-
+} // namespace BSP

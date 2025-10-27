@@ -1,12 +1,12 @@
-#include "ClipMapLinker.h"
 #include "../BSPUtil.h"
+#include "ClipMapLinker.h"
 
 namespace BSP
 {
     ClipMapLinker::ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
         : m_memory(memory),
-        m_search_path(searchPath),
-        m_context(context)
+          m_search_path(searchPath),
+          m_context(context)
     {
     }
 
@@ -18,7 +18,7 @@ namespace BSP
         clipMap->dynEntCount[1] = 0;
         clipMap->dynEntCount[2] = 0;
         clipMap->dynEntCount[3] = 0;
-        
+
         clipMap->dynEntClientList[0] = m_memory.Alloc<DynEntityClient>(clipMap->dynEntCount[0]);
         clipMap->dynEntClientList[1] = nullptr;
 
@@ -50,7 +50,7 @@ namespace BSP
 
     void ClipMapLinker::loadBoxData(clipMap_t* clipMap)
     {
-        // box_model and box_brush are what are used by game traces as "temporary" collision when 
+        // box_model and box_brush are what are used by game traces as "temporary" collision when
         //  no brush or model is specified to do the trace with.
         // All values in this function are taken from official map BSPs
 
@@ -128,7 +128,7 @@ namespace BSP
 
         // Right now there is only one submodel, the world sub model
         assert(gfxWorld->modelCount == 1);
-        
+
         clipMap->numSubModels = 1;
         clipMap->cmodels = m_memory.Alloc<cmodel_t>(clipMap->numSubModels);
 
@@ -282,9 +282,9 @@ namespace BSP
         return static_cast<int>(parentAABBIndex);
     }
 
-    constexpr vec3_t normalX = { 1.0f, 0.0f, 0.0f };
-    constexpr vec3_t normalY = { 0.0f, 1.0f, 0.0f };
-    constexpr vec3_t normalZ = { 0.0f, 0.0f, 1.0f };
+    constexpr vec3_t normalX = {1.0f, 0.0f, 0.0f};
+    constexpr vec3_t normalY = {0.0f, 1.0f, 0.0f};
+    constexpr vec3_t normalZ = {0.0f, 0.0f, 1.0f};
 
     // returns the index of the node/leaf parsed by the function
     // Nodes are indexed by their index in the node array
@@ -296,7 +296,7 @@ namespace BSP
         {
             cLeaf_s leaf;
 
-            leaf.cluster = 0; // always use cluster 0
+            leaf.cluster = 0;       // always use cluster 0
             leaf.brushContents = 0; // no brushes used so contents is 0
             leaf.terrainContents = BSPEditableConstants::LEAF_TERRAIN_CONTENTS;
 
@@ -428,7 +428,8 @@ namespace BSP
                 }
                 BSPUtil::updateAABBWithPoint(vert, partitionMins, partitionMaxs);
             }
-            std::shared_ptr<BSPObject> currObject = std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
+            std::shared_ptr<BSPObject> currObject =
+                std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
             tree->addObjectToTree(std::move(currObject));
         }
 
@@ -493,7 +494,7 @@ namespace BSP
         }
         // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
         clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
-        clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
+        clipMap->triIndices = reinterpret_cast<uint16_t (*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
         memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
 
         // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
@@ -501,7 +502,7 @@ namespace BSP
         std::vector<uint16_t> uniqueIndicesVec;
         for (BSPSurface& surface : bsp->colWorld.surfaces)
         {
-            // partitions are made for each triangle, not one for each surface. 
+            // partitions are made for each triangle, not one for each surface.
             //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
             //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
             int indexOfFirstTri = surface.indexOfFirstIndex / 3;
@@ -621,7 +622,7 @@ namespace BSP
         loadRopesAndConstraints(clipMap);
 
         loadSubModelCollision(clipMap, bsp);
-        
+
         loadDynEnts(clipMap);
 
         loadXModelCollision(clipMap);
@@ -648,5 +649,4 @@ namespace BSP
         auto clipMapAsset = m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);
         return AssetCreationResult::Success(clipMapAsset);
     }
-}
-
+} // namespace BSP

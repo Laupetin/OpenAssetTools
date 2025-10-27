@@ -148,4 +148,4 @@ namespace BSP
             }
         }
     }
-}
+} // namespace BSP

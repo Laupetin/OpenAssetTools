@@ -28,7 +28,6 @@ namespace BSP
         BSPObject(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex);
     };
 
-
     class BSPLeaf
     {
     public:
@@ -47,7 +46,7 @@ namespace BSP
         std::unique_ptr<BSPTree> front;
         std::unique_ptr<BSPTree> back;
 
-        PlaneAxis axis;  // axis that the split plane is on
+        PlaneAxis axis; // axis that the split plane is on
         float distance; // distance from the origin (0, 0, 0) to the plane
 
         BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, PlaneAxis nodeAxis, float nodeDistance);
@@ -69,4 +68,4 @@ namespace BSP
         void splitTree();
         void addObjectToTree(std::shared_ptr<BSPObject> object);
     };
-}
+} // namespace BSP

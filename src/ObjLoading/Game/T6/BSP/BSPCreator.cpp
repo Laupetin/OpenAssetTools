@@ -6,11 +6,8 @@ namespace
 {
     using namespace BSP;
 
-    void addFBXMeshToWorld(ufbx_node* node,
-        std::vector<BSPSurface>& surfaceVec,
-        std::vector<BSPVertex>& vertexVec,
-        std::vector<uint16_t>& indexVec,
-        bool& hasTangentSpace)
+    void addFBXMeshToWorld(
+        ufbx_node* node, std::vector<BSPSurface>& surfaceVec, std::vector<BSPVertex>& vertexVec, std::vector<uint16_t>& indexVec, bool& hasTangentSpace)
     {
         ufbx_mesh* mesh = node->mesh;
 
@@ -43,7 +40,7 @@ namespace
         if (mesh->vertex_tangent.exists == false)
             hasTangentSpace = false;
 
-        // Fix the target_unit_meters ufbx opt not working 
+        // Fix the target_unit_meters ufbx opt not working
         // UFBX stores the transform data in units that are 100x larger than what blender uses, so this converts them back
         ufbx_transform origTransform = node->local_transform;
         origTransform.translation.x /= 100.0f;
@@ -53,12 +50,12 @@ namespace
         origTransform.scale.y /= 100.0f;
         origTransform.scale.z /= 100.0f;
         ufbx_matrix meshMatrix = ufbx_transform_to_matrix(&origTransform);
-        
+
         for (ufbx_mesh_part& meshPart : mesh->material_parts)
         {
             if (meshPart.num_faces == 0)
                 continue;
-            
+
             BSPSurface surface;
             size_t partTriangleNum = meshPart.num_triangles;
             surface.triCount = static_cast<int>(partTriangleNum);
@@ -187,7 +184,7 @@ namespace
         if (hasTangentSpace == false)
             con::warn("warning: one or more meshes have no tangent space. Be sure to select the tangent space box when exporting the FBX.");
     }
-}
+} // namespace
 
 namespace BSP
 {
@@ -201,7 +198,7 @@ namespace BSP
             con::error("Failed to open map gfx fbx file: {}", gfxFbxPath);
             return nullptr;
         }
-        
+
         std::unique_ptr<char> gfxMapData(new char[static_cast<size_t>(gfxFile.m_length)]);
         gfxFile.m_stream->read(gfxMapData.get(), gfxFile.m_length);
         if (gfxFile.m_stream->gcount() != gfxFile.m_length)
@@ -211,7 +208,7 @@ namespace BSP
         }
 
         ufbx_error errorGfx;
-        ufbx_load_opts optsGfx {};
+        ufbx_load_opts optsGfx{};
         optsGfx.target_axes = ufbx_axes_right_handed_y_up;
         optsGfx.generate_missing_normals = true;
         optsGfx.allow_missing_vertex_position = false;
@@ -243,7 +240,7 @@ namespace BSP
             }
 
             ufbx_error errorCol;
-            ufbx_load_opts optsCol {};
+            ufbx_load_opts optsCol{};
             optsCol.target_axes = ufbx_axes_right_handed_y_up;
             optsCol.generate_missing_normals = true;
             optsCol.allow_missing_vertex_position = false;

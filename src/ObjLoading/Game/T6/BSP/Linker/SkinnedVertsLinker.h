@@ -7,15 +7,15 @@
 
 namespace BSP
 {
-	class SkinnedVertsLinker
-	{
-	public:
-		SkinnedVertsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-		AssetCreationResult linkSkinnedVerts(BSPData* bsp);
+    class SkinnedVertsLinker
+    {
+    public:
+        SkinnedVertsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
+        AssetCreationResult linkSkinnedVerts(BSPData* bsp);
 
-	private:
-		MemoryManager& m_memory;
-		ISearchPath& m_search_path;
-		AssetCreationContext& m_context;
-	};
-}
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+        AssetCreationContext& m_context;
+    };
+} // namespace BSP

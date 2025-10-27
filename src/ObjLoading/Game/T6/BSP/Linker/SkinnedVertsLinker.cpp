@@ -4,8 +4,8 @@ namespace BSP
 {
     SkinnedVertsLinker::SkinnedVertsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
         : m_memory(memory),
-        m_search_path(searchPath),
-        m_context(context)
+          m_search_path(searchPath),
+          m_context(context)
     {
     }
 
@@ -22,5 +22,4 @@ namespace BSP
         auto skinnedVertsAsset = m_context.AddAsset<AssetSkinnedVerts>(assetName, skinnedVerts);
         return AssetCreationResult::Success(skinnedVertsAsset);
     }
-}
-
+} // namespace BSP

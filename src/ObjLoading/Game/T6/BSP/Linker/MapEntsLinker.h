@@ -7,15 +7,15 @@
 
 namespace BSP
 {
-	class MapEntsLinker
-	{
-	public:
-		MapEntsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-		AssetCreationResult linkMapEnts(BSPData* bsp);
+    class MapEntsLinker
+    {
+    public:
+        MapEntsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
+        AssetCreationResult linkMapEnts(BSPData* bsp);
 
-	private:
-		MemoryManager& m_memory;
-		ISearchPath& m_search_path;
-		AssetCreationContext& m_context;
-	};
-}
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+        AssetCreationContext& m_context;
+    };
+} // namespace BSP
