@@ -6,22 +6,22 @@ import Skeleton from "primevue/skeleton";
 import { dt } from "@primeuix/themes";
 import type { ZoneDto } from "@/native/ZoneBinds";
 import { useZoneStore } from "@/stores/ZoneStore";
-import { computed, ref, watch } from "vue";
-import type { CommonAssetType, ZoneAssetsDto } from "@/native/AssetBinds";
-import { webviewBinds } from "@/native";
+import { computed, watch } from "vue";
+import type { CommonAssetType } from "@/native/AssetBinds";
 import { getAssetTypeNameCapitalized } from "@/utils/AssetTypeName";
 import { useRouter } from "vue-router";
 import { PAGE } from "@/router/Page";
+import { useAssetStore } from "@/stores/AssetStore";
+import { storeToRefs } from "pinia";
 
+const assetStore = useAssetStore();
 const zoneStore = useZoneStore();
+
+const { assetsOfZone, assetCount, referenceCount } = storeToRefs(assetStore);
 
 const props = defineProps<{
   selectedZone: string | null;
 }>();
-
-const assets = ref<ZoneAssetsDto | null>(null);
-const assetCount = computed(() => assets.value?.assets.length ?? 0);
-const referenceCount = computed(() => assets.value?.references.length ?? 0);
 
 const METER_COLORS = [
   dt("blue.600"),
@@ -37,7 +37,7 @@ const METER_COLORS = [
 const meterItems = computed<MeterItem[]>(() => {
   const assetTypeCounts: Partial<Record<CommonAssetType, number>> = {};
 
-  for (const asset of assets.value?.assets ?? []) {
+  for (const asset of assetsOfZone.value?.assets ?? []) {
     if (!assetTypeCounts[asset.type]) {
       assetTypeCounts[asset.type] = 1;
     } else {
@@ -94,13 +94,7 @@ function onClickShowAssets() {
 watch(
   () => props.selectedZone,
   (newValue) => {
-    assets.value = null;
-    if (!newValue) return;
-    webviewBinds.getAssetsForZone(newValue).then((res) => {
-      if (props.selectedZone === newValue) {
-        assets.value = res;
-      }
-    });
+    assetStore.loadAssetsForZone(newValue);
   },
   { immediate: true },
 );
@@ -115,7 +109,7 @@ watch(
       <Tag :value="selectedZoneDetails.platform" />
     </div>
     <div class="zone-assets">
-      <template v-if="assets">
+      <template v-if="assetsOfZone">
         <div>{{ assetCount }} assets</div>
         <div>{{ referenceCount }} references</div>
         <MeterGroup class="asset-meter" :value="meterItems" />
