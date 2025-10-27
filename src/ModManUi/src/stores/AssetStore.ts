@@ -12,8 +12,14 @@ export const useAssetStore = defineStore("asset", () => {
   const referenceCount = computed(() => assetsOfZone.value?.references.length ?? 0);
 
   function loadAssetsForZone(newZoneName: string | null) {
+    // Skip if assets are already loaded
+    if (newZoneName === zoneName.value) return;
+
+    // Reset current state
     zoneName.value = newZoneName;
     assetsOfZone.value = null;
+
+    // Only load assets when there is a new zone name specified
     if (!newZoneName) return;
     webviewBinds.getAssetsForZone(newZoneName).then((res) => {
       if (zoneName.value === newZoneName) {
