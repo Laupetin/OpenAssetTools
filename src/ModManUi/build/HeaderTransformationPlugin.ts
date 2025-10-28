@@ -1,4 +1,4 @@
-import type { Plugin } from "vite";
+import type { Plugin, UserConfig } from "vite";
 import type { OutputAsset, OutputChunk } from "rollup";
 import path from "node:path";
 import fs from "node:fs";
@@ -7,8 +7,35 @@ type MinimalOutputAsset = Pick<OutputAsset, "type" | "fileName" | "source">;
 type MinimalOutputChunk = Pick<OutputChunk, "type" | "fileName" | "code">;
 type MinimalOutputBundle = Record<string, MinimalOutputAsset | MinimalOutputChunk>;
 
+interface PublicDirFile {
+  fullPath: string;
+  relativePath: string;
+}
+
+function getPublicDirFiles(publicDir?: string): PublicDirFile[] {
+  if (!publicDir) return [];
+
+  const result: PublicDirFile[] = [];
+  const files = fs.readdirSync(publicDir, { recursive: true, withFileTypes: true });
+  for (const file of files) {
+    if (!file.isFile()) continue;
+    const fullPath = path.join(file.parentPath, file.name);
+    let relativePath = path.relative(publicDir, fullPath).replaceAll(/\\/g, "/");
+    if (relativePath.startsWith("./")) {
+      relativePath = relativePath.substring(2);
+    }
+
+    result.push({
+      fullPath,
+      relativePath,
+    });
+  }
+
+  return result;
+}
+
 function createVarName(fileName: string) {
-  return fileName.replaceAll(/[\.-]/g, "_").toUpperCase();
+  return fileName.replaceAll(/[\\/]/g, "__").replaceAll(/[\.-]/g, "_").toUpperCase();
 }
 
 function transformAsset(asset: MinimalOutputAsset) {
@@ -33,10 +60,19 @@ function transformChunk(chunk: MinimalOutputChunk) {
 `;
 }
 
+function transformPublicFile(publicFile: PublicDirFile) {
+  const varName = createVarName(publicFile.relativePath);
+  const bytes = [...fs.readFileSync(publicFile.fullPath)].map((v) => String(v)).join(",");
+
+  return `constexpr const unsigned char ${varName}[] {${bytes}};
+`;
+}
+
 function writeHeader(
   bundle: MinimalOutputBundle,
   outputDir?: string,
   options?: HeaderTransformationPluginOptions,
+  publicDir?: string,
   devServerPort?: number,
 ) {
   const outputPath = options?.outputPath ?? path.join(outputDir ?? "dist", "ViteAssets.h");
@@ -71,12 +107,18 @@ constexpr auto VITE_DEV_SERVER_PORT = ${devServerPort ? String(devServerPort) : 
 `,
   );
 
+  const fileNames: string[] = [];
   for (const curBundle of Object.values(bundle)) {
     if (curBundle.type === "asset") {
       fs.writeSync(fd, transformAsset(curBundle));
     } else {
       fs.writeSync(fd, transformChunk(curBundle));
     }
+    fileNames.push(curBundle.fileName);
+  }
+  for (const publicDirFile of getPublicDirFiles(publicDir)) {
+    fs.writeSync(fd, transformPublicFile(publicDirFile));
+    fileNames.push(publicDirFile.relativePath);
   }
 
   if (includeFileEnumeration) {
@@ -95,8 +137,7 @@ static inline const UiFile MOD_MAN_UI_FILES[] {
     );
 
     let index = 0;
-    for (const curBundle of Object.values(bundle)) {
-      const fileName = curBundle.fileName;
+    for (const fileName of fileNames) {
       const varName = createVarName(fileName);
 
       let prefix = "  ";
@@ -133,15 +174,20 @@ export default function headerTransformationPlugin(
 ): Plugin {
   let writeServerActive = false;
   let writeBundleActive = false;
+  let publicDir: string | undefined = undefined;
 
   return {
     name: "vite-plugin-header-transformation",
     enforce: "post",
-    config(_userOptions, env) {
+    config(userOptions: UserConfig, env) {
       if (env.command === "serve") {
         writeServerActive = true;
       } else {
         writeBundleActive = true;
+      }
+
+      if (typeof userOptions.publicDir === "string") {
+        publicDir = userOptions.publicDir;
       }
     },
     configureServer(server) {
@@ -156,6 +202,7 @@ export default function headerTransformationPlugin(
           },
           server.config.build.outDir,
           options,
+          publicDir,
           server.config.server.port,
         );
       });
@@ -165,7 +212,7 @@ export default function headerTransformationPlugin(
         return;
       }
 
-      writeHeader(bundle, outputOptions.dir, options);
+      writeHeader(bundle, outputOptions.dir, options, publicDir);
     },
   };
 }
