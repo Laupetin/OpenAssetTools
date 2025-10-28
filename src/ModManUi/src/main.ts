@@ -1,4 +1,3 @@
-import "../public/favicon.ico";
 import "@style/main.scss";
 
 import { createApp } from "vue";
