@@ -45,7 +45,7 @@ function onClickBack() {
 @use "@style/colors";
 
 .header {
-  background-color: colors.$COLOR_CONTENT_BACKGROUND;
+  background-color: colors.$color-content-background;
   text-align: center;
 
   padding: 0.25rem 0.25rem;
@@ -53,7 +53,7 @@ function onClickBack() {
   display: flex;
   justify-content: space-between;
 
-  border-bottom: 1px solid colors.$COLOR_CONTENT_BORDER;
+  border-bottom: 1px solid colors.$color-content-border;
 }
 
 .header-section {

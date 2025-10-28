@@ -1,28 +1,28 @@
 // Semantic colors are colors that may be different depending on the context.
 // They have to be used via CSS variables (which is what the SASS variables access).
-$COLOR_SURFACE_0: var(--color-surface-0);
-$COLOR_SURFACE_50: var(--color-surface-50);
-$COLOR_SURFACE_100: var(--color-surface-100);
-$COLOR_SURFACE_200: var(--color-surface-200);
-$COLOR_SURFACE_300: var(--color-surface-300);
-$COLOR_SURFACE_400: var(--color-surface-400);
-$COLOR_SURFACE_500: var(--color-surface-500);
-$COLOR_SURFACE_600: var(--color-surface-600);
-$COLOR_SURFACE_700: var(--color-surface-700);
-$COLOR_SURFACE_800: var(--color-surface-800);
-$COLOR_SURFACE_900: var(--color-surface-900);
-$COLOR_SURFACE_950: var(--color-surface-950);
+$color-surface-0: var(--color-surface-0);
+$color-surface-50: var(--color-surface-50);
+$color-surface-100: var(--color-surface-100);
+$color-surface-200: var(--color-surface-200);
+$color-surface-300: var(--color-surface-300);
+$color-surface-400: var(--color-surface-400);
+$color-surface-500: var(--color-surface-500);
+$color-surface-600: var(--color-surface-600);
+$color-surface-700: var(--color-surface-700);
+$color-surface-800: var(--color-surface-800);
+$color-surface-900: var(--color-surface-900);
+$color-surface-950: var(--color-surface-950);
 
-$COLOR_PRIMARY: var(--color-primary);
-$COLOR_PRIMARY_CONTRAST: var(--color-primary-contrast);
-$COLOR_PRIMARY_HOVER: var(--color-primary-hover);
-$COLOR_PRIMARY_ACTIVE: var(--color-primary-active);
+$color-primary: var(--color-primary);
+$color-primary-contrast: var(--color-primary-contrast);
+$color-primary-hover: var(--color-primary-hover);
+$color-primary-active: var(--color-primary-active);
 
-$COLOR_CONTENT_BACKGROUND: var(--color-content-background);
-$COLOR_CONTENT_HOVER_BACKGROUND: var(--color-content-hover-background);
-$COLOR_CONTENT_BORDER: var(--color-content-border);
+$color-content-background: var(--color-content-background);
+$color-content-hover-background: var(--color-content-hover-background);
+$color-content-border: var(--color-content-border);
 
-$COLOR_TEXT: var(--color-text);
-$COLOR_TEXT_HOVER: var(--color-text-hover);
-$COLOR_TEXT_MUTED: var(--color-text-muted);
-$COLOR_TEXT_HOVER_MUTED: var(--color-text-hover-muted);
+$color-text: var(--color-text);
+$color-text-hover: var(--color-text-hover);
+$color-text-muted: var(--color-text-muted);
+$color-text-hover-muted: var(--color-text-hover-muted);

@@ -17,7 +17,7 @@
   justify-content: center;
   align-items: center;
 
-  background-color: colors.$COLOR_CONTENT_HOVER_BACKGROUND;
-  border-radius: variables.$BORDER_RADIUS_MD;
+  background-color: colors.$color-content-hover-background;
+  border-radius: variables.$border-radius-md;
 }
 </style>
