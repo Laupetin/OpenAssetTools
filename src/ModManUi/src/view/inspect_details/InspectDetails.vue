@@ -2,10 +2,11 @@
 import Skeleton from "primevue/skeleton";
 import { useAssetStore } from "@/stores/AssetStore";
 import { storeToRefs } from "pinia";
-import { watch } from "vue";
+import { ref, watch } from "vue";
 import InspectPreview from "./components/InspectPreview.vue";
 import InspectAssetDetails from "./components/InspectAssetDetails.vue";
 import InspectZoneAssets from "./components/InspectZoneAssets.vue";
+import type { AssetDto } from "@/native/AssetBinds.ts";
 
 const assetStore = useAssetStore();
 
@@ -14,6 +15,8 @@ const { assetsOfZone } = storeToRefs(assetStore);
 const props = defineProps<{
   zoneName: string;
 }>();
+
+const selectedAsset = ref<AssetDto | null>(null);
 
 watch(
   () => props.zoneName,
@@ -27,9 +30,13 @@ watch(
 <template>
   <div class="inspect-details">
     <template v-if="assetsOfZone">
-      <InspectPreview class="inspect-preview" />
-      <InspectAssetDetails class="inspect-details" />
-      <InspectZoneAssets :assets="assetsOfZone.assets" class="inspect-assets" />
+      <InspectPreview class="inspect-area-preview" />
+      <InspectAssetDetails :selected-asset="selectedAsset" class="inspect-area-details" />
+      <InspectZoneAssets
+        v-model:selected-asset="selectedAsset"
+        :assets="assetsOfZone.assets"
+        class="inspect-area-assets"
+      />
     </template>
     <template v-else>
       <div class="skeleton-wrapper">
@@ -60,15 +67,15 @@ watch(
   padding: 0.5rem;
 }
 
-.inspect-preview {
+.inspect-area-preview {
   grid-area: preview;
 }
 
-.inspect-details {
+.inspect-area-details {
   grid-area: details;
 }
 
-.inspect-assets {
+.inspect-area-assets {
   grid-area: assets;
 }
 
