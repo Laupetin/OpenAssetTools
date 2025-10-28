@@ -5,8 +5,35 @@
 
 #include "Json/JsonExtension.h"
 
+NLOHMANN_JSON_SERIALIZE_ENUM(GameId,
+                             {
+                                 {GameId::IW3, "IW3"},
+                                 {GameId::IW4, "IW4"},
+                                 {GameId::IW5, "IW5"},
+                                 {GameId::T5,  "T5" },
+                                 {GameId::T6,  "T6" },
+});
+
+NLOHMANN_JSON_SERIALIZE_ENUM(GamePlatform,
+                             {
+                                 {GamePlatform::PC,   "PC"  },
+                                 {GamePlatform::XBOX, "XBOX"},
+                                 {GamePlatform::PS3,  "PS3" },
+});
+
 namespace
 {
+    class ZoneDto
+    {
+    public:
+        std::string name;
+        std::string filePath;
+        GameId game;
+        GamePlatform platform;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneDto, name, filePath, game, platform);
+
     class ZoneLoadProgressDto
     {
     public:
@@ -19,11 +46,10 @@ namespace
     class ZoneLoadedDto
     {
     public:
-        std::string zoneName;
-        std::string filePath;
+        ZoneDto zone;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneLoadedDto, zoneName, filePath);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneLoadedDto, zone);
 
     class ZoneUnloadedDto
     {
@@ -32,6 +58,35 @@ namespace
     };
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneUnloadedDto, zoneName);
+
+    ZoneDto CreateZoneDto(const LoadedZone& loadedZone)
+    {
+        return ZoneDto{
+            .name = loadedZone.m_zone->m_name,
+            .filePath = loadedZone.m_file_path,
+            .game = loadedZone.m_zone->m_game_id,
+            .platform = loadedZone.m_zone->m_platform,
+        };
+    }
+
+    std::vector<ZoneDto> GetLoadedZones()
+    {
+        auto& context = ModManContext::Get().m_fast_file;
+
+        std::vector<ZoneDto> result;
+
+        {
+            std::shared_lock lock(context.m_zone_lock);
+            result.reserve(context.m_loaded_zones.size());
+
+            for (const auto& loadedZone : context.m_loaded_zones)
+            {
+                result.emplace_back(CreateZoneDto(*loadedZone));
+            }
+        }
+
+        return result;
+    }
 
     void LoadFastFile(webview::webview& wv, std::string id, std::string path) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
     {
@@ -45,10 +100,9 @@ namespace
                     ui::PromiseResolve(wv,
                                        id,
                                        ZoneLoadedDto{
-                                           .zoneName = maybeZone.value()->m_name,
-                                           .filePath = path,
+                                           .zone = CreateZoneDto(*maybeZone.value()),
                                        });
-                    con::debug("Loaded zone \"{}\"", maybeZone.value()->m_name);
+                    con::debug("Loaded zone \"{}\"", maybeZone.value()->m_zone->m_name);
                 }
                 else
                 {
@@ -89,11 +143,10 @@ namespace ui
         Notify(*ModManContext::Get().m_main_webview, "zoneLoadProgress", dto);
     }
 
-    void NotifyZoneLoaded(std::string zoneName, std::string fastFilePath)
+    void NotifyZoneLoaded(const LoadedZone& loadedZone)
     {
         const ZoneLoadedDto dto{
-            .zoneName = std::move(zoneName),
-            .filePath = std::move(fastFilePath),
+            .zone = CreateZoneDto(loadedZone),
         };
         Notify(*ModManContext::Get().m_main_webview, "zoneLoaded", dto);
     }
@@ -108,6 +161,13 @@ namespace ui
 
     void RegisterZoneBinds(webview::webview& wv)
     {
+        BindRetOnly<std::vector<ZoneDto>>(wv,
+                                          "getZones",
+                                          []
+                                          {
+                                              return GetLoadedZones();
+                                          });
+
         BindAsync<std::string>(wv,
                                "loadFastFile",
                                [&wv](const std::string& id, std::string path)

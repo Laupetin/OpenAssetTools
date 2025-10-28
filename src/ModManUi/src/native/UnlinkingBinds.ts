@@ -1,5 +1,8 @@
 export interface ZoneUnlinkProgressDto {
   zoneName: string;
+  /**
+   * Between 0-100
+   */
   percentage: number;
 }
 

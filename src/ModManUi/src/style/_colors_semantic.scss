@@ -1,0 +1,28 @@
+// Semantic colors are colors that may be different depending on the context.
+// They have to be used via CSS variables (which is what the SASS variables access).
+$color-surface-0: var(--color-surface-0);
+$color-surface-50: var(--color-surface-50);
+$color-surface-100: var(--color-surface-100);
+$color-surface-200: var(--color-surface-200);
+$color-surface-300: var(--color-surface-300);
+$color-surface-400: var(--color-surface-400);
+$color-surface-500: var(--color-surface-500);
+$color-surface-600: var(--color-surface-600);
+$color-surface-700: var(--color-surface-700);
+$color-surface-800: var(--color-surface-800);
+$color-surface-900: var(--color-surface-900);
+$color-surface-950: var(--color-surface-950);
+
+$color-primary: var(--color-primary);
+$color-primary-contrast: var(--color-primary-contrast);
+$color-primary-hover: var(--color-primary-hover);
+$color-primary-active: var(--color-primary-active);
+
+$color-content-background: var(--color-content-background);
+$color-content-hover-background: var(--color-content-hover-background);
+$color-content-border: var(--color-content-border);
+
+$color-text: var(--color-text);
+$color-text-hover: var(--color-text-hover);
+$color-text-muted: var(--color-text-muted);
+$color-text-hover-muted: var(--color-text-hover-muted);
