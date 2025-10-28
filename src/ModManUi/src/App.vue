@@ -7,9 +7,11 @@ import ModManHeader from "./components/ModManHeader.vue";
     <ModManHeader />
 
     <div class="router-wrapper">
-      <RouterView v-slot="{ Component }">
+      <RouterView v-slot="{ Component, route }">
         <Transition name="blend">
-          <component :is="Component" />
+          <div class="router-rewrapper" :key="route.name">
+            <component :is="Component" />
+          </div>
         </Transition>
       </RouterView>
     </div>
@@ -33,6 +35,10 @@ import ModManHeader from "./components/ModManHeader.vue";
   height: 100%;
 }
 
+.router-rewrapper {
+  height: 100%;
+}
+
 .blend-enter-from,
 .blend-leave-to {
   opacity: 0;
@@ -45,5 +51,6 @@ import ModManHeader from "./components/ModManHeader.vue";
 
 .blend-leave-active {
   position: absolute;
+  inset: 0;
 }
 </style>
