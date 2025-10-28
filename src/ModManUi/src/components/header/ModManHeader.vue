@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import { useRouter } from "vue-router";
-import IconArrowLeft from "./icons/IconArrowLeft.vue";
-import IconGear from "./icons/IconGear.vue";
-import { useRouteMeta } from "@/router/RouteMeta";
+import { useRoute, useRouter } from "vue-router";
+import IconArrowLeft from "../icons/IconArrowLeft.vue";
+import IconGear from "../icons/IconGear.vue";
+import { useRouteMeta } from "@/router/RouteMeta.ts";
 
-const { routeDisplayName, routeNavigateBackTo } = useRouteMeta();
+const route = useRoute();
+const { headerTitle, routeNavigateBackTo } = useRouteMeta();
 const router = useRouter();
 
 function onClickBack() {
@@ -30,7 +31,10 @@ function onClickBack() {
         </template>
       </Button>
     </div>
-    <h1 class="title">{{ routeDisplayName }}</h1>
+    <h1 class="title">
+      <span v-if="typeof headerTitle === 'string'">{{ headerTitle }}</span>
+      <component v-else :is="headerTitle" v-bind="route.params" />
+    </h1>
     <div class="header-section right">
       <Button variant="text" severity="secondary" aria-label="Settings">
         <template #icon>

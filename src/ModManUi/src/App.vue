@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ModManHeader from "./components/ModManHeader.vue";
+import ModManHeader from "./components/header/ModManHeader.vue";
 </script>
 
 <template>

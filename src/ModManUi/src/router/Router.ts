@@ -3,6 +3,7 @@ import { PAGE } from "./Page";
 import ZoneInspector from "@/view/inspect/ZoneInspector.vue";
 import InspectDetails from "@/view/inspect_details/InspectDetails.vue";
 import type { RouteMeta } from "./RouteMeta";
+import InspectDetailsHeader from "@/view/inspect_details/InspectDetailsHeader.vue";
 
 const ROUTES: RouteRecordRaw[] = [
   {
@@ -19,7 +20,7 @@ const ROUTES: RouteRecordRaw[] = [
         component: InspectDetails,
         meta: {
           backTo: PAGE.INSPECT.SELECT_ZONE,
-          nameFunc: (route) => `Zone details: ${route.params["zoneName"]}`,
+          headerTitleComponent: InspectDetailsHeader,
         } satisfies RouteMeta,
         props: true,
       },

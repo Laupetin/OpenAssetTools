@@ -75,8 +75,8 @@ const meterItems = computed<MeterItem[]>(() => {
   );
 });
 
-const selectedZoneDetails = computed<ZoneDto | null>(
-  () => zoneStore.loadedZones.find((zone) => zone.name === props.selectedZone) ?? null,
+const selectedZoneDetails = computed<ZoneDto | null>(() =>
+  props.selectedZone ? zoneStore.getLoadedZoneByName(props.selectedZone) : null,
 );
 
 const router = useRouter();

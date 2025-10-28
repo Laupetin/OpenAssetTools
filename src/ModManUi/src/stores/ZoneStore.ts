@@ -39,6 +39,10 @@ export const useZoneStore = defineStore("zone", () => {
     return lastPercentageByZoneName.value[zoneName] ?? 100;
   }
 
+  function getLoadedZoneByName(zoneName: string) {
+    return loadedZones.value.find((zone) => zone.name === zoneName) ?? null;
+  }
+
   // Initially get all loaded zones
   webviewBinds.getZones().then((allZones) => {
     loadedZones.value = allZones;
@@ -68,5 +72,6 @@ export const useZoneStore = defineStore("zone", () => {
     lastPercentageByZoneName,
     loadFastFile,
     getPercentageForZoneBeingLoaded,
+    getLoadedZoneByName,
   };
 });
