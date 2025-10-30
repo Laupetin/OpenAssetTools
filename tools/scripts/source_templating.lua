@@ -37,6 +37,7 @@ function useSourceTemplating(projectName)
             }
             buildcommands {
                 '"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
+                .. ' --no-color'
                 .. ' -o "%{prj.location}/"'
                 .. " %{file.relpath}"
             }

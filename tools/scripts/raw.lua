@@ -60,6 +60,7 @@ function Raw:project()
             }
 			buildcommands {
 				'"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
+				.. " --no-color"
 				.. " -o %{cfg.targetdir}/build/raw/%{file.reldirectory}"
 				.. " --build-log \"%{prj.location}/build/%{file.relpath}.log\""
 				.. " %{file.relpath}"
