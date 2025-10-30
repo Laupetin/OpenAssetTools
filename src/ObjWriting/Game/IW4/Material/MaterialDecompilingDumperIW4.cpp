@@ -2,8 +2,7 @@
 
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/TechsetConstantsIW4.h"
-#include "Utils/ClassUtils.h"
+#include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Utils/Logging/Log.h"
 
 #pragma warning(push, 0)
