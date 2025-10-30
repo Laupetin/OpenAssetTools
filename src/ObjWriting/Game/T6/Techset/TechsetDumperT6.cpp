@@ -1,6 +1,8 @@
 #include "TechsetDumperT6.h"
 
+#include "Game/T6/Techset/TechsetConstantsT6.h"
 #include "Shader/ShaderCommon.h"
+#include "Techset/CommonTechsetDumper.h"
 
 #include <sstream>
 #include <unordered_set>
@@ -73,6 +75,31 @@ namespace
 
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
     }
+
+    techset::CommonTechset ConvertToCommonTechset(const MaterialTechniqueSet& techset)
+    {
+        std::vector<std::string> techniqueNames(std::extent_v<decltype(techniqueTypeNames)>);
+
+        for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
+        {
+            const auto* technique = techset.techniques[techniqueIndex];
+            if (technique && technique->name)
+                techniqueNames[techniqueIndex] = technique->name;
+        }
+
+        return techset::CommonTechset{
+            .m_name = techset.name,
+            .m_technique_names = std::move(techniqueNames),
+        };
+    }
+
+    void DumpTechset(const AssetDumpingContext& context, const MaterialTechniqueSet& techset)
+    {
+        static techset::CommonTechniqueTypeNames commonNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+        const auto commonTechset = ConvertToCommonTechset(techset);
+
+        techset::DumpCommon(commonNames, context, commonTechset);
+    }
 } // namespace
 
 namespace techset
@@ -85,6 +112,8 @@ namespace techset
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
         const auto* techniqueSet = asset.Asset();
+        DumpTechset(context, *techniqueSet);
+
         auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
 
         for (const auto* technique : techniqueSet->techniques)
