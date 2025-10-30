@@ -3038,17 +3038,45 @@ namespace T6
         void /*ID3D11RasterizerState*/* rasterizerState;
     };
 
+    enum VertexShaderPrecompiledIndex : unsigned char
+    {
+        VERTEX_SHADER_NONE = 0x0,
+        VERTEX_SHADER_MODEL_LIT,
+        VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+        VERTEX_SHADER_MODEL_UNLIT,
+    };
+
+    enum MaterialType : unsigned char
+    {
+        MTL_TYPE_DEFAULT = 0x0,
+        MTL_TYPE_MODEL,                // m_
+        MTL_TYPE_MODEL_VERTCOL,        // mc_
+        MTL_TYPE_MODEL_LIGHTMAP_VC,    // mlv_
+        MTL_TYPE_WORLD_VERTCOL,        // wc_
+        MTL_TYPE_PACKED_WORLD_VERTCOL, // wpc_
+        MTL_TYPE_QUANT_WORLD,          // wq_
+        MTL_TYPE_QUANT_WORLD_VERTCOL,  // wqc_
+
+        MTL_TYPE_COUNT,
+    };
+
+    struct MaterialTypeInfo
+    {
+        const char* materialPrefix;
+        const char* techniqueSetPrefix;
+    };
+
     struct MaterialPass
     {
         MaterialVertexDeclaration* vertexDecl;
         MaterialVertexShader* vertexShader;
         MaterialPixelShader* pixelShader;
-        char perPrimArgCount;
-        char perObjArgCount;
-        char stableArgCount;
-        char customSamplerFlags;
-        char precompiledIndex;
-        char materialType;
+        unsigned char perPrimArgCount;
+        unsigned char perObjArgCount;
+        unsigned char stableArgCount;
+        unsigned char customSamplerFlags;
+        VertexShaderPrecompiledIndex precompiledIndex;
+        MaterialType materialType;
         MaterialShaderArgument* args;
     };
 
@@ -5837,26 +5865,6 @@ namespace T6
             char textureIndex;
             char samplerIndex;
         };
-    };
-
-    enum MaterialType
-    {
-        MTL_TYPE_DEFAULT = 0x0,
-        MTL_TYPE_MODEL = 0x1,                // m_
-        MTL_TYPE_MODEL_VERTCOL = 0x2,        // mc_
-        MTL_TYPE_MODEL_LIGHTMAP_VC = 0x3,    // ?
-        MTL_TYPE_WORLD_VERTCOL = 0x4,        // wc_
-        MTL_TYPE_PACKED_WORLD_VERTCOL = 0x5, // ?
-        MTL_TYPE_QUANT_WORLD = 0x6,          // ?
-        MTL_TYPE_QUANT_WORLD_VERTCOL = 0x7,  // ?
-
-        MTL_TYPE_COUNT,
-    };
-
-    struct MaterialTypeInfo
-    {
-        const char* materialPrefix;
-        const char* techniqueSetPrefix;
     };
 
     enum MaterialConstantSource

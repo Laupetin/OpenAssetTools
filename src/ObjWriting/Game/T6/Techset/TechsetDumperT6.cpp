@@ -1,6 +1,10 @@
 #include "TechsetDumperT6.h"
 
+#include "Game/T6/Techset/TechsetConstantsT6.h"
 #include "Shader/ShaderCommon.h"
+#include "Techset/CommonTechniqueDumper.h"
+#include "Techset/CommonTechsetDumper.h"
+#include "Techset/TechniqueDumpingZoneState.h"
 
 #include <sstream>
 #include <unordered_set>
@@ -73,21 +77,12 @@ namespace
 
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
     }
-} // namespace
 
-namespace techset
-{
-    DumperT6::DumperT6(const AssetPool<AssetTechniqueSet::Type>& pool)
-        : AbstractAssetDumper(pool)
+    void DumpShaders(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
-    }
-
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
-    {
-        const auto* techniqueSet = asset.Asset();
         auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
 
-        for (const auto* technique : techniqueSet->techniques)
+        for (const auto* technique : techset.techniques)
         {
             if (!technique || !shaderState->ShouldDumpTechnique(technique))
                 continue;
@@ -103,5 +98,77 @@ namespace techset
                     DumpVertexShader(context, *vertexShader);
             }
         }
+    }
+
+    techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
+    {
+        std::vector<std::string> techniqueNames(std::extent_v<decltype(techniqueTypeNames)>);
+
+        for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
+        {
+            const auto* technique = techset.techniques[techniqueIndex];
+            if (technique && technique->name)
+                techniqueNames[techniqueIndex] = technique->name;
+        }
+
+        return techset::CommonTechset{
+            .m_name = techset.name,
+            .m_technique_names = std::move(techniqueNames),
+        };
+    }
+
+    void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
+    {
+        auto* techniqueState = context.GetZoneAssetDumperState<techset::TechniqueDumpingZoneState>();
+        for (const auto* technique : techset.techniques)
+        {
+            if (technique && techniqueState->ShouldDumpTechnique(technique))
+            {
+                const auto commonTechnique = ConvertToCommonTechnique(*technique);
+
+                techset::DumpCommonTechnique(context, commonTechnique);
+            }
+        }
+    }
+
+    techset::CommonTechset ConvertToCommonTechset(const MaterialTechniqueSet& techset)
+    {
+        std::vector<std::string> techniqueNames(std::extent_v<decltype(techniqueTypeNames)>);
+
+        for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
+        {
+            const auto* technique = techset.techniques[techniqueIndex];
+            if (technique && technique->name)
+                techniqueNames[techniqueIndex] = technique->name;
+        }
+
+        return techset::CommonTechset{
+            .m_name = techset.name,
+            .m_technique_names = std::move(techniqueNames),
+        };
+    }
+
+    void DumpTechset(const AssetDumpingContext& context, const MaterialTechniqueSet& techset)
+    {
+        static techset::CommonTechniqueTypeNames commonNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+        const auto commonTechset = ConvertToCommonTechset(techset);
+
+        techset::DumpCommonTechset(commonNames, context, commonTechset);
+    }
+} // namespace
+
+namespace techset
+{
+    DumperT6::DumperT6(const AssetPool<AssetTechniqueSet::Type>& pool)
+        : AbstractAssetDumper(pool)
+    {
+    }
+
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
+    {
+        const auto* techniqueSet = asset.Asset();
+        DumpTechset(context, *techniqueSet);
+        DumpTechniques(context, *techniqueSet);
+        DumpShaders(context, *techniqueSet);
     }
 } // namespace techset

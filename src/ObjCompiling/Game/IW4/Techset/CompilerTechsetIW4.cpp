@@ -3,7 +3,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/Shader/LoaderPixelShaderIW4.h"
 #include "Game/IW4/Shader/LoaderVertexShaderIW4.h"
-#include "Game/IW4/TechsetConstantsIW4.h"
+#include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Shader/D3D9ShaderAnalyser.h"
 #include "Shader/ShaderCommon.h"
 #include "StateMap/StateMapReader.h"
