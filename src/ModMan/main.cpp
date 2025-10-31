@@ -4,6 +4,7 @@
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
 #include "Web/Platform/Windows/FaviconHandlerWindows.h"
+#include "Web/Platform/Windows/TitleHandlerWindows.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
@@ -34,6 +35,7 @@ namespace
             context.m_dev_tools_webview = std::make_unique<webview::webview>(false, nullptr);
             auto& newWindow = *context.m_dev_tools_webview;
             InstallFaviconHandler(newWindow);
+            InstallTitleHandler(newWindow);
 
             newWindow.set_title("Devtools");
             newWindow.set_size(640, 480, WEBVIEW_HINT_NONE);
@@ -69,6 +71,7 @@ namespace
 
             InstallAssetHandler(newWindow);
             InstallFaviconHandler(newWindow);
+            InstallTitleHandler(newWindow);
             ui::RegisterAllBinds(newWindow);
 
 #ifdef _DEBUG
