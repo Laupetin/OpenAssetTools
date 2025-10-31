@@ -101,8 +101,8 @@ namespace BSP
     // These values are BSP linking constants that are required for the link to be successful
     namespace BSPLinkingConstants
     {
-        constexpr const char* MISSING_IMAGE_NAME = "missing_image";
-        constexpr const char* COLOR_ONLY_IMAGE_NAME = "color_only_image";
+        constexpr const char* MISSING_IMAGE_NAME = ",mc/lambert1";
+        constexpr const char* COLOR_ONLY_IMAGE_NAME = ",white";
 
         constexpr const char* DEFAULT_SPAWN_POINT_STRING = R"({
     "attackers": [
