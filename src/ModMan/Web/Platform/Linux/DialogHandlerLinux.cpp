@@ -37,8 +37,6 @@ namespace
 #endif
     }
 
-    void OpenFileDialog() {}
-
     void SetFilters(GtkFileDialog* pDialog, const std::vector<ui::FileDialogFilter>& filters)
     {
         if (filters.empty())

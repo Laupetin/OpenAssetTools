@@ -3,6 +3,8 @@
 #include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
+#include "Web/Platform/Linux/FaviconHandlerLinux.h"
+#include "Web/Platform/Linux/TitleHandlerLinux.h"
 #include "Web/Platform/Windows/FaviconHandlerWindows.h"
 #include "Web/Platform/Windows/TitleHandlerWindows.h"
 #include "Web/UiCommunication.h"
