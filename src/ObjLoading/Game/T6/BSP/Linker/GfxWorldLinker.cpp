@@ -89,7 +89,7 @@ namespace BSP
                 surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(missingImageName);
                 if (surfMaterialAsset == nullptr)
                 {
-                    con::error("unable to find the missing image texture!");
+                    con::error("unable to load the missing image texture {}!", missingImageName);
                     return false;
                 }
             }
