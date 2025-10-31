@@ -1,6 +1,5 @@
-#include "ObjLoaderT6.h"
-
 #include "Asset/GlobalAssetPoolsLoader.h"
+#include "BSP/LoaderBSP_T6.h"
 #include "FontIcon/CsvLoaderFontIconT6.h"
 #include "FontIcon/JsonLoaderFontIconT6.h"
 #include "Game/T6/CommonT6.h"
@@ -17,6 +16,7 @@
 #include "Localize/LocalizeLoaderT6.h"
 #include "Material/LoaderMaterialT6.h"
 #include "ObjContainer/IPak/IPak.h"
+#include "ObjLoaderT6.h"
 #include "ObjLoading.h"
 #include "PhysConstraints/GdtLoaderPhysConstraintsT6.h"
 #include "PhysConstraints/RawLoaderPhysConstraintsT6.h"
@@ -28,6 +28,7 @@
 #include "Slug/LoaderSlugT6.h"
 #include "Sound/LoaderSoundBankT6.h"
 #include "StringTable/LoaderStringTableT6.h"
+#include "TechniqueSet/LoaderTechniqueSetT6.h"
 #include "Tracer/GdtLoaderTracerT6.h"
 #include "Tracer/RawLoaderTracerT6.h"
 #include "Utils/Logging/Log.h"
@@ -42,8 +43,6 @@
 #include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
-#include "BSP/LoaderBSP_T6.h"
-#include "TechniqueSet/LoaderTechniqueSetT6.h"
 
 #include <format>
 #include <memory>
