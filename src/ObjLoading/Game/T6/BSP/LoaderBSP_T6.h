@@ -9,5 +9,5 @@
 
 namespace BSP
 {
-    std::unique_ptr<AssetCreator<T6::AssetGfxWorld>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+    std::unique_ptr<IAssetCreator> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 } // namespace BSP

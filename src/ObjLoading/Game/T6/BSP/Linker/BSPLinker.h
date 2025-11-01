@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         BSPLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkBSP(BSPData* bsp);
+        bool linkBSP(BSPData* bsp);
 
     private:
         FootstepTableDef* addEmptyFootstepTableAsset(std::string assetName);

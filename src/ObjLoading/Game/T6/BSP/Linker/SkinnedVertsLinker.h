@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         SkinnedVertsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkSkinnedVerts(BSPData* bsp);
+        SkinnedVertsDef* linkSkinnedVerts(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;
