@@ -120,6 +120,9 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         return LoadDefaultAssetDependency(assetType, std::format(",{}", assetName));
     }
 
+    if (assetName.starts_with(','))
+        return LoadDefaultAssetDependency(assetType, assetName);
+
     if (m_ignored_asset_lookup->IsAssetIgnored(assetType, assetName))
         return LoadDefaultAssetDependency(assetType, std::format(",{}", assetName));
 
