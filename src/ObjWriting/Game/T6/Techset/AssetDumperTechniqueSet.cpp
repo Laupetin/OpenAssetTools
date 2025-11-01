@@ -24,13 +24,13 @@ void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, const XAss
     {
         nlohmann::json techniqueJs = nlohmann::json::object();
 
-        if (technique != NULL)
+        if (technique != nullptr)
         {
             techniqueJs["name"] = technique->name;
             techniqueJs["flags"] = technique->flags;
             techniqueJs["passCount"] = technique->passCount;
 
-            _ASSERT(technique->passCount == 1);
+            assert(technique->passCount == 1);
 
             techniqueJs["passArray"] = nlohmann::json::array();
             for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
@@ -46,7 +46,7 @@ void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, const XAss
                 passJs["materialType"] = currPass->materialType;
 
                 nlohmann::json vertDeclJs = nlohmann::json::object();
-                if (currPass->vertexDecl != NULL)
+                if (currPass->vertexDecl != nullptr)
                 {
                     vertDeclJs["streamCount"] = currPass->vertexDecl->streamCount;
                     vertDeclJs["hasOptionalSource"] = currPass->vertexDecl->hasOptionalSource;
@@ -56,13 +56,13 @@ void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, const XAss
                         vertDeclJs["routing"][i]["source"] = currPass->vertexDecl->routing.data[i].source;
                         vertDeclJs["routing"][i]["dest"] = currPass->vertexDecl->routing.data[i].dest;
 
-                        _ASSERT(currPass->vertexDecl->routing.decl[i] == NULL);
+                        assert(currPass->vertexDecl->routing.decl[i] == NULL);
                     }
                 }
                 passJs["vertexDecl"] = vertDeclJs;
 
                 passJs["args"] = nlohmann::json::array();
-                if (currPass->args != NULL)
+                if (currPass->args != nullptr)
                 {
                     for (int i = 0; i < currPass->perPrimArgCount + currPass->perObjArgCount + currPass->stableArgCount; i++)
                     {
@@ -90,14 +90,14 @@ void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, const XAss
                 }
 
                 nlohmann::json pixelJs = nlohmann::json::object();
-                if (currPass->pixelShader != NULL)
+                if (currPass->pixelShader != nullptr)
                 {
                     pixelJs["name"] = currPass->pixelShader->name;
                 }
                 passJs["pixelShader"] = pixelJs;
 
                 nlohmann::json vertexJs = nlohmann::json::object();
-                if (currPass->vertexShader != NULL)
+                if (currPass->vertexShader != nullptr)
                 {
                     vertexJs["name"] = currPass->vertexShader->name;
                 }
