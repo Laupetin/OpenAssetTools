@@ -1,3 +1,5 @@
+#include "ObjLoaderT6.h"
+
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "BSP/LoaderBSP_T6.h"
 #include "FontIcon/CsvLoaderFontIconT6.h"
@@ -16,7 +18,6 @@
 #include "Localize/LocalizeLoaderT6.h"
 #include "Material/LoaderMaterialT6.h"
 #include "ObjContainer/IPak/IPak.h"
-#include "ObjLoaderT6.h"
 #include "ObjLoading.h"
 #include "PhysConstraints/GdtLoaderPhysConstraintsT6.h"
 #include "PhysConstraints/RawLoaderPhysConstraintsT6.h"
@@ -381,7 +382,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
         }
 
-        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
+        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt, ZoneDefinition& definition)
         {
             auto& memory = zone.Memory();
 
@@ -441,14 +442,16 @@ namespace T6
             collection.AddAssetCreator(z_barrier::CreateRawLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(z_barrier::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
 
-            collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
+            if (definition.m_map_type != ZoneDefinitionMapType::NONE)
+                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
         }
     } // namespace
 
-    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const
+    void ObjLoader::ConfigureCreatorCollection(
+        AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt, ZoneDefinition& definition) const
     {
         ConfigureDefaultCreators(collection, zone);
-        ConfigureLoaders(collection, zone, searchPath, gdt);
+        ConfigureLoaders(collection, zone, searchPath, gdt, definition);
         ConfigureGlobalAssetPoolsLoaders(collection, zone);
     }
 } // namespace T6

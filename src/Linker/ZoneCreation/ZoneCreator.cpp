@@ -72,7 +72,7 @@ namespace zone_creator
         OutputPathFilesystem cacheDir(context.m_cache_dir);
         objCompiler->ConfigureCreatorCollection(
             creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, creationContext, outDir, cacheDir);
-        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
+        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup, *context.m_definition);
 
         for (const auto& assetEntry : context.m_definition->m_assets)
         {

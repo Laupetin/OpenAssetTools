@@ -3,6 +3,7 @@
 #include "Asset/AssetCreatorCollection.h"
 #include "Gdt/IGdtQueryable.h"
 #include "SearchPath/ISearchPath.h"
+#include "Zone/Definition/ZoneDefinition.h"
 #include "Zone/Zone.h"
 
 class IObjLoader
@@ -28,7 +29,8 @@ public:
      */
     virtual void UnloadContainersOfZone(Zone& zone) const = 0;
 
-    virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const = 0;
+    virtual void ConfigureCreatorCollection(
+        AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt, ZoneDefinition& definition) const = 0;
 
     static const IObjLoader* GetObjLoaderForGame(GameId game);
 };
