@@ -84,7 +84,8 @@ namespace zone_creator
             ++zoneDefinitionContext.m_asset_index_in_definition;
         }
 
-        creatorCollection.FinalizeZone(creationContext);
+        if (!creatorCollection.FinalizeZone(creationContext))
+            return nullptr;
 
         return zone;
     }
