@@ -367,7 +367,7 @@ namespace
 
                 PathGameContext gameContext(paths, projectName, zoneDefinition->m_game);
 
-                if (!zoneDefinition->m_assets.empty())
+                if (!zoneDefinition->m_assets.empty() || zoneDefinition->m_map_type != ZoneDefinitionMapType::NONE)
                 {
                     if (!BuildFastFile(paths, projectName, targetName, *zoneDefinition))
                         return false;
