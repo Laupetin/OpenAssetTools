@@ -30,23 +30,18 @@ namespace
             return AssetCreationResult::NoAction();
         }
 
-        void FinalizeZone(AssetCreationContext& context) override
+        bool FinalizeZone(AssetCreationContext& context) override
         {
-            // custom maps must have a map_gfx file
-            std::string mapGfxFileName = "map_gfx.fbx";
-            auto mapGfxFile = m_search_path.Open(BSPUtil::getFileNameForBSPAsset(mapGfxFileName));
-            if (!mapGfxFile.IsOpen())
-                return;
-
             std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
             if (bsp == nullptr)
-                return;
+                return false;
 
             BSPLinker linker(m_memory, m_search_path, context);
-            if (!linker.linkBSP(bsp.get()))
+            bool result = linker.linkBSP(bsp.get());
+            if (!result)
                 con::error("BSP link has failed.");
 
-            return;
+            return result;
         }
 
     private:
