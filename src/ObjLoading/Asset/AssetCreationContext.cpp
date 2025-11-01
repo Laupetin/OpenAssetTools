@@ -155,6 +155,9 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         return LoadDefaultAssetDependency(assetType, std::format(",{}", assetName));
     }
 
+    if (assetName.starts_with(','))
+        return LoadDefaultAssetDependency(assetType, assetName);
+
     const auto assetTypeName = m_game.GetAssetTypeName(assetType).value_or("unknown");
 
     if (m_ignored_asset_lookup->IsAssetIgnored(assetType, assetName))
@@ -171,10 +174,6 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         }
 
         con::error(R"(Could not load asset "{}" of type "{}")", assetName, assetTypeName);
-    }
-    else if (assetName[0] == ',')
-    {
-        return LoadDefaultAssetDependency(assetType, assetName);
     }
     else if (required)
     {
