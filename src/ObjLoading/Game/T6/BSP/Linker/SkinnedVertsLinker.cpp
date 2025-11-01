@@ -9,17 +9,14 @@ namespace BSP
     {
     }
 
-    AssetCreationResult SkinnedVertsLinker::linkSkinnedVerts(BSPData* bsp)
+    SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(BSPData* bsp)
     {
-        std::string assetName = "skinnedverts";
-
-        // I'm pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
+        // Pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
         // But setting it to the world vertex count seems to work
         SkinnedVertsDef* skinnedVerts = m_memory.Alloc<SkinnedVertsDef>();
-        skinnedVerts->name = m_memory.Dup(assetName.c_str());
+        skinnedVerts->name = m_memory.Dup("skinnedverts");
         skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(bsp->gfxWorld.vertices.size());
 
-        auto skinnedVertsAsset = m_context.AddAsset<AssetSkinnedVerts>(assetName, skinnedVerts);
-        return AssetCreationResult::Success(skinnedVertsAsset);
+        return skinnedVerts;
     }
 } // namespace BSP

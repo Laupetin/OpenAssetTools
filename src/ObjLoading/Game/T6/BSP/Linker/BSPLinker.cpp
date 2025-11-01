@@ -1,4 +1,5 @@
 #include "BSPLinker.h"
+
 #include "ClipMapLinker.h"
 #include "ComWorldLinker.h"
 #include "GameWorldMpLinker.h"
@@ -58,10 +59,10 @@ namespace BSP
     {
     }
 
-    AssetCreationResult BSPLinker::linkBSP(BSPData* bsp)
+    bool BSPLinker::linkBSP(BSPData* bsp)
     {
         if (!addDefaultRequiredAssets(bsp))
-            return AssetCreationResult::Failure();
+            return false;
 
         ComWorldLinker comWorldLinker(m_memory, m_search_path, m_context);
         ClipMapLinker clipMapLinker(m_memory, m_search_path, m_context);
@@ -70,26 +71,36 @@ namespace BSP
         MapEntsLinker mapEntsLinker(m_memory, m_search_path, m_context);
         SkinnedVertsLinker skinnedVertsLinker(m_memory, m_search_path, m_context);
 
-        if (comWorldLinker.linkComWorld(bsp).HasFailed())
-            return AssetCreationResult::Failure();
+        ComWorld* comWorld = comWorldLinker.linkComWorld(bsp);
+        if (comWorld == nullptr)
+            return false;
+        m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
 
-        if (mapEntsLinker.linkMapEnts(bsp).HasFailed())
-            return AssetCreationResult::Failure();
+        MapEnts* mapEnts = mapEntsLinker.linkMapEnts(bsp);
+        if (mapEnts == nullptr)
+            return false;
+        m_context.AddAsset<AssetMapEnts>(mapEnts->name, mapEnts);
 
-        gameWorldMpLinker.linkGameWorldMp(bsp);
-        if (gameWorldMpLinker.linkGameWorldMp(bsp).HasFailed())
-            return AssetCreationResult::Failure();
+        GameWorldMp* gameWorldMp = gameWorldMpLinker.linkGameWorldMp(bsp);
+        if (gameWorldMp == nullptr)
+            return false;
+        m_context.AddAsset<AssetGameWorldMp>(gameWorldMp->name, gameWorldMp);
 
-        if (skinnedVertsLinker.linkSkinnedVerts(bsp).HasFailed())
-            return AssetCreationResult::Failure();
+        SkinnedVertsDef* skinnedVerts = skinnedVertsLinker.linkSkinnedVerts(bsp);
+        if (skinnedVerts == nullptr)
+            return false;
+        m_context.AddAsset<AssetSkinnedVerts>(skinnedVerts->name, skinnedVerts);
 
-        auto result = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
-        if (result.HasFailed())
-            return AssetCreationResult::Failure();
+        GfxWorld* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
+        if (gfxWorld == nullptr)
+            return false;
+        m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
 
-        if (clipMapLinker.linkClipMap(bsp).HasFailed()) // requires gfxworld and mapents asset
-            return AssetCreationResult::Failure();
+        clipMap_t* clipMap = clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
+        if (clipMap == nullptr)
+            return false;
+        m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);
 
-        return result;
+        return true;
     }
 } // namespace BSP

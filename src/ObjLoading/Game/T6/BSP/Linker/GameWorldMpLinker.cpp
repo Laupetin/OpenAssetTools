@@ -9,7 +9,7 @@ namespace BSP
     {
     }
 
-    AssetCreationResult GameWorldMpLinker::linkGameWorldMp(BSPData* bsp)
+    GameWorldMp* GameWorldMpLinker::linkGameWorldMp(BSPData* bsp)
     {
         GameWorldMp* gameWorldMp = m_memory.Alloc<GameWorldMp>();
 
@@ -29,7 +29,6 @@ namespace BSP
         gameWorldMp->path.smoothCache = nullptr;
         gameWorldMp->path.nodeTree = nullptr;
 
-        auto gameWorldMpAsset = m_context.AddAsset<AssetGameWorldMp>(gameWorldMp->name, gameWorldMp);
-        return AssetCreationResult::Success(gameWorldMpAsset);
+        return gameWorldMp;
     }
 } // namespace BSP

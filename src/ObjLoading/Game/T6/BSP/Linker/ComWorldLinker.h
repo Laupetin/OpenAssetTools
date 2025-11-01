@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkComWorld(BSPData* bsp);
+        ComWorld* linkComWorld(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;

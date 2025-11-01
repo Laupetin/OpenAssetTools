@@ -1,5 +1,6 @@
-#include "../BSPUtil.h"
 #include "GfxWorldLinker.h"
+
+#include "../BSPUtil.h"
 #include "Utils/Pack.h"
 
 namespace BSP
@@ -725,7 +726,7 @@ namespace BSP
         return true;
     }
 
-    AssetCreationResult GfxWorldLinker::linkGfxWorld(BSPData* bsp)
+    GfxWorld* GfxWorldLinker::linkGfxWorld(BSPData* bsp)
     {
         GfxWorld* gfxWorld = m_memory.Alloc<GfxWorld>();
         gfxWorld->baseName = m_memory.Dup(bsp->name.c_str());
@@ -738,23 +739,23 @@ namespace BSP
         cleanGfxWorld(gfxWorld);
 
         if (!loadMapSurfaces(bsp, gfxWorld))
-            return AssetCreationResult::Failure();
+            return nullptr;
 
         loadXModels(bsp, gfxWorld);
 
         if (!loadLightmapData(gfxWorld))
-            return AssetCreationResult::Failure();
+            return nullptr;
 
         loadSkyBox(bsp, gfxWorld);
 
         if (!loadReflectionProbeData(gfxWorld))
-            return AssetCreationResult::Failure();
+            return nullptr;
 
         // world bounds are based on loaded surface mins/maxs
         loadWorldBounds(gfxWorld);
 
         if (!loadOutdoors(gfxWorld))
-            return AssetCreationResult::Failure();
+            return nullptr;
 
         // gfx cells depend on surface/smodel count
         loadGfxCells(gfxWorld);
@@ -769,7 +770,6 @@ namespace BSP
 
         loadDynEntData(gfxWorld);
 
-        auto gfxWorldAsset = m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
-        return AssetCreationResult::Success(gfxWorldAsset);
+        return gfxWorld;
     }
 } // namespace BSP

@@ -12,7 +12,7 @@ namespace BSP
     {
     public:
         ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkClipMap(BSPData* bsp);
+        clipMap_t* linkClipMap(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;

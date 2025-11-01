@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         GameWorldMpLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkGameWorldMp(BSPData* bsp);
+        GameWorldMp* linkGameWorldMp(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;

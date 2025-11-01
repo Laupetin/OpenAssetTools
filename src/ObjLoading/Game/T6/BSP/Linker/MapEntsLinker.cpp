@@ -1,5 +1,6 @@
-#include "../BSPUtil.h"
 #include "MapEntsLinker.h"
+
+#include "../BSPUtil.h"
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
@@ -71,7 +72,7 @@ namespace BSP
     {
     }
 
-    AssetCreationResult MapEntsLinker::linkMapEnts(BSPData* bsp)
+    MapEnts* MapEntsLinker::linkMapEnts(BSPData* bsp)
     {
         try
         {
@@ -90,7 +91,7 @@ namespace BSP
             }
             std::string entityString;
             if (!parseMapEntsJSON(entJs["entities"], entityString))
-                return AssetCreationResult::Failure();
+                return nullptr;
 
             json spawnJs;
             std::string spawnFileName = "spawns.json";
@@ -126,13 +127,12 @@ namespace BSP
             mapEnts->trigger.slabCount = 0;
             mapEnts->trigger.slabs = nullptr;
 
-            auto mapEntsAsset = m_context.AddAsset<AssetMapEnts>(mapEnts->name, mapEnts);
-            return AssetCreationResult::Success(mapEntsAsset);
+            return mapEnts;
         }
         catch (const json::exception& e)
         {
             con::error("JSON error when parsing map ents and spawns: {}", e.what());
-            return AssetCreationResult::Failure();
+            return nullptr;
         }
     }
 } // namespace BSP

@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        AssetCreationResult linkGfxWorld(BSPData* bsp);
+        GfxWorld* linkGfxWorld(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;

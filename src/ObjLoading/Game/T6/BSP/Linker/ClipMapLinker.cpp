@@ -1,5 +1,6 @@
-#include "../BSPUtil.h"
 #include "ClipMapLinker.h"
+
+#include "../BSPUtil.h"
 
 namespace BSP
 {
@@ -494,7 +495,7 @@ namespace BSP
         }
         // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
         clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
-        clipMap->triIndices = reinterpret_cast<uint16_t (*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
+        clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
         memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
 
         // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
@@ -601,7 +602,7 @@ namespace BSP
         return true;
     }
 
-    AssetCreationResult ClipMapLinker::linkClipMap(BSPData* bsp)
+    clipMap_t* ClipMapLinker::linkClipMap(BSPData* bsp)
     {
         clipMap_t* clipMap = m_memory.Alloc<clipMap_t>();
         clipMap->name = m_memory.Dup(bsp->bspName.c_str());
@@ -642,11 +643,8 @@ namespace BSP
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
 
         if (!loadWorldCollision(clipMap, bsp))
-            return AssetCreationResult::Failure();
+            return nullptr;
 
-        m_context.AddAsset<AssetClipMapPvs>(clipMap->name, clipMap);
-
-        auto clipMapAsset = m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);
-        return AssetCreationResult::Success(clipMapAsset);
+        return clipMap;
     }
 } // namespace BSP

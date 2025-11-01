@@ -9,7 +9,7 @@ namespace BSP
     {
     }
 
-    AssetCreationResult ComWorldLinker::linkComWorld(BSPData* bsp)
+    ComWorld* ComWorldLinker::linkComWorld(BSPData* bsp)
     {
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
@@ -32,7 +32,6 @@ namespace BSP
         sunLight->dir.y = sunLightDirection.y;
         sunLight->dir.z = sunLightDirection.z;
 
-        auto comWorldAsset = m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
-        return AssetCreationResult::Success(comWorldAsset);
+        return comWorld;
     }
 } // namespace BSP
