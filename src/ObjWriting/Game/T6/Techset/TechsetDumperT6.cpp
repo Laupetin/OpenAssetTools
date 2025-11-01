@@ -2,9 +2,9 @@
 
 #include "Shader/ShaderCommon.h"
 
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
-#include <nlohmann/json.hpp>
 
 using namespace nlohmann;
 using namespace T6;
@@ -103,13 +103,13 @@ namespace techset
         {
             json techniqueJs = json::object();
 
-            if (technique != NULL)
+            if (technique != nullptr)
             {
                 techniqueJs["name"] = technique->name;
                 techniqueJs["flags"] = technique->flags;
                 techniqueJs["passCount"] = technique->passCount;
 
-                _ASSERT(technique->passCount == 1);
+                assert(technique->passCount == 1);
 
                 techniqueJs["passArray"] = json::array();
                 for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
@@ -125,7 +125,7 @@ namespace techset
                     passJs["materialType"] = currPass->materialType;
 
                     json vertDeclJs = json::object();
-                    if (currPass->vertexDecl != NULL)
+                    if (currPass->vertexDecl != nullptr)
                     {
                         vertDeclJs["streamCount"] = currPass->vertexDecl->streamCount;
                         vertDeclJs["hasOptionalSource"] = currPass->vertexDecl->hasOptionalSource;
@@ -135,13 +135,13 @@ namespace techset
                             vertDeclJs["routing"][i]["source"] = currPass->vertexDecl->routing.data[i].source;
                             vertDeclJs["routing"][i]["dest"] = currPass->vertexDecl->routing.data[i].dest;
 
-                            _ASSERT(currPass->vertexDecl->routing.decl[i] == NULL);
+                            assert(currPass->vertexDecl->routing.decl[i] == nullptr);
                         }
                     }
                     passJs["vertexDecl"] = vertDeclJs;
 
                     passJs["args"] = json::array();
-                    if (currPass->args != NULL)
+                    if (currPass->args != nullptr)
                     {
                         for (int i = 0; i < currPass->perPrimArgCount + currPass->perObjArgCount + currPass->stableArgCount; i++)
                         {
@@ -169,7 +169,7 @@ namespace techset
                     }
 
                     json pixelJs = json::object();
-                    if (currPass->pixelShader != NULL)
+                    if (currPass->pixelShader != nullptr)
                     {
                         pixelJs["name"] = currPass->pixelShader->name;
                         if (shaderState->ShouldDumpPixelShader(currPass->pixelShader))
@@ -178,7 +178,7 @@ namespace techset
                     passJs["pixelShader"] = pixelJs;
 
                     json vertexJs = json::object();
-                    if (currPass->vertexShader != NULL)
+                    if (currPass->vertexShader != nullptr)
                     {
                         vertexJs["name"] = currPass->vertexShader->name;
                         if (shaderState->ShouldDumpVertexShader(currPass->vertexShader))

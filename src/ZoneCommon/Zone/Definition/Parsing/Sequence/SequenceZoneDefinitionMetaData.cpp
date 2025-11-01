@@ -1,4 +1,5 @@
 #include "SequenceZoneDefinitionMetaData.h"
+
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 #include "Zone/Definition/Parsing/Matcher/ZoneDefinitionMatcherFactory.h"

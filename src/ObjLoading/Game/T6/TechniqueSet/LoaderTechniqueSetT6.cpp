@@ -1,5 +1,6 @@
-#include "Game/T6/T6.h"
 #include "LoaderTechniqueSetT6.h"
+
+#include "Game/T6/T6.h"
 #include "Shader/ShaderCommon.h"
 
 #include <cstring>
@@ -41,7 +42,7 @@ namespace
 
                 if (techniqueJs.size() == 0)
                 {
-                    techniqueSet->techniques[i] = NULL;
+                    techniqueSet->techniques[i] = nullptr;
                 }
                 else
                 {
@@ -52,8 +53,8 @@ namespace
                     technique->name = _strdup(techName.c_str());
                     technique->flags = techniqueJs["flags"];
                     technique->passCount = techniqueJs["passCount"];
-                    _ASSERT(technique->passCount == 1);
-                    
+                    assert(technique->passCount == 1);
+
                     for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
                     {
                         MaterialPass* currPass = &technique->passArray[passIndex];
@@ -69,7 +70,7 @@ namespace
                         int argCount = currPass->perPrimArgCount + currPass->perObjArgCount + currPass->stableArgCount;
                         if (argCount == 0)
                         {
-                            currPass->args = NULL;
+                            currPass->args = nullptr;
                         }
                         else
                         {
@@ -101,7 +102,7 @@ namespace
 
                         if (passJs["vertexDecl"].size() == 0)
                         {
-                            currPass->vertexDecl = NULL;
+                            currPass->vertexDecl = nullptr;
                         }
                         else
                         {
@@ -113,13 +114,13 @@ namespace
                             {
                                 currPass->vertexDecl->routing.data[i].source = (unsigned char)passJs["vertexDecl"]["routing"][i]["source"];
                                 currPass->vertexDecl->routing.data[i].dest = (unsigned char)passJs["vertexDecl"]["routing"][i]["dest"];
-                                currPass->vertexDecl->routing.decl[i] = NULL;
+                                currPass->vertexDecl->routing.decl[i] = nullptr;
                             }
                         }
 
                         if (passJs["pixelShader"].size() == 0)
                         {
-                            currPass->pixelShader = NULL;
+                            currPass->pixelShader = nullptr;
                         }
                         else
                         {
@@ -127,7 +128,7 @@ namespace
 
                             std::string pixelName = passJs["pixelShader"]["name"];
                             currPass->pixelShader->name = _strdup(pixelName.c_str());
-                            currPass->pixelShader->prog.ps = NULL;
+                            currPass->pixelShader->prog.ps = nullptr;
 
                             const auto psFileName = shader::GetFileNameForPixelShaderAssetName(pixelName);
                             const auto psFile = m_search_path.Open(psFileName);
@@ -143,7 +144,7 @@ namespace
 
                         if (passJs["vertexShader"].size() == 0)
                         {
-                            currPass->vertexShader = NULL;
+                            currPass->vertexShader = nullptr;
                         }
                         else
                         {
@@ -151,7 +152,7 @@ namespace
 
                             std::string vertexName = passJs["vertexShader"]["name"];
                             currPass->vertexShader->name = _strdup(vertexName.c_str());
-                            currPass->vertexShader->prog.vs = NULL;
+                            currPass->vertexShader->prog.vs = nullptr;
 
                             const auto vsFileName = shader::GetFileNameForVertexShaderAssetName(vertexName);
                             const auto vsFile = m_search_path.Open(vsFileName);
