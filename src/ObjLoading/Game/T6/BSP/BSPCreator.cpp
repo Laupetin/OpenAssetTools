@@ -1,7 +1,8 @@
 #include "BSPCreator.h"
 
 #include "BSPUtil.h"
-#include "fbx/ufbx.h"
+
+#include <ufbx.h>
 
 namespace
 {

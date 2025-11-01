@@ -31,8 +31,8 @@ function ufbx:project()
 		language "C++"
 		
 		files { 
-			path.join(folder, "ufbx/ufbx.h"), 
-			path.join(folder, "ufbx/ufbx.c") 
+			path.join(folder, "ufbx/*.h"), 
+			path.join(folder, "ufbx/*.c") 
 		}
 		
 		self:include(includes)

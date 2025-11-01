@@ -117,7 +117,7 @@ group "ThirdParty"
     minizip:project()
     salsa20:project()
     zlib:project()
-	ufbx:project()
+    ufbx:project()
     
     if _OPTIONS["modman"] then
         webview:project()
