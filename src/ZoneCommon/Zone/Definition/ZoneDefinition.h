@@ -15,6 +15,14 @@ enum class ZoneDefinitionObjContainerType : uint8_t
     IPAK
 };
 
+enum class ZoneDefinitionMapType : uint8_t
+{
+    NONE,
+    SP,
+    MP,
+    ZM
+};
+
 class ZoneDefinitionObjContainer
 {
 public:
@@ -69,6 +77,5 @@ public:
     std::vector<std::string> m_gdts;
     std::vector<ZoneDefinitionAsset> m_assets;
     std::vector<ZoneDefinitionObjContainer> m_obj_containers;
-
-    bool is_custom_map = false;
+    ZoneDefinitionMapType m_map_type;
 };
