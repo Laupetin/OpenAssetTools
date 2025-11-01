@@ -1,5 +1,4 @@
 #include "SequenceZoneDefinitionMetaData.h"
-
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 #include "Zone/Definition/Parsing/Matcher/ZoneDefinitionMatcherFactory.h"
@@ -10,7 +9,7 @@
 
 namespace
 {
-    constexpr auto METADATA_CUSTOM_MAP = "custom_map";
+    constexpr auto METADATA_MAP_TYPE = "map";
 
     constexpr auto METADATA_GAME = "game";
     constexpr auto METADATA_GDT = "gdt";
@@ -136,9 +135,24 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
     {
         ProcessMetaDataGame(state, valueToken, value);
     }
-    else if (key == METADATA_CUSTOM_MAP)
+    else if (key == METADATA_MAP_TYPE)
     {
-        state->SetCustomMap();
+        std::string valueLowerCase = value;
+        std::transform(valueLowerCase.begin(),
+                       valueLowerCase.end(),
+                       valueLowerCase.begin(),
+                       [](unsigned char c)
+                       {
+                           return std::tolower(c);
+                       });
+        if (valueLowerCase.compare("sp") == 0)
+            state->SetMapType(ZoneDefinitionMapType::SP);
+        else if (valueLowerCase.compare("mp") == 0)
+            state->SetMapType(ZoneDefinitionMapType::MP);
+        else if (valueLowerCase.compare("zm") == 0)
+            state->SetMapType(ZoneDefinitionMapType::ZM);
+        else
+            throw ParsingException(valueToken.GetPos(), "map must be SP, MP or ZM");
     }
     else if (key == METADATA_GDT)
     {

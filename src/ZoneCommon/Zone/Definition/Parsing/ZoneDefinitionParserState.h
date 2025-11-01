@@ -16,7 +16,7 @@ public:
 
     void SetGame(GameId gameId);
 
-    void SetCustomMap();
+    void SetMapType(ZoneDefinitionMapType mapType);
 
     void StartIPak(std::string ipakName);
     void StartIwd(std::string iwdName);
