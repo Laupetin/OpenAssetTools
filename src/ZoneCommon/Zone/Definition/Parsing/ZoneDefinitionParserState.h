@@ -17,6 +17,8 @@ public:
 
     void SetGame(GameId game);
 
+    void SetCustomMap();
+
     void StartIPak(std::string ipakName);
     void StartIwd(std::string iwdName);
 
