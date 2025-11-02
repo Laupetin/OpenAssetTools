@@ -1,12 +1,12 @@
 #include "PlatformUtilsWindows.h"
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 
 #include <Windows.h>
 #include <exception>
 #include <format>
 
-namespace PLATFORM_NAMESPACE_WINDOWS
+namespace utils
 {
     std::string WideStringToString(const std::wstring& wideString)
     {
@@ -35,6 +35,6 @@ namespace PLATFORM_NAMESPACE_WINDOWS
         MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), result.data(), sizeNeeded);
         return result;
     }
-} // namespace PLATFORM_NAMESPACE_WINDOWS
+} // namespace utils
 
 #endif

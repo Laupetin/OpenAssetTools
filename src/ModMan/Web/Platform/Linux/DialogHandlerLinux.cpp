@@ -1,6 +1,7 @@
 #include "Web/Platform/DialogHandler.h"
+#include "Web/Platform/Platform.h"
 
-#ifdef __linux__
+#ifdef PLATFORM_LINUX
 
 #include <cassert>
 #include <cstdint>
@@ -36,8 +37,6 @@ namespace
         return gtk_init_check(nullptr, nullptr);
 #endif
     }
-
-    void OpenFileDialog() {}
 
     void SetFilters(GtkFileDialog* pDialog, const std::vector<ui::FileDialogFilter>& filters)
     {

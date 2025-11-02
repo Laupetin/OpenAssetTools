@@ -3,6 +3,8 @@
 #include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
+#include "Web/Platform/FaviconHandler.h"
+#include "Web/Platform/TitleHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
@@ -17,7 +19,6 @@
 #endif
 
 using namespace std::string_literals;
-using namespace PLATFORM_NAMESPACE;
 
 namespace
 {
@@ -32,6 +33,8 @@ namespace
         {
             context.m_dev_tools_webview = std::make_unique<webview::webview>(false, nullptr);
             auto& newWindow = *context.m_dev_tools_webview;
+            ui::InstallFaviconHandler(newWindow);
+            ui::InstallTitleHandler(newWindow);
 
             newWindow.set_title("Devtools");
             newWindow.set_size(640, 480, WEBVIEW_HINT_NONE);
@@ -65,11 +68,13 @@ namespace
             newWindow.set_size(1280, 640, WEBVIEW_HINT_NONE);
             newWindow.set_size(640, 480, WEBVIEW_HINT_MIN);
 
-            InstallAssetHandler(newWindow);
+            ui::InstallAssetHandler(newWindow);
+            ui::InstallFaviconHandler(newWindow);
+            ui::InstallTitleHandler(newWindow);
             ui::RegisterAllBinds(newWindow);
 
 #ifdef _DEBUG
-            newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", URL_PREFIX));
+            newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", ui::URL_PREFIX));
 
             if (VITE_DEV_SERVER)
             {
@@ -80,7 +85,7 @@ namespace
                     });
             }
 #else
-            newWindow.navigate(std::format("{}index.html", URL_PREFIX));
+            newWindow.navigate(std::format("{}index.html", ui::URL_PREFIX));
 #endif
             newWindow.run();
         }
