@@ -1,6 +1,7 @@
-#include "AssetHandlerLinux.h"
+#include "Web/Platform/Platform.h"
+#include "Web/Platform/TitleHandler.h"
 
-#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+#ifdef PLATFORM_LINUX
 
 #include "Web/UiAssets.h"
 
@@ -8,9 +9,7 @@
 #include <iostream>
 #include <unordered_map>
 
-using namespace PLATFORM_NAMESPACE_LINUX;
-
-namespace PLATFORM_NAMESPACE_LINUX
+namespace ui
 {
     void InstallTitleHandler(webview::webview& wv)
     {
@@ -26,6 +25,6 @@ namespace PLATFORM_NAMESPACE_LINUX
 
         g_signal_connect(G_OBJECT(webView), "notify::title", G_CALLBACK(on_title_changed), (gpointer)window);
     }
-} // namespace PLATFORM_NAMESPACE_LINUX
+} // namespace ui
 
 #endif

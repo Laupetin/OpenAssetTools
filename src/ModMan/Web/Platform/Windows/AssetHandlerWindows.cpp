@@ -1,6 +1,7 @@
-#include "AssetHandlerWindows.h"
+#include "Web/Platform/AssetHandler.h"
+#include "Web/Platform/Platform.h"
 
-#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
+#ifdef PLATFORM_WINDOWS
 
 #include "PlatformUtilsWindows.h"
 #include "Web/UiAssets.h"
@@ -11,8 +12,6 @@
 #include <sstream>
 #include <webview/detail/backends/win32_edge.hh>
 #include <wrl/event.h>
-
-using namespace PLATFORM_NAMESPACE_WINDOWS;
 
 namespace
 {
@@ -25,7 +24,7 @@ namespace
         std::wstringstream wss;
 
         wss << std::format(L"Content-Length: {}\n", contentLength);
-        wss << L"Content-Type: " << StringToWideString(ui::GetMimeTypeForFileName(assetName));
+        wss << L"Content-Type: " << utils::StringToWideString(ui::GetMimeTypeForFileName(assetName));
 
         return wss.str();
     }
@@ -65,7 +64,7 @@ namespace
 
             Microsoft::WRL::ComPtr<ICoreWebView2WebResourceResponse> response;
 
-            const auto uri = WideStringToString(wUri);
+            const auto uri = utils::WideStringToString(wUri);
             bool fileFound = false;
 
 #ifdef _DEBUG
@@ -74,9 +73,9 @@ namespace
                 return S_OK;
 #endif
 
-            if (uri.starts_with(URL_PREFIX))
+            if (uri.starts_with(ui::URL_PREFIX))
             {
-                const auto asset = uri.substr(std::char_traits<char>::length(URL_PREFIX) - 1);
+                const auto asset = uri.substr(std::char_traits<char>::length(ui::URL_PREFIX) - 1);
 
                 const auto foundUiFile = assetLookup.find(asset);
                 if (foundUiFile != assetLookup.end())
@@ -117,7 +116,7 @@ namespace
     }
 } // namespace
 
-namespace PLATFORM_NAMESPACE_WINDOWS
+namespace ui
 {
     void InstallAssetHandler(webview::webview& wv)
     {
@@ -157,6 +156,6 @@ namespace PLATFORM_NAMESPACE_WINDOWS
             std::cerr << "Failed to add resource requested filter\n";
         }
     }
-} // namespace PLATFORM_NAMESPACE_WINDOWS
+} // namespace ui
 
 #endif

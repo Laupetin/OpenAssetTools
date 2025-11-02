@@ -1,6 +1,7 @@
-#include "AssetHandlerWindows.h"
+#include "Web/Platform/Platform.h"
+#include "Web/Platform/TitleHandler.h"
 
-#if defined(WEBVIEW_PLATFORM_WINDOWS) && defined(WEBVIEW_EDGE)
+#ifdef PLATFORM_WINDOWS
 
 #include "PlatformUtilsWindows.h"
 #include "Web/UiAssets.h"
@@ -11,8 +12,6 @@
 #include <sstream>
 #include <webview/detail/backends/win32_edge.hh>
 #include <wrl/event.h>
-
-using namespace PLATFORM_NAMESPACE_WINDOWS;
 
 namespace
 {
@@ -33,7 +32,7 @@ namespace
     }
 } // namespace
 
-namespace PLATFORM_NAMESPACE_WINDOWS
+namespace ui
 {
     void InstallTitleHandler(webview::webview& wv)
     {
@@ -58,6 +57,6 @@ namespace PLATFORM_NAMESPACE_WINDOWS
             std::cerr << "Failed to add title handler\n";
         }
     }
-} // namespace PLATFORM_NAMESPACE_WINDOWS
+} // namespace ui
 
 #endif

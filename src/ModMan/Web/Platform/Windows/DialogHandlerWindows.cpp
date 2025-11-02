@@ -1,14 +1,13 @@
 #include "Web/Platform/DialogHandler.h"
+#include "Web/Platform/Platform.h"
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 
 #include "PlatformUtilsWindows.h"
 
 #include <shobjidl.h>
 #include <thread>
 #include <windows.h>
-
-using namespace PLATFORM_NAMESPACE_WINDOWS;
 
 namespace
 {
@@ -29,8 +28,8 @@ namespace
             const auto& filter = filters[i];
             COMDLG_FILTERSPEC filterSpec;
 
-            const auto& wName = filterStrings.emplace_back(StringToWideString(filter.m_name));
-            const auto& wSpec = filterStrings.emplace_back(StringToWideString(filter.m_filter));
+            const auto& wName = filterStrings.emplace_back(utils::StringToWideString(filter.m_name));
+            const auto& wSpec = filterStrings.emplace_back(utils::StringToWideString(filter.m_filter));
 
             filterSpec.pszName = wName.c_str();
             filterSpec.pszSpec = wSpec.c_str();
@@ -65,7 +64,7 @@ namespace
                 // Display the file name to the user.
                 if (SUCCEEDED(hr))
                 {
-                    result = WideStringToString(pszFilePath);
+                    result = utils::WideStringToString(pszFilePath);
                     CoTaskMemFree(pszFilePath);
 
                     resultType = ui::DialogCallbackResultType::SUCCESSFUL;

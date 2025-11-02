@@ -1,6 +1,7 @@
 #include "Web/Platform/DialogHandler.h"
+#include "Web/Platform/Platform.h"
 
-#ifdef __linux__
+#ifdef PLATFORM_LINUX
 
 #include <cassert>
 #include <cstdint>
