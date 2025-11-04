@@ -15,15 +15,9 @@
 #include "Utils/MemoryManager.h"
 
 #include <istream>
-#include <nlohmann/json.hpp>
-
-using namespace nlohmann;
 
 namespace GAME
 {
     bool LoadMaterialAsJson(
         std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration);
-		
-	bool LoadMaterialAsJson(
-		json& json, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration);
 } // namespace GAME
