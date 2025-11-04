@@ -1,54 +1,56 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from "vue";
-import { webviewBinds, webviewAddEventListener, webviewRemoveEventListener } from "./native";
-
-const greetMsg = ref("");
-const lastPersonGreeted = ref("");
-const lastPath = ref("");
-const name = ref("");
-
-async function greet() {
-  greetMsg.value = await webviewBinds.greet(name.value);
-}
-
-function onPersonGreeted(person: string) {
-  lastPersonGreeted.value = person;
-}
-
-async function onOpenFastfileClick() {
-  lastPath.value =
-    (await webviewBinds.openFileDialog({ filters: [{ name: "Fastfiles", filter: "*.ff" }] })) ?? "";
-}
-
-webviewAddEventListener("greeting", onPersonGreeted);
-
-onUnmounted(() => webviewRemoveEventListener("greeting", onPersonGreeted));
+import ModManHeader from "./components/header/ModManHeader.vue";
 </script>
 
 <template>
   <main class="container">
-    <h1>Welcome to ModMan</h1>
-    <small>Nothing to see here yet, this is mainly for testing</small>
+    <ModManHeader />
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." autocomplete="off" />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-    <p>The last person greeted is: {{ lastPersonGreeted }}</p>
-    <p>
-      <button @click="onOpenFastfileClick">Open fastfile</button>
-      <span>The last path: {{ lastPath }}</span>
-    </p>
+    <div class="router-wrapper">
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="blend">
+          <div class="router-rewrapper" :key="route.name">
+            <component :is="Component" />
+          </div>
+        </Transition>
+      </RouterView>
+    </div>
   </main>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+<style scoped lang="scss">
+@use "@style/variables";
+
+.container {
+  margin: 0;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+
+  height: 100vh;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+.router-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.router-rewrapper {
+  height: 100%;
+}
+
+.blend-enter-from,
+.blend-leave-to {
+  opacity: 0;
+}
+
+.blend-enter-active,
+.blend-leave-active {
+  transition: opacity 0.25s ease-in-out;
+}
+
+.blend-leave-active {
+  position: absolute;
+  inset: 0;
 }
 </style>

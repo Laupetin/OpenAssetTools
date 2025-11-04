@@ -1,0 +1,68 @@
+@use "colors";
+@use "colors_primitive";
+@use "sass:meta";
+@use "sass:string";
+
+:root {
+  @each $name, $value in meta.module-variables(colors_primitive) {
+    --#{string.to-lower-case($name)}: #{$value};
+  }
+}
+
+:root:not(.dark) {
+  --color-surface-0: #ffffff;
+  --color-surface-50: #{colors.$color-slate-50};
+  --color-surface-100: #{colors.$color-slate-100};
+  --color-surface-200: #{colors.$color-slate-200};
+  --color-surface-300: #{colors.$color-slate-300};
+  --color-surface-400: #{colors.$color-slate-400};
+  --color-surface-500: #{colors.$color-slate-500};
+  --color-surface-600: #{colors.$color-slate-600};
+  --color-surface-700: #{colors.$color-slate-700};
+  --color-surface-800: #{colors.$color-slate-800};
+  --color-surface-900: #{colors.$color-slate-900};
+  --color-surface-950: #{colors.$color-slate-950};
+
+  --color-primary: #{colors.$color-brand-500};
+  --color-primary-contrast: #ffffff;
+  --color-primary-hover: var(--color-brand-600);
+  --color-primary-active: var(--color-brand-700);
+
+  --color-content-background: var(--color-surface-0);
+  --color-content-hover-background: var(--color-surface-100);
+  --color-content-border: var(--color-surface-200);
+
+  --color-text: var(--color-surface-700);
+  --color-text-hover: var(--color-surface-800);
+  --color-text-muted: var(--color-surface-500);
+  --color-text-hover-muted: var(--color-surface-600);
+}
+
+:root.dark {
+  --color-surface-0: #ffffff;
+  --color-surface-50: #{colors.$color-zinc-50};
+  --color-surface-100: #{colors.$color-zinc-100};
+  --color-surface-200: #{colors.$color-zinc-200};
+  --color-surface-300: #{colors.$color-zinc-300};
+  --color-surface-400: #{colors.$color-zinc-400};
+  --color-surface-500: #{colors.$color-zinc-500};
+  --color-surface-600: #{colors.$color-zinc-600};
+  --color-surface-700: #{colors.$color-zinc-700};
+  --color-surface-800: #{colors.$color-zinc-800};
+  --color-surface-900: #{colors.$color-zinc-900};
+  --color-surface-950: #{colors.$color-zinc-950};
+
+  --color-primary: #{colors.$color-brand-400};
+  --color-primary-contrast: var(--color-surface-900);
+  --color-primary-hover: var(--color-brand-300);
+  --color-primary-active: var(--color-brand-200);
+
+  --color-content-background: var(--color-surface-900);
+  --color-content-hover-background: var(--color-surface-800);
+  --color-content-border: var(--color-surface-700);
+
+  --color-text: var(--color-surface-0);
+  --color-text-hover: var(--color-surface-0);
+  --color-text-muted: var(--color-surface-400);
+  --color-text-hover-muted: var(--color-surface-300);
+}

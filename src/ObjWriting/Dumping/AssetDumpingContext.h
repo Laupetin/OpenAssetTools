@@ -4,6 +4,7 @@
 #include "Obj/Gdt/GdtStream.h"
 #include "SearchPath/IOutputPath.h"
 #include "SearchPath/ISearchPath.h"
+#include "Utils/ProgressCallback.h"
 #include "Zone/Zone.h"
 
 #include <memory>
@@ -14,9 +15,17 @@
 class AssetDumpingContext
 {
 public:
-    AssetDumpingContext(const Zone& zone, const std::string& basePath, IOutputPath& outputPath, ISearchPath& objSearchPath);
+    AssetDumpingContext(const Zone& zone,
+                        const std::string& basePath,
+                        IOutputPath& outputPath,
+                        ISearchPath& objSearchPath,
+                        std::optional<std::unique_ptr<ProgressCallback>> progressCallback);
 
     [[nodiscard]] std::unique_ptr<std::ostream> OpenAssetFile(const std::string& fileName) const;
+
+    void IncrementProgress();
+    void SetTotalProgress(size_t value);
+    [[nodiscard]] bool ShouldTrackProgress() const;
 
     template<typename T> T* GetZoneAssetDumperState()
     {
@@ -42,4 +51,7 @@ public:
 
 private:
     std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetDumperState>> m_zone_asset_dumper_states;
+    std::unique_ptr<ProgressCallback> m_progress_callback;
+    size_t m_current_progress;
+    size_t m_total_progress;
 };

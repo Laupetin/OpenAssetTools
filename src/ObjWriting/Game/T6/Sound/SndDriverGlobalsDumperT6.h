@@ -5,9 +5,11 @@
 
 namespace sound
 {
-    class SndDriverGlobalsDumperT6 final : public IAssetDumper<T6::SndDriverGlobals>
+    class SndDriverGlobalsDumperT6 final : public AbstractSingleProgressAssetDumper<T6::AssetSoundDriverGlobals>
     {
     public:
-        void DumpPool(AssetDumpingContext& context, AssetPool<T6::SndDriverGlobals>* pool) override;
+        explicit SndDriverGlobalsDumperT6(const AssetPool<T6::AssetSoundDriverGlobals::Type>& pool);
+
+        void Dump(AssetDumpingContext& context) override;
     };
 } // namespace sound

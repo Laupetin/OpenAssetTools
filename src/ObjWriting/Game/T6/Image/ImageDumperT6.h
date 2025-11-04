@@ -8,14 +8,13 @@
 
 namespace image
 {
-    class DumperT6 final : public AbstractAssetDumper<T6::GfxImage>
+    class DumperT6 final : public AbstractAssetDumper<T6::AssetImage>
     {
     public:
-        DumperT6();
+        explicit DumperT6(const AssetPool<T6::AssetImage::Type>& pool);
 
     protected:
-        bool ShouldDump(XAssetInfo<T6::GfxImage>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::GfxImage>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetImage::Type>& asset) override;
 
     private:
         std::unique_ptr<IImageWriter> m_writer;

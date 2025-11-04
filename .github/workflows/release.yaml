@@ -40,7 +40,7 @@ jobs:
           chmod +x build/bin/Release_x86/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: oat-linux
           path: |
@@ -68,7 +68,7 @@ jobs:
         run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: oat-windows
           path: |
@@ -83,7 +83,7 @@ jobs:
       actions: read
       contents: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
       - name: Zip artifacts
         run: |
           7z a oat-linux.tar ./oat-linux/*

@@ -6,15 +6,15 @@ using namespace T6;
 
 namespace string_table
 {
-    bool DumperT6::ShouldDump(XAssetInfo<StringTable>* asset)
+    DumperT6::DumperT6(const AssetPool<AssetStringTable::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetStringTable::Type>& asset)
     {
-        const auto* stringTable = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* stringTable = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

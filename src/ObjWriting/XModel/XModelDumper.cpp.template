@@ -560,9 +560,9 @@ namespace
         }
     }
 
-    void DumpObjMtl(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
+    void DumpObjMtl(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
         const auto mtlFile = context.OpenAssetFile(std::format("model_export/{}.mtl", model->name));
 
         if (!mtlFile)
@@ -575,9 +575,9 @@ namespace
         writer->Write(common);
     }
 
-    void DumpObjLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    void DumpObjLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".obj"));
 
         if (!assetFile)
@@ -591,9 +591,9 @@ namespace
         writer->Write(common);
     }
 
-    void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_export"));
 
         if (!assetFile)
@@ -604,9 +604,9 @@ namespace
         writer->Write(common);
     }
 
-    void DumpXModelBinLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    void DumpXModelBinLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_bin"));
 
         if (!assetFile)
@@ -619,9 +619,9 @@ namespace
 
     template<typename T>
     void DumpGltfLod(
-        const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod, const std::string& extension)
+        const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod, const std::string& extension)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, extension));
 
         if (!assetFile)
@@ -634,14 +634,14 @@ namespace
         writer->Write(common);
     }
 
-    void DumpXModelSurfs(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
+    void DumpXModelSurfs(const AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
-        const auto* model = asset->Asset();
+        const auto* model = asset.Asset();
 
         for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
         {
             XModelCommon common;
-            PopulateXModelWriter(common, context, currentLod, asset->Asset());
+            PopulateXModelWriter(common, context, currentLod, asset.Asset());
 
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
@@ -841,25 +841,25 @@ namespace
         std::ostream& m_stream;
     };
 
-    void DumpXModelJson(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    void DumpXModelJson(AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
-        const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset.m_name));
         if (!assetFile)
             return;
 
         const JsonDumper dumper(context, *assetFile);
-        dumper.Dump(asset->Asset());
+        dumper.Dump(asset.Asset());
     }
 } // namespace
 
 namespace xmodel
 {
-    bool CLASS_NAME::ShouldDump(XAssetInfo<XModel>* asset)
+    CLASS_NAME::CLASS_NAME (const AssetPool<GAME::AssetXModel::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return !asset->m_name.empty() && asset->m_name[0] != ',';
     }
 
-    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXModel::Type>& asset)
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);

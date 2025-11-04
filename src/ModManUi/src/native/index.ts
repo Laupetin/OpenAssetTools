@@ -1,13 +1,11 @@
+import type { AssetBinds } from "./AssetBinds";
 import type { DialogBinds } from "./DialogBinds";
+import type { UnlinkingBinds, UnlinkingEventMap } from "./UnlinkingBinds";
+import type { ZoneBinds, ZoneEventMap } from "./ZoneBinds";
 
+export type NativeMethods = AssetBinds & DialogBinds & UnlinkingBinds & ZoneBinds;
 
-export type NativeMethods = {
-  greet(name: string): Promise<string>;
-} & DialogBinds;
-
-interface NativeEventMap {
-  greeting: string;
-}
+type NativeEventMap = UnlinkingEventMap & ZoneEventMap;
 
 type WebViewExtensions = {
   webviewBinds: NativeMethods;

@@ -1,16 +1,15 @@
 #pragma once
 
-#ifdef _WIN32
-
 #include "Web/Platform/Platform.h"
 
-#include <optional>
+#ifdef PLATFORM_WINDOWS
+
 #include <string>
 
-namespace PLATFORM_NAMESPACE_WINDOWS
+namespace utils
 {
     std::string WideStringToString(const std::wstring& wideString);
     std::wstring StringToWideString(const std::string& string);
-} // namespace PLATFORM_NAMESPACE_WINDOWS
+} // namespace utils
 
 #endif

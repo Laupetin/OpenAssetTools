@@ -409,31 +409,31 @@ namespace
         }
     }
 
-    InfoString CreateInfoString(XAssetInfo<WeaponVariantDef>* asset)
+    InfoString CreateInfoString(const XAssetInfo<WeaponVariantDef>& asset)
     {
         const auto fullDef = std::make_unique<WeaponFullDef>();
         memset(fullDef.get(), 0, sizeof(WeaponFullDef));
-        CopyToFullDef(asset->Asset(), fullDef.get());
+        CopyToFullDef(asset.Asset(), fullDef.get());
 
         InfoStringFromWeaponConverter converter(fullDef.get(),
                                                 weapon_fields,
                                                 std::extent_v<decltype(weapon_fields)>,
                                                 [asset](const scr_string_t scrStr) -> std::string
                                                 {
-                                                    assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                    if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                    assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                    if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                         return "";
 
-                                                    return asset->m_zone->m_script_strings[scrStr];
+                                                    return asset.m_zone->m_script_strings[scrStr];
                                                 });
 
         return converter.Convert();
     }
 
-    void DumpAccuracyGraphs(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
+    void DumpAccuracyGraphs(AssetDumpingContext& context, const XAssetInfo<WeaponVariantDef>& asset)
     {
         auto* accuracyGraphWriter = context.GetZoneAssetDumperState<AccuracyGraphWriter>();
-        const auto weapon = asset->Asset();
+        const auto weapon = asset.Asset();
         const auto* weapDef = weapon->weapDef;
 
         if (!weapDef)
@@ -461,24 +461,24 @@ namespace
 
 namespace weapon
 {
-    bool DumperT6::ShouldDump(XAssetInfo<WeaponVariantDef>* asset)
+    DumperT6::DumperT6(const AssetPool<AssetWeapon::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeapon::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_WEAPON);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;

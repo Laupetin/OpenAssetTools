@@ -79,7 +79,7 @@ namespace
     ]
 })FONT_ICON");
 
-        Zone zone("MockZone", 0, GameId::T6);
+        Zone zone("MockZone", 0, GameId::T6, GamePlatform::PC);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

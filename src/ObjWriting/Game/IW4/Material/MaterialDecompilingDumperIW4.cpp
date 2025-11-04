@@ -1110,17 +1110,17 @@ namespace
 
 namespace material
 {
-    bool DecompilingGdtDumperIW4::ShouldDump(XAssetInfo<Material>* asset)
+    DecompilingGdtDumperIW4::DecompilingGdtDumperIW4(const AssetPool<AssetMaterial::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DecompilingGdtDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
+    void DecompilingGdtDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMaterial::Type>& asset)
     {
         if (!context.m_gdt)
             return;
 
-        MaterialGdtDumper dumper(*asset->Asset());
+        MaterialGdtDumper dumper(*asset.Asset());
         context.m_gdt->WriteEntry(dumper.CreateGdtEntry());
     }
 } // namespace material

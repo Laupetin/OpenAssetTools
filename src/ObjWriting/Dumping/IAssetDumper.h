@@ -1,9 +1,8 @@
 #pragma once
 
 #include "AssetDumpingContext.h"
-#include "Pool/AssetPool.h"
 
-template<class T> class IAssetDumper
+class IAssetDumper
 {
 public:
     IAssetDumper() = default;
@@ -13,5 +12,6 @@ public:
     IAssetDumper& operator=(const IAssetDumper& other) = default;
     IAssetDumper& operator=(IAssetDumper&& other) noexcept = default;
 
-    virtual void DumpPool(AssetDumpingContext& context, AssetPool<T>* pool) = 0;
+    [[nodiscard]] virtual size_t GetProgressTotalCount() const = 0;
+    virtual void Dump(AssetDumpingContext& context) = 0;
 };

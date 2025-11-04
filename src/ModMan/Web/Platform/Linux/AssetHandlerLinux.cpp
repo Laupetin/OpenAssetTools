@@ -1,14 +1,13 @@
-#include "AssetHandlerLinux.h"
+#include "Web/Platform/AssetHandler.h"
+#include "Web/Platform/Platform.h"
 
-#if defined(WEBVIEW_PLATFORM_LINUX) && defined(WEBVIEW_GTK)
+#ifdef PLATFORM_LINUX
 
 #include "Web/UiAssets.h"
 
 #include <format>
 #include <iostream>
 #include <unordered_map>
-
-using namespace PLATFORM_NAMESPACE_LINUX;
 
 namespace
 {
@@ -37,7 +36,7 @@ namespace
     }
 } // namespace
 
-namespace PLATFORM_NAMESPACE_LINUX
+namespace ui
 {
     void InstallAssetHandler(webview::webview& wv)
     {
@@ -49,6 +48,6 @@ namespace PLATFORM_NAMESPACE_LINUX
 
         webkit_web_context_register_uri_scheme(context, "modman", ModManUriSchemeRequestCb, NULL, nullptr);
     }
-} // namespace PLATFORM_NAMESPACE_LINUX
+} // namespace ui
 
 #endif

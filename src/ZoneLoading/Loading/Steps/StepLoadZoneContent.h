@@ -13,5 +13,6 @@ namespace step
                                                             unsigned pointerBitCount,
                                                             unsigned offsetBlockBitCount,
                                                             block_t insertBlock,
-                                                            MemoryManager& memory);
+                                                            MemoryManager& memory,
+                                                            std::optional<std::unique_ptr<ProgressCallback>> progressCallback);
 }

@@ -7,5 +7,5 @@
 
 namespace font_icon
 {
-    std::unique_ptr<IAssetDumper<T6::FontIcon>> CreateDumperT6();
+    std::unique_ptr<IAssetDumper> CreateDumperT6(const AssetPool<T6::AssetFontIcon::Type>& pool);
 } // namespace font_icon

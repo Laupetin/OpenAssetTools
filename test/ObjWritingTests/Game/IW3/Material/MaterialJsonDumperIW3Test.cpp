@@ -551,19 +551,19 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, GameId::IW3);
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
 
         MemoryManager memory;
         MockSearchPath mockObjPath;
         MockOutputPath mockOutput;
-        AssetDumpingContext context(zone, "", mockOutput, mockObjPath);
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
         AssetPoolDynamic<Material> materialPool(0);
 
         GivenMaterial("wc/ch_plasterwall_long", materialPool, memory);
 
-        material::JsonDumperIW3 dumper;
-        dumper.DumpPool(context, &materialPool);
+        material::JsonDumperIW3 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wc/ch_plasterwall_long.json");
         REQUIRE(file);

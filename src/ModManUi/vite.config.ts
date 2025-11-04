@@ -8,7 +8,6 @@ import headerTransformationPlugin from "./build/HeaderTransformationPlugin";
 // https://vite.dev/config/
 export default defineConfig({
   build: {
-    copyPublicDir: false,
     emptyOutDir: true,
     rollupOptions: {
       output: {
@@ -18,6 +17,7 @@ export default defineConfig({
       },
     },
   },
+  publicDir: fileURLToPath(new URL("./public", import.meta.url)),
   plugins: [
     vue(),
     vueDevTools(),
@@ -30,6 +30,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@style": fileURLToPath(new URL("./src/style", import.meta.url)),
     },
   },
 });

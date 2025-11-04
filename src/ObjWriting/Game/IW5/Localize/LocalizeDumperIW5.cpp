@@ -11,9 +11,14 @@ using namespace IW5;
 
 namespace localize
 {
-    void DumperIW5::DumpPool(AssetDumpingContext& context, AssetPool<IW5::LocalizeEntry>* pool)
+    DumperIW5::DumperIW5(const AssetPool<AssetLocalize::Type>& pool)
+        : AbstractSingleProgressAssetDumper(pool)
     {
-        if (pool->m_asset_lookup.empty())
+    }
+
+    void DumperIW5::Dump(AssetDumpingContext& context)
+    {
+        if (m_pool.m_asset_lookup.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -30,7 +35,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (auto* localizeEntry : *pool)
+            for (const auto* localizeEntry : m_pool)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }
@@ -41,5 +46,7 @@ namespace localize
         {
             con::error("Could not create string file for dumping localized strings of zone '{}'", context.m_zone.m_name);
         }
+
+        context.IncrementProgress();
     }
 } // namespace localize

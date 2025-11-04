@@ -11,19 +11,21 @@ namespace
                             const unsigned pointerBitCount,
                             const unsigned offsetBlockBitCount,
                             const block_t insertBlock,
-                            MemoryManager& memory)
+                            MemoryManager& memory,
+                            std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
             : m_entry_point_factory(std::move(entryPointFactory)),
               m_pointer_bit_count(pointerBitCount),
               m_offset_block_bit_count(offsetBlockBitCount),
               m_insert_block(insertBlock),
-              m_memory(memory)
+              m_memory(memory),
+              m_progress_callback(std::move(progressCallback))
         {
         }
 
         void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
         {
-            const auto inputStream =
-                ZoneInputStream::Create(m_pointer_bit_count, m_offset_block_bit_count, zoneLoader.m_blocks, m_insert_block, stream, m_memory);
+            const auto inputStream = ZoneInputStream::Create(
+                m_pointer_bit_count, m_offset_block_bit_count, zoneLoader.m_blocks, m_insert_block, stream, m_memory, std::move(m_progress_callback));
 
             const auto entryPoint = m_entry_point_factory(*inputStream);
             assert(entryPoint);
@@ -37,6 +39,7 @@ namespace
         unsigned m_offset_block_bit_count;
         block_t m_insert_block;
         MemoryManager& m_memory;
+        std::optional<std::unique_ptr<ProgressCallback>> m_progress_callback;
     };
 } // namespace
 
@@ -46,8 +49,10 @@ namespace step
                                                             const unsigned pointerBitCount,
                                                             const unsigned offsetBlockBitCount,
                                                             const block_t insertBlock,
-                                                            MemoryManager& memory)
+                                                            MemoryManager& memory,
+                                                            std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
     {
-        return std::make_unique<StepLoadZoneContent>(std::move(entryPointFactory), pointerBitCount, offsetBlockBitCount, insertBlock, memory);
+        return std::make_unique<StepLoadZoneContent>(
+            std::move(entryPointFactory), pointerBitCount, offsetBlockBitCount, insertBlock, memory, std::move(progressCallback));
     }
 } // namespace step

@@ -2,10 +2,11 @@
 
 #include "GameLanguage.h"
 
+#include <cstdint>
 #include <type_traits>
 #include <vector>
 
-enum class GameId
+enum class GameId : std::uint8_t
 {
     IW3,
     IW4,
@@ -18,7 +19,7 @@ enum class GameId
 
 // The full uppercase names are macros in the standard lib
 // So unfortunately not usable as values in the enum
-enum class GameEndianness
+enum class GameEndianness : std::uint8_t
 {
     /* Little endian */
     LE,
@@ -26,10 +27,17 @@ enum class GameEndianness
     BE
 };
 
-enum class GameWordSize
+enum class GameWordSize : std::uint8_t
 {
     ARCH_32,
     ARCH_64
+};
+
+enum class GamePlatform : std::uint8_t
+{
+    PC,
+    XBOX,
+    PS3
 };
 
 static constexpr const char* GameId_Names[]{

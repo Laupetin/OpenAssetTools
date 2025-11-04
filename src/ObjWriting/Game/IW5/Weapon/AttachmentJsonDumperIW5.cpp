@@ -395,19 +395,19 @@ namespace
 
 namespace attachment
 {
-    bool JsonDumperIW5::ShouldDump(XAssetInfo<WeaponAttachment>* asset)
+    JsonDumperIW5::JsonDumperIW5(const AssetPool<AssetAttachment::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
+    void JsonDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAttachment::Type>& asset)
     {
-        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset->m_name));
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset.m_name));
 
         if (!assetFile)
             return;
 
         const JsonDumperImpl dumper(context, *assetFile);
-        dumper.Dump(asset->Asset());
+        dumper.Dump(asset.Asset());
     }
 } // namespace attachment

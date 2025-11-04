@@ -1,0 +1,36 @@
+﻿@use "colors";
+@use "css_vars";
+@use "utils.scss";
+
+@import "@fontsource/inter/latin-300.css";
+@import "@fontsource/inter/latin-300-italic.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-400-italic.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-600-italic.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/latin-700-italic.css";
+
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: colors.$color-text;
+  background-color: colors.$color-content-background;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}

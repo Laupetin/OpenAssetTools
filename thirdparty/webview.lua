@@ -13,6 +13,7 @@ function webview:link(links)
 
 	if os.host() == "windows" then
 		links:add("WebView2LoaderStatic")
+		links:add("gdiplus.lib")
 		
 		filter "platforms:x86"
 			libdirs {

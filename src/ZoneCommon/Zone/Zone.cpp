@@ -2,13 +2,15 @@
 
 #include "ZoneRegistry.h"
 
-Zone::Zone(std::string name, const zone_priority_t priority, GameId gameId)
+Zone::Zone(std::string name, const zone_priority_t priority, const GameId gameId, const GamePlatform platform)
     : m_name(std::move(name)),
       m_priority(priority),
       m_language(GameLanguage::LANGUAGE_NONE),
       m_game_id(gameId),
+      m_platform(platform),
       m_pools(ZoneAssetPools::CreateForGame(gameId, this, priority)),
-      m_memory(std::make_unique<ZoneMemory>())
+      m_memory(std::make_unique<ZoneMemory>()),
+      m_registered(false)
 {
 }
 

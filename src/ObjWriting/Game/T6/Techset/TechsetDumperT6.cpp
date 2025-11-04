@@ -79,14 +79,14 @@ namespace
 
 namespace techset
 {
-    bool DumperT6::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
+    DumperT6::DumperT6(const AssetPool<AssetTechniqueSet::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
-        const auto* techniqueSet = asset->Asset();
+        const auto* techniqueSet = asset.Asset();
         auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
 
         const auto assetFile = context.OpenAssetFile(std::format("techniquesets/{}.json", techniqueSet->name));

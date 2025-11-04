@@ -36,6 +36,12 @@ function ModMan:project()
 			path.join(folder, "ModMan/**.cpp") 
 		}
 
+		filter { "system:windows" }
+			files {
+				path.join(folder, "ModMan/**.rc")
+			}
+		filter {}
+
 		includedirs {
 			"%{wks.location}/src/ModMan"
 		}
@@ -47,10 +53,16 @@ function ModMan:project()
 		
 		self:include(includes)
 		Utils:include(includes)
+        ZoneLoading:include(includes)
+        ObjLoading:include(includes)
+        ObjWriting:include(includes)
 		json:include(includes)
 		webview:include(includes)
 
 		links:linkto(Utils)
+		links:linkto(ZoneLoading)
+		links:linkto(ObjLoading)
+		links:linkto(ObjWriting)
 		links:linkto(webview)
 		links:linkall()
 end

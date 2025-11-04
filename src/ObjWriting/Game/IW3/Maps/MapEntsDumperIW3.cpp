@@ -4,15 +4,15 @@ using namespace IW3;
 
 namespace map_ents
 {
-    bool DumperIW3::ShouldDump(XAssetInfo<MapEnts>* asset)
+    DumperIW3::DumperIW3(const AssetPool<IW3::AssetMapEnts::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperIW3::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset)
+    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
     {
-        const auto* mapEnts = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name + ".ents");
+        const auto* mapEnts = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name + ".ents");
 
         if (!assetFile)
             return;

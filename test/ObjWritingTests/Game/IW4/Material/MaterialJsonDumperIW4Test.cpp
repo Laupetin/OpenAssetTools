@@ -532,19 +532,19 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, GameId::IW4);
+        Zone zone("MockZone", 0, GameId::IW4, GamePlatform::PC);
 
         MemoryManager memory;
         MockSearchPath mockObjPath;
         MockOutputPath mockOutput;
-        AssetDumpingContext context(zone, "", mockOutput, mockObjPath);
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
         AssetPoolDynamic<Material> materialPool(0);
 
         GivenMaterial("mc/ch_rubble01", materialPool, memory);
 
-        material::JsonDumperIW4 dumper;
-        dumper.DumpPool(context, &materialPool);
+        material::JsonDumperIW4 dumper(materialPool);
+        dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/mc/ch_rubble01.json");
         REQUIRE(file);

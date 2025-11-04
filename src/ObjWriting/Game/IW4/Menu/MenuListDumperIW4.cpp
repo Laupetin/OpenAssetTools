@@ -147,15 +147,15 @@ namespace menu
         }
     }
 
-    bool MenuListDumperIW4::ShouldDump(XAssetInfo<MenuList>* asset)
+    MenuListDumperIW4::MenuListDumperIW4(const AssetPool<AssetMenuList::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void MenuListDumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset)
+    void MenuListDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenuList::Type>& asset)
     {
-        const auto* menuList = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* menuList = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;
@@ -174,13 +174,13 @@ namespace menu
         menuWriter->End();
     }
 
-    void MenuListDumperIW4::DumpPool(AssetDumpingContext& context, AssetPool<MenuList>* pool)
+    void MenuListDumperIW4::Dump(AssetDumpingContext& context)
     {
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        for (auto* asset : *pool)
+        for (const auto* asset : m_pool)
             CreateDumpingStateForMenuListIW4(zoneState, asset->Asset());
 
-        AbstractAssetDumper<MenuList>::DumpPool(context, pool);
+        AbstractAssetDumper::Dump(context);
     }
 } // namespace menu

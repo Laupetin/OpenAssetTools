@@ -39,20 +39,20 @@ namespace
         }
     };
 
-    InfoString CreateInfoString(XAssetInfo<PhysConstraints>* asset)
+    InfoString CreateInfoString(const XAssetInfo<PhysConstraints>& asset)
     {
-        assert(asset->Asset()->count <= 4);
+        assert(asset.Asset()->count <= 4);
 
-        InfoStringFromPhysConstraintsConverter converter(asset->Asset(),
+        InfoStringFromPhysConstraintsConverter converter(asset.Asset(),
                                                          phys_constraints_fields,
                                                          std::extent_v<decltype(phys_constraints_fields)>,
                                                          [asset](const scr_string_t scrStr) -> std::string
                                                          {
-                                                             assert(scrStr < asset->m_zone->m_script_strings.Count());
-                                                             if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                             assert(scrStr < asset.m_zone->m_script_strings.Count());
+                                                             if (scrStr >= asset.m_zone->m_script_strings.Count())
                                                                  return "";
 
-                                                             return asset->m_zone->m_script_strings[scrStr];
+                                                             return asset.m_zone->m_script_strings[scrStr];
                                                          });
 
         return converter.Convert();
@@ -61,24 +61,24 @@ namespace
 
 namespace phys_constraints
 {
-    bool InfoStringDumperT6::ShouldDump(XAssetInfo<PhysConstraints>* asset)
+    InfoStringDumperT6::InfoStringDumperT6(const AssetPool<AssetPhysConstraints::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
+    void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysConstraints::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS);
+            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS);
             infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
         {
-            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
             if (!assetFile)
                 return;

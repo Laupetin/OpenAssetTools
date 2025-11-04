@@ -4,15 +4,15 @@ using namespace T6;
 
 namespace qdb
 {
-    bool DumperT6::ShouldDump(XAssetInfo<Qdb>* asset)
+    DumperT6::DumperT6(const AssetPool<AssetQdb::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
-        return true;
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, XAssetInfo<Qdb>* asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetQdb::Type>& asset)
     {
-        const auto* qdb = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(asset->m_name);
+        const auto* qdb = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
 
         if (!assetFile)
             return;

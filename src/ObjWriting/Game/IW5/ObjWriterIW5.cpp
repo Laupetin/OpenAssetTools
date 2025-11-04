@@ -21,56 +21,69 @@ using namespace IW5;
 
 bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 {
-#define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
-    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+#define REGISTER_DUMPER(dumperType, poolName)                                                                                                                  \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(dumperType::AssetType_t::EnumEntry))                                                         \
     {                                                                                                                                                          \
-        dumperType dumper;                                                                                                                                     \
-        dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
+        dumpers.emplace_back(std::make_unique<dumperType>(*assetPools->poolName));                                                                             \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolIW5*>(context.m_zone.m_pools.get());
-    // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
-    // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
-    // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
-    // DUMP_ASSET_POOL(AssetDumperXModelSurfs, m_xmodel_surfs, ASSET_TYPE_XMODEL_SURFS)
-    DUMP_ASSET_POOL(xmodel::DumperIW5, m_xmodel, ASSET_TYPE_XMODEL)
-    DUMP_ASSET_POOL(material::JsonDumperIW5, m_material, ASSET_TYPE_MATERIAL)
-    // DUMP_ASSET_POOL(AssetDumperMaterialPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl, ASSET_TYPE_VERTEXDECL)
-    // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
-    DUMP_ASSET_POOL(image::DumperIW5, m_image, ASSET_TYPE_IMAGE)
-    // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
-    // DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
-    DUMP_ASSET_POOL(sound::LoadedSoundDumperIW5, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
-    // DUMP_ASSET_POOL(AssetDumperclipMap_t, m_clip_map, ASSET_TYPE_CLIPMAP)
-    // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)
-    // DUMP_ASSET_POOL(AssetDumperGlassWorld, m_glass_world, ASSET_TYPE_GLASSWORLD)
-    // DUMP_ASSET_POOL(AssetDumperPathData, m_path_data, ASSET_TYPE_PATHDATA)
-    // DUMP_ASSET_POOL(AssetDumperVehicleTrack, m_vehicle_track, ASSET_TYPE_VEHICLE_TRACK)
-    // DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents, ASSET_TYPE_MAP_ENTS)
-    // DUMP_ASSET_POOL(AssetDumperFxWorld, m_fx_world, ASSET_TYPE_FXWORLD)
-    // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
-    // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
-    // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
-    DUMP_ASSET_POOL(menu::MenuListDumperIW5, m_menu_list, ASSET_TYPE_MENULIST)
-    DUMP_ASSET_POOL(menu::MenuDumperIW5, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(localize::DumperIW5, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
-    DUMP_ASSET_POOL(attachment::JsonDumperIW5, m_attachment, ASSET_TYPE_ATTACHMENT)
-    DUMP_ASSET_POOL(weapon::DumperIW5, m_weapon, ASSET_TYPE_WEAPON)
-    // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
-    // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
-    // DUMP_ASSET_POOL(AssetDumperSurfaceFxTable, m_surface_fx_table, ASSET_TYPE_SURFACE_FX)
-    DUMP_ASSET_POOL(raw_file::DumperIW5, m_raw_file, ASSET_TYPE_RAWFILE)
-    DUMP_ASSET_POOL(script::DumperIW5, m_script_file, ASSET_TYPE_SCRIPTFILE)
-    DUMP_ASSET_POOL(string_table::DumperIW5, m_string_table, ASSET_TYPE_STRINGTABLE)
-    DUMP_ASSET_POOL(leaderboard::JsonDumperIW5, m_leaderboard, ASSET_TYPE_LEADERBOARD)
-    // DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
-    // DUMP_ASSET_POOL(AssetDumperTracerDef, m_tracer, ASSET_TYPE_TRACER)
-    // DUMP_ASSET_POOL(AssetDumperVehicleDef, m_vehicle, ASSET_TYPE_VEHICLE)
-    DUMP_ASSET_POOL(addon_map_ents::DumperIW5, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
+    std::vector<std::unique_ptr<IAssetDumper>> dumpers;
+
+    // REGISTER_DUMPER(AssetDumperPhysPreset, m_phys_preset)
+    // REGISTER_DUMPER(AssetDumperPhysCollmap, m_phys_collmap)
+    // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
+    // REGISTER_DUMPER(AssetDumperXModelSurfs, m_xmodel_surfs)
+    REGISTER_DUMPER(xmodel::DumperIW5, m_xmodel)
+    REGISTER_DUMPER(material::JsonDumperIW5, m_material)
+    // REGISTER_DUMPER(AssetDumperMaterialPixelShader, m_material_pixel_shader)
+    // REGISTER_DUMPER(AssetDumperMaterialVertexShader, m_material_vertex_shader)
+    // REGISTER_DUMPER(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl)
+    // REGISTER_DUMPER(AssetDumperMaterialTechniqueSet, m_technique_set)
+    REGISTER_DUMPER(image::DumperIW5, m_image)
+    // REGISTER_DUMPER(AssetDumpersnd_alias_list_t, m_sound)
+    // REGISTER_DUMPER(AssetDumperSndCurve, m_sound_curve)
+    REGISTER_DUMPER(sound::LoadedSoundDumperIW5, m_loaded_sound)
+    // REGISTER_DUMPER(AssetDumperclipMap_t, m_clip_map)
+    // REGISTER_DUMPER(AssetDumperComWorld, m_com_world)
+    // REGISTER_DUMPER(AssetDumperGlassWorld, m_glass_world)
+    // REGISTER_DUMPER(AssetDumperPathData, m_path_data)
+    // REGISTER_DUMPER(AssetDumperVehicleTrack, m_vehicle_track)
+    // REGISTER_DUMPER(AssetDumperMapEnts, m_map_ents)
+    // REGISTER_DUMPER(AssetDumperFxWorld, m_fx_world)
+    // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
+    // REGISTER_DUMPER(AssetDumperGfxLightDef, m_gfx_light_def)
+    // REGISTER_DUMPER(AssetDumperFont_s, m_font)
+    REGISTER_DUMPER(menu::MenuListDumperIW5, m_menu_list)
+    REGISTER_DUMPER(menu::MenuDumperIW5, m_menu_def)
+    REGISTER_DUMPER(localize::DumperIW5, m_localize)
+    REGISTER_DUMPER(attachment::JsonDumperIW5, m_attachment)
+    REGISTER_DUMPER(weapon::DumperIW5, m_weapon)
+    // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
+    // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
+    // REGISTER_DUMPER(AssetDumperSurfaceFxTable, m_surface_fx_table)
+    REGISTER_DUMPER(raw_file::DumperIW5, m_raw_file)
+    REGISTER_DUMPER(script::DumperIW5, m_script_file)
+    REGISTER_DUMPER(string_table::DumperIW5, m_string_table)
+    REGISTER_DUMPER(leaderboard::JsonDumperIW5, m_leaderboard)
+    // REGISTER_DUMPER(AssetDumperStructuredDataDefSet, m_structed_data_def_set)
+    // REGISTER_DUMPER(AssetDumperTracerDef, m_tracer)
+    // REGISTER_DUMPER(AssetDumperVehicleDef, m_vehicle)
+    REGISTER_DUMPER(addon_map_ents::DumperIW5, m_addon_map_ents)
+
+    if (context.ShouldTrackProgress())
+    {
+        size_t totalProgress = 0uz;
+        for (const auto& dumper : dumpers)
+            totalProgress += dumper->GetProgressTotalCount();
+
+        context.SetTotalProgress(totalProgress);
+    }
+
+    for (const auto& dumper : dumpers)
+        dumper->Dump(context);
 
     return true;
 
-#undef DUMP_ASSET_POOL
+#undef REGISTER_DUMPER
 }

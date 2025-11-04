@@ -17,10 +17,12 @@
 
 namespace xmodel
 {
-    class CLASS_NAME final : public AbstractAssetDumper<GAME::XModel>
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetXModel>
     {
+    public:
+        explicit CLASS_NAME (const AssetPool<GAME::AssetXModel::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<GAME::XModel>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GAME::XModel>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetXModel::Type>& asset) override;
     };
 } // namespace xmodel

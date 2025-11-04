@@ -5,10 +5,12 @@
 
 namespace slug
 {
-    class DumperT6 final : public AbstractAssetDumper<T6::Slug>
+    class DumperT6 final : public AbstractAssetDumper<T6::AssetSlug>
     {
+    public:
+        explicit DumperT6(const AssetPool<T6::AssetSlug::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<T6::Slug>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<T6::Slug>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetSlug::Type>& asset) override;
     };
 } // namespace slug

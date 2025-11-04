@@ -5,10 +5,12 @@
 
 namespace light_def
 {
-    class DumperIW4 final : public AbstractAssetDumper<IW4::GfxLightDef>
+    class DumperIW4 final : public AbstractAssetDumper<IW4::AssetLightDef>
     {
+    public:
+        explicit DumperIW4(const AssetPool<IW4::AssetLightDef::Type>& pool);
+
     protected:
-        bool ShouldDump(XAssetInfo<IW4::GfxLightDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<IW4::GfxLightDef>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetLightDef::Type>& asset) override;
     };
 } // namespace light_def

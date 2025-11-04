@@ -59,7 +59,8 @@ namespace
 
 namespace image
 {
-    DumperIW4::DumperIW4()
+    DumperIW4::DumperIW4(const AssetPool<AssetImage::Type>& pool)
+        : AbstractAssetDumper(pool)
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
@@ -76,19 +77,14 @@ namespace image
         }
     }
 
-    bool DumperIW4::ShouldDump(XAssetInfo<GfxImage>* asset)
+    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
-        return true;
-    }
-
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
-    {
-        const auto* image = asset->Asset();
+        const auto* image = asset.Asset();
         const auto texture = LoadImageData(context.m_obj_search_path, *image);
         if (!texture)
             return;
 
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset->m_name, m_writer->GetFileExtension()));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name, m_writer->GetFileExtension()));
 
         if (!assetFile)
             return;
