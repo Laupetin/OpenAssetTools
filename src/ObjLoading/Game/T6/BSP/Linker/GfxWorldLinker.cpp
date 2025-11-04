@@ -23,7 +23,7 @@ namespace BSP
             BSPVertex& bspVertex = bsp->gfxWorld.vertices.at(vertIdx);
             GfxPackedWorldVertex* gfxVertex = &vertexBuffer[vertIdx];
 
-            gfxVertex->xyz = BSPUtil::convertToBO2Coords(bspVertex.pos);
+            gfxVertex->xyz = bspVertex.pos;
             gfxVertex->color.packed = pack32::Vec4PackGfxColor(bspVertex.color.v);
             gfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(bspVertex.texCoord.v);
             gfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.normal.v);
