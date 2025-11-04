@@ -490,17 +490,10 @@ namespace BSP
         {
             int indexOfFirstIndex = surface.indexOfFirstIndex;
             int indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx += 3)
+            for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
             {
-                int firstTriIndex = indexOfFirstIndex + indexIdx;
-                int triIndex0 = bsp->colWorld.indices[firstTriIndex + 0] + indexOfFirstVertex;
-                int triIndex1 = bsp->colWorld.indices[firstTriIndex + 1] + indexOfFirstVertex;
-                int triIndex2 = bsp->colWorld.indices[firstTriIndex + 2] + indexOfFirstVertex;
-
-                // triangle index ordering is opposite to blenders, so its converted here
-                triIndexVec.emplace_back(triIndex2);
-                triIndexVec.emplace_back(triIndex1);
-                triIndexVec.emplace_back(triIndex0);
+                int triIndex = bsp->colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
+                triIndexVec.emplace_back(triIndex);
             }
         }
         // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
