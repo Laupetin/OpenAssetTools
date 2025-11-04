@@ -12,24 +12,24 @@ namespace BSP
     public:
         GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
 
-        [[nodiscard]] T6::GfxWorld* linkGfxWorld(const BSPData& bsp) const;
+        [[nodiscard]] T6::GfxWorld* LinkGfxWorld(const BSPData& bsp) const;
 
     private:
-        void loadDrawData(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
-        bool loadMapSurfaces(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
-        void loadXModels(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
-        void cleanGfxWorld(T6::GfxWorld& gfxWorld) const;
-        void loadGfxLights(T6::GfxWorld& gfxWorld) const;
-        void loadLightGrid(T6::GfxWorld& gfxWorld) const;
-        void loadGfxCells(T6::GfxWorld& gfxWorld) const;
-        void loadModels(T6::GfxWorld& gfxWorld) const;
-        bool loadReflectionProbeData(T6::GfxWorld& gfxWorld) const;
-        bool loadLightmapData(T6::GfxWorld& gfxWorld) const;
-        void loadSkyBox(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
-        void loadDynEntData(T6::GfxWorld& gfxWorld) const;
-        bool loadOutdoors(T6::GfxWorld& gfxWorld) const;
-        void loadSunData(T6::GfxWorld& gfxWorld) const;
-        void loadWorldBounds(T6::GfxWorld& gfxWorld) const;
+        void LoadDrawData(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        bool LoadMapSurfaces(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void LoadXModels(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void CleanGfxWorld(T6::GfxWorld& gfxWorld) const;
+        void LoadGfxLights(T6::GfxWorld& gfxWorld) const;
+        void LoadLightGrid(T6::GfxWorld& gfxWorld) const;
+        void LoadGfxCells(T6::GfxWorld& gfxWorld) const;
+        void LoadModels(T6::GfxWorld& gfxWorld) const;
+        bool LoadReflectionProbeData(T6::GfxWorld& gfxWorld) const;
+        bool LoadLightmapData(T6::GfxWorld& gfxWorld) const;
+        void LoadSkyBox(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void LoadDynEntData(T6::GfxWorld& gfxWorld) const;
+        bool LoadOutdoors(T6::GfxWorld& gfxWorld) const;
+        void LoadSunData(T6::GfxWorld& gfxWorld) const;
+        void LoadWorldBounds(T6::GfxWorld& gfxWorld) const;
 
         MemoryManager& m_memory;
         ISearchPath& m_search_path;

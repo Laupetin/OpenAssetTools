@@ -17,7 +17,7 @@ namespace BSP
     {
     }
 
-    void ClipMapLinker::loadDynEnts(clipMap_t& clipMap) const
+    void ClipMapLinker::LoadDynEnts(clipMap_t& clipMap) const
     {
         uint16_t dynEntCount = 0;
         clipMap.originalDynEntCount = dynEntCount;
@@ -44,7 +44,7 @@ namespace BSP
         clipMap.dynEntDefList[1] = nullptr;
     }
 
-    void ClipMapLinker::loadVisibility(clipMap_t& clipMap) const
+    void ClipMapLinker::LoadVisibility(clipMap_t& clipMap) const
     {
         // Only use one visbility cluster for the entire map
         clipMap.numClusters = 1;
@@ -55,7 +55,7 @@ namespace BSP
         memset(clipMap.visibility, 0xFF, clipMap.clusterBytes);
     }
 
-    void ClipMapLinker::loadBoxData(clipMap_t& clipMap) const
+    void ClipMapLinker::LoadBoxData(clipMap_t& clipMap) const
     {
         // box_model and box_brush are what are used by game traces as "temporary" collision when
         //  no brush or model is specified to do the trace with.
@@ -116,7 +116,7 @@ namespace BSP
         clipMap.box_brush->verts = nullptr;
     }
 
-    void ClipMapLinker::loadRopesAndConstraints(clipMap_t& clipMap) const
+    void ClipMapLinker::LoadRopesAndConstraints(clipMap_t& clipMap) const
     {
         clipMap.num_constraints = 0; // max 511
         clipMap.constraints = nullptr;
@@ -126,7 +126,7 @@ namespace BSP
         clipMap.ropes = m_memory.Alloc<rope_t>(clipMap.max_ropes);
     }
 
-    void ClipMapLinker::loadSubModelCollision(clipMap_t& clipMap, const BSPData& bsp) const
+    void ClipMapLinker::LoadSubModelCollision(clipMap_t& clipMap, const BSPData& bsp) const
     {
         // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp.bspName);
@@ -165,7 +165,7 @@ namespace BSP
         clipMap.cmodels[0].info = nullptr; // always set to 0
     }
 
-    void ClipMapLinker::loadXModelCollision(clipMap_t& clipMap) const
+    void ClipMapLinker::LoadXModelCollision(clipMap_t& clipMap) const
     {
         // Right now XModels aren't supported
         clipMap.numStaticModels = 0;
@@ -215,11 +215,11 @@ namespace BSP
         */
     }
 
-    void ClipMapLinker::addAABBTreeFromLeaf(clipMap_t& clipMap, const BSPTree& tree, size_t& outParentCount, size_t& outParentStartIndex)
+    void ClipMapLinker::AddAABBTreeFromLeaf(clipMap_t& clipMap, const BSPTree& tree, size_t& outParentCount, size_t& outParentStartIndex)
     {
         assert(tree.isLeaf);
 
-        size_t leafObjectCount = tree.leaf->getObjectCount();
+        size_t leafObjectCount = tree.leaf->GetObjectCount();
         assert(leafObjectCount > 0);
         highestLeafObjectCount = std::max(leafObjectCount, highestLeafObjectCount);
 
@@ -248,7 +248,7 @@ namespace BSP
             vec3_t parentMaxs;
             for (size_t objectIdx = 0; objectIdx < childObjectCount; objectIdx++)
             {
-                int partitionIndex = tree.leaf->getObject(addedObjectCount + objectIdx)->partitionIndex;
+                int partitionIndex = tree.leaf->GetObject(addedObjectCount + objectIdx)->partitionIndex;
                 CollisionPartition* partition = &clipMap.partitions[partitionIndex];
                 for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
                 {
@@ -278,7 +278,7 @@ namespace BSP
             // add child AABBs
             for (size_t objectIdx = 0; objectIdx < childObjectCount; objectIdx++)
             {
-                int partitionIndex = tree.leaf->getObject(addedObjectCount + objectIdx)->partitionIndex;
+                int partitionIndex = tree.leaf->GetObject(addedObjectCount + objectIdx)->partitionIndex;
                 CollisionPartition* partition = &clipMap.partitions[partitionIndex];
                 vec3_t childMins;
                 vec3_t childMaxs;
@@ -327,7 +327,7 @@ namespace BSP
     // Nodes are indexed by their index in the node array
     // Leafs are indexed by (-1 - <leaf index>)
     // See https://developer.valvesoftware.com/wiki/BSP_(Source)
-    int16_t ClipMapLinker::loadBSPNode(clipMap_t& clipMap, const BSPTree& tree)
+    int16_t ClipMapLinker::LoadBSPNode(clipMap_t& clipMap, const BSPTree& tree)
     {
         if (tree.isLeaf)
         {
@@ -346,11 +346,11 @@ namespace BSP
             leaf.maxs.z = 0.0f;
             leaf.leafBrushNode = 0;
 
-            if (tree.leaf->getObjectCount() > 0)
+            if (tree.leaf->GetObjectCount() > 0)
             {
                 size_t parentCount = 0;
                 size_t parentStartIndex = 0;
-                addAABBTreeFromLeaf(clipMap, tree, parentCount, parentStartIndex);
+                AddAABBTreeFromLeaf(clipMap, tree, parentCount, parentStartIndex);
                 leaf.collAabbCount = static_cast<uint16_t>(parentCount);
                 leaf.firstCollAabbIndex = static_cast<uint16_t>(parentStartIndex);
             }
@@ -400,14 +400,14 @@ namespace BSP
 
             planeVec.emplace_back(plane);
 
-            // The recursion of adding the children through loadBSPNode means the parent node needs to be added before the chilren are loaded
+            // The recursion of adding the children through LoadBSPNode means the parent node needs to be added before the children are loaded
             size_t nodeIndex = nodeVec.size();
             nodeVec.emplace_back();
 
             cNode_t node;
             node.plane = nullptr; // initialised after the BSP tree has been loaded
-            node.children[0] = loadBSPNode(clipMap, *tree.node->front);
-            node.children[1] = loadBSPNode(clipMap, *tree.node->back);
+            node.children[0] = LoadBSPNode(clipMap, *tree.node->front);
+            node.children[1] = LoadBSPNode(clipMap, *tree.node->back);
 
             nodeVec.at(nodeIndex) = node;
 
@@ -415,7 +415,7 @@ namespace BSP
         }
     }
 
-    void ClipMapLinker::loadBSPTree(clipMap_t& clipMap, const BSPData& bsp)
+    void ClipMapLinker::LoadBSPTree(clipMap_t& clipMap, const BSPData& bsp)
     {
         vec3_t worldMins;
         vec3_t worldMaxs;
@@ -452,11 +452,11 @@ namespace BSP
             }
             auto currObject =
                 std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
-            tree->addObjectToTree(std::move(currObject));
+            tree->AddObjectToTree(std::move(currObject));
         }
 
         // load planes, nodes, leafs, and AABB trees
-        loadBSPNode(clipMap, *tree);
+        LoadBSPNode(clipMap, *tree);
 
         clipMap.info.planeCount = static_cast<int>(planeVec.size());
         clipMap.info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
@@ -481,7 +481,7 @@ namespace BSP
         con::info("Highest leaf object count: {}", highestLeafObjectCount);
     }
 
-    bool ClipMapLinker::loadPartitions(clipMap_t& clipMap, const BSPData& bsp) const
+    bool ClipMapLinker::LoadPartitions(clipMap_t& clipMap, const BSPData& bsp) const
     {
         // due to tris using uint16_t as the type for indexing the vert array,
         //  any vertex count over the uint16_t max means the vertices above the uint16_t max can't be indexed
@@ -592,7 +592,7 @@ namespace BSP
         */
     }
 
-    bool ClipMapLinker::loadWorldCollision(clipMap_t& clipMap, const BSPData& bsp)
+    bool ClipMapLinker::LoadWorldCollision(clipMap_t& clipMap, const BSPData& bsp)
     {
         // No support for brushes, only tris right now
         clipMap.info.numBrushSides = 0;
@@ -609,15 +609,15 @@ namespace BSP
         clipMap.info.brushContents = nullptr;
 
         // load verts, tris, uinds and partitions
-        if (!loadPartitions(clipMap, bsp))
+        if (!LoadPartitions(clipMap, bsp))
             return false;
 
-        loadBSPTree(clipMap, bsp);
+        LoadBSPTree(clipMap, bsp);
 
         return true;
     }
 
-    clipMap_t* ClipMapLinker::linkClipMap(const BSPData& bsp)
+    clipMap_t* ClipMapLinker::LinkClipMap(const BSPData& bsp)
     {
         clipMap_t* clipMap = m_memory.Alloc<clipMap_t>();
         clipMap->name = m_memory.Dup(bsp.bspName.c_str());
@@ -631,17 +631,17 @@ namespace BSP
         assert(mapEntsAsset != nullptr);
         clipMap->mapEnts = mapEntsAsset->Asset();
 
-        loadBoxData(*clipMap);
+        LoadBoxData(*clipMap);
 
-        loadVisibility(*clipMap);
+        LoadVisibility(*clipMap);
 
-        loadRopesAndConstraints(*clipMap);
+        LoadRopesAndConstraints(*clipMap);
 
-        loadSubModelCollision(*clipMap, bsp);
+        LoadSubModelCollision(*clipMap, bsp);
 
-        loadDynEnts(*clipMap);
+        LoadDynEnts(*clipMap);
 
-        loadXModelCollision(*clipMap);
+        LoadXModelCollision(*clipMap);
 
         // Clipmap materials define the properties of a material (bullet penetration, no collision, water, etc)
         // Right now there is no way to define properties per material so only one material is used
@@ -657,7 +657,7 @@ namespace BSP
         clipMap->triEdgeIsWalkable = new char[walkableEdgeSize];
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
 
-        if (!loadWorldCollision(*clipMap, bsp))
+        if (!LoadWorldCollision(*clipMap, bsp))
             return nullptr;
 
         return clipMap;

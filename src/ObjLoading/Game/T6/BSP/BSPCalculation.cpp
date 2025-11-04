@@ -18,17 +18,17 @@ namespace BSP
         partitionIndex = objPartitionIndex;
     }
 
-    void BSPLeaf::addObject(std::shared_ptr<BSPObject> object)
+    void BSPLeaf::AddObject(std::shared_ptr<BSPObject> object)
     {
         objectList.emplace_back(std::move(object));
     }
 
-    BSPObject* BSPLeaf::getObject(const size_t index) const
+    BSPObject* BSPLeaf::GetObject(const size_t index) const
     {
         return objectList.at(index).get();
     }
 
-    size_t BSPLeaf::getObjectCount() const
+    size_t BSPLeaf::GetObjectCount() const
     {
         return objectList.size();
     }
@@ -41,7 +41,7 @@ namespace BSP
         distance = nodeDistance;
     }
 
-    PlaneSide BSPNode::objectIsInFront(const BSPObject& object) const
+    PlaneSide BSPNode::ObjectIsInFront(const BSPObject& object) const
     {
         float minCoord, maxCoord;
 
@@ -89,10 +89,10 @@ namespace BSP
         max.z = zMax;
         level = treeLevel;
 
-        splitTree();
+        SplitTree();
     }
 
-    void BSPTree::splitTree()
+    void BSPTree::SplitTree()
     {
         std::unique_ptr<BSPTree> front;
         std::unique_ptr<BSPTree> back;
@@ -139,28 +139,28 @@ namespace BSP
         }
     }
 
-    void BSPTree::addObjectToTree(std::shared_ptr<BSPObject> object) const
+    void BSPTree::AddObjectToTree(std::shared_ptr<BSPObject> object) const
     {
         if (isLeaf)
         {
-            leaf->addObject(std::move(object));
+            leaf->AddObject(std::move(object));
         }
         else
         {
-            const auto side = node->objectIsInFront(*object);
+            const auto side = node->ObjectIsInFront(*object);
 
             if (side == PlaneSide::SIDE_FRONT)
             {
-                node->front->addObjectToTree(std::move(object));
+                node->front->AddObjectToTree(std::move(object));
             }
             else if (side == PlaneSide::SIDE_BACK)
             {
-                node->back->addObjectToTree(std::move(object));
+                node->back->AddObjectToTree(std::move(object));
             }
             else // intersects
             {
-                node->front->addObjectToTree(object);
-                node->back->addObjectToTree(object);
+                node->front->AddObjectToTree(object);
+                node->back->AddObjectToTree(object);
             }
         }
     }

@@ -11,7 +11,7 @@ using namespace BSP;
 
 namespace
 {
-    void addFBXMeshToWorld(
+    void AddFBXMeshToWorld(
         ufbx_node* node, std::vector<BSPSurface>& surfaceVec, std::vector<BSPVertex>& vertexVec, std::vector<uint16_t>& indexVec, bool& hasTangentSpace)
     {
         ufbx_mesh* mesh = node->mesh;
@@ -176,7 +176,7 @@ namespace
         }
     }
 
-    void loadWorldData(const ufbx_scene& scene, BSPData& bsp, const bool isGfxData)
+    void LoadWorldData(const ufbx_scene& scene, BSPData& bsp, const bool isGfxData)
     {
         bool hasTangentSpace = true;
         for (ufbx_node* node : scene.nodes)
@@ -184,9 +184,9 @@ namespace
             if (node->attrib_type == UFBX_ELEMENT_MESH)
             {
                 if (isGfxData)
-                    addFBXMeshToWorld(node, bsp.gfxWorld.surfaces, bsp.gfxWorld.vertices, bsp.gfxWorld.indices, hasTangentSpace);
+                    AddFBXMeshToWorld(node, bsp.gfxWorld.surfaces, bsp.gfxWorld.vertices, bsp.gfxWorld.indices, hasTangentSpace);
                 else
-                    addFBXMeshToWorld(node, bsp.colWorld.surfaces, bsp.colWorld.vertices, bsp.colWorld.indices, hasTangentSpace);
+                    AddFBXMeshToWorld(node, bsp.colWorld.surfaces, bsp.colWorld.vertices, bsp.colWorld.indices, hasTangentSpace);
             }
             else
             {
@@ -201,7 +201,7 @@ namespace
 
 namespace BSP
 {
-    std::unique_ptr<BSPData> createBSPData(const std::string& mapName, ISearchPath& searchPath)
+    std::unique_ptr<BSPData> CreateBSPData(const std::string& mapName, ISearchPath& searchPath)
     {
         const auto gfxFbxPath = GetFileNameForBSPAsset("map_gfx.fbx");
         const auto gfxFile = searchPath.Open(gfxFbxPath);
@@ -268,8 +268,8 @@ namespace BSP
         bsp->name = mapName;
         bsp->bspName = std::format("maps/mp/{}.d3dbsp", mapName);
 
-        loadWorldData(*gfxScene, *bsp, true);
-        loadWorldData(*colScene, *bsp, false);
+        LoadWorldData(*gfxScene, *bsp, true);
+        LoadWorldData(*colScene, *bsp, false);
 
         ufbx_free_scene(gfxScene);
         if (gfxScene != colScene)

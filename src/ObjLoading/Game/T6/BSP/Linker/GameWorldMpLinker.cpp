@@ -11,7 +11,7 @@ namespace BSP
     {
     }
 
-    GameWorldMp* GameWorldMpLinker::linkGameWorldMp(const BSPData& bsp) const
+    GameWorldMp* GameWorldMpLinker::LinkGameWorldMp(const BSPData& bsp) const
     {
         GameWorldMp* gameWorldMp = m_memory.Alloc<GameWorldMp>();
 

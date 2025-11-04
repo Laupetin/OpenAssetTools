@@ -13,21 +13,21 @@ namespace BSP
     public:
         ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
 
-        [[nodiscard]] T6::clipMap_t* linkClipMap(const BSPData& bsp);
+        [[nodiscard]] T6::clipMap_t* LinkClipMap(const BSPData& bsp);
 
     private:
-        void loadBoxData(T6::clipMap_t& clipMap) const;
-        void loadVisibility(T6::clipMap_t& clipMap) const;
-        void loadDynEnts(T6::clipMap_t& clipMap) const;
-        void loadRopesAndConstraints(T6::clipMap_t& clipMap) const;
-        void loadSubModelCollision(T6::clipMap_t& clipMap, const BSPData& bsp) const;
-        void loadXModelCollision(T6::clipMap_t& clipMap) const;
+        void LoadBoxData(T6::clipMap_t& clipMap) const;
+        void LoadVisibility(T6::clipMap_t& clipMap) const;
+        void LoadDynEnts(T6::clipMap_t& clipMap) const;
+        void LoadRopesAndConstraints(T6::clipMap_t& clipMap) const;
+        void LoadSubModelCollision(T6::clipMap_t& clipMap, const BSPData& bsp) const;
+        void LoadXModelCollision(T6::clipMap_t& clipMap) const;
 
-        void addAABBTreeFromLeaf(T6::clipMap_t& clipMap, const BSPTree& tree, size_t& out_parentCount, size_t& out_parentStartIndex);
-        int16_t loadBSPNode(T6::clipMap_t& clipMap, const BSPTree& tree);
-        void loadBSPTree(T6::clipMap_t& clipMap, const BSPData& bsp);
-        bool loadPartitions(T6::clipMap_t& clipMap, const BSPData& bsp) const;
-        bool loadWorldCollision(T6::clipMap_t& clipMap, const BSPData& bsp);
+        void AddAABBTreeFromLeaf(T6::clipMap_t& clipMap, const BSPTree& tree, size_t& outParentCount, size_t& outParentStartIndex);
+        int16_t LoadBSPNode(T6::clipMap_t& clipMap, const BSPTree& tree);
+        void LoadBSPTree(T6::clipMap_t& clipMap, const BSPData& bsp);
+        bool LoadPartitions(T6::clipMap_t& clipMap, const BSPData& bsp) const;
+        bool LoadWorldCollision(T6::clipMap_t& clipMap, const BSPData& bsp);
 
         MemoryManager& m_memory;
         ISearchPath& m_search_path;

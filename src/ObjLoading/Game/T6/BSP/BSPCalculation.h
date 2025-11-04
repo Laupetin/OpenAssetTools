@@ -34,9 +34,9 @@ namespace BSP
     class BSPLeaf
     {
     public:
-        void addObject(std::shared_ptr<BSPObject> object);
-        [[nodiscard]] BSPObject* getObject(size_t index) const;
-        [[nodiscard]] size_t getObjectCount() const;
+        void AddObject(std::shared_ptr<BSPObject> object);
+        [[nodiscard]] BSPObject* GetObject(size_t index) const;
+        [[nodiscard]] size_t GetObjectCount() const;
 
         std::vector<std::shared_ptr<BSPObject>> objectList;
     };
@@ -47,7 +47,7 @@ namespace BSP
     {
     public:
         BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, PlaneAxis nodeAxis, float nodeDistance);
-        [[nodiscard]] PlaneSide objectIsInFront(const BSPObject& object) const;
+        [[nodiscard]] PlaneSide ObjectIsInFront(const BSPObject& object) const;
 
         std::unique_ptr<BSPTree> front;
         std::unique_ptr<BSPTree> back;
@@ -61,8 +61,8 @@ namespace BSP
     public:
         BSPTree(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int treeLevel);
 
-        void splitTree();
-        void addObjectToTree(std::shared_ptr<BSPObject> object) const;
+        void SplitTree();
+        void AddObjectToTree(std::shared_ptr<BSPObject> object) const;
 
         bool isLeaf;
         std::unique_ptr<BSPLeaf> leaf;

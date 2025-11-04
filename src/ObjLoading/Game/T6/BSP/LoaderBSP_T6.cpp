@@ -32,12 +32,12 @@ namespace
 
         bool FinalizeZone(AssetCreationContext& context) override
         {
-            const auto bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
+            const auto bsp = CreateBSPData(m_zone.m_name, m_search_path);
             if (!bsp)
                 return false;
 
             BSPLinker linker(m_memory, m_search_path, context);
-            const auto result = linker.linkBSP(*bsp);
+            const auto result = linker.LinkBSP(*bsp);
             if (!result)
                 con::error("BSP link has failed.");
 

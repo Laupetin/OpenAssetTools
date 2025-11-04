@@ -72,7 +72,7 @@ namespace BSP
     {
     }
 
-    MapEnts* MapEntsLinker::linkMapEnts(const BSPData& bsp) const
+    MapEnts* MapEntsLinker::LinkMapEnts(const BSPData& bsp) const
     {
         try
         {

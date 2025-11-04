@@ -12,11 +12,11 @@ namespace BSP
     public:
         BSPLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
 
-        [[nodiscard]] bool linkBSP(const BSPData& bsp) const;
+        [[nodiscard]] bool LinkBSP(const BSPData& bsp) const;
 
     private:
-        void addEmptyFootstepTableAsset(const std::string& assetName) const;
-        [[nodiscard]] bool addDefaultRequiredAssets(const BSPData& bsp) const;
+        void AddEmptyFootstepTableAsset(const std::string& assetName) const;
+        [[nodiscard]] bool AddDefaultRequiredAssets(const BSPData& bsp) const;
 
         MemoryManager& m_memory;
         ISearchPath& m_search_path;

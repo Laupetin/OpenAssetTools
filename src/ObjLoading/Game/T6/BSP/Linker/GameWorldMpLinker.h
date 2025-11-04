@@ -12,7 +12,7 @@ namespace BSP
     public:
         GameWorldMpLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
 
-        [[nodiscard]] T6::GameWorldMp* linkGameWorldMp(const BSPData& bsp) const;
+        [[nodiscard]] T6::GameWorldMp* LinkGameWorldMp(const BSPData& bsp) const;
 
     private:
         MemoryManager& m_memory;

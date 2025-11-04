@@ -11,7 +11,7 @@ namespace BSP
     {
     }
 
-    ComWorld* ComWorldLinker::linkComWorld(const BSPData& bsp) const
+    ComWorld* ComWorldLinker::LinkComWorld(const BSPData& bsp) const
     {
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();

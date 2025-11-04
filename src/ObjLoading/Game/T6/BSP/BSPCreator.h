@@ -5,5 +5,5 @@
 
 namespace BSP
 {
-    std::unique_ptr<BSPData> createBSPData(const std::string& mapName, ISearchPath& searchPath);
+    std::unique_ptr<BSPData> CreateBSPData(const std::string& mapName, ISearchPath& searchPath);
 }; // namespace BSP

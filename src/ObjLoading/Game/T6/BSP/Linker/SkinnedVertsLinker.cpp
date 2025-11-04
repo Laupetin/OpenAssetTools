@@ -9,7 +9,7 @@ namespace BSP
     {
     }
 
-    T6::SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(const BSPData& bsp) const
+    T6::SkinnedVertsDef* SkinnedVertsLinker::LinkSkinnedVerts(const BSPData& bsp) const
     {
         // Pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
         // But setting it to the world vertex count seems to work
