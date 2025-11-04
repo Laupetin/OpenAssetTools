@@ -77,7 +77,7 @@ namespace BSP
         try
         {
             json entJs;
-            const auto entityFilePath = BSPUtil::getFileNameForBSPAsset("entities.json");
+            const auto entityFilePath = GetFileNameForBSPAsset("entities.json");
             const auto entFile = m_search_path.Open(entityFilePath);
             if (!entFile.IsOpen())
             {
@@ -93,7 +93,7 @@ namespace BSP
                 return nullptr;
 
             json spawnJs;
-            const auto spawnFilePath = BSPUtil::getFileNameForBSPAsset("spawns.json");
+            const auto spawnFilePath = GetFileNameForBSPAsset("spawns.json");
             const auto spawnFile = m_search_path.Open(spawnFilePath);
             if (!spawnFile.IsOpen())
             {

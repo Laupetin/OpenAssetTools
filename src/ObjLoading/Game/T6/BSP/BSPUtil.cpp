@@ -9,12 +9,12 @@ using namespace T6;
 
 namespace BSP
 {
-    std::string BSPUtil::getFileNameForBSPAsset(const std::string& assetName)
+    std::string GetFileNameForBSPAsset(const std::string& assetName)
     {
         return std::format("BSP/{}", assetName);
     }
 
-    vec3_t BSPUtil::convertToBO2Coords(const vec3_t& coordinate)
+    vec3_t ConvertToBO2Coords(const vec3_t& coordinate)
     {
         vec3_t result;
         result.x = coordinate.x;
@@ -23,7 +23,7 @@ namespace BSP
         return result;
     }
 
-    vec3_t BSPUtil::convertFromBO2Coords(const vec3_t& coordinate)
+    vec3_t ConvertFromBO2Coords(const vec3_t& coordinate)
     {
         vec3_t result;
         result.x = coordinate.x;
@@ -32,7 +32,7 @@ namespace BSP
         return result;
     }
 
-    void BSPUtil::updateAABB(const vec3_t& newAABBMins, const vec3_t& newAABBMaxs, vec3_t& AABBMins, vec3_t& AABBMaxs)
+    void UpdateAABB(const vec3_t& newAABBMins, const vec3_t& newAABBMaxs, vec3_t& AABBMins, vec3_t& AABBMaxs)
     {
         AABBMins.x = std::min(AABBMins.x, newAABBMins.x);
         AABBMaxs.x = std::max(AABBMaxs.x, newAABBMaxs.x);
@@ -44,7 +44,7 @@ namespace BSP
         AABBMaxs.z = std::max(AABBMaxs.z, newAABBMaxs.z);
     }
 
-    void BSPUtil::updateAABBWithPoint(const vec3_t& point, vec3_t& AABBMins, vec3_t& AABBMaxs)
+    void UpdateAABBWithPoint(const vec3_t& point, vec3_t& AABBMins, vec3_t& AABBMaxs)
     {
         AABBMins.x = std::min(AABBMins.x, point.x);
         AABBMaxs.x = std::max(AABBMaxs.x, point.x);
@@ -56,7 +56,7 @@ namespace BSP
         AABBMaxs.z = std::max(AABBMaxs.z, point.z);
     }
 
-    vec3_t BSPUtil::calcMiddleOfAABB(const vec3_t& mins, const vec3_t& maxs)
+    vec3_t CalcMiddleOfAABB(const vec3_t& mins, const vec3_t& maxs)
     {
         vec3_t result;
         result.x = (mins.x + maxs.x) * 0.5f;
@@ -66,7 +66,7 @@ namespace BSP
         return result;
     }
 
-    vec3_t BSPUtil::calcHalfSizeOfAABB(const vec3_t& mins, const vec3_t& maxs)
+    vec3_t CalcHalfSizeOfAABB(const vec3_t& mins, const vec3_t& maxs)
     {
         vec3_t result;
         result.x = (maxs.x - mins.x) * 0.5f;
@@ -76,7 +76,7 @@ namespace BSP
         return result;
     }
 
-    float BSPUtil::distBetweenPoints(const vec3_t& p1, const vec3_t& p2)
+    float DistBetweenPoints(const vec3_t& p1, const vec3_t& p2)
     {
         const auto x = p2.x - p1.x;
         const auto y = p2.y - p1.y;
@@ -86,7 +86,7 @@ namespace BSP
     }
 
     // angles are in euler degrees
-    void BSPUtil::convertAnglesToAxis(const vec3_t* angles, vec3_t* axis)
+    void ConvertAnglesToAxis(const vec3_t* angles, vec3_t* axis)
     {
         constexpr auto conversionValue = std::numbers::pi_v<float> / 180.0f;
         const auto xRadians = angles->x * conversionValue;
@@ -111,7 +111,7 @@ namespace BSP
         axis[2].z = cosZ * cosX;
     }
 
-    void BSPUtil::matrixTranspose3x3(const vec3_t* in, vec3_t* out)
+    void MatrixTranspose3x3(const vec3_t* in, vec3_t* out)
     {
         out[0].x = in[0].x;
         out[0].y = in[1].x;

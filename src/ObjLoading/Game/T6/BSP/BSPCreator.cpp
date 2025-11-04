@@ -98,7 +98,7 @@ namespace
                     blenderCoords.x = static_cast<float>(transformedPos.x);
                     blenderCoords.y = static_cast<float>(transformedPos.y);
                     blenderCoords.z = static_cast<float>(transformedPos.z);
-                    vertex.pos = BSPUtil::convertToBO2Coords(blenderCoords);
+                    vertex.pos = ConvertToBO2Coords(blenderCoords);
 
                     if (surface.material.materialType == BSPMaterialType::MATERIAL_TYPE_TEXTURE
                         || surface.material.materialType == BSPMaterialType::MATERIAL_TYPE_EMPTY)
@@ -203,7 +203,7 @@ namespace BSP
 {
     std::unique_ptr<BSPData> createBSPData(const std::string& mapName, ISearchPath& searchPath)
     {
-        const auto gfxFbxPath = BSPUtil::getFileNameForBSPAsset("map_gfx.fbx");
+        const auto gfxFbxPath = GetFileNameForBSPAsset("map_gfx.fbx");
         const auto gfxFile = searchPath.Open(gfxFbxPath);
         if (!gfxFile.IsOpen())
         {
@@ -232,7 +232,7 @@ namespace BSP
         }
 
         ufbx_scene* colScene;
-        const auto colFbxPath = BSPUtil::getFileNameForBSPAsset("map_col.fbx");
+        const auto colFbxPath = GetFileNameForBSPAsset("map_col.fbx");
         const auto colFile = searchPath.Open(colFbxPath);
         if (!colFile.IsOpen())
         {

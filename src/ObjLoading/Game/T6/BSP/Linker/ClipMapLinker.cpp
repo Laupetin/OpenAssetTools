@@ -146,7 +146,7 @@ namespace BSP
         clipMap.cmodels[0].maxs.x = gfxModel->bounds[1].x;
         clipMap.cmodels[0].maxs.y = gfxModel->bounds[1].y;
         clipMap.cmodels[0].maxs.z = gfxModel->bounds[1].z;
-        clipMap.cmodels[0].radius = BSPUtil::distBetweenPoints(clipMap.cmodels[0].mins, clipMap.cmodels[0].maxs) / 2;
+        clipMap.cmodels[0].radius = DistBetweenPoints(clipMap.cmodels[0].mins, clipMap.cmodels[0].maxs) / 2;
 
         // The world sub model has no leafs associated with it
         clipMap.cmodels[0].leaf.firstCollAabbIndex = 0;
@@ -262,14 +262,14 @@ namespace BSP
                         parentMaxs = vert;
                     }
 
-                    BSPUtil::updateAABBWithPoint(vert, parentMins, parentMaxs);
+                    UpdateAABBWithPoint(vert, parentMins, parentMaxs);
                 }
             }
             size_t childObjectStartIndex = AABBTreeVec.size();
 
             CollisionAabbTree parentAABB;
-            parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
-            parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
+            parentAABB.origin = CalcMiddleOfAABB(parentMins, parentMaxs);
+            parentAABB.halfSize = CalcHalfSizeOfAABB(parentMins, parentMaxs);
             parentAABB.materialIndex = 0; // always use the first material
             parentAABB.childCount = static_cast<uint16_t>(childObjectCount);
             parentAABB.u.firstChildIndex = static_cast<int>(childObjectStartIndex);
@@ -294,15 +294,15 @@ namespace BSP
                         childMaxs = vert;
                     }
 
-                    BSPUtil::updateAABBWithPoint(vert, childMins, childMaxs);
+                    UpdateAABBWithPoint(vert, childMins, childMaxs);
                 }
 
                 CollisionAabbTree childAABBTree{};
                 childAABBTree.materialIndex = 0; // always use the first material
                 childAABBTree.childCount = 0;
                 childAABBTree.u.partitionIndex = partitionIndex;
-                childAABBTree.origin = BSPUtil::calcMiddleOfAABB(childMins, childMaxs);
-                childAABBTree.halfSize = BSPUtil::calcHalfSizeOfAABB(childMins, childMaxs);
+                childAABBTree.origin = CalcMiddleOfAABB(childMins, childMaxs);
+                childAABBTree.halfSize = CalcHalfSizeOfAABB(childMins, childMaxs);
                 AABBTreeVec.emplace_back(childAABBTree);
             }
 
@@ -428,7 +428,7 @@ namespace BSP
                 worldMins = vertex;
                 worldMaxs = vertex;
             }
-            BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
+            UpdateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
         const auto tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
         assert(!tree->isLeaf);
@@ -448,7 +448,7 @@ namespace BSP
                     partitionMins = vert;
                     partitionMaxs = vert;
                 }
-                BSPUtil::updateAABBWithPoint(vert, partitionMins, partitionMaxs);
+                UpdateAABBWithPoint(vert, partitionMins, partitionMaxs);
             }
             auto currObject =
                 std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
