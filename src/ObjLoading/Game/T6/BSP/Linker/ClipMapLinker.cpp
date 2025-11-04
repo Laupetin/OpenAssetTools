@@ -218,6 +218,9 @@ namespace BSP
 
         assert(objectCount > 0);
 
+        if (objectCount > highestLeafObjectCount)
+            highestLeafObjectCount = objectCount;
+
         // add the parent AABB node
         vec3_t parentMins;
         vec3_t parentMaxs;
@@ -456,6 +459,8 @@ namespace BSP
         // The plane of each node have the same index
         for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
             clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
+
+        con::info("Highest leaf object count: {}", highestLeafObjectCount);
     }
 
     bool ClipMapLinker::loadPartitions(clipMap_t* clipMap, BSPData* bsp)
@@ -471,7 +476,7 @@ namespace BSP
         clipMap->vertCount = static_cast<unsigned int>(bsp->colWorld.vertices.size());
         clipMap->verts = m_memory.Alloc<vec3_t>(clipMap->vertCount);
         for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
-            clipMap->verts[vertIdx] = BSPUtil::convertToBO2Coords(bsp->colWorld.vertices[vertIdx].pos);
+            clipMap->verts[vertIdx] = bsp->colWorld.vertices[vertIdx].pos;
 
         // The clipmap index buffer has a unique index for each vertex in the world, compared to the gfxworld's
         //  index buffer having a unique index for each vertex on a surface. This code converts gfxworld indices to clipmap indices.

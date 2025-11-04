@@ -91,9 +91,11 @@ namespace
                     uint32_t index = tempIndices[idxOfIndex];
 
                     ufbx_vec3 transformedPos = ufbx_transform_position(&meshMatrix, ufbx_get_vertex_vec3(&mesh->vertex_position, index));
-                    vertex.pos.x = static_cast<float>(transformedPos.x);
-                    vertex.pos.y = static_cast<float>(transformedPos.y);
-                    vertex.pos.z = static_cast<float>(transformedPos.z);
+                    vec3_t blenderCoords;
+                    blenderCoords.x = static_cast<float>(transformedPos.x);
+                    blenderCoords.y = static_cast<float>(transformedPos.y);
+                    blenderCoords.z = static_cast<float>(transformedPos.z);
+                    vertex.pos = BSPUtil::convertToBO2Coords(blenderCoords);
 
                     if (surface.material.materialType == MATERIAL_TYPE_TEXTURE || surface.material.materialType == MATERIAL_TYPE_EMPTY)
                     {
