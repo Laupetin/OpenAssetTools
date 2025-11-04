@@ -158,9 +158,12 @@ namespace
             vertexVec.insert(vertexVec.end(), tempVertices.begin(), tempVertices.end());
 
             // T6 uses unsigned shorts as their index type so we have to loop and convert them from an unsigned int
-            for (size_t idx = 0; idx < outIndices.size(); idx++)
+            for (size_t idx = 0; idx < outIndices.size(); idx += 3)
             {
-                indexVec.emplace_back(static_cast<uint16_t>(outIndices[idx]));
+                // BO2's index ordering is opposite to the FBX, so its converted here
+                indexVec.emplace_back(static_cast<uint16_t>(outIndices[idx + 2]));
+                indexVec.emplace_back(static_cast<uint16_t>(outIndices[idx + 1]));
+                indexVec.emplace_back(static_cast<uint16_t>(outIndices[idx + 0]));
             }
 
             surfaceVec.emplace_back(surface);

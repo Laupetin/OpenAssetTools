@@ -44,12 +44,9 @@ namespace BSP
         assert(indexCount % 3 == 0);
         gfxWorld->draw.indexCount = static_cast<int>(indexCount);
         gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount);
-        for (size_t indexIdx = 0; indexIdx < indexCount; indexIdx += 3)
+        for (size_t indexIdx = 0; indexIdx < indexCount; indexIdx++)
         {
-            // the editor orders their vertices opposite to bo2, so its converted here
-            gfxWorld->draw.indices[indexIdx + 2] = bsp->gfxWorld.indices.at(indexIdx + 0);
-            gfxWorld->draw.indices[indexIdx + 1] = bsp->gfxWorld.indices.at(indexIdx + 1);
-            gfxWorld->draw.indices[indexIdx + 0] = bsp->gfxWorld.indices.at(indexIdx + 2);
+            gfxWorld->draw.indices[indexIdx] = bsp->gfxWorld.indices.at(indexIdx);
         }
     }
 
