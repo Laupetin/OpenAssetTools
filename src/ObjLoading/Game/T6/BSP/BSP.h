@@ -63,6 +63,8 @@ namespace BSP
     {
         constexpr unsigned int MAX_COLLISION_VERTS = UINT16_MAX;
 
+        constexpr size_t MAX_AABB_TREE_CHILDREN = 128;
+
         enum BSPDefaultLights
         {
             STATIC_LIGHT_INDEX = 0,

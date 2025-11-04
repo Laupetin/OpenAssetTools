@@ -31,7 +31,7 @@ namespace BSP
         std::vector<cLeaf_s> leafVec;
         std::vector<CollisionAabbTree> AABBTreeVec;
         size_t highestLeafObjectCount = 0;
-        int addAABBTreeFromLeaf(BSPTree* node, clipMap_t* clipMap);
+        void addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex);
         int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree);
         void loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
         bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
