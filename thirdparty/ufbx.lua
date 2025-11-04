@@ -8,7 +8,7 @@ function ufbx:include(includes)
 	end
 end
 
-function ufbx:link()
+function ufbx:link(links)
 	links:add(self:name())
 end
 
