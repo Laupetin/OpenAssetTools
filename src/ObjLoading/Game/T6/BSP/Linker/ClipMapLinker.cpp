@@ -332,27 +332,20 @@ namespace BSP
         else
         {
             cplane_s plane;
-
+            plane.dist = tree->node->distance;
             if (tree->node->axis == AXIS_X)
             {
                 plane.normal = normalX;
-                plane.dist = tree->node->distance;
-            }
-            else
-            {
-                // converting Z coords to BO2 negates the z coords and sets it to the y coord.
-                assert(tree->node->axis == AXIS_Z);
-                plane.normal = normalY;
-                plane.dist = -tree->node->distance;
-            }
-
-            if (plane.normal.x == 1.0f)
                 plane.type = 0;
-            else if (plane.normal.y == 1.0f)
-                plane.type = 1;
-            else
+            }
+            else if (tree->node->axis == AXIS_Y)
             {
-                assert(plane.normal.z == 1.0f);
+                plane.normal = normalY;
+                plane.type = 1;
+            }
+            else // tree->node->axis == AXIS_Z
+            {
+                plane.normal = normalZ;
                 plane.type = 2;
             }
 
@@ -369,23 +362,14 @@ namespace BSP
 
             planeVec.emplace_back(plane);
 
-            // The recursion of adding the children means the node needs to be added before the chilren are loaded
+            // The recursion of adding the children through loadBSPNode means the parent node needs to be added before the chilren are loaded
             size_t nodeIndex = nodeVec.size();
             nodeVec.emplace_back();
 
             cNode_t node;
             node.plane = nullptr; // initalised after the BSP tree has been loaded
-            if (plane.type == 1)
-            {
-                // Due to the plane normal going from Z to Y, objects behind the plane are now in front and objects in front are now behind
-                node.children[1] = loadBSPNode(clipMap, tree->node->front.get());
-                node.children[0] = loadBSPNode(clipMap, tree->node->back.get());
-            }
-            else
-            {
-                node.children[0] = loadBSPNode(clipMap, tree->node->front.get());
-                node.children[1] = loadBSPNode(clipMap, tree->node->back.get());
-            }
+            node.children[0] = loadBSPNode(clipMap, tree->node->front.get());
+            node.children[1] = loadBSPNode(clipMap, tree->node->back.get());
 
             nodeVec.at(nodeIndex) = node;
 
@@ -395,15 +379,11 @@ namespace BSP
 
     void ClipMapLinker::loadBSPTree(clipMap_t* clipMap, BSPData* bsp)
     {
-        // HACK:
-        //  the BSP tree creation does not work when BO2's coordinate system is used for mins and maxs.
-        //  Workaround is to convert every BO2 coordinate before it is added into the BSP tree.
-
         vec3_t worldMins;
         vec3_t worldMaxs;
         for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
         {
-            vec3_t vertex = BSPUtil::convertFromBO2Coords(clipMap->verts[vertIdx]);
+            vec3_t vertex = clipMap->verts[vertIdx];
             // initalise AABB with the first vertex
             if (vertIdx == 0)
             {
@@ -423,7 +403,7 @@ namespace BSP
             for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
             {
                 uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
-                vec3_t vert = BSPUtil::convertFromBO2Coords(clipMap->verts[uind]);
+                vec3_t vert = clipMap->verts[uind];
                 // initalise the AABB with the first vertex
                 if (uindIdx == 0)
                 {
