@@ -86,8 +86,6 @@ namespace BSP
         splitTree();
     }
 
-    // For simplicity, only split across the X and Z axis.
-    // It is unlikely that there are many layers to a map, and is instead mostly flat
     void BSPTree::splitTree()
     {
         std::unique_ptr<BSPTree> front;
@@ -103,6 +101,17 @@ namespace BSP
 
             isLeaf = false;
             node = std::make_unique<BSPNode>(std::move(front), std::move(back), AXIS_X, halfLength);
+            leaf = nullptr;
+        }
+        else if (max.y - min.y > MAX_NODE_SIZE)
+        {
+            // split along the x axis
+            halfLength = (min.y + max.y) * 0.5f;
+            front = std::make_unique<BSPTree>(min.x, halfLength, min.z, max.x, max.y, max.z, level + 1);
+            back = std::make_unique<BSPTree>(min.x, min.y, min.z, max.x, halfLength, max.z, level + 1);
+
+            isLeaf = false;
+            node = std::make_unique<BSPNode>(std::move(front), std::move(back), AXIS_Y, halfLength);
             leaf = nullptr;
         }
         else if (max.z - min.z > MAX_NODE_SIZE)
