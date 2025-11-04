@@ -209,81 +209,103 @@ namespace BSP
         */
     }
 
-    int ClipMapLinker::addAABBTreeFromLeaf(BSPTree* node, clipMap_t* clipMap)
+    void ClipMapLinker::addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex)
     {
-        assert(node->isLeaf);
+        assert(tree->isLeaf);
 
-        size_t objectCount = node->leaf->getObjectCount();
-        size_t parentAABBIndex = AABBTreeVec.size();
+        size_t leafObjectCount = tree->leaf->getObjectCount();
+        assert(leafObjectCount > 0);
+        if (leafObjectCount > highestLeafObjectCount)
+            highestLeafObjectCount = leafObjectCount;
 
-        assert(objectCount > 0);
+        // BO2 has a maximum limit of 128 children per AABB tree (essentially),
+        // so this is fixed by adding multiple parent AABB trees that hold 128 children each
+        size_t result = leafObjectCount / BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+        size_t remainder = leafObjectCount % BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+        size_t parentCount = result;
+        if (remainder > 0)
+            parentCount++;
 
-        if (objectCount > highestLeafObjectCount)
-            highestLeafObjectCount = objectCount;
-
-        // add the parent AABB node
-        vec3_t parentMins;
-        vec3_t parentMaxs;
-        for (size_t objectIdx = 0; objectIdx < objectCount; objectIdx++)
+        size_t parentAABBArrayIndex = AABBTreeVec.size();
+        AABBTreeVec.resize(AABBTreeVec.size() + parentCount);
+        size_t unaddedObjectCount = leafObjectCount;
+        size_t addedObjectCount = 0;
+        for (size_t parentIdx = 0; parentIdx < parentCount; parentIdx++)
         {
-            int partitionIndex = node->leaf->getObject(objectIdx)->partitionIndex;
-            CollisionPartition* partition = &clipMap->partitions[partitionIndex];
-            for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
-            {
-                uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
-                vec3_t vert = clipMap->verts[uind];
+            size_t childObjectCount = BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+            if (unaddedObjectCount <= BSPGameConstants::MAX_AABB_TREE_CHILDREN)
+                childObjectCount = unaddedObjectCount;
+            else
+                unaddedObjectCount -= BSPGameConstants::MAX_AABB_TREE_CHILDREN;
 
-                // initalise the parent AABB with the first vertex
-                if (objectIdx == 0 && uindIdx == 0)
+            // add the parent AABB
+            vec3_t parentMins;
+            vec3_t parentMaxs;
+            for (size_t objectIdx = 0; objectIdx < childObjectCount; objectIdx++)
+            {
+                int partitionIndex = tree->leaf->getObject(addedObjectCount + objectIdx)->partitionIndex;
+                CollisionPartition* partition = &clipMap->partitions[partitionIndex];
+                for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
                 {
-                    parentMins = vert;
-                    parentMaxs = vert;
+                    uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
+                    vec3_t vert = clipMap->verts[uind];
+
+                    // initalise the parent AABB with the first vertex
+                    if (objectIdx == 0 && uindIdx == 0)
+                    {
+                        parentMins = vert;
+                        parentMaxs = vert;
+                    }
+
+                    BSPUtil::updateAABBWithPoint(vert, parentMins, parentMaxs);
+                }
+            }
+            size_t childObjectStartIndex = AABBTreeVec.size();
+
+            CollisionAabbTree parentAABB;
+            parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
+            parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
+            parentAABB.materialIndex = 0; // always use the first material
+            parentAABB.childCount = static_cast<uint16_t>(childObjectCount);
+            parentAABB.u.firstChildIndex = static_cast<int>(childObjectStartIndex);
+            AABBTreeVec.at(parentAABBArrayIndex + parentIdx) = parentAABB;
+
+            // add child AABBs
+            for (size_t objectIdx = 0; objectIdx < childObjectCount; objectIdx++)
+            {
+                int partitionIndex = tree->leaf->getObject(addedObjectCount + objectIdx)->partitionIndex;
+                CollisionPartition* partition = &clipMap->partitions[partitionIndex];
+                vec3_t childMins;
+                vec3_t childMaxs;
+                for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
+                {
+                    uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
+                    vec3_t vert = clipMap->verts[uind];
+
+                    // initalise the child AABB with the first vertex
+                    if (uindIdx == 0)
+                    {
+                        childMins = vert;
+                        childMaxs = vert;
+                    }
+
+                    BSPUtil::updateAABBWithPoint(vert, childMins, childMaxs);
                 }
 
-                BSPUtil::updateAABBWithPoint(vert, parentMins, parentMaxs);
-            }
-        }
-
-        CollisionAabbTree parentAABB;
-        parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
-        parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
-        parentAABB.materialIndex = 0; // always use the first material
-        parentAABB.childCount = static_cast<uint16_t>(objectCount);
-        parentAABB.u.firstChildIndex = static_cast<int>(parentAABBIndex + 1);
-        AABBTreeVec.emplace_back(parentAABB);
-
-        // add child AABB nodes
-        for (size_t objectIdx = 0; objectIdx < objectCount; objectIdx++)
-        {
-            int partitionIndex = node->leaf->getObject(objectIdx)->partitionIndex;
-            CollisionPartition* partition = &clipMap->partitions[partitionIndex];
-            vec3_t childMins;
-            vec3_t childMaxs;
-            for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
-            {
-                uint16_t uind = clipMap->info.uinds[partition->fuind + uindIdx];
-                vec3_t vert = clipMap->verts[uind];
-
-                // initalise the child AABB with the first vertex
-                if (uindIdx == 0)
-                {
-                    childMins = vert;
-                    childMaxs = vert;
-                }
-
-                BSPUtil::updateAABBWithPoint(vert, childMins, childMaxs);
+                CollisionAabbTree childAABBTree;
+                childAABBTree.materialIndex = 0; // always use the first material
+                childAABBTree.childCount = 0;
+                childAABBTree.u.partitionIndex = partitionIndex;
+                childAABBTree.origin = BSPUtil::calcMiddleOfAABB(childMins, childMaxs);
+                childAABBTree.halfSize = BSPUtil::calcHalfSizeOfAABB(childMins, childMaxs);
+                AABBTreeVec.emplace_back(childAABBTree);
             }
 
-            CollisionAabbTree childAABBTree;
-            childAABBTree.materialIndex = 0; // always use the first material
-            childAABBTree.childCount = 0;
-            childAABBTree.u.partitionIndex = partitionIndex;
-            childAABBTree.origin = BSPUtil::calcMiddleOfAABB(childMins, childMaxs);
-            childAABBTree.halfSize = BSPUtil::calcHalfSizeOfAABB(childMins, childMaxs);
-            AABBTreeVec.emplace_back(childAABBTree);
+            addedObjectCount += childObjectCount;
         }
 
-        return static_cast<int>(parentAABBIndex);
+        *out_parentCount = parentCount;
+        *out_parentStartIndex = parentAABBArrayIndex;
     }
 
     constexpr vec3_t normalX = {1.0f, 0.0f, 0.0f};
@@ -315,8 +337,11 @@ namespace BSP
 
             if (tree->leaf->getObjectCount() > 0)
             {
-                leaf.firstCollAabbIndex = addAABBTreeFromLeaf(tree, clipMap);
-                leaf.collAabbCount = 1; // 1 as it is the parent of all object AABBs
+                size_t parentCount = 0;
+                size_t parentStartIndex = 0;
+                addAABBTreeFromLeaf(clipMap, tree, &parentCount, &parentStartIndex);
+                leaf.collAabbCount = static_cast<uint16_t>(parentCount);
+                leaf.firstCollAabbIndex = static_cast<uint16_t>(parentStartIndex);
             }
             else
             {
