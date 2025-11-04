@@ -52,39 +52,50 @@ namespace
     class JsonLoader
     {
     public:
-        JsonLoader(MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-            : m_memory(memory),
+        JsonLoader(std::istream& stream, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+            : m_stream(stream),
+              m_memory(memory),
               m_context(context),
               m_registration(registration)
         {
         }
 
-        bool Load(json& jRoot, Material& material) const
+        bool Load(Material& material) const
         {
-			std::string type;
-			unsigned version;
-	
-			jRoot.at("_type").get_to(type);
-			jRoot.at("_version").get_to(version);
-	
-			if (type != "material" || version != 1u)
-			{
-				con::error("Tried to load material \"{}\" but did not find expected type material of version 1", material.info.name);
-				return false;
-			}
+            try
+            {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "material" || version != 1u)
+                {
+                    con::error("Tried to load material \"{}\" but did not find expected type material of version 1", material.info.name);
+                    return false;
+                }
             
 #ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
-            std::string game;
-            jRoot.at("_game").get_to(game);
-            if (game != GAME_LOWER)
-            {
-                con::error("Tried to load material \"{}\" but \"_game\" did not find expected type value {}", material.info.name, GAME_LOWER);
-                return false;
-            }
+                std::string game;
+                jRoot.at("_game").get_to(game);
+                if (game != GAME_LOWER)
+                {
+                    con::error("Tried to load material \"{}\" but \"_game\" did not find expected type value {}", material.info.name, GAME_LOWER);
+                    return false;
+                }
 #endif
 
-            const auto jMaterial = jRoot.get<JsonMaterial>();
-            return CreateMaterialFromJson(jMaterial, material);
+                const auto jMaterial = jRoot.get<JsonMaterial>();
+                return CreateMaterialFromJson(jMaterial, material);
+            }
+            catch (const json::exception& e)
+            {
+                con::error("Failed to parse json of material: {}", e.what());
+            }
+
+            return false;
         }
 
     private:
@@ -508,6 +519,7 @@ namespace
             return true;
         }
 
+        std::istream& m_stream;
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
         AssetRegistration<AssetMaterial>& m_registration;
@@ -517,28 +529,10 @@ namespace
 namespace GAME
 {
     bool LoadMaterialAsJson(
-		std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-	{
-		const JsonLoader loader(memory, context, registration);
-	
-		try
-        {
-			auto jRoot = json::parse(stream);
-			
-			return loader.Load(jRoot, material);
-		}
-        catch (const json::exception& e)
-        {
-            con::error("Failed to parse json of material: {}", e.what());
-			return false;
-        }
-	}
-	
-	bool LoadMaterialAsJson(
-		json& json, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
-	{
-		const JsonLoader loader(memory, context, registration);
-	
-		return loader.Load(json, material);
-	}
+        std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
+    {
+        const JsonLoader loader(stream, memory, context, registration);
+
+        return loader.Load(material);
+    }
 } // namespace GAME
