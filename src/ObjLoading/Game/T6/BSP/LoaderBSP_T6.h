@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Asset/IAssetCreator.h"
-#include "Game/T6/T6.h"
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
