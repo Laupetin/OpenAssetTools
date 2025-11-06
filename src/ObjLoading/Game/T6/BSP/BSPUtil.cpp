@@ -1,5 +1,3 @@
-#pragma once
-
 #include "BSPUtil.h"
 
 #include <cmath>
