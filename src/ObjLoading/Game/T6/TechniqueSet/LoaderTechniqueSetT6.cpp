@@ -33,7 +33,7 @@ namespace
             const auto js = nlohmann::json::parse(*file.m_stream.get());
 
             std::string techSetName = js["name"];
-            techniqueSet->name = _strdup(techSetName.c_str());
+            techniqueSet->name = m_memory.Dup(techSetName.c_str());
             techniqueSet->worldVertFormat = (unsigned char)js["worldVertFormat"];
 
             for (int i = 0; i < 36; i++)
@@ -50,7 +50,7 @@ namespace
                     techniqueSet->techniques[i] = technique;
 
                     std::string techName = techniqueJs["name"];
-                    technique->name = _strdup(techName.c_str());
+                    technique->name = m_memory.Dup(techName.c_str());
                     technique->flags = techniqueJs["flags"];
                     technique->passCount = techniqueJs["passCount"];
                     assert(technique->passCount == 1);
@@ -127,7 +127,7 @@ namespace
                             currPass->pixelShader = new MaterialPixelShader;
 
                             std::string pixelName = passJs["pixelShader"]["name"];
-                            currPass->pixelShader->name = _strdup(pixelName.c_str());
+                            currPass->pixelShader->name = m_memory.Dup(pixelName.c_str());
                             currPass->pixelShader->prog.ps = nullptr;
 
                             const auto psFileName = shader::GetFileNameForPixelShaderAssetName(pixelName);
@@ -151,7 +151,7 @@ namespace
                             currPass->vertexShader = new MaterialVertexShader;
 
                             std::string vertexName = passJs["vertexShader"]["name"];
-                            currPass->vertexShader->name = _strdup(vertexName.c_str());
+                            currPass->vertexShader->name = m_memory.Dup(vertexName.c_str());
                             currPass->vertexShader->prog.vs = nullptr;
 
                             const auto vsFileName = shader::GetFileNameForVertexShaderAssetName(vertexName);
