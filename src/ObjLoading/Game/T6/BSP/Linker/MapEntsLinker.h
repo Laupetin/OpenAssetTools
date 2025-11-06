@@ -11,7 +11,7 @@ namespace BSP
     {
     public:
         MapEntsLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        MapEnts* linkMapEnts(BSPData* bsp);
+        T6::MapEnts* linkMapEnts(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;

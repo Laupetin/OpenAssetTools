@@ -11,27 +11,27 @@ namespace BSP
     {
     public:
         GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        GfxWorld* linkGfxWorld(BSPData* bsp);
+        T6::GfxWorld* linkGfxWorld(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
         AssetCreationContext& m_context;
 
-        void loadDrawData(BSPData* projInfo, GfxWorld* gfxWorld);
-        bool loadMapSurfaces(BSPData* projInfo, GfxWorld* gfxWorld);
-        void loadXModels(BSPData* projInfo, GfxWorld* gfxWorld);
-        void cleanGfxWorld(GfxWorld* gfxWorld);
-        void loadGfxLights(GfxWorld* gfxWorld);
-        void loadLightGrid(GfxWorld* gfxWorld);
-        void loadGfxCells(GfxWorld* gfxWorld);
-        void loadModels(GfxWorld* gfxWorld);
-        bool loadReflectionProbeData(GfxWorld* gfxWorld);
-        bool loadLightmapData(GfxWorld* gfxWorld);
-        void loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld);
-        void loadDynEntData(GfxWorld* gfxWorld);
-        bool loadOutdoors(GfxWorld* gfxWorld);
-        void loadSunData(GfxWorld* gfxWorld);
-        void loadWorldBounds(GfxWorld* gfxWorld);
+        void loadDrawData(BSPData* projInfo, T6::GfxWorld* gfxWorld);
+        bool loadMapSurfaces(BSPData* projInfo, T6::GfxWorld* gfxWorld);
+        void loadXModels(BSPData* projInfo, T6::GfxWorld* gfxWorld);
+        void cleanGfxWorld(T6::GfxWorld* gfxWorld);
+        void loadGfxLights(T6::GfxWorld* gfxWorld);
+        void loadLightGrid(T6::GfxWorld* gfxWorld);
+        void loadGfxCells(T6::GfxWorld* gfxWorld);
+        void loadModels(T6::GfxWorld* gfxWorld);
+        bool loadReflectionProbeData(T6::GfxWorld* gfxWorld);
+        bool loadLightmapData(T6::GfxWorld* gfxWorld);
+        void loadSkyBox(BSPData* projInfo, T6::GfxWorld* gfxWorld);
+        void loadDynEntData(T6::GfxWorld* gfxWorld);
+        bool loadOutdoors(T6::GfxWorld* gfxWorld);
+        void loadSunData(T6::GfxWorld* gfxWorld);
+        void loadWorldBounds(T6::GfxWorld* gfxWorld);
     };
 } // namespace BSP

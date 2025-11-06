@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-using namespace T6;
 
 namespace BSP
 {
@@ -20,11 +19,11 @@ namespace BSP
 
     struct BSPVertex
     {
-        vec3_t pos;
-        vec4_t color;
-        vec2_t texCoord;
-        vec3_t normal;
-        vec3_t tangent;
+        T6::vec3_t pos;
+        T6::vec4_t color;
+        T6::vec2_t texCoord;
+        T6::vec3_t normal;
+        T6::vec3_t tangent;
     };
 
     struct BSPMaterial
@@ -153,7 +152,7 @@ namespace BSP
         // Default xmodel values
         // Unused as there is no support for xmodels right now
         constexpr float DEFAULT_SMODEL_CULL_DIST = 10000.0f;
-        constexpr int DEFAULT_SMODEL_FLAGS = STATIC_MODEL_FLAG_NO_SHADOW;
+        constexpr int DEFAULT_SMODEL_FLAGS = T6::STATIC_MODEL_FLAG_NO_SHADOW;
         constexpr int DEFAULT_SMODEL_LIGHT = 1;
         constexpr int DEFAULT_SMODEL_REFLECTION_PROBE = 0;
 
@@ -161,7 +160,7 @@ namespace BSP
         constexpr int DEFAULT_SURFACE_LIGHT = BSPGameConstants::SUN_LIGHT_INDEX;
         constexpr int DEFAULT_SURFACE_LIGHTMAP = 0;
         constexpr int DEFAULT_SURFACE_REFLECTION_PROBE = 0;
-        constexpr int DEFAULT_SURFACE_FLAGS = (GFX_SURFACE_CASTS_SUN_SHADOW | GFX_SURFACE_CASTS_SHADOW);
+        constexpr int DEFAULT_SURFACE_FLAGS = (T6::GFX_SURFACE_CASTS_SUN_SHADOW | T6::GFX_SURFACE_CASTS_SHADOW);
 
         // material flags determine the features of a surface
         // unsure which flag type changes what right now
@@ -180,7 +179,7 @@ namespace BSP
         constexpr unsigned char LIGHTGRID_COLOUR = 128;
 
         // Sunlight values
-        constexpr vec4_t SUNLIGHT_COLOR = {0.75f, 0.75f, 0.75f, 1.0f};
-        constexpr vec3_t SUNLIGHT_DIRECTION = {0.0f, 0.0f, 0.0f};
+        constexpr T6::vec4_t SUNLIGHT_COLOR = {0.75f, 0.75f, 0.75f, 1.0f};
+        constexpr T6::vec3_t SUNLIGHT_DIRECTION = {0.0f, 0.0f, 0.0f};
     }; // namespace BSPEditableConstants
 } // namespace BSP

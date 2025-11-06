@@ -12,29 +12,29 @@ namespace BSP
     {
     public:
         ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        clipMap_t* linkClipMap(BSPData* bsp);
+        T6::clipMap_t* linkClipMap(BSPData* bsp);
 
     private:
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
         AssetCreationContext& m_context;
 
-        void loadBoxData(clipMap_t* clipMap);
-        void loadVisibility(clipMap_t* clipMap);
-        void loadDynEnts(clipMap_t* clipMap);
-        void loadRopesAndConstraints(clipMap_t* clipMap);
-        void loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp);
-        void loadXModelCollision(clipMap_t* clipMap);
+        void loadBoxData(T6::clipMap_t* clipMap);
+        void loadVisibility(T6::clipMap_t* clipMap);
+        void loadDynEnts(T6::clipMap_t* clipMap);
+        void loadRopesAndConstraints(T6::clipMap_t* clipMap);
+        void loadSubModelCollision(T6::clipMap_t* clipMap, BSPData* bsp);
+        void loadXModelCollision(T6::clipMap_t* clipMap);
 
-        std::vector<cplane_s> planeVec;
-        std::vector<cNode_t> nodeVec;
-        std::vector<cLeaf_s> leafVec;
-        std::vector<CollisionAabbTree> AABBTreeVec;
+        std::vector<T6::cplane_s> planeVec;
+        std::vector<T6::cNode_t> nodeVec;
+        std::vector<T6::cLeaf_s> leafVec;
+        std::vector<T6::CollisionAabbTree> AABBTreeVec;
         size_t highestLeafObjectCount = 0;
-        void addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex);
-        int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree);
-        void loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
-        bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
-        bool loadWorldCollision(clipMap_t* clipMap, BSPData* bsp);
+        void addAABBTreeFromLeaf(T6::clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex);
+        int16_t loadBSPNode(T6::clipMap_t* clipMap, BSPTree* tree);
+        void loadBSPTree(T6::clipMap_t* clipMap, BSPData* bsp);
+        bool loadPartitions(T6::clipMap_t* clipMap, BSPData* bsp);
+        bool loadWorldCollision(T6::clipMap_t* clipMap, BSPData* bsp);
     };
 } // namespace BSP

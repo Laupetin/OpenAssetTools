@@ -21,8 +21,8 @@ namespace BSP
     class BSPObject
     {
     public:
-        vec3_t min;
-        vec3_t max;
+        T6::vec3_t min;
+        T6::vec3_t max;
         int partitionIndex; // index of the partition the object is contained in
 
         BSPObject(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex);
@@ -61,8 +61,8 @@ namespace BSP
         std::unique_ptr<BSPNode> node;
 
         int level; // level in the BSP tree
-        vec3_t min;
-        vec3_t max;
+        T6::vec3_t min;
+        T6::vec3_t max;
 
         BSPTree(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int treeLevel);
         void splitTree();

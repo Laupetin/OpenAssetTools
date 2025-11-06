@@ -4,6 +4,8 @@
 #include "Utils/Alignment.h"
 #include "Utils/Pack.h"
 
+using namespace T6;
+
 namespace BSP
 {
     GfxWorldLinker::GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)

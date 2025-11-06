@@ -7,6 +7,8 @@
 #include "MapEntsLinker.h"
 #include "SkinnedVertsLinker.h"
 
+using namespace T6;
+
 namespace BSP
 {
     FootstepTableDef* BSPLinker::addEmptyFootstepTableAsset(std::string assetName)

@@ -14,7 +14,7 @@ namespace BSP
         bool linkBSP(BSPData* bsp);
 
     private:
-        FootstepTableDef* addEmptyFootstepTableAsset(std::string assetName);
+        T6::FootstepTableDef* addEmptyFootstepTableAsset(std::string assetName);
         bool addDefaultRequiredAssets(BSPData* bsp);
 
         MemoryManager& m_memory;

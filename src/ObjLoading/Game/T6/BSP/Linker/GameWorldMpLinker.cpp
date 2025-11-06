@@ -1,5 +1,7 @@
 #include "GameWorldMpLinker.h"
 
+using namespace T6;
+
 namespace BSP
 {
     GameWorldMpLinker::GameWorldMpLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)

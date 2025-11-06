@@ -2,6 +2,8 @@
 
 #include "../BSPUtil.h"
 
+using namespace T6;
+
 namespace BSP
 {
     ClipMapLinker::ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)

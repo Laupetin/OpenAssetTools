@@ -1,5 +1,7 @@
 #include "ComWorldLinker.h"
 
+using namespace T6;
+
 namespace BSP
 {
     ComWorldLinker::ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)

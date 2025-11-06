@@ -91,7 +91,7 @@ namespace
                     uint32_t index = tempIndices[idxOfIndex];
 
                     ufbx_vec3 transformedPos = ufbx_transform_position(&meshMatrix, ufbx_get_vertex_vec3(&mesh->vertex_position, index));
-                    vec3_t blenderCoords;
+                    T6::vec3_t blenderCoords;
                     blenderCoords.x = static_cast<float>(transformedPos.x);
                     blenderCoords.y = static_cast<float>(transformedPos.y);
                     blenderCoords.z = static_cast<float>(transformedPos.z);
