@@ -217,8 +217,7 @@ namespace BSP
 
         size_t leafObjectCount = tree->leaf->getObjectCount();
         assert(leafObjectCount > 0);
-        if (leafObjectCount > highestLeafObjectCount)
-            highestLeafObjectCount = leafObjectCount;
+        highestLeafObjectCount = std::max(leafObjectCount, highestLeafObjectCount);
 
         // BO2 has a maximum limit of 128 children per AABB tree (essentially),
         // so this is fixed by adding multiple parent AABB trees that hold 128 children each

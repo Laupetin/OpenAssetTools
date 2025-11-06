@@ -1,5 +1,6 @@
 #include "BSPUtil.h"
 
+#include <algorithm>
 #include <cmath>
 #include <format>
 
@@ -32,44 +33,26 @@ namespace BSP
 
     void BSPUtil::updateAABB(vec3_t& newAABBMins, vec3_t& newAABBMaxs, vec3_t& AABBMins, vec3_t& AABBMaxs)
     {
-        if (AABBMins.x > newAABBMins.x)
-            AABBMins.x = newAABBMins.x;
+        AABBMins.x = std::min(AABBMins.x, newAABBMins.x);
+        AABBMaxs.x = std::max(AABBMaxs.x, newAABBMaxs.x);
 
-        if (newAABBMaxs.x > AABBMaxs.x)
-            AABBMaxs.x = newAABBMaxs.x;
+        AABBMins.y = std::min(AABBMins.y, newAABBMins.y);
+        AABBMaxs.y = std::max(AABBMaxs.y, newAABBMaxs.y);
 
-        if (AABBMins.y > newAABBMins.y)
-            AABBMins.y = newAABBMins.y;
-
-        if (newAABBMaxs.y > AABBMaxs.y)
-            AABBMaxs.y = newAABBMaxs.y;
-
-        if (AABBMins.z > newAABBMins.z)
-            AABBMins.z = newAABBMins.z;
-
-        if (newAABBMaxs.z > AABBMaxs.z)
-            AABBMaxs.z = newAABBMaxs.z;
+        AABBMins.z = std::min(AABBMins.z, newAABBMins.z);
+        AABBMaxs.z = std::max(AABBMaxs.z, newAABBMaxs.z);
     }
 
     void BSPUtil::updateAABBWithPoint(vec3_t& point, vec3_t& AABBMins, vec3_t& AABBMaxs)
     {
-        if (AABBMins.x > point.x)
-            AABBMins.x = point.x;
+        AABBMins.x = std::min(AABBMins.x, point.x);
+        AABBMaxs.x = std::max(AABBMaxs.x, point.x);
 
-        if (point.x > AABBMaxs.x)
-            AABBMaxs.x = point.x;
+        AABBMins.y = std::min(AABBMins.y, point.y);
+        AABBMaxs.y = std::max(AABBMaxs.y, point.y);
 
-        if (AABBMins.y > point.y)
-            AABBMins.y = point.y;
-
-        if (point.y > AABBMaxs.y)
-            AABBMaxs.y = point.y;
-
-        if (AABBMins.z > point.z)
-            AABBMins.z = point.z;
-
-        if (point.z > AABBMaxs.z)
-            AABBMaxs.z = point.z;
+        AABBMins.z = std::min(AABBMins.z, point.z);
+        AABBMaxs.z = std::max(AABBMaxs.z, point.z);
     }
 
     vec3_t BSPUtil::calcMiddleOfAABB(vec3_t& mins, vec3_t& maxs)
