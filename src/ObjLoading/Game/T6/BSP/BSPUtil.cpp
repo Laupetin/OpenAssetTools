@@ -88,11 +88,6 @@ namespace BSP
         return result;
     }
 
-    size_t BSPUtil::allignBy128(size_t size)
-    {
-        return ((size + 127) & 0xFFFFFF80);
-    }
-
     float BSPUtil::distBetweenPoints(vec3_t& p1, vec3_t& p2)
     {
         float x = p2.x - p1.x;

@@ -1,6 +1,7 @@
 #include "GfxWorldLinker.h"
 
 #include "../BSPUtil.h"
+#include "Utils/Alignment.h"
 #include "Utils/Pack.h"
 
 namespace BSP
@@ -138,14 +139,14 @@ namespace BSP
 
         // visdata is written to by the game
         // all visdata is alligned by 128
-        size_t allignedSurfaceCount = BSPUtil::allignBy128(surfaceCount);
-        gfxWorld->dpvs.surfaceVisDataCount = static_cast<unsigned int>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceVisData[0] = m_memory.Alloc<char>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceVisData[1] = m_memory.Alloc<char>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceVisData[2] = m_memory.Alloc<char>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceVisDataCameraSaved = m_memory.Alloc<char>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceCastsShadow = m_memory.Alloc<char>(allignedSurfaceCount);
-        gfxWorld->dpvs.surfaceCastsSunShadow = m_memory.Alloc<char>(allignedSurfaceCount);
+        auto alignedSurfaceCount = utils::Align(surfaceCount, 128uz);
+        gfxWorld->dpvs.surfaceVisDataCount = static_cast<unsigned int>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceVisData[0] = m_memory.Alloc<char>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceVisData[1] = m_memory.Alloc<char>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceVisData[2] = m_memory.Alloc<char>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceVisDataCameraSaved = m_memory.Alloc<char>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceCastsShadow = m_memory.Alloc<char>(alignedSurfaceCount);
+        gfxWorld->dpvs.surfaceCastsSunShadow = m_memory.Alloc<char>(alignedSurfaceCount);
 
         return true;
     }
@@ -226,13 +227,13 @@ namespace BSP
 
         // visdata is written to by the game
         // all visdata is alligned by 128
-        size_t allignedModelCount = BSPUtil::allignBy128(modelCount);
-        gfxWorld->dpvs.smodelVisDataCount = static_cast<unsigned int>(allignedModelCount);
-        gfxWorld->dpvs.smodelVisData[0] = m_memory.Alloc<char>(allignedModelCount);
-        gfxWorld->dpvs.smodelVisData[1] = m_memory.Alloc<char>(allignedModelCount);
-        gfxWorld->dpvs.smodelVisData[2] = m_memory.Alloc<char>(allignedModelCount);
-        gfxWorld->dpvs.smodelVisDataCameraSaved = m_memory.Alloc<char>(allignedModelCount);
-        gfxWorld->dpvs.smodelCastsShadow = m_memory.Alloc<char>(allignedModelCount);
+        const auto alignedModelCount = utils::Align(modelCount, 128u);
+        gfxWorld->dpvs.smodelVisDataCount = static_cast<unsigned int>(alignedModelCount);
+        gfxWorld->dpvs.smodelVisData[0] = m_memory.Alloc<char>(alignedModelCount);
+        gfxWorld->dpvs.smodelVisData[1] = m_memory.Alloc<char>(alignedModelCount);
+        gfxWorld->dpvs.smodelVisData[2] = m_memory.Alloc<char>(alignedModelCount);
+        gfxWorld->dpvs.smodelVisDataCameraSaved = m_memory.Alloc<char>(alignedModelCount);
+        gfxWorld->dpvs.smodelCastsShadow = m_memory.Alloc<char>(alignedModelCount);
         for (unsigned int i = 0; i < modelCount; i++)
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & STATIC_MODEL_FLAG_NO_SHADOW) == 0)

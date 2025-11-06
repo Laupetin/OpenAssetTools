@@ -138,14 +138,8 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
     }
     else if (key == METADATA_MAP_TYPE)
     {
-        std::string valueLowerCase = value;
-        std::transform(valueLowerCase.begin(),
-                       valueLowerCase.end(),
-                       valueLowerCase.begin(),
-                       [](unsigned char c)
-                       {
-                           return std::tolower(c);
-                       });
+        std::string valueLowerCase(value);
+        utils::MakeStringLowerCase(valueLowerCase);
 
         if (valueLowerCase == "sp")
             state->SetMapType(ZoneDefinitionMapType::SP);
