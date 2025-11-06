@@ -17,7 +17,5 @@ namespace BSP
         static float distBetweenPoints(T6::vec3_t& p1, T6::vec3_t& p2);
         static void convertAnglesToAxis(T6::vec3_t* angles, T6::vec3_t* axis);
         static void matrixTranspose3x3(const T6::vec3_t* in, T6::vec3_t* out);
-        static T6::vec3_t convertStringToVec3(std::string& str);
-        static std::string convertVec3ToString(T6::vec3_t& vec);
     };
 } // namespace BSP

@@ -135,34 +135,4 @@ namespace BSP
         out[2].y = in[1].z;
         out[2].z = in[2].z;
     }
-
-    vec3_t BSPUtil::convertStringToVec3(std::string& str)
-    {
-        std::string v1Str = str;
-
-        int nextValIndex = 0;
-        while (v1Str[nextValIndex] != ' ')
-            nextValIndex++;
-        nextValIndex++; // skip past space
-        std::string v2Str = &v1Str[nextValIndex];
-
-        nextValIndex = 0;
-        while (v2Str[nextValIndex] != ' ')
-            nextValIndex++;
-        nextValIndex++; // skip past space
-        std::string v3Str = &v2Str[nextValIndex];
-
-        vec3_t result;
-        result.x = static_cast<float>(atof(v1Str.c_str()));
-        result.y = static_cast<float>(atof(v2Str.c_str()));
-        result.z = static_cast<float>(atof(v3Str.c_str()));
-        return result;
-    }
-
-    std::string BSPUtil::convertVec3ToString(vec3_t& vec)
-    {
-        std::string result = std::format("{} {} {}", vec.x, vec.y, vec.z);
-        return result;
-    }
-
 } // namespace BSP
