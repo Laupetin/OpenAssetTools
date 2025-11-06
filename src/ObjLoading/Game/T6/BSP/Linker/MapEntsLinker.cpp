@@ -17,7 +17,7 @@ namespace
             {
                 std::string className;
                 entity.at("classname").get_to(className);
-                if (className.compare("worldspawn") != 0)
+                if (className != "worldspawn")
                 {
                     con::error("ERROR: first entity in the map entity string must be the worldspawn class!");
                     return false;

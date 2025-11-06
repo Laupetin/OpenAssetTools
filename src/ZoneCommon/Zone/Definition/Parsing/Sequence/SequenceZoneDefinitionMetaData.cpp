@@ -146,11 +146,12 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
                        {
                            return std::tolower(c);
                        });
-        if (valueLowerCase.compare("sp") == 0)
+
+        if (valueLowerCase == "sp")
             state->SetMapType(ZoneDefinitionMapType::SP);
-        else if (valueLowerCase.compare("mp") == 0)
+        else if (valueLowerCase == "mp")
             state->SetMapType(ZoneDefinitionMapType::MP);
-        else if (valueLowerCase.compare("zm") == 0)
+        else if (valueLowerCase == "zm")
             state->SetMapType(ZoneDefinitionMapType::ZM);
         else
             throw ParsingException(valueToken.GetPos(), "map must be SP, MP or ZM");
