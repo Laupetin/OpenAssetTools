@@ -1,6 +1,6 @@
 #include "MapEntsLinker.h"
 
-#include "../BSPUtil.h"
+#include "Game/T6/BSP/BSPUtil.h"
 
 #include <nlohmann/json.hpp>
 

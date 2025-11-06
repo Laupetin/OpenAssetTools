@@ -1,6 +1,6 @@
 #include "GfxWorldLinker.h"
 
-#include "../BSPUtil.h"
+#include "Game/T6/BSP/BSPUtil.h"
 #include "Utils/Alignment.h"
 #include "Utils/Pack.h"
 

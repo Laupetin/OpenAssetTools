@@ -1,6 +1,6 @@
 #include "ClipMapLinker.h"
 
-#include "../BSPUtil.h"
+#include "Game/T6/BSP/BSPUtil.h"
 
 using namespace T6;
 
@@ -499,7 +499,7 @@ namespace BSP
         }
         // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
         clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
-        clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
+        clipMap->triIndices = reinterpret_cast<uint16_t (*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
         memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
 
         // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
