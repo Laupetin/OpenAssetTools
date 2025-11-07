@@ -4,10 +4,10 @@
 #include "BSPUtil.h"
 #include "Linker/BSPLinker.h"
 
+using namespace BSP;
+
 namespace
 {
-    using namespace BSP;
-
     class BSPLoader final : public IAssetCreator
     {
     public:

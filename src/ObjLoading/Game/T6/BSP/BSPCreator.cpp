@@ -4,10 +4,10 @@
 
 #include <ufbx.h>
 
+using namespace BSP;
+
 namespace
 {
-    using namespace BSP;
-
     void addFBXMeshToWorld(
         ufbx_node* node, std::vector<BSPSurface>& surfaceVec, std::vector<BSPVertex>& vertexVec, std::vector<uint16_t>& indexVec, bool& hasTangentSpace)
     {
