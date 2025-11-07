@@ -15,9 +15,9 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "@primeuix/themes": "^1.2.5",
-    "pinia": "3.0.3",
+    "pinia": "3.0.4",
     "primevue": "^4.4.1",
-    "vue": "3.5.22",
+    "vue": "3.5.24",
     "vue-router": "4.6.3"
   },
   "devDependencies": {
@@ -38,9 +38,9 @@
     "prettier": "3.6.2",
     "sass": "1.93.3",
     "typescript": "~5.9.3",
-    "vite": "7.1.12",
+    "vite": "7.2.2",
     "vite-plugin-vue-devtools": "^8.0.3",
-    "vitest": "^3.2.4",
+    "vitest": "^4.0.8",
     "vue-tsc": "3.1.3"
   }
 }
