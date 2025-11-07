@@ -17,3 +17,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
+    groups:
+      modman-dependencies:
+        patterns:
+          - "*"
