@@ -69,31 +69,39 @@ namespace BSP
             BSP_DEFAULT_LIGHT_COUNT = 2
         };
 
-        inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_allies",
-                                                           "mp_ctf_spawn_allies_start",
-                                                           "mp_sd_spawn_defender",
-                                                           "mp_dom_spawn_allies_start",
-                                                           "mp_dem_spawn_defender_start",
-                                                           "mp_dem_spawn_defenderOT_start",
-                                                           "mp_dem_spawn_defender",
-                                                           "mp_tdm_spawn_allies_start",
-                                                           "mp_tdm_spawn_team1_start",
-                                                           "mp_tdm_spawn_team2_start",
-                                                           "mp_tdm_spawn_team3_start"};
+        inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {
+            "mp_ctf_spawn_allies",
+            "mp_ctf_spawn_allies_start",
+            "mp_sd_spawn_defender",
+            "mp_dom_spawn_allies_start",
+            "mp_dem_spawn_defender_start",
+            "mp_dem_spawn_defenderOT_start",
+            "mp_dem_spawn_defender",
+            "mp_tdm_spawn_allies_start",
+            "mp_tdm_spawn_team1_start",
+            "mp_tdm_spawn_team2_start",
+            "mp_tdm_spawn_team3_start",
+        };
 
-        inline const char* ATTACKER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_axis",
-                                                           "mp_ctf_spawn_axis_start",
-                                                           "mp_sd_spawn_attacker",
-                                                           "mp_dom_spawn_axis_start",
-                                                           "mp_dem_spawn_attacker_start",
-                                                           "mp_dem_spawn_attackerOT_start",
-                                                           "mp_dem_spawn_defender",
-                                                           "mp_tdm_spawn_axis_start",
-                                                           "mp_tdm_spawn_team4_start",
-                                                           "mp_tdm_spawn_team5_start",
-                                                           "mp_tdm_spawn_team6_start"};
+        inline const char* ATTACKER_SPAWN_POINT_NAMES[] = {
+            "mp_ctf_spawn_axis",
+            "mp_ctf_spawn_axis_start",
+            "mp_sd_spawn_attacker",
+            "mp_dom_spawn_axis_start",
+            "mp_dem_spawn_attacker_start",
+            "mp_dem_spawn_attackerOT_start",
+            "mp_dem_spawn_defender",
+            "mp_tdm_spawn_axis_start",
+            "mp_tdm_spawn_team4_start",
+            "mp_tdm_spawn_team5_start",
+            "mp_tdm_spawn_team6_start",
+        };
 
-        inline const char* FFA_SPAWN_POINT_NAMES[] = {"mp_tdm_spawn", "mp_dm_spawn", "mp_dom_spawn"};
+        inline const char* FFA_SPAWN_POINT_NAMES[] = {
+            "mp_tdm_spawn",
+            "mp_dm_spawn",
+            "mp_dom_spawn",
+        };
     } // namespace BSPGameConstants
 
     // BSPLinkingConstants:
