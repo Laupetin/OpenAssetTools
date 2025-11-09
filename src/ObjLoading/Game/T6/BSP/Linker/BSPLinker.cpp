@@ -11,18 +11,16 @@ using namespace T6;
 
 namespace BSP
 {
-    FootstepTableDef* BSPLinker::addEmptyFootstepTableAsset(const std::string& assetName) const
+    void BSPLinker::addEmptyFootstepTableAsset(const std::string& assetName) const
     {
-        if (assetName.length() == 0)
-            return nullptr;
+        if (assetName.empty())
+            return;
 
         auto* footstepTable = m_memory.Alloc<FootstepTableDef>();
         footstepTable->name = m_memory.Dup(assetName.c_str());
         memset(footstepTable->sndAliasTable, 0, sizeof(footstepTable->sndAliasTable));
 
         m_context.AddAsset<AssetFootstepTable>(assetName, footstepTable);
-
-        return footstepTable;
     }
 
     bool BSPLinker::addDefaultRequiredAssets(const BSPData& bsp) const

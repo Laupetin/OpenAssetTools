@@ -15,7 +15,7 @@ namespace BSP
         [[nodiscard]] bool linkBSP(const BSPData& bsp) const;
 
     private:
-        T6::FootstepTableDef* addEmptyFootstepTableAsset(const std::string& assetName) const;
+        void addEmptyFootstepTableAsset(const std::string& assetName) const;
         [[nodiscard]] bool addDefaultRequiredAssets(const BSPData& bsp) const;
 
         MemoryManager& m_memory;
