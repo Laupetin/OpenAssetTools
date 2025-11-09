@@ -7,6 +7,8 @@
 #include "MapEntsLinker.h"
 #include "SkinnedVertsLinker.h"
 
+#include <format>
+
 using namespace T6;
 
 namespace BSP
@@ -25,18 +27,18 @@ namespace BSP
 
     bool BSPLinker::addDefaultRequiredAssets(const BSPData& bsp) const
     {
-        if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp.name + ".gsc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}.gsc", bsp.name)) == nullptr)
             return false;
-        if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp.name + "_amb.gsc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_amb.gsc", bsp.name)) == nullptr)
             return false;
-        if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp.name + "_fx.gsc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_fx.gsc", bsp.name)) == nullptr)
             return false;
 
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp.name + ".csc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}.csc", bsp.name)) == nullptr)
             return false;
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp.name + "_amb.csc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_amb.csc", bsp.name)) == nullptr)
             return false;
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp.name + "_fx.csc") == nullptr)
+        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_fx.csc", bsp.name)) == nullptr)
             return false;
 
         addEmptyFootstepTableAsset("default_1st_person");

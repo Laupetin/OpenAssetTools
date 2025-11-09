@@ -2,6 +2,7 @@
 
 #include "BSPUtil.h"
 
+#include <format>
 #include <ufbx.h>
 
 using namespace BSP;
@@ -262,7 +263,7 @@ namespace BSP
         auto bsp = std::make_unique<BSPData>();
 
         bsp->name = mapName;
-        bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
+        bsp->bspName = std::format("maps/mp/{}.d3dbsp", mapName);
 
         loadWorldData(*gfxScene, *bsp, true);
         loadWorldData(*colScene, *bsp, false);

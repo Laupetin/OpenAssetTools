@@ -5,6 +5,7 @@
 #include "Utils/Pack.h"
 
 #include <cassert>
+#include <format>
 
 using namespace T6;
 
@@ -648,7 +649,7 @@ namespace BSP
 
     void GfxWorldLinker::loadSkyBox(const BSPData& projInfo, GfxWorld& gfxWorld) const
     {
-        const std::string skyBoxName = "skybox_" + projInfo.name;
+        const auto skyBoxName = std::format("skybox_{}", projInfo.name);
         gfxWorld.skyBoxModel = m_memory.Dup(skyBoxName.c_str());
 
         if (m_context.LoadDependency<AssetXModel>(skyBoxName) == nullptr)
