@@ -11,27 +11,27 @@ namespace BSP
     {
     public:
         GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
-        T6::GfxWorld* linkGfxWorld(BSPData* bsp);
+        T6::GfxWorld* linkGfxWorld(const BSPData& bsp) const;
 
     private:
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
         AssetCreationContext& m_context;
 
-        void loadDrawData(BSPData* projInfo, T6::GfxWorld* gfxWorld);
-        bool loadMapSurfaces(BSPData* projInfo, T6::GfxWorld* gfxWorld);
-        void loadXModels(BSPData* projInfo, T6::GfxWorld* gfxWorld);
-        void cleanGfxWorld(T6::GfxWorld* gfxWorld);
-        void loadGfxLights(T6::GfxWorld* gfxWorld);
-        void loadLightGrid(T6::GfxWorld* gfxWorld);
-        void loadGfxCells(T6::GfxWorld* gfxWorld);
-        void loadModels(T6::GfxWorld* gfxWorld);
-        bool loadReflectionProbeData(T6::GfxWorld* gfxWorld);
-        bool loadLightmapData(T6::GfxWorld* gfxWorld);
-        void loadSkyBox(BSPData* projInfo, T6::GfxWorld* gfxWorld);
-        void loadDynEntData(T6::GfxWorld* gfxWorld);
-        bool loadOutdoors(T6::GfxWorld* gfxWorld);
-        void loadSunData(T6::GfxWorld* gfxWorld);
-        void loadWorldBounds(T6::GfxWorld* gfxWorld);
+        void loadDrawData(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        bool loadMapSurfaces(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void loadXModels(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void cleanGfxWorld(T6::GfxWorld& gfxWorld) const;
+        void loadGfxLights(T6::GfxWorld& gfxWorld) const;
+        void loadLightGrid(T6::GfxWorld& gfxWorld) const;
+        void loadGfxCells(T6::GfxWorld& gfxWorld) const;
+        void loadModels(T6::GfxWorld& gfxWorld) const;
+        bool loadReflectionProbeData(T6::GfxWorld& gfxWorld) const;
+        bool loadLightmapData(T6::GfxWorld& gfxWorld) const;
+        void loadSkyBox(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
+        void loadDynEntData(T6::GfxWorld& gfxWorld) const;
+        bool loadOutdoors(T6::GfxWorld& gfxWorld) const;
+        void loadSunData(T6::GfxWorld& gfxWorld) const;
+        void loadWorldBounds(T6::GfxWorld& gfxWorld) const;
     };
 } // namespace BSP

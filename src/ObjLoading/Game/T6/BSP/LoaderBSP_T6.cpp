@@ -32,12 +32,12 @@ namespace
 
         bool FinalizeZone(AssetCreationContext& context) override
         {
-            std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
+            const std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
             if (bsp == nullptr)
                 return false;
 
             BSPLinker linker(m_memory, m_search_path, context);
-            bool result = linker.linkBSP(bsp.get());
+            const bool result = linker.linkBSP(*bsp);
             if (!result)
                 con::error("BSP link has failed.");
 

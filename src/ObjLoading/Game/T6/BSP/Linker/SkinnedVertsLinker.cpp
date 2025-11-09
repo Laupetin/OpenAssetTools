@@ -9,13 +9,13 @@ namespace BSP
     {
     }
 
-    T6::SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(BSPData* bsp)
+    T6::SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(const BSPData& bsp) const
     {
         // Pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
         // But setting it to the world vertex count seems to work
         T6::SkinnedVertsDef* skinnedVerts = m_memory.Alloc<T6::SkinnedVertsDef>();
         skinnedVerts->name = m_memory.Dup("skinnedverts");
-        skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(bsp->gfxWorld.vertices.size());
+        skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(bsp.gfxWorld.vertices.size());
 
         return skinnedVerts;
     }

@@ -4,7 +4,8 @@ namespace BSP
 {
     constexpr int MAX_NODE_SIZE = 512; // maximum size a BSP node can be before it becomes a leaf
 
-    BSPObject::BSPObject(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int objPartitionIndex)
+    BSPObject::BSPObject(
+        const float xMin, const float yMin, const float zMin, const float xMax, const float yMax, const float zMax, const int objPartitionIndex)
     {
         min.x = xMin;
         min.y = yMin;
@@ -20,17 +21,17 @@ namespace BSP
         objectList.emplace_back(std::move(object));
     }
 
-    BSPObject* BSPLeaf::getObject(size_t index)
+    BSPObject* BSPLeaf::getObject(const size_t index) const
     {
         return objectList.at(index).get();
     }
 
-    size_t BSPLeaf::getObjectCount()
+    size_t BSPLeaf::getObjectCount() const
     {
         return objectList.size();
     }
 
-    BSPNode::BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, PlaneAxis nodeAxis, float nodeDistance)
+    BSPNode::BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, const PlaneAxis nodeAxis, const float nodeDistance)
     {
         front = std::move(frontTree);
         back = std::move(backTree);
@@ -38,25 +39,25 @@ namespace BSP
         distance = nodeDistance;
     }
 
-    PlaneSide BSPNode::objectIsInFront(BSPObject* object)
+    PlaneSide BSPNode::objectIsInFront(const BSPObject& object) const
     {
         float minCoord, maxCoord;
 
         // Select the relevant coordinate based on the plane's axis
         if (axis == AXIS_X)
         {
-            minCoord = object->min.x;
-            maxCoord = object->max.x;
+            minCoord = object.min.x;
+            maxCoord = object.max.x;
         }
         else if (axis == AXIS_Y)
         {
-            minCoord = object->min.y;
-            maxCoord = object->max.y;
+            minCoord = object.min.y;
+            maxCoord = object.max.y;
         }
         else // axis == AXIS_Z
         {
-            minCoord = object->min.z;
-            maxCoord = object->max.z;
+            minCoord = object.min.z;
+            maxCoord = object.max.z;
         }
 
         // Compare with the plane's distance
@@ -74,7 +75,7 @@ namespace BSP
         }
     }
 
-    BSPTree::BSPTree(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int treeLevel)
+    BSPTree::BSPTree(const float xMin, const float yMin, const float zMin, const float xMax, const float yMax, const float zMax, const int treeLevel)
     {
         min.x = xMin;
         min.y = yMin;
@@ -133,7 +134,7 @@ namespace BSP
         }
     }
 
-    void BSPTree::addObjectToTree(std::shared_ptr<BSPObject> object)
+    void BSPTree::addObjectToTree(std::shared_ptr<BSPObject> object) const
     {
         if (isLeaf)
         {
@@ -141,7 +142,7 @@ namespace BSP
         }
         else
         {
-            PlaneSide side = node->objectIsInFront(object.get());
+            const PlaneSide side = node->objectIsInFront(*object);
             if (side == SIDE_FRONT)
             {
                 node->front->addObjectToTree(std::move(object));

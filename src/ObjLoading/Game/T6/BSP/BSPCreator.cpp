@@ -170,17 +170,17 @@ namespace
         }
     }
 
-    void loadWorldData(ufbx_scene* scene, BSPData* bsp, bool isGfxData)
+    void loadWorldData(const ufbx_scene& scene, BSPData& bsp, const bool isGfxData)
     {
         bool hasTangentSpace = true;
-        for (ufbx_node* node : scene->nodes)
+        for (ufbx_node* node : scene.nodes)
         {
             if (node->attrib_type == UFBX_ELEMENT_MESH)
             {
                 if (isGfxData)
-                    addFBXMeshToWorld(node, bsp->gfxWorld.surfaces, bsp->gfxWorld.vertices, bsp->gfxWorld.indices, hasTangentSpace);
+                    addFBXMeshToWorld(node, bsp.gfxWorld.surfaces, bsp.gfxWorld.vertices, bsp.gfxWorld.indices, hasTangentSpace);
                 else
-                    addFBXMeshToWorld(node, bsp->colWorld.surfaces, bsp->colWorld.vertices, bsp->colWorld.indices, hasTangentSpace);
+                    addFBXMeshToWorld(node, bsp.colWorld.surfaces, bsp.colWorld.vertices, bsp.colWorld.indices, hasTangentSpace);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace
 
 namespace BSP
 {
-    std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
+    std::unique_ptr<BSPData> createBSPData(const std::string& mapName, ISearchPath& searchPath)
     {
         std::string gfxFbxFileName = "map_gfx.fbx";
         std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset(gfxFbxFileName);
@@ -228,8 +228,8 @@ namespace BSP
 
         ufbx_scene* colScene;
         std::string colFbxFileName = "map_col.fbx";
-        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset(colFbxFileName);
-        auto colFile = searchPath.Open(colFbxPath);
+        const auto colFbxPath = BSPUtil::getFileNameForBSPAsset(colFbxFileName);
+        const auto colFile = searchPath.Open(colFbxPath);
         if (!colFile.IsOpen())
         {
             con::warn("Failed to open map collison fbx file: {}. map gfx will be used for collision instead.", colFbxPath);
@@ -264,8 +264,8 @@ namespace BSP
         bsp->name = mapName;
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
 
-        loadWorldData(gfxScene, bsp.get(), true);
-        loadWorldData(colScene, bsp.get(), false);
+        loadWorldData(*gfxScene, *bsp, true);
+        loadWorldData(*colScene, *bsp, false);
 
         ufbx_free_scene(gfxScene);
         if (gfxScene != colScene)

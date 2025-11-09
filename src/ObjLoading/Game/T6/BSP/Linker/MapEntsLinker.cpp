@@ -74,7 +74,7 @@ namespace BSP
     {
     }
 
-    MapEnts* MapEntsLinker::linkMapEnts(BSPData* bsp)
+    MapEnts* MapEntsLinker::linkMapEnts(const BSPData& bsp) const
     {
         try
         {
@@ -116,7 +116,7 @@ namespace BSP
             parseSpawnpointJSON(spawnJs["FFA"], entityString, BSPGameConstants::FFA_SPAWN_POINT_NAMES, ffaNameCount);
 
             MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
-            mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
+            mapEnts->name = m_memory.Dup(bsp.bspName.c_str());
 
             mapEnts->entityString = m_memory.Dup(entityString.c_str());
             mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character

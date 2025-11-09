@@ -11,11 +11,11 @@ namespace BSP
     {
     }
 
-    ComWorld* ComWorldLinker::linkComWorld(BSPData* bsp)
+    ComWorld* ComWorldLinker::linkComWorld(const BSPData& bsp) const
     {
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
-        comWorld->name = m_memory.Dup(bsp->bspName.c_str());
+        comWorld->name = m_memory.Dup(bsp.bspName.c_str());
         comWorld->isInUse = 1;
         comWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
         comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(comWorld->primaryLightCount);
