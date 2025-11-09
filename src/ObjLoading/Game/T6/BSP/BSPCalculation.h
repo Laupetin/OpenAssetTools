@@ -34,8 +34,8 @@ namespace BSP
         std::vector<std::shared_ptr<BSPObject>> objectList;
 
         void addObject(std::shared_ptr<BSPObject> object);
-        BSPObject* getObject(size_t index) const;
-        size_t getObjectCount() const;
+        [[nodiscard]] BSPObject* getObject(size_t index) const;
+        [[nodiscard]] size_t getObjectCount() const;
     };
 
     class BSPTree;
@@ -50,7 +50,7 @@ namespace BSP
         float distance; // distance from the origin (0, 0, 0) to the plane
 
         BSPNode(std::unique_ptr<BSPTree> frontTree, std::unique_ptr<BSPTree> backTree, PlaneAxis nodeAxis, float nodeDistance);
-        PlaneSide objectIsInFront(const BSPObject& object) const;
+        [[nodiscard]] PlaneSide objectIsInFront(const BSPObject& object) const;
     };
 
     class BSPTree

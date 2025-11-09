@@ -13,7 +13,7 @@ namespace BSP
     public:
         ClipMapLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
 
-        T6::clipMap_t* linkClipMap(const BSPData& bsp);
+        [[nodiscard]] T6::clipMap_t* linkClipMap(const BSPData& bsp);
 
     private:
         MemoryManager& m_memory;

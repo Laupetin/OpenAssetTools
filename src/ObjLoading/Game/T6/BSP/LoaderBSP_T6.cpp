@@ -18,7 +18,7 @@ namespace
         {
         }
 
-        std::optional<asset_type_t> GetHandlingAssetType() const override
+        [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override
         {
             // don't handle any asset types
             return std::nullopt;
