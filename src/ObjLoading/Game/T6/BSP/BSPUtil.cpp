@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <numbers>
 
 using namespace T6;
 
@@ -85,9 +86,10 @@ namespace BSP
     // angles are in euler degrees
     void BSPUtil::convertAnglesToAxis(const vec3_t* angles, vec3_t* axis)
     {
-        const auto xRadians = angles->x * 0.017453292f; // M_PI / 180.0f
-        const auto yRadians = angles->y * 0.017453292f; // M_PI / 180.0f
-        const auto zRadians = angles->z * 0.017453292f; // M_PI / 180.0f
+        constexpr auto conversionValue = std::numbers::pi_v<float> / 180.0f;
+        const auto xRadians = angles->x * conversionValue;
+        const auto yRadians = angles->y * conversionValue;
+        const auto zRadians = angles->z * conversionValue;
 
         const auto cosX = cos(xRadians);
         const auto sinX = sin(xRadians);
