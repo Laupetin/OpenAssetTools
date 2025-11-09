@@ -16,7 +16,7 @@ namespace BSP
         if (assetName.length() == 0)
             return nullptr;
 
-        FootstepTableDef* footstepTable = m_memory.Alloc<FootstepTableDef>();
+        auto* footstepTable = m_memory.Alloc<FootstepTableDef>();
         footstepTable->name = m_memory.Dup(assetName.c_str());
         memset(footstepTable->sndAliasTable, 0, sizeof(footstepTable->sndAliasTable));
 
@@ -73,32 +73,32 @@ namespace BSP
         MapEntsLinker mapEntsLinker(m_memory, m_search_path, m_context);
         SkinnedVertsLinker skinnedVertsLinker(m_memory, m_search_path, m_context);
 
-        ComWorld* comWorld = comWorldLinker.linkComWorld(bsp);
+        auto* comWorld = comWorldLinker.linkComWorld(bsp);
         if (comWorld == nullptr)
             return false;
         m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
 
-        MapEnts* mapEnts = mapEntsLinker.linkMapEnts(bsp);
+        auto* mapEnts = mapEntsLinker.linkMapEnts(bsp);
         if (mapEnts == nullptr)
             return false;
         m_context.AddAsset<AssetMapEnts>(mapEnts->name, mapEnts);
 
-        GameWorldMp* gameWorldMp = gameWorldMpLinker.linkGameWorldMp(bsp);
+        auto* gameWorldMp = gameWorldMpLinker.linkGameWorldMp(bsp);
         if (gameWorldMp == nullptr)
             return false;
         m_context.AddAsset<AssetGameWorldMp>(gameWorldMp->name, gameWorldMp);
 
-        SkinnedVertsDef* skinnedVerts = skinnedVertsLinker.linkSkinnedVerts(bsp);
+        auto* skinnedVerts = skinnedVertsLinker.linkSkinnedVerts(bsp);
         if (skinnedVerts == nullptr)
             return false;
         m_context.AddAsset<AssetSkinnedVerts>(skinnedVerts->name, skinnedVerts);
 
-        GfxWorld* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
+        auto* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
         if (gfxWorld == nullptr)
             return false;
         m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
 
-        clipMap_t* clipMap = clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
+        auto* clipMap = clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
         if (clipMap == nullptr)
             return false;
         m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);

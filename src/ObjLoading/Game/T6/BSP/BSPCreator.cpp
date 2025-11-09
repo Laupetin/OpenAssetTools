@@ -259,7 +259,7 @@ namespace BSP
             }
         }
 
-        std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
+        auto bsp = std::make_unique<BSPData>();
 
         bsp->name = mapName;
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";

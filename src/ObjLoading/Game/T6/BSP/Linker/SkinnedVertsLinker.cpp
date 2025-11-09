@@ -13,7 +13,7 @@ namespace BSP
     {
         // Pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
         // But setting it to the world vertex count seems to work
-        T6::SkinnedVertsDef* skinnedVerts = m_memory.Alloc<T6::SkinnedVertsDef>();
+        auto* skinnedVerts = m_memory.Alloc<T6::SkinnedVertsDef>();
         skinnedVerts->name = m_memory.Dup("skinnedverts");
         skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(bsp.gfxWorld.vertices.size());
 

@@ -675,11 +675,11 @@ namespace BSP
         gfxWorld.dpvsDyn.dynEntClientWordCount[1] = 0;
         gfxWorld.dpvsDyn.usageCount = 0;
 
-        const int dynEntCellBitsSize = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * gfxWorld.dpvsPlanes.cellCount;
+        const auto dynEntCellBitsSize = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * gfxWorld.dpvsPlanes.cellCount;
         gfxWorld.dpvsDyn.dynEntCellBits[0] = m_memory.Alloc<unsigned int>(dynEntCellBitsSize);
         gfxWorld.dpvsDyn.dynEntCellBits[1] = nullptr;
 
-        const int dynEntVisData0Size = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * 32;
+        const auto dynEntVisData0Size = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * 32;
         gfxWorld.dpvsDyn.dynEntVisData[0][0] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld.dpvsDyn.dynEntVisData[0][1] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld.dpvsDyn.dynEntVisData[0][2] = m_memory.Alloc<char>(dynEntVisData0Size);
@@ -687,7 +687,7 @@ namespace BSP
         gfxWorld.dpvsDyn.dynEntVisData[1][1] = nullptr;
         gfxWorld.dpvsDyn.dynEntVisData[1][2] = nullptr;
 
-        const unsigned int dynEntShadowVisCount = gfxWorld.dpvsDyn.dynEntClientCount[0] * (gfxWorld.primaryLightCount - gfxWorld.sunPrimaryLightIndex - 1);
+        const auto dynEntShadowVisCount = gfxWorld.dpvsDyn.dynEntClientCount[0] * (gfxWorld.primaryLightCount - gfxWorld.sunPrimaryLightIndex - 1);
         gfxWorld.primaryLightDynEntShadowVis[0] = m_memory.Alloc<unsigned int>(dynEntShadowVisCount);
         gfxWorld.primaryLightDynEntShadowVis[1] = nullptr;
 
@@ -697,14 +697,14 @@ namespace BSP
 
     bool GfxWorldLinker::loadOutdoors(GfxWorld& gfxWorld) const
     {
-        const float xRecip = 1.0f / (gfxWorld.maxs.x - gfxWorld.mins.x);
-        const float xScale = -(xRecip * gfxWorld.mins.x);
+        const auto xRecip = 1.0f / (gfxWorld.maxs.x - gfxWorld.mins.x);
+        const auto xScale = -(xRecip * gfxWorld.mins.x);
 
-        const float yRecip = 1.0f / (gfxWorld.maxs.y - gfxWorld.mins.y);
-        const float yScale = -(yRecip * gfxWorld.mins.y);
+        const auto yRecip = 1.0f / (gfxWorld.maxs.y - gfxWorld.mins.y);
+        const auto yScale = -(yRecip * gfxWorld.mins.y);
 
-        const float zRecip = 1.0f / (gfxWorld.maxs.z - gfxWorld.mins.z);
-        const float zScale = -(zRecip * gfxWorld.mins.z);
+        const auto zRecip = 1.0f / (gfxWorld.maxs.z - gfxWorld.mins.z);
+        const auto zScale = -(zRecip * gfxWorld.mins.z);
 
         memset(gfxWorld.outdoorLookupMatrix, 0, sizeof(gfxWorld.outdoorLookupMatrix));
 

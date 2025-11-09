@@ -142,7 +142,7 @@ namespace BSP
         }
         else
         {
-            const PlaneSide side = node->objectIsInFront(*object);
+            const auto side = node->objectIsInFront(*object);
             if (side == SIDE_FRONT)
             {
                 node->front->addObjectToTree(std::move(object));

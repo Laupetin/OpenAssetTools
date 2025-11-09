@@ -129,7 +129,7 @@ namespace BSP
         // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
         auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp.bspName);
         assert(gfxWorldAsset != nullptr);
-        GfxWorld* gfxWorld = gfxWorldAsset->Asset();
+        auto* gfxWorld = gfxWorldAsset->Asset();
 
         // Right now there is only one submodel, the world sub model
         assert(gfxWorld->modelCount == 1);
@@ -137,7 +137,7 @@ namespace BSP
         clipMap.numSubModels = 1;
         clipMap.cmodels = m_memory.Alloc<cmodel_t>(clipMap.numSubModels);
 
-        GfxBrushModel* gfxModel = &gfxWorld->models[0];
+        auto* gfxModel = &gfxWorld->models[0];
         clipMap.cmodels[0].mins.x = gfxModel->bounds[0].x;
         clipMap.cmodels[0].mins.y = gfxModel->bounds[0].y;
         clipMap.cmodels[0].mins.z = gfxModel->bounds[0].z;
@@ -420,14 +420,14 @@ namespace BSP
             }
             BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
-        std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
+        const auto tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
         assert(!tree->isLeaf);
 
         for (int partitionIdx = 0; partitionIdx < clipMap.partitionCount; partitionIdx++)
         {
             vec3_t partitionMins;
             vec3_t partitionMaxs;
-            CollisionPartition* partition = &clipMap.partitions[partitionIdx];
+            auto* partition = &clipMap.partitions[partitionIdx];
             for (int uindIdx = 0; uindIdx < partition->nuinds; uindIdx++)
             {
                 uint16_t uind = clipMap.info.uinds[partition->fuind + uindIdx];
@@ -440,7 +440,7 @@ namespace BSP
                 }
                 BSPUtil::updateAABBWithPoint(vert, partitionMins, partitionMaxs);
             }
-            std::shared_ptr<BSPObject> currObject =
+            auto currObject =
                 std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
             tree->addObjectToTree(std::move(currObject));
         }
@@ -491,11 +491,11 @@ namespace BSP
         std::vector<uint16_t> triIndexVec;
         for (const BSPSurface& surface : bsp.colWorld.surfaces)
         {
-            const int indexOfFirstIndex = surface.indexOfFirstIndex;
-            const int indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
+            const auto indexOfFirstIndex = surface.indexOfFirstIndex;
+            const auto indexOfFirstVertex = surface.indexOfFirstVertex;
+            for (auto indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
             {
-                int triIndex = bsp.colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
+                auto triIndex = bsp.colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
                 triIndexVec.emplace_back(triIndex);
             }
         }
@@ -512,9 +512,9 @@ namespace BSP
             // partitions are made for each triangle, not one for each surface.
             //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
             //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
-            const int indexOfFirstTri = surface.indexOfFirstIndex / 3;
-            const int indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (int triIdx = 0; triIdx < surface.triCount; triIdx++)
+            const auto indexOfFirstTri = surface.indexOfFirstIndex / 3;
+            const auto indexOfFirstVertex = surface.indexOfFirstVertex;
+            for (auto triIdx = 0; triIdx < surface.triCount; triIdx++)
             {
                 CollisionPartition partition;
                 partition.triCount = 1;
@@ -524,7 +524,7 @@ namespace BSP
                 partition.fuind = static_cast<int>(uniqueIndicesVec.size());
 
                 // All tri indices are unique since there is only one tri per partition
-                uint16_t* tri = clipMap.triIndices[partition.firstTri];
+                auto* tri = clipMap.triIndices[partition.firstTri];
                 uniqueIndicesVec.emplace_back(tri[0]);
                 uniqueIndicesVec.emplace_back(tri[1]);
                 uniqueIndicesVec.emplace_back(tri[2]);

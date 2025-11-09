@@ -24,7 +24,7 @@ namespace BSP
         gameWorldMp->path.nodeTreeCount = 0;
 
         // The game has 128 empty nodes allocated
-        const int extraNodeCount = gameWorldMp->path.nodeCount + 128;
+        const auto extraNodeCount = gameWorldMp->path.nodeCount + 128;
         gameWorldMp->path.nodes = m_memory.Alloc<pathnode_t>(extraNodeCount);
         gameWorldMp->path.basenodes = m_memory.Alloc<pathbasenode_t>(extraNodeCount);
         gameWorldMp->path.pathVis = nullptr;

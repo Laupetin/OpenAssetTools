@@ -75,9 +75,9 @@ namespace BSP
 
     float BSPUtil::distBetweenPoints(const vec3_t& p1, const vec3_t& p2)
     {
-        const float x = p2.x - p1.x;
-        const float y = p2.y - p1.y;
-        const float z = p2.z - p1.z;
+        const auto x = p2.x - p1.x;
+        const auto y = p2.y - p1.y;
+        const auto z = p2.z - p1.z;
 
         return sqrtf((x * x) + (y * y) + (z * z));
     }
@@ -85,16 +85,16 @@ namespace BSP
     // angles are in euler degrees
     void BSPUtil::convertAnglesToAxis(const vec3_t* angles, vec3_t* axis)
     {
-        const float xRadians = angles->x * 0.017453292f; // M_PI / 180.0f
-        const float yRadians = angles->y * 0.017453292f; // M_PI / 180.0f
-        const float zRadians = angles->z * 0.017453292f; // M_PI / 180.0f
+        const auto xRadians = angles->x * 0.017453292f; // M_PI / 180.0f
+        const auto yRadians = angles->y * 0.017453292f; // M_PI / 180.0f
+        const auto zRadians = angles->z * 0.017453292f; // M_PI / 180.0f
 
-        const float cosX = cos(xRadians);
-        const float sinX = sin(xRadians);
-        const float cosY = cos(yRadians);
-        const float sinY = sin(yRadians);
-        const float cosZ = cos(zRadians);
-        const float sinZ = sin(zRadians);
+        const auto cosX = cos(xRadians);
+        const auto sinX = sin(xRadians);
+        const auto cosY = cos(yRadians);
+        const auto sinY = sin(yRadians);
+        const auto cosZ = cos(zRadians);
+        const auto sinZ = sin(zRadians);
 
         axis[0].x = cosX * cosY;
         axis[0].y = cosX * sinY;
