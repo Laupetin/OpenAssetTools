@@ -17,7 +17,7 @@ namespace BSP
 
     void ClipMapLinker::loadDynEnts(clipMap_t& clipMap) const
     {
-        int dynEntCount = 0;
+        uint16_t dynEntCount = 0;
         clipMap.originalDynEntCount = dynEntCount;
         clipMap.dynEntCount[0] = clipMap.originalDynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         clipMap.dynEntCount[1] = 0;
@@ -495,9 +495,9 @@ namespace BSP
         {
             const auto indexOfFirstIndex = surface.indexOfFirstIndex;
             const auto indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (auto indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
+            for (auto indexIdx = 0u; indexIdx < surface.triCount * 3; indexIdx++)
             {
-                auto triIndex = bsp.colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
+                auto triIndex = static_cast<uint16_t>(bsp.colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex);
                 triIndexVec.emplace_back(triIndex);
             }
         }
@@ -516,11 +516,11 @@ namespace BSP
             //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
             const auto indexOfFirstTri = surface.indexOfFirstIndex / 3;
             const auto indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (auto triIdx = 0; triIdx < surface.triCount; triIdx++)
+            for (auto triIdx = 0u; triIdx < surface.triCount; triIdx++)
             {
                 CollisionPartition partition;
                 partition.triCount = 1;
-                partition.firstTri = indexOfFirstTri + triIdx;
+                partition.firstTri = static_cast<int>(indexOfFirstTri + triIdx);
 
                 partition.nuinds = 3;
                 partition.fuind = static_cast<int>(uniqueIndicesVec.size());

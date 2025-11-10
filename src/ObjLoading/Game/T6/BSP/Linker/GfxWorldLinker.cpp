@@ -75,9 +75,9 @@ namespace BSP
             gfxSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
 
             gfxSurface->tris.triCount = static_cast<uint16_t>(bspSurface.triCount);
-            gfxSurface->tris.baseIndex = bspSurface.indexOfFirstIndex;
+            gfxSurface->tris.baseIndex = static_cast<int>(bspSurface.indexOfFirstIndex);
 
-            gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
+            gfxSurface->tris.vertexDataOffset0 = static_cast<int>(bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex));
             gfxSurface->tris.vertexDataOffset1 = 0;
 
             std::string surfMaterialName;
@@ -666,7 +666,7 @@ namespace BSP
 
     void GfxWorldLinker::loadDynEntData(GfxWorld& gfxWorld) const
     {
-        int dynEntCount = 0;
+        unsigned dynEntCount = 0u;
         gfxWorld.dpvsDyn.dynEntClientCount[0] = dynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld.dpvsDyn.dynEntClientCount[1] = 0;
 
@@ -676,11 +676,11 @@ namespace BSP
         gfxWorld.dpvsDyn.dynEntClientWordCount[1] = 0;
         gfxWorld.dpvsDyn.usageCount = 0;
 
-        const auto dynEntCellBitsSize = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * gfxWorld.dpvsPlanes.cellCount;
+        const auto dynEntCellBitsSize = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * static_cast<unsigned>(gfxWorld.dpvsPlanes.cellCount);
         gfxWorld.dpvsDyn.dynEntCellBits[0] = m_memory.Alloc<unsigned int>(dynEntCellBitsSize);
         gfxWorld.dpvsDyn.dynEntCellBits[1] = nullptr;
 
-        const auto dynEntVisData0Size = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * 32;
+        const auto dynEntVisData0Size = gfxWorld.dpvsDyn.dynEntClientWordCount[0] * 32u;
         gfxWorld.dpvsDyn.dynEntVisData[0][0] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld.dpvsDyn.dynEntVisData[0][1] = m_memory.Alloc<char>(dynEntVisData0Size);
         gfxWorld.dpvsDyn.dynEntVisData[0][2] = m_memory.Alloc<char>(dynEntVisData0Size);
@@ -688,7 +688,7 @@ namespace BSP
         gfxWorld.dpvsDyn.dynEntVisData[1][1] = nullptr;
         gfxWorld.dpvsDyn.dynEntVisData[1][2] = nullptr;
 
-        const auto dynEntShadowVisCount = gfxWorld.dpvsDyn.dynEntClientCount[0] * (gfxWorld.primaryLightCount - gfxWorld.sunPrimaryLightIndex - 1);
+        const auto dynEntShadowVisCount = gfxWorld.dpvsDyn.dynEntClientCount[0] * (gfxWorld.primaryLightCount - gfxWorld.sunPrimaryLightIndex - 1u);
         gfxWorld.primaryLightDynEntShadowVis[0] = m_memory.Alloc<unsigned int>(dynEntShadowVisCount);
         gfxWorld.primaryLightDynEntShadowVis[1] = nullptr;
 

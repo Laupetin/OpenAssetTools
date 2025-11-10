@@ -61,9 +61,9 @@ namespace
 
             BSPSurface surface;
             size_t partTriangleNum = meshPart.num_triangles;
-            surface.triCount = static_cast<int>(partTriangleNum);
-            surface.indexOfFirstVertex = static_cast<int>(vertexVec.size());
-            surface.indexOfFirstIndex = static_cast<int>(indexVec.size());
+            surface.triCount = static_cast<unsigned>(partTriangleNum);
+            surface.indexOfFirstVertex = static_cast<unsigned>(vertexVec.size());
+            surface.indexOfFirstIndex = static_cast<unsigned>(indexVec.size());
 
             if (mesh->materials.count == 0)
             {

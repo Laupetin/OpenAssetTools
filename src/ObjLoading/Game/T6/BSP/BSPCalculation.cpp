@@ -4,7 +4,7 @@
 
 namespace BSP
 {
-    constexpr int MAX_NODE_SIZE = 512; // maximum size a BSP node can be before it becomes a leaf
+    constexpr auto MAX_NODE_SIZE = 512u; // maximum size a BSP node can be before it becomes a leaf
 
     BSPObject::BSPObject(
         const float xMin, const float yMin, const float zMin, const float xMax, const float yMax, const float zMax, const int objPartitionIndex)

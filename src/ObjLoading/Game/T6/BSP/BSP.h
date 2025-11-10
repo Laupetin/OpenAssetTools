@@ -34,9 +34,9 @@ namespace BSP
     struct BSPSurface
     {
         BSPMaterial material;
-        int triCount;
-        int indexOfFirstVertex;
-        int indexOfFirstIndex;
+        unsigned triCount;
+        unsigned indexOfFirstVertex;
+        unsigned indexOfFirstIndex;
     };
 
     struct BSPWorld
