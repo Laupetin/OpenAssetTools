@@ -14,10 +14,6 @@ namespace BSP
         [[nodiscard]] T6::GfxWorld* linkGfxWorld(const BSPData& bsp) const;
 
     private:
-        MemoryManager& m_memory;
-        ISearchPath& m_search_path;
-        AssetCreationContext& m_context;
-
         void loadDrawData(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
         bool loadMapSurfaces(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
         void loadXModels(const BSPData& projInfo, T6::GfxWorld& gfxWorld) const;
@@ -33,5 +29,9 @@ namespace BSP
         bool loadOutdoors(T6::GfxWorld& gfxWorld) const;
         void loadSunData(T6::GfxWorld& gfxWorld) const;
         void loadWorldBounds(T6::GfxWorld& gfxWorld) const;
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+        AssetCreationContext& m_context;
     };
 } // namespace BSP
