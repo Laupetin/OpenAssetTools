@@ -2,6 +2,7 @@
 
 #include "Shader/ShaderCommon.h"
 
+#include <format>
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
