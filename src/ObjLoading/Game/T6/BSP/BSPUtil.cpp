@@ -62,6 +62,7 @@ namespace BSP
         result.x = (mins.x + maxs.x) * 0.5f;
         result.y = (mins.y + maxs.y) * 0.5f;
         result.z = (mins.z + maxs.z) * 0.5f;
+
         return result;
     }
 
@@ -71,6 +72,7 @@ namespace BSP
         result.x = (maxs.x - mins.x) * 0.5f;
         result.y = (maxs.y - mins.y) * 0.5f;
         result.z = (maxs.z - mins.z) * 0.5f;
+
         return result;
     }
 
@@ -91,12 +93,12 @@ namespace BSP
         const auto yRadians = angles->y * conversionValue;
         const auto zRadians = angles->z * conversionValue;
 
-        const auto cosX = cos(xRadians);
-        const auto sinX = sin(xRadians);
-        const auto cosY = cos(yRadians);
-        const auto sinY = sin(yRadians);
-        const auto cosZ = cos(zRadians);
-        const auto sinZ = sin(zRadians);
+        const auto cosX = std::cos(xRadians);
+        const auto sinX = std::sin(xRadians);
+        const auto cosY = std::cos(yRadians);
+        const auto sinY = std::sin(yRadians);
+        const auto cosZ = std::cos(zRadians);
+        const auto sinZ = std::sin(zRadians);
 
         axis[0].x = cosX * cosY;
         axis[0].y = cosX * sinY;

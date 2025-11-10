@@ -88,6 +88,7 @@ namespace BSP
         max.y = yMax;
         max.z = zMax;
         level = treeLevel;
+
         splitTree();
     }
 

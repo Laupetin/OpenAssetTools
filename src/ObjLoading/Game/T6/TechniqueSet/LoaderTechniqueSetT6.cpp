@@ -91,7 +91,7 @@ namespace
                                     consts[1] = currArgJs["u"]["const1"];
                                     consts[2] = currArgJs["u"]["const2"];
                                     consts[3] = currArgJs["u"]["const3"];
-                                    currArg->u.literalConst = (float(*)[4])consts;
+                                    currArg->u.literalConst = (float (*)[4])consts;
                                 }
                                 else
                                 {

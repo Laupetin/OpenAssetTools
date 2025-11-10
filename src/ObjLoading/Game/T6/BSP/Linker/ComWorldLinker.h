@@ -11,6 +11,7 @@ namespace BSP
     {
     public:
         ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
+
         [[nodiscard]] T6::ComWorld* linkComWorld(const BSPData& bsp) const;
 
     private:

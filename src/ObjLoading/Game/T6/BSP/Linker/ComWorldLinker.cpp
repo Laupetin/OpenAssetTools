@@ -15,6 +15,7 @@ namespace BSP
     {
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
+
         comWorld->name = m_memory.Dup(bsp.bspName.c_str());
         comWorld->isInUse = 1;
         comWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
@@ -25,6 +26,7 @@ namespace BSP
         ComPrimaryLight* sunLight = &comWorld->primaryLights[1];
         const vec4_t sunLightColor = BSPEditableConstants::SUNLIGHT_COLOR;
         const vec3_t sunLightDirection = BSPEditableConstants::SUNLIGHT_DIRECTION;
+
         sunLight->type = GFX_LIGHT_TYPE_DIR;
         sunLight->diffuseColor.r = sunLightColor.r;
         sunLight->diffuseColor.g = sunLightColor.g;

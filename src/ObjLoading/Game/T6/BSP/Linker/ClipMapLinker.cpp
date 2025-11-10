@@ -295,7 +295,7 @@ namespace BSP
                     BSPUtil::updateAABBWithPoint(vert, childMins, childMaxs);
                 }
 
-                CollisionAabbTree childAABBTree;
+                CollisionAabbTree childAABBTree{};
                 childAABBTree.materialIndex = 0; // always use the first material
                 childAABBTree.childCount = 0;
                 childAABBTree.u.partitionIndex = partitionIndex;
@@ -311,9 +311,15 @@ namespace BSP
         outParentStartIndex = parentAABBArrayIndex;
     }
 
-    constexpr vec3_t normalX = {1.0f, 0.0f, 0.0f};
-    constexpr vec3_t normalY = {0.0f, 1.0f, 0.0f};
-    constexpr vec3_t normalZ = {0.0f, 0.0f, 1.0f};
+    constexpr vec3_t normalX = {
+        {.x = 1.0f, .y = 0.0f, .z = 0.0f}
+    };
+    constexpr vec3_t normalY = {
+        {.x = 0.0f, .y = 1.0f, .z = 0.0f}
+    };
+    constexpr vec3_t normalZ = {
+        {.x = 0.0f, .y = 0.0f, .z = 1.0f}
+    };
 
     // returns the index of the node/leaf parsed by the function
     // Nodes are indexed by their index in the node array

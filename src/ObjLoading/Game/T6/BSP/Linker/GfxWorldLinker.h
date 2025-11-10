@@ -11,6 +11,7 @@ namespace BSP
     {
     public:
         GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context);
+
         [[nodiscard]] T6::GfxWorld* linkGfxWorld(const BSPData& bsp) const;
 
     private:

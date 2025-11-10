@@ -59,6 +59,7 @@ namespace BSP
     {
     public:
         BSPTree(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int treeLevel);
+
         void splitTree();
         void addObjectToTree(std::shared_ptr<BSPObject> object) const;
 
