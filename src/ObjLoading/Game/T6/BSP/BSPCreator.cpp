@@ -209,8 +209,8 @@ namespace BSP
             return nullptr;
         }
 
-        std::unique_ptr<char> gfxMapData(new char[static_cast<size_t>(gfxFile.m_length)]);
-        gfxFile.m_stream->read(gfxMapData.get(), gfxFile.m_length);
+        std::vector<char> gfxMapData(static_cast<size_t>(gfxFile.m_length));
+        gfxFile.m_stream->read(gfxMapData.data(), gfxFile.m_length);
         if (gfxFile.m_stream->gcount() != gfxFile.m_length)
         {
             con::error("Read error of gfx fbx file: {}", gfxFbxPath);
@@ -222,7 +222,7 @@ namespace BSP
         optsGfx.target_axes = ufbx_axes_right_handed_y_up;
         optsGfx.generate_missing_normals = true;
         optsGfx.allow_missing_vertex_position = false;
-        ufbx_scene* gfxScene = ufbx_load_memory(gfxMapData.get(), static_cast<size_t>(gfxFile.m_length), &optsGfx, &errorGfx);
+        ufbx_scene* gfxScene = ufbx_load_memory(gfxMapData.data(), static_cast<size_t>(gfxFile.m_length), &optsGfx, &errorGfx);
         if (!gfxScene)
         {
             con::error("Failed to load map gfx fbx file: {}", errorGfx.description.data);
@@ -239,9 +239,9 @@ namespace BSP
         }
         else
         {
-            std::unique_ptr<char> colMapData(new char[static_cast<size_t>(colFile.m_length)]);
+            std::vector<char> colMapData(static_cast<size_t>(colFile.m_length));
             colFile.m_stream->seekg(0);
-            colFile.m_stream->read(colMapData.get(), colFile.m_length);
+            colFile.m_stream->read(colMapData.data(), colFile.m_length);
             if (colFile.m_stream->gcount() != colFile.m_length)
             {
                 con::error("Read error of collision fbx file: {}", colFbxPath);
@@ -253,7 +253,7 @@ namespace BSP
             optsCol.target_axes = ufbx_axes_right_handed_y_up;
             optsCol.generate_missing_normals = true;
             optsCol.allow_missing_vertex_position = false;
-            colScene = ufbx_load_memory(colMapData.get(), static_cast<size_t>(colFile.m_length), &optsCol, &errorCol);
+            colScene = ufbx_load_memory(colMapData.data(), static_cast<size_t>(colFile.m_length), &optsCol, &errorCol);
             if (!colScene)
             {
                 con::error("Failed to load map collision fbx file: {}", errorCol.description.data);
