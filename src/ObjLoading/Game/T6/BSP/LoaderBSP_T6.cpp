@@ -33,7 +33,7 @@ namespace
         bool FinalizeZone(AssetCreationContext& context) override
         {
             const auto bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
-            if (bsp == nullptr)
+            if (!bsp)
                 return false;
 
             BSPLinker linker(m_memory, m_search_path, context);

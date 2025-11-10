@@ -87,11 +87,11 @@ namespace BSP
                 surfMaterialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
 
             auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(surfMaterialName);
-            if (surfMaterialAsset == nullptr)
+            if (!surfMaterialAsset)
             {
                 std::string missingImageName = BSPLinkingConstants::MISSING_IMAGE_NAME;
                 surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(missingImageName);
-                if (surfMaterialAsset == nullptr)
+                if (!surfMaterialAsset)
                 {
                     con::error("unable to load the missing image texture {}!", missingImageName);
                     return false;
@@ -174,7 +174,7 @@ namespace BSP
                 customMapModel* inModel = &projInfo->models[i];
 
                 auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
-                if (xModelAsset == nullptr)
+                if (!xModelAsset)
                 {
                     printf("XModel %s not found!\n", inModel->name.c_str());
                     currModel->model = nullptr;
@@ -616,7 +616,7 @@ namespace BSP
 
         std::string probeImageName = "reflection_probe0";
         auto probeImageAsset = m_context.LoadDependency<AssetImage>(probeImageName);
-        if (probeImageAsset == nullptr)
+        if (!probeImageAsset)
         {
             con::error("ERROR! unable to find reflection probe image {}!", probeImageName);
             return false;
@@ -635,7 +635,7 @@ namespace BSP
 
         std::string secondaryTexture = "lightmap0_secondary";
         auto secondaryTextureAsset = m_context.LoadDependency<AssetImage>(secondaryTexture);
-        if (secondaryTextureAsset == nullptr)
+        if (!secondaryTextureAsset)
         {
             con::error("ERROR! unable to find lightmap image {}!", secondaryTexture);
             return false;
@@ -652,7 +652,7 @@ namespace BSP
         const auto skyBoxName = std::format("skybox_{}", projInfo.name);
         gfxWorld.skyBoxModel = m_memory.Dup(skyBoxName.c_str());
 
-        if (m_context.LoadDependency<AssetXModel>(skyBoxName) == nullptr)
+        if (!m_context.LoadDependency<AssetXModel>(skyBoxName))
         {
             con::warn("WARN: Unable to load the skybox xmodel {}!", skyBoxName);
         }
@@ -719,7 +719,7 @@ namespace BSP
 
         const std::string outdoorImageName = std::string("$outdoor");
         auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
-        if (outdoorImageAsset == nullptr)
+        if (!outdoorImageAsset)
         {
             con::error("ERROR! unable to find outdoor image $outdoor!");
             return false;

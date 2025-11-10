@@ -27,18 +27,18 @@ namespace BSP
 
     bool BSPLinker::addDefaultRequiredAssets(const BSPData& bsp) const
     {
-        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}.gsc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}.gsc", bsp.name)))
             return false;
-        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_amb.gsc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_amb.gsc", bsp.name)))
             return false;
-        if (m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_fx.gsc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("maps/mp/{}_fx.gsc", bsp.name)))
             return false;
 
-        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}.csc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}.csc", bsp.name)))
             return false;
-        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_amb.csc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_amb.csc", bsp.name)))
             return false;
-        if (m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_fx.csc", bsp.name)) == nullptr)
+        if (!m_context.LoadDependency<AssetScript>(std::format("clientscripts/mp/{}_fx.csc", bsp.name)))
             return false;
 
         addEmptyFootstepTableAsset("default_1st_person");
@@ -48,7 +48,7 @@ namespace BSP
         addEmptyFootstepTableAsset("default_3rd_person_loud");
         addEmptyFootstepTableAsset("default_ai");
 
-        if (m_context.LoadDependency<AssetRawFile>("animtrees/fxanim_props.atr") == nullptr)
+        if (!m_context.LoadDependency<AssetRawFile>("animtrees/fxanim_props.atr"))
             return false;
 
         return true;
@@ -74,32 +74,32 @@ namespace BSP
         SkinnedVertsLinker skinnedVertsLinker(m_memory, m_search_path, m_context);
 
         auto* comWorld = comWorldLinker.linkComWorld(bsp);
-        if (comWorld == nullptr)
+        if (!comWorld)
             return false;
         m_context.AddAsset<AssetComWorld>(comWorld->name, comWorld);
 
         auto* mapEnts = mapEntsLinker.linkMapEnts(bsp);
-        if (mapEnts == nullptr)
+        if (!mapEnts)
             return false;
         m_context.AddAsset<AssetMapEnts>(mapEnts->name, mapEnts);
 
         auto* gameWorldMp = gameWorldMpLinker.linkGameWorldMp(bsp);
-        if (gameWorldMp == nullptr)
+        if (!gameWorldMp)
             return false;
         m_context.AddAsset<AssetGameWorldMp>(gameWorldMp->name, gameWorldMp);
 
         auto* skinnedVerts = skinnedVertsLinker.linkSkinnedVerts(bsp);
-        if (skinnedVerts == nullptr)
+        if (!skinnedVerts)
             return false;
         m_context.AddAsset<AssetSkinnedVerts>(skinnedVerts->name, skinnedVerts);
 
         auto* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
-        if (gfxWorld == nullptr)
+        if (!gfxWorld)
             return false;
         m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
 
         auto* clipMap = clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
-        if (clipMap == nullptr)
+        if (!clipMap)
             return false;
         m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);
 
