@@ -397,7 +397,7 @@ namespace BSP
             nodeVec.emplace_back();
 
             cNode_t node;
-            node.plane = nullptr; // initalised after the BSP tree has been loaded
+            node.plane = nullptr; // initialised after the BSP tree has been loaded
             node.children[0] = loadBSPNode(clipMap, *tree.node->front);
             node.children[1] = loadBSPNode(clipMap, *tree.node->back);
 
@@ -414,7 +414,7 @@ namespace BSP
         for (unsigned int vertIdx = 0; vertIdx < clipMap.vertCount; vertIdx++)
         {
             vec3_t vertex = clipMap.verts[vertIdx];
-            // initalise AABB with the first vertex
+            // initialise AABB with the first vertex
             if (vertIdx == 0)
             {
                 worldMins = vertex;

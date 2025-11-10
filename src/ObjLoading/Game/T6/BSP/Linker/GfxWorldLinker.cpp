@@ -231,7 +231,7 @@ namespace BSP
         gfxWorld.dpvs.smodelDrawInsts = m_memory.Alloc<GfxStaticModelDrawInst>(modelCount);
 
         // visdata is written to by the game
-        // all visdata is alligned by 128
+        // all visdata is aligned by 128
         const auto alignedModelCount = utils::Align(modelCount, 128u);
         gfxWorld.dpvs.smodelVisDataCount = static_cast<unsigned int>(alignedModelCount);
         gfxWorld.dpvs.smodelVisData[0] = m_memory.Alloc<char>(alignedModelCount);

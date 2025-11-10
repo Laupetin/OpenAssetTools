@@ -17,7 +17,7 @@ namespace
         assert(node->attrib_type == UFBX_ELEMENT_MESH);
 
         if (mesh->instances.count != 1)
-            con::warn("mesh {} has {} instances, only the 1st instace will be used.", node->name.data, mesh->instances.count);
+            con::warn("mesh {} has {} instances, only the 1st instance will be used.", node->name.data, mesh->instances.count);
 
         if (mesh->num_triangles == 0)
         {
@@ -84,9 +84,9 @@ namespace
                 ufbx_face* face = &mesh->faces.data[faceIndex];
 
                 // Triangulate the face into the indices vector
-                uint32_t triangluatedTriCount = ufbx_triangulate_face(tempIndices.data(), tempIndices.size(), mesh, *face);
+                uint32_t triangulatedTriCount = ufbx_triangulate_face(tempIndices.data(), tempIndices.size(), mesh, *face);
 
-                for (uint32_t idxOfIndex = 0; idxOfIndex < triangluatedTriCount * 3; idxOfIndex++)
+                for (uint32_t idxOfIndex = 0; idxOfIndex < triangulatedTriCount * 3; idxOfIndex++)
                 {
                     BSPVertex vertex;
                     uint32_t index = tempIndices[idxOfIndex];
@@ -234,7 +234,7 @@ namespace BSP
         const auto colFile = searchPath.Open(colFbxPath);
         if (!colFile.IsOpen())
         {
-            con::warn("Failed to open map collison fbx file: {}. map gfx will be used for collision instead.", colFbxPath);
+            con::warn("Failed to open map collision fbx file: {}. map gfx will be used for collision instead.", colFbxPath);
             colScene = gfxScene;
         }
         else
