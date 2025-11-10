@@ -106,9 +106,11 @@ namespace BSP
             {
                 spawnJs = json::parse(*spawnFile.m_stream);
             }
-            size_t defenderNameCount = std::extent<decltype(BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES)>::value;
-            size_t attackerNameCount = std::extent<decltype(BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES)>::value;
-            size_t ffaNameCount = std::extent<decltype(BSPGameConstants::FFA_SPAWN_POINT_NAMES)>::value;
+
+            constexpr auto defenderNameCount = std::extent_v<decltype(BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES)>;
+            constexpr auto attackerNameCount = std::extent_v<decltype(BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES)>;
+            constexpr auto ffaNameCount = std::extent_v<decltype(BSPGameConstants::FFA_SPAWN_POINT_NAMES)>;
+
             parseSpawnpointJSON(spawnJs["attackers"], entityString, BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES, defenderNameCount);
             parseSpawnpointJSON(spawnJs["defenders"], entityString, BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES, attackerNameCount);
             parseSpawnpointJSON(spawnJs["FFA"], entityString, BSPGameConstants::FFA_SPAWN_POINT_NAMES, ffaNameCount);
