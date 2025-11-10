@@ -515,7 +515,6 @@ namespace BSP
             //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
             //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
             const auto indexOfFirstTri = surface.indexOfFirstIndex / 3;
-            const auto indexOfFirstVertex = surface.indexOfFirstVertex;
             for (auto triIdx = 0u; triIdx < surface.triCount; triIdx++)
             {
                 CollisionPartition partition;

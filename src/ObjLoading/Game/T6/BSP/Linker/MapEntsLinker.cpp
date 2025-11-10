@@ -61,8 +61,6 @@ namespace
             }
         }
     }
-
-    std::string loadMapEnts() {}
 } // namespace
 
 namespace BSP
