@@ -3,6 +3,7 @@
 #include "BSPUtil.h"
 
 #include <format>
+#include <limits>
 #include <ufbx.h>
 
 using namespace BSP;
@@ -33,9 +34,9 @@ namespace
 
         for (size_t k = 0; k < mesh->num_indices; k++)
         {
-            if (mesh->vertex_indices[k] > UINT16_MAX)
+            if (mesh->vertex_indices[k] > std::numeric_limits<std::uint16_t>::max())
             {
-                con::warn("ignoring mesh {}, it has more than {} indices.", node->name.data, UINT16_MAX);
+                con::warn("ignoring mesh {}, it has more than {} indices.", node->name.data, std::numeric_limits<std::uint16_t>::max());
                 return;
             }
         }

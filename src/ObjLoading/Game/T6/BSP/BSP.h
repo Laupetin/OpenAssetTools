@@ -4,6 +4,7 @@
 #include "Utils/Logging/Log.h"
 
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -59,7 +60,7 @@ namespace BSP
     // These values are hardcoded ingame and will break the map if they are changed
     namespace BSPGameConstants
     {
-        constexpr unsigned int MAX_COLLISION_VERTS = UINT16_MAX;
+        constexpr unsigned int MAX_COLLISION_VERTS = std::numeric_limits<std::uint16_t>::max();
 
         constexpr size_t MAX_AABB_TREE_CHILDREN = 128;
 
