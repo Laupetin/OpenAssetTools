@@ -361,18 +361,20 @@ namespace BSP
         {
             cplane_s plane;
             plane.dist = tree.node->distance;
-            if (tree.node->axis == AXIS_X)
+            if (tree.node->axis == PlaneAxis::AXIS_X)
             {
                 plane.normal = normalX;
                 plane.type = 0;
             }
-            else if (tree.node->axis == AXIS_Y)
+            else if (tree.node->axis == PlaneAxis::AXIS_Y)
             {
                 plane.normal = normalY;
                 plane.type = 1;
             }
-            else // tree->node->axis == AXIS_Z
+            else
             {
+                assert(tree.node->axis == PlaneAxis::AXIS_Z);
+
                 plane.normal = normalZ;
                 plane.type = 2;
             }

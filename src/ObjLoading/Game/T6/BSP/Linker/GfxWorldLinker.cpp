@@ -81,7 +81,7 @@ namespace BSP
             gfxSurface->tris.vertexDataOffset1 = 0;
 
             std::string surfMaterialName;
-            if (bspSurface.material.materialType == MATERIAL_TYPE_TEXTURE)
+            if (bspSurface.material.materialType == BSPMaterialType::MATERIAL_TYPE_TEXTURE)
                 surfMaterialName = bspSurface.material.materialName;
             else // MATERIAL_TYPE_COLOUR || MATERIAL_TYPE_EMPTY
                 surfMaterialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
@@ -200,9 +200,9 @@ namespace BSP
                 currModelInst->maxs.z = currModel->model->maxs.z + currModel->placement.origin.z;
 
                 currModel->cullDist = DEFAULT_SMODEL_CULL_DIST;
-                currModel->flags = DEFAULT_SMODEL_FLAGS;
-                currModel->primaryLightIndex = DEFAULT_SMODEL_LIGHT;
-                currModel->reflectionProbeIndex = DEFAULT_SMODEL_REFLECTION_PROBE;
+                currModel->flags = BSPEditableConstants::DEFAULT_SMODEL_FLAGS;
+                currModel->primaryLightIndex = BSPEditableConstants::DEFAULT_SMODEL_LIGHT;
+                currModel->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SMODEL_REFLECTION_PROBE;
 
                 // unknown use / unused
                 currModel->smid = i;

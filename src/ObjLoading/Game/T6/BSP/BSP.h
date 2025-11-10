@@ -3,12 +3,13 @@
 #include "Game/T6/T6.h"
 #include "Utils/Logging/Log.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
 namespace BSP
 {
-    enum BSPMaterialType
+    enum class BSPMaterialType : std::uint8_t
     {
         MATERIAL_TYPE_COLOUR,
         MATERIAL_TYPE_TEXTURE,

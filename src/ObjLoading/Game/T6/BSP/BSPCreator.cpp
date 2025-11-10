@@ -67,12 +67,12 @@ namespace
 
             if (mesh->materials.count == 0)
             {
-                surface.material.materialType = MATERIAL_TYPE_EMPTY;
+                surface.material.materialType = BSPMaterialType::MATERIAL_TYPE_EMPTY;
                 surface.material.materialName = "";
             }
             else
             {
-                surface.material.materialType = MATERIAL_TYPE_TEXTURE;
+                surface.material.materialType = BSPMaterialType::MATERIAL_TYPE_TEXTURE;
                 surface.material.materialName = mesh->materials.data[meshPart.index]->name.data;
             }
 
@@ -98,15 +98,18 @@ namespace
                     blenderCoords.z = static_cast<float>(transformedPos.z);
                     vertex.pos = BSPUtil::convertToBO2Coords(blenderCoords);
 
-                    if (surface.material.materialType == MATERIAL_TYPE_TEXTURE || surface.material.materialType == MATERIAL_TYPE_EMPTY)
+                    if (surface.material.materialType == BSPMaterialType::MATERIAL_TYPE_TEXTURE
+                        || surface.material.materialType == BSPMaterialType::MATERIAL_TYPE_EMPTY)
                     {
                         vertex.color.x = 1.0f;
                         vertex.color.y = 1.0f;
                         vertex.color.z = 1.0f;
                         vertex.color.w = 1.0f;
                     }
-                    else // surface->material.materialType == MATERIAL_TYPE_COLOUR
+                    else
                     {
+                        assert(surface.material.materialType == BSPMaterialType::MATERIAL_TYPE_COLOUR);
+
                         float factor = static_cast<float>(mesh->materials.data[meshPart.index]->fbx.diffuse_factor.value_real);
                         ufbx_vec4 diffuse = mesh->materials.data[meshPart.index]->fbx.diffuse_color.value_vec4;
                         vertex.color.x = static_cast<float>(diffuse.x * factor);

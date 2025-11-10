@@ -1,5 +1,7 @@
 #include "BSPCalculation.h"
 
+#include <cassert>
+
 namespace BSP
 {
     constexpr int MAX_NODE_SIZE = 512; // maximum size a BSP node can be before it becomes a leaf
@@ -44,18 +46,20 @@ namespace BSP
         float minCoord, maxCoord;
 
         // Select the relevant coordinate based on the plane's axis
-        if (axis == AXIS_X)
+        if (axis == PlaneAxis::AXIS_X)
         {
             minCoord = object.min.x;
             maxCoord = object.max.x;
         }
-        else if (axis == AXIS_Y)
+        else if (axis == PlaneAxis::AXIS_Y)
         {
             minCoord = object.min.y;
             maxCoord = object.max.y;
         }
-        else // axis == AXIS_Z
+        else
         {
+            assert(axis == PlaneAxis::AXIS_Z);
+
             minCoord = object.min.z;
             maxCoord = object.max.z;
         }
@@ -63,15 +67,15 @@ namespace BSP
         // Compare with the plane's distance
         if (maxCoord < distance)
         {
-            return SIDE_BACK; // Object is entirely on the negative side
+            return PlaneSide::SIDE_BACK; // Object is entirely on the negative side
         }
         else if (minCoord > distance)
         {
-            return SIDE_FRONT; // Object is entirely on the positive side
+            return PlaneSide::SIDE_FRONT; // Object is entirely on the positive side
         }
         else
         {
-            return SIDE_INTERSECTS;
+            return PlaneSide::SIDE_INTERSECTS;
         }
     }
 
@@ -101,7 +105,7 @@ namespace BSP
             back = std::make_unique<BSPTree>(min.x, min.y, min.z, halfLength, max.y, max.z, level + 1);
 
             isLeaf = false;
-            node = std::make_unique<BSPNode>(std::move(front), std::move(back), AXIS_X, halfLength);
+            node = std::make_unique<BSPNode>(std::move(front), std::move(back), PlaneAxis::AXIS_X, halfLength);
             leaf = nullptr;
         }
         else if (max.y - min.y > MAX_NODE_SIZE)
@@ -112,7 +116,7 @@ namespace BSP
             back = std::make_unique<BSPTree>(min.x, min.y, min.z, max.x, halfLength, max.z, level + 1);
 
             isLeaf = false;
-            node = std::make_unique<BSPNode>(std::move(front), std::move(back), AXIS_Y, halfLength);
+            node = std::make_unique<BSPNode>(std::move(front), std::move(back), PlaneAxis::AXIS_Y, halfLength);
             leaf = nullptr;
         }
         else if (max.z - min.z > MAX_NODE_SIZE)
@@ -123,7 +127,7 @@ namespace BSP
             back = std::make_unique<BSPTree>(min.x, min.y, min.z, max.x, max.y, halfLength, level + 1);
 
             isLeaf = false;
-            node = std::make_unique<BSPNode>(std::move(front), std::move(back), AXIS_Z, halfLength);
+            node = std::make_unique<BSPNode>(std::move(front), std::move(back), PlaneAxis::AXIS_Z, halfLength);
             leaf = nullptr;
         }
         else
@@ -143,11 +147,12 @@ namespace BSP
         else
         {
             const auto side = node->objectIsInFront(*object);
-            if (side == SIDE_FRONT)
+
+            if (side == PlaneSide::SIDE_FRONT)
             {
                 node->front->addObjectToTree(std::move(object));
             }
-            else if (side == SIDE_BACK)
+            else if (side == PlaneSide::SIDE_BACK)
             {
                 node->back->addObjectToTree(std::move(object));
             }

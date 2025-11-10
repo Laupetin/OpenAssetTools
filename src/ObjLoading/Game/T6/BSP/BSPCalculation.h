@@ -2,16 +2,18 @@
 
 #include "BSP.h"
 
+#include <cstdint>
+
 namespace BSP
 {
-    enum PlaneAxis
+    enum class PlaneAxis : std::uint8_t
     {
         AXIS_X,
         AXIS_Y,
         AXIS_Z
     };
 
-    enum PlaneSide
+    enum class PlaneSide : std::uint8_t
     {
         SIDE_FRONT,
         SIDE_BACK,
