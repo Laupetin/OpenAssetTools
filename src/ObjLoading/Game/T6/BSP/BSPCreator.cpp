@@ -2,6 +2,7 @@
 
 #include "BSPUtil.h"
 
+#include <cassert>
 #include <format>
 #include <limits>
 #include <ufbx.h>

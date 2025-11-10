@@ -2,7 +2,9 @@
 
 #include "Game/T6/BSP/BSPUtil.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstring>
 
 using namespace T6;
 

@@ -3,6 +3,7 @@
 #include "BSP.h"
 
 #include <cstdint>
+#include <memory>
 
 namespace BSP
 {

@@ -7,6 +7,7 @@
 #include "MapEntsLinker.h"
 #include "SkinnedVertsLinker.h"
 
+#include <cstring>
 #include <format>
 
 using namespace T6;

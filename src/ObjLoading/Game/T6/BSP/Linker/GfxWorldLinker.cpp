@@ -5,6 +5,7 @@
 #include "Utils/Pack.h"
 
 #include <cassert>
+#include <cstring>
 #include <format>
 
 using namespace T6;
