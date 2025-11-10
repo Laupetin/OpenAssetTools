@@ -28,7 +28,7 @@ function ufbx:project()
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
-		language "C++"
+		language "C"
 		
 		files { 
 			path.join(folder, "ufbx/*.h"), 
