@@ -717,8 +717,7 @@ namespace BSP
         gfxWorld.outdoorLookupMatrix[3].z = zScale;
         gfxWorld.outdoorLookupMatrix[3].w = 1.0f;
 
-        const std::string outdoorImageName = std::string("$outdoor");
-        auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
+        const auto outdoorImageAsset = m_context.LoadDependency<AssetImage>("$outdoor");
         if (!outdoorImageAsset)
         {
             con::error("ERROR! unable to find outdoor image $outdoor!");
