@@ -1,7 +1,6 @@
 #include "CommonTechsetDumper.h"
 
 #include "Dumping/AbstractTextDumper.h"
-#include "Game/IW3/Material/MaterialConstantZoneStateIW3.h"
 #include "Techset/TechsetCommon.h"
 
 #include <cassert>
@@ -36,8 +35,7 @@ namespace
                 dumpedTechniques[techniqueIndex] = true;
                 WriteTechniqueType(techniqueIndex);
 
-                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(IW3::MaterialTechniqueSet::techniques)>;
-                     nextTechniqueIndex++)
+                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < techniqueCount; nextTechniqueIndex++)
                 {
                     if (techset.m_technique_names[nextTechniqueIndex] != technique)
                         continue;

@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace d3d11
 {
-    enum class ShaderType
+    enum class ShaderType : std::uint8_t
     {
         UNKNOWN,
         PIXEL_SHADER,
@@ -33,7 +34,7 @@ namespace d3d11
         unsigned m_flags;
     };
 
-    enum class ConstantBufferType
+    enum class ConstantBufferType : std::uint8_t
     {
         UNKNOWN,
         CBUFFER,
@@ -59,7 +60,7 @@ namespace d3d11
         std::vector<ConstantBufferVariable> m_variables;
     };
 
-    enum class BoundResourceType
+    enum class BoundResourceType : std::uint8_t
     {
         UNKNOWN,
         CBUFFER,
@@ -68,7 +69,7 @@ namespace d3d11
         SAMPLER
     };
 
-    enum class BoundResourceReturnType
+    enum class BoundResourceReturnType : std::uint8_t
     {
         UNKNOWN,
         UNORM,
@@ -81,7 +82,7 @@ namespace d3d11
         CONTINUED,
     };
 
-    enum class BoundResourceDimension
+    enum class BoundResourceDimension : std::uint8_t
     {
         UNKNOWN,
         BUFFER,
@@ -131,6 +132,6 @@ namespace d3d11
     class ShaderAnalyser
     {
     public:
-        static std::unique_ptr<ShaderInfo> GetShaderInfo(const uint8_t* shader, size_t shaderSize);
+        static std::unique_ptr<ShaderInfo> GetShaderInfo(const void* shader, size_t shaderSize);
     };
 } // namespace d3d11
