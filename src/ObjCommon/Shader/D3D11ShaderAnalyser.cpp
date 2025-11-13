@@ -32,14 +32,17 @@ namespace d3d11
           m_flags(0u)
     {
     }
+} // namespace d3d11
 
-    static constexpr auto TAG_RDEF = FileUtils::MakeMagic32('R', 'D', 'E', 'F');
-    static constexpr auto TAG_SHDR = FileUtils::MakeMagic32('S', 'H', 'D', 'R');
+namespace
+{
+    constexpr auto TAG_RDEF = FileUtils::MakeMagic32('R', 'D', 'E', 'F');
+    constexpr auto TAG_SHDR = FileUtils::MakeMagic32('S', 'H', 'D', 'R');
 
-    static constexpr auto VERSION_5_0 = 0x500;
-    static constexpr auto VERSION_5_1 = 0x501;
-    static constexpr auto TARGET_VERSION_MASK = 0xFFFF;
-    static constexpr auto CHUNK_TABLE_OFFSET = 28u;
+    constexpr auto VERSION_5_0 = 0x500;
+    constexpr auto VERSION_5_1 = 0x501;
+    constexpr auto TARGET_VERSION_MASK = 0xFFFF;
+    constexpr auto CHUNK_TABLE_OFFSET = 28u;
 
     struct FileRdefHeader
     {
@@ -669,16 +672,16 @@ namespace d3d11
 
         return true;
     }
-} // namespace d3d11
+} // namespace
 
-std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const uint8_t* shader, const size_t shaderSize)
+std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const void* shader, const size_t shaderSize)
 {
     if (shader == nullptr || shaderSize == 0)
         return nullptr;
 
     auto shaderInfo = std::make_unique<ShaderInfo>();
 
-    if (!PopulateShaderInfoFromBytes(*shaderInfo, shader, shaderSize))
+    if (!PopulateShaderInfoFromBytes(*shaderInfo, static_cast<const uint8_t*>(shader), shaderSize))
         return nullptr;
 
     return shaderInfo;

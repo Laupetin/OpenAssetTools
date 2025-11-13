@@ -6,7 +6,6 @@
 #include "Techset/CommonTechsetDumper.h"
 #include "Techset/TechniqueDumpingZoneState.h"
 
-#include <sstream>
 #include <unordered_set>
 
 using namespace T6;
@@ -102,18 +101,51 @@ namespace
 
     techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
     {
-        std::vector<std::string> techniqueNames(std::extent_v<decltype(techniqueTypeNames)>);
+        std::vector<techset::CommonPass> passes;
 
-        for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
         {
-            const auto* technique = techset.techniques[techniqueIndex];
-            if (technique && technique->name)
-                techniqueNames[techniqueIndex] = technique->name;
+            const auto& pass = technique.passArray[passIndex];
+
+            techset::CommonTechniqueShader vertexShader{};
+            techset::CommonTechniqueShader pixelShader{};
+
+            if (pass.vertexShader)
+            {
+                if (pass.vertexShader->name)
+                    vertexShader.m_name = pass.vertexShader->name;
+
+                if (pass.vertexShader->prog.loadDef.program)
+                {
+                    vertexShader.m_shader_bin = pass.vertexShader->prog.loadDef.program;
+                    vertexShader.m_shader_bin_size = pass.vertexShader->prog.loadDef.programSize * sizeof(uint32_t);
+                }
+            }
+
+            if (pass.pixelShader)
+            {
+                if (pass.pixelShader->name)
+                    pixelShader.m_name = pass.pixelShader->name;
+
+                if (pass.pixelShader->prog.loadDef.program)
+                {
+                    pixelShader.m_shader_bin = pass.pixelShader->prog.loadDef.program;
+                    pixelShader.m_shader_bin_size = pass.pixelShader->prog.loadDef.programSize * sizeof(uint32_t);
+                }
+            }
+
+            passes.emplace_back(techset::CommonPass{
+                .m_sampler_flags = pass.customSamplerFlags,
+                .m_dx_version = techset::DxVersion::DX11,
+                .m_vertex_shader = vertexShader,
+                .m_pixel_shader = pixelShader,
+            });
         }
 
-        return techset::CommonTechset{
-            .m_name = techset.name,
-            .m_technique_names = std::move(techniqueNames),
+        return techset::CommonTechnique{
+            .m_name = technique.name ? technique.name : std::string(),
+            .m_flags = technique.flags,
+            .m_passes = std::move(passes),
         };
     }
 
