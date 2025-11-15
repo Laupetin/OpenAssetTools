@@ -73,9 +73,11 @@ namespace
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
 
-        void FinalizeZone(AssetCreationContext& context) override
+        bool FinalizeZone(AssetCreationContext& context) override
         {
             context.GetZoneAssetCreationState<MenuConversionZoneState>().FinalizeSupportingData();
+
+            return true;
         }
 
     private:

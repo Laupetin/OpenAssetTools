@@ -22,3 +22,6 @@
 [submodule "thirdparty/webview"]
 	path = thirdparty/webview
 	url = https://github.com/Laupetin/webview.git
+[submodule "thirdparty/ufbx"]
+	path = thirdparty/ufbx
+	url = https://github.com/ufbx/ufbx
