@@ -4,6 +4,7 @@
 #include "Shader/ShaderCommon.h"
 #include "Techset/CommonTechniqueDumper.h"
 #include "Techset/CommonTechsetDumper.h"
+#include "Techset/ShaderDumpingZoneState.h"
 #include "Techset/TechniqueDumpingZoneState.h"
 
 #include <unordered_set>
@@ -12,51 +13,6 @@ using namespace T6;
 
 namespace
 {
-    class ShaderZoneState final : public IZoneAssetDumperState
-    {
-    public:
-        bool ShouldDumpTechnique(const MaterialTechnique* technique)
-        {
-            const auto existingTechnique = m_dumped_techniques.find(technique);
-            if (existingTechnique == m_dumped_techniques.end())
-            {
-                m_dumped_techniques.emplace(technique);
-                return true;
-            }
-
-            return false;
-        }
-
-        bool ShouldDumpPixelShader(const MaterialPixelShader* pixelShader)
-        {
-            const auto existingPixelShader = m_dumped_pixel_shaders.find(pixelShader);
-            if (existingPixelShader == m_dumped_pixel_shaders.end())
-            {
-                m_dumped_pixel_shaders.emplace(pixelShader);
-                return true;
-            }
-
-            return false;
-        }
-
-        bool ShouldDumpVertexShader(const MaterialVertexShader* vertexShader)
-        {
-            const auto existingVertexShader = m_dumped_vertex_shaders.find(vertexShader);
-            if (existingVertexShader == m_dumped_vertex_shaders.end())
-            {
-                m_dumped_vertex_shaders.emplace(vertexShader);
-                return true;
-            }
-
-            return false;
-        }
-
-    private:
-        std::unordered_set<const MaterialTechnique*> m_dumped_techniques;
-        std::unordered_set<const MaterialPixelShader*> m_dumped_pixel_shaders;
-        std::unordered_set<const MaterialVertexShader*> m_dumped_vertex_shaders;
-    };
-
     void DumpPixelShader(const AssetDumpingContext& context, const MaterialPixelShader& pixelShader)
     {
         const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForPixelShaderAssetName(pixelShader.name));
@@ -79,7 +35,7 @@ namespace
 
     void DumpShaders(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
-        auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
+        auto* shaderState = context.GetZoneAssetDumperState<techset::ShaderDumpingZoneState>();
 
         for (const auto* technique : techset.techniques)
         {
