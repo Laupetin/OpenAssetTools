@@ -5,5 +5,5 @@
 
 namespace techset
 {
-    void DumpCommonTechnique(const AssetDumpingContext& context, const CommonTechnique& technique);
+    void DumpCommonTechnique(const CommonStreamRoutingInfos& routingInfos, const AssetDumpingContext& context, const CommonTechnique& technique);
 } // namespace techset

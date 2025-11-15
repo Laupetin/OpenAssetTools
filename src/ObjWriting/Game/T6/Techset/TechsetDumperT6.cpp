@@ -99,6 +99,28 @@ namespace
         }
     }
 
+    techset::CommonVertexDeclaration ConvertToCommonVertexDeclaration(const MaterialVertexDeclaration* vertexDecl)
+    {
+        std::vector<techset::CommonStreamRouting> commonRouting;
+
+        if (vertexDecl)
+        {
+            const auto streamCount = std::min(static_cast<size_t>(vertexDecl->streamCount), std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
+            for (auto streamIndex = 0u; streamIndex < streamCount; streamIndex++)
+            {
+                const auto& routing = vertexDecl->routing.data[streamIndex];
+                commonRouting.emplace_back(techset::CommonStreamRouting{
+                    .m_source = static_cast<techset::CommonStreamSource>(routing.source),
+                    .m_destination = static_cast<techset::CommonStreamDestination>(routing.dest),
+                });
+            }
+        }
+
+        return techset::CommonVertexDeclaration{
+            .m_routing = std::move(commonRouting),
+        };
+    }
+
     techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
     {
         std::vector<techset::CommonPass> passes;
@@ -139,6 +161,7 @@ namespace
                 .m_dx_version = techset::DxVersion::DX11,
                 .m_vertex_shader = vertexShader,
                 .m_pixel_shader = pixelShader,
+                .m_vertex_declaration = ConvertToCommonVertexDeclaration(pass.vertexDecl),
             });
         }
 
@@ -151,6 +174,9 @@ namespace
 
     void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
+        static techset::CommonStreamRoutingInfos routingInfos(
+            streamRoutingSources, std::extent_v<decltype(streamRoutingSources)>, streamRoutingDestinations, std::extent_v<decltype(streamRoutingDestinations)>);
+
         auto* techniqueState = context.GetZoneAssetDumperState<techset::TechniqueDumpingZoneState>();
         for (const auto* technique : techset.techniques)
         {
@@ -158,7 +184,7 @@ namespace
             {
                 const auto commonTechnique = ConvertToCommonTechnique(*technique);
 
-                techset::DumpCommonTechnique(context, commonTechnique);
+                techset::DumpCommonTechnique(routingInfos, context, commonTechnique);
             }
         }
     }

@@ -21,8 +21,9 @@ namespace
     class TechniqueFileWriter : public AbstractTextDumper
     {
     public:
-        explicit TechniqueFileWriter(std::ostream& stream)
-            : AbstractTextDumper(stream)
+        TechniqueFileWriter(const CommonStreamRoutingInfos& routingInfos, std::ostream& stream)
+            : AbstractTextDumper(stream),
+              m_routing_infos(routingInfos)
         {
         }
 
@@ -66,9 +67,9 @@ namespace
 #endif
 
             DumpStateMap();
-            DumpShader(pass, pass.m_vertex_shader, TechniqueShaderType::VERTEX_SHADER);
-            DumpShader(pass, pass.m_pixel_shader, TechniqueShaderType::PIXEL_SHADER);
-            // DumpVertexDecl(pass);
+            DumpShader(pass.m_vertex_shader, TechniqueShaderType::VERTEX_SHADER, pass.m_dx_version);
+            DumpShader(pass.m_pixel_shader, TechniqueShaderType::PIXEL_SHADER, pass.m_dx_version);
+            DumpVertexDecl(pass.m_vertex_declaration);
 
             DecIndent();
             m_stream << "}\n";
@@ -82,7 +83,7 @@ namespace
             m_stream << "stateMap \"passthrough\"; // TODO\n";
         }
 
-        void DumpShader(const CommonPass& pass, const CommonTechniqueShader& shader, const TechniqueShaderType shaderType) const
+        void DumpShader(const CommonTechniqueShader& shader, const TechniqueShaderType shaderType, const DxVersion dxVersion) const
         {
             if (!shader.m_shader_bin)
             {
@@ -93,7 +94,7 @@ namespace
             }
 
             unsigned versionMajor, versionMinor;
-            if (pass.m_dx_version == DxVersion::DX9)
+            if (dxVersion == DxVersion::DX9)
             {
                 const auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(shader.m_shader_bin, shader.m_shader_bin_size);
                 assert(shaderInfo);
@@ -105,7 +106,7 @@ namespace
             }
             else
             {
-                assert(pass.m_dx_version == DxVersion::DX11);
+                assert(dxVersion == DxVersion::DX11);
                 const auto shaderInfo = d3d11::ShaderAnalyser::GetShaderInfo(shader.m_shader_bin, shader.m_shader_bin_size);
                 assert(shaderInfo);
                 if (!shaderInfo)
@@ -126,17 +127,34 @@ namespace
             Indent();
             m_stream << "}\n";
         }
+
+        void DumpVertexDecl(const CommonVertexDeclaration& vertexDeclaration) const
+        {
+            if (vertexDeclaration.m_routing.empty())
+                return;
+
+            m_stream << "\n";
+
+            for (const auto& routing : vertexDeclaration.m_routing)
+            {
+                Indent();
+                m_stream << std::format(
+                    "vertex.{} = code.{};\n", m_routing_infos.GetDestinationName(routing.m_destination), m_routing_infos.GetSourceName(routing.m_source));
+            }
+        }
+
+        const CommonStreamRoutingInfos& m_routing_infos;
     };
 } // namespace
 
 namespace techset
 {
-    void DumpCommonTechnique(const AssetDumpingContext& context, const CommonTechnique& technique)
+    void DumpCommonTechnique(const CommonStreamRoutingInfos& routingInfos, const AssetDumpingContext& context, const CommonTechnique& technique)
     {
         const auto techniqueFile = context.OpenAssetFile(GetFileNameForTechniqueName(technique.m_name));
         if (techniqueFile)
         {
-            TechniqueFileWriter writer(*techniqueFile);
+            TechniqueFileWriter writer(routingInfos, *techniqueFile);
             writer.DumpTechnique(technique);
         }
     }

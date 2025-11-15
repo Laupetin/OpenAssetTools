@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
+#include "Techset/CommonTechnique.h"
 
 namespace T6
 {
@@ -45,57 +45,158 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
 
-    static const char* materialStreamDestinationNames[]{
-        "position",    "normal",       "color[0]",     "color[1]",     "depth",        "texcoord[0]", "texcoord[1]",
-        "texcoord[2]", "texcoord[3]",  "texcoord[4]",  "texcoord[5]",  "texcoord[6]",  "texcoord[7]", "texcoord[8]",
-        "texcoord[9]", "texcoord[10]", "texcoord[11]", "texcoord[12]", "texcoord[13]", "blendWeight",
+    static techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
+        {
+         .name = "position",
+         .abbreviation = "p",
+         .optional = false,
+         },
+        {
+         .name = "color",
+         .abbreviation = "c",
+         .optional = false,
+         },
+        {
+         .name = "texcoord[0]",
+         .abbreviation = "t0",
+         .optional = false,
+         },
+        {
+         .name = "normal",
+         .abbreviation = "n",
+         .optional = false,
+         },
+        {
+         .name = "tangent",
+         .abbreviation = "t",
+         .optional = false,
+         },
+        {
+         .name = "texcoord[1]",
+         .abbreviation = "t1",
+         .optional = false,
+         },
+        {
+         .name = "texcoord[2]",
+         .abbreviation = "t2",
+         .optional = true,
+         },
+        {
+         .name = "texcoord[3]",
+         .abbreviation = "t3",
+         .optional = true,
+         },
+        {
+         .name = "normalTransform[0]",
+         .abbreviation = "n0",
+         .optional = true,
+         },
+        {
+         .name = "normalTransform[1]",
+         .abbreviation = "n1",
+         .optional = true,
+         },
+        {
+         .name = "blendWeight",
+         .abbreviation = "b",
+         .optional = true,
+         },
     };
-    static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
+    static_assert(std::extent_v<decltype(streamRoutingSources)> == STREAM_SRC_COUNT);
 
-    static const char* materialStreamDestinationAbbreviation[]{
-        "p", "n", "c0", "c1", "d", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "b",
+    static techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
+        {
+         .name = "position",
+         .abbreviation = "p",
+         },
+        {
+         .name = "normal",
+         .abbreviation = "n",
+         },
+        {
+         .name = "color[0]",
+         .abbreviation = "c0",
+         },
+        {
+         .name = "color[1]",
+         .abbreviation = "c1",
+         },
+        {
+         .name = "depth",
+         .abbreviation = "d",
+         },
+        {
+         .name = "texcoord[0]",
+         .abbreviation = "t0",
+         },
+        {
+         .name = "texcoord[1]",
+         .abbreviation = "t1",
+         },
+        {
+         .name = "texcoord[2]",
+         .abbreviation = "t2",
+         },
+        {
+         .name = "texcoord[3]",
+         .abbreviation = "t3",
+         },
+        {
+         .name = "texcoord[4]",
+         .abbreviation = "t4",
+         },
+        {
+         .name = "texcoord[5]",
+         .abbreviation = "t5",
+         },
+        {
+         .name = "texcoord[6]",
+         .abbreviation = "t6",
+         },
+        {
+         .name = "texcoord[7]",
+         .abbreviation = "t7",
+         },
+        {
+         .name = "texcoord[8]",
+         .abbreviation = "t8",
+         },
+        {
+         .name = "texcoord[9]",
+         .abbreviation = "t9",
+         },
+        {
+         .name = "texcoord[10]",
+         .abbreviation = "t10",
+         },
+        {
+         .name = "texcoord[11]",
+         .abbreviation = "t11",
+         },
+        {
+         .name = "texcoord[12]",
+         .abbreviation = "t12",
+         },
+        {
+         .name = "texcoord[13]",
+         .abbreviation = "t13",
+         },
+        {
+         .name = "blendWeight",
+         .abbreviation = "b",
+         },
     };
-    static_assert(std::extent_v<decltype(materialStreamDestinationAbbreviation)> == STREAM_DST_COUNT);
-
-    static const char* materialStreamSourceNames[]{
-        "position",
-        "color",
-        "texcoord[0]",
-        "normal",
-        "tangent",
-        "texcoord[1]",
-        "texcoord[2]",
-        "texcoord[3]",
-        "normalTransform[0]",
-        "normalTransform[1]",
-        "blendWeight",
-    };
-    static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
-
-    static const char* materialStreamSourceAbbreviation[]{
-        "p",
-        "c",
-        "t0",
-        "n",
-        "t",
-        "t1",
-        "t2",
-        "t3",
-        "n0",
-        "n1",
-        "b",
-    };
-    static_assert(std::extent_v<decltype(materialStreamSourceAbbreviation)> == STREAM_SRC_COUNT);
+    static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
     inline MaterialTypeInfo g_materialTypeInfo[]{
-        {"",    ""   },
-        {"m/",  "m_" },
-        {"mc/", "mc_"},
-        {"?",   "?"  },
-        {"wc/", "wc_"},
-        {"?",   "?"  },
-        {"?",   "?"  },
-        {"?",   "?"  },
-    }; // TODO: Fill this
+        {"",     ""    },
+        {"m/",   "m_"  },
+        {"mc/",  "mc_" },
+        {"mlv/", "mlv_"},
+        {"wc/",  "wc_" },
+        {"wpc/", "wpc_"},
+        {"wq/",  "wq_" },
+        {"wqc/", "wqc_"},
+    };
     static_assert(std::extent_v<decltype(g_materialTypeInfo)> == MTL_TYPE_COUNT);
 } // namespace T6
