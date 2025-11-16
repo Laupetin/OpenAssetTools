@@ -77,6 +77,132 @@ namespace
         };
     }
 
+    techset::CommonShaderArg ConvertToCommonArg(const MaterialShaderArgument& arg)
+    {
+        switch (arg.type)
+        {
+        case MTL_ARG_CODE_VERTEX_CONST:
+        case MTL_ARG_CODE_PIXEL_CONST:
+            return techset::CommonShaderArg{
+                .m_type = techset::CommonShaderArgType::CODE_CONST,
+                .code_const_source = static_cast<techset::CommonCodeConstSource>(arg.u.codeConst.index),
+            };
+
+        case MTL_ARG_MATERIAL_VERTEX_CONST:
+        case MTL_ARG_MATERIAL_PIXEL_CONST:
+            return techset::CommonShaderArg{
+                .m_type = techset::CommonShaderArgType::CODE_CONST,
+                .name_hash = arg.u.nameHash,
+            };
+
+        case MTL_ARG_CODE_PIXEL_SAMPLER:
+            return techset::CommonShaderArg{
+                .m_type = techset::CommonShaderArgType::CODE_SAMPLER,
+                .name_hash = arg.u.codeSampler,
+            };
+
+        case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
+            return techset::CommonShaderArg{
+                .m_type = techset::CommonShaderArgType::MATERIAL_SAMPLER,
+                .name_hash = arg.u.nameHash,
+            };
+
+        default:
+        case MTL_ARG_LITERAL_VERTEX_CONST:
+        case MTL_ARG_LITERAL_PIXEL_CONST:
+            if (arg.u.literalConst)
+            {
+                return techset::CommonShaderArg{
+                    .m_type = techset::CommonShaderArgType::LITERAL_CONST,
+                    .literal_value = {(*arg.u.literalConst)[0], (*arg.u.literalConst)[1], (*arg.u.literalConst)[2], (*arg.u.literalConst)[3]},
+                };
+            }
+
+            return techset::CommonShaderArg{
+                .m_type = techset::CommonShaderArgType::LITERAL_CONST,
+                .literal_value = {},
+            };
+        }
+    }
+
+    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPass& pass, const MaterialVertexShader* vertexShader)
+    {
+        techset::CommonTechniqueShader result{};
+        if (!vertexShader)
+            return result;
+
+        if (vertexShader->name)
+            result.m_name = vertexShader->name;
+
+        if (vertexShader->prog.loadDef.program)
+        {
+            result.m_shader_bin = vertexShader->prog.loadDef.program;
+            result.m_shader_bin_size = vertexShader->prog.loadDef.programSize;
+        }
+
+        if (pass.args)
+        {
+            const size_t totalArgCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
+            for (auto argIndex = 0uz; argIndex < totalArgCount; argIndex++)
+            {
+                const auto& arg = pass.args[argIndex];
+
+                switch (arg.type)
+                {
+                case MTL_ARG_CODE_VERTEX_CONST:
+                case MTL_ARG_MATERIAL_VERTEX_CONST:
+                case MTL_ARG_LITERAL_VERTEX_CONST:
+                    result.m_args.emplace_back(ConvertToCommonArg(arg));
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPass& pass, const MaterialPixelShader* pixelShader)
+    {
+        techset::CommonTechniqueShader result{};
+        if (!pixelShader)
+            return result;
+
+        if (pixelShader->name)
+            result.m_name = pixelShader->name;
+
+        if (pixelShader->prog.loadDef.program)
+        {
+            result.m_shader_bin = pixelShader->prog.loadDef.program;
+            result.m_shader_bin_size = pixelShader->prog.loadDef.programSize;
+        }
+
+        if (pass.args)
+        {
+            const size_t totalArgCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
+            for (auto argIndex = 0uz; argIndex < totalArgCount; argIndex++)
+            {
+                const auto& arg = pass.args[argIndex];
+
+                switch (arg.type)
+                {
+                case MTL_ARG_CODE_PIXEL_CONST:
+                case MTL_ARG_CODE_PIXEL_SAMPLER:
+                case MTL_ARG_MATERIAL_PIXEL_CONST:
+                case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
+                case MTL_ARG_LITERAL_PIXEL_CONST:
+                    result.m_args.emplace_back(ConvertToCommonArg(arg));
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
     techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
     {
         std::vector<techset::CommonPass> passes;
@@ -85,38 +211,11 @@ namespace
         {
             const auto& pass = technique.passArray[passIndex];
 
-            techset::CommonTechniqueShader vertexShader{};
-            techset::CommonTechniqueShader pixelShader{};
-
-            if (pass.vertexShader)
-            {
-                if (pass.vertexShader->name)
-                    vertexShader.m_name = pass.vertexShader->name;
-
-                if (pass.vertexShader->prog.loadDef.program)
-                {
-                    vertexShader.m_shader_bin = pass.vertexShader->prog.loadDef.program;
-                    vertexShader.m_shader_bin_size = pass.vertexShader->prog.loadDef.programSize * sizeof(uint32_t);
-                }
-            }
-
-            if (pass.pixelShader)
-            {
-                if (pass.pixelShader->name)
-                    pixelShader.m_name = pass.pixelShader->name;
-
-                if (pass.pixelShader->prog.loadDef.program)
-                {
-                    pixelShader.m_shader_bin = pass.pixelShader->prog.loadDef.program;
-                    pixelShader.m_shader_bin_size = pass.pixelShader->prog.loadDef.programSize * sizeof(uint32_t);
-                }
-            }
-
             passes.emplace_back(techset::CommonPass{
                 .m_sampler_flags = pass.customSamplerFlags,
                 .m_dx_version = techset::DxVersion::DX11,
-                .m_vertex_shader = vertexShader,
-                .m_pixel_shader = pixelShader,
+                .m_vertex_shader = ConvertToCommonShader(pass, pass.vertexShader),
+                .m_pixel_shader = ConvertToCommonShader(pass, pass.pixelShader),
                 .m_vertex_declaration = ConvertToCommonVertexDeclaration(pass.vertexDecl),
             });
         }

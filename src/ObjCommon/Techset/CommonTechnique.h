@@ -1,11 +1,19 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace techset
 {
+    typedef std::uint8_t CommonStreamSource;
+    typedef std::uint8_t CommonStreamDestination;
+
+    typedef std::uint8_t CommonCodeConstSource;
+    typedef std::uint8_t CommonCodeSamplerSource;
+
     struct CommonStreamRoutingSourceInfo
     {
         const char* name;
@@ -19,8 +27,44 @@ namespace techset
         const char* abbreviation;
     };
 
-    typedef std::uint8_t CommonStreamSource;
-    typedef std::uint8_t CommonStreamDestination;
+    enum class CommonCodeSourceUpdateFrequency : std::uint8_t
+    {
+        PER_PRIM,
+        PER_OBJECT,
+        RARELY,
+        CUSTOM,
+    };
+
+    struct CommonCodeConstSourceInfo
+    {
+        CommonCodeConstSource value;
+        const char* accessor;
+        std::uint8_t arrayCount;
+        CommonCodeSourceUpdateFrequency updateFrequency;
+    };
+
+    struct CommonCodeSamplerSourceInfo
+    {
+        CommonCodeSamplerSource value;
+        const char* accessor;
+        CommonCodeSourceUpdateFrequency updateFrequency;
+    };
+
+    class CommonCodeSourceInfos
+    {
+    public:
+        CommonCodeSourceInfos(const CommonCodeConstSourceInfo* codeConstSourceInfos,
+                              size_t codeConstCount,
+                              const CommonCodeSamplerSourceInfo* codeSamplerSourceInfos,
+                              size_t codeSamplerCount);
+
+        [[nodiscard]] std::optional<CommonCodeConstSourceInfo> GetInfoForCodeConstSource(CommonCodeConstSource codeConstSource) const;
+        [[nodiscard]] std::optional<CommonCodeSamplerSourceInfo> GetInfoForCodeSamplerSource(CommonCodeSamplerSource codeSamplerSource) const;
+
+    private:
+        std::vector<CommonCodeConstSourceInfo> m_code_const_source_infos;
+        std::vector<CommonCodeSamplerSourceInfo> m_code_sampler_source_infos;
+    };
 
     class CommonStreamRoutingInfos
     {
@@ -39,6 +83,34 @@ namespace techset
     private:
         std::vector<CommonStreamRoutingSourceInfo> m_sources;
         std::vector<CommonStreamRoutingDestinationInfo> m_destinations;
+    };
+
+    enum class CommonShaderArgType : std::uint8_t
+    {
+        // Value is set to a float4 value in the pass
+        LITERAL_CONST,
+        // Value is set to a float4 value in the material
+        MATERIAL_CONST,
+        // Value is set to a float4 value calculated in code
+        CODE_CONST,
+        // Value is set to a sampler from the material
+        MATERIAL_SAMPLER,
+        // Value is set to a sampler generated in code
+        CODE_SAMPLER
+    };
+
+    class CommonShaderArg
+    {
+    public:
+        CommonShaderArgType m_type;
+
+        union
+        {
+            std::array<float, 4> literal_value;
+            CommonCodeConstSource code_const_source;
+            CommonCodeSamplerSource code_sampler_source;
+            unsigned name_hash;
+        };
     };
 
     class CommonStreamRouting
@@ -60,6 +132,7 @@ namespace techset
         std::string m_name;
         const void* m_shader_bin;
         size_t m_shader_bin_size;
+        std::vector<CommonShaderArg> m_args;
     };
 
     enum class DxVersion : std::uint8_t

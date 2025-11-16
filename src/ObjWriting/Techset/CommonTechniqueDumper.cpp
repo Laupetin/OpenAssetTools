@@ -83,7 +83,7 @@ namespace
             m_stream << "stateMap \"passthrough\"; // TODO\n";
         }
 
-        void DumpShader(const CommonTechniqueShader& shader, const TechniqueShaderType shaderType, const DxVersion dxVersion) const
+        void DumpShader(const CommonTechniqueShader& shader, const TechniqueShaderType shaderType, const DxVersion dxVersion)
         {
             if (!shader.m_shader_bin)
             {
@@ -103,6 +103,11 @@ namespace
 
                 versionMajor = shaderInfo->m_version_major;
                 versionMinor = shaderInfo->m_version_minor;
+
+                DumpShaderHeader(shader, shaderType, versionMajor, versionMinor);
+
+                for (const auto& arg : shader.m_args)
+                    DumpShaderArgDx9(arg, *shaderInfo);
             }
             else
             {
@@ -114,8 +119,21 @@ namespace
 
                 versionMajor = shaderInfo->m_version_major;
                 versionMinor = shaderInfo->m_version_minor;
+
+                DumpShaderHeader(shader, shaderType, versionMajor, versionMinor);
+
+                for (const auto& arg : shader.m_args)
+                {
+                }
             }
 
+            DecIndent();
+            Indent();
+            m_stream << "}\n";
+        }
+
+        void DumpShaderHeader(const CommonTechniqueShader& shader, const TechniqueShaderType shaderType, unsigned versionMajor, unsigned versionMinor)
+        {
             const auto shaderTypeName = shaderType == TechniqueShaderType::VERTEX_SHADER ? "vertexShader" : "pixelShader";
 
             m_stream << "\n";
@@ -123,9 +141,133 @@ namespace
             m_stream << std::format("{} {}.{} \"{}\"\n", shaderTypeName, versionMajor, versionMinor, shader.m_name);
             Indent();
             m_stream << "{\n";
+            IncIndent();
+        }
 
-            Indent();
-            m_stream << "}\n";
+        void DumpShaderArgDx9(const CommonShaderArg& arg, const d3d9::ShaderInfo& shaderInfo)
+        {
+            const auto expectedRegisterSet = arg.m_type == CommonShaderArgType::CODE_SAMPLER || arg.m_type == CommonShaderArgType::MATERIAL_SAMPLER
+                                                 ? d3d9::RegisterSet::SAMPLER
+                                                 : d3d9::RegisterSet::FLOAT_4;
+            const auto targetShaderArg = std::ranges::find_if(shaderInfo.m_constants,
+                                                              [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
+                                                              {
+                                                                  return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest
+                                                                         && constant.m_register_index + constant.m_register_count > arg.dest;
+                                                              });
+
+            assert(targetShaderArg != shaderInfo.m_constants.end());
+            if (targetShaderArg == shaderInfo.m_constants.end())
+            {
+                m_stream << std::format("// Unrecognized arg dest: {} type: {}\n", arg.dest, arg.type);
+                return;
+            }
+
+            std::string codeDestAccessor;
+            if (targetShaderArg->m_type_elements > 1)
+            {
+                codeDestAccessor = std::format("{}[{}]", targetShaderArg->m_name, arg.dest - targetShaderArg->m_register_index)
+            }
+            else
+                codeDestAccessor = targetShaderArg->m_name;
+
+            if (arg.m_type == CommonShaderArgType::CODE_CONST)
+            {
+                const auto sourceIndex = static_cast<MaterialConstantSource>(arg.u.codeConst.index);
+                std::string codeSourceAccessor;
+                if (FindCodeConstantSourceAccessor(sourceIndex, s_codeConsts, codeSourceAccessor)
+                    || FindCodeConstantSourceAccessor(sourceIndex, s_defaultCodeConsts, codeSourceAccessor))
+                {
+                    if (codeDestAccessor != codeSourceAccessor)
+                    {
+                        Indent();
+                        m_stream << codeDestAccessor << " = constant." << codeSourceAccessor << ";\n";
+                    }
+                    else
+                    {
+#ifdef TECHSET_DEBUG
+                        Indent();
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = constant." << codeSourceAccessor << ";\n";
+#endif
+                    }
+                }
+                else
+                {
+                    assert(false);
+                    Indent();
+                    m_stream << codeDestAccessor << " = UNKNOWN;\n";
+                }
+            }
+            else if (arg.m_type == CommonShaderArgType::CODE_SAMPLER)
+            {
+                const auto sourceIndex = static_cast<MaterialTextureSource>(arg.u.codeSampler);
+                std::string codeSourceAccessor;
+                if (FindCodeSamplerSourceAccessor(sourceIndex, s_codeSamplers, codeSourceAccessor)
+                    || FindCodeSamplerSourceAccessor(sourceIndex, s_defaultCodeSamplers, codeSourceAccessor))
+                {
+                    if (codeDestAccessor != codeSourceAccessor)
+                    {
+                        Indent();
+                        m_stream << codeDestAccessor << " = sampler." << codeSourceAccessor << ";\n";
+                    }
+                    else
+                    {
+#ifdef TECHSET_DEBUG
+                        Indent();
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = sampler." << codeSourceAccessor << ";\n";
+#endif
+                    }
+                }
+                else
+                {
+                    assert(false);
+                    Indent();
+                    m_stream << codeDestAccessor << " = UNKNOWN;\n";
+                }
+            }
+            else if (arg.m_type == CommonShaderArgType::LITERAL_CONST)
+            {
+                if (arg.u.literalConst)
+                {
+                    Indent();
+                    m_stream << codeDestAccessor << " = float4( " << (*arg.u.literalConst)[0] << ", " << (*arg.u.literalConst)[1] << ", "
+                             << (*arg.u.literalConst)[2] << ", " << (*arg.u.literalConst)[3] << " );\n";
+                }
+            }
+            else if (arg.m_type == CommonShaderArgType::MATERIAL_CONST || arg.m_type == CommonShaderArgType::MATERIAL_SAMPLER)
+            {
+                Indent();
+                m_stream << codeDestAccessor << " = material.";
+
+                const auto knownConstantName = knownConstantNames.find(arg.u.nameHash);
+                if (knownConstantName != knownConstantNames.end())
+                {
+                    m_stream << knownConstantName->second;
+                }
+                else
+                {
+                    const auto knownMaterialTextureName = knownTextureMaps.find(arg.u.nameHash);
+
+                    if (knownMaterialTextureName != knownTextureMaps.end())
+                    {
+                        m_stream << knownMaterialTextureName->second.m_name;
+                    }
+                    else
+                    {
+                        const auto shaderArgNameHash = Common::R_HashString(targetShaderArg->m_name.c_str(), 0u);
+                        if (shaderArgNameHash == arg.u.nameHash)
+                            m_stream << targetShaderArg->m_name;
+                        else
+                            m_stream << "#0x" << std::hex << arg.u.nameHash;
+                    }
+                }
+
+                m_stream << ";\n";
+            }
+            else
+            {
+                assert(false);
+            }
         }
 
         void DumpVertexDecl(const CommonVertexDeclaration& vertexDeclaration) const
