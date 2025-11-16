@@ -6,7 +6,7 @@
 #include "ObjWriting.h"
 #include "Zone/ZoneRegistry.h"
 
-namespace T6
+namespace
 {
     const char* KNOWN_CONSTANT_NAMES[]{
         "AngularVelocityScale",
@@ -471,7 +471,10 @@ namespace T6
         "ui3d",
         "ui3dSampler",
     };
+} // namespace
 
+namespace T6
+{
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
         for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
@@ -493,7 +496,7 @@ namespace T6
         }
     }
 
-    unsigned MaterialConstantZoneState::HashString(const std::string& str)
+    unsigned MaterialConstantZoneState::HashString(const std::string& str) const
     {
         return Common::R_HashString(str.c_str());
     }

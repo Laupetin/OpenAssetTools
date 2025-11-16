@@ -1,7 +1,60 @@
 #include "CommonTechnique.h"
 
+#include <algorithm>
+
 namespace techset
 {
+    CommonCodeSourceInfos::CommonCodeSourceInfos(const CommonCodeConstSourceInfo* codeConstSourceInfos,
+                                                 const size_t codeConstCount,
+                                                 const CommonCodeSamplerSourceInfo* codeSamplerSourceInfos,
+                                                 const size_t codeSamplerCount)
+        : m_code_const_source_infos(codeConstCount),
+          m_code_sampler_source_infos(codeSamplerCount)
+    {
+        std::copy(codeConstSourceInfos, &codeConstSourceInfos[codeConstCount], m_code_const_source_infos.data());
+        std::ranges::sort(m_code_const_source_infos,
+                          [](const CommonCodeConstSourceInfo& a, const CommonCodeConstSourceInfo& b) -> bool
+                          {
+                              return a.value < b.value;
+                          });
+
+        std::copy(codeSamplerSourceInfos, &codeSamplerSourceInfos[codeSamplerCount], m_code_sampler_source_infos.data());
+        std::ranges::sort(m_code_sampler_source_infos,
+                          [](const CommonCodeSamplerSourceInfo& a, const CommonCodeSamplerSourceInfo& b) -> bool
+                          {
+                              return a.value < b.value;
+                          });
+    }
+
+    std::optional<CommonCodeConstSourceInfo> CommonCodeSourceInfos::GetInfoForCodeConstSource(const CommonCodeConstSource codeConstSource) const
+    {
+        for (const auto& codeConstSourceInfo : m_code_const_source_infos)
+        {
+            const auto codeConstSourceInfoEnd = static_cast<unsigned>(codeConstSourceInfo.value) + codeConstSourceInfo.arrayCount;
+            if (codeConstSourceInfo.value <= codeConstSource && codeConstSourceInfoEnd >= codeConstSource)
+                return codeConstSourceInfo;
+
+            if (codeConstSourceInfoEnd > codeConstSource)
+                return std::nullopt;
+        }
+
+        return std::nullopt;
+    }
+
+    std::optional<CommonCodeSamplerSourceInfo> CommonCodeSourceInfos::GetInfoForCodeSamplerSource(const CommonCodeSamplerSource codeSamplerSource) const
+    {
+        for (const auto& codeSamplerSourceInfo : m_code_sampler_source_infos)
+        {
+            if (codeSamplerSourceInfo.value == codeSamplerSource)
+                return codeSamplerSourceInfo;
+
+            if (codeSamplerSourceInfo.value > codeSamplerSource)
+                return std::nullopt;
+        }
+
+        return std::nullopt;
+    }
+
     CommonStreamRoutingInfos::CommonStreamRoutingInfos(const CommonStreamRoutingSourceInfo* sourceInfos,
                                                        const size_t sourceCount,
                                                        const CommonStreamRoutingDestinationInfo* destinationNames,
