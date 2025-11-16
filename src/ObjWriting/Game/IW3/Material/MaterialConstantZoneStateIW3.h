@@ -13,6 +13,6 @@ namespace IW3
         void ExtractNamesFromZoneInternal() override;
         void ExtractNamesFromTechnique(const MaterialTechnique* technique);
         void AddStaticKnownNames() override;
-        unsigned HashString(const std::string& str) override;
+        [[nodiscard]] unsigned HashString(const std::string& str) const override;
     };
 } // namespace IW3

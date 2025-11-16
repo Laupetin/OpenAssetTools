@@ -6,7 +6,7 @@
 #include "ObjWriting.h"
 #include "Zone/ZoneRegistry.h"
 
-namespace IW5
+namespace
 {
     const char* KNOWN_CONSTANT_NAMES[]{
         "worldViewProjectionMatrix",
@@ -197,7 +197,10 @@ namespace IW5
         "worldMap",
         "worldMapSampler",
     };
+} // namespace
 
+namespace IW5
+{
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
         for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::IW5)->Zones())
@@ -230,7 +233,7 @@ namespace IW5
             AddTextureDefName(knownTextureDefName);
     }
 
-    unsigned MaterialConstantZoneState::HashString(const std::string& str)
+    unsigned MaterialConstantZoneState::HashString(const std::string& str) const
     {
         return Common::R_HashString(str.c_str());
     }

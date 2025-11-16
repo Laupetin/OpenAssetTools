@@ -9,13 +9,22 @@
 
 namespace
 {
-    constexpr const char* SAMPLER_STR = "Sampler";
-    constexpr const char* GLOBALS_CBUFFER_NAME = "$Globals";
-    constexpr const char* PER_OBJECT_CONSTS_CBUFFER_NAME = "PerObjectConsts";
+    constexpr auto SAMPLER_STR = "Sampler";
+    constexpr auto GLOBALS_CBUFFER_NAME = "$Globals";
+    constexpr auto PER_PRIM_CONSTS_CBUFFER_NAME = "PerPrimConsts";
+    constexpr auto PER_OBJECT_CONSTS_CBUFFER_NAME = "PerObjectConsts";
 } // namespace
 
-void AbstractMaterialConstantZoneState::ExtractNamesFromZone()
+AbstractMaterialConstantZoneState::AbstractMaterialConstantZoneState()
+    : m_initialized(false)
 {
+}
+
+void AbstractMaterialConstantZoneState::EnsureInitialized()
+{
+    if (m_initialized)
+        return;
+
     con::debug("Building material constant name lookup...");
 
     const auto begin = std::chrono::high_resolution_clock::now();
@@ -31,6 +40,8 @@ void AbstractMaterialConstantZoneState::ExtractNamesFromZone()
                durationInMs.count(),
                m_constant_names_from_shaders.size(),
                m_texture_def_names_from_shaders.size());
+
+    m_initialized = true;
 }
 
 bool AbstractMaterialConstantZoneState::GetConstantName(const unsigned hash, std::string& constantName) const
@@ -124,6 +135,12 @@ void AbstractMaterialConstantZoneStateDx11::ExtractNamesFromShader(const void* s
                                                                 return constantBuffer.m_name == GLOBALS_CBUFFER_NAME;
                                                             });
 
+    const auto perPrimConsts = std::ranges::find_if(std::as_const(shaderInfo->m_constant_buffers),
+                                                    [](const d3d11::ConstantBuffer& constantBuffer)
+                                                    {
+                                                        return constantBuffer.m_name == PER_PRIM_CONSTS_CBUFFER_NAME;
+                                                    });
+
     const auto perObjectConsts = std::ranges::find_if(std::as_const(shaderInfo->m_constant_buffers),
                                                       [](const d3d11::ConstantBuffer& constantBuffer)
                                                       {
@@ -133,6 +150,12 @@ void AbstractMaterialConstantZoneStateDx11::ExtractNamesFromShader(const void* s
     if (globalsConstantBuffer != shaderInfo->m_constant_buffers.end())
     {
         for (const auto& variable : globalsConstantBuffer->m_variables)
+            AddConstantName(variable.m_name);
+    }
+
+    if (perPrimConsts != shaderInfo->m_constant_buffers.end())
+    {
+        for (const auto& variable : perPrimConsts->m_variables)
             AddConstantName(variable.m_name);
     }
 
