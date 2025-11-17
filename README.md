@@ -68,6 +68,7 @@ or check out one of the following projects that are using OAT:
 * [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
 * [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
 * [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
+* [SadSlothXL/t6-ports](https://github.com/SadSlothXL/t6-ports)
 
 If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it.
 
