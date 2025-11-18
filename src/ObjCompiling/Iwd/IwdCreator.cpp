@@ -3,11 +3,70 @@
 #include "Utils/FileToZlibWrapper.h"
 #include "Utils/Logging/Log.h"
 
+#include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <format>
-#include <fstream>
-#include <iostream>
 #include <zip.h>
+
+namespace fs = std::filesystem;
+
+namespace
+{
+    void FillFileInfoTime(zip_fileinfo& fileInfo)
+    {
+        const auto localNow = std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}.get_local_time();
+        const auto nowDays = std::chrono::floor<std::chrono::days>(localNow);
+        const std::chrono::year_month_day ymd(std::chrono::floor<std::chrono::days>(localNow));
+        const std::chrono::hh_mm_ss hms(std::chrono::floor<std::chrono::milliseconds>(localNow - nowDays));
+
+        fileInfo.dosDate = 0u;
+        fileInfo.tmz_date.tm_year = static_cast<int>(ymd.year());
+        fileInfo.tmz_date.tm_mon = static_cast<int>(static_cast<unsigned>(ymd.month()) - static_cast<unsigned>(std::chrono::January));
+        fileInfo.tmz_date.tm_mday = static_cast<int>(static_cast<unsigned>(ymd.day()));
+        fileInfo.tmz_date.tm_hour = static_cast<int>(hms.hours().count());
+        fileInfo.tmz_date.tm_min = static_cast<int>(hms.minutes().count());
+        fileInfo.tmz_date.tm_sec = static_cast<int>(hms.seconds().count());
+    }
+
+    void AddCustomUserInclusions(ISearchPath& searchPath, zipFile zipFile, const std::string& iwdName)
+    {
+        const auto prefix = std::format("iwd/{}", iwdName);
+        searchPath.Find(SearchPathSearchOptions().OnlyDiskFiles(true).FilterPrefix(prefix).IncludeSubdirectories(true),
+                        [&searchPath, &zipFile, &prefix, &iwdName](const std::string& path)
+                        {
+                            const auto relativePath = fs::relative(path, prefix);
+
+                            std::string normalizedPath(relativePath.string());
+                            std::ranges::replace(normalizedPath, '\\', '/');
+
+                            const auto readFile = searchPath.Open(path);
+                            if (!readFile.IsOpen())
+                            {
+                                con::error("Failed to open file for iwd: {}", path);
+                                return;
+                            }
+
+                            zip_fileinfo fileInfo{};
+                            FillFileInfoTime(fileInfo);
+                            zipOpenNewFileInZip(zipFile, normalizedPath.c_str(), &fileInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+
+                            char tempBuffer[0x1000];
+
+                            do
+                            {
+                                readFile.m_stream->read(tempBuffer, sizeof(tempBuffer));
+                                const auto readCount = readFile.m_stream->gcount();
+                                if (readCount > 0)
+                                    zipWriteInFileInZip(zipFile, tempBuffer, static_cast<unsigned>(readCount));
+                            } while (!readFile.m_stream->eof());
+
+                            zipCloseFileInZip(zipFile);
+
+                            con::debug("Added {} to iwd {}", normalizedPath, iwdName);
+                        });
+    }
+} // namespace
 
 IwdToCreate::IwdToCreate(std::string name)
     : m_name(std::move(name))
@@ -73,7 +132,11 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
         } while (!readFile.m_stream->eof());
 
         zipCloseFileInZip(zipFile);
+
+        con::debug("Added {} to iwd {}", filePath, m_name);
     }
+
+    AddCustomUserInclusions(searchPath, zipFile, m_name);
 
     zipClose(zipFile, nullptr);
 

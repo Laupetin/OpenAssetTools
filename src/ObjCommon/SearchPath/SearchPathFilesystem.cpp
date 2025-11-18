@@ -3,12 +3,41 @@
 #include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iostream>
 
 namespace fs = std::filesystem;
+
+namespace
+{
+    bool CheckOptionsPrefix(std::string& prefix, std::string& path)
+    {
+        if (prefix.empty())
+            return true;
+
+        const auto combinedPath = fs::path(path) / prefix;
+        if (fs::status(combinedPath).type() == std::filesystem::file_type::directory)
+        {
+            prefix = std::string();
+            path = combinedPath.string();
+            return true;
+        }
+
+        const auto parentDir = combinedPath.parent_path();
+        if (!parentDir.empty())
+        {
+            if (fs::status(parentDir).type() != std::filesystem::file_type::directory)
+                return false;
+
+            path = parentDir.string();
+            prefix = combinedPath.filename().string();
+        }
+
+        return true;
+    }
+} // namespace
 
 SearchPathFilesystem::SearchPathFilesystem(std::string path)
     : m_path(std::move(path))
@@ -33,28 +62,65 @@ SearchPathOpenFile SearchPathFilesystem::Open(const std::string& fileName)
 
 void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
 {
+    std::string prefix = options.m_prefix;
+    std::string path = m_path;
+    if (!CheckOptionsPrefix(prefix, path))
+        return;
+
     try
     {
         if (options.m_should_include_subdirectories)
         {
-            std::filesystem::recursive_directory_iterator iterator(m_path);
+            std::filesystem::recursive_directory_iterator iterator(path);
             for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
             {
-                auto path = entry->path();
-                if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                if (!entry->is_regular_file())
                     continue;
-                callback(options.m_absolute_paths ? absolute(path).string() : path.string());
+
+                auto entryPath = entry->path();
+                if (!prefix.empty() && !entryPath.filename().string().starts_with(prefix))
+                    continue;
+
+                if (options.m_filter_extensions && entryPath.extension().string() != options.m_extension)
+                    continue;
+
+                const auto absolutePath = absolute(entryPath);
+                if (options.m_absolute_paths)
+                {
+                    callback(absolutePath.string());
+                }
+                else
+                {
+                    const auto relativePath = fs::relative(entryPath, m_path);
+                    callback(relativePath.string());
+                }
             }
         }
         else
         {
-            std::filesystem::directory_iterator iterator(m_path);
+            std::filesystem::directory_iterator iterator(path);
             for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
             {
-                auto path = entry->path();
-                if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                if (!entry->is_regular_file())
                     continue;
-                callback(options.m_absolute_paths ? absolute(path).string() : path.string());
+
+                auto entryPath = entry->path();
+                if (!prefix.empty() && !entryPath.filename().string().starts_with(prefix))
+                    continue;
+
+                if (options.m_filter_extensions && entryPath.extension().string() != options.m_extension)
+                    continue;
+
+                const auto absolutePath = absolute(entryPath);
+                if (options.m_absolute_paths)
+                {
+                    callback(absolutePath.string());
+                }
+                else
+                {
+                    const auto relativePath = fs::relative(absolutePath, m_path);
+                    callback(relativePath.string());
+                }
             }
         }
     }
