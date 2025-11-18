@@ -15,7 +15,7 @@ public:
     std::unique_ptr<std::istream> m_stream;
     int64_t m_length;
 
-    _NODISCARD bool IsOpen() const;
+    [[nodiscard]] bool IsOpen() const;
 
     SearchPathOpenFile();
     SearchPathOpenFile(std::unique_ptr<std::istream> stream, int64_t length);

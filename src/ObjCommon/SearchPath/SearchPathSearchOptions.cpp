@@ -39,3 +39,10 @@ SearchPathSearchOptions& SearchPathSearchOptions::FilterExtensions(std::string e
 
     return *this;
 }
+
+SearchPathSearchOptions& SearchPathSearchOptions::FilterPrefix(std::string prefix)
+{
+    m_prefix = std::move(prefix);
+
+    return *this;
+}
