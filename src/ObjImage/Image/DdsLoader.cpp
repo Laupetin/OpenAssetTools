@@ -115,6 +115,16 @@ namespace dds
                 m_format = &ImageFormat::FORMAT_BC3;
                 return true;
 
+            case FileUtils::MakeMagic32('A', 'T', 'I', '1'):
+            case FileUtils::MakeMagic32('B', 'C', '4', 'U'):
+                m_format = &ImageFormat::FORMAT_BC4;
+                return true;
+
+            case FileUtils::MakeMagic32('A', 'T', 'I', '2'):
+            case FileUtils::MakeMagic32('B', 'C', '5', 'U'):
+                m_format = &ImageFormat::FORMAT_BC5;
+                return true;
+
             case FileUtils::MakeMagic32('D', 'X', '1', '0'):
                 return ReadDxt10Header();
 
