@@ -40,7 +40,7 @@ jobs:
           node-version: 24
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -96,7 +96,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2.0.0
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
