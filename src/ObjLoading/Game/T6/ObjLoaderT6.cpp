@@ -1,6 +1,7 @@
 #include "ObjLoaderT6.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
+#include "BSP/LoaderBSP_T6.h"
 #include "FontIcon/CsvLoaderFontIconT6.h"
 #include "FontIcon/JsonLoaderFontIconT6.h"
 #include "Game/T6/CommonT6.h"
@@ -28,6 +29,7 @@
 #include "Slug/LoaderSlugT6.h"
 #include "Sound/LoaderSoundBankT6.h"
 #include "StringTable/LoaderStringTableT6.h"
+#include "TechniqueSet/LoaderTechniqueSetT6.h"
 #include "Tracer/GdtLoaderTracerT6.h"
 #include "Tracer/RawLoaderTracerT6.h"
 #include "Utils/Logging/Log.h"
@@ -380,7 +382,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
         }
 
-        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
+        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt, ZoneDefinition& definition)
         {
             auto& memory = zone.Memory();
 
@@ -392,7 +394,7 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
             collection.AddAssetCreator(xmodel::CreateLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(material::CreateLoaderT6(memory, searchPath));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
+            collection.AddAssetCreator(technique_set::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(image::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(sound::CreateSoundBankLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
@@ -439,13 +441,17 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
             collection.AddAssetCreator(z_barrier::CreateRawLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(z_barrier::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
+
+            if (definition.m_map_type != ZoneDefinitionMapType::NONE)
+                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
         }
     } // namespace
 
-    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const
+    void ObjLoader::ConfigureCreatorCollection(
+        AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt, ZoneDefinition& definition) const
     {
         ConfigureDefaultCreators(collection, zone);
-        ConfigureLoaders(collection, zone, searchPath, gdt);
+        ConfigureLoaders(collection, zone, searchPath, gdt, definition);
         ConfigureGlobalAssetPoolsLoaders(collection, zone);
     }
 } // namespace T6

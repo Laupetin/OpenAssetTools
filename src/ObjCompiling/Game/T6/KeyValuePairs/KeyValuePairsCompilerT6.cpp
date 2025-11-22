@@ -32,12 +32,12 @@ namespace
             return AssetCreationResult::NoAction();
         }
 
-        void FinalizeZone(AssetCreationContext& context) override
+        bool FinalizeZone(AssetCreationContext& context) override
         {
             m_kvp_creator.Finalize(m_zone_definition);
             const auto commonKvps = m_kvp_creator.GetFinalKeyValuePairs();
             if (commonKvps.empty())
-                return;
+                return true;
 
             auto* gameKvps = m_memory.Alloc<KeyValuePairs>();
             gameKvps->name = m_memory.Dup(m_zone.m_name.c_str());
@@ -61,6 +61,8 @@ namespace
             }
 
             context.AddAsset(AssetRegistration<AssetKeyValuePairs>(m_zone.m_name, gameKvps));
+
+            return true;
         }
 
     private:

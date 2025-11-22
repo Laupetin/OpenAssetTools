@@ -2,9 +2,12 @@
 
 #include "Shader/ShaderCommon.h"
 
+#include <format>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
 
+using namespace nlohmann;
 using namespace T6;
 
 namespace
@@ -87,21 +90,111 @@ namespace techset
         const auto* techniqueSet = asset.Asset();
         auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
 
+        const auto assetFile = context.OpenAssetFile(std::format("techniquesets/{}.json", techniqueSet->name));
+        if (!assetFile)
+            return;
+
+        json js;
+
+        js["name"] = techniqueSet->name;
+        js["worldVertFormat"] = techniqueSet->worldVertFormat;
+
+        js["techniques"] = json::array();
         for (const auto* technique : techniqueSet->techniques)
         {
-            if (!technique || !shaderState->ShouldDumpTechnique(technique))
-                continue;
+            json techniqueJs = json::object();
 
-            for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+            if (technique != nullptr)
             {
-                const auto* pixelShader = technique->passArray[passIndex].pixelShader;
-                if (pixelShader && shaderState->ShouldDumpPixelShader(pixelShader))
-                    DumpPixelShader(context, *pixelShader);
+                techniqueJs["name"] = technique->name;
+                techniqueJs["flags"] = technique->flags;
+                techniqueJs["passCount"] = technique->passCount;
 
-                const auto* vertexShader = technique->passArray[passIndex].vertexShader;
-                if (vertexShader && shaderState->ShouldDumpVertexShader(vertexShader))
-                    DumpVertexShader(context, *vertexShader);
+                assert(technique->passCount == 1);
+
+                techniqueJs["passArray"] = json::array();
+                for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+                {
+                    const MaterialPass* currPass = &technique->passArray[passIndex];
+                    json passJs = json::object();
+
+                    passJs["perPrimArgCount"] = currPass->perPrimArgCount;
+                    passJs["perObjArgCount"] = currPass->perObjArgCount;
+                    passJs["stableArgCount"] = currPass->stableArgCount;
+                    passJs["customSamplerFlags"] = currPass->customSamplerFlags;
+                    passJs["precompiledIndex"] = currPass->precompiledIndex;
+                    passJs["materialType"] = currPass->materialType;
+
+                    json vertDeclJs = json::object();
+                    if (currPass->vertexDecl != nullptr)
+                    {
+                        vertDeclJs["streamCount"] = currPass->vertexDecl->streamCount;
+                        vertDeclJs["hasOptionalSource"] = currPass->vertexDecl->hasOptionalSource;
+                        vertDeclJs["isLoaded"] = currPass->vertexDecl->isLoaded;
+                        for (int i = 0; i < 16; i++)
+                        {
+                            vertDeclJs["routing"][i]["source"] = currPass->vertexDecl->routing.data[i].source;
+                            vertDeclJs["routing"][i]["dest"] = currPass->vertexDecl->routing.data[i].dest;
+
+                            assert(currPass->vertexDecl->routing.decl[i] == nullptr);
+                        }
+                    }
+                    passJs["vertexDecl"] = vertDeclJs;
+
+                    passJs["args"] = json::array();
+                    if (currPass->args != nullptr)
+                    {
+                        for (int i = 0; i < currPass->perPrimArgCount + currPass->perObjArgCount + currPass->stableArgCount; i++)
+                        {
+                            json argsJs = json::object();
+                            MaterialShaderArgument* currArg = &currPass->args[i];
+
+                            argsJs["type"] = currArg->type;
+                            argsJs["location"] = currArg->location.offset;
+                            argsJs["size"] = currArg->size;
+                            argsJs["buffer"] = currArg->buffer;
+                            if (currArg->type == MTL_ARG_LITERAL_VERTEX_CONST || currArg->type == MTL_ARG_LITERAL_PIXEL_CONST)
+                            {
+                                argsJs["u"]["const0"] = currArg->u.literalConst[0];
+                                argsJs["u"]["const1"] = currArg->u.literalConst[1];
+                                argsJs["u"]["const2"] = currArg->u.literalConst[2];
+                                argsJs["u"]["const3"] = currArg->u.literalConst[3];
+                            }
+                            else
+                            {
+                                argsJs["u"]["value"] = currArg->u.nameHash;
+                            }
+
+                            passJs["args"].push_back(argsJs);
+                        }
+                    }
+
+                    json pixelJs = json::object();
+                    if (currPass->pixelShader != nullptr)
+                    {
+                        pixelJs["name"] = currPass->pixelShader->name;
+                        if (shaderState->ShouldDumpPixelShader(currPass->pixelShader))
+                            DumpPixelShader(context, *currPass->pixelShader);
+                    }
+                    passJs["pixelShader"] = pixelJs;
+
+                    json vertexJs = json::object();
+                    if (currPass->vertexShader != nullptr)
+                    {
+                        vertexJs["name"] = currPass->vertexShader->name;
+                        if (shaderState->ShouldDumpVertexShader(currPass->vertexShader))
+                            DumpVertexShader(context, *currPass->vertexShader);
+                    }
+                    passJs["vertexShader"] = vertexJs;
+
+                    techniqueJs["passArray"].push_back(passJs);
+                }
             }
+
+            js["techniques"].push_back(techniqueJs);
         }
+
+        std::string jsonString = js.dump(4);
+        assetFile->write(jsonString.c_str(), jsonString.size());
     }
 } // namespace techset
