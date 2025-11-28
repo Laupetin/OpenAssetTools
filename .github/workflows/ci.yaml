@@ -15,9 +15,10 @@ jobs:
         build_arch: [x86, x64]
         include:
           - build_arch: x86
+            gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
             additional_packages: gcc-13-multilib g++-13-multilib
           - build_arch: x64
-            premake_flags: --modman
+            gtk_packages: libgtk-4-dev libwebkitgtk-6.0-dev
     name: Build-Test Linux ${{ matrix.build_arch }}
     runs-on: ubuntu-latest
     container: ubuntu:24.04
@@ -25,10 +26,14 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Setup env for x86 cross-compilation
+        if: ${{ matrix.build_arch == 'x86' }}
+        run: dpkg --add-architecture i386
+
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y wget tar git make curl gcc-13 g++-13 libgtk-4-dev libwebkitgtk-6.0-dev ${{ matrix.additional_packages }}
+          apt-get install -y wget tar git make curl gcc-13 g++-13 ${{ matrix.gtk_packages }} ${{ matrix.additional_packages }}
           update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
           update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
           update-alternatives --set gcc /usr/bin/gcc-13
@@ -48,11 +53,10 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh ${{ matrix.premake_flags }}
+        run: ./generate.sh --modman
 
       - name: Build UI
         working-directory: ${{ github.workspace }}
-        if: ${{ matrix.build_arch == 'x64' }}
         run: |
           npm --prefix src/ModManUi install
           npm --prefix src/ModManUi run lint
@@ -61,7 +65,9 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
-          make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
+          [[ "${{ matrix.build_arch }}" == "x86" ]] && export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig:$PKG_CONFIG_PATH || true
+          echo "Package config path: $PKG_CONFIG_PATH"
+          scripts/build.sh release ${{ matrix.build_arch }}
           chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
 
       - name: Test
