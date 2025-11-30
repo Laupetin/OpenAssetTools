@@ -30,6 +30,8 @@ public:
      */
     bool Start(const int argc, const char** argv)
     {
+        con::init();
+
         auto shouldContinue = true;
         if (!m_args.ParseArgs(argc, argv, shouldContinue))
             return false;

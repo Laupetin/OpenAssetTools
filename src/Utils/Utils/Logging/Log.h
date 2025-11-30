@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <format>
 #include <string>
 
 namespace con
 {
-    enum class LogLevel
+    enum class LogLevel : std::uint8_t
     {
         DEBUG = 0,
         INFO,
@@ -13,8 +14,11 @@ namespace con
         ERROR
     };
 
-    extern LogLevel globalLogLevel;
-    extern bool globalUseColor;
+    extern LogLevel _globalLogLevel;
+
+    void init();
+    void set_log_level(LogLevel value);
+    void set_use_color(bool value);
 
     void _debug_internal(const std::string& str);
     void _info_internal(const std::string& str);
@@ -23,42 +27,42 @@ namespace con
 
     inline void debug(const std::string& str)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::DEBUG))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::DEBUG))
             return;
         _debug_internal(str);
     }
 
     template<class Arg0, class... OtherArgs> void debug(std::format_string<Arg0, OtherArgs...> fmt, Arg0&& arg0, OtherArgs&&... otherArgs)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::DEBUG))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::DEBUG))
             return;
         _debug_internal(std::vformat(fmt.get(), std::make_format_args(arg0, otherArgs...)));
     }
 
     inline void info(const std::string& str)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::INFO))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::INFO))
             return;
         _info_internal(str);
     }
 
     template<class Arg0, class... OtherArgs> void info(std::format_string<Arg0, OtherArgs...> fmt, Arg0&& arg0, OtherArgs&&... otherArgs)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::INFO))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::INFO))
             return;
         _info_internal(std::vformat(fmt.get(), std::make_format_args(arg0, otherArgs...)));
     }
 
     inline void warn(const std::string& str)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
             return;
         _warn_internal(str);
     }
 
     template<class Arg0, class... OtherArgs> void warn(std::format_string<Arg0, OtherArgs...> fmt, Arg0&& arg0, OtherArgs&&... otherArgs)
     {
-        if (static_cast<unsigned>(globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
+        if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
             return;
         _warn_internal(std::vformat(fmt.get(), std::make_format_args(arg0, otherArgs...)));
     }

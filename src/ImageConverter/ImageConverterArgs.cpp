@@ -146,12 +146,12 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
 
     // -v; --verbose
     if (m_argument_parser.IsOptionSpecified(OPTION_VERBOSE))
-        con::globalLogLevel = con::LogLevel::DEBUG;
+        con::set_log_level(con::LogLevel::DEBUG);
     else
-        con::globalLogLevel = con::LogLevel::INFO;
+        con::set_log_level(con::LogLevel::INFO);
 
     // --no-color
-    con::globalUseColor = !m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR);
+    con::set_use_color(!m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR));
 
     return true;
 }
