@@ -35,6 +35,8 @@ namespace image_converter
 
         bool Start(const int argc, const char** argv) override
         {
+            con::init();
+
             auto shouldContinue = true;
             if (!m_args.ParseArgs(argc, argv, shouldContinue))
                 return false;

@@ -129,6 +129,8 @@ int main(int argc, const char** argv)
     g_set_application_name("OpenAssetTools ModMan");
 #endif
 
+    con::init();
+
     ModManArgs args;
     auto shouldContinue = true;
     if (!args.ParseArgs(MODMAN_ARGC, MODMAN_ARGV, shouldContinue))
