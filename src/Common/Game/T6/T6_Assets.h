@@ -1246,13 +1246,13 @@ namespace T6
 
     struct GfxWorldVertexData0
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
     struct GfxWorldVertexData1
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
@@ -1278,6 +1278,16 @@ namespace T6
     typedef tdef_align32(4) char aligned_byte_pointer;
     typedef tdef_align32(4) GfxCompressedLightGridCoeffs GfxCompressedLightGridCoeffs_align4;
 
+    struct GfxLightGridRow
+    {
+        uint16_t colStart;
+        uint16_t colCount;
+        uint16_t zStart;
+        uint16_t zCount;
+        unsigned int firstEntry;
+        char lookupTable[1]; // The lookup table has a variable length
+    };
+
     struct GfxLightGrid
     {
         unsigned int sunPrimaryLightIndex;
@@ -1288,7 +1298,7 @@ namespace T6
         unsigned int colAxis;
         uint16_t* rowDataStart;
         unsigned int rawRowDataSize;
-        aligned_byte_pointer* rawRowData;
+        aligned_byte_pointer* rawRowData; // GfxLightGridRow
         unsigned int entryCount;
         GfxLightGridEntry* entries;
         unsigned int colorCount;
@@ -3898,6 +3908,17 @@ namespace T6
         int baseIndex;
     };
 
+    enum GfxSurfaceFlags
+    {
+        GFX_SURFACE_CASTS_SUN_SHADOW = 0x1,
+        GFX_SURFACE_HAS_PRIMARY_LIGHT_CONFLICT = 0x2,
+        GFX_SURFACE_IS_SKY = 0x4,
+        GFX_SURFACE_NO_DRAW = 0x8,
+        GFX_SURFACE_CASTS_SHADOW = 0x10,
+        GFX_SURFACE_QUANTIZED = 0x20,
+        GFX_SURFACE_NO_COLOR = 0x40
+    };
+
     struct type_align32(16) GfxSurface
     {
         srfTriangles_t tris;
@@ -3928,6 +3949,12 @@ namespace T6
         unsigned int* lmapVertexColors;
         void /*ID3D11Buffer*/* lmapVertexColorsVB;
         uint16_t numLmapVertexColors;
+    };
+
+    enum StaticModelFlag
+    {
+        STATIC_MODEL_FLAG_NO_SHADOW = 0x1,
+        STATIC_MODEL_FLAG_LIGHTMAP_VC = 0x2,
     };
 
     struct GfxStaticModelDrawInst
@@ -5728,6 +5755,11 @@ namespace T6
         unsigned int packed;
     };
 
+    union PackedLmapCoords
+    {
+        unsigned int packed;
+    };
+
     struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
@@ -5736,6 +5768,17 @@ namespace T6
         PackedTexCoords texCoord;
         PackedUnitVec normal;
         PackedUnitVec tangent;
+    };
+
+    struct GfxPackedWorldVertex
+    {
+        vec3_t xyz;
+        float binormalSign;
+        GfxColor color;
+        PackedTexCoords texCoord;
+        PackedUnitVec normal;
+        PackedUnitVec tangent;
+        PackedLmapCoords lmapCoord;
     };
 
     struct XRigidVertList
@@ -7051,6 +7094,23 @@ namespace T6
         int type;
         int maxChars;
         char* stringValue;
+    };
+
+    enum GfxLightType
+    {
+        GFX_LIGHT_TYPE_NONE = 0x0,
+        GFX_LIGHT_TYPE_DIR = 0x1,
+        GFX_LIGHT_TYPE_SPOT = 0x2,
+        GFX_LIGHT_TYPE_SPOT_SQUARE = 0x3,
+        GFX_LIGHT_TYPE_SPOT_ROUND = 0x4,
+        GFX_LIGHT_TYPE_OMNI = 0x5,
+        GFX_LIGHT_TYPE_COUNT = 0x6,
+        GFX_LIGHT_TYPE_DIR_SHADOWMAP = 0x6,
+        GFX_LIGHT_TYPE_SPOT_SHADOWMAP = 0x7,
+        GFX_LIGHT_TYPE_SPOT_SQUARE_SHADOWMAP = 0x8,
+        GFX_LIGHT_TYPE_SPOT_ROUND_SHADOWMAP = 0x9,
+        GFX_LIGHT_TYPE_OMNI_SHADOWMAP = 0xA,
+        GFX_LIGHT_TYPE_COUNT_WITH_SHADOWMAP_VERSIONS = 0xB,
     };
 
 #ifndef __zonecodegenerator

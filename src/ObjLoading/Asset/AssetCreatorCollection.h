@@ -27,7 +27,7 @@ public:
 
     AssetCreationResult CreateAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
     AssetCreationResult CreateDefaultAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
-    void FinalizeZone(AssetCreationContext& context) const;
+    bool FinalizeZone(AssetCreationContext& context) const;
 
 private:
     std::vector<std::vector<IAssetCreator*>> m_asset_creators_by_type;

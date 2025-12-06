@@ -34,6 +34,7 @@ void ZoneDefinitionProperties::Include(const ZoneDefinitionProperties& otherProp
 }
 
 ZoneDefinition::ZoneDefinition()
-    : m_game(GameId::COUNT)
+    : m_game(GameId::COUNT),
+      m_map_type(ZoneDefinitionMapType::NONE)
 {
 }
