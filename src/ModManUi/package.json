@@ -16,16 +16,16 @@
     "@fontsource/inter": "^5.2.8",
     "@primeuix/themes": "^2.0.2",
     "pinia": "3.0.4",
-    "primevue": "^4.5.1",
+    "primevue": "^4.5.3",
     "vue": "3.5.25",
-    "vue-router": "4.6.3"
+    "vue-router": "4.6.4"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.5",
     "@types/jsdom": "^27.0.0",
-    "@types/node": "^24.10.1",
-    "@vitejs/plugin-vue": "6.0.2",
-    "@vitest/eslint-plugin": "^1.5.1",
+    "@types/node": "^25.0.1",
+    "@vitejs/plugin-vue": "6.0.3",
+    "@vitest/eslint-plugin": "^1.5.2",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/test-utils": "^2.4.6",
@@ -33,14 +33,14 @@
     "eslint": "^9.39.1",
     "eslint-plugin-vue": "~10.6.2",
     "jiti": "^2.5.1",
-    "jsdom": "^27.2.0",
+    "jsdom": "^27.3.0",
     "npm-run-all2": "^8.0.4",
     "prettier": "3.7.4",
-    "sass": "1.94.2",
+    "sass": "1.96.0",
     "typescript": "~5.9.3",
-    "vite": "7.2.6",
+    "vite": "7.2.7",
     "vite-plugin-vue-devtools": "^8.0.5",
     "vitest": "^4.0.15",
-    "vue-tsc": "3.1.5"
+    "vue-tsc": "3.1.8"
   }
 }
