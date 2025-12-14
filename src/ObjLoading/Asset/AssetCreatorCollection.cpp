@@ -79,10 +79,15 @@ AssetCreationResult AssetCreatorCollection::CreateDefaultAsset(const asset_type_
     return AssetCreationResult::NoAction();
 }
 
-void AssetCreatorCollection::FinalizeZone(AssetCreationContext& context) const
+bool AssetCreatorCollection::FinalizeZone(AssetCreationContext& context) const
 {
     for (const auto& creator : m_asset_creators)
-        creator->FinalizeZone(context);
+    {
+        if (!creator->FinalizeZone(context))
+            return false;
+    }
     for (const auto& postProcessor : m_asset_post_processors)
         postProcessor->FinalizeZone(context);
+
+    return true;
 }
