@@ -13,7 +13,8 @@ namespace IW3
 
     public:
         static constexpr const char* MAGIC_UNSIGNED = "IWffu100";
-        static constexpr int ZONE_VERSION = 5;
+        static constexpr int ZONE_VERSION_PC = 5;
+        static constexpr int ZONE_VERSION_XENON = 1;
 
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED) == sizeof(ZoneHeader::m_magic));
 
