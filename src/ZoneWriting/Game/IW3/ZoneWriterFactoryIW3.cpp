@@ -38,7 +38,7 @@ namespace
     ZoneHeader CreateHeaderForParams()
     {
         ZoneHeader header{};
-        header.m_version = ZoneConstants::ZONE_VERSION;
+        header.m_version = ZoneConstants::ZONE_VERSION_PC;
         memcpy(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, sizeof(ZoneHeader::m_magic));
 
         return header;
