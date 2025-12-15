@@ -32,7 +32,7 @@ namespace
             LINE("#pragma once")
             LINE("")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
-            LINE("#include \"Loading/AssetMarker.h\"")
+            LINE("#include \"Marking/AssetMarker.h\"")
             LINE("")
             LINE("#include <string>")
             LINE("")

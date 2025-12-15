@@ -7,7 +7,7 @@ template<typename AssetType> class GlobalAssetPoolsLoader : public AssetCreator<
 public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-    GlobalAssetPoolsLoader(Zone& zone)
+    explicit GlobalAssetPoolsLoader(Zone& zone)
         : m_zone(zone)
     {
     }

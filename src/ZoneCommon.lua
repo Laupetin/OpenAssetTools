@@ -43,9 +43,20 @@ function ZoneCommon:project()
 		
 		files {
 			path.join(folder, "ZoneCommon/**.h"), 
-			path.join(folder, "ZoneCommon/**.cpp") 
+			path.join(folder, "ZoneCommon/**.cpp"),
+			ZoneCode:allMarkFiles()
 		}
 		
-		lzx:include(includes)
+        vpaths {
+			["*"] = {
+				path.join(folder, "ZoneCommon"),
+				path.join(BuildFolder(), "src/ZoneCode")
+			}
+		}
+		
         self:include(includes)
+		lzx:include(includes)
+		ZoneCode:include(includes)
+
+		ZoneCode:use()
 end

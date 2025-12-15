@@ -225,6 +225,20 @@ function ZoneCode:allTestFiles()
     return result
 end
 
+function ZoneCode:allMarkFiles()
+    result = {}
+
+    for game, assets in pairs(self.Assets) do
+        for i, assetName in ipairs(assets) do
+            local assetNameLower = string.lower(assetName)
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.cpp")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.h")
+        end
+    end
+    
+    return result
+end
+
 function ZoneCode:allLoadFiles()
     result = {}
 
@@ -233,8 +247,6 @@ function ZoneCode:allLoadFiles()
             local assetNameLower = string.lower(assetName)
             table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.cpp")
             table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.h")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.h")
         end
     end
     

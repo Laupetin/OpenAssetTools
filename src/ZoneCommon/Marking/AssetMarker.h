@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ContentLoaderBase.h"
 #include "Pool/XAssetInfo.h"
 #include "Zone/ZoneTypes.h"
 
