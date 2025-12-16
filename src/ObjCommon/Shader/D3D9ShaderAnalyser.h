@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace d3d9
 {
-    enum class ShaderType
+    enum class ShaderType : std::uint8_t
     {
         UNKNOWN,
         PIXEL_SHADER,
@@ -14,7 +15,7 @@ namespace d3d9
     };
 
     // https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3dxregister-set
-    enum class RegisterSet
+    enum class RegisterSet : std::uint8_t
     {
         BOOL,
         INT_4,
@@ -26,7 +27,7 @@ namespace d3d9
     };
 
     // https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3dxparameter-class
-    enum class ParameterClass
+    enum class ParameterClass : std::uint8_t
     {
         SCALAR,
         VECTOR,
@@ -40,7 +41,7 @@ namespace d3d9
     };
 
     // https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3dxparameter-type
-    enum class ParameterType
+    enum class ParameterType : std::uint8_t
     {
         VOID,
         BOOL,

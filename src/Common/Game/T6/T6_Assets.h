@@ -3038,17 +3038,45 @@ namespace T6
         void /*ID3D11RasterizerState*/* rasterizerState;
     };
 
+    enum VertexShaderPrecompiledIndex : unsigned char
+    {
+        VERTEX_SHADER_NONE = 0x0,
+        VERTEX_SHADER_MODEL_LIT,
+        VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+        VERTEX_SHADER_MODEL_UNLIT,
+    };
+
+    enum MaterialType : unsigned char
+    {
+        MTL_TYPE_DEFAULT = 0x0,
+        MTL_TYPE_MODEL,                // m_
+        MTL_TYPE_MODEL_VERTCOL,        // mc_
+        MTL_TYPE_MODEL_LIGHTMAP_VC,    // mlv_
+        MTL_TYPE_WORLD_VERTCOL,        // wc_
+        MTL_TYPE_PACKED_WORLD_VERTCOL, // wpc_
+        MTL_TYPE_QUANT_WORLD,          // wq_
+        MTL_TYPE_QUANT_WORLD_VERTCOL,  // wqc_
+
+        MTL_TYPE_COUNT,
+    };
+
+    struct MaterialTypeInfo
+    {
+        const char* materialPrefix;
+        const char* techniqueSetPrefix;
+    };
+
     struct MaterialPass
     {
         MaterialVertexDeclaration* vertexDecl;
         MaterialVertexShader* vertexShader;
         MaterialPixelShader* pixelShader;
-        char perPrimArgCount;
-        char perObjArgCount;
-        char stableArgCount;
-        char customSamplerFlags;
-        char precompiledIndex;
-        char materialType;
+        unsigned char perPrimArgCount;
+        unsigned char perObjArgCount;
+        unsigned char stableArgCount;
+        unsigned char customSamplerFlags;
+        VertexShaderPrecompiledIndex precompiledIndex;
+        MaterialType materialType;
         MaterialShaderArgument* args;
     };
 
@@ -5834,29 +5862,9 @@ namespace T6
 
         struct
         {
-            char textureIndex;
-            char samplerIndex;
+            uint8_t textureIndex;
+            uint8_t samplerIndex;
         };
-    };
-
-    enum MaterialType
-    {
-        MTL_TYPE_DEFAULT = 0x0,
-        MTL_TYPE_MODEL = 0x1,                // m_
-        MTL_TYPE_MODEL_VERTCOL = 0x2,        // mc_
-        MTL_TYPE_MODEL_LIGHTMAP_VC = 0x3,    // ?
-        MTL_TYPE_WORLD_VERTCOL = 0x4,        // wc_
-        MTL_TYPE_PACKED_WORLD_VERTCOL = 0x5, // ?
-        MTL_TYPE_QUANT_WORLD = 0x6,          // ?
-        MTL_TYPE_QUANT_WORLD_VERTCOL = 0x7,  // ?
-
-        MTL_TYPE_COUNT,
-    };
-
-    struct MaterialTypeInfo
-    {
-        const char* materialPrefix;
-        const char* techniqueSetPrefix;
     };
 
     enum MaterialConstantSource
@@ -5940,7 +5948,6 @@ namespace T6
         CONST_SRC_CODE_DEPTH_FROM_CLIP = 0x42,
         CONST_SRC_CODE_CODE_MESH_ARG_0 = 0x43,
         CONST_SRC_CODE_CODE_MESH_ARG_1 = 0x44,
-        CONST_SRC_CODE_CODE_MESH_ARG_LAST = 0x44,
         CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS = 0x45,
         CONST_SRC_CODE_GRID_LIGHTING_SH_0 = 0x46,
         CONST_SRC_CODE_GRID_LIGHTING_SH_1 = 0x47,
@@ -6123,6 +6130,67 @@ namespace T6
 
         CONST_SRC_TOTAL_COUNT,
         CONST_SRC_NONE,
+    };
+
+    enum MaterialTextureSource
+    {
+        TEXTURE_SRC_CODE_BLACK = 0x0,
+        TEXTURE_SRC_CODE_WHITE = 0x1,
+        TEXTURE_SRC_CODE_IDENTITY_NORMAL_MAP = 0x2,
+        TEXTURE_SRC_CODE_MODEL_LIGHTING = 0x3,
+        TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY = 0x4,
+        TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY = 0x5,
+        TEXTURE_SRC_CODE_SHADOWMAP_SUN = 0x6,
+        TEXTURE_SRC_CODE_SHADOWMAP_SPOT = 0x7,
+        TEXTURE_SRC_CODE_FEEDBACK = 0x8,
+        TEXTURE_SRC_CODE_RESOLVED_POST_SUN = 0x9,
+        TEXTURE_SRC_CODE_RESOLVED_SCENE = 0xA,
+        TEXTURE_SRC_CODE_POST_EFFECT_SRC = 0xB,
+        TEXTURE_SRC_CODE_POST_EFFECT_GODRAYS = 0xC,
+        TEXTURE_SRC_CODE_POST_EFFECT_0 = 0xD,
+        TEXTURE_SRC_CODE_POST_EFFECT_1 = 0xE,
+        TEXTURE_SRC_CODE_LIGHT_ATTENUATION = 0xF,
+        TEXTURE_SRC_CODE_DLIGHT_ATTENUATION = 0x10,
+        TEXTURE_SRC_CODE_OUTDOOR = 0x11,
+        TEXTURE_SRC_CODE_FLOATZ = 0x12,
+        TEXTURE_SRC_CODE_PROCESSED_FLOATZ = 0x13,
+        TEXTURE_SRC_CODE_RAW_FLOATZ = 0x14,
+        TEXTURE_SRC_CODE_STENCIL = 0x15,
+        TEXTURE_SRC_CODE_CINEMATIC_Y = 0x16,
+        TEXTURE_SRC_CODE_CINEMATIC_CR = 0x17,
+        TEXTURE_SRC_CODE_CINEMATIC_CB = 0x18,
+        TEXTURE_SRC_CODE_CINEMATIC_A = 0x19,
+        TEXTURE_SRC_CODE_REFLECTION_PROBE = 0x1A,
+        TEXTURE_SRC_CODE_FEATHER_FLOAT_Z = 0x1B,
+        TEXTURE_SRC_CODE_TEXTURE_0 = 0x1C,
+        TEXTURE_SRC_CODE_TEXTURE_1 = 0x1D,
+        TEXTURE_SRC_CODE_TEXTURE_2 = 0x1E,
+        TEXTURE_SRC_CODE_TEXTURE_3 = 0x1F,
+        TEXTURE_SRC_CODE_IMPACT_MASK_DEPRECATED = 0x20,
+        TEXTURE_SRC_CODE_UI3D = 0x21,
+        TEXTURE_SRC_CODE_MISSILE_CAM = 0x22,
+        TEXTURE_SRC_CODE_MISSILE_CAM_0 = 0x23,
+        TEXTURE_SRC_CODE_MISSILE_CAM_1 = 0x24,
+        TEXTURE_SRC_CODE_MISSILE_CAM_2 = 0x25,
+        TEXTURE_SRC_CODE_MISSILE_CAM_3 = 0x26,
+        TEXTURE_SRC_CODE_COMPOSITE_RESULT = 0x27,
+        TEXTURE_SRC_CODE_HEATMAP = 0x28,
+        TEXTURE_SRC_CODE_SONAR_COLOR = 0x29,
+        TEXTURE_SRC_CODE_SONAR_DEPTH = 0x2A,
+        TEXTURE_SRC_CODE_QRCODE_0 = 0x2B,
+        TEXTURE_SRC_CODE_QRCODE_1 = 0x2C,
+        TEXTURE_SRC_CODE_QRCODE_2 = 0x2D,
+        TEXTURE_SRC_CODE_QRCODE_3 = 0x2E,
+        TEXTURE_SRC_CODE_QRCODE_4 = 0x2F,
+        TEXTURE_SRC_CODE_QRCODE_5 = 0x30,
+        TEXTURE_SRC_CODE_QRCODE_6 = 0x31,
+        TEXTURE_SRC_CODE_QRCODE_7 = 0x32,
+        TEXTURE_SRC_CODE_QRCODE_8 = 0x33,
+        TEXTURE_SRC_CODE_QRCODE_9 = 0x34,
+        TEXTURE_SRC_CODE_QRCODE_10 = 0x35,
+        TEXTURE_SRC_CODE_QRCODE_11 = 0x36,
+
+        TEXTURE_SRC_CODE_COUNT
     };
 
     struct CodeConstantSource

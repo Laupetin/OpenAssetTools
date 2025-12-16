@@ -369,7 +369,7 @@ namespace material
     void CLASS_NAME::Dump(AssetDumpingContext& context)
     {
         auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
-        materialConstantState->ExtractNamesFromZone();
+        materialConstantState->EnsureInitialized();
 
         AbstractAssetDumper::Dump(context);
     }

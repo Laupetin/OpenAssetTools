@@ -11,6 +11,6 @@ namespace IW5
     protected:
         void ExtractNamesFromZoneInternal() override;
         void AddStaticKnownNames() override;
-        unsigned HashString(const std::string& str) override;
+        [[nodiscard]] unsigned HashString(const std::string& str) const override;
     };
 } // namespace IW5

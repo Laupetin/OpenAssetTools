@@ -1,9 +1,12 @@
 #include "TechsetDumperIW4.h"
 
 #include "Dumping/AbstractTextDumper.h"
-#include "Game/IW4/TechsetConstantsIW4.h"
+#include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Pool/GlobalAssetPool.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Techset/CommonTechset.h"
+#include "Techset/CommonTechsetDumper.h"
+#include "Techset/TechniqueDumpingZoneState.h"
 #include "Techset/TechsetCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -16,23 +19,8 @@
 
 using namespace IW4;
 
-namespace IW4
+namespace
 {
-    class TechniqueDumpingZoneState final : public IZoneAssetDumperState
-    {
-        std::set<const MaterialTechnique*> m_dumped_techniques;
-
-    public:
-        bool ShouldDumpTechnique(const MaterialTechnique* technique)
-        {
-            if (m_dumped_techniques.find(technique) != m_dumped_techniques.end())
-                return false;
-
-            m_dumped_techniques.emplace(technique);
-            return true;
-        }
-    };
-
     class TechniqueFileWriter : public AbstractTextDumper
     {
         void DumpStateMap() const
@@ -472,67 +460,31 @@ namespace IW4
         }
     };
 
-    class TechsetFileWriter : public AbstractTextDumper
+    techset::CommonTechset ConvertToCommonTechset(const MaterialTechniqueSet& techset)
     {
-        bool m_last_write_was_value;
+        std::vector<std::string> techniqueNames(std::extent_v<decltype(techniqueTypeNames)>);
 
-    public:
-        explicit TechsetFileWriter(std::ostream& stream)
-            : AbstractTextDumper(stream),
-              m_last_write_was_value(false)
+        for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
         {
+            const auto* technique = techset.techniques[techniqueIndex];
+            if (technique && technique->name)
+                techniqueNames[techniqueIndex] = technique->name;
         }
 
-        void WriteTechniqueType(const size_t techniqueIndex)
-        {
-            assert(techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>);
+        return techset::CommonTechset{
+            .m_name = techset.name,
+            .m_technique_names = std::move(techniqueNames),
+        };
+    }
 
-            if (m_last_write_was_value)
-            {
-                m_stream << "\n";
-                m_last_write_was_value = false;
-            }
-            m_stream << '"' << techniqueTypeNames[techniqueIndex] << "\":\n";
-        }
+    void DumpTechset(const AssetDumpingContext& context, const MaterialTechniqueSet& techset)
+    {
+        static techset::CommonTechniqueTypeNames commonNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+        const auto commonTechset = ConvertToCommonTechset(techset);
 
-        void WriteTechniqueValue(const char* value)
-        {
-            m_last_write_was_value = true;
-
-            IncIndent();
-            Indent();
-            m_stream << value << ";\n";
-            DecIndent();
-        }
-
-        void DumpTechset(const MaterialTechniqueSet* techset)
-        {
-            std::vector<bool> dumpedTechniques(std::extent_v<decltype(MaterialTechniqueSet::techniques)>);
-
-            for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
-            {
-                const auto* technique = techset->techniques[techniqueIndex];
-                if (technique == nullptr || dumpedTechniques[techniqueIndex])
-                    continue;
-
-                dumpedTechniques[techniqueIndex] = true;
-                WriteTechniqueType(techniqueIndex);
-
-                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>;
-                     nextTechniqueIndex++)
-                {
-                    if (techset->techniques[nextTechniqueIndex] != technique)
-                        continue;
-
-                    dumpedTechniques[nextTechniqueIndex] = true;
-                    WriteTechniqueType(nextTechniqueIndex);
-                }
-
-                WriteTechniqueValue(technique->name);
-            }
-        }
-    };
-} // namespace IW4
+        techset::DumpCommonTechset(commonNames, context, commonTechset);
+    }
+} // namespace
 
 namespace techset
 {
@@ -543,18 +495,11 @@ namespace techset
 
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
-        const auto* techset = asset.Asset();
-
-        const auto techsetFile = context.OpenAssetFile(GetFileNameForTechsetName(techset->name));
-
-        if (techsetFile)
-        {
-            TechsetFileWriter writer(*techsetFile);
-            writer.DumpTechset(techset);
-        }
+        const auto* techniqueSet = asset.Asset();
+        DumpTechset(context, *techniqueSet);
 
         auto* techniqueState = context.GetZoneAssetDumperState<TechniqueDumpingZoneState>();
-        for (const auto* technique : techset->techniques)
+        for (const auto* technique : techniqueSet->techniques)
         {
             if (technique && techniqueState->ShouldDumpTechnique(technique))
             {
