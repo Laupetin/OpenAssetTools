@@ -61,6 +61,8 @@ namespace
 
                 if (ret < 0)
                     throw InvalidCompressionException();
+                if (ret == Z_STREAM_END)
+                    break;
             }
 
             return length - m_stream.avail_out;
