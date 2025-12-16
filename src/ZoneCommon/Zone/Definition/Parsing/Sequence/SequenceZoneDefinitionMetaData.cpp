@@ -113,11 +113,11 @@ namespace
         }
 
         const auto keyPos = keyToken.GetPos();
-        con::error("Warning: {} L{}: Zone definition \">type,{}\" is deprecated and should be removed. {}",
-                   keyPos.m_filename.get(),
-                   keyPos.m_line,
-                   keyToken.FieldValue(),
-                   deprecationSuggestedAction);
+        con::warn("Deprecated: {} L{}: Zone definition \">type,{}\" is deprecated and should be removed. {}",
+                  keyPos.m_filename.get(),
+                  keyPos.m_line,
+                  keyToken.FieldValue(),
+                  deprecationSuggestedAction);
     }
 } // namespace
 
