@@ -725,14 +725,33 @@ namespace
                 }
             }
 
-            constexpr auto maxVertices = std::numeric_limits<decltype(XSurface::vertCount)>::max();
-            if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVertices)
-            {
-                con::error("Lod exceeds limit of {} vertices", maxVertices);
-                return false;
-            }
-
             ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
+
+            // Since bone weights are sorted by weight count, the last must have the highest weight count
+            const auto maxWeightCount = common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
+            const auto modelIsRigid = maxWeightCount <= 1;
+
+            if (modelIsRigid)
+            {
+                constexpr auto maxVerticesForRigid = static_cast<size_t>(std::numeric_limits<decltype(XSurface::vertCount)>::max());
+                if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVerticesForRigid)
+                {
+                    con::error("Lod exceeds limit of {} vertices for rigid models", maxVerticesForRigid);
+                    return false;
+                }
+            }
+            else
+            {
+                constexpr auto maxVerticesForAnimated =
+                    std::min(static_cast<size_t>(std::numeric_limits<decltype(XSurface::vertCount)>::max()),
+                             static_cast<size_t>(std::numeric_limits<std::remove_extent_t<decltype(XSurfaceVertexInfo::vertCount)>>::max()));
+
+                if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVerticesForAnimated)
+                {
+                    con::error("Lod exceeds limit of {} vertices for animated models", maxVerticesForAnimated);
+                    return false;
+                }
+            }
 
             surface.baseVertIndex = static_cast<uint16_t>(vertexOffset);
             surface.vertCount = static_cast<uint16_t>(xmodelToCommonVertexIndexLookup.size());
@@ -748,11 +767,7 @@ namespace
 
             if (!common.m_bone_weight_data.weights.empty())
             {
-                // Since bone weights are sorted by weight count, the last must have the highest weight count
-                const auto maxWeightCount =
-                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
-
-                if (maxWeightCount == 0) // XModel is rigid
+                if (modelIsRigid)
                 {
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 }
