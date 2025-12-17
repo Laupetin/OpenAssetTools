@@ -1,36 +1,30 @@
 #pragma once
 
-#include "Pool/XAssetInfo.h"
+#include "Game/IAsset.h"
+#include "Marking/AssetVisitor.h"
 #include "Zone/ZoneTypes.h"
 
-#include <unordered_set>
+#include <type_traits>
 
 class AssetMarker
 {
-public:
-    [[nodiscard]] std::vector<XAssetInfoGeneric*> GetDependencies() const;
-    [[nodiscard]] std::vector<scr_string_t> GetUsedScriptStrings() const;
-    [[nodiscard]] std::vector<IndirectAssetReference> GetIndirectAssetReferences() const;
-
 protected:
-    AssetMarker(asset_type_t assetType, Zone& zone);
+    explicit AssetMarker(AssetVisitor& visitor);
 
-    void AddDependency(XAssetInfoGeneric* assetInfo);
+    template<typename AssetType> void Mark_Dependency(std::add_lvalue_reference_t<std::add_pointer_t<typename AssetType::Type>> asset)
+    {
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-    void Mark_ScriptString(scr_string_t scrString);
-    void MarkArray_ScriptString(const scr_string_t* scrStringArray, size_t count);
+        const auto result = m_visitor.Visit_Dependency(AssetType::EnumEntry, AssetNameAccessor<AssetType>()(*asset));
+        if (result.has_value())
+            asset = static_cast<std::add_pointer_t<typename AssetType::Type>>(result->m_ptr);
+    }
 
-    void Mark_IndirectAssetRef(asset_type_t type, const char* assetRefName);
-    void MarkArray_IndirectAssetRef(asset_type_t type, const char** assetRefNames, size_t count);
+    void Mark_ScriptString(scr_string_t& scriptString) const;
+    void MarkArray_ScriptString(scr_string_t* scriptStringArray, size_t count) const;
 
-    [[nodiscard]] XAssetInfoGeneric* GetAssetInfoByName(const std::string& name) const;
+    void Mark_IndirectAssetRef(asset_type_t assetType, const char* assetName) const;
+    void MarkArray_IndirectAssetRef(asset_type_t assetType, const char** assetNames, size_t count) const;
 
-    Zone& m_zone;
-
-private:
-    asset_type_t m_asset_type;
-
-    std::unordered_set<XAssetInfoGeneric*> m_dependencies;
-    std::unordered_set<scr_string_t> m_used_script_strings;
-    std::unordered_set<IndirectAssetReference> m_indirect_asset_references;
+    AssetVisitor& m_visitor;
 };

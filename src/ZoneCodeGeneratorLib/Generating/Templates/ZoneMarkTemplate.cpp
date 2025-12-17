@@ -33,6 +33,7 @@ namespace
             LINE("")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
             LINE("#include \"Marking/AssetMarker.h\"")
+            LINE("#include \"Marking/AssetVisitor.h\"")
             LINE("")
             LINE("#include <string>")
             LINE("")
@@ -48,7 +49,6 @@ namespace
             m_intendation++;
             PrintHeaderConstructor();
             PrintHeaderMainMarkMethodDeclaration(m_env.m_asset);
-            PrintHeaderGetAssetInfoMethodDeclaration(m_env.m_asset);
             LINE("")
 
             m_intendation--;
@@ -136,8 +136,6 @@ namespace
             PrintConstructorMethod();
             LINE("")
             PrintMainMarkMethod();
-            LINE("")
-            PrintGetAssetInfoMethod();
 
             for (const auto* type : m_env.m_used_types)
             {
@@ -210,14 +208,9 @@ namespace
             LINEF("void Mark_{0}();", MakeSafeTypeName(info->m_definition))
         }
 
-        void PrintHeaderGetAssetInfoMethodDeclaration(const StructureInformation* info) const
-        {
-            LINEF("XAssetInfo<{0}>* GetAssetInfo({0}* pAsset) const;", info->m_definition->GetFullName())
-        }
-
         void PrintHeaderConstructor() const
         {
-            LINEF("{0}(Zone& zone);", MarkerClassName(m_env.m_asset))
+            LINEF("explicit {0}(AssetVisitor& visitor);", MarkerClassName(m_env.m_asset))
         }
 
         void PrintHeaderMainMarkMethodDeclaration(const StructureInformation* info) const
@@ -237,10 +230,10 @@ namespace
 
         void PrintConstructorMethod()
         {
-            LINEF("{0}::{0}(Zone& zone)", MarkerClassName(m_env.m_asset))
+            LINEF("{0}::{0}(AssetVisitor& visitor)", MarkerClassName(m_env.m_asset))
 
             m_intendation++;
-            LINEF(": AssetMarker({0}::EnumEntry, zone)", m_env.m_asset->m_asset_name)
+            LINE(": AssetMarker(visitor)")
             m_intendation--;
 
             LINE("{")
@@ -286,7 +279,7 @@ namespace
 
             if (info && StructureComputations(info).IsAsset())
             {
-                LINEF("AddDependency({0}(m_zone).GetAssetInfo(*{1}));", MarkerClassName(info), MakeTypePtrVarName(def))
+                LINEF("Mark_Dependency<{0}>(*{1});", info->m_asset_name, MakeTypePtrVarName(def))
             }
             else
             {
@@ -413,7 +406,7 @@ namespace
         {
             if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("AddDependency({0}(m_zone).GetAssetInfo({1}));", MarkerClassName(member->m_type), MakeMemberAccess(info, member, modifier))
+                LINEF("Mark_Dependency<{0}>({1});", member->m_type->m_asset_name, MakeMemberAccess(info, member, modifier))
             }
             else if (loadType == MemberLoadType::POINTER_ARRAY)
             {
@@ -747,20 +740,6 @@ namespace
             {
                 PrintMarkMemberIfNeedsTreatment(info, member.get());
             }
-
-            m_intendation--;
-            LINE("}")
-        }
-
-        void PrintGetAssetInfoMethod()
-        {
-            LINEF("XAssetInfo<{0}>* {1}::GetAssetInfo({0}* pAsset) const", m_env.m_asset->m_definition->GetFullName(), MarkerClassName(m_env.m_asset))
-            LINE("{")
-            m_intendation++;
-
-            LINEF("return reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfoByName(AssetNameAccessor<{1}>()(*pAsset)));",
-                  m_env.m_asset->m_definition->GetFullName(),
-                  m_env.m_asset->m_asset_name)
 
             m_intendation--;
             LINE("}")
