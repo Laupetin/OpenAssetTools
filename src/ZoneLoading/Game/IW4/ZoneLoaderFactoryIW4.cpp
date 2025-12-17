@@ -36,14 +36,7 @@
 using namespace IW4;
 namespace fs = std::filesystem;
 
-class StepLogPosition final : public ILoadingStep
-{
-public:
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
-    {
-        con::info("Stream position before dump: 0x{:X}", stream.Pos());
-    }
-};
+
 
 namespace
 {
@@ -213,8 +206,6 @@ namespace
         // If file is signed setup a RSA instance.
         auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official, inspectResult.m_generic_result.m_platform);
 
-        zoneLoader.AddLoadingStep(std::make_unique<StepLogPosition>());
-
         zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
@@ -289,7 +280,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Skip timestamp
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
 
-    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX)
+    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX) // skip 16 unknown bytes on Xbox
     {
         zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(16));
     }
@@ -329,9 +320,6 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
         dumpFileNamePath.replace_extension(".dat");
         std::string dumpFileName = dumpFileNamePath.string();
         con::warn("Dumping xbox assets is not supported, making a full fastfile data dump to {}", dumpFileName);
-
-        zoneLoader->AddLoadingStep(std::make_unique<StepLogPosition>());
-
         zoneLoader->AddLoadingStep(step::CreateStepDumpData(dumpFileName, 0xFFFFFFFF));
     }
 
