@@ -752,7 +752,7 @@ namespace
                 const auto maxWeightCount =
                     common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
 
-                if (maxWeightCount == 0) // XModel is rigid
+                if (maxWeightCount <= 1) // XModel is rigid
                 {
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 }
