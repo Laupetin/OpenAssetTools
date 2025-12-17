@@ -278,7 +278,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Skip timestamp
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
 
-    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX) // skip 16 unknown bytes on Xbox
+    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX) // TODO: find out what this is
     {
         zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(16));
     }
