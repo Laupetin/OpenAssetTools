@@ -12,6 +12,7 @@
 #include "Loading/Processor/ProcessorInflate.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
+#include "Loading/Steps/StepDumpData.h"
 #include "Loading/Steps/StepLoadHash.h"
 #include "Loading/Steps/StepLoadSignature.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
@@ -23,14 +24,26 @@
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/Endianness.h"
 #include "Utils/Logging/Log.h"
 
 #include <cassert>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <type_traits>
 
 using namespace IW4;
+namespace fs = std::filesystem;
+
+class StepLogPosition final : public ILoadingStep
+{
+public:
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+    {
+        con::info("Stream position before dump: 0x{:X}", stream.Pos());
+    }
+};
 
 namespace
 {
@@ -42,13 +55,50 @@ namespace
 
     std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(const ZoneHeader& header)
     {
-        if (header.m_version != ZoneConstants::ZONE_VERSION)
-            return std::nullopt;
 
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
+        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION)
         {
-            if (*reinterpret_cast<const uint32_t*>(&header.m_magic[std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)])
-                == ZoneConstants::IW4X_ZONE_VERSION)
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
+            {
+                if (*reinterpret_cast<const uint32_t*>(&header.m_magic[std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)])
+                    == ZoneConstants::IW4X_ZONE_VERSION)
+                {
+                    return ZoneLoaderInspectionResultIW4{
+                        .m_generic_result =
+                            ZoneLoaderInspectionResult{
+                                                       .m_game_id = GameId::IW4,
+                                                       .m_endianness = GameEndianness::LE,
+                                                       .m_word_size = GameWordSize::ARCH_32,
+                                                       .m_platform = GamePlatform::PC,
+                                                       .m_is_official = false,
+                                                       .m_is_signed = false,
+                                                       .m_is_encrypted = false,
+                                                       },
+                        .m_is_iw4x = true,
+                    };
+                }
+
+                return std::nullopt;
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
+            {
+                return ZoneLoaderInspectionResultIW4{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::IW4,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PC,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_is_iw4x = false,
+                };
+            }
+
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
             {
                 return ZoneLoaderInspectionResultIW4{
                     .m_generic_result =
@@ -61,45 +111,44 @@ namespace
                                                    .m_is_signed = false,
                                                    .m_is_encrypted = false,
                                                    },
-                    .m_is_iw4x = true,
+                    .m_is_iw4x = false,
                 };
             }
-
-            return std::nullopt;
         }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
+        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON)
         {
-            return ZoneLoaderInspectionResultIW4{
-                .m_generic_result =
-                    ZoneLoaderInspectionResult{
-                                               .m_game_id = GameId::IW4,
-                                               .m_endianness = GameEndianness::LE,
-                                               .m_word_size = GameWordSize::ARCH_32,
-                                               .m_platform = GamePlatform::PC,
-                                               .m_is_official = true,
-                                               .m_is_signed = true,
-                                               .m_is_encrypted = false,
-                                               },
-                .m_is_iw4x = false,
-            };
-        }
-
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
-        {
-            return ZoneLoaderInspectionResultIW4{
-                .m_generic_result =
-                    ZoneLoaderInspectionResult{
-                                               .m_game_id = GameId::IW4,
-                                               .m_endianness = GameEndianness::LE,
-                                               .m_word_size = GameWordSize::ARCH_32,
-                                               .m_platform = GamePlatform::PC,
-                                               .m_is_official = false,
-                                               .m_is_signed = false,
-                                               .m_is_encrypted = false,
-                                               },
-                .m_is_iw4x = false,
-            };
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
+            {
+                return ZoneLoaderInspectionResultIW4{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::IW4,
+                                                   .m_endianness = GameEndianness::BE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::XBOX,
+                                                   .m_is_official = false,
+                                                   .m_is_signed = false,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_is_iw4x = false,
+                };
+            }
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
+            {
+                return ZoneLoaderInspectionResultIW4{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::IW4,
+                                                   .m_endianness = GameEndianness::BE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::XBOX,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = true,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_is_iw4x = false,
+                };
+            }
         }
 
         return std::nullopt;
@@ -121,16 +170,27 @@ namespace
 #undef XBLOCK_DEF
     }
 
-    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial)
+    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial, const GamePlatform platform)
     {
         if (isOfficial)
         {
             auto rsa = cryptography::CreateRsa(cryptography::HashingAlgorithm::RSA_HASH_SHA256, cryptography::RsaPaddingMode::RSA_PADDING_PSS);
 
-            if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
+            if (platform == GamePlatform::PC)
             {
-                con::error("Invalid public key for signature checking");
-                return nullptr;
+                if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
+                {
+                    con::error("Invalid public key for signature checking");
+                    return nullptr;
+                }
+            }
+            else if (platform == GamePlatform::XBOX)
+            {
+                if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON)))
+                {
+                    con::error("Invalid public key for signature checking");
+                    return nullptr;
+                }
             }
 
             return rsa;
@@ -151,7 +211,9 @@ namespace
             return;
 
         // If file is signed setup a RSA instance.
-        auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official);
+        auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official, inspectResult.m_generic_result.m_platform);
+
+        zoneLoader.AddLoadingStep(std::make_unique<StepLogPosition>());
 
         zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
@@ -227,6 +289,11 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Skip timestamp
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
 
+    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX)
+    {
+        zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(16));
+    }
+
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     AddAuthHeaderSteps(*inspectResult, *zoneLoader, fileName);
 
@@ -238,21 +305,35 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
         zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(1));
     }
 
-    // Start of the XFile struct
-    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    if (inspectResult->m_generic_result.m_endianness == GameEndianness::LE)
+    {
+        // Start of the XFile struct
+        zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
 
-    // Start of the zone content
-    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
-        [zonePtr](ZoneInputStream& stream)
-        {
-            return std::make_unique<ContentLoader>(*zonePtr, stream);
-        },
-        32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
-        ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
-        std::move(progressCallback)));
+        // Start of the zone content
+        zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
+            [zonePtr](ZoneInputStream& stream)
+            {
+                return std::make_unique<ContentLoader>(*zonePtr, stream);
+            },
+            32u,
+            ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+            ZoneConstants::INSERT_BLOCK,
+            zonePtr->Memory(),
+            std::move(progressCallback)));
+    }
+    else
+    {
+        fs::path dumpFileNamePath = fs::path(fileName).filename();
+        dumpFileNamePath.replace_extension(".dat");
+        std::string dumpFileName = dumpFileNamePath.string();
+        con::warn("Dumping xbox assets is not supported, making a full fastfile data dump to {}", dumpFileName);
+
+        zoneLoader->AddLoadingStep(std::make_unique<StepLogPosition>());
+
+        zoneLoader->AddLoadingStep(step::CreateStepDumpData(dumpFileName, 0xFFFFFFFF));
+    }
 
     return zoneLoader;
 }

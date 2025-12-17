@@ -18,6 +18,7 @@ namespace IW4
         static constexpr const char* MAGIC_IW4X = "IW4x";
         static constexpr int ZONE_VERSION = 276;
         static constexpr int IW4X_ZONE_VERSION = 3;
+        static constexpr int ZONE_VERSION_XENON = 269;
 
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_INFINITY_WARD) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
@@ -39,6 +40,20 @@ namespace IW4
             0x21, 0xC3, 0xE1, 0xD4, 0x20, 0x28, 0xDD, 0x3A, 0x4D, 0x51, 0xE7, 0x49, 0x8A, 0x49, 0xEF, 0xF5, 0xDA, 0xDA, 0x7D, 0x5D, 0xA8, 0x0B, 0xA1,
             0x77, 0xCD, 0x62, 0x7D, 0x9D, 0x40, 0x26, 0x44, 0x4B, 0x3B, 0x0A, 0x89, 0x02, 0x03, 0x01, 0x00, 0x01,
         };
+
+        inline static const uint8_t RSA_PUBLIC_KEY_INFINITY_WARD_XENON[270]{
+            48u,  130u, 1u,   10u,  2u,   130u, 1u,   1u,   0u,   205u, 150u, 80u,  200u, 178u, 78u,  16u,  228u, 121u, 5u,   65u,  110u, 155u, 239u,
+            206u, 81u,  196u, 45u,  158u, 201u, 209u, 132u, 35u,  240u, 172u, 34u,  36u,  24u,  233u, 157u, 40u,  203u, 175u, 180u, 127u, 96u,  179u,
+            103u, 50u,  67u,  252u, 15u,  169u, 112u, 120u, 66u,  204u, 169u, 134u, 64u,  202u, 50u,  202u, 130u, 155u, 12u,  99u,  176u, 81u,  137u,
+            20u,  41u,  234u, 21u,  51u,  63u,  123u, 235u, 102u, 237u, 247u, 22u,  247u, 69u,  6u,   198u, 65u,  98u,  222u, 0u,   117u, 250u, 140u,
+            143u, 229u, 191u, 115u, 203u, 117u, 44u,  68u,  9u,   80u,  216u, 30u,  81u,  226u, 88u,  178u, 86u,  111u, 229u, 245u, 192u, 32u,  79u,
+            95u,  85u,  143u, 141u, 209u, 55u,  204u, 232u, 59u,  9u,   6u,   44u,  93u,  185u, 123u, 142u, 227u, 199u, 131u, 203u, 143u, 64u,  99u,
+            137u, 174u, 107u, 15u,  222u, 56u,  94u,  215u, 244u, 101u, 140u, 48u,  90u,  139u, 158u, 162u, 66u,  3u,   247u, 128u, 171u, 223u, 160u,
+            143u, 149u, 160u, 187u, 182u, 29u,  163u, 189u, 59u,  111u, 66u,  104u, 221u, 66u,  251u, 230u, 50u,  2u,   59u,  8u,   238u, 52u,  60u,
+            143u, 30u,  232u, 89u,  17u,  8u,   9u,   41u,  190u, 105u, 177u, 212u, 85u,  16u,  111u, 243u, 146u, 23u,  9u,   62u,  112u, 160u, 26u,
+            230u, 125u, 109u, 49u,  208u, 248u, 51u,  223u, 240u, 41u,  85u,  98u,  29u,  95u,  62u,  141u, 58u,  29u,  90u,  19u,  176u, 249u, 137u,
+            137u, 145u, 143u, 6u,   186u, 58u,  55u,  22u,  197u, 125u, 137u, 239u, 239u, 99u,  78u,  243u, 137u, 25u,  6u,   137u, 241u, 123u, 220u,
+            245u, 110u, 54u,  10u,  139u, 200u, 196u, 93u,  194u, 125u, 19u,  157u, 2u,   3u,   1u,   0u,   1u};
 
         static constexpr size_t AUTHED_CHUNK_SIZE = 0x2000;
         static constexpr unsigned AUTHED_CHUNK_COUNT_PER_GROUP = 256;
