@@ -2159,7 +2159,7 @@ namespace
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, "
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<{1}>(**pAsset), reallocatedAsset, "
                   "assetInfo.GetDependencies(), "
                   "assetInfo.GetUsedScriptStrings(), assetInfo.GetIndirectAssetReferences()));",
                   info->m_definition->GetFullName(),
@@ -2185,7 +2185,7 @@ namespace
             LINE("")
             LINE("if (m_asset_info == nullptr && *pAsset != nullptr)")
             m_intendation++;
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetNameAccessor<{1}>()(**pAsset)));",
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<{1}>(**pAsset)));",
                   m_env.m_asset->m_definition->GetFullName(),
                   m_env.m_asset->m_asset_name)
             m_intendation--;

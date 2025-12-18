@@ -42,7 +42,7 @@ public:
     AssetCreationResult CreateDefaultAsset(const std::string& assetName, AssetCreationContext& context) const override
     {
         auto* asset = m_memory.Alloc<typename AssetType::Type>();
-        AssetNameAccessor<AssetType>{}(*asset) = m_memory.Dup(assetName.c_str());
+        AssetName<AssetType>(*asset) = m_memory.Dup(assetName.c_str());
 
         return AssetCreationResult::Success(context.AddAsset<AssetType>(assetName, asset));
     }

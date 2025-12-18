@@ -18,11 +18,11 @@ public:
 
 template<typename AssetType> struct AssetNameAccessor
 {
-public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
     // static constexpr bool IS_SINGLETON = false;
+    // using RETURN_TYPE = const char*&;
 
-    // const char*& operator()(AssetType::Type& asset)
+    // static RETURN_TYPE GetAssetName(assetType::Type& asset)
     // {
     //     throw std::runtime_error("Not implemented");
     // }
@@ -34,8 +34,9 @@ public:
     public:                                                                                                                                                    \
         static_assert(std::is_base_of_v<IAssetBase, assetType>);                                                                                               \
         static constexpr bool IS_SINGLETON = false;                                                                                                            \
+        using RETURN_TYPE = const char*&;                                                                                                                      \
                                                                                                                                                                \
-        const char*& operator()(assetType::Type& asset)                                                                                                        \
+        static RETURN_TYPE GetAssetName(assetType::Type& asset)                                                                                                \
         {                                                                                                                                                      \
             return asset.nameProperty;                                                                                                                         \
         }                                                                                                                                                      \
@@ -47,10 +48,17 @@ public:
     public:                                                                                                                                                    \
         static_assert(std::is_base_of_v<IAssetBase, assetType>);                                                                                               \
         static constexpr bool IS_SINGLETON = true;                                                                                                             \
+        using RETURN_TYPE = const char* const&;                                                                                                                \
                                                                                                                                                                \
-        const char* const& operator()(assetType::Type& asset)                                                                                                  \
+        static RETURN_TYPE GetAssetName(assetType::Type& asset)                                                                                                \
         {                                                                                                                                                      \
             static const char* NAME = singletonName;                                                                                                           \
             return NAME;                                                                                                                                       \
         }                                                                                                                                                      \
     }
+
+template<typename AssetType> AssetNameAccessor<AssetType>::RETURN_TYPE AssetName(typename AssetType::Type& asset)
+{
+    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+    return AssetNameAccessor<AssetType>::GetAssetName(asset);
+}

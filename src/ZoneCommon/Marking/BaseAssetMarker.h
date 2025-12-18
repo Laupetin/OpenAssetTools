@@ -15,7 +15,7 @@ protected:
     {
         static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-        const auto result = m_visitor.Visit_Dependency(AssetType::EnumEntry, AssetNameAccessor<AssetType>()(*asset));
+        const auto result = m_visitor.Visit_Dependency(AssetType::EnumEntry, AssetName<AssetType>(*asset));
         if (result.has_value())
             asset = static_cast<std::add_pointer_t<typename AssetType::Type>>(result->m_ptr);
     }
