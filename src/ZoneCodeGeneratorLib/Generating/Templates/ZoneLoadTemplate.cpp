@@ -145,7 +145,7 @@ namespace
             LINE("")
             LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
             LINE("")
-            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
             LINE("")
             LINE("#include \"Loading/AssetInfoCollector.h\"")
 
@@ -236,11 +236,6 @@ namespace
         static std::string LoaderClassName(const StructureInformation* asset)
         {
             return std::format("Loader_{0}", asset->m_definition->m_name);
-        }
-
-        static std::string MarkerClassName(const StructureInformation* asset)
-        {
-            return std::format("Marker_{0}", asset->m_definition->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -2158,7 +2153,7 @@ namespace
             LINE("assert(pAsset != nullptr);")
             LINE("")
             LINE("AssetInfoCollector assetInfo(m_zone);")
-            LINEF("{0} marker(assetInfo);", MarkerClassName(m_env.m_asset))
+            LINEF("AssetMarker<{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
             LINE("marker.Mark(*pAsset);")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())

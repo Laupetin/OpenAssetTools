@@ -32,7 +32,7 @@ namespace
             LINE("#pragma once")
             LINE("")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
-            LINE("#include \"Marking/AssetMarker.h\"")
+            LINE("#include \"Marking/BaseAssetMarker.h\"")
             LINE("#include \"Marking/AssetVisitor.h\"")
             LINE("")
             LINE("#include <string>")
@@ -40,7 +40,7 @@ namespace
             LINEF("namespace {0}", m_env.m_game)
             LINE("{")
             m_intendation++;
-            LINEF("class {0} final : public AssetMarker", MarkerClassName(m_env.m_asset))
+            LINEF("class {0} final : public BaseAssetMarker", MarkerClassName(m_env.m_asset))
             LINE("{")
             m_intendation++;
 
@@ -107,6 +107,8 @@ namespace
             LINE("};")
             m_intendation--;
             LINE("}")
+            LINE("")
+            LINEF("DEFINE_MARKER_CLASS_FOR_ASSET({0}::{1}, {0}::{2})", m_env.m_game, m_env.m_asset->m_asset_name, MarkerClassName(m_env.m_asset))
         }
 
         void Source()
@@ -233,7 +235,7 @@ namespace
             LINEF("{0}::{0}(AssetVisitor& visitor)", MarkerClassName(m_env.m_asset))
 
             m_intendation++;
-            LINE(": AssetMarker(visitor)")
+            LINE(": BaseAssetMarker(visitor)")
             m_intendation--;
 
             LINE("{")
