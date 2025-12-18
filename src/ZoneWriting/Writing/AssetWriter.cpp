@@ -17,6 +17,9 @@ scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
     if (m_asset->m_zone == &m_zone)
         return scrString;
 
+    // This swap should have already been performed in GlobalAssetPoolsLoader
+    assert(false);
+
     const auto strValue = m_asset->m_zone->m_script_strings.CValue(scrString);
     return m_zone.m_script_strings.GetScriptString(strValue);
 }

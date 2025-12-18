@@ -10,6 +10,7 @@ function ZoneCommon:include(includes)
 		ObjCommon:include(includes)
 		Parser:include(includes)
 		Cryptography:include(includes)
+		ZoneCode:include(includes)
 	end
 end
 
@@ -21,6 +22,7 @@ function ZoneCommon:link(links)
 	links:linkto(Parser)
 	links:linkto(Utils)
 	links:linkto(lzx)
+	ZoneCode:use()
 end
 
 function ZoneCommon:use()

@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "FontIcon/CsvLoaderFontIconT6.h"
 #include "FontIcon/JsonLoaderFontIconT6.h"
+#include "Game/T6/AssetMarkerT6.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
@@ -340,7 +341,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetImage>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundBank>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundPatch>>(zone));
-            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMap>>(zone));
+            // collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMap>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMapPvs>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetComWorld>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetGameWorldSp>>(zone));

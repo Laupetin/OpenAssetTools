@@ -25,6 +25,9 @@ void BaseAssetMarker::MarkArray_ScriptString(scr_string_t* scriptStringArray, co
 
 void BaseAssetMarker::Mark_IndirectAssetRef(const asset_type_t assetType, const char* assetName) const
 {
+    if (!assetName)
+        return;
+
     m_visitor.Visit_IndirectAssetRef(assetType, assetName);
 }
 

@@ -1,6 +1,7 @@
 #include "ObjLoaderIW5.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
+#include "Game/IW5/AssetMarkerIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"

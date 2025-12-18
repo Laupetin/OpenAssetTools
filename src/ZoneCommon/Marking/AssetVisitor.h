@@ -10,7 +10,7 @@ class AssetVisitor
 public:
     virtual ~AssetVisitor() = default;
 
-    virtual std::optional<XAssetInfoGeneric> Visit_Dependency(asset_type_t assetType, const char* assetName)
+    virtual std::optional<XAssetInfoGeneric*> Visit_Dependency(asset_type_t assetType, const char* assetName)
     {
         // Do nothing by default
         return std::nullopt;

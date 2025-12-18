@@ -17,7 +17,7 @@ protected:
 
         const auto result = m_visitor.Visit_Dependency(AssetType::EnumEntry, AssetName<AssetType>(*asset));
         if (result.has_value())
-            asset = static_cast<std::add_pointer_t<typename AssetType::Type>>(result->m_ptr);
+            asset = static_cast<std::add_pointer_t<typename AssetType::Type>>((*result)->m_ptr);
     }
 
     void Mark_ScriptString(scr_string_t& scriptString) const;

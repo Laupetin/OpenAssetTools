@@ -18,7 +18,7 @@ public:
     [[nodiscard]] std::vector<scr_string_t> GetUsedScriptStrings() const;
     [[nodiscard]] std::vector<IndirectAssetReference> GetIndirectAssetReferences() const;
 
-    std::optional<XAssetInfoGeneric> Visit_Dependency(asset_type_t assetType, const char* assetName) override;
+    std::optional<XAssetInfoGeneric*> Visit_Dependency(asset_type_t assetType, const char* assetName) override;
     std::optional<scr_string_t> Visit_ScriptString(scr_string_t scriptString) override;
     void Visit_IndirectAssetRef(asset_type_t assetType, const char* assetName) override;
 
