@@ -40,7 +40,7 @@ namespace
             {
                 for (auto i = 0u; i < sizeof(CommonTechnique::m_flags) * 8u; i++)
                 {
-                    const auto mask = 1ui64 << i;
+                    const auto mask = 1ull << i;
                     if (technique.m_flags & mask)
                     {
                         Indent();
@@ -63,7 +63,7 @@ namespace
 #ifdef TECHSET_DEBUG
             for (auto i = 0u; i < sizeof(CommonPass::m_sampler_flags) * 8u; i++)
             {
-                const auto mask = 1ui64 << i;
+                const auto mask = 1ull << i;
                 if (pass.m_sampler_flags & mask)
                 {
                     Indent();
