@@ -16,8 +16,8 @@ namespace IW4
         static constexpr const char* MAGIC_SIGNED_OAT = "ABff0100";
         static constexpr const char* MAGIC_UNSIGNED = "IWffu100";
         static constexpr const char* MAGIC_IW4X = "IW4x";
-        static constexpr int ZONE_VERSION = 276;
-        static constexpr int IW4X_ZONE_VERSION = 3;
+        static constexpr int ZONE_VERSION_PC = 276;
+        static constexpr int ZONE_VERSION_IW4x = 3;
         static constexpr int ZONE_VERSION_XENON = 269;
 
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_INFINITY_WARD) == sizeof(ZoneHeader::m_magic));

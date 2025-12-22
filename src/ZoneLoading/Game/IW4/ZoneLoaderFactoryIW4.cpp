@@ -48,12 +48,12 @@ namespace
     std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(const ZoneHeader& header)
     {
 
-        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION)
+        if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
             {
                 if (*reinterpret_cast<const uint32_t*>(&header.m_magic[std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)])
-                    == ZoneConstants::IW4X_ZONE_VERSION)
+                    == ZoneConstants::ZONE_VERSION_IW4x)
                 {
                     return ZoneLoaderInspectionResultIW4{
                         .m_generic_result =
