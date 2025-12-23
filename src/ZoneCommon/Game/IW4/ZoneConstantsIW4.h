@@ -19,6 +19,7 @@ namespace IW4
         static constexpr int ZONE_VERSION_PC = 276;
         static constexpr int ZONE_VERSION_IW4x = 3;
         static constexpr int ZONE_VERSION_XENON = 269;
+        static constexpr int ZONE_VERSION_XENON_ALPHA = 253;
 
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_INFINITY_WARD) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
