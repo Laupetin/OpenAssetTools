@@ -1,4 +1,4 @@
-#include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW5/GameAssetPoolIW5.h"
 #include "Linker.h"
 #include "OatTestPaths.h"
 #include "SystemTestsPaths.h"
@@ -15,11 +15,11 @@ using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("Simple Zone(IW3)", "[iw3][system][simple]")
+    TEST_CASE("Simple Zone(IW5)", "[iw5][system][simple]")
     {
-        const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW3/simple").string();
-        const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW3/simple").string();
-        const auto outputPath = oat::paths::GetTempDirectory("iw3_simple").string();
+        const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/simple").string();
+        const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/simple").string();
+        const auto outputPath = oat::paths::GetTempDirectory("iw5_simple").string();
 
         const char* argStrings[]{
             "SystemTests", // bin
@@ -30,7 +30,7 @@ namespace
             sourceSearchPath.c_str(),
             "--output-folder",
             outputPath.c_str(),
-            "SimpleZoneIW3",
+            "SimpleZoneIW5",
         };
 
         LinkerArgs args;
@@ -46,16 +46,16 @@ namespace
 
         REQUIRE(linkerResult);
 
-        const auto expectedZonePath = (fs::path(outputPath) / "SimpleZoneIW3.ff").string();
+        const auto expectedZonePath = (fs::path(outputPath) / "SimpleZoneIW5.ff").string();
         auto maybeZone = ZoneLoading::LoadZone(expectedZonePath, std::nullopt);
         REQUIRE(maybeZone);
 
         auto zone = std::move(*maybeZone);
-        auto pools = dynamic_cast<GameAssetPoolIW3*>(zone->m_pools.get());
+        auto pools = dynamic_cast<GameAssetPoolIW5*>(zone->m_pools.get());
 
-        REQUIRE(zone->m_game_id == GameId::IW3);
+        REQUIRE(zone->m_game_id == GameId::IW5);
         REQUIRE(zone->m_platform == GamePlatform::PC);
-        REQUIRE(zone->m_name == "SimpleZoneIW3");
+        REQUIRE(zone->m_name == "SimpleZoneIW5");
         REQUIRE(pools->GetTotalAssetCount() == 1);
         REQUIRE(pools->m_raw_file->GetAsset("SimpleZone.txt"));
     }
