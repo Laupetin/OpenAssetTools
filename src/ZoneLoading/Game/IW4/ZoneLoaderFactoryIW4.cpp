@@ -106,7 +106,8 @@ namespace
                 };
             }
         }
-        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON)
+        else if (endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON
+                 || endianness::FromBigEndian(header.m_version) == ZoneConstants::ZONE_VERSION_XENON_ALPHA)
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
             {
