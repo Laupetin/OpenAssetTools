@@ -39,7 +39,7 @@ namespace
     ZoneHeader CreateHeaderForParams(const bool isSecure, const bool isOfficial)
     {
         ZoneHeader header{};
-        header.m_version = ZoneConstants::ZONE_VERSION;
+        header.m_version = ZoneConstants::ZONE_VERSION_PC;
 
         if (isSecure)
         {
