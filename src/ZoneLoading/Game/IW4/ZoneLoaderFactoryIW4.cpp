@@ -47,7 +47,6 @@ namespace
 
     std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(const ZoneHeader& header)
     {
-
         if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
@@ -168,21 +167,25 @@ namespace
         {
             auto rsa = cryptography::CreateRsa(cryptography::HashingAlgorithm::RSA_HASH_SHA256, cryptography::RsaPaddingMode::RSA_PADDING_PSS);
 
+            bool keySetSuccessful;
             if (platform == GamePlatform::PC)
             {
-                if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
-                {
-                    con::error("Invalid public key for signature checking");
-                    return nullptr;
-                }
+                keySetSuccessful = rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_PC, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_PC));
             }
             else if (platform == GamePlatform::XBOX)
             {
-                if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON)))
-                {
-                    con::error("Invalid public key for signature checking");
-                    return nullptr;
-                }
+                keySetSuccessful = rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON));
+            }
+            else
+            {
+                con::error("No public key for platform");
+                return nullptr;
+            }
+
+            if (!keySetSuccessful)
+            {
+                con::error("Invalid public key for signature checking");
+                return nullptr;
             }
 
             return rsa;
@@ -279,10 +282,9 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Skip timestamp
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
 
+    // Xbox fastfiles have an additional header of all included images outside the zone data
     if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX)
-    {
         zoneLoader->AddLoadingStep(step::CreateStepSkipZoneImageHeaders());
-    }
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     AddAuthHeaderSteps(*inspectResult, *zoneLoader, fileName);
