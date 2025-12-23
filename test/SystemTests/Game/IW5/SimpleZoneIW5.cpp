@@ -17,9 +17,9 @@ namespace
 {
     TEST_CASE("Simple Zone(IW5)", "[iw5][system][simple]")
     {
-        const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/simple").string();
-        const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/simple").string();
-        const auto outputPath = oat::paths::GetTempDirectory("iw5_simple").string();
+        const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/Simple").string();
+        const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/Simple").string();
+        const auto outputPath = oat::paths::GetTempDirectory("SimpleZoneIW5").string();
 
         const char* argStrings[]{
             "SystemTests", // bin
