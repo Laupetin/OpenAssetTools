@@ -11,6 +11,7 @@ end
 function Catch2Common:link(links)
 	links:add(self:name())
 	links:linkto(catch2)
+	links:linkto(Utils)
 end
 
 function Catch2Common:use()
@@ -45,7 +46,9 @@ function Catch2Common:project()
 		
 		self:include(includes)
 		catch2:include(includes)
+		Utils:include(includes)
 
 		links:linkto(catch2)
+		links:linkto(Utils)
 		links:linkall()
 end

@@ -145,7 +145,9 @@ namespace
             LINE("")
             LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
             LINE("")
-            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
+            LINE("")
+            LINE("#include \"Loading/AssetInfoCollector.h\"")
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -234,11 +236,6 @@ namespace
         static std::string LoaderClassName(const StructureInformation* asset)
         {
             return std::format("Loader_{0}", asset->m_definition->m_name);
-        }
-
-        static std::string MarkerClassName(const StructureInformation* asset)
-        {
-            return std::format("Marker_{0}", asset->m_definition->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -2155,14 +2152,16 @@ namespace
 
             LINE("assert(pAsset != nullptr);")
             LINE("")
-            LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
+            LINE("AssetInfoCollector assetInfo(m_zone);")
+            LINEF("AssetMarker<{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
             LINE("marker.Mark(*pAsset);")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, marker.GetDependencies(), "
-                  "marker.GetUsedScriptStrings(), marker.GetIndirectAssetReferences()));",
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<{1}>(**pAsset), reallocatedAsset, "
+                  "assetInfo.GetDependencies(), "
+                  "assetInfo.GetUsedScriptStrings(), assetInfo.GetIndirectAssetReferences()));",
                   info->m_definition->GetFullName(),
                   info->m_asset_name)
             LINE("*pAsset = m_asset_info->Asset();")
@@ -2186,7 +2185,7 @@ namespace
             LINE("")
             LINE("if (m_asset_info == nullptr && *pAsset != nullptr)")
             m_intendation++;
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetNameAccessor<{1}>()(**pAsset)));",
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<{1}>(**pAsset)));",
                   m_env.m_asset->m_definition->GetFullName(),
                   m_env.m_asset->m_asset_name)
             m_intendation--;

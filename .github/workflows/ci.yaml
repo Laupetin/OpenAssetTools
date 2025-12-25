@@ -78,6 +78,7 @@ jobs:
           ./ObjLoadingTests
           ./ObjWritingTests
           ./ParserTests
+          ./SystemTests
           ./ZoneCodeGeneratorLibTests
           ./ZoneCommonTests
 
@@ -137,6 +138,8 @@ jobs:
           ./ObjWritingTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ParserTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
+          ./SystemTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ZoneCodeGeneratorLibTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)

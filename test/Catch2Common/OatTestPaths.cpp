@@ -24,4 +24,13 @@ namespace oat::paths
 
         return result;
     }
+
+    std::filesystem::path GetTempDirectory(const std::string& subDir)
+    {
+        auto result = fs::current_path() / "build" / ".tmp" / subDir;
+        if (!fs::is_directory(result))
+            fs::create_directories(result);
+
+        return result;
+    }
 } // namespace oat::paths

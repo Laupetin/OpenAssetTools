@@ -54,7 +54,7 @@ public:
         return static_cast<XAssetInfo<typename AssetType::Type>*>(LoadDependencyGeneric(AssetType::EnumEntry, assetName));
     }
 
-    XAssetInfoGeneric* LoadDependencyGeneric(asset_type_t assetType, const std::string& assetName);
+    XAssetInfoGeneric* LoadDependencyGeneric(asset_type_t assetType, const std::string& assetName, bool required = true);
 
     template<typename AssetType> IndirectAssetReference LoadIndirectAssetReference(const std::string& assetName)
     {

@@ -129,11 +129,13 @@ group ""
 include "src/Common.lua"
 include "src/Cryptography.lua"
 include "src/ImageConverter.lua"
-include "src/Linker.lua"
+include "src/LinkerCli.lua"
+include "src/Linking.lua"
 include "src/ModMan.lua"
 include "src/Parser.lua"
 include "src/RawTemplater.lua"
-include "src/Unlinker.lua"
+include "src/UnlinkerCli.lua"
+include "src/Unlinking.lua"
 include "src/Utils.lua"
 include "src/ZoneCode.lua"
 include "src/ZoneCodeGeneratorLib.lua"
@@ -165,6 +167,8 @@ group "Components"
     ObjImage:project()
     ObjLoading:project()
     ObjWriting:project()
+    Linking:project()
+    Unlinking:project()
 group ""
 
 -- Tools group: All projects that compile into the final tools
@@ -175,8 +179,8 @@ group ""
 
 -- Tools group: All projects that compile into the final tools
 group "Tools"
-    Linker:project()
-    Unlinker:project()
+    LinkerCli:project()
+    UnlinkerCli:project()
     ImageConverter:project()
 
     if _OPTIONS["modman"] then
@@ -199,6 +203,7 @@ include "test/ObjLoadingTests.lua"
 include "test/ObjWritingTests.lua"
 include "test/ParserTestUtils.lua"
 include "test/ParserTests.lua"
+include "test/SystemTests.lua"
 include "test/ZoneCodeGeneratorLibTests.lua"
 include "test/ZoneCommonTests.lua"
 
@@ -212,6 +217,7 @@ group "Tests"
     ObjWritingTests:project()
     ParserTestUtils:project()
     ParserTests:project()
+    SystemTests:project()
     ZoneCodeGeneratorLibTests:project()
     ZoneCommonTests:project()
 group ""

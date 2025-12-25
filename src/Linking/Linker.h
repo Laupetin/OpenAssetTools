@@ -1,16 +1,15 @@
 #pragma once
+
+#include "LinkerArgs.h"
+
 #include <memory>
 
 class Linker
 {
 public:
-    Linker() = default;
     virtual ~Linker() = default;
 
-    Linker(const Linker& other) = delete;
-    Linker(Linker&& other) noexcept = delete;
-    Linker& operator=(const Linker& other) = delete;
-    Linker& operator=(Linker&& other) noexcept = delete;
+    static std::unique_ptr<Linker> Create(LinkerArgs args);
 
     /**
      * \brief Starts the Linker application logic.
@@ -18,7 +17,5 @@ public:
      * \param argv The command line arguments.
      * \return \c true if the application was successful or \c false if an error occurred.
      */
-    virtual bool Start(int argc, const char** argv) = 0;
-
-    static std::unique_ptr<Linker> Create();
+    virtual bool Start() = 0;
 };

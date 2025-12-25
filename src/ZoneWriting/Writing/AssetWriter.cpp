@@ -10,6 +10,14 @@ AssetWriter::AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, IZoneOutput
 {
 }
 
+const char* AssetWriter::NonReferenceAssetName(const char* assetName)
+{
+    if (assetName && assetName[0] == ',')
+        return &assetName[1];
+
+    return assetName;
+}
+
 scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
 {
     assert(scrString < m_asset->m_zone->m_script_strings.Count());
@@ -17,6 +25,7 @@ scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
     if (m_asset->m_zone == &m_zone)
         return scrString;
 
+    // The asset comes from a different zone, we need to translate it
     const auto strValue = m_asset->m_zone->m_script_strings.CValue(scrString);
     return m_zone.m_script_strings.GetScriptString(strValue);
 }

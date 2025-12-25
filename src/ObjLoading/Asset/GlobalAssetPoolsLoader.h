@@ -1,13 +1,36 @@
 #pragma once
+
 #include "Asset/IAssetCreator.h"
+#include "Marking/AssetVisitor.h"
+#include "Marking/BaseAssetMarker.h"
 #include "Pool/GlobalAssetPool.h"
+
+class GlobalAssetPoolsRegistrationPreparation : public AssetVisitor
+{
+public:
+    GlobalAssetPoolsRegistrationPreparation(GenericAssetRegistration& registration, Zone& zone, Zone& foreignZone, AssetCreationContext& context);
+
+    std::optional<XAssetInfoGeneric*> Visit_Dependency(asset_type_t assetType, const char* assetName) override;
+    std::optional<scr_string_t> Visit_ScriptString(scr_string_t scriptString) override;
+    void Visit_IndirectAssetRef(asset_type_t assetType, const char* assetName) override;
+
+    [[nodiscard]] bool Failed() const;
+
+private:
+    GenericAssetRegistration& m_registration;
+    Zone& m_zone;
+    Zone& m_foreign_zone;
+    AssetCreationContext& m_context;
+
+    bool m_failure;
+};
 
 template<typename AssetType> class GlobalAssetPoolsLoader : public AssetCreator<AssetType>
 {
 public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-    GlobalAssetPoolsLoader(Zone& zone)
+    explicit GlobalAssetPoolsLoader(Zone& zone)
         : m_zone(zone)
     {
     }
@@ -21,26 +44,12 @@ public:
 
         AssetRegistration<AssetType> registration(assetName, existingAsset->Asset());
 
-        for (const auto* dependency : existingAsset->m_dependencies)
-        {
-            auto* newDependency = context.LoadDependencyGeneric(dependency->m_type, dependency->m_name);
-            if (newDependency)
-                registration.AddDependency(newDependency);
-            else
-                return AssetCreationResult::Failure();
-        }
-
-        for (const auto& indirectAssetReference : existingAsset->m_indirect_asset_references)
-            registration.AddIndirectAssetReference(context.LoadIndirectAssetReferenceGeneric(indirectAssetReference.m_type, indirectAssetReference.m_name));
-
-        // Make sure any used script string is available in the created zone
-        // The replacement of the scr_string_t values will be done upon writing
-        for (const auto scrString : existingAsset->m_used_script_strings)
-            m_zone.m_script_strings.AddOrGetScriptString(existingAsset->m_zone->m_script_strings.CValue(scrString));
+        GlobalAssetPoolsRegistrationPreparation registrationPreparation(registration, m_zone, *existingAsset->m_zone, context);
+        AssetMarker<AssetType> marker(registrationPreparation);
+        marker.Mark(existingAsset->Asset());
 
         auto* newAsset = context.AddAsset(std::move(registration));
-
-        // Make sure we remember this asset came from another zone
+        // Make sure we remember this asset came from a different zone
         newAsset->m_zone = existingAsset->m_zone;
 
         return AssetCreationResult::Success(newAsset);
