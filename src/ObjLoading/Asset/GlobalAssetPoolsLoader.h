@@ -5,10 +5,10 @@
 #include "Marking/BaseAssetMarker.h"
 #include "Pool/GlobalAssetPool.h"
 
-class GlobalAssetPoolsAssetStealer : public AssetVisitor
+class GlobalAssetPoolsRegistrationPreparation : public AssetVisitor
 {
 public:
-    GlobalAssetPoolsAssetStealer(GenericAssetRegistration& registration, Zone& zone, Zone& foreignZone, AssetCreationContext& context);
+    GlobalAssetPoolsRegistrationPreparation(GenericAssetRegistration& registration, Zone& zone, Zone& foreignZone, AssetCreationContext& context);
 
     std::optional<XAssetInfoGeneric*> Visit_Dependency(asset_type_t assetType, const char* assetName) override;
     std::optional<scr_string_t> Visit_ScriptString(scr_string_t scriptString) override;
@@ -44,11 +44,13 @@ public:
 
         AssetRegistration<AssetType> registration(assetName, existingAsset->Asset());
 
-        GlobalAssetPoolsAssetStealer stealer(registration, m_zone, *existingAsset->m_zone, context);
-        AssetMarker<AssetType> marker(stealer);
+        GlobalAssetPoolsRegistrationPreparation registrationPreparation(registration, m_zone, *existingAsset->m_zone, context);
+        AssetMarker<AssetType> marker(registrationPreparation);
         marker.Mark(existingAsset->Asset());
 
         auto* newAsset = context.AddAsset(std::move(registration));
+        // Make sure we remember this asset came from a different zone
+        newAsset->m_zone = existingAsset->m_zone;
 
         return AssetCreationResult::Success(newAsset);
     }
