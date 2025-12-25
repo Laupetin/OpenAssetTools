@@ -1,11 +1,22 @@
 #include "Utils/Logging/Log.h"
 
 #include <catch2/catch_session.hpp>
+#include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <iostream>
 
 namespace fs = std::filesystem;
+
+namespace
+{
+    bool ShouldClearTempFolder()
+    {
+        auto* envVar = std::getenv("OAT_KEEP_TMP_DIR");
+
+        return !envVar || !envVar[0] || (envVar[0] == '0' && !envVar[1]);
+    }
+} // namespace
 
 int main(const int argc, char* argv[])
 {
@@ -46,8 +57,16 @@ int main(const int argc, char* argv[])
     const auto result = Catch::Session().run(argc, argv);
 
     const auto tempDir = expectedBuildDir / ".tmp";
-    if (fs::is_directory(tempDir))
-        fs::remove_all(tempDir);
+    if (ShouldClearTempFolder())
+    {
+        con::info("Clearing tmp folder. Define env var OAT_KEEP_TMP_DIR=1 to keep it.");
+        if (fs::is_directory(tempDir))
+            fs::remove_all(tempDir);
+    }
+    else
+    {
+        con::info("Kept tmp dir {} on disk.", tempDir.string());
+    }
 
     return result;
 }
