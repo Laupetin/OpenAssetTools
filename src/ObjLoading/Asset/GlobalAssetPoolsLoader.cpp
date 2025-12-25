@@ -11,19 +11,32 @@ GlobalAssetPoolsAssetStealer::GlobalAssetPoolsAssetStealer(GenericAssetRegistrat
 
 std::optional<XAssetInfoGeneric*> GlobalAssetPoolsAssetStealer::Visit_Dependency(const asset_type_t assetType, const char* assetName)
 {
-    auto assetNameToLoad = assetName;
-    if (assetNameToLoad && assetNameToLoad[0] == ',')
-        assetNameToLoad = &assetNameToLoad[1];
-
-    auto* newDependency = m_context.LoadDependencyGeneric(assetType, assetNameToLoad);
-    if (!newDependency)
+    if (assetName && assetName[0] == ',')
     {
-        m_failure = true;
-        return std::nullopt;
+        /*
+        Try to load the actual asset when the asset from the global asset pools just references one.
+        If that fails, keep the reference to not destroy previous existing behaviour of just being able to use assets from the global pools
+        without ignores.
+        */
+        auto* nonReferenceAssetName = &assetName[1];
+
+        auto* assetDependency = m_context.LoadDependencyGeneric(assetType, nonReferenceAssetName, false);
+        if (assetDependency)
+        {
+            m_registration.AddDependency(assetDependency);
+            return assetDependency;
+        }
     }
 
-    m_registration.AddDependency(newDependency);
-    return newDependency;
+    auto* newDependency = m_context.LoadDependencyGeneric(assetType, assetName);
+    if (newDependency)
+    {
+        m_registration.AddDependency(newDependency);
+        return newDependency;
+    }
+
+    m_failure = true;
+    return std::nullopt;
 }
 
 std::optional<scr_string_t> GlobalAssetPoolsAssetStealer::Visit_ScriptString(scr_string_t scriptString)

@@ -104,7 +104,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDefaultAssetDependency(const asset_
     return nullptr;
 }
 
-XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_t assetType, const std::string& assetName)
+XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_t assetType, const std::string& assetName, bool required)
 {
     auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
@@ -131,7 +131,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
 
         con::error("Could not load asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
-    else
+    else if (required)
     {
         con::error("Missing asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
