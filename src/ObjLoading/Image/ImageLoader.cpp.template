@@ -1,0 +1,126 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageLoader" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#define REQUIRES_DATA_HASH
+#endif
+
+// This file was templated.
+// See ImageLoader.cpp.template.
+// Do not modify, changes will be lost.
+
+#set LOADER_HEADER "\"ImageLoader" + GAME + ".h\""
+#include LOADER_HEADER
+
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#include COMMON_HEADER
+#include "Image/ImageCommon.h"
+#include "Image/IwiLoader.h"
+#include "Utils/Logging/Log.h"
+
+#include <cstring>
+#include <format>
+#include <iostream>
+#include <sstream>
+
+#ifdef REQUIRES_DATA_HASH
+#include <zlib.h>
+#endif
+
+using namespace GAME;
+/*
+namespace
+{
+#set LOADER_CLASS "ImageLoader" + GAME
+    class LOADER_CLASS final : public AssetCreator<AssetImage>
+    {
+    public:
+        LOADER_CLASS (MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            auto 
+
+            auto* image = m_memory.Alloc<GfxImage>();
+            image->name = m_memory.Dup(assetName.c_str());
+#ifdef FEATURE_t6
+            image->hash = Common::R_HashString(image->name, 0);
+#endif
+            image->delayLoadPixels = true;
+
+            image->noPicmip = !texture->HasMipMaps();
+            image->width = static_cast<uint16_t>(texture->GetWidth());
+            image->height = static_cast<uint16_t>(texture->GetHeight());
+            image->depth = static_cast<uint16_t>(texture->GetDepth());
+
+#ifdef FEATURE_T6
+            image->streaming = 1;
+            image->streamedParts[0].levelCount = 1;
+            image->streamedParts[0].levelSize = static_cast<uint32_t>(fileSize);
+            image->streamedParts[0].hash = dataHash & 0x1FFFFFFF;
+            image->streamedPartCount = 1;
+#endif
+
+            return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
+        }
+
+    private:
+        std::unique_ptr<Texture> LoadIwi(const std::string& assetName, AssetCreationContext& context, bool& failure)
+        {
+            const auto fileName = image::GetFileNameForAsset(assetName, ".iwi");
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return nullptr;
+
+            const auto fileSize = static_cast<size_t>(file.m_length);
+            const auto fileData = std::make_unique<char[]>(fileSize);
+            file.m_stream->read(fileData.get(), static_cast<std::streamsize>(fileSize));
+
+#ifdef REQUIRES_DATA_HASH
+            const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(fileData.get()), static_cast<unsigned>(fileSize)));
+#endif
+
+            std::istringstream ss(std::string(fileData.get(), fileSize));
+
+        }
+
+        std::unique_ptr<Texture> LoadIwiData(const std::string& assetName, AssetCreationContext& context, bool& failure)
+        {
+            const auto texture = iwi::LoadIwi(ss);
+            if (!texture)
+            {
+                con::error("Failed to load texture from: {}", fileName);
+                failure = true;
+            }
+
+            return texture;
+        }
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace image
+{
+#set LOADER_METHOD "CreateLoader" + GAME
+    std::unique_ptr<AssetCreator<AssetImage>> LOADER_METHOD (MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<LOADER_CLASS>(memory, searchPath);
+    }
+} // namespace image
+*/
