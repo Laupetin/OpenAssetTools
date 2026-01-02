@@ -79,8 +79,8 @@ namespace
                 return false;
             }
 
-            const auto texture = image::LoadIwi(file);
-            if (!texture)
+            const auto loadResult = image::LoadIwi(file);
+            if (!loadResult)
                 return false;
 
             auto outPath = iwiPath;
@@ -93,7 +93,7 @@ namespace
                 return false;
             }
 
-            m_dds_writer.DumpImage(outFile, texture.get());
+            m_dds_writer.DumpImage(outFile, loadResult->m_texture.get());
             return true;
         }
 

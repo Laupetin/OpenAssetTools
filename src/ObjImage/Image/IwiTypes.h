@@ -16,6 +16,18 @@ namespace image
         IWI_27 = 27
     };
 
+    struct CommonIwiMetaData
+    {
+        // Always high resolution
+        bool m_no_picmip;
+        bool m_streaming;
+        bool m_clamp_u;
+        bool m_clamp_v;
+        bool m_dynamic;
+
+        float m_gamma;
+    };
+
     struct IwiVersionHeader
     {
         char tag[3];

@@ -1,0 +1,111 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageLoaderExternal" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+#if defined(FEATURE_IW3)
+#define IWI_VERSION IWI_6
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#define IWI_VERSION IWI_8
+#elif defined(FEATURE_T5)
+#define IWI_VERSION IWI_13
+#elif defined(FEATURE_T6)
+#define IWI_VERSION IWI_27
+#endif
+
+#if defined(FEATURE_T6)
+#define HASH_TYPE CRC32
+#else
+#define HASH_TYPE NONE
+#endif
+
+
+// This file was templated.
+// See ImageLoaderExternal.cpp.template.
+// Do not modify, changes will be lost.
+
+#set LOADER_HEADER "\"ImageLoaderExternal" + GAME + ".h\""
+#include LOADER_HEADER
+
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#include COMMON_HEADER
+#include "Image/ImageLoaderCommon.h"
+#include "Utils/Logging/Log.h"
+
+#include <cstring>
+
+using namespace GAME;
+using namespace image;
+
+namespace
+{
+#set LOADER_CLASS "ImageLoader" + GAME
+    class LOADER_CLASS final : public AssetCreator<AssetImage>
+    {
+    public:
+        LOADER_CLASS(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto loadingResult = LoadImageCommon(assetName, m_search_path, IwiVersion::IWI_VERSION, CommonImageLoaderHashType::HASH_TYPE);
+            const auto earlyReturn = loadingResult.GetResultIfCancelled();
+            if (earlyReturn)
+                return *earlyReturn;
+            
+            const auto* texture = loadingResult.m_texture.get();
+
+            auto* image = m_memory.Alloc<GfxImage>();
+            image->name = m_memory.Dup(assetName.c_str());
+#ifdef FEATURE_t6
+            image->hash = Common::R_HashString(image->name, 0);
+#endif
+#ifndef FEATURE_IW5
+            image->delayLoadPixels = true;
+#endif
+
+            image->noPicmip = loadingResult.m_meta.m_no_picmip;
+            image->width = static_cast<uint16_t>(texture->GetWidth());
+            image->height = static_cast<uint16_t>(texture->GetHeight());
+            image->depth = static_cast<uint16_t>(texture->GetDepth());
+
+#ifdef FEATURE_T6
+            image->streaming = 1;
+            image->streamedParts[0].levelCount = 1;
+            image->streamedParts[0].levelSize = static_cast<uint32_t>(loadingResult.m_iwi_size);
+            image->streamedParts[0].hash = loadingResult.m_hash.crc32 & 0x1FFFFFFF;
+            image->streamedPartCount = 1;
+#endif
+
+            image->texture.loadDef = m_memory.Alloc<GfxImageLoadDef>();
+
+            return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
+        }
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace image
+{
+#set LOADER_METHOD "CreateLoaderExternal" + GAME
+    std::unique_ptr<AssetCreator<AssetImage>> LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<LOADER_CLASS>(memory, searchPath);
+    }
+} // namespace image

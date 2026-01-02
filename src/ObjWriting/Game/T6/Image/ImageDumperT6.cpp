@@ -47,11 +47,11 @@ namespace
 
                 if (ipakStream)
                 {
-                    auto loadedTexture = image::LoadIwi(*ipakStream);
+                    auto loadResult = image::LoadIwi(*ipakStream);
                     ipakStream->close();
 
-                    if (loadedTexture != nullptr)
-                        return loadedTexture;
+                    if (loadResult)
+                        return std::move(loadResult->m_texture);
                 }
             }
         }
@@ -64,7 +64,8 @@ namespace
             return nullptr;
         }
 
-        return image::LoadIwi(*filePathImage.m_stream);
+        auto loadResult = image::LoadIwi(*filePathImage.m_stream);
+        return loadResult ? std::move(loadResult->m_texture) : nullptr;
     }
 
     std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)

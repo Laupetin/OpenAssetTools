@@ -4,8 +4,8 @@
 #include "Game/IW3/AssetMarkerIW3.h"
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
+#include "Game/IW3/Image/ImageLoaderExternalIW3.h"
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
-#include "Image/AssetLoaderImageIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
@@ -95,7 +95,7 @@ namespace
         collection.AddAssetCreator(xmodel::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-        collection.AddAssetCreator(image::CreateLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(image::CreateLoaderExternalIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
