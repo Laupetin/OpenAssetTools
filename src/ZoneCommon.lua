@@ -11,6 +11,7 @@ function ZoneCommon:include(includes)
 		Parser:include(includes)
 		Cryptography:include(includes)
 		ZoneCode:include(includes)
+		ZoneCode:use()
 	end
 end
 
