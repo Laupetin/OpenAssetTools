@@ -78,8 +78,5 @@ std::optional<scr_string_t> AssetInfoCollector::Visit_ScriptString(scr_string_t 
 
 void AssetInfoCollector::Visit_IndirectAssetRef(asset_type_t assetType, const char* assetName)
 {
-    if (!assetName || !assetName[0])
-        return;
-
     m_indirect_asset_references.emplace(assetType, assetName);
 }
