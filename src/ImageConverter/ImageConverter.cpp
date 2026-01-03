@@ -1,5 +1,6 @@
 #include "ImageConverter.h"
 
+#include "Game/IGame.h"
 #include "Image/DdsLoader.h"
 #include "Image/DdsWriter.h"
 #include "Image/IwiLoader.h"
@@ -17,10 +18,12 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <optional>
 
 namespace fs = std::filesystem;
+using namespace image;
 
-namespace image_converter
+namespace
 {
     constexpr auto EXTENSION_IWI = ".iwi";
     constexpr auto EXTENSION_DDS = ".dds";
@@ -29,7 +32,7 @@ namespace image_converter
     {
     public:
         ImageConverterImpl()
-            : m_game_to_convert_to(image_converter::Game::UNKNOWN)
+            : m_game_to_convert_to(std::nullopt)
         {
         }
 
@@ -76,7 +79,7 @@ namespace image_converter
                 return false;
             }
 
-            const auto texture = iwi::LoadIwi(file);
+            const auto texture = image::LoadIwi(file);
             if (!texture)
                 return false;
 
@@ -103,7 +106,7 @@ namespace image_converter
                 return false;
             }
 
-            const auto texture = dds::LoadDds(file);
+            const auto texture = image::LoadDds(file);
             if (!texture)
                 return false;
 
@@ -129,23 +132,23 @@ namespace image_converter
             if (m_iwi_writer)
                 return true;
 
-            if (m_game_to_convert_to == Game::UNKNOWN && !ShowGameTui())
+            if (!m_game_to_convert_to && !ShowGameTui())
                 return false;
 
-            switch (m_game_to_convert_to)
+            switch (*m_game_to_convert_to)
             {
-            case Game::IW3:
-                m_iwi_writer = std::make_unique<iwi6::IwiWriter>();
+            case GameId::IW3:
+                m_iwi_writer = std::make_unique<image::iwi6::IwiWriter>();
                 break;
-            case Game::IW4:
-            case Game::IW5:
-                m_iwi_writer = std::make_unique<iwi8::IwiWriter>();
+            case GameId::IW4:
+            case GameId::IW5:
+                m_iwi_writer = std::make_unique<image::iwi8::IwiWriter>();
                 break;
-            case Game::T5:
-                m_iwi_writer = std::make_unique<iwi13::IwiWriter>();
+            case GameId::T5:
+                m_iwi_writer = std::make_unique<image::iwi13::IwiWriter>();
                 break;
-            case Game::T6:
-                m_iwi_writer = std::make_unique<iwi27::IwiWriter>();
+            case GameId::T6:
+                m_iwi_writer = std::make_unique<image::iwi27::IwiWriter>();
                 break;
             default:
                 assert(false);
@@ -170,19 +173,19 @@ namespace image_converter
             switch (num)
             {
             case 1:
-                m_game_to_convert_to = Game::IW3;
+                m_game_to_convert_to = GameId::IW3;
                 break;
             case 2:
-                m_game_to_convert_to = Game::IW4;
+                m_game_to_convert_to = GameId::IW4;
                 break;
             case 3:
-                m_game_to_convert_to = Game::IW5;
+                m_game_to_convert_to = GameId::IW5;
                 break;
             case 4:
-                m_game_to_convert_to = Game::T5;
+                m_game_to_convert_to = GameId::T5;
                 break;
             case 5:
-                m_game_to_convert_to = Game::T6;
+                m_game_to_convert_to = GameId::T6;
                 break;
             default:
                 con::error("Invalid input");
@@ -193,13 +196,13 @@ namespace image_converter
         }
 
         ImageConverterArgs m_args;
-        image_converter::Game m_game_to_convert_to;
+        std::optional<GameId> m_game_to_convert_to;
         DdsWriter m_dds_writer;
-        std::unique_ptr<IImageWriter> m_iwi_writer;
+        std::unique_ptr<ImageWriter> m_iwi_writer;
     };
-} // namespace image_converter
+} // namespace
 
 std::unique_ptr<ImageConverter> ImageConverter::Create()
 {
-    return std::make_unique<image_converter::ImageConverterImpl>();
+    return std::make_unique<ImageConverterImpl>();
 }

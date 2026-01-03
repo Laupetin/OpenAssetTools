@@ -5,7 +5,7 @@
 #include <istream>
 #include <memory>
 
-namespace iwi
+namespace image
 {
     std::unique_ptr<Texture> LoadIwi(std::istream& stream);
-}; // namespace iwi
+}; // namespace image

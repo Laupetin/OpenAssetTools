@@ -9,7 +9,9 @@
 #include <iostream>
 #include <memory>
 
-namespace dds
+using namespace image;
+
+namespace
 {
     class DdsLoaderInternal
     {
@@ -193,7 +195,7 @@ namespace dds
             return ReadPixelFormatUnsigned(pf);
         }
 
-        _NODISCARD bool ReadHeader()
+        [[nodiscard]] bool ReadHeader()
         {
             DDS_HEADER header{};
             m_stream.read(reinterpret_cast<char*>(&header), sizeof(header));
@@ -277,10 +279,13 @@ namespace dds
         unsigned m_depth;
         const ImageFormat* m_format;
     };
+} // namespace
 
+namespace image
+{
     std::unique_ptr<Texture> LoadDds(std::istream& stream)
     {
         DdsLoaderInternal internal(stream);
         return internal.LoadDds();
     }
-} // namespace dds
+} // namespace image

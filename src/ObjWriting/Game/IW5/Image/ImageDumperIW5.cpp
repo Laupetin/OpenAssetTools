@@ -13,6 +13,7 @@
 #include <format>
 
 using namespace IW5;
+using namespace image;
 
 namespace
 {
@@ -24,15 +25,15 @@ namespace
 
         textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
 
-        if ((loadDef.flags & iwi8::IMG_FLAG_MAPTYPE_MASK) == iwi8::IMG_FLAG_MAPTYPE_3D)
+        if ((loadDef.flags & image::iwi8::IMG_FLAG_MAPTYPE_MASK) == image::iwi8::IMG_FLAG_MAPTYPE_3D)
             textureLoader.Type(TextureType::T_3D);
-        else if ((loadDef.flags & iwi8::IMG_FLAG_MAPTYPE_MASK) == iwi8::IMG_FLAG_MAPTYPE_CUBE)
+        else if ((loadDef.flags & image::iwi8::IMG_FLAG_MAPTYPE_MASK) == image::iwi8::IMG_FLAG_MAPTYPE_CUBE)
             textureLoader.Type(TextureType::T_CUBE);
         else
             textureLoader.Type(TextureType::T_2D);
 
         textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
-        textureLoader.HasMipMaps(!(loadDef.flags & iwi8::IMG_FLAG_NOMIPMAPS));
+        textureLoader.HasMipMaps(!(loadDef.flags & image::iwi8::IMG_FLAG_NOMIPMAPS));
         return textureLoader.LoadTexture(loadDef.data);
     }
 
@@ -46,7 +47,7 @@ namespace
             return nullptr;
         }
 
-        return iwi::LoadIwi(*filePathImage.m_stream);
+        return image::LoadIwi(*filePathImage.m_stream);
     }
 
     std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "IImageWriter.h"
 #include "Image/IwiTypes.h"
+#include "ImageWriter.h"
 
-namespace iwi13
+namespace image::iwi13
 {
-    class IwiWriter final : public IImageWriter
+    class IwiWriter final : public ImageWriter
     {
         static IwiFormat GetIwiFormatForImageFormat(const ImageFormat* imageFormat);
 
@@ -27,4 +27,4 @@ namespace iwi13
         std::string GetFileExtension() override;
         void DumpImage(std::ostream& stream, const Texture* texture) override;
     };
-} // namespace iwi13
+} // namespace image::iwi13

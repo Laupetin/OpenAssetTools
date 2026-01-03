@@ -8,7 +8,9 @@
 #include <iostream>
 #include <type_traits>
 
-namespace iwi
+using namespace image;
+
+namespace
 {
     const ImageFormat* GetFormat6(int8_t format)
     {
@@ -74,7 +76,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi6::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi6::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -188,7 +190,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi8::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi8::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -283,7 +285,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -380,7 +382,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi27::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi27::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -405,22 +407,25 @@ namespace iwi
 
         return texture;
     }
+} // namespace
 
+namespace image
+{
     std::unique_ptr<Texture> LoadIwi(std::istream& stream)
     {
-        IwiVersion iwiVersion{};
+        IwiVersionHeader iwiVersionHeader{};
 
-        stream.read(reinterpret_cast<char*>(&iwiVersion), sizeof(iwiVersion));
-        if (stream.gcount() != sizeof(iwiVersion))
+        stream.read(reinterpret_cast<char*>(&iwiVersionHeader), sizeof(iwiVersionHeader));
+        if (stream.gcount() != sizeof(iwiVersionHeader))
             return nullptr;
 
-        if (iwiVersion.tag[0] != 'I' || iwiVersion.tag[1] != 'W' || iwiVersion.tag[2] != 'i')
+        if (iwiVersionHeader.tag[0] != 'I' || iwiVersionHeader.tag[1] != 'W' || iwiVersionHeader.tag[2] != 'i')
         {
             con::error("Invalid IWI magic");
             return nullptr;
         }
 
-        switch (iwiVersion.version)
+        switch (iwiVersionHeader.version)
         {
         case 6:
             return LoadIwi6(stream);
@@ -438,7 +443,7 @@ namespace iwi
             break;
         }
 
-        con::error("Unknown IWI version {}", iwiVersion.version);
+        con::error("Unknown IWI version {}", iwiVersionHeader.version);
         return nullptr;
     }
-} // namespace iwi
+} // namespace image

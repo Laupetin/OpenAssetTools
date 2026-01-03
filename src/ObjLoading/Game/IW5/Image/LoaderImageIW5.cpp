@@ -37,7 +37,7 @@ namespace
             file.m_stream->read(fileData.get(), fileSize);
 
             std::istringstream ss(std::string(fileData.get(), fileSize));
-            const auto texture = iwi::LoadIwi(ss);
+            const auto texture = image::LoadIwi(ss);
             if (!texture)
             {
                 con::error("Failed to load texture from: {}", fileName);

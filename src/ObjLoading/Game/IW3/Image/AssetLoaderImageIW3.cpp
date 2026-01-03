@@ -12,6 +12,7 @@
 #include <iostream>
 
 using namespace IW3;
+using namespace image;
 
 namespace
 {
@@ -38,7 +39,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            const auto texture = dds::LoadDds(*file.m_stream);
+            const auto texture = image::LoadDds(*file.m_stream);
             if (!texture)
             {
                 con::error("Failed to load dds file for image asset \"{}\"", assetName);
@@ -91,11 +92,11 @@ namespace
             loadDef->levelCount = static_cast<char>(mipCount);
             loadDef->flags = 0;
             if (!texture->HasMipMaps())
-                loadDef->flags |= iwi6::IMG_FLAG_NOMIPMAPS;
+                loadDef->flags |= image::iwi6::IMG_FLAG_NOMIPMAPS;
             if (texture->GetTextureType() == TextureType::T_CUBE)
-                loadDef->flags |= iwi6::IMG_FLAG_CUBEMAP;
+                loadDef->flags |= image::iwi6::IMG_FLAG_CUBEMAP;
             if (texture->GetTextureType() == TextureType::T_3D)
-                loadDef->flags |= iwi6::IMG_FLAG_VOLMAP;
+                loadDef->flags |= image::iwi6::IMG_FLAG_VOLMAP;
             loadDef->dimensions[0] = image->width;
             loadDef->dimensions[1] = image->height;
             loadDef->dimensions[2] = image->depth;

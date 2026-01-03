@@ -38,7 +38,7 @@ namespace
             const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(fileData.get()), static_cast<unsigned>(fileSize)));
 
             std::istringstream ss(std::string(fileData.get(), fileSize));
-            const auto texture = iwi::LoadIwi(ss);
+            const auto texture = image::LoadIwi(ss);
             if (!texture)
             {
                 con::error("Failed to load texture from: {}", fileName);
