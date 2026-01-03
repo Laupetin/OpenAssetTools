@@ -30,11 +30,13 @@ public:
     public:
         Define();
         Define(std::string name, std::string value);
+        Define(std::string name, std::string value, bool parameterized);
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
 
         std::string m_name;
         std::string m_value;
         std::vector<DefineParameterPosition> m_parameter_positions;
+        bool m_parameterized;
         bool m_contains_token_pasting_operators;
 
     private:
@@ -132,6 +134,7 @@ private:
     Define m_current_define;
     std::ostringstream m_current_define_value;
     std::vector<std::string> m_current_define_parameters;
+    bool m_current_define_parameterized;
 
     const Define* m_current_macro;
     MacroParameterState m_multi_line_macro_parameters;
