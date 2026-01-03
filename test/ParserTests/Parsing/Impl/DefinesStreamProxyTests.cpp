@@ -1226,4 +1226,28 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Only macros with args parse parenthesis", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define ONE result",
+            "#define TWO() result",
+            "#define THREE(f) result",
+            "ONE()",
+            "TWO()",
+            "THREE(f)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "result()");
+        ExpectLine(&proxy, 5, "result");
+        ExpectLine(&proxy, 6, "result");
+
+        REQUIRE(proxy.Eof());
+    }
 } // namespace test::parsing::impl::defines_stream_proxy
