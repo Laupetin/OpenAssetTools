@@ -1,0 +1,23 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageLoaderEmbedded" + GAME + ".h"
+
+// This file was templated.
+// See ImageLoaderEmbedded.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+namespace image
+{
+#set LOADER_METHOD "CreateLoaderEmbedded" + GAME
+    std::unique_ptr<AssetCreator<GAME::AssetImage>> LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace image

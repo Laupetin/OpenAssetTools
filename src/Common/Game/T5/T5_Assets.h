@@ -1242,6 +1242,18 @@ namespace T5
         int platform[2];
     };
 
+    enum MapType
+    {
+        MAPTYPE_NONE = 0x0,
+        MAPTYPE_INVALID1 = 0x1,
+        MAPTYPE_INVALID2 = 0x2,
+        MAPTYPE_2D = 0x3,
+        MAPTYPE_3D = 0x4,
+        MAPTYPE_CUBE = 0x5,
+
+        MAPTYPE_COUNT
+    };
+
     enum TextureSemantic
     {
         TS_2D = 0x0,

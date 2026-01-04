@@ -1515,7 +1515,8 @@ namespace IW3
         MAPTYPE_2D = 0x3,
         MAPTYPE_3D = 0x4,
         MAPTYPE_CUBE = 0x5,
-        MAPTYPE_COUNT = 0x6,
+
+        MAPTYPE_COUNT
     };
 
     enum TextureSemantic

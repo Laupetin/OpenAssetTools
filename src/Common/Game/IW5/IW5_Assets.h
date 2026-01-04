@@ -732,23 +732,6 @@ namespace IW5
         GfxImage* image;
     };
 
-    enum TextureSemantic
-    {
-        TS_2D = 0x0,
-        TS_FUNCTION = 0x1,
-        TS_COLOR_MAP = 0x2,
-        TS_DETAIL_MAP = 0x3,
-        TS_UNUSED_2 = 0x4,
-        TS_NORMAL_MAP = 0x5,
-        TS_UNUSED_3 = 0x6,
-        TS_UNUSED_4 = 0x7,
-        TS_SPECULAR_MAP = 0x8,
-        TS_UNUSED_5 = 0x9,
-        TS_UNUSED_6 = 0xA,
-        TS_WATER_MAP = 0xB,
-        TS_DISPLACEMENT_MAP = 0xC
-    };
-
     union MaterialTextureDefInfo
     {
         GfxImage* image;
@@ -1155,6 +1138,48 @@ namespace IW5
     struct CardMemory
     {
         int platform[2];
+    };
+
+    enum MapType
+    {
+        MAPTYPE_NONE = 0x0,
+        MAPTYPE_INVALID1 = 0x1,
+        MAPTYPE_1D = 0x2,
+        MAPTYPE_2D = 0x3,
+        MAPTYPE_3D = 0x4,
+        MAPTYPE_CUBE = 0x5,
+
+        MAPTYPE_COUNT
+    };
+
+    enum TextureSemantic
+    {
+        TS_2D = 0x0,
+        TS_FUNCTION = 0x1,
+        TS_COLOR_MAP = 0x2,
+        TS_DETAIL_MAP = 0x3,
+        TS_UNUSED_2 = 0x4,
+        TS_NORMAL_MAP = 0x5,
+        TS_UNUSED_3 = 0x6,
+        TS_UNUSED_4 = 0x7,
+        TS_SPECULAR_MAP = 0x8,
+        TS_UNUSED_5 = 0x9,
+        TS_UNUSED_6 = 0xA,
+        TS_WATER_MAP = 0xB,
+        TS_DISPLACEMENT_MAP = 0xC
+    };
+
+    enum ImageCategory
+    {
+        IMG_CATEGORY_UNKNOWN = 0x0,
+        IMG_CATEGORY_AUTO_GENERATED = 0x1,
+        IMG_CATEGORY_LIGHTMAP = 0x2,
+        IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+        IMG_CATEGORY_RAW = 0x4,
+        IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+        IMG_CATEGORY_WATER = 0x5,
+        IMG_CATEGORY_RENDERTARGET = 0x6,
+        IMG_CATEGORY_TEMP = 0x7,
     };
 
     struct GfxImage

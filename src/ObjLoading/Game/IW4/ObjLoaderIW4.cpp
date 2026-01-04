@@ -4,6 +4,7 @@
 #include "Game/IW4/AssetMarkerIW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Image/ImageLoaderEmbeddedIW4.h"
 #include "Game/IW4/Image/ImageLoaderExternalIW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
@@ -131,6 +132,7 @@ namespace
         collection.AddAssetCreator(shader::CreatePixelShaderLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(shader::CreateVertexShaderLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechset>(memory));
+        collection.AddAssetCreator(image::CreateLoaderEmbeddedIW4(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         collection.AddAssetCreator(sound_curve::CreateLoaderIW4(memory, searchPath));
