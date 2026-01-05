@@ -122,8 +122,6 @@ namespace
         REQUIRE(zone->m_script_strings.Value(xmodel->Asset()->boneNames[2]) == "EarRight2");
     }
 
-    // x64 for now produces invalid zones, don't try to load them yet
-#ifdef ARCH_x86
     TEST_CASE("Reuse assets from global asset pool(T6)", "[t6][system][simple]")
     {
         const auto testDir = oat::paths::GetSystemTestsDirectory() / "Game/T6/ReuseGlobalAssetPoolsAssets";
@@ -133,5 +131,4 @@ namespace
         BuildTestZone(testDir, outputPath);
         CheckTestZoneContent(outputPath);
     }
-#endif
 } // namespace
