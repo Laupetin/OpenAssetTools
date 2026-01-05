@@ -1,14 +1,18 @@
 #include "OncePerTemplateRenderingContext.h"
 
+#include "Domain/Computations/StructureComputations.h"
+
 #include <algorithm>
 
 OncePerTemplateRenderingContext::OncePerTemplateRenderingContext(std::string game,
                                                                  const Architecture gameArchitecture,
-                                                                 std::vector<const FastFileBlock*> fastFileBlocks)
+                                                                 std::vector<const FastFileBlock*> fastFileBlocks,
+                                                                 std::vector<StructureInformation*> assets)
     : m_game(std::move(game)),
       m_architecture_mismatch(gameArchitecture != OWN_ARCHITECTURE),
       m_pointer_size(GetPointerSizeForArchitecture(gameArchitecture)),
       m_blocks(std::move(fastFileBlocks)),
+      m_assets(std::move(assets)),
       m_default_normal_block(nullptr),
       m_default_temp_block(nullptr)
 {
@@ -26,6 +30,15 @@ OncePerTemplateRenderingContext::OncePerTemplateRenderingContext(std::string gam
 
 std::unique_ptr<OncePerTemplateRenderingContext> OncePerTemplateRenderingContext::BuildContext(const IDataRepository* repository)
 {
+    std::vector<StructureInformation*> assetInformation;
+    for (auto* info : repository->GetAllStructureInformation())
+    {
+        if (!StructureComputations(info).IsAsset())
+            continue;
+
+        assetInformation.emplace_back(info);
+    }
+
     return std::make_unique<OncePerTemplateRenderingContext>(
-        OncePerTemplateRenderingContext(repository->GetGameName(), repository->GetArchitecture(), repository->GetAllFastFileBlocks()));
+        OncePerTemplateRenderingContext(repository->GetGameName(), repository->GetArchitecture(), repository->GetAllFastFileBlocks(), assetInformation));
 }

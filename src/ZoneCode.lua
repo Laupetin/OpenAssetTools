@@ -229,11 +229,16 @@ function ZoneCode:allMarkFiles()
     result = {}
 
     for game, assets in pairs(self.Assets) do
+
+        -- PerAsset
         for i, assetName in ipairs(assets) do
             local assetNameLower = string.lower(assetName)
             table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.cpp")
             table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.h")
         end
+        
+        -- PerTemplate
+        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker" .. game .. ".h")
     end
     
     return result
@@ -320,7 +325,7 @@ function ZoneCode:project()
                     .. ' --no-color'
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
-                    .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'
+                    .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}"'
                     .. ' -g ZoneLoad'
                     .. ' -g ZoneMark'
                     .. ' -g ZoneWrite'
