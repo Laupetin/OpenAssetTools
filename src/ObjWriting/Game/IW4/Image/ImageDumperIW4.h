@@ -2,7 +2,7 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
-#include "Image/IImageWriter.h"
+#include "Image/ImageWriter.h"
 
 #include <memory>
 
@@ -17,6 +17,6 @@ namespace image
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetImage::Type>& asset) override;
 
     private:
-        std::unique_ptr<IImageWriter> m_writer;
+        std::unique_ptr<ImageWriter> m_writer;
     };
 } // namespace image

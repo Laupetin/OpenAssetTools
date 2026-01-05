@@ -86,7 +86,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 ImageConverterArgs::ImageConverterArgs()
-    : m_game_to_convert_to(image_converter::Game::UNKNOWN),
+    : m_game_to_convert_to(std::nullopt),
       m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }

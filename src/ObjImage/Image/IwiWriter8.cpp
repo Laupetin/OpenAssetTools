@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-using namespace iwi8;
+using namespace image::iwi8;
 
 IwiWriter::IwiWriter() = default;
 
@@ -40,13 +40,13 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
 
 void IwiWriter::WriteVersion(std::ostream& stream)
 {
-    IwiVersion version{};
+    IwiVersionHeader version{};
     version.tag[0] = 'I';
     version.tag[1] = 'W';
     version.tag[2] = 'i';
     version.version = 8;
 
-    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
+    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersionHeader));
 }
 
 void IwiWriter::FillHeader2D(IwiHeader& header, const Texture2D& texture)
@@ -96,7 +96,7 @@ void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
     if (!texture->HasMipMaps())
         header.flags |= IMG_FLAG_NOMIPMAPS;
 
-    auto currentFileSize = sizeof(IwiVersion) + sizeof(IwiHeader);
+    auto currentFileSize = sizeof(IwiVersionHeader) + sizeof(IwiHeader);
 
     const auto textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)

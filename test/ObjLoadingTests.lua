@@ -3,6 +3,7 @@ ObjLoadingTests = {}
 function ObjLoadingTests:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
+			"%{wks.location}/src/ObjLoading",
 			path.join(TestFolder(), "ObjLoadingTests")
 		}
 	end

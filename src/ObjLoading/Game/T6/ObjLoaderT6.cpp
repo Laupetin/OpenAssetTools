@@ -7,12 +7,13 @@
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
+#include "Game/T6/Image/ImageLoaderEmbeddedT6.h"
+#include "Game/T6/Image/ImageLoaderExternalT6.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/XModel/LoaderXModelT6.h"
 #include "Image/Dx12TextureLoader.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
-#include "Image/LoaderImageT6.h"
 #include "Image/Texture.h"
 #include "Leaderboard/JsonLoaderLeaderboardT6.h"
 #include "Localize/LocalizeLoaderT6.h"
@@ -394,7 +395,8 @@ namespace T6
             collection.AddAssetCreator(xmodel::CreateLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(material::CreateLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-            collection.AddAssetCreator(image::CreateLoaderT6(memory, searchPath));
+            collection.AddAssetCreator(image::CreateLoaderEmbeddedT6(memory, searchPath));
+            collection.AddAssetCreator(image::CreateLoaderExternalT6(memory, searchPath));
             collection.AddAssetCreator(sound::CreateSoundBankLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));

@@ -8,7 +8,9 @@
 #include <iostream>
 #include <type_traits>
 
-namespace iwi
+using namespace image;
+
+namespace
 {
     const ImageFormat* GetFormat6(int8_t format)
     {
@@ -47,17 +49,20 @@ namespace iwi
         return nullptr;
     }
 
-    std::unique_ptr<Texture> LoadIwi6(std::istream& stream)
+    std::optional<IwiLoaderResult> LoadIwi6(std::istream& stream)
     {
         iwi6::IwiHeader header{};
 
         stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (stream.gcount() != sizeof(header))
-            return nullptr;
+        {
+            con::error("IWI header corrupted");
+            return std::nullopt;
+        }
 
         const auto* format = GetFormat6(header.format);
         if (format == nullptr)
-            return nullptr;
+            return std::nullopt;
 
         auto width = header.dimensions[0];
         auto height = header.dimensions[1];
@@ -74,7 +79,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi6::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi6::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -86,18 +91,30 @@ namespace iwi
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
                 con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
                 con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
         }
 
-        return texture;
+        CommonIwiMetaData meta{
+            .m_no_picmip = (header.flags & iwi6::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
+            .m_streaming = (header.flags & iwi6::IwiFlags::IMG_FLAG_STREAMING) != 0,
+            .m_clamp_u = (header.flags & iwi6::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
+            .m_clamp_v = (header.flags & iwi6::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
+            .m_dynamic = (header.flags & iwi6::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+        };
+
+        return IwiLoaderResult{
+            .m_version = IwiVersion::IWI_6,
+            .m_meta = meta,
+            .m_texture = std::move(texture),
+        };
     }
 
     const ImageFormat* GetFormat8(int8_t format)
@@ -145,17 +162,20 @@ namespace iwi
         return nullptr;
     }
 
-    std::unique_ptr<Texture> LoadIwi8(std::istream& stream)
+    std::optional<IwiLoaderResult> LoadIwi8(std::istream& stream)
     {
         iwi8::IwiHeader header{};
 
         stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (stream.gcount() != sizeof(header))
-            return nullptr;
+        {
+            con::error("IWI header corrupted");
+            return std::nullopt;
+        }
 
         const auto* format = GetFormat8(header.format);
         if (format == nullptr)
-            return nullptr;
+            return std::nullopt;
 
         auto width = header.dimensions[0];
         auto height = header.dimensions[1];
@@ -178,17 +198,17 @@ namespace iwi
         else if ((header.flags & iwi8::IwiFlags::IMG_FLAG_MAPTYPE_MASK) == iwi8::IwiFlags::IMG_FLAG_MAPTYPE_1D)
         {
             con::error("Iwi has unsupported map type 1D");
-            return nullptr;
+            return std::nullopt;
         }
         else
         {
             con::error("Iwi has unsupported map type");
-            return nullptr;
+            return std::nullopt;
         }
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi8::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi8::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -200,18 +220,30 @@ namespace iwi
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
                 con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
                 con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
         }
 
-        return texture;
+        CommonIwiMetaData meta{
+            .m_no_picmip = (header.flags & iwi8::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
+            .m_streaming = (header.flags & iwi8::IwiFlags::IMG_FLAG_STREAMING) != 0,
+            .m_clamp_u = (header.flags & iwi8::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
+            .m_clamp_v = (header.flags & iwi8::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
+            .m_dynamic = (header.flags & iwi8::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+        };
+
+        return IwiLoaderResult{
+            .m_version = IwiVersion::IWI_8,
+            .m_meta = meta,
+            .m_texture = std::move(texture),
+        };
     }
 
     const ImageFormat* GetFormat13(int8_t format)
@@ -256,17 +288,20 @@ namespace iwi
         return nullptr;
     }
 
-    std::unique_ptr<Texture> LoadIwi13(std::istream& stream)
+    std::optional<IwiLoaderResult> LoadIwi13(std::istream& stream)
     {
         iwi13::IwiHeader header{};
 
         stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (stream.gcount() != sizeof(header))
-            return nullptr;
+        {
+            con::error("IWI header corrupted");
+            return std::nullopt;
+        }
 
         const auto* format = GetFormat6(header.format);
         if (format == nullptr)
-            return nullptr;
+            return std::nullopt;
 
         auto width = header.dimensions[0];
         auto height = header.dimensions[1];
@@ -283,7 +318,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -295,18 +330,31 @@ namespace iwi
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
                 con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
                 con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
         }
 
-        return texture;
+        CommonIwiMetaData meta{
+            .m_no_picmip = (header.flags & iwi13::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
+            .m_streaming = (header.flags & iwi13::IwiFlags::IMG_FLAG_STREAMING) != 0,
+            .m_clamp_u = (header.flags & iwi13::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
+            .m_clamp_v = (header.flags & iwi13::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
+            .m_dynamic = (header.flags & iwi13::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+            .m_gamma = header.gamma,
+        };
+
+        return IwiLoaderResult{
+            .m_version = IwiVersion::IWI_13,
+            .m_meta = meta,
+            .m_texture = std::move(texture),
+        };
     }
 
     const ImageFormat* GetFormat27(int8_t format)
@@ -353,17 +401,20 @@ namespace iwi
         return nullptr;
     }
 
-    std::unique_ptr<Texture> LoadIwi27(std::istream& stream)
+    std::optional<IwiLoaderResult> LoadIwi27(std::istream& stream)
     {
         iwi27::IwiHeader header{};
 
         stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (stream.gcount() != sizeof(header))
-            return nullptr;
+        {
+            con::error("IWI header corrupted");
+            return std::nullopt;
+        }
 
         const auto* format = GetFormat27(header.format);
         if (format == nullptr)
-            return nullptr;
+            return std::nullopt;
 
         auto width = header.dimensions[0];
         auto height = header.dimensions[1];
@@ -380,7 +431,7 @@ namespace iwi
 
         texture->Allocate();
 
-        auto currentFileSize = sizeof(iwi27::IwiHeader) + sizeof(IwiVersion);
+        auto currentFileSize = sizeof(iwi27::IwiHeader) + sizeof(IwiVersionHeader);
         const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
         for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -392,35 +443,54 @@ namespace iwi
                 && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
             {
                 con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
 
             stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
             if (stream.gcount() != sizeOfMipLevel)
             {
                 con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
-                return nullptr;
+                return std::nullopt;
             }
         }
 
-        return texture;
+        CommonIwiMetaData meta{
+            .m_no_picmip = (header.flags & iwi27::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
+            .m_streaming = (header.flags & iwi27::IwiFlags::IMG_FLAG_STREAMING) != 0,
+            .m_clamp_u = (header.flags & iwi27::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
+            .m_clamp_v = (header.flags & iwi27::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
+            .m_dynamic = (header.flags & iwi27::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+            .m_gamma = header.gamma,
+        };
+
+        return IwiLoaderResult{
+            .m_version = IwiVersion::IWI_27,
+            .m_meta = meta,
+            .m_texture = std::move(texture),
+        };
     }
+} // namespace
 
-    std::unique_ptr<Texture> LoadIwi(std::istream& stream)
+namespace image
+{
+    std::optional<IwiLoaderResult> LoadIwi(std::istream& stream)
     {
-        IwiVersion iwiVersion{};
+        IwiVersionHeader iwiVersionHeader{};
 
-        stream.read(reinterpret_cast<char*>(&iwiVersion), sizeof(iwiVersion));
-        if (stream.gcount() != sizeof(iwiVersion))
-            return nullptr;
-
-        if (iwiVersion.tag[0] != 'I' || iwiVersion.tag[1] != 'W' || iwiVersion.tag[2] != 'i')
+        stream.read(reinterpret_cast<char*>(&iwiVersionHeader), sizeof(iwiVersionHeader));
+        if (stream.gcount() != sizeof(iwiVersionHeader))
         {
-            con::error("Invalid IWI magic");
-            return nullptr;
+            con::error("IWI version header corrupted");
+            return std::nullopt;
         }
 
-        switch (iwiVersion.version)
+        if (iwiVersionHeader.tag[0] != 'I' || iwiVersionHeader.tag[1] != 'W' || iwiVersionHeader.tag[2] != 'i')
+        {
+            con::error("Invalid IWI magic");
+            return std::nullopt;
+        }
+
+        switch (iwiVersionHeader.version)
         {
         case 6:
             return LoadIwi6(stream);
@@ -438,7 +508,7 @@ namespace iwi
             break;
         }
 
-        con::error("Unknown IWI version {}", iwiVersion.version);
-        return nullptr;
+        con::error("Unknown IWI version {}", iwiVersionHeader.version);
+        return std::nullopt;
     }
-} // namespace iwi
+} // namespace image

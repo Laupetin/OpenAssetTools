@@ -5,7 +5,7 @@
 #include <istream>
 #include <memory>
 
-namespace dds
+namespace image
 {
     std::unique_ptr<Texture> LoadDds(std::istream& stream);
 }

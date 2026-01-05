@@ -16,6 +16,7 @@
 #include <format>
 
 using namespace IW3;
+using namespace image;
 
 namespace
 {
@@ -26,15 +27,15 @@ namespace
         const auto& loadDef = *image.texture.loadDef;
         textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
 
-        if (loadDef.flags & iwi6::IMG_FLAG_VOLMAP)
+        if (loadDef.flags & image::iwi6::IMG_FLAG_VOLMAP)
             textureLoader.Type(TextureType::T_3D);
-        else if (loadDef.flags & iwi6::IMG_FLAG_CUBEMAP)
+        else if (loadDef.flags & image::iwi6::IMG_FLAG_CUBEMAP)
             textureLoader.Type(TextureType::T_CUBE);
         else
             textureLoader.Type(TextureType::T_2D);
 
         textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
-        textureLoader.HasMipMaps(!(loadDef.flags & iwi6::IMG_FLAG_NOMIPMAPS));
+        textureLoader.HasMipMaps(!(loadDef.flags & image::iwi6::IMG_FLAG_NOMIPMAPS));
         return textureLoader.LoadTexture(loadDef.data);
     }
 
@@ -48,7 +49,8 @@ namespace
             return nullptr;
         }
 
-        return iwi::LoadIwi(*filePathImage.m_stream);
+        auto loadResult = image::LoadIwi(*filePathImage.m_stream);
+        return loadResult ? std::move(loadResult->m_texture) : nullptr;
     }
 
     std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)

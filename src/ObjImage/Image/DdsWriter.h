@@ -1,12 +1,16 @@
 #pragma once
-#include "IImageWriter.h"
 
-class DdsWriter final : public IImageWriter
+#include "ImageWriter.h"
+
+namespace image
 {
-public:
-    ~DdsWriter() override;
+    class DdsWriter final : public ImageWriter
+    {
+    public:
+        ~DdsWriter() override;
 
-    bool SupportsImageFormat(const ImageFormat* imageFormat) override;
-    std::string GetFileExtension() override;
-    void DumpImage(std::ostream& stream, const Texture* texture) override;
-};
+        bool SupportsImageFormat(const ImageFormat* imageFormat) override;
+        std::string GetFileExtension() override;
+        void DumpImage(std::ostream& stream, const Texture* texture) override;
+    };
+} // namespace image
