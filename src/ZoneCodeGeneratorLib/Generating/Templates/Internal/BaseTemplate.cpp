@@ -5,7 +5,7 @@
 
 #include <sstream>
 
-BaseTemplate::BaseTemplate(std::ostream& stream, const RenderingContext& context)
+BaseTemplate::BaseTemplate(std::ostream& stream, const OncePerAssetRenderingContext& context)
     : m_out(stream),
       m_env(context),
       m_intendation(0u)

@@ -16,7 +16,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, const RenderingContext& context)
+        Template(std::ostream& stream, const OncePerAssetRenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -764,7 +764,7 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRender(const RenderingContext& context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -777,7 +777,7 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRender(const Rendering
     return files;
 }
 
-void ZoneMarkTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
+void ZoneMarkTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
 {
     Template t(stream, context);
 

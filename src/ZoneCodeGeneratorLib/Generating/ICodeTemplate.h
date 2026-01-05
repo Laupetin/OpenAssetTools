@@ -1,22 +1,25 @@
 #pragma once
 
-#include "RenderingContext.h"
+#include "OncePerAssetRenderingContext.h"
+#include "OncePerTemplateRenderingContext.h"
 
 #include <ostream>
 #include <string>
 #include <vector>
 
+typedef unsigned CodeTemplateFileTag;
+
 class CodeTemplateFile
 {
 public:
-    CodeTemplateFile(std::string fileName, const int tag)
+    CodeTemplateFile(std::string fileName, const CodeTemplateFileTag tag)
         : m_file_name(std::move(fileName)),
           m_tag(tag)
     {
     }
 
     std::string m_file_name;
-    int m_tag;
+    CodeTemplateFileTag m_tag;
 };
 
 class ICodeTemplate
@@ -29,6 +32,17 @@ public:
     ICodeTemplate& operator=(const ICodeTemplate& other) = default;
     ICodeTemplate& operator=(ICodeTemplate&& other) noexcept = default;
 
-    virtual std::vector<CodeTemplateFile> GetFilesToRender(const RenderingContext& context) = 0;
-    virtual void RenderFile(std::ostream& stream, int fileTag, const RenderingContext& context) = 0;
+    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+    {
+        return {};
+    }
+
+    virtual void RenderOncePerTemplateFile(std::ostream& stream, CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context) {}
+
+    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+    {
+        return {};
+    }
+
+    virtual void RenderOncePerAssetFile(std::ostream& stream, CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context) {}
 };

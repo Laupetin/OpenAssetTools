@@ -24,10 +24,10 @@ public:
     bool m_pointer_array_reference_is_reusable;
 };
 
-class RenderingContext
+class OncePerAssetRenderingContext
 {
 public:
-    static std::unique_ptr<RenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
+    static std::unique_ptr<OncePerAssetRenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
 
     std::string m_game;
     bool m_architecture_mismatch;
@@ -45,7 +45,7 @@ public:
     const FastFileBlock* m_default_temp_block;
 
 private:
-    RenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
+    OncePerAssetRenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);

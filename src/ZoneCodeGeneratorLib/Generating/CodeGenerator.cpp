@@ -28,9 +28,9 @@ void CodeGenerator::SetupTemplates()
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
 
-bool CodeGenerator::GenerateCodeForTemplate(const RenderingContext& context, ICodeTemplate* codeTemplate) const
+bool CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
-    for (const auto& codeFile : codeTemplate->GetFilesToRender(context))
+    for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerTemplate(context))
     {
         fs::path p(m_args->m_output_directory);
         p.append(codeFile.m_file_name);
@@ -47,7 +47,34 @@ bool CodeGenerator::GenerateCodeForTemplate(const RenderingContext& context, ICo
             return false;
         }
 
-        codeTemplate->RenderFile(stream, codeFile.m_tag, context);
+        codeTemplate->RenderOncePerTemplateFile(stream, codeFile.m_tag, context);
+
+        stream.close();
+    }
+
+    return true;
+}
+
+bool CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
+{
+    for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerAsset(context))
+    {
+        fs::path p(m_args->m_output_directory);
+        p.append(codeFile.m_file_name);
+
+        auto parentFolder(p);
+        parentFolder.remove_filename();
+        create_directories(parentFolder);
+
+        std::ofstream stream(p, std::fstream::out | std::fstream::binary);
+
+        if (!stream.is_open())
+        {
+            con::error("Failed to open file '{}'", p.string());
+            return false;
+        }
+
+        codeTemplate->RenderOncePerAssetFile(stream, codeFile.m_tag, context);
 
         stream.close();
     }
@@ -101,20 +128,31 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
         const auto foundTemplate = m_template_mapping.find(lowerTemplateName);
         if (foundTemplate == m_template_mapping.end())
         {
-            con::error("Unknown template '{}'.", templateName);
+            con::error("Unknown template '{}'", templateName);
             return false;
         }
 
         for (auto* asset : assets)
         {
-            auto context = RenderingContext::BuildContext(repository, asset);
-            if (!GenerateCodeForTemplate(*context, foundTemplate->second.get()))
+            auto context = OncePerAssetRenderingContext::BuildContext(repository, asset);
+            if (!GenerateCodeOncePerAsset(*context, foundTemplate->second.get()))
             {
                 con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
                 return false;
             }
 
             con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+        }
+
+        {
+            auto context = OncePerTemplateRenderingContext::BuildContext(repository);
+            if (!GenerateCodeOncePerTemplate(*context, foundTemplate->second.get()))
+            {
+                con::error("Failed to generate code with preset '{}'", foundTemplate->first);
+                return false;
+            }
+
+            con::info("Successfully generated code with preset '{}'", foundTemplate->first);
         }
     }
     const auto end = std::chrono::steady_clock::now();

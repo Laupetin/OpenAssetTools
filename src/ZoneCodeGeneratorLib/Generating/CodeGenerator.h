@@ -17,7 +17,9 @@ public:
 private:
     void SetupTemplates();
 
-    bool GenerateCodeForTemplate(const RenderingContext& context, ICodeTemplate* codeTemplate) const;
+    bool GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    bool GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
+
     static bool GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 
     const ZoneCodeGeneratorArguments* m_args;

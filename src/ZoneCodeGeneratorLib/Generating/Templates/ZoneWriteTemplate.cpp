@@ -9,13 +9,13 @@
 
 namespace
 {
-    constexpr int TAG_HEADER = 1;
-    constexpr int TAG_SOURCE = 2;
+    constexpr CodeTemplateFileTag TAG_HEADER = 1;
+    constexpr CodeTemplateFileTag TAG_SOURCE = 2;
 
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, const RenderingContext& context)
+        Template(std::ostream& stream, const OncePerAssetRenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -1233,7 +1233,7 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(const RenderingContext& context)
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -1247,7 +1247,7 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(const Renderin
     return files;
 }
 
-void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
+void ZoneWriteTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
 {
     Template t(stream, context);
 

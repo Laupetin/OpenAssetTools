@@ -14,7 +14,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, const RenderingContext& context)
+        Template(std::ostream& stream, const OncePerAssetRenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -81,7 +81,7 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRender(const RenderingContext& context)
+std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -93,7 +93,7 @@ std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRender(const R
     return files;
 }
 
-void AssetStructTestsTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
+void AssetStructTestsTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
 {
     Template t(stream, context);
 

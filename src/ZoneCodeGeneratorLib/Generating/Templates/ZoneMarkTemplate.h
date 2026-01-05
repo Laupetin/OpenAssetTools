@@ -1,9 +1,10 @@
 #pragma once
+
 #include "Generating/ICodeTemplate.h"
 
 class ZoneMarkTemplate final : public ICodeTemplate
 {
 public:
-    std::vector<CodeTemplateFile> GetFilesToRender(const RenderingContext& context) override;
-    void RenderFile(std::ostream& stream, int fileTag, const RenderingContext& context) override;
+    std::vector<CodeTemplateFile> GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context) override;
+    void RenderOncePerAssetFile(std::ostream& stream, CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context) override;
 };
