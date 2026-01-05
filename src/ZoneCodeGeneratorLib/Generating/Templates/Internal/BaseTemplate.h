@@ -5,7 +5,6 @@
 #include "Domain/Evaluation/OperandDynamic.h"
 #include "Domain/Evaluation/OperandStatic.h"
 #include "Domain/Evaluation/Operation.h"
-#include "Generating/RenderingContext.h"
 
 #include <format>
 #include <ostream>
@@ -15,9 +14,11 @@ class BaseTemplate
 protected:
     static constexpr auto INTENDATION = "    ";
 
-    BaseTemplate(std::ostream& stream, const RenderingContext& context);
+    explicit BaseTemplate(std::ostream& stream);
 
     void DoIntendation() const;
+
+    void AddGeneratedHint() const;
 
     static std::string Upper(std::string str);
     static std::string Lower(std::string str);
@@ -37,7 +38,6 @@ protected:
     static std::string MakeEvaluation(const IEvaluation* evaluation);
 
     std::ostream& m_out;
-    const RenderingContext& m_env;
     unsigned m_intendation;
 
 private:

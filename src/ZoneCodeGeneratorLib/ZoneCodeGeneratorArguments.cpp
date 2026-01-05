@@ -6,7 +6,6 @@
 #include "Utils/Logging/Log.h"
 
 #include <format>
-#include <iostream>
 #include <type_traits>
 
 // clang-format off
@@ -81,9 +80,8 @@ const CommandLineOption* const OPTION_GENERATE =
     CommandLineOption::Builder::Create()
     .WithShortName("g")
     .WithLongName("generate")
-    .WithDescription("Generates a specified asset/preset combination. Can be used multiple times. Available presets: ZoneLoad, ZoneWrite, AssetStructTests")
+    .WithDescription("Generates a specified preset. Can be used multiple times. Available presets: ZoneLoad, ZoneWrite, AssetStructTests")
     .WithCategory(CATEGORY_OUTPUT)
-    .WithParameter("assetName")
     .WithParameter("preset")
     .Reusable()
     .Build();
@@ -103,27 +101,9 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 
 namespace
 {
-    static constexpr unsigned FLAG_TASK_GENERATE = 1 << 0;
-    static constexpr unsigned FLAG_TASK_PRINT = 1 << 1;
+    constexpr unsigned FLAG_TASK_GENERATE = 1 << 0;
+    constexpr unsigned FLAG_TASK_PRINT = 1 << 1;
 } // namespace
-
-GenerationTask::GenerationTask()
-    : m_all_assets(false)
-{
-}
-
-GenerationTask::GenerationTask(std::string templateName)
-    : m_all_assets(true),
-      m_template_name(std::move(templateName))
-{
-}
-
-GenerationTask::GenerationTask(std::string assetName, std::string templateName)
-    : m_all_assets(false),
-      m_asset_name(std::move(assetName)),
-      m_template_name(std::move(templateName))
-{
-}
 
 ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
@@ -217,17 +197,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     if (m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
     {
         m_task_flags |= FLAG_TASK_GENERATE;
-        const auto generateParameterValues = m_argument_parser.GetParametersForOption(OPTION_GENERATE);
-        for (auto i = 0u; i < generateParameterValues.size(); i += 2)
-        {
-            const auto& assetName = generateParameterValues[i];
-            const auto& templateName = generateParameterValues[i + 1];
-
-            if (assetName == "*")
-                m_generation_tasks.emplace_back(templateName);
-            else
-                m_generation_tasks.emplace_back(assetName, templateName);
-        }
+        m_template_names = m_argument_parser.GetParametersForOption(OPTION_GENERATE);
     }
 
     if (m_task_flags == 0)
