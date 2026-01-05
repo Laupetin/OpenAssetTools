@@ -321,10 +321,10 @@ function ZoneCode:project()
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'
-                    .. ' -g "*" ZoneLoad'
-                    .. ' -g "*" ZoneMark'
-                    .. ' -g "*" ZoneWrite'
-                    .. ' -g "*" AssetStructTests'
+                    .. ' -g ZoneLoad'
+                    .. ' -g ZoneMark'
+                    .. ' -g ZoneWrite'
+                    .. ' -g AssetStructTests'
             }
             buildinputs {
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h"),

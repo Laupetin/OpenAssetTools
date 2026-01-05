@@ -6,11 +6,11 @@
 #include "Templates/ZoneMarkTemplate.h"
 #include "Templates/ZoneWriteTemplate.h"
 #include "Utils/Logging/Log.h"
+#include "Utils/StringUtils.h"
 
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -55,7 +55,7 @@ bool CodeGenerator::GenerateCodeForTemplate(const RenderingContext& context, ICo
     return true;
 }
 
-bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::string& name, StructureInformation*& asset)
+bool CodeGenerator::GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset)
 {
     auto* def = repository->GetDataDefinitionByName(name);
     if (def == nullptr)
@@ -64,7 +64,7 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
         return false;
     }
 
-    auto* defWithMembers = dynamic_cast<DefinitionWithMembers*>(def);
+    const auto* defWithMembers = dynamic_cast<DefinitionWithMembers*>(def);
     asset = defWithMembers != nullptr ? repository->GetInformationFor(defWithMembers) : nullptr;
     if (asset == nullptr)
     {
@@ -81,7 +81,7 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     return true;
 }
 
-bool CodeGenerator::GenerateCode(IDataRepository* repository)
+bool CodeGenerator::GenerateCode(const IDataRepository* repository)
 {
     std::vector<StructureInformation*> assets;
 
@@ -93,42 +93,28 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
     }
 
     const auto start = std::chrono::steady_clock::now();
-    for (const auto& generationTask : m_args->m_generation_tasks)
+    for (const auto& templateName : m_args->m_template_names)
     {
-        auto templateName = generationTask.m_template_name;
-        for (auto& c : templateName)
-            c = static_cast<char>(tolower(c));
+        std::string lowerTemplateName(templateName);
+        utils::MakeStringLowerCase(lowerTemplateName);
 
-        const auto foundTemplate = m_template_mapping.find(templateName);
+        const auto foundTemplate = m_template_mapping.find(lowerTemplateName);
         if (foundTemplate == m_template_mapping.end())
         {
-            con::error("Unknown template '{}'.", generationTask.m_template_name);
+            con::error("Unknown template '{}'.", templateName);
             return false;
         }
 
-        if (generationTask.m_all_assets)
+        for (auto* asset : assets)
         {
-            for (auto* asset : assets)
-            {
-                auto context = RenderingContext::BuildContext(repository, asset);
-                if (!GenerateCodeForTemplate(*context, foundTemplate->second.get()))
-                {
-                    con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                    return false;
-                }
-
-                con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-            }
-        }
-        else
-        {
-            StructureInformation* asset;
-            if (!GetAssetWithName(repository, generationTask.m_asset_name, asset))
-                return false;
-
             auto context = RenderingContext::BuildContext(repository, asset);
             if (!GenerateCodeForTemplate(*context, foundTemplate->second.get()))
+            {
+                con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
                 return false;
+            }
+
+            con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
         }
     }
     const auto end = std::chrono::steady_clock::now();
