@@ -198,16 +198,22 @@ ZoneCode.Assets = {
 }
 
 function ZoneCode:outputForAssets(assetList)
+    buildoutputs {
+        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetLoader%{file.basename}.h",
+        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetMarker%{file.basename}.h",
+        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetWriter%{file.basename}.h",
+    }
+
     for i = 1, #assetList do
         local assetNameLower = string.lower(assetList[i])
         buildoutputs {
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_write_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_write_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_struct_test.cpp",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_load_db.cpp",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_load_db.h",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_mark_db.cpp",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_mark_db.h",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_write_db.cpp",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_write_db.h",
+            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_struct_test.cpp",
         }
     end
 end
@@ -216,9 +222,11 @@ function ZoneCode:allTestFiles()
     result = {}
 
     for game, assets in pairs(self.Assets) do
+        local gameLower = string.lower(game)
+
         for i, assetName in ipairs(assets) do
             local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_struct_test.cpp")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_struct_test.cpp")
         end
     end
     
@@ -229,12 +237,13 @@ function ZoneCode:allMarkFiles()
     result = {}
 
     for game, assets in pairs(self.Assets) do
+        local gameLower = string.lower(game)
 
         -- PerAsset
         for i, assetName in ipairs(assets) do
             local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_mark_db.h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_mark_db.cpp")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_mark_db.h")
         end
         
         -- PerTemplate
@@ -248,11 +257,17 @@ function ZoneCode:allLoadFiles()
     result = {}
 
     for game, assets in pairs(self.Assets) do
+        local gameLower = string.lower(game)
+
+        -- PerAsset
         for i, assetName in ipairs(assets) do
             local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_load_db.h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_load_db.cpp")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_load_db.h")
         end
+        
+        -- PerTemplate
+        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader" .. game .. ".h")
     end
     
     return result
@@ -262,11 +277,17 @@ function ZoneCode:allWriteFiles()
     result = {}
 
     for game, assets in pairs(self.Assets) do
+        local gameLower = string.lower(game)
+
+        -- PerAsset
         for i, assetName in ipairs(assets) do
             local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_write_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_write_db.h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_write_db.cpp")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_write_db.h")
         end
+        
+        -- PerTemplate
+        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter" .. game .. ".h")
     end
     
     return result

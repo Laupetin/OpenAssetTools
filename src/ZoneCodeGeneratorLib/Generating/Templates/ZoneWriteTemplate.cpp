@@ -2,6 +2,7 @@
 
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <cstdint>
@@ -11,6 +12,33 @@ namespace
 {
     constexpr CodeTemplateFileTag TAG_HEADER = 1;
     constexpr CodeTemplateFileTag TAG_SOURCE = 2;
+    constexpr CodeTemplateFileTag TAG_ALL_WRITERS = 3;
+
+    class PerTemplate final : BaseTemplate
+    {
+    public:
+        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
+            : BaseTemplate(stream),
+              m_env(context)
+        {
+        }
+
+        void AllWriters() const
+        {
+            AddGeneratedHint();
+
+            LINE("#pragma once")
+            LINE("")
+
+            for (const auto* asset : m_env.m_assets)
+            {
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_write_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+            }
+        }
+
+    private:
+        const OncePerTemplateRenderingContext& m_env;
+    };
 
     class PerAsset final : BaseTemplate
     {
@@ -111,7 +139,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"{0}_{1}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -119,7 +147,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_write_db.h\"", Lower(type->m_type->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_write_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
                 }
             }
 
@@ -1228,16 +1256,35 @@ namespace
     };
 } // namespace
 
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+{
+    std::vector<CodeTemplateFile> files;
+
+    files.emplace_back(std::format("AssetWriter{0}.h", context.m_game), TAG_ALL_WRITERS);
+
+    return files;
+}
+
+void ZoneWriteTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+{
+    assert(fileTag == TAG_ALL_WRITERS);
+
+    const PerTemplate t(stream, context);
+    t.AllWriters();
+}
+
 std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
     auto assetName = context.m_asset->m_definition->m_name;
-    for (auto& c : assetName)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(assetName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_write_db.h", assetName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_write_db.cpp", assetName), TAG_SOURCE);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_write_db.h", assetName, gameName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_write_db.cpp", assetName, gameName), TAG_SOURCE);
 
     return files;
 }
