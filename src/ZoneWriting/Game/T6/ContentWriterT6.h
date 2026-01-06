@@ -24,5 +24,9 @@ namespace T6
         XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
+
+        ZoneOutputOffset varXAssetListWritten;
+        ZoneOutputOffset varXAssetWritten;
+        ZoneOutputOffset varScriptStringListWritten;
     };
 } // namespace T6

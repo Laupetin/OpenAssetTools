@@ -26,15 +26,15 @@ void ContentWriterBase::WriteXString(const bool atStreamStart)
         varXStringWritten = m_stream->Write<const char*>(varXString);
     }
 
-    assert(varXStringWritten != nullptr);
+    assert(varXStringWritten.Offset() != nullptr);
 
-    if (m_stream->ReusableShouldWrite(varXStringWritten))
+    if (m_stream->ReusableShouldWrite(*varXString, varXStringWritten))
     {
-        m_stream->Align(alignof(const char));
-        m_stream->ReusableAddOffset(*varXStringWritten);
-        m_stream->WriteNullTerminated(*varXStringWritten);
+        m_stream->Align(1);
+        m_stream->ReusableAddOffset(*varXString);
+        m_stream->WriteNullTerminated(*varXString);
 
-        m_stream->MarkFollowing(*varXStringWritten);
+        m_stream->MarkFollowing(varXStringWritten);
     }
 }
 
@@ -46,11 +46,12 @@ void ContentWriterBase::WriteXStringArray(const bool atStreamStart, const size_t
         varXStringWritten = m_stream->Write<const char*>(varXString, count);
     }
 
-    assert(varXStringWritten != nullptr);
+    assert(varXStringWritten.Offset() != nullptr);
 
     for (size_t index = 0; index < count; index++)
     {
         WriteXString(false);
-        varXStringWritten++;
+        varXString++;
+        varXStringWritten.Inc(m_stream->GetPointerByteCount());
     }
 }

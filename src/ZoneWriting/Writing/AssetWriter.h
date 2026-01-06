@@ -17,5 +17,5 @@ protected:
     XAssetInfoGeneric* m_asset;
 
     scr_string_t* varScriptString;
-    scr_string_t* varScriptStringWritten;
+    ZoneOutputOffset varScriptStringWritten;
 };

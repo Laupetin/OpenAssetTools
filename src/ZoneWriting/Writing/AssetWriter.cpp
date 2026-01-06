@@ -38,12 +38,13 @@ void AssetWriter::WriteScriptStringArray(const bool atStreamStart, const size_t 
         varScriptStringWritten = m_stream->Write<scr_string_t>(varScriptString, count);
     }
 
-    assert(varScriptStringWritten != nullptr);
+    assert(varScriptStringWritten.Offset() != nullptr);
 
-    auto* ptr = varScriptStringWritten;
     for (size_t index = 0; index < count; index++)
     {
-        *ptr = UseScriptString(*ptr);
-        ptr++;
+        *static_cast<scr_string_t*>(varScriptStringWritten.Offset()) = UseScriptString(*varScriptString);
+
+        varScriptString++;
+        varScriptStringWritten.Inc(sizeof(scr_string_t));
     }
 }
