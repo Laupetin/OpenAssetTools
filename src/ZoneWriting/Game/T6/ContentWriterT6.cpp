@@ -63,15 +63,18 @@ void ContentWriter::WriteScriptStringList(const bool atStreamStart)
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)
-        varScriptStringList = m_stream->Write(varScriptStringList);
+        varScriptStringListWritten = m_stream->Write(varScriptStringList);
 
     if (varScriptStringList->strings != nullptr)
     {
-        m_stream->Align(alignof(const char*));
+        m_stream->Align(4);
         varXString = varScriptStringList->strings;
         WriteXStringArray(true, varScriptStringList->count);
 
-        m_stream->MarkFollowing(varScriptStringList->strings);
+#ifdef ARCH_x86
+        static_assert(offsetof(ScriptStringList, strings) == 4u);
+#endif
+        m_stream->MarkFollowing(varScriptStringListWritten.WithInnerOffset(4));
     }
 
     m_stream->PopBlock();
@@ -90,7 +93,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        varXAsset = m_stream->Write(varXAsset);
+        varXAssetWritten = m_stream->Write(varXAsset);
 
     switch (varXAsset->type)
     {
@@ -158,12 +161,17 @@ void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t coun
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        varXAsset = m_stream->Write(varXAsset, count);
+        varXAssetWritten = m_stream->Write(varXAsset, count);
 
     for (size_t index = 0; index < count; index++)
     {
         WriteXAsset(false);
         varXAsset++;
+
+#ifdef ARCH_x86
+        static_assert(sizeof(XAsset) == 8u);
+#endif
+        varXAssetWritten.Inc(8u);
     }
 }
 
@@ -178,25 +186,38 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
 
     CreateXAssetList(assetList, memory);
 
-    varXAssetList = static_cast<XAssetList*>(m_stream->WriteDataRaw(&assetList, sizeof(assetList)));
+    varXAssetList = &assetList;
+    varXAssetListWritten = m_stream->WriteDataRaw(&assetList, sizeof(assetList));
 
+#ifdef ARCH_x86
+    static_assert(offsetof(XAssetList, stringList) == 0u);
+#endif
     varScriptStringList = &varXAssetList->stringList;
+    varScriptStringListWritten = varXAssetListWritten.WithInnerOffset(0);
     WriteScriptStringList(false);
 
     if (varXAssetList->depends != nullptr)
     {
-        m_stream->Align(alignof(const char*));
+        m_stream->Align(4);
         varXString = varXAssetList->depends;
         WriteXStringArray(true, varXAssetList->dependCount);
-        m_stream->MarkFollowing(varXAssetList->depends);
+
+#ifdef ARCH_x86
+        static_assert(offsetof(XAssetList, depends) == 12u);
+#endif
+        m_stream->MarkFollowing(varXAssetListWritten.WithInnerOffset(12));
     }
 
     if (varXAssetList->assets != nullptr)
     {
-        m_stream->Align(alignof(XAsset));
+        m_stream->Align(4);
         varXAsset = varXAssetList->assets;
         WriteXAssetArray(true, varXAssetList->assetCount);
-        m_stream->MarkFollowing(varXAssetList->assets);
+
+#ifdef ARCH_x86
+        static_assert(offsetof(XAssetList, assets) == 20u);
+#endif
+        m_stream->MarkFollowing(varXAssetListWritten.WithInnerOffset(20));
     }
 
     m_stream->PopBlock();

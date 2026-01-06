@@ -24,5 +24,5 @@ protected:
     ZoneOutputStream* m_stream;
 
     const char** varXString;
-    const char** varXStringWritten;
+    ZoneOutputOffset varXStringWritten;
 };

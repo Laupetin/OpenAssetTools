@@ -10,13 +10,27 @@
 #include <typeinfo>
 #include <vector>
 
+class ZoneOutputOffset
+{
+public:
+    ZoneOutputOffset();
+    explicit ZoneOutputOffset(void* offset);
+
+    [[nodiscard]] void* Offset() const;
+    void Inc(size_t size);
+    [[nodiscard]] ZoneOutputOffset WithInnerOffset(size_t innerOffset) const;
+
+private:
+    void* m_offset;
+};
+
 class ZoneOutputStream : public IZoneStream
 {
 public:
     /**
      * \brief Returns the configured bits that make up a pointer.
      */
-    [[nodiscard]] virtual unsigned GetPointerBitCount() const = 0;
+    [[nodiscard]] virtual unsigned GetPointerByteCount() const = 0;
 
     /**
      * \brief Aligns the write position in the current block with the specified value.
@@ -31,7 +45,7 @@ public:
      * \param dst The memory location to write data to.
      * \param size The amount of data to write.
      */
-    virtual void* WriteDataRaw(const void* dst, size_t size) = 0;
+    virtual ZoneOutputOffset WriteDataRaw(const void* dst, size_t size) = 0;
 
     /**
      * \brief Write data with the current blocks write operation into its block memory.
@@ -41,17 +55,17 @@ public:
      * \param dst The destination where the data is written to. Must be inside the current block's memory bounds.
      * \param size The amount of data to write.
      */
-    virtual void* WriteDataInBlock(const void* dst, size_t size) = 0;
+    virtual ZoneOutputOffset WriteDataInBlock(const void* dst, size_t size) = 0;
     virtual void IncBlockPos(size_t size) = 0;
     virtual void WriteNullTerminated(const void* dst) = 0;
 
-    virtual bool ReusableShouldWrite(void** pPtr, size_t size, std::type_index type) = 0;
+    virtual bool ReusableShouldWrite(void* pPtr, ZoneOutputOffset outputOffset, size_t size, std::type_index type) = 0;
     virtual void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) = 0;
-    virtual void MarkFollowing(void** pPtr) = 0;
+    virtual void MarkFollowing(ZoneOutputOffset offset) = 0;
 
-    template<typename T> bool ReusableShouldWrite(T** pPtr)
+    template<typename T> bool ReusableShouldWrite(T* pPtr, const ZoneOutputOffset outputOffset)
     {
-        return ReusableShouldWrite(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(pPtr)), sizeof(T), std::type_index(typeid(T)));
+        return ReusableShouldWrite(const_cast<void*>(reinterpret_cast<const void*>(pPtr)), outputOffset, sizeof(T), std::type_index(typeid(T)));
     }
 
     template<typename T> void ReusableAddOffset(T* ptr)
@@ -64,24 +78,19 @@ public:
         ReusableAddOffset(const_cast<void*>(reinterpret_cast<const void*>(ptr)), sizeof(T), count, std::type_index(typeid(T)));
     }
 
-    template<typename T> T* Write(T* dst)
+    template<typename T> ZoneOutputOffset Write(T* dst)
     {
-        return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), sizeof(T)));
+        return WriteDataInBlock(reinterpret_cast<const void*>(dst), sizeof(T));
     }
 
-    template<typename T> T* Write(T* dst, const size_t count)
+    template<typename T> ZoneOutputOffset Write(T* dst, const size_t count)
     {
-        return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), count * sizeof(T)));
+        return WriteDataInBlock(reinterpret_cast<const void*>(dst), count * sizeof(T));
     }
 
-    template<typename T> T* WritePartial(T* dst, const size_t size)
+    ZoneOutputOffset WritePartial(const void* dst, const size_t size)
     {
-        return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), size));
-    }
-
-    template<typename T> void MarkFollowing(T*& ptr)
-    {
-        MarkFollowing(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(&ptr)));
+        return WriteDataInBlock(dst, size);
     }
 
     static std::unique_ptr<ZoneOutputStream>

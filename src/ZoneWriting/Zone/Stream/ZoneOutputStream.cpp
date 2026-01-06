@@ -44,7 +44,13 @@ namespace
             : m_zone_data(zoneData),
               m_blocks(blocks),
               m_block_bit_count(blockBitCount),
-              m_pointer_byte_count(pointerBitCount / 8u)
+              m_pointer_byte_count(pointerBitCount / 8u),
+
+              // -1
+              m_zone_ptr_following(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)),
+
+              // -2
+              m_zone_ptr_insert((std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)) - 1u)
         {
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
@@ -52,9 +58,9 @@ namespace
             m_insert_block = blocks[insertBlock];
         }
 
-        [[nodiscard]] unsigned GetPointerBitCount() const override
+        [[nodiscard]] unsigned GetPointerByteCount() const override
         {
-            return m_pointer_byte_count * 8u;
+            return m_pointer_byte_count;
         }
 
         void PushBlock(const block_t block) override
@@ -113,19 +119,20 @@ namespace
             }
         }
 
-        void* WriteDataRaw(const void* src, const size_t size) override
+        ZoneOutputOffset WriteDataRaw(const void* src, const size_t size) override
         {
             auto* result = m_zone_data.GetBufferOfSize(size);
             memcpy(result, src, size);
-            return result;
+
+            return ZoneOutputOffset(result);
         }
 
-        void* WriteDataInBlock(const void* src, const size_t size) override
+        ZoneOutputOffset WriteDataInBlock(const void* src, const size_t size) override
         {
             assert(!m_block_stack.empty());
 
             if (m_block_stack.empty())
-                return nullptr;
+                return ZoneOutputOffset();
 
             const auto* block = m_block_stack.top();
 
@@ -147,7 +154,8 @@ namespace
             }
 
             IncBlockPos(size);
-            return result;
+
+            return ZoneOutputOffset(result);
         }
 
         void IncBlockPos(const size_t size) override
@@ -174,19 +182,30 @@ namespace
             WriteDataInBlock(src, len + 1);
         }
 
-        void MarkFollowing(void** pPtr) override
+        void MarkFollowing(const ZoneOutputOffset outputOffset) override
         {
             assert(!m_block_stack.empty());
-            assert(pPtr != nullptr);
-            *pPtr = m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_TEMP ? PTR_INSERT : PTR_FOLLOWING;
+
+            auto* ptr = static_cast<char*>(outputOffset.Offset());
+            assert(ptr != nullptr);
+
+            if (m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_TEMP)
+            {
+                for (auto i = 0u; i < m_pointer_byte_count; i++)
+                    ptr[i] = reinterpret_cast<const char*>(&m_zone_ptr_insert)[i];
+            }
+            else
+            {
+                for (auto i = 0u; i < m_pointer_byte_count; i++)
+                    ptr[i] = reinterpret_cast<const char*>(&m_zone_ptr_following)[i];
+            }
         }
 
-        bool ReusableShouldWrite(void** pPtr, const size_t entrySize, const std::type_index type) override
+        bool ReusableShouldWrite(void* ptr, const ZoneOutputOffset outputOffset, const size_t entrySize, const std::type_index type) override
         {
             assert(!m_block_stack.empty());
-            assert(pPtr != nullptr);
 
-            if (*pPtr == nullptr)
+            if (ptr == nullptr)
                 return false;
 
             const auto foundEntriesForType = m_reusable_entries.find(type);
@@ -197,11 +216,14 @@ namespace
 
             for (const auto& entry : foundEntriesForType->second)
             {
-                if (*pPtr >= entry.m_start_ptr && *pPtr < entry.m_end_ptr)
+                if (ptr >= entry.m_start_ptr && ptr < entry.m_end_ptr)
                 {
-                    assert((reinterpret_cast<uintptr_t>(*pPtr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) % entrySize == 0);
-                    *pPtr =
-                        reinterpret_cast<void*>(entry.m_start_zone_ptr + (reinterpret_cast<uintptr_t>(*pPtr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)));
+                    assert((reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) % entrySize == 0);
+                    const auto finalZonePointer = entry.m_start_zone_ptr + (reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr));
+
+                    for (auto i = 0u; i < m_pointer_byte_count; i++)
+                        static_cast<char*>(ptr)[i] = reinterpret_cast<const char*>(&finalZonePointer)[i];
+
                     return false;
                 }
             }
@@ -265,9 +287,37 @@ namespace
         unsigned m_pointer_byte_count;
         XBlock* m_insert_block;
 
+        uintptr_t m_zone_ptr_following;
+        uintptr_t m_zone_ptr_insert;
+
         std::unordered_map<std::type_index, std::vector<ReusableEntry>> m_reusable_entries;
     };
 } // namespace
+
+ZoneOutputOffset::ZoneOutputOffset()
+    : m_offset(nullptr)
+{
+}
+
+ZoneOutputOffset::ZoneOutputOffset(void* offset)
+    : m_offset(offset)
+{
+}
+
+void* ZoneOutputOffset::Offset() const
+{
+    return m_offset;
+}
+
+void ZoneOutputOffset::Inc(const size_t size)
+{
+    m_offset = static_cast<void*>(static_cast<char*>(m_offset) + size);
+}
+
+ZoneOutputOffset ZoneOutputOffset::WithInnerOffset(const size_t innerOffset) const
+{
+    return ZoneOutputOffset(static_cast<char*>(m_offset) + innerOffset);
+}
 
 std::unique_ptr<ZoneOutputStream>
     ZoneOutputStream::Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData)
