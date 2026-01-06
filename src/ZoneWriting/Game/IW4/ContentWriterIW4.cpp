@@ -156,7 +156,7 @@ void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t coun
     }
 }
 
-void ContentWriter::WriteContent(IZoneOutputStream& stream)
+void ContentWriter::WriteContent(ZoneOutputStream& stream)
 {
     m_stream = &stream;
 

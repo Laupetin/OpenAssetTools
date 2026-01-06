@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-AssetWriter::AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, IZoneOutputStream& stream)
+AssetWriter::AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, ZoneOutputStream& stream)
     : ContentWriterBase(zone, stream),
       m_asset(asset),
       varScriptString(nullptr),

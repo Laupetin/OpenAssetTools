@@ -10,7 +10,7 @@ ContentWriterBase::ContentWriterBase(const Zone& zone)
 {
 }
 
-ContentWriterBase::ContentWriterBase(const Zone& zone, IZoneOutputStream& stream)
+ContentWriterBase::ContentWriterBase(const Zone& zone, ZoneOutputStream& stream)
     : m_zone(zone),
       m_stream(&stream),
       varXString(nullptr),
