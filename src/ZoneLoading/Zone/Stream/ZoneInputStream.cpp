@@ -53,6 +53,7 @@ namespace
                           MemoryManager& memory,
                           std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
             : m_blocks(blocks),
+              m_block_offsets(blocks.size()),
               m_stream(stream),
               m_memory(memory),
               m_pointer_byte_count(pointerBitCount / 8u),
@@ -67,9 +68,7 @@ namespace
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
 
-            const auto blockCount = static_cast<unsigned>(blocks.size());
-            m_block_offsets = std::make_unique<size_t[]>(blockCount);
-            std::memset(m_block_offsets.get(), 0, sizeof(size_t) * blockCount);
+            std::memset(m_block_offsets.data(), 0, sizeof(decltype(m_block_offsets)::value_type) * m_block_offsets.size());
 
             m_insert_block = blocks[insertBlock];
 
@@ -488,7 +487,7 @@ namespace
         }
 
         std::vector<XBlock*>& m_blocks;
-        std::unique_ptr<size_t[]> m_block_offsets;
+        std::vector<size_t> m_block_offsets;
 
         std::stack<XBlock*> m_block_stack;
         std::stack<size_t> m_temp_offsets;
