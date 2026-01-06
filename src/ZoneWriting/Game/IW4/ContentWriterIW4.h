@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Game/IW4/IW4.h"
 #include "Writing/ContentWriterBase.h"
 #include "Writing/IContentWritingEntryPoint.h"
@@ -10,7 +11,7 @@ namespace IW4
     public:
         explicit ContentWriter(const Zone& zone);
 
-        void WriteContent(IZoneOutputStream& stream) override;
+        void WriteContent(ZoneOutputStream& stream) override;
 
     private:
         void CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const;

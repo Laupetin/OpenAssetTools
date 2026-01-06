@@ -1,20 +1,46 @@
 #pragma once
 
+#include "InMemoryZoneData.h"
 #include "Zone/Stream/IZoneStream.h"
+#include "Zone/XBlock.h"
 
 #include <cstddef>
+#include <memory>
 #include <typeindex>
 #include <typeinfo>
+#include <vector>
 
-class IZoneOutputStream : public IZoneStream
+class ZoneOutputStream : public IZoneStream
 {
 public:
-    inline static void* const PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    inline static void* const PTR_INSERT = reinterpret_cast<void*>(-2);
+    /**
+     * \brief Returns the configured bits that make up a pointer.
+     */
+    [[nodiscard]] virtual unsigned GetPointerBitCount() const = 0;
 
-    virtual void Align(int alignTo) = 0;
+    /**
+     * \brief Aligns the write position in the current block with the specified value.
+     * \param align The alignment value that the write position is aligned with. This should typically be the alignment of the struct that
+     * should be written afterward.
+     */
+    virtual void Align(unsigned align) = 0;
 
+    /**
+     * \brief Write data to the zone data without considering the current block or advancing the block position.
+     * The data is written directly to the specified location instead of block memory.
+     * \param dst The memory location to write data to.
+     * \param size The amount of data to write.
+     */
     virtual void* WriteDataRaw(const void* dst, size_t size) = 0;
+
+    /**
+     * \brief Write data with the current blocks write operation into its block memory.
+     * Depending on the block type, the underlying stream might be written to or not.
+     * The current block position is advanced by the number of bytes written.
+     * The destination must be inside the current block's memory space, otherwise an exception is thrown.
+     * \param dst The destination where the data is written to. Must be inside the current block's memory bounds.
+     * \param size The amount of data to write.
+     */
     virtual void* WriteDataInBlock(const void* dst, size_t size) = 0;
     virtual void IncBlockPos(size_t size) = 0;
     virtual void WriteNullTerminated(const void* dst) = 0;
@@ -57,4 +83,7 @@ public:
     {
         MarkFollowing(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(&ptr)));
     }
+
+    static std::unique_ptr<ZoneOutputStream>
+        Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData);
 };
