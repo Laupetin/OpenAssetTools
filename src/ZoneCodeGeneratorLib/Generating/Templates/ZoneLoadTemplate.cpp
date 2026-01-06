@@ -12,6 +12,33 @@ namespace
 {
     constexpr int TAG_HEADER = 1;
     constexpr int TAG_SOURCE = 2;
+    constexpr int TAG_ALL_LOADERS = 3;
+
+    class PerTemplate final : BaseTemplate
+    {
+    public:
+        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
+            : BaseTemplate(stream),
+              m_env(context)
+        {
+        }
+
+        void AllLoaders() const
+        {
+            AddGeneratedHint();
+
+            LINE("#pragma once")
+            LINE("")
+
+            for (const auto* asset : m_env.m_assets)
+            {
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_load_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+            }
+        }
+
+    private:
+        const OncePerTemplateRenderingContext& m_env;
+    };
 
     class PerAsset final : BaseTemplate
     {
@@ -135,7 +162,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"{0}_{1}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
             LINE("")
             LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
             LINE("")
@@ -147,7 +174,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_load_db.h\"", Lower(type->m_type->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_load_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
                 }
             }
 
@@ -2192,6 +2219,23 @@ namespace
     };
 } // namespace
 
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+{
+    std::vector<CodeTemplateFile> files;
+
+    files.emplace_back(std::format("AssetLoader{0}.h", context.m_game), TAG_ALL_LOADERS);
+
+    return files;
+}
+
+void ZoneLoadTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+{
+    assert(fileTag == TAG_ALL_LOADERS);
+
+    const PerTemplate t(stream, context);
+    t.AllLoaders();
+}
+
 std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
@@ -2199,8 +2243,11 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(con
     auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_load_db.h", assetName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_load_db.cpp", assetName), TAG_SOURCE);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.h", assetName, gameName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.cpp", assetName, gameName), TAG_SOURCE);
 
     return files;
 }

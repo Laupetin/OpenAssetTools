@@ -87,7 +87,10 @@ std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerA
     auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_struct_test.cpp", assetName), TAG_SOURCE);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_struct_test.cpp", assetName, gameName), TAG_SOURCE);
 
     return files;
 }
