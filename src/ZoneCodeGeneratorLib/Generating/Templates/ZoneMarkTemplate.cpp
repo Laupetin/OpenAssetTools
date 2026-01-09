@@ -18,7 +18,7 @@ namespace
     {
     public:
         PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -44,7 +44,7 @@ namespace
     {
     public:
         PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }

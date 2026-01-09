@@ -220,9 +220,10 @@ namespace
                 {
                     assert((reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) % entrySize == 0);
                     const auto finalZonePointer = entry.m_start_zone_ptr + (reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr));
+                    auto* writtenPtrOffset = outputOffset.Offset();
 
                     for (auto i = 0u; i < m_pointer_byte_count; i++)
-                        static_cast<char*>(ptr)[i] = reinterpret_cast<const char*>(&finalZonePointer)[i];
+                        static_cast<char*>(writtenPtrOffset)[i] = reinterpret_cast<const char*>(&finalZonePointer)[i];
 
                     return false;
                 }

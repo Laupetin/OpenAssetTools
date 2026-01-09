@@ -18,7 +18,7 @@ namespace
     {
     public:
         PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -44,7 +44,7 @@ namespace
     {
     public:
         PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -267,7 +267,7 @@ namespace
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
         }
 
-        bool ShouldGenerateFillMethod(const RenderingUsedType& type)
+        static bool ShouldGenerateFillMethod(const RenderingUsedType& type)
         {
             const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
             const auto hasMismatchingStructure =
@@ -370,47 +370,6 @@ namespace
 
             m_intendation--;
             LINE("}")
-        }
-
-        [[nodiscard]] size_t SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
-        {
-            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-            if (declModifiers.empty())
-                return memberInfo.m_member->m_type_declaration->GetSize();
-
-            if (level == 0)
-                return memberInfo.m_member->m_type_declaration->GetSize();
-
-            size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
-            const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
-            for (auto i = declModifiers.rbegin(); i != end; ++i)
-            {
-                if ((*i)->GetType() == DeclarationModifierType::POINTER)
-                    currentSize = m_env.m_pointer_size;
-                else
-                    currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
-            }
-
-            return currentSize;
-        }
-
-        [[nodiscard]] size_t
-            OffsetForMemberModifier(const MemberInformation& memberInfo, const DeclarationModifierComputations& modifier, const size_t nestedBaseOffset) const
-        {
-            size_t curOffset = memberInfo.m_member->m_offset;
-
-            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-            auto curDeclModifier = declModifiers.begin();
-            auto curLevel = 0u;
-            for (const auto index : modifier.GetArrayIndices())
-            {
-                if (index > 0)
-                    curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
-
-                curLevel++;
-            }
-
-            return curOffset + nestedBaseOffset;
         }
 
         void PrintFillStruct_Member_DynamicArray(const StructureInformation& structInfo,

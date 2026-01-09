@@ -11,7 +11,7 @@ protected:
     AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, ZoneOutputStream& stream);
 
     [[nodiscard]] static const char* NonReferenceAssetName(const char* assetName);
-    [[nodiscard]] scr_string_t UseScriptString(scr_string_t scrString) const;
+    void UseScriptString(scr_string_t scrString, ZoneOutputOffset written) const;
     void WriteScriptStringArray(bool atStreamStart, size_t count);
 
     XAssetInfoGeneric* m_asset;

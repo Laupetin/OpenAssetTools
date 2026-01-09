@@ -18,7 +18,7 @@ namespace
     {
     public:
         PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -44,7 +44,7 @@ namespace
     {
     public:
         PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -106,8 +106,8 @@ namespace
             LINE("")
 
             LINE(VariableDecl(m_env.m_asset->m_definition))
-            LINE(WrittenVariableDecl(m_env.m_asset->m_definition))
             LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+            LINE(WrittenVariableDecl(m_env.m_asset->m_definition))
             LINE(WrittenPointerVariableDecl(m_env.m_asset->m_definition))
             LINE("")
 
@@ -115,18 +115,25 @@ namespace
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
                     LINE(VariableDecl(type->m_type))
-                    LINE(WrittenVariableDecl(type->m_type))
-                }
             }
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
                     LINE(PointerVariableDecl(type->m_type))
+            }
+
+            LINE("")
+
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                    LINE(WrittenVariableDecl(type->m_type))
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
                     LINE(WrittenPointerVariableDecl(type->m_type))
-                }
             }
 
             m_intendation--;
@@ -213,7 +220,7 @@ namespace
 
         static std::string WrittenVariableDecl(const DataDefinition* def)
         {
-            return std::format("{0}* var{1}Written;", def->GetFullName(), MakeSafeTypeName(def));
+            return std::format("ZoneOutputOffset var{0}Written;", MakeSafeTypeName(def));
         }
 
         static std::string PointerVariableDecl(const DataDefinition* def)
@@ -223,7 +230,7 @@ namespace
 
         static std::string WrittenPointerVariableDecl(const DataDefinition* def)
         {
-            return std::format("{0}** var{1}PtrWritten;", def->GetFullName(), MakeSafeTypeName(def));
+            return std::format("ZoneOutputOffset var{0}PtrWritten;", MakeSafeTypeName(def));
         }
 
         void PrintHeaderPtrArrayWriteMethodDeclaration(const DataDefinition* def) const
@@ -248,7 +255,7 @@ namespace
 
         void PrintHeaderMainWriteMethodDeclaration(const StructureInformation* info) const
         {
-            LINEF("void Write({0}** pAsset);", info->m_definition->GetFullName())
+            LINEF("void Write({0}* pAsset, ZoneOutputOffset pointerWrittenOffset);", info->m_definition->GetFullName())
         }
 
         void PrintHeaderConstructor() const
@@ -261,19 +268,60 @@ namespace
             LINEF("var{0} = nullptr;", def->m_name)
         }
 
-        void PrintWrittenVariableInitialization(const DataDefinition* def) const
-        {
-            LINEF("var{0}Written = nullptr;", def->m_name)
-        }
-
         void PrintPointerVariableInitialization(const DataDefinition* def) const
         {
             LINEF("var{0}Ptr = nullptr;", def->m_name)
         }
 
-        void PrintWrittenPointerVariableInitialization(const DataDefinition* def) const
+        static void MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
         {
-            LINEF("var{0}PtrWritten = nullptr;", def->m_name)
+            str << "var";
+            MakeSafeTypeNameInternal(def, str);
+            str << "PtrWritten";
+        }
+
+        static void MakeTypeWrittenVarNameInternal(const DataDefinition* def, std::ostringstream& str)
+        {
+            str << "var";
+            MakeSafeTypeNameInternal(def, str);
+            str << "Written";
+        }
+
+        static std::string MakeTypeWrittenVarName(const DataDefinition* def)
+        {
+            std::ostringstream str;
+            MakeTypeWrittenVarNameInternal(def, str);
+            return str.str();
+        }
+
+        static std::string MakeTypeWrittenPtrVarName(const DataDefinition* def)
+        {
+            std::ostringstream str;
+            MakeTypeWrittenPtrVarNameInternal(def, str);
+            return str.str();
+        }
+
+        std::string
+            MakeWrittenMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier) const
+        {
+            std::ostringstream str;
+            MakeTypeWrittenVarNameInternal(info->m_definition, str);
+            str << ".WithInnerOffset(";
+
+            if (m_env.m_architecture_mismatch)
+            {
+                str << OffsetForMemberModifier(*member, modifier, 0);
+            }
+            else
+            {
+                str << "offsetof(" << info->m_definition->GetFullName() << ", " << member->m_member->m_name;
+                MakeArrayIndicesInternal(modifier, str);
+                str << ')';
+            }
+
+            str << ')';
+
+            return str.str();
         }
 
         void PrintConstructorMethod()
@@ -290,26 +338,18 @@ namespace
             m_intendation++;
 
             PrintVariableInitialization(m_env.m_asset->m_definition);
-            PrintWrittenVariableInitialization(m_env.m_asset->m_definition);
             PrintPointerVariableInitialization(m_env.m_asset->m_definition);
-            PrintWrittenPointerVariableInitialization(m_env.m_asset->m_definition);
             LINE("")
 
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
                     PrintVariableInitialization(type->m_type);
-                    PrintWrittenVariableInitialization(type->m_type);
-                }
             }
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_info && type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
                     PrintPointerVariableInitialization(type->m_type);
-                    PrintWrittenPointerVariableInitialization(type->m_type);
-                }
             }
 
             m_intendation--;
@@ -334,7 +374,7 @@ namespace
             }
             else if (writeType == MemberWriteType::EMBEDDED)
             {
-                LINEF("{0} = UseScriptString({1});", MakeWrittenMemberAccess(info, member, modifier), MakeMemberAccess(info, member, modifier))
+                LINEF("UseScriptString({0}, {1});", MakeMemberAccess(info, member, modifier), MakeWrittenMemberAccess(info, member, modifier))
             }
             else
             {
@@ -351,7 +391,7 @@ namespace
             if (writeType == MemberWriteType::SINGLE_POINTER)
             {
                 LINEF("{0} writer({1}, m_zone, *m_stream);", WriterClassName(member->m_type), MakeMemberAccess(info, member, modifier))
-                LINEF("writer.Write(&{0});", MakeWrittenMemberAccess(info, member, modifier))
+                LINEF("writer.Write({0}, {1});", MakeMemberAccess(info, member, modifier), MakeWrittenMemberAccess(info, member, modifier))
             }
             else if (writeType == MemberWriteType::POINTER_ARRAY)
             {
@@ -373,18 +413,20 @@ namespace
             {
                 if (member->m_member->m_type_declaration->m_is_const)
                 {
-                    LINEF("varXStringWritten = &{0};", MakeWrittenMemberAccess(info, member, modifier))
+                    LINEF("varXString = &{0};", MakeMemberAccess(info, member, modifier))
                 }
                 else
                 {
-                    LINEF("varXStringWritten = const_cast<const char**>(&{0});", MakeWrittenMemberAccess(info, member, modifier))
+                    LINEF("varXString = const_cast<const char**>(&{0});", MakeMemberAccess(info, member, modifier))
                 }
+                LINEF("varXStringWritten = {0};", MakeWrittenMemberAccess(info, member, modifier))
                 LINE("WriteXString(false);")
             }
             else if (writeType == MemberWriteType::POINTER_ARRAY)
             {
                 if (modifier.IsArray())
                 {
+                    LINEF("varXString = {0};", MakeMemberAccess(info, member, modifier))
                     LINEF("varXStringWritten = {0};", MakeWrittenMemberAccess(info, member, modifier))
                     LINEF("WriteXStringArray(false, {0});", modifier.GetArraySize())
                 }
@@ -507,7 +549,7 @@ namespace
                 else
                 {
                     LINEF("{0} = &{1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
-                    LINEF("{0} = &{1};", MakeTypeWrittenVarName(member->m_member->m_type_declaration->m_type), MakeWrittenMemberAccess(info, member, modifier))
+                    LINEF("{0} = {1};", MakeTypeWrittenVarName(member->m_member->m_type_declaration->m_type), MakeWrittenMemberAccess(info, member, modifier))
                     LINEF("Write_{0}(false);", MakeSafeTypeName(member->m_member->m_type_declaration->m_type))
                 }
             }
@@ -730,6 +772,14 @@ namespace
             return member->m_is_reusable;
         }
 
+        std::string MakeReusableInnerOffset(const DataDefinition* dataDefinition, const Variable* member) const
+        {
+            if (m_env.m_architecture_mismatch)
+                return std::to_string(member->m_offset);
+
+            return std::format("offsetof({0}, {1})", dataDefinition->GetFullName(), member->m_name);
+        }
+
         void WriteMember_Reuse(const StructureInformation* info,
                                const MemberInformation* member,
                                const DeclarationModifierComputations& modifier,
@@ -741,7 +791,10 @@ namespace
                 return;
             }
 
-            LINEF("if (m_stream->ReusableShouldWrite(&{0}))", MakeWrittenMemberAccess(info, member, modifier))
+            LINEF("if (m_stream->ReusableShouldWrite({0}, {1}.WithInnerOffset({2})))",
+                  MakeMemberAccess(info, member, modifier),
+                  MakeTypeWrittenVarName(info->m_definition),
+                  MakeReusableInnerOffset(info->m_definition, member->m_member))
             LINE("{")
             m_intendation++;
 
@@ -1001,17 +1054,17 @@ namespace
                 }
                 else
                 {
-                    LINEF("{0} = m_stream->WritePartial<{1}>({2}, offsetof({1}, {3}));",
+                    LINEF("{0} = m_stream->WritePartial({1}, offsetof({2}, {3}));",
                           MakeTypeWrittenVarName(info->m_definition),
-                          info->m_definition->GetFullName(),
                           MakeTypeVarName(info->m_definition),
+                          info->m_definition->GetFullName(),
                           dynamicMember->m_member->m_name)
                 }
 
                 m_intendation--;
 
                 LINE("")
-                LINEF("assert({0} != nullptr);", MakeTypeWrittenVarName(info->m_definition))
+                LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenVarName(info->m_definition))
             }
             else
             {
@@ -1063,7 +1116,7 @@ namespace
             m_intendation--;
 
             LINE("")
-            LINEF("assert({0} != nullptr);", MakeTypeWrittenPtrVarName(info->m_definition))
+            LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenPtrVarName(info->m_definition))
 
             LINE("")
             if (inTemp)
@@ -1071,7 +1124,7 @@ namespace
                 LINEF("m_stream->PushBlock({0});", m_env.m_default_temp_block->m_name)
                 LINE("")
             }
-            LINEF("if (m_stream->ReusableShouldWrite({0}))", MakeTypeWrittenPtrVarName(info->m_definition))
+            LINEF("if (m_stream->ReusableShouldWrite(*{0}, {1}))", MakeTypePtrVarName(info->m_definition), MakeTypeWrittenPtrVarName(info->m_definition))
             LINE("{")
             m_intendation++;
 
@@ -1089,7 +1142,7 @@ namespace
             }
 
             LINE("")
-            LINEF("m_stream->MarkFollowing(*{0});", MakeTypeWrittenPtrVarName(info->m_definition))
+            LINEF("m_stream->MarkFollowing({0});", MakeTypeWrittenPtrVarName(info->m_definition))
 
             m_intendation--;
             LINE("}")
@@ -1106,7 +1159,9 @@ namespace
 
         void PrintMainWriteMethod()
         {
-            LINEF("void {0}::Write({1}** pAsset)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
+            LINEF("void {0}::Write({1}* pAsset, const ZoneOutputOffset pointerWrittenOffset)",
+                  WriterClassName(m_env.m_asset),
+                  m_env.m_asset->m_definition->GetFullName())
             LINE("{")
             m_intendation++;
 
@@ -1116,9 +1171,8 @@ namespace
             LINE("")
             LINEF("auto* zoneAsset = static_cast<{0}*>(m_asset->m_ptr);", m_env.m_asset->m_definition->GetFullName())
             LINEF("{0} = &zoneAsset;", MakeTypePtrVarName(m_env.m_asset->m_definition))
-            LINEF("{0} = &zoneAsset;", MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition))
+            LINEF("{0} = pointerWrittenOffset;", MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition))
             LINEF("WritePtr_{0}(false);", MakeSafeTypeName(m_env.m_asset->m_definition))
-            LINE("*pAsset = zoneAsset;")
 
             m_intendation--;
             LINE("}")
@@ -1142,7 +1196,7 @@ namespace
             {
                 LINEF("m_stream->Write<{0}>(*{1});", def->GetFullName(), MakeTypePtrVarName(def))
             }
-            LINEF("m_stream->MarkFollowing(*{0});", MakeTypeWrittenPtrVarName(def))
+            LINEF("m_stream->MarkFollowing({0});", MakeTypeWrittenPtrVarName(def))
         }
 
         void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
@@ -1154,13 +1208,13 @@ namespace
             if (info && StructureComputations(info).IsAsset())
             {
                 LINEF("{0} writer(*{1}, m_zone, *m_stream);", WriterClassName(info), MakeTypePtrVarName(def))
-                LINEF("writer.Write({0});", MakeTypeWrittenPtrVarName(def))
+                LINEF("writer.Write(*{0}, {1});", MakeTypePtrVarName(def), MakeTypeWrittenPtrVarName(def))
             }
             else
             {
                 if (reusable)
                 {
-                    LINEF("if (m_stream->ReusableShouldWrite({0}))", MakeTypeWrittenPtrVarName(def))
+                    LINEF("if (m_stream->ReusableShouldWrite(*{0}, {1}))", MakeTypePtrVarName(def), MakeTypeWrittenPtrVarName(def))
                     LINE("{")
                     m_intendation++;
 
@@ -1194,11 +1248,11 @@ namespace
             m_intendation--;
 
             LINE("")
-            LINEF("assert({0} != nullptr);", MakeTypeWrittenPtrVarName(def))
+            LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenPtrVarName(def))
 
             LINE("")
             LINEF("{0}** var = {1};", def->GetFullName(), MakeTypePtrVarName(def))
-            LINEF("{0}** varWritten = {1};", def->GetFullName(), MakeTypeWrittenPtrVarName(def))
+            LINEF("ZoneOutputOffset varWritten = {1};", def->GetFullName(), MakeTypeWrittenPtrVarName(def))
             LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
@@ -1208,7 +1262,7 @@ namespace
             PrintWritePtrArrayMethod_PointerCheck(def, info, reusable);
             LINE("")
             LINE("var++;")
-            LINE("varWritten++;")
+            LINE("varWritten.Inc(m_stream->GetPointerByteCount());")
 
             m_intendation--;
             LINE("}")
@@ -1230,11 +1284,11 @@ namespace
             m_intendation--;
 
             LINE("")
-            LINEF("assert({0} != nullptr);", MakeTypeWrittenVarName(def))
+            LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenVarName(def))
 
             LINE("")
             LINEF("{0}* var = {1};", def->GetFullName(), MakeTypeVarName(def))
-            LINEF("{0}* varWritten = {1};", def->GetFullName(), MakeTypeWrittenVarName(def))
+            LINEF("ZoneOutputOffset varWritten = {1};", def->GetFullName(), MakeTypeWrittenVarName(def))
             LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
@@ -1243,7 +1297,7 @@ namespace
             LINEF("{0} = varWritten;", MakeTypeWrittenVarName(info->m_definition))
             LINEF("Write_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
-            LINE("varWritten++;")
+            LINE("varWritten.Inc(m_stream->GetPointerByteCount());")
 
             m_intendation--;
             LINE("}")
