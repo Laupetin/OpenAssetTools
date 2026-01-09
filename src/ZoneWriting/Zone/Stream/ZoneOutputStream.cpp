@@ -14,9 +14,6 @@
 
 namespace
 {
-    inline const auto PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    inline const auto PTR_INSERT = reinterpret_cast<void*>(-2);
-
     class ReusableEntry
     {
     public:
@@ -182,6 +179,35 @@ namespace
             WriteDataInBlock(src, len + 1);
         }
 
+        ZoneStreamFillWriteAccessor WriteWithFill(const size_t size) override
+        {
+            // If no block has been pushed, load raw
+            if (!m_block_stack.empty())
+            {
+                const auto* block = m_block_stack.top();
+
+                void* result = nullptr;
+                switch (block->m_type)
+                {
+                case XBlockType::BLOCK_TYPE_TEMP:
+                case XBlockType::BLOCK_TYPE_NORMAL:
+                    result = m_zone_data.GetBufferOfSize(size);
+                    break;
+
+                case XBlockType::BLOCK_TYPE_RUNTIME:
+                case XBlockType::BLOCK_TYPE_DELAY:
+                    assert(false);
+                    break;
+                }
+
+                IncBlockPos(size);
+
+                return ZoneStreamFillWriteAccessor(result, size);
+            }
+
+            return ZoneStreamFillWriteAccessor(m_zone_data.GetBufferOfSize(size), size);
+        }
+
         void MarkFollowing(const ZoneOutputOffset outputOffset) override
         {
             assert(!m_block_stack.empty());
@@ -305,9 +331,9 @@ ZoneOutputOffset::ZoneOutputOffset(void* offset)
 {
 }
 
-void* ZoneOutputOffset::Offset() const
+ZoneOutputOffset ZoneOutputOffset::AtOffset(const size_t innerOffset) const
 {
-    return m_offset;
+    return ZoneOutputOffset(static_cast<char*>(m_offset) + innerOffset);
 }
 
 void ZoneOutputOffset::Inc(const size_t size)
@@ -315,13 +341,29 @@ void ZoneOutputOffset::Inc(const size_t size)
     m_offset = static_cast<void*>(static_cast<char*>(m_offset) + size);
 }
 
-ZoneOutputOffset ZoneOutputOffset::WithInnerOffset(const size_t innerOffset) const
+void* ZoneOutputOffset::Offset() const
 {
-    return ZoneOutputOffset(static_cast<char*>(m_offset) + innerOffset);
+    return m_offset;
 }
 
 std::unique_ptr<ZoneOutputStream>
     ZoneOutputStream::Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData)
 {
     return std::make_unique<InMemoryZoneOutputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, zoneData);
+}
+
+ZoneStreamFillWriteAccessor::ZoneStreamFillWriteAccessor(void* blockBuffer, const size_t bufferSize)
+    : m_block_buffer(blockBuffer),
+      m_buffer_size(bufferSize)
+{
+}
+
+ZoneStreamFillWriteAccessor ZoneStreamFillWriteAccessor::AtOffset(const size_t offset) const
+{
+    return ZoneStreamFillWriteAccessor(static_cast<char*>(m_block_buffer) + offset, m_buffer_size - offset);
+}
+
+ZoneOutputOffset ZoneStreamFillWriteAccessor::Offset() const
+{
+    return ZoneOutputOffset(m_block_buffer);
 }

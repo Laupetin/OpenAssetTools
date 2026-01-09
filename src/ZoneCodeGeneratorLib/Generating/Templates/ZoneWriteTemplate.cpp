@@ -306,7 +306,7 @@ namespace
         {
             std::ostringstream str;
             MakeTypeWrittenVarNameInternal(info->m_definition, str);
-            str << ".WithInnerOffset(";
+            str << ".AtOffset(";
 
             if (m_env.m_architecture_mismatch)
             {
@@ -791,7 +791,7 @@ namespace
                 return;
             }
 
-            LINEF("if (m_stream->ReusableShouldWrite({0}, {1}.WithInnerOffset({2})))",
+            LINEF("if (m_stream->ReusableShouldWrite({0}, {1}.AtOffset({2})))",
                   MakeMemberAccess(info, member, modifier),
                   MakeTypeWrittenVarName(info->m_definition),
                   MakeReusableInnerOffset(info->m_definition, member->m_member))
