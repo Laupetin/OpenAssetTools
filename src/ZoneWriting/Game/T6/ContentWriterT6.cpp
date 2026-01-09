@@ -82,11 +82,14 @@ void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 
 void ContentWriter::WriteXAsset(const bool atStreamStart)
 {
+#ifdef ARCH_x86
+    static_assert(offsetof(XAsset, header.data) == 4u);
+#endif
 #define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
         Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                            \
-        writer.Write(&varXAsset->header.headerEntry);                                                                                                          \
+        writer.Write(varXAsset->header.headerEntry, varXAssetWritten.WithInnerOffset(4));                                                                      \
         break;                                                                                                                                                 \
     }
 
