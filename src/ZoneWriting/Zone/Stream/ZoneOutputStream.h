@@ -4,6 +4,7 @@
 #include "Zone/Stream/IZoneStream.h"
 #include "Zone/XBlock.h"
 
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <typeindex>
@@ -16,12 +17,39 @@ public:
     ZoneOutputOffset();
     explicit ZoneOutputOffset(void* offset);
 
-    [[nodiscard]] void* Offset() const;
+    [[nodiscard]] ZoneOutputOffset AtOffset(size_t innerOffset) const;
     void Inc(size_t size);
-    [[nodiscard]] ZoneOutputOffset WithInnerOffset(size_t innerOffset) const;
+    [[nodiscard]] void* Offset() const;
 
 private:
     void* m_offset;
+};
+
+class ZoneStreamFillWriteAccessor
+{
+public:
+    ZoneStreamFillWriteAccessor(void* blockBuffer, size_t bufferSize);
+
+    [[nodiscard]] ZoneStreamFillWriteAccessor AtOffset(size_t offset) const;
+    [[nodiscard]] ZoneOutputOffset Offset() const;
+
+    template<typename T> void Fill(const T& value, const size_t offset) const
+    {
+        assert(offset + sizeof(T) <= m_buffer_size);
+
+        *reinterpret_cast<T*>(static_cast<char*>(m_block_buffer) + offset) = value;
+    }
+
+    template<typename T, size_t S> void FillArray(T (&value)[S], const size_t offset) const
+    {
+        assert(offset + sizeof(T) * S <= m_buffer_size);
+
+        std::memcpy(static_cast<char*>(m_block_buffer) + offset, value, sizeof(T) * S);
+    }
+
+private:
+    void* m_block_buffer;
+    size_t m_buffer_size;
 };
 
 class ZoneOutputStream : public IZoneStream
@@ -58,6 +86,8 @@ public:
     virtual ZoneOutputOffset WriteDataInBlock(const void* dst, size_t size) = 0;
     virtual void IncBlockPos(size_t size) = 0;
     virtual void WriteNullTerminated(const void* dst) = 0;
+
+    virtual ZoneStreamFillWriteAccessor WriteWithFill(size_t size) = 0;
 
     virtual bool ReusableShouldWrite(void* pPtr, ZoneOutputOffset outputOffset, size_t size, std::type_index type) = 0;
     virtual void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) = 0;

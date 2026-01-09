@@ -60,10 +60,7 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
 
 void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
-    if (atStreamStart)
-        varScriptStringListWritten = m_stream->Write(varScriptStringList);
+    assert(!atStreamStart);
 
     if (varScriptStringList->strings != nullptr)
     {
@@ -74,10 +71,8 @@ void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 #ifdef ARCH_x86
         static_assert(offsetof(ScriptStringList, strings) == 4u);
 #endif
-        m_stream->MarkFollowing(varScriptStringListWritten.WithInnerOffset(4));
+        m_stream->MarkFollowing(varScriptStringListWritten.AtOffset(4));
     }
-
-    m_stream->PopBlock();
 }
 
 void ContentWriter::WriteXAsset(const bool atStreamStart)
@@ -89,7 +84,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
         Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                            \
-        writer.Write(varXAsset->header.headerEntry, varXAssetWritten.WithInnerOffset(4));                                                                      \
+        writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                             \
         break;                                                                                                                                                 \
     }
 
@@ -162,18 +157,27 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t count)
 {
     assert(varXAsset != nullptr);
+#ifdef ARCH_x86
+    static_assert(sizeof(XAsset) == 8u);
+#endif
 
     if (atStreamStart)
+    {
+#ifdef ARCH_x86
         varXAssetWritten = m_stream->Write(varXAsset, count);
+#else
+        const auto fill = m_stream->WriteWithFill(8u * count);
+        varXAssetWritten = fill.Offset();
+
+        for (size_t index = 0; index < count; index++)
+            fill.Fill(varXAsset[index].type, 8u * index);
+#endif
+    }
 
     for (size_t index = 0; index < count; index++)
     {
         WriteXAsset(false);
         varXAsset++;
-
-#ifdef ARCH_x86
-        static_assert(sizeof(XAsset) == 8u);
-#endif
         varXAssetWritten.Inc(8u);
     }
 }
@@ -182,21 +186,36 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
 {
     m_stream = &stream;
 
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
     MemoryManager memory;
     XAssetList assetList{};
 
     CreateXAssetList(assetList, memory);
 
     varXAssetList = &assetList;
+
+#ifdef ARCH_x86
+    static_assert(sizeof(XAssetList) == 24);
+    static_assert(offsetof(XAssetList, dependCount) == 8u);
+    static_assert(offsetof(XAssetList, assetCount) == 16u);
     varXAssetListWritten = m_stream->WriteDataRaw(&assetList, sizeof(assetList));
+#else
+    const auto fillAccessor = m_stream->WriteWithFill(24u);
+    varXAssetListWritten = fillAccessor.Offset();
+
+    varScriptStringList = &varXAssetList->stringList;
+    fillAccessor.Fill(varScriptStringList->count, 0u);
+
+    fillAccessor.Fill(varXAssetList->dependCount, 8u);
+    fillAccessor.Fill(varXAssetList->assetCount, 16u);
+#endif
+
+    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
 #ifdef ARCH_x86
     static_assert(offsetof(XAssetList, stringList) == 0u);
 #endif
     varScriptStringList = &varXAssetList->stringList;
-    varScriptStringListWritten = varXAssetListWritten.WithInnerOffset(0);
+    varScriptStringListWritten = varXAssetListWritten.AtOffset(0);
     WriteScriptStringList(false);
 
     if (varXAssetList->depends != nullptr)
@@ -208,7 +227,7 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
 #ifdef ARCH_x86
         static_assert(offsetof(XAssetList, depends) == 12u);
 #endif
-        m_stream->MarkFollowing(varXAssetListWritten.WithInnerOffset(12));
+        m_stream->MarkFollowing(varXAssetListWritten.AtOffset(12));
     }
 
     if (varXAssetList->assets != nullptr)
@@ -220,7 +239,7 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
 #ifdef ARCH_x86
         static_assert(offsetof(XAssetList, assets) == 20u);
 #endif
-        m_stream->MarkFollowing(varXAssetListWritten.WithInnerOffset(20));
+        m_stream->MarkFollowing(varXAssetListWritten.AtOffset(20));
     }
 
     m_stream->PopBlock();
