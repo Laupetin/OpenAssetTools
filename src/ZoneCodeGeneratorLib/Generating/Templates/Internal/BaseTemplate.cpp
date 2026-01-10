@@ -1,6 +1,7 @@
 #include "BaseTemplate.h"
 
 #include "Domain/Computations/MemberComputations.h"
+#include "Domain/Computations/StructureComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 
 #include <sstream>
@@ -260,6 +261,15 @@ std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
     std::ostringstream str;
     MakeEvaluationInternal(evaluation, str);
     return str.str();
+}
+
+bool BaseTemplate::ShouldGenerateFillMethod(const RenderingUsedType& type)
+{
+    const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
+    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
+    const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
+
+    return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
 }
 
 size_t BaseTemplate::SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const

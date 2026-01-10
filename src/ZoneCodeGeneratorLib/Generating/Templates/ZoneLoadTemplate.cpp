@@ -267,16 +267,6 @@ namespace
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
         }
 
-        static bool ShouldGenerateFillMethod(const RenderingUsedType& type)
-        {
-            const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
-            const auto hasMismatchingStructure =
-                type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
-            const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
-
-            return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
-        }
-
         void PrintFillStructMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void FillStruct_{0}(const ZoneStreamFillReadAccessor& fillAccessor);", MakeSafeTypeName(info->m_definition))
@@ -355,7 +345,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                 {
                     PrintVariableInitialization(type->m_type);
                 }

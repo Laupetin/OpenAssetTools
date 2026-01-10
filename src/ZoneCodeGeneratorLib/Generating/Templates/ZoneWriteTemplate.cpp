@@ -79,6 +79,16 @@ namespace
             m_intendation++;
 
             // Method Declarations
+            if (m_env.m_architecture_mismatch)
+            {
+                for (const auto* type : m_env.m_used_types)
+                {
+                    if (ShouldGenerateFillMethod(*type))
+                    {
+                        PrintFillStructMethodDeclaration(type->m_info);
+                    }
+                }
+            }
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_pointer_array_reference_exists)
@@ -114,7 +124,8 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                     LINE(VariableDecl(type->m_type))
             }
             for (const auto* type : m_env.m_used_types)
@@ -167,6 +178,17 @@ namespace
             LINE("")
             PrintMainWriteMethod();
 
+            if (m_env.m_architecture_mismatch)
+            {
+                for (const auto* type : m_env.m_used_types)
+                {
+                    if (ShouldGenerateFillMethod(*type))
+                    {
+                        LINE("")
+                        PrintFillStructMethod(type->m_info);
+                    }
+                }
+            }
             for (const auto* type : m_env.m_used_types)
             {
                 if (type->m_pointer_array_reference_exists)
@@ -231,6 +253,11 @@ namespace
         static std::string WrittenPointerVariableDecl(const DataDefinition* def)
         {
             return std::format("ZoneOutputOffset var{0}PtrWritten;", MakeSafeTypeName(def));
+        }
+
+        void PrintFillStructMethodDeclaration(const StructureInformation* info) const
+        {
+            LINEF("void FillStruct_{0}(const ZoneStreamFillWriteAccessor& fillAccessor);", MakeSafeTypeName(info->m_definition))
         }
 
         void PrintHeaderPtrArrayWriteMethodDeclaration(const DataDefinition* def) const
@@ -343,7 +370,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                     PrintVariableInitialization(type->m_type);
             }
             for (const auto* type : m_env.m_used_types)
@@ -444,7 +472,7 @@ namespace
             }
         }
 
-        void WriteMember_ArrayPointer(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier) const
+        void WriteMember_ArrayPointer(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             const MemberComputations computations(member);
             LINEF("m_stream->MarkFollowing({0});", MakeWrittenMemberAccess(info, member, modifier))
@@ -454,6 +482,20 @@ namespace
                 LINEF("WriteArray_{0}(true, {1});",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
                       MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+            }
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            {
+                LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+                LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                LINE("for (auto i = 0uz; i < fillArraySize; i++)")
+                LINE("{")
+                m_intendation++;
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
+                LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
+                      MakeSafeTypeName(member->m_type->m_definition),
+                      member->m_member->m_type_declaration->m_type->GetSize())
+                m_intendation--;
+                LINE("}")
             }
             else
             {
@@ -571,6 +613,13 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("Write_{0}(true);", MakeSafeTypeName(member->m_type->m_definition))
             }
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            {
+                LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
+                LINEF("FillStruct_{0}(m_stream->WriteWithFill({1}));",
+                      MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
+                      member->m_member->m_type_declaration->m_type->GetSize())
+            }
             else
             {
                 LINEF("m_stream->Write<{0}{1}>({2});",
@@ -583,7 +632,7 @@ namespace
         void WriteMember_TypeCheck(const StructureInformation* info,
                                    const MemberInformation* member,
                                    const DeclarationModifierComputations& modifier,
-                                   const MemberWriteType writeType) const
+                                   const MemberWriteType writeType)
         {
             if (member->m_is_string)
             {
@@ -667,7 +716,7 @@ namespace
         void WriteMember_InsertReuse(const StructureInformation* info,
                                      const MemberInformation* member,
                                      const DeclarationModifierComputations& modifier,
-                                     const MemberWriteType writeType) const
+                                     const MemberWriteType writeType)
         {
             if (!WriteMember_ShouldMakeInsertReuse(member, modifier, writeType))
             {
@@ -733,7 +782,7 @@ namespace
         void WriteMember_Align(const StructureInformation* info,
                                const MemberInformation* member,
                                const DeclarationModifierComputations& modifier,
-                               const MemberWriteType writeType) const
+                               const MemberWriteType writeType)
         {
             if (!WriteMember_ShouldMakeAlign(member, modifier, writeType))
             {
@@ -1042,26 +1091,39 @@ namespace
             if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
             {
                 LINE("if (atStreamStart)")
-                m_intendation++;
 
-                if (dynamicMember == nullptr)
+                if (info->m_has_matching_cross_platform_structure)
                 {
-                    LINEF("{0} = m_stream->Write<{1}>({2}); // Size: {3}",
-                          MakeTypeWrittenVarName(info->m_definition),
-                          info->m_definition->GetFullName(),
-                          MakeTypeVarName(info->m_definition),
-                          info->m_definition->GetSize())
+                    m_intendation++;
+                    if (dynamicMember == nullptr)
+                    {
+                        LINEF("{0} = m_stream->Write<{1}>({2}); // Size: {3}",
+                              MakeTypeWrittenVarName(info->m_definition),
+                              info->m_definition->GetFullName(),
+                              MakeTypeVarName(info->m_definition),
+                              info->m_definition->GetSize())
+                    }
+                    else
+                    {
+                        LINEF("{0} = m_stream->WritePartial({1}, offsetof({2}, {3}));",
+                              MakeTypeWrittenVarName(info->m_definition),
+                              MakeTypeVarName(info->m_definition),
+                              info->m_definition->GetFullName(),
+                              dynamicMember->m_member->m_name)
+                    }
+                    m_intendation--;
                 }
                 else
                 {
-                    LINEF("{0} = m_stream->WritePartial({1}, offsetof({2}, {3}));",
-                          MakeTypeWrittenVarName(info->m_definition),
-                          MakeTypeVarName(info->m_definition),
-                          info->m_definition->GetFullName(),
-                          dynamicMember->m_member->m_name)
+                    LINE("{")
+                    m_intendation++;
+                    LINEF("const auto fillAccessor = m_stream->WriteWithFill({0});",
+                          dynamicMember == nullptr ? info->m_definition->GetSize() : dynamicMember->m_member->m_offset)
+                    LINEF("{0} = fillAccessor.Offset();", MakeTypeWrittenVarName(info->m_definition))
+                    LINEF("FillStruct_{0}(fillAccessor);", MakeSafeTypeName(info->m_definition))
+                    m_intendation--;
+                    LINE("}")
                 }
-
-                m_intendation--;
 
                 LINE("")
                 LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenVarName(info->m_definition))
@@ -1109,10 +1171,7 @@ namespace
 
             LINE("if (atStreamStart)")
             m_intendation++;
-            LINEF("{0} = m_stream->Write<{1}*>({2});",
-                  MakeTypeWrittenPtrVarName(info->m_definition),
-                  info->m_definition->GetFullName(),
-                  MakeTypePtrVarName(info->m_definition))
+            LINEF("{0} = m_stream->WriteWithFill(m_stream->GetPointerByteCount()).Offset();", MakeTypeWrittenPtrVarName(info->m_definition))
             m_intendation--;
 
             LINE("")
@@ -1173,6 +1232,253 @@ namespace
             LINEF("{0} = &zoneAsset;", MakeTypePtrVarName(m_env.m_asset->m_definition))
             LINEF("{0} = pointerWrittenOffset;", MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition))
             LINEF("WritePtr_{0}(false);", MakeSafeTypeName(m_env.m_asset->m_definition))
+
+            m_intendation--;
+            LINE("}")
+        }
+
+        void PrintFillStruct_Member_EmbeddedArray(const StructureInformation& structInfo,
+                                                  const MemberInformation& memberInfo,
+                                                  const DeclarationModifierComputations& modifier,
+                                                  const size_t nestedBaseOffset)
+        {
+            if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+            {
+                LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+                LINE("{")
+                m_intendation++;
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
+                      MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINEF("fillAccessor.FillArray({0}, {1});",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+            }
+        }
+
+        void PrintFillStruct_Member_Embedded(const StructureInformation& structInfo,
+                                             const MemberInformation& memberInfo,
+                                             const DeclarationModifierComputations& modifier,
+                                             const size_t nestedBaseOffset)
+        {
+            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->m_anonymous;
+
+            if (!hasAnonymousType)
+            {
+                const auto hasMismatchingStructure = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+                const auto hasDynamicMember = memberInfo.m_type && StructureComputations(memberInfo.m_type).GetDynamicMember();
+                if (hasMismatchingStructure || hasDynamicMember)
+                {
+                    LINEF("{0} = &{1};", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                    LINEF("FillStruct_{0}(fillAccessor.AtOffset({1}));",
+                          MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+                }
+                else
+                {
+                    LINEF("fillAccessor.Fill({0}, {1});",
+                          MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+                }
+            }
+            else if (memberInfo.m_member->m_name.empty())
+            {
+                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
+                {
+                    PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);
+                }
+            }
+            else
+            {
+                LINEF("#error Unsupported anonymous struct with name: {0}", memberInfo.m_member->m_name)
+            }
+        }
+
+        void PrintFillStruct_Member_ReferenceArray(const StructureInformation& info,
+                                                   const MemberInformation& member,
+                                                   const DeclarationModifierComputations& modifier,
+                                                   const size_t nestedBaseOffset)
+        {
+            for (const auto& entry : modifier.GetArrayEntries())
+            {
+                PrintFillStruct_Member(info, member, entry, nestedBaseOffset);
+            }
+        }
+
+        // nestedBaseOffset: Base offset in case member is part of a nested anonymous sub-struct
+        void PrintFillStruct_Member(const StructureInformation& structInfo,
+                                    const MemberInformation& memberInfo,
+                                    const DeclarationModifierComputations& modifier,
+                                    const size_t nestedBaseOffset)
+        {
+            if (modifier.IsDynamicArray())
+            {
+            }
+            else if (modifier.IsArray() && modifier.GetNextDeclarationModifier() == nullptr)
+            {
+                PrintFillStruct_Member_EmbeddedArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.GetDeclarationModifier() == nullptr)
+            {
+                PrintFillStruct_Member_Embedded(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.IsArray())
+            {
+                PrintFillStruct_Member_ReferenceArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else
+            {
+                assert(false);
+                LINEF("#error PrintFillStruct_Member failed @ {0}", memberInfo.m_member->m_name)
+            }
+        }
+
+        void PrintFillStruct_Member_Condition_Union(const StructureInformation& structInfo,
+                                                    const MemberInformation& member,
+                                                    const DeclarationModifierComputations& modifier)
+        {
+            const MemberComputations computations(&member);
+
+            if (computations.IsFirstUsedMember())
+            {
+                if (member.m_condition)
+                {
+                    LINEF("if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, modifier, 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    PrintFillStruct_Member(structInfo, member, modifier, 0u);
+                }
+            }
+            else if (computations.IsLastUsedMember())
+            {
+                if (member.m_condition)
+                {
+                    LINEF("else if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, modifier, 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    LINE("else")
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, modifier, 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+            }
+            else
+            {
+                if (member.m_condition)
+                {
+                    LINEF("else if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, modifier, 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    LINEF("#error Middle member of union2 must have condition ({0})", member.m_member->m_name)
+                }
+            }
+        }
+
+        static bool ShouldFillMember(const DeclarationModifierComputations& modifier)
+        {
+            return !modifier.HasPointerModifier();
+        }
+
+        void PrintFillStruct_Struct(const StructureInformation& info)
+        {
+            const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
+
+            if (dynamicMember)
+            {
+                if (info.m_definition->GetType() == DataDefinitionType::UNION)
+                {
+                    for (const auto& member : info.m_ordered_members)
+                    {
+                        const MemberComputations computations(member.get());
+                        if (computations.ShouldIgnore())
+                            continue;
+
+                        DeclarationModifierComputations modifier(member.get());
+                        if (!ShouldFillMember(modifier))
+                            continue;
+
+                        PrintFillStruct_Member_Condition_Union(info, *member, modifier);
+                    }
+                }
+                else
+                {
+                    for (const auto& member : info.m_ordered_members)
+                    {
+                        const MemberComputations computations(member.get());
+                        if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                            continue;
+
+                        DeclarationModifierComputations modifier(member.get());
+                        if (!ShouldFillMember(modifier))
+                            continue;
+
+                        PrintFillStruct_Member(info, *member, modifier, 0u);
+                    }
+                }
+            }
+            else
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore())
+                        continue;
+
+                    DeclarationModifierComputations modifier(member.get());
+                    if (!ShouldFillMember(modifier))
+                        continue;
+
+                    PrintFillStruct_Member(info, *member, modifier, 0u);
+                }
+            }
+        }
+
+        void PrintFillStructMethod(const StructureInformation* info)
+        {
+            LINEF("void {0}::FillStruct_{1}(const ZoneStreamFillWriteAccessor& fillAccessor)",
+                  WriterClassName(m_env.m_asset),
+                  MakeSafeTypeName(info->m_definition))
+
+            LINE("{")
+            m_intendation++;
+
+            PrintFillStruct_Struct(*info);
 
             m_intendation--;
             LINE("}")
@@ -1244,7 +1550,7 @@ namespace
 
             LINE("if (atStreamStart)")
             m_intendation++;
-            LINEF("{0} = m_stream->Write<{1}*>({2}, count);", MakeTypeWrittenPtrVarName(def), def->GetFullName(), MakeTypePtrVarName(def))
+            LINEF("{0} = m_stream->WriteWithFill(m_stream->GetPointerByteCount() * count).Offset();", MakeTypeWrittenPtrVarName(def))
             m_intendation--;
 
             LINE("")
@@ -1279,9 +1585,38 @@ namespace
             LINEF("assert({0} != nullptr);", MakeTypeVarName(def))
             LINE("")
             LINE("if (atStreamStart)")
-            m_intendation++;
-            LINEF("{0} = m_stream->Write<{1}>({2}, count);", MakeTypeWrittenVarName(def), def->GetFullName(), MakeTypeVarName(def))
-            m_intendation--;
+
+            if (info->m_has_matching_cross_platform_structure)
+            {
+                m_intendation++;
+                LINEF("{0} = m_stream->Write<{1}>({2}, count);", MakeTypeWrittenVarName(def), def->GetFullName(), MakeTypeVarName(def))
+                m_intendation--;
+            }
+            else
+            {
+                LINE("{")
+                m_intendation++;
+
+                LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize())
+                LINEF("{0} = arrayFill.Offset();", MakeTypeWrittenVarName(info->m_definition))
+                LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
+                LINEF("auto* var = {0};", MakeTypeVarName(def))
+                LINE("for (size_t index = 0; index < count; index++)")
+                LINE("{")
+                m_intendation++;
+
+                LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINE("var++;")
+
+                m_intendation--;
+                LINE("}")
+
+                LINEF("{0} = arrayStart;", MakeTypeVarName(def))
+
+                m_intendation--;
+                LINE("}")
+            }
 
             LINE("")
             LINEF("assert({0}.Offset() != nullptr);", MakeTypeWrittenVarName(def))
@@ -1297,7 +1632,7 @@ namespace
             LINEF("{0} = varWritten;", MakeTypeWrittenVarName(info->m_definition))
             LINEF("Write_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
-            LINE("varWritten.Inc(m_stream->GetPointerByteCount());")
+            LINEF("varWritten.Inc({0});", def->GetSize())
 
             m_intendation--;
             LINE("}")

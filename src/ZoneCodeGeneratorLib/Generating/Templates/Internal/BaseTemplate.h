@@ -6,6 +6,7 @@
 #include "Domain/Evaluation/OperandStatic.h"
 #include "Domain/Evaluation/Operation.h"
 #include "Generating/BaseRenderingContext.h"
+#include "Generating/OncePerAssetRenderingContext.h"
 
 #include <format>
 #include <ostream>
@@ -33,6 +34,8 @@ protected:
     static std::string MakeCustomActionCall(const CustomAction* action);
     static std::string MakeArrayCount(const ArrayDeclarationModifier* arrayModifier);
     static std::string MakeEvaluation(const IEvaluation* evaluation);
+
+    static bool ShouldGenerateFillMethod(const RenderingUsedType& type);
 
     static void MakeSafeTypeNameInternal(const DataDefinition* def, std::ostringstream& str);
     static void MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str);
