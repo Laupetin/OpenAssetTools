@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Zone/Stream/IZoneOutputStream.h"
+#include "Zone/Stream/ZoneOutputStream.h"
 #include "Zone/Zone.h"
 
 class ContentWriterBase
 {
 protected:
     explicit ContentWriterBase(const Zone& zone);
-    ContentWriterBase(const Zone& zone, IZoneOutputStream& stream);
+    ContentWriterBase(const Zone& zone, ZoneOutputStream& stream);
 
 public:
     virtual ~ContentWriterBase() = default;
@@ -21,8 +21,8 @@ protected:
     void WriteXStringArray(bool atStreamStart, size_t count);
 
     const Zone& m_zone;
-    IZoneOutputStream* m_stream;
+    ZoneOutputStream* m_stream;
 
     const char** varXString;
-    const char** varXStringWritten;
+    ZoneOutputOffset varXStringWritten;
 };

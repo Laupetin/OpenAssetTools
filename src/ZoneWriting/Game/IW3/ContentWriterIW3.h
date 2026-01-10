@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Game/IW3/IW3.h"
 #include "Writing/ContentWriterBase.h"
 #include "Writing/IContentWritingEntryPoint.h"
@@ -10,7 +11,7 @@ namespace IW3
     public:
         explicit ContentWriter(const Zone& zone);
 
-        void WriteContent(IZoneOutputStream& stream) override;
+        void WriteContent(ZoneOutputStream& stream) override;
 
     private:
         void CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const;
@@ -23,5 +24,9 @@ namespace IW3
         XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
+
+        ZoneOutputOffset varXAssetListWritten;
+        ZoneOutputOffset varXAssetWritten;
+        ZoneOutputOffset varScriptStringListWritten;
     };
 } // namespace IW3

@@ -8,13 +8,8 @@ OncePerTemplateRenderingContext::OncePerTemplateRenderingContext(std::string gam
                                                                  const Architecture gameArchitecture,
                                                                  std::vector<const FastFileBlock*> fastFileBlocks,
                                                                  std::vector<StructureInformation*> assets)
-    : m_game(std::move(game)),
-      m_architecture_mismatch(gameArchitecture != OWN_ARCHITECTURE),
-      m_pointer_size(GetPointerSizeForArchitecture(gameArchitecture)),
-      m_blocks(std::move(fastFileBlocks)),
-      m_assets(std::move(assets)),
-      m_default_normal_block(nullptr),
-      m_default_temp_block(nullptr)
+    : BaseRenderingContext(std::move(game), gameArchitecture, std::move(fastFileBlocks)),
+      m_assets(std::move(assets))
 {
     for (const auto* block : m_blocks)
     {

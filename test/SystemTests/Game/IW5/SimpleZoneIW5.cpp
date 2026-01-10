@@ -46,8 +46,6 @@ namespace
 
         REQUIRE(linkerResult);
 
-        // x64 for now produces invalid zones, don't try to load them yet
-#ifdef ARCH_x86
         const auto expectedZonePath = (fs::path(outputPath) / "SimpleZoneIW5.ff").string();
         auto maybeZone = ZoneLoading::LoadZone(expectedZonePath, std::nullopt);
         REQUIRE(maybeZone);
@@ -60,6 +58,5 @@ namespace
         REQUIRE(zone->m_name == "SimpleZoneIW5");
         REQUIRE(pools->GetTotalAssetCount() == 1);
         REQUIRE(pools->m_raw_file->GetAsset("SimpleZone.txt"));
-#endif
     }
 } // namespace
