@@ -284,8 +284,8 @@ namespace
             assert(m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_NORMAL);
 
             uintptr_t ptr = 0;
-            ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (sizeof(uintptr_t) * 8 - m_block_bit_count);
-            ptr |= m_block_stack.top()->m_buffer_size & (UINTPTR_MAX >> m_block_bit_count);
+            ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (m_pointer_byte_count * 8 - m_block_bit_count);
+            ptr |= m_block_stack.top()->m_buffer_size & (UINTPTR_MAX >> (m_block_bit_count + (sizeof(uintptr_t) - m_pointer_byte_count) * 8));
             ptr++;
 
             return ptr;
@@ -295,9 +295,9 @@ namespace
         {
             PushBlock(m_insert_block->m_index);
 
-            Align(sizeof(uintptr_t));
+            Align(m_pointer_byte_count);
             const auto result = GetCurrentZonePointer();
-            IncBlockPos(sizeof(uintptr_t));
+            IncBlockPos(m_pointer_byte_count);
 
             PopBlock();
 
