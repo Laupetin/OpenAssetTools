@@ -360,10 +360,12 @@ ZoneStreamFillWriteAccessor::ZoneStreamFillWriteAccessor(void* blockBuffer, cons
 
 ZoneStreamFillWriteAccessor ZoneStreamFillWriteAccessor::AtOffset(const size_t offset) const
 {
+    assert(m_block_buffer);
     return ZoneStreamFillWriteAccessor(static_cast<char*>(m_block_buffer) + offset, m_buffer_size - offset);
 }
 
 ZoneOutputOffset ZoneStreamFillWriteAccessor::Offset() const
 {
+    assert(m_block_buffer);
     return ZoneOutputOffset(m_block_buffer);
 }

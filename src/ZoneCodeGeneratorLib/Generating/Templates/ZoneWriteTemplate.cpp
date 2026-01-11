@@ -486,16 +486,23 @@ namespace
             else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
             {
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
-                LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
-                LINE("for (auto i = 0uz; i < fillArraySize; i++)")
-                LINE("{")
-                m_intendation++;
-                LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
-                LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
-                      MakeSafeTypeName(member->m_type->m_definition),
-                      member->m_member->m_type_declaration->m_type->GetSize())
-                m_intendation--;
-                LINE("}")
+                if (!computations.IsInRuntimeBlock())
+                {
+                    LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                    LINE("for (auto i = 0uz; i < fillArraySize; i++)")
+                    LINE("{")
+                    m_intendation++;
+                    LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
+                    LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
+                          MakeSafeTypeName(member->m_type->m_definition),
+                          member->m_member->m_type_declaration->m_type->GetSize())
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    LINEF("m_stream->IncBlockPos({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                }
             }
             else
             {

@@ -36,6 +36,7 @@ public:
 
     template<typename T> void Fill(const T& value, const size_t offset) const
     {
+        assert(m_block_buffer);
         assert(offset + sizeof(T) <= m_buffer_size);
 
         *reinterpret_cast<T*>(static_cast<char*>(m_block_buffer) + offset) = value;
@@ -43,6 +44,7 @@ public:
 
     template<typename T, size_t S> void FillArray(T (&value)[S], const size_t offset) const
     {
+        assert(m_block_buffer);
         assert(offset + sizeof(T) * S <= m_buffer_size);
 
         std::memcpy(static_cast<char*>(m_block_buffer) + offset, value, sizeof(T) * S);
