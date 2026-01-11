@@ -1598,7 +1598,7 @@ namespace
                 m_intendation++;
 
                 LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize())
-                LINEF("{0} = arrayFill.Offset();", MakeTypeWrittenVarName(info->m_definition))
+                LINEF("{0} = arrayFill.Offset();", MakeTypeWrittenVarName(def))
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
                 LINE("for (size_t index = 0; index < count; index++)")
