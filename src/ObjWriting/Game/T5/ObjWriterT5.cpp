@@ -2,6 +2,7 @@
 
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/Material/MaterialJsonDumperT5.h"
+#include "Game/T5/Techset/TechsetDumperT5.h"
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "Image/ImageDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
@@ -28,7 +29,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
     REGISTER_DUMPER(xmodel::DumperT5, m_xmodel)
     REGISTER_DUMPER(material::JsonDumperT5, m_material)
-    // REGISTER_DUMPER(AssetDumperTechniqueSet, m_technique_set)
+    REGISTER_DUMPER(techset::DumperT5, m_technique_set)
     REGISTER_DUMPER(image::DumperT5, m_image)
     // REGISTER_DUMPER(AssetDumperSndBank, m_sound_bank)
     // REGISTER_DUMPER(AssetDumperSndPatch, m_sound_patch)
