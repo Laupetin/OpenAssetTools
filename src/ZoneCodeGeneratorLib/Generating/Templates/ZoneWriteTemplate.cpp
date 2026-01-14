@@ -731,31 +731,37 @@ namespace
                 return;
             }
 
+            LINE_STARTF("m_stream->ReusableAddOffset({0}", MakeMemberAccess(info, member, modifier))
+
             if (writeType == MemberWriteType::ARRAY_POINTER)
             {
-                LINEF("m_stream->ReusableAddOffset({0}, {1});",
-                      MakeMemberAccess(info, member, modifier),
-                      MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                {
+                    LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize())
+                }
+
+                LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
             }
             else if (writeType == MemberWriteType::POINTER_ARRAY)
             {
+                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                {
+                    LINE_MIDDLEF(", {0}", m_env.m_pointer_size)
+                }
+
                 const auto* evaluation = modifier.GetPointerArrayCountEvaluation();
 
                 if (evaluation)
                 {
-                    LINEF("m_stream->ReusableAddOffset({0}, {1});",
-                          MakeMemberAccess(info, member, modifier),
-                          MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
+                    LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
                 }
                 else
                 {
-                    LINEF("m_stream->ReusableAddOffset({0}, {1});", MakeMemberAccess(info, member, modifier), modifier.GetArraySize())
+                    LINE_MIDDLEF(", {0}", modifier.GetArraySize())
                 }
             }
-            else
-            {
-                LINEF("m_stream->ReusableAddOffset({0});", MakeMemberAccess(info, member, modifier))
-            }
+
+            LINE_END(");")
 
             WriteMember_TypeCheck(info, member, modifier, writeType);
         }

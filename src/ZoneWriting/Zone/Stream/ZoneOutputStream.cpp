@@ -17,12 +17,13 @@ namespace
     class ReusableEntry
     {
     public:
-        ReusableEntry(void* startPtr, const size_t entrySize, const size_t entryCount, const uintptr_t startZonePtr)
+        ReusableEntry(void* startPtr, const size_t entrySize, const size_t entryCount, const size_t blockSize, const uintptr_t startZonePtr)
             : m_start_ptr(startPtr),
               m_end_ptr(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(startPtr) + entrySize * entryCount)),
               m_start_zone_ptr(startZonePtr),
               m_entry_size(entrySize),
-              m_entry_count(entryCount)
+              m_entry_count(entryCount),
+              m_block_size(blockSize)
         {
         }
 
@@ -31,6 +32,7 @@ namespace
         uintptr_t m_start_zone_ptr;
         size_t m_entry_size;
         size_t m_entry_count;
+        size_t m_block_size;
     };
 
     class InMemoryZoneOutputStream final : public ZoneOutputStream
@@ -245,7 +247,9 @@ namespace
                 if (ptr >= entry.m_start_ptr && ptr < entry.m_end_ptr)
                 {
                     assert((reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) % entrySize == 0);
-                    const auto finalZonePointer = entry.m_start_zone_ptr + (reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr));
+
+                    const auto entryIndex = (reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) / entry.m_entry_size;
+                    const auto finalZonePointer = entry.m_start_zone_ptr + entryIndex * entry.m_block_size;
                     auto* writtenPtrOffset = outputOffset.Offset();
 
                     for (auto i = 0u; i < m_pointer_byte_count; i++)
@@ -258,7 +262,7 @@ namespace
             return true;
         }
 
-        void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) override
+        void ReusableAddOffset(void* ptr, const size_t size, const size_t count, const size_t blockSize, std::type_index type) override
         {
             assert(!m_block_stack.empty());
 
@@ -268,12 +272,12 @@ namespace
             if (foundEntriesForType == m_reusable_entries.end())
             {
                 std::vector<ReusableEntry> entries;
-                entries.emplace_back(ptr, size, count, zoneOffset);
+                entries.emplace_back(ptr, size, count, blockSize, zoneOffset);
                 m_reusable_entries.emplace(std::make_pair(type, std::move(entries)));
             }
             else
             {
-                foundEntriesForType->second.emplace_back(ptr, size, count, zoneOffset);
+                foundEntriesForType->second.emplace_back(ptr, size, count, blockSize, zoneOffset);
             }
         }
 
