@@ -596,7 +596,7 @@ namespace
         {
             const MemberComputations computations(&member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(false))
             {
                 if (member.m_condition)
                 {
@@ -614,7 +614,7 @@ namespace
                     PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(false))
             {
                 if (member.m_condition)
                 {
@@ -810,7 +810,7 @@ namespace
                 if (computations.ShouldIgnore())
                     continue;
 
-                if (computations.IsFirstUsedMember())
+                if (computations.IsFirstUsedMember(false))
                 {
                     LINE("")
                     if (member->m_condition)
@@ -829,7 +829,7 @@ namespace
                         PrintDynamicOversize_DynamicMember(info, *member);
                     }
                 }
-                else if (computations.IsLastUsedMember())
+                else if (computations.IsLastUsedMember(false))
                 {
                     if (member->m_condition)
                     {
@@ -1788,7 +1788,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(false))
             {
                 LINE("")
                 if (member->m_condition)
@@ -1807,7 +1807,7 @@ namespace
                     LoadMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(false))
             {
                 if (member->m_condition)
                 {

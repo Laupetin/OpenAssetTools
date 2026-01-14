@@ -1010,7 +1010,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(false))
             {
                 LINE("")
                 if (member->m_condition)
@@ -1029,7 +1029,7 @@ namespace
                     WriteMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(false))
             {
                 if (member->m_condition)
                 {
@@ -1326,12 +1326,20 @@ namespace
             }
         }
 
+        static bool ShouldFillMember(const DeclarationModifierComputations& modifier)
+        {
+            return !modifier.HasPointerModifier();
+        }
+
         // nestedBaseOffset: Base offset in case member is part of a nested anonymous sub-struct
         void PrintFillStruct_Member(const StructureInformation& structInfo,
                                     const MemberInformation& memberInfo,
                                     const DeclarationModifierComputations& modifier,
                                     const size_t nestedBaseOffset)
         {
+            if (!ShouldFillMember(modifier))
+                return;
+
             if (modifier.IsDynamicArray())
             {
             }
@@ -1360,7 +1368,7 @@ namespace
         {
             const MemberComputations computations(&member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -1378,7 +1386,7 @@ namespace
                     PrintFillStruct_Member(structInfo, member, modifier, 0u);
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -1423,49 +1431,10 @@ namespace
             }
         }
 
-        static bool ShouldFillMember(const DeclarationModifierComputations& modifier)
-        {
-            return !modifier.HasPointerModifier();
-        }
-
         void PrintFillStruct_Struct(const StructureInformation& info)
         {
             const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
-
-            if (dynamicMember)
-            {
-                if (info.m_definition->GetType() == DataDefinitionType::UNION)
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore())
-                            continue;
-
-                        DeclarationModifierComputations modifier(member.get());
-                        if (!ShouldFillMember(modifier))
-                            continue;
-
-                        PrintFillStruct_Member_Condition_Union(info, *member, modifier);
-                    }
-                }
-                else
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore() || member.get() == dynamicMember)
-                            continue;
-
-                        DeclarationModifierComputations modifier(member.get());
-                        if (!ShouldFillMember(modifier))
-                            continue;
-
-                        PrintFillStruct_Member(info, *member, modifier, 0u);
-                    }
-                }
-            }
-            else
+            if (info.m_definition->GetType() == DataDefinitionType::UNION)
             {
                 for (const auto& member : info.m_ordered_members)
                 {
@@ -1474,9 +1443,18 @@ namespace
                         continue;
 
                     DeclarationModifierComputations modifier(member.get());
-                    if (!ShouldFillMember(modifier))
+                    PrintFillStruct_Member_Condition_Union(info, *member, modifier);
+                }
+            }
+            else
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore() || member.get() == dynamicMember)
                         continue;
 
+                    DeclarationModifierComputations modifier(member.get());
                     PrintFillStruct_Member(info, *member, modifier, 0u);
                 }
             }

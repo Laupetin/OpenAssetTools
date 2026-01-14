@@ -2594,8 +2594,8 @@ namespace IW3
 
     union entryInternalData
     {
-        int op;
         Operand operand;
+        int op;
     };
 
     enum expressionEntryType : int
