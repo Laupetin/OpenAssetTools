@@ -596,7 +596,7 @@ namespace
         {
             const MemberComputations computations(&member);
 
-            if (computations.IsFirstUsedMember(false))
+            if (computations.IsFirstUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -614,7 +614,7 @@ namespace
                     PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
                 }
             }
-            else if (computations.IsLastUsedMember(false))
+            else if (computations.IsLastUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -668,35 +668,7 @@ namespace
             }
 
             const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
-
-            if (dynamicMember)
-            {
-                if (info.m_definition->GetType() == DataDefinitionType::UNION)
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore())
-                            continue;
-
-                        PrintFillStruct_Member_Condition_Union(info, *member);
-                    }
-                }
-                else
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore() || member.get() == dynamicMember)
-                            continue;
-
-                        PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
-                    }
-
-                    PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
-                }
-            }
-            else
+            if (info.m_definition->GetType() == DataDefinitionType::UNION)
             {
                 for (const auto& member : info.m_ordered_members)
                 {
@@ -704,8 +676,22 @@ namespace
                     if (computations.ShouldIgnore())
                         continue;
 
+                    PrintFillStruct_Member_Condition_Union(info, *member);
+                }
+            }
+            else
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                        continue;
+
                     PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
                 }
+
+                if (dynamicMember)
+                    PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
             }
         }
 
