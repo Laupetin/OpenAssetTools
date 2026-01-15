@@ -1,10 +1,10 @@
 ![OpenAssetTools Logo](repo/logo_64_64.png) OpenAssetTools
 ============
 
-![GitHub branch check runs](https://img.shields.io/github/check-runs/laupetin/openassettools/main)
-![GitHub Release](https://img.shields.io/github/v/release/laupetin/openassettools)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/laupetin/openassettools/latest)
-![GitHub License](https://img.shields.io/github/license/laupetin/openassettools)
+[![GitHub Release](https://img.shields.io/github/v/release/laupetin/openassettools)](https://github.com/Laupetin/OpenAssetTools/releases/latest)
+[![GitHub commits since latest release](https://img.shields.io/github/commits-since/laupetin/openassettools/latest)](https://github.com/Laupetin/OpenAssetTools/releases/latest)
+[![GitHub branch check runs](https://img.shields.io/github/check-runs/laupetin/openassettools/main)](https://github.com/Laupetin/OpenAssetTools/actions)
+[![GitHub License](https://img.shields.io/github/license/laupetin/openassettools)](https://github.com/Laupetin/OpenAssetTools/blob/main/LICENSE)
 
 
 OpenAssetTools (OAT) is a work in progress project aiming to create a modding tools suite for older Call Of Duty titles.
