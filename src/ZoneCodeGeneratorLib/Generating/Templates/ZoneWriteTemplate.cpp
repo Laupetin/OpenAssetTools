@@ -397,6 +397,7 @@ namespace
             }
             else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
             {
+                LINEF("varScriptString = {0};", MakeMemberAccess(info, member, modifier))
                 LINEF("varScriptStringWritten = {0};", MakeWrittenMemberAccess(info, member, modifier))
                 LINEF("WriteScriptStringArray(false, {0});", MakeArrayCount(dynamic_cast<ArrayDeclarationModifier*>(modifier.GetDeclarationModifier())))
             }
