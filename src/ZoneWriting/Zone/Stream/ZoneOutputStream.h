@@ -34,12 +34,24 @@ public:
     [[nodiscard]] ZoneStreamFillWriteAccessor AtOffset(size_t offset) const;
     [[nodiscard]] ZoneOutputOffset Offset() const;
 
-    template<typename T> void Fill(const T& value, const size_t offset) const
+    template<typename T>
+        requires(sizeof(T) <= sizeof(uintptr_t))
+    void Fill(const T& value, const size_t offset) const
     {
         assert(m_block_buffer);
         assert(offset + sizeof(T) <= m_buffer_size);
 
         *reinterpret_cast<T*>(static_cast<char*>(m_block_buffer) + offset) = value;
+    }
+
+    template<typename T>
+        requires(sizeof(T) > sizeof(uintptr_t))
+    void Fill(const T& value, const size_t offset) const
+    {
+        assert(m_block_buffer);
+        assert(offset + sizeof(T) <= m_buffer_size);
+
+        std::memcpy(static_cast<char*>(m_block_buffer) + offset, &value, sizeof(T));
     }
 
     template<typename T, size_t S> void FillArray(T (&value)[S], const size_t offset) const
