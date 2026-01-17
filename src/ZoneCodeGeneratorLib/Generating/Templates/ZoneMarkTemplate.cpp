@@ -18,7 +18,7 @@ namespace
     {
     public:
         PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -32,10 +32,7 @@ namespace
 
             for (const auto* asset : m_env.m_assets)
             {
-                auto lowerAssetName = asset->m_definition->m_name;
-                utils::MakeStringLowerCase(lowerAssetName);
-
-                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_mark_db.h\"", m_env.m_game, lowerAssetName)
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_mark_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
             }
         }
 
@@ -47,7 +44,7 @@ namespace
     {
     public:
         PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -142,7 +139,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"{0}_{1}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -150,7 +147,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_mark_db.h\"", Lower(type->m_type->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_mark_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
                 }
             }
             LINE("")
@@ -673,7 +670,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(false))
             {
                 LINE("")
                 if (member->m_condition)
@@ -692,7 +689,7 @@ namespace
                     MarkMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(false))
             {
                 if (member->m_condition)
                 {
@@ -802,7 +799,7 @@ void ZoneMarkTemplate::RenderOncePerTemplateFile(std::ostream& stream, const Cod
 {
     assert(fileTag == TAG_ALL_MARKERS);
 
-    PerTemplate t(stream, context);
+    const PerTemplate t(stream, context);
     t.AllMarkers();
 }
 
@@ -813,8 +810,11 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(con
     auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_mark_db.h", assetName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_mark_db.cpp", assetName), TAG_SOURCE);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.h", assetName, gameName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.cpp", assetName, gameName), TAG_SOURCE);
 
     return files;
 }

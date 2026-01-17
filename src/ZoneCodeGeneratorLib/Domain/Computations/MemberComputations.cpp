@@ -189,15 +189,15 @@ bool MemberComputations::IsInRuntimeBlock() const
     return m_info->m_fast_file_block != nullptr && m_info->m_fast_file_block->m_type == FastFileBlockType::RUNTIME;
 }
 
-bool MemberComputations::IsFirstUsedMember() const
+bool MemberComputations::IsFirstUsedMember(const bool includeLeafs) const
 {
-    const auto parentUsedMembers = StructureComputations(m_info->m_parent).GetUsedMembers();
+    const auto parentUsedMembers = StructureComputations(m_info->m_parent).GetUsedMembers(includeLeafs);
     return !parentUsedMembers.empty() && parentUsedMembers[0] == m_info;
 }
 
-bool MemberComputations::IsLastUsedMember() const
+bool MemberComputations::IsLastUsedMember(const bool includeLeafs) const
 {
-    const auto parentUsedMembers = StructureComputations(m_info->m_parent).GetUsedMembers();
+    const auto parentUsedMembers = StructureComputations(m_info->m_parent).GetUsedMembers(includeLeafs);
     return !parentUsedMembers.empty() && parentUsedMembers[parentUsedMembers.size() - 1] == m_info;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Game/T5/T5.h"
 #include "Writing/ContentWriterBase.h"
 #include "Writing/IContentWritingEntryPoint.h"
@@ -8,9 +9,9 @@ namespace T5
     class ContentWriter final : public ContentWriterBase, public IContentWritingEntryPoint
     {
     public:
-        ContentWriter(const Zone& zone);
+        explicit ContentWriter(const Zone& zone);
 
-        void WriteContent(IZoneOutputStream& stream) override;
+        void WriteContent(ZoneOutputStream& stream) override;
 
     private:
         void CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const;
@@ -23,5 +24,9 @@ namespace T5
         XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
+
+        ZoneOutputOffset varXAssetListWritten;
+        ZoneOutputOffset varXAssetWritten;
+        ZoneOutputOffset varScriptStringListWritten;
     };
 } // namespace T5

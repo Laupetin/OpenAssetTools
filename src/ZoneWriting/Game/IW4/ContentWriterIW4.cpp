@@ -1,40 +1,6 @@
 #include "ContentWriterIW4.h"
 
-#include "Game/IW4/XAssets/addonmapents/addonmapents_write_db.h"
-#include "Game/IW4/XAssets/clipmap_t/clipmap_t_write_db.h"
-#include "Game/IW4/XAssets/comworld/comworld_write_db.h"
-#include "Game/IW4/XAssets/font_s/font_s_write_db.h"
-#include "Game/IW4/XAssets/fxeffectdef/fxeffectdef_write_db.h"
-#include "Game/IW4/XAssets/fximpacttable/fximpacttable_write_db.h"
-#include "Game/IW4/XAssets/fxworld/fxworld_write_db.h"
-#include "Game/IW4/XAssets/gameworldmp/gameworldmp_write_db.h"
-#include "Game/IW4/XAssets/gameworldsp/gameworldsp_write_db.h"
-#include "Game/IW4/XAssets/gfximage/gfximage_write_db.h"
-#include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_write_db.h"
-#include "Game/IW4/XAssets/gfxworld/gfxworld_write_db.h"
-#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_write_db.h"
-#include "Game/IW4/XAssets/loadedsound/loadedsound_write_db.h"
-#include "Game/IW4/XAssets/localizeentry/localizeentry_write_db.h"
-#include "Game/IW4/XAssets/mapents/mapents_write_db.h"
-#include "Game/IW4/XAssets/material/material_write_db.h"
-#include "Game/IW4/XAssets/materialpixelshader/materialpixelshader_write_db.h"
-#include "Game/IW4/XAssets/materialtechniqueset/materialtechniqueset_write_db.h"
-#include "Game/IW4/XAssets/materialvertexdeclaration/materialvertexdeclaration_write_db.h"
-#include "Game/IW4/XAssets/materialvertexshader/materialvertexshader_write_db.h"
-#include "Game/IW4/XAssets/menudef_t/menudef_t_write_db.h"
-#include "Game/IW4/XAssets/menulist/menulist_write_db.h"
-#include "Game/IW4/XAssets/physcollmap/physcollmap_write_db.h"
-#include "Game/IW4/XAssets/physpreset/physpreset_write_db.h"
-#include "Game/IW4/XAssets/rawfile/rawfile_write_db.h"
-#include "Game/IW4/XAssets/snd_alias_list_t/snd_alias_list_t_write_db.h"
-#include "Game/IW4/XAssets/sndcurve/sndcurve_write_db.h"
-#include "Game/IW4/XAssets/stringtable/stringtable_write_db.h"
-#include "Game/IW4/XAssets/structureddatadefset/structureddatadefset_write_db.h"
-#include "Game/IW4/XAssets/tracerdef/tracerdef_write_db.h"
-#include "Game/IW4/XAssets/vehicledef/vehicledef_write_db.h"
-#include "Game/IW4/XAssets/weaponcompletedef/weaponcompletedef_write_db.h"
-#include "Game/IW4/XAssets/xanimparts/xanimparts_write_db.h"
-#include "Game/IW4/XAssets/xmodel/xmodel_write_db.h"
+#include "Game/IW4/AssetWriterIW4.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>
@@ -91,30 +57,31 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
 
 void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
-    if (atStreamStart)
-        varScriptStringList = m_stream->Write(varScriptStringList);
+    assert(!atStreamStart);
 
     if (varScriptStringList->strings != nullptr)
     {
-        m_stream->Align(alignof(const char*));
+        m_stream->Align(4);
         varXString = varScriptStringList->strings;
         WriteXStringArray(true, varScriptStringList->count);
 
-        m_stream->MarkFollowing(varScriptStringList->strings);
+#ifdef ARCH_x86
+        static_assert(offsetof(ScriptStringList, strings) == 4u);
+#endif
+        m_stream->MarkFollowing(varScriptStringListWritten.AtOffset(4));
     }
-
-    m_stream->PopBlock();
 }
 
 void ContentWriter::WriteXAsset(const bool atStreamStart)
 {
+#ifdef ARCH_x86
+    static_assert(offsetof(XAsset, header.data) == 4u);
+#endif
 #define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
         Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                            \
-        writer.Write(&varXAsset->header.headerEntry);                                                                                                          \
+        writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                             \
         break;                                                                                                                                                 \
     }
 #define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
@@ -124,7 +91,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        varXAsset = m_stream->Write(varXAsset);
+        varXAssetWritten = m_stream->Write(varXAsset);
 
     switch (varXAsset->type)
     {
@@ -180,38 +147,75 @@ void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t coun
 {
     assert(varXAsset != nullptr);
 
+#ifdef ARCH_x86
+    static_assert(sizeof(XAsset) == 8u);
+#endif
+
     if (atStreamStart)
-        varXAsset = m_stream->Write(varXAsset, count);
+    {
+#ifdef ARCH_x86
+        varXAssetWritten = m_stream->Write(varXAsset, count);
+#else
+        const auto fill = m_stream->WriteWithFill(8u * count);
+        varXAssetWritten = fill.Offset();
+
+        for (size_t index = 0; index < count; index++)
+            fill.Fill(varXAsset[index].type, 8u * index);
+#endif
+    }
 
     for (size_t index = 0; index < count; index++)
     {
         WriteXAsset(false);
         varXAsset++;
+        varXAssetWritten.Inc(8u);
     }
 }
 
-void ContentWriter::WriteContent(IZoneOutputStream& stream)
+void ContentWriter::WriteContent(ZoneOutputStream& stream)
 {
     m_stream = &stream;
-
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     MemoryManager memory;
     XAssetList assetList{};
 
     CreateXAssetList(assetList, memory);
 
-    varXAssetList = static_cast<XAssetList*>(m_stream->WriteDataRaw(&assetList, sizeof(assetList)));
+    varXAssetList = &assetList;
+
+#ifdef ARCH_x86
+    static_assert(sizeof(XAssetList) == 16);
+    static_assert(offsetof(XAssetList, assetCount) == 8u);
+    varXAssetListWritten = m_stream->WriteDataRaw(&assetList, sizeof(assetList));
+#else
+    const auto fillAccessor = m_stream->WriteWithFill(16u);
+    varXAssetListWritten = fillAccessor.Offset();
 
     varScriptStringList = &varXAssetList->stringList;
+    fillAccessor.Fill(varScriptStringList->count, 0u);
+
+    fillAccessor.Fill(varXAssetList->assetCount, 8u);
+#endif
+
+    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
+
+#ifdef ARCH_x86
+    static_assert(offsetof(XAssetList, stringList) == 0u);
+#endif
+    varScriptStringList = &varXAssetList->stringList;
+    varScriptStringListWritten = varXAssetListWritten.AtOffset(0);
     WriteScriptStringList(false);
 
     if (varXAssetList->assets != nullptr)
     {
-        m_stream->Align(alignof(XAsset));
+        m_stream->Align(4);
         varXAsset = varXAssetList->assets;
         WriteXAssetArray(true, varXAssetList->assetCount);
-        m_stream->MarkFollowing(varXAssetList->assets);
+
+#ifdef ARCH_x86
+        static_assert(offsetof(XAssetList, assets) == 12u);
+#endif
+        m_stream->MarkFollowing(varXAssetListWritten.AtOffset(12));
     }
 
     m_stream->PopBlock();

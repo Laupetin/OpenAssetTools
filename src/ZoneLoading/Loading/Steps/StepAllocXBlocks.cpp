@@ -13,8 +13,8 @@ namespace
         {
             const auto blockCount = static_cast<unsigned>(zoneLoader.m_blocks.size());
 
-            const auto blockSizes = std::make_unique<xblock_size_t[]>(blockCount);
-            stream.Load(blockSizes.get(), sizeof(xblock_size_t) * blockCount);
+            std::vector<xblock_size_t> blockSizes(blockCount);
+            stream.Load(blockSizes.data(), sizeof(xblock_size_t) * blockCount);
 
             uint64_t totalMemory = 0;
             for (unsigned int block = 0; block < blockCount; block++)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BaseRenderingContext.h"
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Information/StructureInformation.h"
 #include "Persistence/IDataRepository.h"
@@ -24,15 +25,10 @@ public:
     bool m_pointer_array_reference_is_reusable;
 };
 
-class OncePerAssetRenderingContext
+class OncePerAssetRenderingContext : public BaseRenderingContext
 {
 public:
     static std::unique_ptr<OncePerAssetRenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
-
-    std::string m_game;
-    bool m_architecture_mismatch;
-    unsigned m_pointer_size;
-    std::vector<const FastFileBlock*> m_blocks;
 
     StructureInformation* m_asset;
 
@@ -40,9 +36,6 @@ public:
     std::vector<RenderingUsedType*> m_used_structures;
     std::vector<RenderingUsedType*> m_referenced_assets;
     bool m_has_actions;
-
-    const FastFileBlock* m_default_normal_block;
-    const FastFileBlock* m_default_temp_block;
 
 private:
     OncePerAssetRenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
