@@ -1494,7 +1494,7 @@ namespace
             {
                 LINEF("m_stream->Write<{0}>(*{1});", def->GetFullName(), MakeTypePtrVarName(def))
             }
-            LINEF("m_stream->MarkFollowing({0});", MakeTypeWrittenPtrVarName(def))
+            LINEF("m_stream->MarkFollowing(varWritten);")
         }
 
         void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
