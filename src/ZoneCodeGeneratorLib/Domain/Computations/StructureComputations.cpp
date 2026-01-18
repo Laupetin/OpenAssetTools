@@ -38,7 +38,7 @@ bool StructureComputations::HasNonDynamicMember() const
     return false;
 }
 
-std::vector<MemberInformation*> StructureComputations::GetUsedMembers() const
+std::vector<MemberInformation*> StructureComputations::GetUsedMembers(const bool includeLeafs) const
 {
     std::vector<MemberInformation*> members;
 
@@ -54,7 +54,7 @@ std::vector<MemberInformation*> StructureComputations::GetUsedMembers() const
     {
         for (const auto& member : m_info->m_ordered_members)
         {
-            if (!member->m_is_leaf && !MemberComputations(member.get()).ShouldIgnore())
+            if ((includeLeafs || !member->m_is_leaf) && !MemberComputations(member.get()).ShouldIgnore())
                 members.push_back(member.get());
         }
     }

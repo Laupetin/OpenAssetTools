@@ -25,8 +25,8 @@ public:
     [[nodiscard]] bool IsNotInDefaultNormalBlock() const;
     [[nodiscard]] bool IsInTempBlock() const;
     [[nodiscard]] bool IsInRuntimeBlock() const;
-    [[nodiscard]] bool IsFirstUsedMember() const;
-    [[nodiscard]] bool IsLastUsedMember() const;
+    [[nodiscard]] bool IsFirstUsedMember(bool includeLeafs) const;
+    [[nodiscard]] bool IsLastUsedMember(bool includeLeafs) const;
     [[nodiscard]] bool HasDynamicArraySize() const;
     [[nodiscard]] bool IsDynamicMember() const;
     [[nodiscard]] bool IsAfterPartialLoad() const;

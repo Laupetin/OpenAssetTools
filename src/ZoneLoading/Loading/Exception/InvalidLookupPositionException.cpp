@@ -2,7 +2,7 @@
 
 #include <format>
 
-InvalidLookupPositionException::InvalidLookupPositionException(block_t block, size_t offset)
+InvalidLookupPositionException::InvalidLookupPositionException(const block_t block, const size_t offset)
     : m_block(block),
       m_offset(offset)
 {

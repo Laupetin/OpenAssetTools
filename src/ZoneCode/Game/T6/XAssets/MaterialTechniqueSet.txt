@@ -52,3 +52,8 @@ use MaterialShaderArgument;
 set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST 
 || type == MTL_ARG_LITERAL_PIXEL_CONST;
 set reusable u::literalConst;
+set condition u::codeConst type == MTL_ARG_CODE_VERTEX_CONST 
+|| type == MTL_ARG_CODE_PIXEL_CONST;
+set condition u::codeSampler type == MTL_ARG_CODE_PIXEL_SAMPLER;
+set condition u::nameHash type == MTL_ARG_MATERIAL_VERTEX_CONST 
+|| type == MTL_ARG_MATERIAL_PIXEL_CONST || type == MTL_ARG_MATERIAL_PIXEL_SAMPLER;

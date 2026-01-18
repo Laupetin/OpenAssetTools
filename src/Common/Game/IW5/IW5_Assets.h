@@ -2608,8 +2608,8 @@ namespace IW5
 
     union entryInternalData
     {
-        int op;
         Operand operand;
+        int op;
     };
 
     struct expressionEntry

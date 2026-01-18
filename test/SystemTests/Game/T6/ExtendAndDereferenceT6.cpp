@@ -115,8 +115,6 @@ namespace
         REQUIRE(material->Asset()->techniqueSet->techniques[T6::TECHNIQUE_UNLIT]);
     }
 
-    // x64 for now produces invalid zones, don't try to load them yet
-#ifdef ARCH_x86
     TEST_CASE("Extend and dereference(T6)", "[t6][system][simple]")
     {
         const auto testDir = oat::paths::GetSystemTestsDirectory() / "Game/T6/ExtendAndDereference";
@@ -126,5 +124,4 @@ namespace
         BuildCombinedZone(testDir, outputPath);
         CheckCombinedZoneContent(outputPath);
     }
-#endif
 } // namespace

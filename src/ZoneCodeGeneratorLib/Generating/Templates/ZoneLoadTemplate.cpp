@@ -12,12 +12,39 @@ namespace
 {
     constexpr int TAG_HEADER = 1;
     constexpr int TAG_SOURCE = 2;
+    constexpr int TAG_ALL_LOADERS = 3;
+
+    class PerTemplate final : BaseTemplate
+    {
+    public:
+        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
+            : BaseTemplate(stream, context),
+              m_env(context)
+        {
+        }
+
+        void AllLoaders() const
+        {
+            AddGeneratedHint();
+
+            LINE("#pragma once")
+            LINE("")
+
+            for (const auto* asset : m_env.m_assets)
+            {
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_load_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+            }
+        }
+
+    private:
+        const OncePerTemplateRenderingContext& m_env;
+    };
 
     class PerAsset final : BaseTemplate
     {
     public:
         PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream),
+            : BaseTemplate(stream, context),
               m_env(context)
         {
         }
@@ -135,7 +162,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("#include \"{0}_{1}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
             LINE("")
             LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
             LINE("")
@@ -147,7 +174,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_load_db.h\"", Lower(type->m_type->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_load_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
                 }
             }
 
@@ -240,16 +267,6 @@ namespace
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
         }
 
-        bool ShouldGenerateFillMethod(const RenderingUsedType& type)
-        {
-            const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
-            const auto hasMismatchingStructure =
-                type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
-            const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
-
-            return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
-        }
-
         void PrintFillStructMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void FillStruct_{0}(const ZoneStreamFillReadAccessor& fillAccessor);", MakeSafeTypeName(info->m_definition))
@@ -328,7 +345,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                 {
                     PrintVariableInitialization(type->m_type);
                 }
@@ -343,47 +361,6 @@ namespace
 
             m_intendation--;
             LINE("}")
-        }
-
-        [[nodiscard]] size_t SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
-        {
-            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-            if (declModifiers.empty())
-                return memberInfo.m_member->m_type_declaration->GetSize();
-
-            if (level == 0)
-                return memberInfo.m_member->m_type_declaration->GetSize();
-
-            size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
-            const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
-            for (auto i = declModifiers.rbegin(); i != end; ++i)
-            {
-                if ((*i)->GetType() == DeclarationModifierType::POINTER)
-                    currentSize = m_env.m_pointer_size;
-                else
-                    currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
-            }
-
-            return currentSize;
-        }
-
-        [[nodiscard]] size_t
-            OffsetForMemberModifier(const MemberInformation& memberInfo, const DeclarationModifierComputations& modifier, const size_t nestedBaseOffset) const
-        {
-            size_t curOffset = memberInfo.m_member->m_offset;
-
-            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-            auto curDeclModifier = declModifiers.begin();
-            auto curLevel = 0u;
-            for (const auto index : modifier.GetArrayIndices())
-            {
-                if (index > 0)
-                    curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
-
-                curLevel++;
-            }
-
-            return curOffset + nestedBaseOffset;
         }
 
         void PrintFillStruct_Member_DynamicArray(const StructureInformation& structInfo,
@@ -619,7 +596,7 @@ namespace
         {
             const MemberComputations computations(&member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -637,7 +614,7 @@ namespace
                     PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(true))
             {
                 if (member.m_condition)
                 {
@@ -691,35 +668,7 @@ namespace
             }
 
             const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
-
-            if (dynamicMember)
-            {
-                if (info.m_definition->GetType() == DataDefinitionType::UNION)
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore())
-                            continue;
-
-                        PrintFillStruct_Member_Condition_Union(info, *member);
-                    }
-                }
-                else
-                {
-                    for (const auto& member : info.m_ordered_members)
-                    {
-                        const MemberComputations computations(member.get());
-                        if (computations.ShouldIgnore() || member.get() == dynamicMember)
-                            continue;
-
-                        PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
-                    }
-
-                    PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
-                }
-            }
-            else
+            if (info.m_definition->GetType() == DataDefinitionType::UNION)
             {
                 for (const auto& member : info.m_ordered_members)
                 {
@@ -727,8 +676,22 @@ namespace
                     if (computations.ShouldIgnore())
                         continue;
 
+                    PrintFillStruct_Member_Condition_Union(info, *member);
+                }
+            }
+            else
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                        continue;
+
                     PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
                 }
+
+                if (dynamicMember)
+                    PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
             }
         }
 
@@ -833,7 +796,7 @@ namespace
                 if (computations.ShouldIgnore())
                     continue;
 
-                if (computations.IsFirstUsedMember())
+                if (computations.IsFirstUsedMember(false))
                 {
                     LINE("")
                     if (member->m_condition)
@@ -852,7 +815,7 @@ namespace
                         PrintDynamicOversize_DynamicMember(info, *member);
                     }
                 }
-                else if (computations.IsLastUsedMember())
+                else if (computations.IsLastUsedMember(false))
                 {
                     if (member->m_condition)
                     {
@@ -1811,7 +1774,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstUsedMember())
+            if (computations.IsFirstUsedMember(false))
             {
                 LINE("")
                 if (member->m_condition)
@@ -1830,7 +1793,7 @@ namespace
                     LoadMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastUsedMember())
+            else if (computations.IsLastUsedMember(false))
             {
                 if (member->m_condition)
                 {
@@ -2192,6 +2155,23 @@ namespace
     };
 } // namespace
 
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+{
+    std::vector<CodeTemplateFile> files;
+
+    files.emplace_back(std::format("AssetLoader{0}.h", context.m_game), TAG_ALL_LOADERS);
+
+    return files;
+}
+
+void ZoneLoadTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+{
+    assert(fileTag == TAG_ALL_LOADERS);
+
+    const PerTemplate t(stream, context);
+    t.AllLoaders();
+}
+
 std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
@@ -2199,8 +2179,11 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(con
     auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_load_db.h", assetName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_load_db.cpp", assetName), TAG_SOURCE);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.h", assetName, gameName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.cpp", assetName, gameName), TAG_SOURCE);
 
     return files;
 }

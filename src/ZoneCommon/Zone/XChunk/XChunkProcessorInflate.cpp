@@ -27,7 +27,7 @@ size_t XChunkProcessorInflate::Process(unsigned streamNumber, const uint8_t* inp
     ret = inflate(&stream, Z_FULL_FLUSH);
     if (ret != Z_STREAM_END)
     {
-        con::error("inflate of stream failed with error code {}: {}", streamNumber, ret, stream.msg);
+        con::error("inflate of stream {} failed with error code {}: {}", streamNumber, ret, stream.msg);
         throw XChunkException(std::format("Zone has invalid or unsupported compression: {}", stream.msg));
     }
 

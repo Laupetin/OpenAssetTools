@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-AssetWriter::AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, IZoneOutputStream& stream)
+AssetWriter::AssetWriter(XAssetInfoGeneric* asset, const Zone& zone, ZoneOutputStream& stream)
     : ContentWriterBase(zone, stream),
       m_asset(asset),
       varScriptString(nullptr),
@@ -18,16 +18,16 @@ const char* AssetWriter::NonReferenceAssetName(const char* assetName)
     return assetName;
 }
 
-scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
+void AssetWriter::UseScriptString(const scr_string_t scrString, const ZoneOutputOffset written) const
 {
     assert(scrString < m_asset->m_zone->m_script_strings.Count());
 
     if (m_asset->m_zone == &m_zone)
-        return scrString;
+        return;
 
     // The asset comes from a different zone, we need to translate it
     const auto strValue = m_asset->m_zone->m_script_strings.CValue(scrString);
-    return m_zone.m_script_strings.GetScriptString(strValue);
+    *static_cast<scr_string_t*>(written.Offset()) = m_zone.m_script_strings.GetScriptString(strValue);
 }
 
 void AssetWriter::WriteScriptStringArray(const bool atStreamStart, const size_t count)
@@ -38,12 +38,13 @@ void AssetWriter::WriteScriptStringArray(const bool atStreamStart, const size_t 
         varScriptStringWritten = m_stream->Write<scr_string_t>(varScriptString, count);
     }
 
-    assert(varScriptStringWritten != nullptr);
+    assert(varScriptStringWritten.Offset() != nullptr);
 
-    auto* ptr = varScriptStringWritten;
     for (size_t index = 0; index < count; index++)
     {
-        *ptr = UseScriptString(*ptr);
-        ptr++;
+        UseScriptString(*varScriptString, varScriptStringWritten);
+
+        varScriptString++;
+        varScriptStringWritten.Inc(sizeof(scr_string_t));
     }
 }

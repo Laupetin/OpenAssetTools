@@ -7,7 +7,9 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <string>
 
+using namespace std::string_literals;
 namespace fs = std::filesystem;
 
 result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const std::string& path,
@@ -41,5 +43,9 @@ result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const
     auto loadedZone = zoneLoader->LoadZone(file);
 
     file.close();
+
+    if (!loadedZone)
+        return result::Unexpected("Loading zone failed."s);
+
     return std::move(loadedZone);
 }

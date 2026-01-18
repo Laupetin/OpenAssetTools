@@ -1,13 +1,15 @@
 #include "BaseTemplate.h"
 
 #include "Domain/Computations/MemberComputations.h"
+#include "Domain/Computations/StructureComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 
 #include <sstream>
 
-BaseTemplate::BaseTemplate(std::ostream& stream)
+BaseTemplate::BaseTemplate(std::ostream& stream, const BaseRenderingContext& context)
     : m_out(stream),
-      m_intendation(0u)
+      m_intendation(0u),
+      m_env(context)
 {
 }
 
@@ -61,25 +63,11 @@ void BaseTemplate::MakeTypeVarNameInternal(const DataDefinition* def, std::ostri
     MakeSafeTypeNameInternal(def, str);
 }
 
-void BaseTemplate::MakeTypeWrittenVarNameInternal(const DataDefinition* def, std::ostringstream& str)
-{
-    str << "var";
-    MakeSafeTypeNameInternal(def, str);
-    str << "Written";
-}
-
 void BaseTemplate::MakeTypePtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
 {
     str << "var";
     MakeSafeTypeNameInternal(def, str);
     str << "Ptr";
-}
-
-void BaseTemplate::MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
-{
-    str << "var";
-    MakeSafeTypeNameInternal(def, str);
-    str << "PtrWritten";
 }
 
 void BaseTemplate::MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str)
@@ -97,24 +85,10 @@ std::string BaseTemplate::MakeTypeVarName(const DataDefinition* def)
     return str.str();
 }
 
-std::string BaseTemplate::MakeTypeWrittenVarName(const DataDefinition* def)
-{
-    std::ostringstream str;
-    MakeTypeWrittenVarNameInternal(def, str);
-    return str.str();
-}
-
 std::string BaseTemplate::MakeTypePtrVarName(const DataDefinition* def)
 {
     std::ostringstream str;
     MakeTypePtrVarNameInternal(def, str);
-    return str.str();
-}
-
-std::string BaseTemplate::MakeTypeWrittenPtrVarName(const DataDefinition* def)
-{
-    std::ostringstream str;
-    MakeTypeWrittenPtrVarNameInternal(def, str);
     return str.str();
 }
 
@@ -129,17 +103,6 @@ std::string BaseTemplate::MakeMemberAccess(const StructureInformation* info, con
 {
     std::ostringstream str;
     MakeTypeVarNameInternal(info->m_definition, str);
-    str << "->" << member->m_member->m_name;
-    MakeArrayIndicesInternal(modifier, str);
-
-    return str.str();
-}
-
-std::string
-    BaseTemplate::MakeWrittenMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
-{
-    std::ostringstream str;
-    MakeTypeWrittenVarNameInternal(info->m_definition, str);
     str << "->" << member->m_member->m_name;
     MakeArrayIndicesInternal(modifier, str);
 
@@ -298,4 +261,53 @@ std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
     std::ostringstream str;
     MakeEvaluationInternal(evaluation, str);
     return str.str();
+}
+
+bool BaseTemplate::ShouldGenerateFillMethod(const RenderingUsedType& type)
+{
+    const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
+    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
+    const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
+
+    return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
+}
+
+size_t BaseTemplate::SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
+{
+    const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
+    if (declModifiers.empty())
+        return memberInfo.m_member->m_type_declaration->GetSize();
+
+    if (level == 0)
+        return memberInfo.m_member->m_type_declaration->GetSize();
+
+    size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
+    const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
+    for (auto i = declModifiers.rbegin(); i != end; ++i)
+    {
+        if ((*i)->GetType() == DeclarationModifierType::POINTER)
+            currentSize = m_env.m_pointer_size;
+        else
+            currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
+    }
+
+    return currentSize;
+}
+
+size_t BaseTemplate::OffsetForMemberModifier(const MemberInformation& memberInfo,
+                                             const DeclarationModifierComputations& modifier,
+                                             const size_t nestedBaseOffset) const
+{
+    size_t curOffset = memberInfo.m_member->m_offset;
+
+    auto curLevel = 0u;
+    for (const auto index : modifier.GetArrayIndices())
+    {
+        if (index > 0)
+            curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
+
+        curLevel++;
+    }
+
+    return curOffset + nestedBaseOffset;
 }
