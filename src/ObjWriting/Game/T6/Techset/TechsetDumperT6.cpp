@@ -312,18 +312,14 @@ namespace
                 techniqueNames[techniqueIndex] = technique->name;
         }
 
-        return techset::CommonTechset{
-            .m_name = techset.name,
-            .m_technique_names = std::move(techniqueNames),
-        };
+        return techset::CommonTechset(techset.name, std::move(techniqueNames));
     }
 
     void DumpTechset(const AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
-        static techset::CommonTechniqueTypeNames commonNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
         const auto commonTechset = ConvertToCommonTechset(techset);
 
-        techset::DumpCommonTechset(commonNames, context, commonTechset);
+        techset::DumpCommonTechset(commonTechniqueTypeNames, context, commonTechset);
     }
 } // namespace
 
