@@ -11,10 +11,10 @@
 #include "Pool/GlobalAssetPool.h"
 #include "StateMap/StateMapFromTechniqueExtractor.h"
 #include "StateMap/StateMapHandler.h"
+#include "Techset/CommonTechsetCache.h"
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechniqueStateMapCache.h"
 #include "Techset/TechsetCommon.h"
-#include "Techset/TechsetDefinitionCache.h"
 #include "Utils/Logging/Log.h"
 
 #include <cassert>
@@ -795,7 +795,7 @@ namespace
             m_registration.AddDependency(techset);
             m_material.techniqueSet = techset->Asset();
 
-            auto& definitionCache = m_context.GetZoneAssetCreationState<::techset::TechsetDefinitionCache>();
+            auto& definitionCache = m_context.GetZoneAssetCreationState<::techset::CommonTechsetCache>();
 
             bool failure = false;
             const auto* techsetDefinition = m_techset_creator->LoadTechsetDefinition(techsetName, m_context, failure);
@@ -808,12 +808,12 @@ namespace
             SetTechniqueSetCameraRegion(techsetDefinition);
         }
 
-        void SetTechniqueSetStateBits(const ::techset::TechsetDefinition* techsetDefinition)
+        void SetTechniqueSetStateBits(const techset::CommonTechset* commonTechset)
         {
             for (auto i = 0; i < TECHNIQUE_COUNT; i++)
             {
-                std::string techniqueName;
-                if (techsetDefinition->GetTechniqueByIndex(i, techniqueName))
+                auto techniqueName = commonTechset->m_technique_names[i];
+                if (!techniqueName.empty())
                 {
                     const auto stateBitsForTechnique = GetStateBitsForTechnique(techniqueName);
                     const auto foundStateBits = std::ranges::find_if(m_state_bits,
@@ -892,17 +892,17 @@ namespace
             return outBits;
         }
 
-        void SetTechniqueSetCameraRegion(const ::techset::TechsetDefinition* techsetDefinition) const
+        void SetTechniqueSetCameraRegion(const techset::CommonTechset* commonTechset) const
         {
             std::string tempName;
-            if (techsetDefinition->GetTechniqueByIndex(TECHNIQUE_LIT, tempName))
+            if (!commonTechset->m_technique_names[TECHNIQUE_LIT].empty())
             {
                 if (m_material.info.sortKey >= SORTKEY_TRANS_START)
                     m_material.cameraRegion = CAMERA_REGION_LIT_TRANS;
                 else
                     m_material.cameraRegion = CAMERA_REGION_LIT_OPAQUE;
             }
-            else if (techsetDefinition->GetTechniqueByIndex(TECHNIQUE_EMISSIVE, tempName))
+            else if (!commonTechset->m_technique_names[TECHNIQUE_EMISSIVE].empty())
             {
                 m_material.cameraRegion = CAMERA_REGION_EMISSIVE;
             }

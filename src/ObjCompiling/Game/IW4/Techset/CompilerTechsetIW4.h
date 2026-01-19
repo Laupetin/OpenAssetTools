@@ -4,7 +4,7 @@
 #include "Game/IW4/IW4.h"
 #include "SearchPath/ISearchPath.h"
 #include "StateMap/StateMapDefinition.h"
-#include "Techset/TechsetDefinition.h"
+#include "Techset/CommonTechset.h"
 #include "Utils/MemoryManager.h"
 
 #include <memory>
@@ -18,7 +18,7 @@ namespace techset
         ICreatorIW4() = default;
         virtual ~ICreatorIW4() = default;
 
-        virtual TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) = 0;
+        virtual CommonTechset* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) = 0;
         virtual const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) = 0;
     };
 

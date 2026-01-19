@@ -474,10 +474,7 @@ namespace
                 techniqueNames[techniqueIndex] = technique->name;
         }
 
-        return techset::CommonTechset{
-            .m_name = techset.name,
-            .m_technique_names = std::move(techniqueNames),
-        };
+        return techset::CommonTechset(techset.name, std::move(techniqueNames));
     }
 
     void DumpTechset(const AssetDumpingContext& context, const MaterialTechniqueSet& techset)
