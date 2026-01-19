@@ -2,10 +2,11 @@
 
 #include "Game/T6/T6.h"
 #include "Techset/CommonTechnique.h"
+#include "Techset/CommonTechset.h"
 
 namespace T6
 {
-    inline const char* techniqueTypeNames[]{
+    static inline const char* techniqueTypeNames[]{
         "depth prepass",
         "build shadowmap depth",
         "unlit",
@@ -44,8 +45,9 @@ namespace T6
         "debug performance",
     };
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
+    static inline techset::CommonTechniqueTypeNames commonTechniqueTypeNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
 
-    static techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
+    static inline techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
         {
          .name = "position",
          .abbreviation = "p",
@@ -104,7 +106,7 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(streamRoutingSources)> == STREAM_SRC_COUNT);
 
-    static techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
+    static inline techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
         {
          .name = "position",
          .abbreviation = "p",
@@ -188,7 +190,7 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
-    static techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
+    static inline techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
         {
          .value = CONST_SRC_CODE_LIGHT_POSITION,
          .accessor = "lightPosition",
@@ -1511,7 +1513,7 @@ namespace T6
          },
     };
 
-    static techset::CommonCodeSamplerSourceInfo commonCodeSamplerSources[]{
+    static inline techset::CommonCodeSamplerSourceInfo commonCodeSamplerSources[]{
         {
          .value = TEXTURE_SRC_CODE_BLACK,
          .accessor = "black",
@@ -1789,7 +1791,7 @@ namespace T6
          },
     };
 
-    inline MaterialTypeInfo g_materialTypeInfo[]{
+    static inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",     ""    },
         {"m/",   "m_"  },
         {"mc/",  "mc_" },

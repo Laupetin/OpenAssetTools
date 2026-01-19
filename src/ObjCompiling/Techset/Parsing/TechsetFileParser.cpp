@@ -4,7 +4,7 @@
 
 using namespace techset;
 
-namespace techset
+namespace
 {
     class SequenceTechniqueTypeName final : public TechsetParser::sequence_t
     {
@@ -26,11 +26,11 @@ namespace techset
         {
             const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
 
-            size_t techniqueTypeIndex;
-            if (!state->FindTechniqueTypeIndex(typeNameToken.StringValue(), techniqueTypeIndex))
+            const auto maybeTechniqueTypeIndex = state->m_technique_type_names.GetTechniqueTypeByName(typeNameToken.StringValue());
+            if (!maybeTechniqueTypeIndex.has_value())
                 throw ParsingException(typeNameToken.GetPos(), "Unknown technique type name");
 
-            state->m_current_technique_types.push_back(techniqueTypeIndex);
+            state->m_current_technique_types.push_back(maybeTechniqueTypeIndex.value());
         }
     };
 
@@ -64,31 +64,34 @@ namespace techset
                 techniqueNameToken.m_type == SimpleParserValueType::STRING ? techniqueNameToken.StringValue() : techniqueNameToken.IdentifierValue();
 
             for (const auto techniqueTypeIndex : state->m_current_technique_types)
-                state->m_definition->SetTechniqueByIndex(techniqueTypeIndex, techniqueName);
+                state->m_definition->m_technique_names[techniqueTypeIndex] = techniqueName;
             state->m_current_technique_types.clear();
         }
     };
+} // namespace
+
+namespace techset
+{
+    TechsetParser::TechsetParser(SimpleLexer& lexer, const CommonTechniqueTypeNames& techniqueTypeNames)
+        : AbstractParser(&lexer, std::make_unique<TechsetParserState>(techniqueTypeNames))
+    {
+    }
+
+    const std::vector<TechsetParser::sequence_t*>& TechsetParser::GetTestsForState()
+    {
+        static std::vector<sequence_t*> allTests({
+            new SequenceTechniqueTypeName(),
+            new SequenceTechniqueName(),
+        });
+        static std::vector<sequence_t*> techniqueTypeNameOnlyTests({
+            new SequenceTechniqueTypeName(),
+        });
+
+        return m_state->m_current_technique_types.empty() ? techniqueTypeNameOnlyTests : allTests;
+    }
+
+    std::unique_ptr<CommonTechset> TechsetParser::GetParsingResult() const
+    {
+        return std::move(m_state->m_definition);
+    }
 } // namespace techset
-
-TechsetParser::TechsetParser(SimpleLexer* lexer, const char** validTechniqueTypeNames, const size_t validTechniqueTypeNameCount)
-    : AbstractParser(lexer, std::make_unique<TechsetParserState>(validTechniqueTypeNames, validTechniqueTypeNameCount))
-{
-}
-
-const std::vector<TechsetParser::sequence_t*>& TechsetParser::GetTestsForState()
-{
-    static std::vector<sequence_t*> allTests({
-        new SequenceTechniqueTypeName(),
-        new SequenceTechniqueName(),
-    });
-    static std::vector<sequence_t*> techniqueTypeNameOnlyTests({
-        new SequenceTechniqueTypeName(),
-    });
-
-    return m_state->m_current_technique_types.empty() ? techniqueTypeNameOnlyTests : allTests;
-}
-
-std::unique_ptr<TechsetDefinition> TechsetParser::GetTechsetDefinition() const
-{
-    return std::move(m_state->m_definition);
-}
