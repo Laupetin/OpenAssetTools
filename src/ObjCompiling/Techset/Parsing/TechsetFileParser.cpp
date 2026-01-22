@@ -72,8 +72,8 @@ namespace
 
 namespace techset
 {
-    TechsetParser::TechsetParser(SimpleLexer& lexer, const CommonTechniqueTypeNames& techniqueTypeNames)
-        : AbstractParser(&lexer, std::make_unique<TechsetParserState>(techniqueTypeNames))
+    TechsetParser::TechsetParser(SimpleLexer& lexer, std::string techsetName, const CommonTechniqueTypeNames& techniqueTypeNames)
+        : AbstractParser(&lexer, std::make_unique<TechsetParserState>(std::move(techsetName), techniqueTypeNames))
     {
     }
 
