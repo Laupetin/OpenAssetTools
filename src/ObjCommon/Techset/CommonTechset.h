@@ -28,6 +28,7 @@ namespace techset
         CommonTechset() = default;
         explicit CommonTechset(size_t techniqueTypeCount);
         CommonTechset(std::string name, std::vector<std::string> techniqueNames);
+        CommonTechset(std::string name, size_t techniqueTypeCount);
 
         std::string m_name;
         std::vector<std::string> m_technique_names;
