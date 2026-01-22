@@ -20,7 +20,7 @@ namespace techset
     {
         failure = false;
 
-        const auto fileName = GetFileNameForTechniqueName(assetName);
+        const auto fileName = GetFileNameForTechsetName(assetName);
         const auto techniqueFile = searchPath.Open(fileName);
         if (!techniqueFile.IsOpen())
             return nullptr;
@@ -36,7 +36,7 @@ namespace techset
         CommentRemovingStreamProxy commentProxy(&baseStream);
         const auto lexer = std::make_unique<SimpleLexer>(&commentProxy, std::move(lexerConfig));
 
-        const auto parser = std::make_unique<TechsetParser>(*lexer, techniqueTypeNames);
+        const auto parser = std::make_unique<TechsetParser>(*lexer, assetName, techniqueTypeNames);
 
         const auto success = parser->Parse();
         if (success)

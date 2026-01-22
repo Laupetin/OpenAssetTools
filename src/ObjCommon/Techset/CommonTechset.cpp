@@ -46,4 +46,10 @@ namespace techset
           m_technique_names(std::move(techniqueNames))
     {
     }
+
+    CommonTechset::CommonTechset(std::string name, const size_t techniqueTypeCount)
+        : m_name(std::move(name)),
+          m_technique_names(techniqueTypeCount)
+    {
+    }
 } // namespace techset
