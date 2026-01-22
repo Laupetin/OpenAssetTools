@@ -10,9 +10,9 @@ namespace techset
     class TechsetParser final : public AbstractParser<SimpleParserValue, TechsetParserState>
     {
     public:
-        TechsetParser(SimpleLexer& lexer, const CommonTechniqueTypeNames& techniqueTypeNames);
+        TechsetParser(SimpleLexer& lexer, std::string techsetName, const CommonTechniqueTypeNames& techniqueTypeNames);
         [[nodiscard]] std::unique_ptr<CommonTechset> GetParsingResult() const;
-        
+
     protected:
         const std::vector<sequence_t*>& GetTestsForState() override;
     };
