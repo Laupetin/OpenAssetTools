@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace techset
@@ -11,7 +12,7 @@ namespace techset
     class TechsetParserState
     {
     public:
-        explicit TechsetParserState(const CommonTechniqueTypeNames& techniqueTypeNames);
+        TechsetParserState(std::string techsetName, const CommonTechniqueTypeNames& techniqueTypeNames);
 
         const CommonTechniqueTypeNames& m_technique_type_names;
         std::unique_ptr<CommonTechset> m_definition;
