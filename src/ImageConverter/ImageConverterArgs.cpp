@@ -153,5 +153,16 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
     // --no-color
     con::set_use_color(!m_argument_parser.IsOptionSpecified(OPTION_NO_COLOR));
 
+    if (m_argument_parser.IsOptionSpecified(OPTION_GAME_IW3))
+        m_game_to_convert_to = GameId::IW3;
+    else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_IW4))
+        m_game_to_convert_to = GameId::IW4;
+    else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_IW5))
+        m_game_to_convert_to = GameId::IW5;
+    else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_T5))
+        m_game_to_convert_to = GameId::T5;
+    else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_T6))
+        m_game_to_convert_to = GameId::T6;
+
     return true;
 }
