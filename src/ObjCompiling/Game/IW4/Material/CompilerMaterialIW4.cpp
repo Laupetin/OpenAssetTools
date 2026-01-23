@@ -9,11 +9,8 @@
 #include "Gdt/AbstractGdtEntryReader.h"
 #include "Gdt/IGdtQueryable.h"
 #include "Pool/GlobalAssetPool.h"
-#include "Techset/CommonTechsetCache.h"
-#include "Techset/StateMap/StateMapFromTechniqueExtractor.h"
 #include "Techset/StateMap/StateMapHandler.h"
-#include "Techset/TechniqueFileReader.h"
-#include "Techset/TechniqueStateMapCache.h"
+#include "Techset/StateMap/TechniqueStateMapCache.h"
 #include "Techset/TechsetCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -28,6 +25,7 @@ using namespace IW4;
 
 namespace
 {
+    /*
     class SkipMaterialException final : public std::exception
     {
     };
@@ -1328,6 +1326,7 @@ namespace
 
         std::unique_ptr<techset::ICreatorIW4> m_techset_creator;
     };
+    */
 
     class MaterialLoader final : public AssetCreator<AssetMaterial>
     {
@@ -1341,6 +1340,8 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
+            return AssetCreationResult::NoAction();
+            /*
             const auto* entry = m_gdt.GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_MATERIAL, assetName);
             if (!entry)
                 return AssetCreationResult::NoAction();
@@ -1367,6 +1368,7 @@ namespace
             }
 
             return AssetCreationResult::Failure();
+            */
         }
 
     private:
