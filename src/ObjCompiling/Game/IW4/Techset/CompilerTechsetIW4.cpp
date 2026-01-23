@@ -6,11 +6,9 @@
 #include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Shader/D3D9ShaderAnalyser.h"
 #include "Shader/ShaderCommon.h"
-#include "Techset/CommonTechsetCache.h"
 #include "Techset/CommonTechsetLoader.h"
 #include "Techset/StateMap/StateMapReader.h"
-#include "Techset/TechniqueFileReader.h"
-#include "Techset/TechniqueStateMapCache.h"
+#include "Techset/StateMap/TechniqueStateMapCache.h"
 #include "Techset/TechsetCommon.h"
 #include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
@@ -32,6 +30,7 @@ using namespace std::string_literals;
 
 namespace
 {
+    /*
     class LoadedTechnique
     {
     public:
@@ -407,7 +406,7 @@ namespace
 
                                   if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
                                       || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
-                                      return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
+                                      return arg1.m_arg.u.nameHash < arg2.m_arg.u.nameHash;
 
                                   return arg1.m_arg.dest < arg2.m_arg.dest;
                               });
@@ -1263,7 +1262,7 @@ namespace
         TechniqueZoneLoadingState& m_zone_state;
         techset::ICreatorIW4* m_techset_creator;
     };
-
+    */
     class TechsetLoader final : public techset::ICreatorIW4
     {
     public:
@@ -1275,15 +1274,18 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
+            return AssetCreationResult::NoAction();
+            /*
             bool failure = false;
             const auto* techsetDefinition = LoadTechsetDefinition(assetName, context, failure);
             if (!techsetDefinition)
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             return CreateTechsetFromDefinition(assetName, *techsetDefinition, context);
+            */
         }
 
-    private:
+        /*
         AssetCreationResult CreateTechsetFromDefinition(const std::string& assetName, const CommonTechset& definition, AssetCreationContext& context)
         {
             auto* techset = m_memory.Alloc<MaterialTechniqueSet>();
@@ -1311,9 +1313,11 @@ namespace
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
+        */
 
         CommonTechset* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) override
         {
+            /*
             failure = false;
             auto& definitionCache = context.GetZoneAssetCreationState<CommonTechsetCache>();
             auto* cachedTechsetDefinition = definitionCache.GetCachedTechsetDefinition(assetName);
@@ -1334,10 +1338,13 @@ namespace
             definitionCache.AddCommonTechsetToCache(assetName, std::move(techsetDefinition));
 
             return techsetDefinitionPtr;
+            */
+            return nullptr;
         }
 
         const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) override
         {
+            /*
             auto& stateMapCache = context.GetZoneAssetCreationState<TechniqueStateMapCache>();
             auto* cachedStateMap = stateMapCache.GetCachedStateMap(stateMapName);
             if (cachedStateMap)
@@ -1358,6 +1365,8 @@ namespace
             stateMapCache.AddStateMapToCache(std::move(stateMapDefinition));
 
             return stateMapDefinitionPtr;
+            */
+            return nullptr;
         }
 
     private:

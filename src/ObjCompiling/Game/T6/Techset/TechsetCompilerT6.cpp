@@ -43,6 +43,25 @@ namespace
         return static_cast<MaterialWorldVertexFormat>(0);
     }
 
+    MaterialType GetMaterialType(const std::string& name)
+    {
+        for (unsigned materialTypeIndex = MTL_TYPE_MODEL; materialTypeIndex < MTL_TYPE_COUNT; materialTypeIndex++)
+        {
+            if (name.starts_with(g_materialTypeInfo[materialTypeIndex].techniqueSetPrefix))
+                return static_cast<MaterialType>(materialTypeIndex);
+        }
+
+        return MTL_TYPE_DEFAULT;
+    }
+
+    void ApplyMaterialTypeToTechnique(MaterialTechnique& technique, const MaterialType materialType)
+    {
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+        {
+            technique.passArray[passIndex].materialType = materialType;
+        }
+    }
+
     MaterialTechniqueSet* ConvertTechniqueSet(const techset::CommonTechset& commonTechset, MemoryManager& memory)
     {
         auto* techset = memory.Alloc<MaterialTechniqueSet>();
@@ -69,6 +88,27 @@ namespace
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
+            const auto materialType = GetMaterialType(assetName);
+
+            for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
+            {
+                const auto& techniqueName = commonTechset->m_technique_names[techniqueIndex];
+                if (techniqueName.empty())
+                    continue;
+
+                auto* technique = context.LoadSubAsset<SubAssetTechnique>(techniqueName);
+                if (!technique)
+                    return AssetCreationResult::Failure();
+
+                techset->techniques[techniqueIndex] = technique->Asset();
+
+                // Another techset may override this for the technique
+                // but the game determines the material type by techset name.
+                // So this may just be a constraint that cannot be changed.
+                ApplyMaterialTypeToTechnique(*techset->techniques[techniqueIndex], materialType);
+
+                // Precompiled index?
+            }
 
             return AssetCreationResult::Success(context.AddAsset(AssetRegistration<AssetTechniqueSet>(assetName, techset)));
         }
