@@ -23,10 +23,8 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            assert(state->m_in_pass == false);
-            state->m_in_pass = true;
-
-            state->m_acceptor->AcceptNextPass();
+            assert(!state->m_current_pass);
+            state->m_current_pass = CommonPass();
         }
     };
 } // namespace techset

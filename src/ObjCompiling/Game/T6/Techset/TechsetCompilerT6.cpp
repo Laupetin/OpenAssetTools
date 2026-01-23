@@ -70,6 +70,19 @@ namespace
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
 
+            for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
+            {
+                const auto& techniqueName = commonTechset->m_technique_names[techniqueIndex];
+                if (techniqueName.empty())
+                    continue;
+
+                auto* technique = context.LoadSubAsset<SubAssetTechnique>(techniqueName);
+                if (!technique)
+                    return AssetCreationResult::Failure();
+
+                techset->techniques[techniqueIndex] = technique->Asset();
+            }
+
             return AssetCreationResult::Success(context.AddAsset(AssetRegistration<AssetTechniqueSet>(assetName, techset)));
         }
 

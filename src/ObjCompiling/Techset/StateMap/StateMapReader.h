@@ -4,7 +4,6 @@
 #include "Parsing/StateMapParserState.h"
 #include "StateMapDefinition.h"
 #include "Techset/StateMap/StateMapLayout.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <string>
@@ -22,7 +21,7 @@ namespace state_map
     public:
         StateMapReader(std::istream& stream, std::string fileName, std::string stateMapName, const StateMapLayout& layout);
 
-        _NODISCARD bool IsValidEndState(const StateMapParserState* state) const;
-        _NODISCARD std::unique_ptr<StateMapDefinition> ReadStateMapDefinition() const;
+        [[nodiscard]] bool IsValidEndState(const StateMapParserState* state) const;
+        [[nodiscard]] std::unique_ptr<StateMapDefinition> ReadStateMapDefinition() const;
     };
 } // namespace state_map

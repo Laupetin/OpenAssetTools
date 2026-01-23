@@ -8,8 +8,6 @@
 #include "Techset/ShaderDumpingZoneState.h"
 #include "Techset/TechniqueDumpingZoneState.h"
 
-#include <unordered_set>
-
 using namespace T6;
 
 namespace
@@ -66,16 +64,12 @@ namespace
             for (auto streamIndex = 0u; streamIndex < streamCount; streamIndex++)
             {
                 const auto& routing = vertexDecl->routing.data[streamIndex];
-                commonRouting.emplace_back(techset::CommonStreamRouting{
-                    .m_source = static_cast<techset::CommonStreamSource>(routing.source),
-                    .m_destination = static_cast<techset::CommonStreamDestination>(routing.dest),
-                });
+                commonRouting.emplace_back(static_cast<techset::CommonStreamSource>(routing.source),
+                                           static_cast<techset::CommonStreamDestination>(routing.dest));
             }
         }
 
-        return techset::CommonVertexDeclaration{
-            .m_routing = std::move(commonRouting),
-        };
+        return techset::CommonVertexDeclaration(std::move(commonRouting));
     }
 
     techset::CommonShaderArg ConvertToCommonArg(const MaterialShaderArgument& arg)
@@ -84,100 +78,99 @@ namespace
         {
         case MTL_ARG_CODE_VERTEX_CONST:
         case MTL_ARG_CODE_PIXEL_CONST:
-            return techset::CommonShaderArg{
-                .m_type = techset::CommonShaderArgType::CODE_CONST,
-                .m_destination = {.dx11 =
-                                      {
-                                          .m_location = arg.location.offset,
-                                          .m_size = arg.size,
-                                          .m_buffer = arg.buffer,
-                                      }},
-                .m_value = {
-                                  .code_const_source = static_cast<techset::CommonCodeConstSource>(arg.u.codeConst.index),
-                                  }
+        {
+            const techset::CommonShaderArgValue value{
+                .code_const_source = static_cast<techset::CommonCodeConstSource>(arg.u.codeConst.index),
             };
+            const techset::CommonShaderArgDestination destination = {
+                .dx11 = {
+                         .m_location = arg.location.offset,
+                         .m_size = arg.size,
+                         .m_buffer = arg.buffer,
+                         }
+            };
+
+            return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
+        }
 
         case MTL_ARG_MATERIAL_VERTEX_CONST:
         case MTL_ARG_MATERIAL_PIXEL_CONST:
-            return techset::CommonShaderArg{
-                .m_type = techset::CommonShaderArgType::MATERIAL_CONST,
-                .m_destination = {.dx11 =
-                                      {
-                                          .m_location = arg.location.offset,
-                                          .m_size = arg.size,
-                                          .m_buffer = arg.buffer,
-                                      }},
-                .m_value = {
-                                  .name_hash = arg.u.nameHash,
-                                  }
+        {
+            const techset::CommonShaderArgValue value{
+                .name_hash = arg.u.nameHash,
             };
+            const techset::CommonShaderArgDestination destination = {
+                .dx11 = {
+                         .m_location = arg.location.offset,
+                         .m_size = arg.size,
+                         .m_buffer = arg.buffer,
+                         }
+            };
+
+            return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
+        }
 
         case MTL_ARG_CODE_PIXEL_SAMPLER:
-            return techset::CommonShaderArg{
-                .m_type = techset::CommonShaderArgType::CODE_SAMPLER,
-                .m_destination = {.dx11 =
-                                      {
-                                          .m_location = arg.location.samplerIndex,
-                                          .m_size = arg.size,
-                                          .m_buffer = arg.buffer,
-                                      }},
-                .m_value = {
-                                  .code_sampler_source = static_cast<techset::CommonCodeSamplerSource>(arg.u.codeSampler),
-                                  }
+        {
+            const techset::CommonShaderArgValue value{
+                .code_sampler_source = static_cast<techset::CommonCodeSamplerSource>(arg.u.codeSampler),
+            };
+            const techset::CommonShaderArgDestination destination = {
+                .dx11 = {
+                         .m_location = arg.location.samplerIndex,
+                         .m_size = arg.size,
+                         .m_buffer = arg.buffer,
+                         }
             };
 
+            return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
+        }
+
         case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
-            return techset::CommonShaderArg{
-                .m_type = techset::CommonShaderArgType::MATERIAL_SAMPLER,
-                .m_destination = {.dx11 =
-                                      {
-                                          .m_location = arg.location.samplerIndex,
-                                          .m_size = arg.size,
-                                          .m_buffer = arg.buffer,
-                                      }},
-                .m_value = {
-                                  .name_hash = arg.u.nameHash,
-                                  }
+        {
+            const techset::CommonShaderArgValue value{
+                .name_hash = arg.u.nameHash,
             };
+            const techset::CommonShaderArgDestination destination = {
+                .dx11 = {
+                         .m_location = arg.location.samplerIndex,
+                         .m_size = arg.size,
+                         .m_buffer = arg.buffer,
+                         }
+            };
+
+            return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
+        }
 
         default:
         case MTL_ARG_LITERAL_VERTEX_CONST:
         case MTL_ARG_LITERAL_PIXEL_CONST:
+        {
+            techset::CommonShaderArgValue value{};
             if (arg.u.literalConst)
             {
-                return techset::CommonShaderArg{
-                    .m_type = techset::CommonShaderArgType::LITERAL_CONST,
-                    .m_destination = {.dx11 =
-                                          {
-                                              .m_location = arg.location.offset,
-                                              .m_size = arg.size,
-                                              .m_buffer = arg.buffer,
-                                          }},
-                    .m_value = {
-                                      .literal_value =
-                            {
-                                (*arg.u.literalConst)[0],
-                                (*arg.u.literalConst)[1],
-                                (*arg.u.literalConst)[2],
-                                (*arg.u.literalConst)[3],
-                            }, }
+                value.literal_value = {
+                    (*arg.u.literalConst)[0],
+                    (*arg.u.literalConst)[1],
+                    (*arg.u.literalConst)[2],
+                    (*arg.u.literalConst)[3],
                 };
             }
 
-            return techset::CommonShaderArg{
-                .m_type = techset::CommonShaderArgType::LITERAL_CONST,
-                .m_destination = {.dx11 =
-                                      {
-                                          .m_location = arg.location.offset,
-                                          .m_size = arg.size,
-                                          .m_buffer = arg.buffer,
-                                      }},
-                .m_value = {},
+            const techset::CommonShaderArgDestination destination = {
+                .dx11 = {
+                         .m_location = arg.location.offset,
+                         .m_size = arg.size,
+                         .m_buffer = arg.buffer,
+                         }
             };
+
+            return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
+        }
         }
     }
 
-    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPass& pass, const MaterialVertexShader* vertexShader)
+    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
         techset::CommonTechniqueShader result{};
         if (!vertexShader)
@@ -188,34 +181,16 @@ namespace
 
         if (vertexShader->prog.loadDef.program)
         {
-            result.m_shader_bin = vertexShader->prog.loadDef.program;
-            result.m_shader_bin_size = vertexShader->prog.loadDef.programSize;
-        }
-
-        if (pass.args)
-        {
-            const size_t totalArgCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
-            for (auto argIndex = 0uz; argIndex < totalArgCount; argIndex++)
-            {
-                const auto& arg = pass.args[argIndex];
-
-                switch (arg.type)
-                {
-                case MTL_ARG_CODE_VERTEX_CONST:
-                case MTL_ARG_MATERIAL_VERTEX_CONST:
-                case MTL_ARG_LITERAL_VERTEX_CONST:
-                    result.m_args.emplace_back(ConvertToCommonArg(arg));
-                    break;
-                default:
-                    break;
-                }
-            }
+            result.m_bin = techset::CommonTechniqueShaderBin{
+                .m_shader_bin = vertexShader->prog.loadDef.program,
+                .m_shader_bin_size = vertexShader->prog.loadDef.programSize,
+            };
         }
 
         return result;
     }
 
-    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPass& pass, const MaterialPixelShader* pixelShader)
+    techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
         techset::CommonTechniqueShader result{};
         if (!pixelShader)
@@ -226,30 +201,10 @@ namespace
 
         if (pixelShader->prog.loadDef.program)
         {
-            result.m_shader_bin = pixelShader->prog.loadDef.program;
-            result.m_shader_bin_size = pixelShader->prog.loadDef.programSize;
-        }
-
-        if (pass.args)
-        {
-            const size_t totalArgCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
-            for (auto argIndex = 0uz; argIndex < totalArgCount; argIndex++)
-            {
-                const auto& arg = pass.args[argIndex];
-
-                switch (arg.type)
-                {
-                case MTL_ARG_CODE_PIXEL_CONST:
-                case MTL_ARG_CODE_PIXEL_SAMPLER:
-                case MTL_ARG_MATERIAL_PIXEL_CONST:
-                case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
-                case MTL_ARG_LITERAL_PIXEL_CONST:
-                    result.m_args.emplace_back(ConvertToCommonArg(arg));
-                    break;
-                default:
-                    break;
-                }
-            }
+            result.m_bin = techset::CommonTechniqueShaderBin{
+                .m_shader_bin = pixelShader->prog.loadDef.program,
+                .m_shader_bin_size = pixelShader->prog.loadDef.programSize,
+            };
         }
 
         return result;
@@ -257,37 +212,34 @@ namespace
 
     techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
     {
-        std::vector<techset::CommonPass> passes;
+        techset::CommonTechnique commonTechnique(technique.name ? technique.name : std::string(), technique.flags);
 
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
         {
             const auto& pass = technique.passArray[passIndex];
+            techset::CommonPass commonPass(pass.customSamplerFlags,
+                                           // No clue what the actual state map was
+                                           "passthrough",
+                                           ConvertToCommonShader(pass.vertexShader),
+                                           ConvertToCommonShader(pass.pixelShader),
+                                           ConvertToCommonVertexDeclaration(pass.vertexDecl));
 
-            passes.emplace_back(techset::CommonPass{
-                .m_sampler_flags = pass.customSamplerFlags,
-                .m_dx_version = techset::DxVersion::DX11,
-                .m_vertex_shader = ConvertToCommonShader(pass, pass.vertexShader),
-                .m_pixel_shader = ConvertToCommonShader(pass, pass.pixelShader),
-                .m_vertex_declaration = ConvertToCommonVertexDeclaration(pass.vertexDecl),
-            });
+            if (pass.args)
+            {
+                const size_t totalArgCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
+                commonPass.m_args.reserve(totalArgCount);
+                for (auto argIndex = 0uz; argIndex < totalArgCount; argIndex++)
+                    commonPass.m_args.emplace_back(ConvertToCommonArg(pass.args[argIndex]));
+            }
+
+            commonTechnique.m_passes.emplace_back(std::move(commonPass));
         }
 
-        return techset::CommonTechnique{
-            .m_name = technique.name ? technique.name : std::string(),
-            .m_flags = technique.flags,
-            .m_passes = std::move(passes),
-        };
+        return commonTechnique;
     }
 
     void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
-        static techset::CommonCodeSourceInfos codeSourceInfos(commonCodeConstSources,
-                                                              std::extent_v<decltype(commonCodeConstSources)>,
-                                                              commonCodeSamplerSources,
-                                                              std::extent_v<decltype(commonCodeSamplerSources)>);
-        static techset::CommonStreamRoutingInfos routingInfos(
-            streamRoutingSources, std::extent_v<decltype(streamRoutingSources)>, streamRoutingDestinations, std::extent_v<decltype(streamRoutingDestinations)>);
-
         auto* techniqueState = context.GetZoneAssetDumperState<techset::TechniqueDumpingZoneState>();
         const auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
         for (const auto* technique : techset.techniques)
@@ -296,7 +248,8 @@ namespace
             {
                 const auto commonTechnique = ConvertToCommonTechnique(*technique);
 
-                techset::DumpCommonTechnique(context, commonTechnique, codeSourceInfos, routingInfos, *materialConstantState);
+                techset::DumpCommonTechnique(
+                    context, commonTechnique, techset::DxVersion::DX11, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState);
             }
         }
     }
