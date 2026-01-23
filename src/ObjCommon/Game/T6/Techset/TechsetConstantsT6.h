@@ -190,6 +190,11 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
+    static inline techset::CommonStreamRoutingInfos commonRoutingInfos(streamRoutingSources,
+                                                                       std::extent_v<decltype(streamRoutingSources)>,
+                                                                       streamRoutingDestinations,
+                                                                       std::extent_v<decltype(streamRoutingDestinations)>);
+
     static inline techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
         {
          .value = CONST_SRC_CODE_LIGHT_POSITION,
@@ -1790,6 +1795,10 @@ namespace T6
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          },
     };
+    static inline techset::CommonCodeSourceInfos commonCodeSourceInfos(commonCodeConstSources,
+                                                                       std::extent_v<decltype(commonCodeConstSources)>,
+                                                                       commonCodeSamplerSources,
+                                                                       std::extent_v<decltype(commonCodeSamplerSources)>);
 
     static inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",     ""    },

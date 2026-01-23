@@ -4,12 +4,10 @@
 #include "IAssetDumper.h"
 #include "Pool/AssetPool.h"
 
-template<class AssetType> class AbstractAssetDumper : public IAssetDumper
+template<AssetDefinition Asset_t> class AbstractAssetDumper : public IAssetDumper
 {
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
 public:
-    using AssetType_t = AssetType;
+    using AssetType_t = Asset_t;
 
     [[nodiscard]] size_t GetProgressTotalCount() const override
     {
@@ -32,27 +30,25 @@ public:
     }
 
 protected:
-    explicit AbstractAssetDumper(const AssetPool<typename AssetType::Type>& pool)
+    explicit AbstractAssetDumper(const AssetPool<typename Asset_t::Type>& pool)
         : m_pool(pool)
     {
     }
 
-    virtual bool ShouldDump(const XAssetInfo<typename AssetType::Type>& asset)
+    virtual bool ShouldDump(const XAssetInfo<typename Asset_t::Type>& asset)
     {
         return true;
     }
 
-    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<typename AssetType::Type>& asset) = 0;
+    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<typename Asset_t::Type>& asset) = 0;
 
-    const AssetPool<typename AssetType::Type>& m_pool;
+    const AssetPool<typename Asset_t::Type>& m_pool;
 };
 
-template<class AssetType> class AbstractSingleProgressAssetDumper : public IAssetDumper
+template<AssetDefinition Asset_t> class AbstractSingleProgressAssetDumper : public IAssetDumper
 {
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
 public:
-    using AssetType_t = AssetType;
+    using AssetType_t = Asset_t;
 
     [[nodiscard]] size_t GetProgressTotalCount() const override
     {
@@ -60,10 +56,10 @@ public:
     }
 
 protected:
-    explicit AbstractSingleProgressAssetDumper(const AssetPool<typename AssetType::Type>& pool)
+    explicit AbstractSingleProgressAssetDumper(const AssetPool<typename Asset_t::Type>& pool)
         : m_pool(pool)
     {
     }
 
-    const AssetPool<typename AssetType::Type>& m_pool;
+    const AssetPool<typename Asset_t::Type>& m_pool;
 };

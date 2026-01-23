@@ -7,6 +7,8 @@
 
 namespace techset
 {
-    std::unique_ptr<CommonTechnique>
-        LoadCommonTechnique(const AssetCreationContext& context, const CommonCodeSourceInfos& codeSourceInfos, const CommonStreamRoutingInfos& routingInfos);
+    std::unique_ptr<CommonTechnique> LoadCommonTechnique(const std::string& techniqueName,
+                                                         const CommonCodeSourceInfos& codeSourceInfos,
+                                                         const CommonStreamRoutingInfos& routingInfos,
+                                                         ISearchPath& searchPath);
 } // namespace techset

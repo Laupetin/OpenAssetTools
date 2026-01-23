@@ -1,8 +1,7 @@
 #pragma once
 
-#include "StateMap/StateMapDefinition.h"
-#include "StateMap/StateMapLayout.h"
-#include "Utils/ClassUtils.h"
+#include "Techset/StateMap/StateMapDefinition.h"
+#include "Techset/StateMap/StateMapLayout.h"
 
 #include <cstdint>
 #include <unordered_map>
@@ -13,7 +12,7 @@ namespace state_map
     {
     public:
         void AddValue(std::string key, std::string value);
-        _NODISCARD SimpleExpressionValue ValueByName(const std::string& name) const override;
+        [[nodiscard]] SimpleExpressionValue ValueByName(const std::string& name) const override;
 
     private:
         std::unordered_map<std::string, std::string> m_vars;

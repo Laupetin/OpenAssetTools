@@ -23,8 +23,15 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            assert(state->m_in_shader == true);
-            state->m_in_shader = false;
+            assert(state->m_current_pass);
+            assert(state->m_current_shader);
+
+            if (state->m_current_shader_type == TechniqueParserShaderType::VERTEX)
+                state->m_current_pass->m_vertex_shader = std::move(*state->m_current_shader);
+            else
+                state->m_current_pass->m_pixel_shader = std::move(*state->m_current_shader);
+
+            state->m_current_shader = std::nullopt;
         }
     };
 
@@ -203,7 +210,7 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            assert(state->m_in_shader == true);
+            assert(state->m_current_shader);
 
             const auto& shaderArgumentNameToken = result.NextCapture(CAPTURE_SHADER_ARGUMENT);
 

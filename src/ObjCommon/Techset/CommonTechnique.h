@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace techset
@@ -79,10 +80,14 @@ namespace techset
         [[nodiscard]] bool IsSourceOptional(CommonStreamSource source) const;
         [[nodiscard]] const char* GetDestinationName(CommonStreamDestination destination) const;
         [[nodiscard]] const char* GetDestinationAbbreviation(CommonStreamDestination destination) const;
+        [[nodiscard]] std::optional<CommonStreamSource> GetSourceByName(const std::string& name) const;
+        [[nodiscard]] std::optional<CommonStreamDestination> GetDestinationByName(const std::string& name) const;
 
     private:
         std::vector<CommonStreamRoutingSourceInfo> m_sources;
         std::vector<CommonStreamRoutingDestinationInfo> m_destinations;
+        std::unordered_map<std::string, CommonStreamSource> m_source_lookup;
+        std::unordered_map<std::string, CommonStreamDestination> m_destination_lookup;
     };
 
     union CommonShaderArgValue
@@ -132,6 +137,8 @@ namespace techset
     class CommonShaderArg
     {
     public:
+        CommonShaderArg() = default;
+
         CommonShaderArgType m_type;
         CommonShaderArgDestination m_destination;
         CommonShaderArgValue m_value;
@@ -140,6 +147,9 @@ namespace techset
     class CommonStreamRouting
     {
     public:
+        CommonStreamRouting() = default;
+        CommonStreamRouting(CommonStreamSource source, CommonStreamDestination destination);
+
         CommonStreamSource m_source;
         CommonStreamDestination m_destination;
     };
@@ -147,15 +157,27 @@ namespace techset
     class CommonVertexDeclaration
     {
     public:
+        CommonVertexDeclaration() = default;
+        explicit CommonVertexDeclaration(std::vector<CommonStreamRouting> routing);
+
         std::vector<CommonStreamRouting> m_routing;
+    };
+
+    class CommonTechniqueShaderBin
+    {
+    public:
+        const void* m_shader_bin;
+        size_t m_shader_bin_size;
     };
 
     class CommonTechniqueShader
     {
     public:
+        CommonTechniqueShader() = default;
+        explicit CommonTechniqueShader(std::string name);
+
         std::string m_name;
-        const void* m_shader_bin;
-        size_t m_shader_bin_size;
+        std::optional<CommonTechniqueShaderBin> m_bin;
         std::vector<CommonShaderArg> m_args;
     };
 
@@ -168,7 +190,10 @@ namespace techset
     class CommonPass
     {
     public:
+        CommonPass() = default;
+
         uint32_t m_sampler_flags;
+        std::string m_state_map;
         DxVersion m_dx_version;
         CommonTechniqueShader m_vertex_shader;
         CommonTechniqueShader m_pixel_shader;
@@ -178,6 +203,9 @@ namespace techset
     class CommonTechnique
     {
     public:
+        CommonTechnique();
+        explicit CommonTechnique(std::string name);
+
         std::string m_name;
         uint64_t m_flags;
         std::vector<CommonPass> m_passes;

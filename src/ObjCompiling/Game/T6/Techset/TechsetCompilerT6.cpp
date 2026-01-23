@@ -2,8 +2,12 @@
 
 #include "Game/T6/T6.h"
 #include "Game/T6/Techset/TechsetConstantsT6.h"
+#include "Techset/CommonTechniqueLoader.h"
 #include "Techset/CommonTechsetLoader.h"
+#include "Techset/TechniqueCache.h"
 #include "Techset/TechsetCommon.h"
+
+#include <cassert>
 
 using namespace T6;
 
@@ -52,6 +56,30 @@ namespace
         return techset;
     }
 
+    MaterialTechnique* ConvertTechnique(const techset::CommonTechnique& commonTechnique, MemoryManager& memory)
+    {
+        const auto additionalPassCount = std::max(commonTechnique.m_passes.size(), 1u) - 1u;
+        auto* technique = static_cast<MaterialTechnique*>(memory.AllocRaw(sizeof(MaterialTechnique) + additionalPassCount * sizeof(MaterialPass)));
+
+        technique->name = memory.Dup(commonTechnique.m_name.c_str());
+        technique->passCount = static_cast<uint16_t>(commonTechnique.m_passes.size());
+
+        return technique;
+    }
+
+    MaterialTechnique* LoadAndConvertTechnique(const std::string& techniqueName, techset::TechniqueCache& cache, MemoryManager& memory, ISearchPath& searchPath)
+    {
+        const auto commonTechnique = techset::LoadCommonTechnique(techniqueName, commonCodeSourceInfos, commonRoutingInfos, searchPath);
+        if (!commonTechnique)
+            return nullptr;
+
+        auto* convertedTechnique = ConvertTechnique(*commonTechnique, memory);
+        assert(convertedTechnique);
+        cache.AddTechniqueToCache(techniqueName, convertedTechnique);
+
+        return convertedTechnique;
+    }
+
     class TechsetCompilerT6 final : public AssetCreator<AssetTechniqueSet>
     {
     public:
@@ -69,6 +97,23 @@ namespace
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
+            auto& techniqueCache = context.GetZoneAssetCreationState<techset::TechniqueCache>();
+
+            for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
+            {
+                const auto& techniqueName = commonTechset->m_technique_names[techniqueIndex];
+                if (techniqueName.empty())
+                    continue;
+
+                auto* technique = techniqueCache.GetCachedTechnique<MaterialTechnique>(techniqueName);
+                if (!technique)
+                    technique = LoadAndConvertTechnique(techniqueName, techniqueCache, m_memory, m_search_path);
+
+                if (!technique)
+                    return AssetCreationResult::Failure();
+
+                techset->techniques[techniqueIndex] = technique;
+            }
 
             return AssetCreationResult::Success(context.AddAsset(AssetRegistration<AssetTechniqueSet>(assetName, techset)));
         }

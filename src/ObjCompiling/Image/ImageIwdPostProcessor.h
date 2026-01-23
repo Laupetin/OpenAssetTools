@@ -34,11 +34,9 @@ namespace image
         unsigned m_current_iwd_end_index;
     };
 
-    template<typename AssetType> class IwdPostProcessor final : public AbstractIwdPostProcessor
+    template<AssetDefinition Asset_t> class IwdPostProcessor final : public AbstractIwdPostProcessor
     {
     public:
-        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
         IwdPostProcessor(const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, ZoneAssetCreationStateContainer& zoneStates, IOutputPath& outDir)
             : AbstractIwdPostProcessor(zoneDefinition, searchPath, zoneStates, outDir)
         {
@@ -46,7 +44,7 @@ namespace image
 
         [[nodiscard]] asset_type_t GetHandlingAssetType() const override
         {
-            return AssetType::EnumEntry;
+            return Asset_t::EnumEntry;
         }
     };
 } // namespace image

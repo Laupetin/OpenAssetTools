@@ -1,14 +1,14 @@
 #include "TechniqueFileParserState.h"
 
-#include <cassert>
-
-using namespace techset;
-
-TechniqueParserState::TechniqueParserState(ITechniqueDefinitionAcceptor* acceptor)
-    : m_acceptor(acceptor),
-      m_in_pass(false),
-      m_in_shader(false),
-      m_current_shader(ShaderSelector::VERTEX_SHADER)
+namespace techset
 {
-    assert(acceptor);
-}
+    TechniqueParserState::TechniqueParserState(std::string techniqueName,
+                                               const CommonCodeSourceInfos& codeSourceInfos,
+                                               const CommonStreamRoutingInfos& routingInfos)
+        : m_technique(std::make_unique<CommonTechnique>(std::move(techniqueName))),
+          m_code_source_infos(codeSourceInfos),
+          m_routing_infos(routingInfos),
+          m_current_shader_type(TechniqueParserShaderType::VERTEX)
+    {
+    }
+} // namespace techset

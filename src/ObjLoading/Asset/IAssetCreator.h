@@ -29,13 +29,11 @@ public:
     virtual void FinalizeZone(AssetCreationContext& context) {}
 };
 
-template<typename AssetType> class AssetCreator : public IAssetCreator
+template<AssetDefinition Asset_t> class AssetCreator : public IAssetCreator
 {
 public:
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
     [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override
     {
-        return AssetType::EnumEntry;
-    };
+        return Asset_t::EnumEntry;
+    }
 };

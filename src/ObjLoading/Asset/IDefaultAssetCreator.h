@@ -24,27 +24,25 @@ public:
     virtual AssetCreationResult CreateDefaultAsset(const std::string& assetName, AssetCreationContext& context) const = 0;
 };
 
-template<typename AssetType> class DefaultAssetCreator : public IDefaultAssetCreator
+template<AssetDefinition Asset_t> class DefaultAssetCreator : public IDefaultAssetCreator
 {
 public:
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
-    DefaultAssetCreator(MemoryManager& memory)
+    explicit DefaultAssetCreator(MemoryManager& memory)
         : m_memory(memory)
     {
     }
 
     [[nodiscard]] asset_type_t GetHandlingAssetType() const override
     {
-        return AssetType::EnumEntry;
+        return Asset_t::EnumEntry;
     }
 
     AssetCreationResult CreateDefaultAsset(const std::string& assetName, AssetCreationContext& context) const override
     {
-        auto* asset = m_memory.Alloc<typename AssetType::Type>();
-        AssetName<AssetType>(*asset) = m_memory.Dup(assetName.c_str());
+        auto* asset = m_memory.Alloc<typename Asset_t::Type>();
+        AssetName<Asset_t>(*asset) = m_memory.Dup(assetName.c_str());
 
-        return AssetCreationResult::Success(context.AddAsset<AssetType>(assetName, asset));
+        return AssetCreationResult::Success(context.AddAsset<Asset_t>(assetName, asset));
     }
 
 private:

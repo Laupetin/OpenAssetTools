@@ -91,7 +91,7 @@ namespace
 
         void DumpShader(const CommonTechnique& technique, const CommonTechniqueShader& shader, const TechniqueShaderType shaderType, const DxVersion dxVersion)
         {
-            if (!shader.m_shader_bin)
+            if (!shader.m_bin || !shader.m_bin->m_shader_bin)
             {
                 if (!shader.m_name.empty())
                 {
@@ -105,7 +105,7 @@ namespace
             unsigned versionMajor, versionMinor;
             if (dxVersion == DxVersion::DX9)
             {
-                const auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(shader.m_shader_bin, shader.m_shader_bin_size);
+                const auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(shader.m_bin->m_shader_bin, shader.m_bin->m_shader_bin_size);
                 assert(shaderInfo);
                 if (!shaderInfo)
                     return;
@@ -121,7 +121,7 @@ namespace
             else
             {
                 assert(dxVersion == DxVersion::DX11);
-                const auto shaderInfo = d3d11::ShaderAnalyser::GetShaderInfo(shader.m_shader_bin, shader.m_shader_bin_size);
+                const auto shaderInfo = d3d11::ShaderAnalyser::GetShaderInfo(shader.m_bin->m_shader_bin, shader.m_bin->m_shader_bin_size);
                 assert(shaderInfo);
                 if (!shaderInfo)
                     return;
