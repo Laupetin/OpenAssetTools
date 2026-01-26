@@ -85,4 +85,4 @@ exit 1
 
 :runpremake
 git submodule update --init --recursive
-%PREMAKE_BIN% %* vs2022
+%PREMAKE_BIN% %* vs2026
