@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta6/premake-5.0.0-beta6-linux.tar.gz'
-PREMAKE_HASH='fade2839ace1a2953556693e6f3d8f9b8b2897894b5a1f2ad477cdf8e9af042a'
+PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz'
+PREMAKE_HASH='2921a59e267bce1f3e5208b8e04881c94dc23f4849adf0d830875ded23634b1f'
 
 # The following variables can be set:
 #     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
