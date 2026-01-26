@@ -1,4 +1,4 @@
-require("premake", ">=5.0.0-beta5")
+require("premake", ">=5.0.0-beta8")
 
 include "tools/scripts/folders.lua"
 include "tools/scripts/including.lua"
@@ -18,10 +18,7 @@ workspace "OpenAssetTools"
     systemversion "latest"
     cppdialect "C++23"
     largeaddressaware "on"
-
-	flags {
-		"MultiProcessorCompile"
-	}
+    multiprocessorcompile "on"
 
     configurations { 
         "Debug",
