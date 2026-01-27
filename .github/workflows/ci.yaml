@@ -16,7 +16,7 @@ jobs:
         include:
           - build_arch: x86
             gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
-            additional_packages: gcc-13-multilib g++-13-multilib
+            additional_packages: gcc-14-multilib g++-14-multilib
           - build_arch: x64
             gtk_packages: libgtk-4-dev libwebkitgtk-6.0-dev
     name: Build-Test Linux ${{ matrix.build_arch }}
@@ -33,11 +33,11 @@ jobs:
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y wget tar git make curl gcc-13 g++-13 ${{ matrix.gtk_packages }} ${{ matrix.additional_packages }}
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
-          update-alternatives --set gcc /usr/bin/gcc-13
-          update-alternatives --set g++ /usr/bin/g++-13
+          apt-get install -y wget tar git make curl gcc-14 g++-14 ${{ matrix.gtk_packages }} ${{ matrix.additional_packages }}
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
+          update-alternatives --set gcc /usr/bin/gcc-14
+          update-alternatives --set g++ /usr/bin/g++-14
 
       - name: Install node
         uses: actions/setup-node@v6

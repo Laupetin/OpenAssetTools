@@ -16,11 +16,11 @@ jobs:
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y wget tar git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
-          update-alternatives --set gcc /usr/bin/gcc-13
-          update-alternatives --set g++ /usr/bin/g++-13
+          apt-get install -y wget tar git make gcc-14 g++-14 gcc-14-multilib g++-14-multilib
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
+          update-alternatives --set gcc /usr/bin/gcc-14
+          update-alternatives --set g++ /usr/bin/g++-14
 
       - name: Checkout repository
         uses: actions/checkout@v6
