@@ -1,0 +1,34 @@
+name: "Configure gcc"
+description: "Installs and configures gcc in a specific version on an ubuntu image"
+inputs:
+  gcc_version:
+    description: "The version of gcc to install. Must be the major version only."
+    required: true
+  enable_x86:
+    description: "Whether to enable x86 support."
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Install g++ and multilib
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y gcc-${{ inputs.gcc_version }} g++-${{ inputs.gcc_version }} ${ADDITIONAL_PACKAGES}
+      env:
+        ADDITIONAL_PACKAGES: ${{ case(inputs.enable_x86 == 'true', format('gcc-{0}-multilib g++-{0}-multilib', inputs.gcc_version), '') }}
+
+    - name: Configure gcc
+      shell: bash
+      run: |
+        function register_gcc_version {
+            local version=$1
+            local priority=$2
+
+            update-alternatives \
+                --verbose \
+                --install /usr/bin/gcc gcc /usr/bin/gcc-${version} ${priority} \
+                --slave   /usr/bin/g++ g++ /usr/bin/g++-${version}
+        }
+
+        register_gcc_version ${{ inputs.gcc_version }} 100

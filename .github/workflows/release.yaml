@@ -13,14 +13,17 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Install g++ and multilib
+      - name: Install base packages
         run: |
           apt-get update
-          apt-get install -y wget tar git make gcc-14 g++-14 gcc-14-multilib g++-14-multilib
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
-          update-alternatives --set gcc /usr/bin/gcc-14
-          update-alternatives --set g++ /usr/bin/g++-14
+          apt-get install -y wget tar git make curl
+
+      - name: Configure gcc
+        if: ${{ matrix.toolset == 'gcc' }}
+        uses: ./.github/actions/configure-gcc
+        with:
+          gcc_version: 14
+          enable_x86: "true"
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -31,12 +34,12 @@ jobs:
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh --oat-version=${{ github.ref_name }}
+        run: ./generate.sh --cc=gcc --oat-version=${{ github.ref_name }}
 
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
-          make -C build -j$(nproc) config=release_x86 all
+          scripts/build.sh release x86
           chmod +x build/bin/Release_x86/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts

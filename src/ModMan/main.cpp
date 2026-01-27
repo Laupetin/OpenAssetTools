@@ -134,10 +134,10 @@ int main(int argc, const char** argv)
     ModManArgs args;
     auto shouldContinue = true;
     if (!args.ParseArgs(MODMAN_ARGC, MODMAN_ARGV, shouldContinue))
-        return false;
+        return 1;
 
     if (!shouldContinue)
-        return true;
+        return 0;
 
     con::info("Starting ModMan " GIT_VERSION);
 
