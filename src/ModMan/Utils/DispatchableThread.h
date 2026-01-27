@@ -15,9 +15,9 @@ public:
     DispatchableThread();
     ~DispatchableThread();
     DispatchableThread(const DispatchableThread& other) = delete;
-    DispatchableThread(DispatchableThread&& other) noexcept = default;
+    DispatchableThread(DispatchableThread&& other) noexcept = delete;
     DispatchableThread& operator=(const DispatchableThread& other) = delete;
-    DispatchableThread& operator=(DispatchableThread&& other) noexcept = default;
+    DispatchableThread& operator=(DispatchableThread&& other) noexcept = delete;
 
     void Start();
     void Terminate();

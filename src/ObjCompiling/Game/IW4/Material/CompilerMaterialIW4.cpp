@@ -1334,7 +1334,7 @@ namespace
     public:
         MaterialLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
             : m_memory(memory),
-              m_search_path(m_search_path),
+              m_search_path(searchPath),
               m_gdt(gdt)
         {
         }

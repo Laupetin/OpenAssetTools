@@ -13,8 +13,8 @@ public:
     virtual ~ContentWriterBase() = default;
     ContentWriterBase(const ContentWriterBase& other) = default;
     ContentWriterBase(ContentWriterBase&& other) noexcept = default;
-    ContentWriterBase& operator=(const ContentWriterBase& other) = default;
-    ContentWriterBase& operator=(ContentWriterBase&& other) noexcept = default;
+    ContentWriterBase& operator=(const ContentWriterBase& other) = delete;
+    ContentWriterBase& operator=(ContentWriterBase&& other) noexcept = delete;
 
 protected:
     void WriteXString(bool atStreamStart);
