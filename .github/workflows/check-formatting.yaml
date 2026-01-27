@@ -5,21 +5,28 @@ on:
 
 jobs:
   check-formatting:
-    runs-on: ubuntu-latest
     name: Check formatting
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    defaults:
+      run:
+        shell: bash
     steps:
+      - name: Install base packages
+        run: |
+          apt-get update
+          apt-get install -y wget tar git make curl
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v2
+      - name: Configure clang
+        uses: ./.github/actions/configure-clang
         with:
-          version: "20.1"
+          clang_version: 20
 
       - name: Test formatting for all files
         working-directory: ${{ github.workspace }}
-        run: |
-          export CLANG_FORMAT_BIN="${LLVM_PATH}/bin/clang-format"
-          ./scripts/check-format.sh
+        run: ./scripts/check-format.sh

@@ -13,47 +13,56 @@ jobs:
     strategy:
       matrix:
         build_arch: [x86, x64]
+        toolset: [gcc, clang]
         include:
           - build_arch: x86
             gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
-            additional_packages: gcc-14-multilib g++-14-multilib
           - build_arch: x64
             gtk_packages: libgtk-4-dev libwebkitgtk-6.0-dev
-    name: Build-Test Linux ${{ matrix.build_arch }}
+    name: Build-Test Linux ${{ matrix.toolset }} ${{ matrix.build_arch }}
     runs-on: ubuntu-latest
     container: ubuntu:24.04
     defaults:
       run:
         shell: bash
     steps:
-      - name: Setup env for x86 cross-compilation
+      - name: Enable i386 architecture
         if: ${{ matrix.build_arch == 'x86' }}
         run: dpkg --add-architecture i386
 
-      - name: Install g++ and multilib
+      - name: Install base packages
         run: |
           apt-get update
-          apt-get install -y wget tar git make curl gcc-14 g++-14 ${{ matrix.gtk_packages }} ${{ matrix.additional_packages }}
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
-          update-alternatives --set gcc /usr/bin/gcc-14
-          update-alternatives --set g++ /usr/bin/g++-14
-
-      - name: Install node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+          apt-get install -y wget tar git make curl ${{ matrix.gtk_packages }}
 
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           submodules: recursive
 
+      - name: Configure gcc
+        uses: ./.github/actions/configure-gcc
+        with:
+          gcc_version: 14
+          enable_x86: ${{ case(matrix.build_arch == 'x86', 'true', 'false') }}
+
+      - name: Configure clang
+        if: ${{ matrix.toolset == 'clang' }}
+        uses: ./.github/actions/configure-clang
+        with:
+          clang_version: 20
+          enable_x86: ${{ case(matrix.build_arch == 'x86', 'true', 'false') }}
+
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
           PREMAKE_NO_PROMPT: 1
-        run: ./generate.sh --modman
+        run: ./generate.sh --cc=${{ matrix.toolset }} --modman
 
       - name: Build UI
         working-directory: ${{ github.workspace }}
