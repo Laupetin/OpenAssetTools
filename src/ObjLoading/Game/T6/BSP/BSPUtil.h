@@ -7,7 +7,7 @@ namespace BSP
     class BSPUtil
     {
     public:
-        static std::string getFileNameForBSPAsset(std::string& assetName);
+        static std::string getFileNameForBSPAsset(const std::string& assetName);
         static vec3_t convertToBO2Coords(vec3_t& OGL_coordinate);
         static vec3_t convertFromBO2Coords(vec3_t& bo2_coordinate);
         static void updateAABB(vec3_t& newAABBMins, vec3_t& newAABBMaxs, vec3_t& AABBMins, vec3_t& AABBMaxs);

@@ -27,7 +27,8 @@ namespace BSP
             gfxVertex->color.packed = pack32::Vec4PackGfxColor(bspVertex.color.v);
             gfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(bspVertex.texCoord.v);
             gfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.normal.v);
-            gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
+            // gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
+            gfxVertex->tangent.packed = 0;
 
             // unimplemented variables
             gfxVertex->binormalSign = 0.0f;

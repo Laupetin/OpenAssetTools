@@ -1,12 +1,622 @@
 #include "BSPCreator.h"
 
 #include "BSPUtil.h"
+#include "XModel/Gltf/GltfBinInput.h"
+#include "XModel/Gltf/GltfTextInput.h"
+#include "XModel/Gltf/Internal/GltfAccessor.h"
+#include "XModel/Gltf/Internal/GltfBuffer.h"
+#include "XModel/Gltf/Internal/GltfBufferView.h"
+#include "XModel/Gltf/JsonGltf.h"
 
-#include <ufbx.h>
+#include <deque>
+#include <exception>
+#include <format>
+#include <iostream>
+#include <limits>
+#include <numbers>
+#include <string>
+
+namespace
+{
+    struct AccessorsForVertex
+    {
+        unsigned m_position_accessor;
+        unsigned m_normal_accessor;
+        std::optional<unsigned> m_color_accessor;
+        unsigned m_uv_accessor;
+        unsigned m_index_accessor;
+    };
+
+    void RhcToLhcCoordinates(float (&coords)[3])
+    {
+        const float two[3]{coords[0], coords[1], coords[2]};
+
+        coords[0] = two[0];
+        coords[1] = -two[2];
+        coords[2] = two[1];
+    }
+
+    void RhcToLhcScale(float (&coords)[3])
+    {
+        const float two[3]{coords[0], coords[1], coords[2]};
+
+        coords[0] = two[0];
+        coords[1] = two[2];
+        coords[2] = two[1];
+    }
+
+    void RhcToLhcIndices(unsigned (&indices)[3])
+    {
+        const unsigned two[3]{indices[0], indices[1], indices[2]};
+
+        indices[0] = two[2];
+        indices[1] = two[1];
+        indices[2] = two[0];
+    }
+} // namespace
 
 namespace
 {
     using namespace BSP;
+    using namespace gltf;
+
+    class GltfLoadException final : std::exception
+    {
+    public:
+        explicit GltfLoadException(std::string message)
+            : m_message(std::move(message))
+        {
+        }
+
+        [[nodiscard]] const std::string& Str() const
+        {
+            return m_message;
+        }
+
+        [[nodiscard]] const char* what() const noexcept override
+        {
+            return m_message.c_str();
+        }
+
+    private:
+        std::string m_message;
+    };
+
+    class BSPLoader
+    {
+    private:
+        const Input& m_input;
+        BSPData* m_bsp;
+        std::vector<std::unique_ptr<Accessor>> m_accessors;
+        std::vector<std::unique_ptr<BufferView>> m_buffer_views;
+        std::vector<std::unique_ptr<Buffer>> m_buffers;
+
+        std::optional<Accessor*> GetAccessorForIndex(const char* attributeName,
+                                                     const std::optional<unsigned> index,
+                                                     std::initializer_list<JsonAccessorType> allowedAccessorTypes,
+                                                     std::initializer_list<JsonAccessorComponentType> allowedAccessorComponentTypes) const
+        {
+            if (!index)
+                return std::nullopt;
+
+            if (*index > m_accessors.size())
+                throw GltfLoadException(std::format("Index for {} accessor out of bounds", attributeName));
+
+            auto* accessor = m_accessors[*index].get();
+
+            const auto maybeType = accessor->GetType();
+            if (maybeType)
+            {
+                if (std::ranges::find(allowedAccessorTypes, *maybeType) == allowedAccessorTypes.end())
+                    throw GltfLoadException(std::format("Accessor for {} has unsupported type {}", attributeName, static_cast<unsigned>(*maybeType)));
+            }
+
+            const auto maybeComponentType = accessor->GetComponentType();
+            if (maybeComponentType)
+            {
+                if (std::ranges::find(allowedAccessorComponentTypes, *maybeComponentType) == allowedAccessorComponentTypes.end())
+                    throw GltfLoadException(
+                        std::format("Accessor for {} has unsupported component type {}", attributeName, static_cast<unsigned>(*maybeComponentType)));
+            }
+
+            return accessor;
+        }
+
+        static void VerifyAccessorVertexCount(const char* accessorType, const Accessor* accessor, const size_t vertexCount)
+        {
+            if (accessor->GetCount() != vertexCount)
+                throw GltfLoadException(std::format("Element count of {} accessor does not match expected vertex count of {}", accessorType, vertexCount));
+        }
+
+        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, BSPSurface& surface)
+        {
+            // clang-format off
+            const auto* positionAccessor = GetAccessorForIndex(
+                "POSITION",
+                accessorsForVertex.m_position_accessor,
+                { JsonAccessorType::VEC3 },
+                { JsonAccessorComponentType::FLOAT }
+            ).value_or(nullptr);
+            // clang-format on
+            assert(positionAccessor != nullptr);
+
+            const auto vertexCount = positionAccessor->GetCount();
+            OnesAccessor onesAccessor(vertexCount);
+
+            // clang-format off
+            const auto* normalAccessor = GetAccessorForIndex(
+                "NORMAL",
+                accessorsForVertex.m_normal_accessor,
+                { JsonAccessorType::VEC3 },
+                { JsonAccessorComponentType::FLOAT }
+            ).value_or(nullptr);
+            VerifyAccessorVertexCount("NORMAL", normalAccessor, vertexCount);
+            assert(normalAccessor != nullptr);
+
+            const auto* uvAccessor = GetAccessorForIndex(
+                "TEXCOORD_0",
+                accessorsForVertex.m_uv_accessor,
+                { JsonAccessorType::VEC2 },
+                { JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT }
+            ).value_or(nullptr);
+            VerifyAccessorVertexCount("TEXCOORD_0", uvAccessor, vertexCount);
+            assert(uvAccessor != nullptr);
+
+            const auto* colorAccessor = GetAccessorForIndex(
+                "COLOR_0",
+                accessorsForVertex.m_color_accessor,
+                { JsonAccessorType::VEC3, JsonAccessorType::VEC4 },
+                { JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT }
+            ).value_or(&onesAccessor);
+            VerifyAccessorVertexCount("COLOR_0", colorAccessor, vertexCount);
+
+            const auto* indexAccessor = GetAccessorForIndex(
+                "INDICES",
+                accessorsForVertex.m_index_accessor,
+                { JsonAccessorType::SCALAR },
+                { JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT, JsonAccessorComponentType::UNSIGNED_INT }
+            ).value_or(nullptr);
+            assert(indexAccessor != nullptr);
+            // clang-format on
+
+            const auto indexCount = indexAccessor->GetCount();
+            if (indexCount % 3 != 0)
+                throw GltfLoadException("Index count must be dividable by 3 for triangles");
+            const auto faceCount = indexCount / 3u;
+            if (faceCount > UINT16_MAX)
+                throw GltfLoadException("Face count exceeded the UINT16_MAX");
+
+            surface.triCount = faceCount;
+            surface.indexOfFirstIndex = static_cast<int>(m_bsp->gfxWorld.indices.size());
+            surface.indexOfFirstVertex = static_cast<int>(m_bsp->gfxWorld.vertices.size());
+
+            for (auto faceIndex = 0u; faceIndex < faceCount; faceIndex++)
+            {
+                unsigned indices[3];
+                if (!indexAccessor->GetUnsigned(faceIndex * 3u + 0u, indices[0]) || !indexAccessor->GetUnsigned(faceIndex * 3u + 1u, indices[1])
+                    || !indexAccessor->GetUnsigned(faceIndex * 3u + 2u, indices[2]))
+                {
+                    assert(false);
+                }
+                if (indices[0] > UINT16_MAX || indices[1] > UINT16_MAX || indices[2] > UINT16_MAX)
+                    throw GltfLoadException("Index number exceeded the UINT16_MAX");
+
+                RhcToLhcIndices(indices);
+                m_bsp->gfxWorld.indices.emplace_back(indices[0]);
+                m_bsp->gfxWorld.indices.emplace_back(indices[1]);
+                m_bsp->gfxWorld.indices.emplace_back(indices[2]);
+            }
+
+            const auto vertexOffset = static_cast<unsigned>(m_bsp->gfxWorld.vertices.size());
+            m_bsp->gfxWorld.vertices.reserve(vertexOffset + vertexCount);
+            for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
+            {
+                BSPVertex vertex;
+
+                if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.pos.v) || !normalAccessor->GetFloatVec3(vertexIndex, vertex.normal.v)
+                    || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color.v) || !uvAccessor->GetFloatVec2(vertexIndex, vertex.texCoord.v))
+                {
+                    assert(false);
+                }
+
+                RhcToLhcCoordinates(vertex.pos.v);
+                RhcToLhcCoordinates(vertex.normal.v);
+
+                m_bsp->gfxWorld.vertices.emplace_back(vertex);
+            }
+
+            return vertexOffset;
+        }
+
+        void loadSurfaceMaterialData(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive, BSPSurface& surface)
+        {
+            BSPMaterialType matType;
+            if (!primitive.material)
+                if (!primitive.attributes.COLOR_0)
+                {
+                    // matType = MATERIAL_TYPE_EMPTY;
+                    throw GltfLoadException("Primitive requires material or colour data.");
+                }
+                else
+                    matType = MATERIAL_TYPE_COLOUR;
+            else
+                matType = MATERIAL_TYPE_TEXTURE;
+            surface.material.materialType = matType;
+
+            if (matType == MATERIAL_TYPE_TEXTURE)
+            {
+                if (!jRoot.materials || *primitive.material >= jRoot.materials->size())
+                    throw GltfLoadException("Invalid material index");
+                surface.material.materialName = jRoot.materials.value()[primitive.material.value()].name.value();
+            }
+            else
+                surface.material.materialName = "";
+        }
+
+        bool CreateSurfaceFromPrimitive(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive)
+        {
+            if (!primitive.indices)
+                throw GltfLoadException("Requires primitives indices");
+            if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
+                throw GltfLoadException("Only triangles are supported");
+            if (!primitive.attributes.POSITION)
+                throw GltfLoadException("Requires primitives attribute POSITION");
+            if (!primitive.attributes.NORMAL)
+                throw GltfLoadException("Requires primitives attribute NORMAL");
+            if (!primitive.attributes.TEXCOORD_0)
+                throw GltfLoadException("Requires primitives attribute TEXCOORD_0");
+
+            const AccessorsForVertex accessorsForVertex{
+                .m_position_accessor = *primitive.attributes.POSITION,
+                .m_normal_accessor = *primitive.attributes.NORMAL,
+                .m_color_accessor = primitive.attributes.COLOR_0,
+                .m_uv_accessor = *primitive.attributes.TEXCOORD_0,
+                .m_index_accessor = *primitive.indices,
+            };
+
+            BSPSurface surface;
+
+            loadSurfaceMaterialData(jRoot, primitive, surface);
+            CreateVertices(accessorsForVertex, surface);
+
+            m_bsp->gfxWorld.surfaces.emplace_back(surface);
+
+            return true;
+        }
+
+        static std::vector<unsigned> GetRootNodes(const JsonRoot& jRoot)
+        {
+            if (!jRoot.nodes || jRoot.nodes->empty())
+                return {};
+
+            const auto nodeCount = jRoot.nodes->size();
+            std::vector<unsigned> rootNodes;
+            std::vector<bool> isChild(nodeCount);
+
+            for (const auto& node : jRoot.nodes.value())
+            {
+                if (!node.children)
+                    continue;
+
+                for (const auto childIndex : node.children.value())
+                {
+                    if (childIndex >= nodeCount)
+                        throw GltfLoadException("Illegal child index");
+
+                    if (isChild[childIndex])
+                        throw GltfLoadException("Node hierarchy is not a set of disjoint strict trees");
+
+                    isChild[childIndex] = true;
+                }
+            }
+
+            for (auto nodeIndex = 0u; nodeIndex < nodeCount; nodeIndex++)
+            {
+                if (!isChild[nodeIndex])
+                    rootNodes.emplace_back(nodeIndex);
+            }
+
+            return rootNodes;
+        }
+
+        void TraverseNodes(const JsonRoot& jRoot)
+        {
+            // Make sure there are any nodes to traverse
+            if (!jRoot.nodes || jRoot.nodes->empty())
+                return;
+
+            std::deque<unsigned> nodeQueue;
+            const std::vector<unsigned> rootNodes = GetRootNodes(jRoot);
+
+            for (const auto rootNode : rootNodes)
+                nodeQueue.emplace_back(rootNode);
+
+            while (!nodeQueue.empty())
+            {
+                const auto& node = jRoot.nodes.value()[nodeQueue.front()];
+                nodeQueue.pop_front();
+
+                if (node.children)
+                {
+                    for (const auto childIndex : *node.children)
+                        nodeQueue.emplace_back(childIndex);
+                }
+
+                if (node.mesh)
+                {
+                    con::info("Mesh {} found", node.name.has_value() ? node.name.value() : "");
+
+                    const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+                    for (const auto& primitive : mesh.primitives)
+                    {
+                        CreateSurfaceFromPrimitive(jRoot, primitive);
+                    }
+                }
+            }
+        }
+
+        void CreateBuffers(const JsonRoot& jRoot)
+        {
+            if (!jRoot.buffers)
+                return;
+
+            m_buffers.reserve(jRoot.buffers->size());
+            for (const auto& jBuffer : *jRoot.buffers)
+            {
+                if (!jBuffer.uri)
+                {
+                    const void* embeddedBufferPtr = nullptr;
+                    size_t embeddedBufferSize = 0u;
+                    if (!m_input.GetEmbeddedBuffer(embeddedBufferPtr, embeddedBufferSize) || embeddedBufferSize == 0u)
+                        throw GltfLoadException("Buffer tried to access embedded data when there is none");
+
+                    m_buffers.emplace_back(std::make_unique<EmbeddedBuffer>(embeddedBufferPtr, embeddedBufferSize));
+                }
+                else if (DataUriBuffer::IsDataUri(*jBuffer.uri))
+                {
+                    auto dataUriBuffer = std::make_unique<DataUriBuffer>();
+                    if (!dataUriBuffer->ReadDataFromUri(*jBuffer.uri))
+                        throw GltfLoadException("Buffer has invalid data uri");
+
+                    m_buffers.emplace_back(std::move(dataUriBuffer));
+                }
+                else
+                {
+                    throw GltfLoadException("File buffers are not supported");
+                }
+            }
+        }
+
+        void CreateBufferViews(const JsonRoot& jRoot)
+        {
+            if (!jRoot.bufferViews)
+                return;
+
+            m_buffer_views.reserve(jRoot.bufferViews->size());
+            for (const auto& jBufferView : *jRoot.bufferViews)
+            {
+                if (jBufferView.buffer >= m_buffers.size())
+                    throw GltfLoadException("Buffer view references invalid buffer");
+
+                const auto* buffer = m_buffers[jBufferView.buffer].get();
+                const auto offset = jBufferView.byteOffset.value_or(0u);
+                const auto length = jBufferView.byteLength;
+                const auto stride = jBufferView.byteStride.value_or(0u);
+
+                if (offset + length > buffer->GetSize())
+                    throw GltfLoadException("Buffer view is defined larger as underlying buffer");
+
+                m_buffer_views.emplace_back(std::make_unique<BufferView>(buffer, offset, length, stride));
+            }
+        }
+
+        void CreateAccessors(const JsonRoot& jRoot)
+        {
+            if (!jRoot.accessors)
+                return;
+
+            m_accessors.reserve(jRoot.accessors->size());
+            for (const auto& jAccessor : *jRoot.accessors)
+            {
+                if (!jAccessor.bufferView)
+                {
+                    m_accessors.emplace_back(std::make_unique<NullAccessor>(jAccessor.count));
+                    continue;
+                }
+
+                if (*jAccessor.bufferView >= m_buffer_views.size())
+                    throw GltfLoadException("Accessor references invalid buffer view");
+
+                const auto* bufferView = m_buffer_views[*jAccessor.bufferView].get();
+                const auto byteOffset = jAccessor.byteOffset.value_or(0u);
+                if (jAccessor.componentType == JsonAccessorComponentType::FLOAT)
+                    m_accessors.emplace_back(std::make_unique<FloatAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
+                else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_BYTE)
+                    m_accessors.emplace_back(std::make_unique<UnsignedByteAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
+                else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_SHORT)
+                    m_accessors.emplace_back(std::make_unique<UnsignedShortAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
+                else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_INT)
+                    m_accessors.emplace_back(std::make_unique<UnsignedIntAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
+                else
+                    throw GltfLoadException(std::format("Accessor has unsupported component type {}", static_cast<unsigned>(jAccessor.componentType)));
+            }
+        }
+
+    public:
+        bool addGLTFDataToBSP(bool isGfxWorld)
+        {
+            JsonRoot jRoot;
+            try
+            {
+                jRoot = m_input.GetJson().get<JsonRoot>();
+            }
+            catch (const nlohmann::json::exception& e)
+            {
+                con::error("Failed to parse GLTF JSON: {}", e.what());
+                return false;
+            }
+
+            try
+            {
+                CreateBuffers(jRoot);
+                CreateBufferViews(jRoot);
+                CreateAccessors(jRoot);
+
+                TraverseNodes(jRoot);
+            }
+            catch (const GltfLoadException& e)
+            {
+                con::error("Failed to load GLTF: {}", e.Str());
+                return false;
+            }
+        }
+
+        BSPLoader(const Input& input, BSPData* bsp)
+            : m_input(input),
+              m_bsp(bsp) {};
+    };
+} // namespace
+
+namespace BSP
+{
+    std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
+    {
+        bool isGfxFileGltf = true;
+        std::string gfxFilePath = BSPUtil::getFileNameForBSPAsset("map_gfx.gltf");
+        auto gfxFile = searchPath.Open(gfxFilePath);
+        if (!gfxFile.IsOpen())
+        {
+            isGfxFileGltf = false;
+            gfxFilePath = BSPUtil::getFileNameForBSPAsset("map_gfx.glb");
+            gfxFile = searchPath.Open(gfxFilePath);
+            if (!gfxFile.IsOpen())
+            {
+                con::error("BSP Creator: Can't find map_gfx.gltf or map_gfx.glb.");
+                return nullptr;
+            }
+        }
+
+        std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
+
+        bsp->name = mapName;
+        bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
+
+        if (isGfxFileGltf)
+        {
+            gltf::TextInput input;
+            if (!input.ReadGltfData(*gfxFile.m_stream))
+                return nullptr;
+
+            BSPLoader loader(input, bsp.get());
+            if (!loader.addGLTFDataToBSP(true))
+                return nullptr;
+        }
+        else
+        {
+            gltf::BinInput input;
+            if (!input.ReadGltfData(*gfxFile.m_stream))
+                return nullptr;
+
+            BSPLoader loader(input, bsp.get());
+            if (!loader.addGLTFDataToBSP(true))
+                return nullptr;
+        }
+
+        return bsp;
+    }
+} // namespace BSP
+
+/*
+std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
+    {
+        std::string gfxFbxFileName = "map_gfx.fbx";
+        std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset(gfxFbxFileName);
+        auto gfxFile = searchPath.Open(gfxFbxPath);
+        if (!gfxFile.IsOpen())
+        {
+            con::error("Failed to open map gfx fbx file: {}", gfxFbxPath);
+            return nullptr;
+        }
+
+        std::unique_ptr<char> gfxMapData(new char[static_cast<size_t>(gfxFile.m_length)]);
+        gfxFile.m_stream->read(gfxMapData.get(), gfxFile.m_length);
+        if (gfxFile.m_stream->gcount() != gfxFile.m_length)
+        {
+            con::error("Read error of gfx fbx file: {}", gfxFbxPath);
+            return nullptr;
+        }
+
+        ufbx_error errorGfx;
+        ufbx_load_opts optsGfx{};
+        optsGfx.target_axes = ufbx_axes_right_handed_y_up;
+        optsGfx.generate_missing_normals = true;
+        optsGfx.allow_missing_vertex_position = false;
+        ufbx_scene* gfxScene = ufbx_load_memory(gfxMapData.get(), static_cast<size_t>(gfxFile.m_length), &optsGfx, &errorGfx);
+        if (!gfxScene)
+        {
+            con::error("Failed to load map gfx fbx file: {}", errorGfx.description.data);
+            return nullptr;
+        }
+
+        ufbx_scene* colScene;
+        std::string colFbxFileName = "map_col.fbx";
+        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset(colFbxFileName);
+        auto colFile = searchPath.Open(colFbxPath);
+        if (!colFile.IsOpen())
+        {
+            con::warn("Failed to open map collison fbx file: {}. map gfx will be used for collision instead.", colFbxPath);
+            colScene = gfxScene;
+        }
+        else
+        {
+            std::unique_ptr<char> colMapData(new char[static_cast<size_t>(colFile.m_length)]);
+            colFile.m_stream->seekg(0);
+            colFile.m_stream->read(colMapData.get(), colFile.m_length);
+            if (colFile.m_stream->gcount() != colFile.m_length)
+            {
+                con::error("Read error of collision fbx file: {}", colFbxPath);
+                return nullptr;
+            }
+
+            ufbx_error errorCol;
+            ufbx_load_opts optsCol{};
+            optsCol.target_axes = ufbx_axes_right_handed_y_up;
+            optsCol.generate_missing_normals = true;
+            optsCol.allow_missing_vertex_position = false;
+            colScene = ufbx_load_memory(colMapData.get(), static_cast<size_t>(colFile.m_length), &optsCol, &errorCol);
+            if (!colScene)
+            {
+                con::error("Failed to load map collision fbx file: {}", errorCol.description.data);
+                return nullptr;
+            }
+        }
+
+        std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
+
+        bsp->name = mapName;
+        bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
+
+        loadWorldData(gfxScene, bsp.get(), true);
+        loadWorldData(colScene, bsp.get(), false);
+
+        ufbx_free_scene(gfxScene);
+        if (gfxScene != colScene)
+            ufbx_free_scene(colScene);
+
+        return bsp;
+    }
+
+
+
+
+
+
+
+
+
+
+
+        using namespace BSP;
 
     void addFBXMeshToWorld(
         ufbx_node* node, std::vector<BSPSurface>& surfaceVec, std::vector<BSPVertex>& vertexVec, std::vector<uint16_t>& indexVec, bool& hasTangentSpace)
@@ -191,86 +801,4 @@ namespace
         if (hasTangentSpace == false)
             con::warn("warning: one or more meshes have no tangent space. Be sure to select the tangent space box when exporting the FBX.");
     }
-} // namespace
-
-namespace BSP
-{
-    std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
-    {
-        std::string gfxFbxFileName = "map_gfx.fbx";
-        std::string gfxFbxPath = BSPUtil::getFileNameForBSPAsset(gfxFbxFileName);
-        auto gfxFile = searchPath.Open(gfxFbxPath);
-        if (!gfxFile.IsOpen())
-        {
-            con::error("Failed to open map gfx fbx file: {}", gfxFbxPath);
-            return nullptr;
-        }
-
-        std::unique_ptr<char> gfxMapData(new char[static_cast<size_t>(gfxFile.m_length)]);
-        gfxFile.m_stream->read(gfxMapData.get(), gfxFile.m_length);
-        if (gfxFile.m_stream->gcount() != gfxFile.m_length)
-        {
-            con::error("Read error of gfx fbx file: {}", gfxFbxPath);
-            return nullptr;
-        }
-
-        ufbx_error errorGfx;
-        ufbx_load_opts optsGfx{};
-        optsGfx.target_axes = ufbx_axes_right_handed_y_up;
-        optsGfx.generate_missing_normals = true;
-        optsGfx.allow_missing_vertex_position = false;
-        ufbx_scene* gfxScene = ufbx_load_memory(gfxMapData.get(), static_cast<size_t>(gfxFile.m_length), &optsGfx, &errorGfx);
-        if (!gfxScene)
-        {
-            con::error("Failed to load map gfx fbx file: {}", errorGfx.description.data);
-            return nullptr;
-        }
-
-        ufbx_scene* colScene;
-        std::string colFbxFileName = "map_col.fbx";
-        std::string colFbxPath = BSPUtil::getFileNameForBSPAsset(colFbxFileName);
-        auto colFile = searchPath.Open(colFbxPath);
-        if (!colFile.IsOpen())
-        {
-            con::warn("Failed to open map collison fbx file: {}. map gfx will be used for collision instead.", colFbxPath);
-            colScene = gfxScene;
-        }
-        else
-        {
-            std::unique_ptr<char> colMapData(new char[static_cast<size_t>(colFile.m_length)]);
-            colFile.m_stream->seekg(0);
-            colFile.m_stream->read(colMapData.get(), colFile.m_length);
-            if (colFile.m_stream->gcount() != colFile.m_length)
-            {
-                con::error("Read error of collision fbx file: {}", colFbxPath);
-                return nullptr;
-            }
-
-            ufbx_error errorCol;
-            ufbx_load_opts optsCol{};
-            optsCol.target_axes = ufbx_axes_right_handed_y_up;
-            optsCol.generate_missing_normals = true;
-            optsCol.allow_missing_vertex_position = false;
-            colScene = ufbx_load_memory(colMapData.get(), static_cast<size_t>(colFile.m_length), &optsCol, &errorCol);
-            if (!colScene)
-            {
-                con::error("Failed to load map collision fbx file: {}", errorCol.description.data);
-                return nullptr;
-            }
-        }
-
-        std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
-
-        bsp->name = mapName;
-        bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
-
-        loadWorldData(gfxScene, bsp.get(), true);
-        loadWorldData(colScene, bsp.get(), false);
-
-        ufbx_free_scene(gfxScene);
-        if (gfxScene != colScene)
-            ufbx_free_scene(colScene);
-
-        return bsp;
-    }
-} // namespace BSP
+*/

@@ -7,7 +7,7 @@
 
 namespace BSP
 {
-    std::string BSPUtil::getFileNameForBSPAsset(std::string& assetName)
+    std::string BSPUtil::getFileNameForBSPAsset(const std::string& assetName)
     {
         return std::format("BSP/{}", assetName);
     }
