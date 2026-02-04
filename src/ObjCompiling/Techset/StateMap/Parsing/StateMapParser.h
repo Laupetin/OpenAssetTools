@@ -4,8 +4,6 @@
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
 #include "StateMapParserState.h"
-#include "Techset/TechsetDefinition.h"
-#include "Utils/ClassUtils.h"
 
 namespace state_map
 {
@@ -16,7 +14,7 @@ namespace state_map
 
     public:
         StateMapParser(SimpleLexer* lexer, std::string stateMapName, const StateMapLayout& layout);
-        _NODISCARD std::unique_ptr<StateMapDefinition> GetStateMapDefinition() const;
-        _NODISCARD StateMapParserState* GetState() const;
+        [[nodiscard]] std::unique_ptr<StateMapDefinition> GetStateMapDefinition() const;
+        [[nodiscard]] StateMapParserState* GetState() const;
     };
 } // namespace state_map

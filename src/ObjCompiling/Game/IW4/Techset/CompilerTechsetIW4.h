@@ -3,8 +3,8 @@
 #include "Asset/IAssetCreator.h"
 #include "Game/IW4/IW4.h"
 #include "SearchPath/ISearchPath.h"
-#include "StateMap/StateMapDefinition.h"
 #include "Techset/CommonTechset.h"
+#include "Techset/StateMap/StateMapDefinition.h"
 #include "Utils/MemoryManager.h"
 
 #include <memory>

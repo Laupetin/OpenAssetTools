@@ -2,7 +2,6 @@
 
 #include "Parsing/IParserLineStream.h"
 #include "TechniqueDefinitionAcceptor.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <string>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "StateMap/StateMapDefinition.h"
-#include "StateMap/StateMapLayout.h"
+#include "Techset/StateMap/StateMapDefinition.h"
+#include "Techset/StateMap/StateMapLayout.h"
 
 #include <memory>
 #include <set>

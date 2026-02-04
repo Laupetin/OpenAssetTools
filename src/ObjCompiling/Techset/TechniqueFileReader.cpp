@@ -3,7 +3,7 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
-#include "Parsing/TechniqueFileParser.h"
+#include "Techset/Parsing/TechniqueFileParser.h"
 #include "Utils/Logging/Log.h"
 
 #include <iostream>
