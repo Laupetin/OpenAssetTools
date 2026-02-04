@@ -5,8 +5,8 @@
 
 namespace
 {
-    static constexpr auto CAPTURE_TYPE = 1;
-    static constexpr auto CAPTURE_ASSET_NAME = 2;
+    constexpr auto CAPTURE_TYPE = 1;
+    constexpr auto CAPTURE_ASSET_NAME = 2;
 } // namespace
 
 SequenceAsset::SequenceAsset()
@@ -31,7 +31,7 @@ void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<Comm
     if (definition == nullptr)
         throw ParsingException(typeNameToken.GetPos(), "Unknown type");
 
-    auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(definition);
+    const auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(definition);
     if (definitionWithMembers == nullptr)
         throw ParsingException(typeNameToken.GetPos(), "Type must be struct or union");
 

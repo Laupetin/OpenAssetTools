@@ -47,7 +47,7 @@ namespace
                 continue;
 
             // Any script strings, asset refs and assets need to be processed.
-            if (member->m_is_script_string || member->m_asset_ref || member->m_type && StructureComputations(member->m_type).IsAsset())
+            if (member->m_is_script_string || !member->m_asset_ref.empty() || member->m_type && StructureComputations(member->m_type).IsAsset())
             {
                 info->m_requires_marking = true;
                 return true;
