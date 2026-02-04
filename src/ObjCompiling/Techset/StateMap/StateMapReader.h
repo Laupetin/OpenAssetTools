@@ -2,8 +2,8 @@
 
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/StateMapParserState.h"
-#include "StateMap/StateMapLayout.h"
 #include "StateMapDefinition.h"
+#include "Techset/StateMap/StateMapLayout.h"
 #include "Utils/ClassUtils.h"
 
 #include <memory>
