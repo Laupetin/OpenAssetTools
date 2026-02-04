@@ -2,8 +2,8 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
-#include "StateMap/StateMapLayout.h"
 #include "Techset/CommonTechset.h"
+#include "Techset/StateMap/StateMapLayout.h"
 
 #include <type_traits>
 #include <unordered_map>
