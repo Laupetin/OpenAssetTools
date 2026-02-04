@@ -4,9 +4,10 @@
 
 AssetCreatorCollection::AssetCreatorCollection(const Zone& zone)
 {
-    m_asset_creators_by_type.resize(zone.m_pools->GetAssetTypeCount());
-    m_asset_post_processors_by_type.resize(zone.m_pools->GetAssetTypeCount());
-    m_default_asset_creators_by_type.resize(zone.m_pools->GetAssetTypeCount());
+    const auto* game = IGame::GetGameById(zone.m_game_id);
+    m_asset_creators_by_type.resize(game->GetAssetTypeCount());
+    m_asset_post_processors_by_type.resize(game->GetAssetTypeCount());
+    m_default_asset_creators_by_type.resize(game->GetAssetTypeCount());
 }
 
 void AssetCreatorCollection::AddAssetCreator(std::unique_ptr<IAssetCreator> creator)

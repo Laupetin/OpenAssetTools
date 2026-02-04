@@ -5,7 +5,6 @@
 #include "Pool/ZoneAssetPools.h"
 
 #include <memory>
-#include <optional>
 
 class GameAssetPoolIW3 final : public ZoneAssetPools
 {
@@ -40,12 +39,6 @@ public:
     ~GameAssetPoolIW3() override = default;
 
     [[nodiscard]] XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
-
-    static std::optional<const char*> AssetTypeNameByType(asset_type_t assetType);
-    [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
-
-    static asset_type_t AssetTypeCount();
-    [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
 
 protected:
     XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;

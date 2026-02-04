@@ -26,7 +26,7 @@ public:
     IParserLineStream& m_underlying_stream;
     std::unordered_set<std::string> m_inclusions;
 
-    const IAssetNameResolver* m_asset_name_resolver;
+    AssetNameResolver m_asset_name_resolver;
 
     std::optional<ZoneDefinitionObjContainer> m_current_ipak;
     std::optional<ZoneDefinitionObjContainer> m_current_iwd;

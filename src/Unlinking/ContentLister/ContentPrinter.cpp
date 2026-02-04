@@ -18,7 +18,7 @@ void ContentPrinter::PrintContent() const
     con::info("Content:");
 
     for (const auto& asset : *pools)
-        con::info("{}, {}", *pools->GetAssetTypeName(asset->m_type), asset->m_name);
+        con::info("{}, {}", *game->GetAssetTypeName(asset->m_type), asset->m_name);
 
     con::info("");
 }

@@ -3,26 +3,13 @@
 #include "Pool/AssetPoolDynamic.h"
 
 #include <cassert>
-#include <type_traits>
 
 using namespace IW3;
-
-namespace
-{
-    constexpr const char* ASSET_TYPE_NAMES[]{
-        "xmodelpieces",   "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loadedsound",
-        "clipmap_unused", "clipmap",    "comworld",    "gameworldsp", "gameworldmp",      "mapents",      "gfxworld", "lightdef", "uimap",      "font",
-        "menulist",       "menu",       "localize",    "weapon",      "snddriverglobals", "fx",           "impactfx", "aitype",   "mptype",     "character",
-        "xmodelalias",    "rawfile",    "stringtable",
-    };
-}
 
 GameAssetPoolIW3::GameAssetPoolIW3(Zone* zone, const zone_priority_t priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
-
 #define INIT_POOL(poolName) (poolName) = std::make_unique<AssetPoolDynamic<decltype(poolName)::element_type::type>>(m_priority)
 
     INIT_POOL(m_phys_preset);
@@ -150,27 +137,4 @@ XAssetInfoGeneric* GameAssetPoolIW3::GetAsset(const asset_type_t type, const std
     return nullptr;
 
 #undef CASE_GET_ASSET
-}
-
-std::optional<const char*> GameAssetPoolIW3::AssetTypeNameByType(const asset_type_t assetType)
-{
-    if (assetType >= 0 && assetType < static_cast<int>(std::extent_v<decltype(ASSET_TYPE_NAMES)>))
-        return ASSET_TYPE_NAMES[assetType];
-
-    return std::nullopt;
-}
-
-std::optional<const char*> GameAssetPoolIW3::GetAssetTypeName(const asset_type_t assetType) const
-{
-    return AssetTypeNameByType(assetType);
-}
-
-asset_type_t GameAssetPoolIW3::AssetTypeCount()
-{
-    return ASSET_TYPE_COUNT;
-}
-
-asset_type_t GameAssetPoolIW3::GetAssetTypeCount() const
-{
-    return AssetTypeCount();
 }

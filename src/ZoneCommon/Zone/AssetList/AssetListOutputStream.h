@@ -3,7 +3,6 @@
 #include "AssetList.h"
 #include "Csv/CsvStream.h"
 #include "Game/IGame.h"
-#include "Zone/AssetNameResolver.h"
 
 #include <iostream>
 
@@ -16,5 +15,5 @@ public:
 
 private:
     CsvOutputStream m_stream;
-    const IAssetNameResolver* m_asset_name_resolver;
+    const IGame* m_game;
 };

@@ -12,9 +12,9 @@ namespace
     class AssetListInputStream
     {
     public:
-        AssetListInputStream(std::istream& stream, GameId game)
+        AssetListInputStream(std::istream& stream, const GameId game)
             : m_stream(stream),
-              m_asset_name_resolver(IAssetNameResolver::GetResolverForGame(game))
+              m_asset_name_resolver(game)
         {
         }
 
@@ -33,7 +33,7 @@ namespace
                     continue;
 
                 const auto& typeName = row[0];
-                const auto maybeType = m_asset_name_resolver->GetAssetTypeByName(typeName);
+                const auto maybeType = m_asset_name_resolver.GetAssetTypeByName(typeName);
                 if (!maybeType)
                 {
                     con::error("Unknown asset type name \"{}\"", typeName);
@@ -60,7 +60,7 @@ namespace
 
     private:
         CsvInputStream m_stream;
-        const IAssetNameResolver* m_asset_name_resolver;
+        AssetNameResolver m_asset_name_resolver;
     };
 } // namespace
 
