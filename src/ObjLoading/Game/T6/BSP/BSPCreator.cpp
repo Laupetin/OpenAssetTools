@@ -8,6 +8,10 @@
 #include "XModel/Gltf/Internal/GltfBufferView.h"
 #include "XModel/Gltf/JsonGltf.h"
 
+#pragma warning(push, 0)
+#include <Eigen>
+#pragma warning(pop)
+
 #include <deque>
 #include <exception>
 #include <format>
@@ -33,15 +37,6 @@ namespace
 
         coords[0] = two[0];
         coords[1] = -two[2];
-        coords[2] = two[1];
-    }
-
-    void RhcToLhcScale(float (&coords)[3])
-    {
-        const float two[3]{coords[0], coords[1], coords[2]};
-
-        coords[0] = two[0];
-        coords[1] = two[2];
         coords[2] = two[1];
     }
 
@@ -128,7 +123,73 @@ namespace
                 throw GltfLoadException(std::format("Element count of {} accessor does not match expected vertex count of {}", accessorType, vertexCount));
         }
 
-        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, BSPSurface& surface)
+        Eigen::Matrix4d createNodeMatrix(const gltf::JsonNode& node)
+        {
+            if (node.matrix)
+                return Eigen::Matrix4d({
+                    {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
+                    {(*node.matrix)[1], (*node.matrix)[5], (*node.matrix)[9],  (*node.matrix)[13]},
+                    {(*node.matrix)[2], (*node.matrix)[6], (*node.matrix)[10], (*node.matrix)[14]},
+                    {(*node.matrix)[3], (*node.matrix)[7], (*node.matrix)[11], (*node.matrix)[15]}
+                });
+
+            float localTranslation[3];
+            float localRotation[4];
+            float localScale[3];
+            if (node.translation)
+            {
+                localTranslation[0] = (*node.translation)[0];
+                localTranslation[1] = (*node.translation)[1];
+                localTranslation[2] = (*node.translation)[2];
+            }
+            else
+            {
+                localTranslation[0] = 0.0f;
+                localTranslation[1] = 0.0f;
+                localTranslation[2] = 0.0f;
+            }
+
+            if (node.rotation)
+            {
+                localRotation[0] = (*node.rotation)[0];
+                localRotation[1] = (*node.rotation)[1];
+                localRotation[2] = (*node.rotation)[2];
+                localRotation[3] = (*node.rotation)[3];
+            }
+            else
+            {
+                localRotation[0] = 0.0f;
+                localRotation[1] = 0.0f;
+                localRotation[2] = 0.0f;
+                localRotation[3] = 1.0f;
+            }
+
+            if (node.scale)
+            {
+                localScale[0] = (*node.scale)[0];
+                localScale[1] = (*node.scale)[1];
+                localScale[2] = (*node.scale)[2];
+            }
+            else
+            {
+                localScale[0] = 1.0f;
+                localScale[1] = 1.0f;
+                localScale[2] = 1.0f;
+            }
+
+            Eigen::Vector3d translation(localTranslation[0], localTranslation[1], localTranslation[2]);
+            Eigen::Quaterniond rotation(localRotation[0], localRotation[1], localRotation[2], localRotation[3]);
+            Eigen::Vector3d scale(localScale[0], localScale[1], localScale[2]);
+
+            Eigen::Affine3d transform = Eigen::Affine3d::Identity();
+            transform.translate(translation);
+            transform.rotate(rotation);
+            transform.scale(scale);
+
+            return transform.matrix();
+        }
+
+        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, BSPSurface& surface)
         {
             // clang-format off
             const auto* positionAccessor = GetAccessorForIndex(
@@ -207,6 +268,7 @@ namespace
                 m_bsp->gfxWorld.indices.emplace_back(indices[2]);
             }
 
+            Eigen::Matrix4d nodeMatrix = createNodeMatrix(node);
             const auto vertexOffset = static_cast<unsigned>(m_bsp->gfxWorld.vertices.size());
             m_bsp->gfxWorld.vertices.reserve(vertexOffset + vertexCount);
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
@@ -218,6 +280,12 @@ namespace
                 {
                     assert(false);
                 }
+
+                Eigen::Vector4d position(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1.0f);
+                Eigen::Vector4d transformedPosition = nodeMatrix * position;
+                vertex.pos.x = transformedPosition.x();
+                vertex.pos.y = transformedPosition.y();
+                vertex.pos.z = transformedPosition.z();
 
                 RhcToLhcCoordinates(vertex.pos.v);
                 RhcToLhcCoordinates(vertex.normal.v);
@@ -253,33 +321,42 @@ namespace
                 surface.material.materialName = "";
         }
 
-        bool CreateSurfaceFromPrimitive(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive)
+        bool CreateSurfacesFromNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
-            if (!primitive.indices)
-                throw GltfLoadException("Requires primitives indices");
-            if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
-                throw GltfLoadException("Only triangles are supported");
-            if (!primitive.attributes.POSITION)
-                throw GltfLoadException("Requires primitives attribute POSITION");
-            if (!primitive.attributes.NORMAL)
-                throw GltfLoadException("Requires primitives attribute NORMAL");
-            if (!primitive.attributes.TEXCOORD_0)
-                throw GltfLoadException("Requires primitives attribute TEXCOORD_0");
+            if (!node.mesh)
+                return false;
 
-            const AccessorsForVertex accessorsForVertex{
-                .m_position_accessor = *primitive.attributes.POSITION,
-                .m_normal_accessor = *primitive.attributes.NORMAL,
-                .m_color_accessor = primitive.attributes.COLOR_0,
-                .m_uv_accessor = *primitive.attributes.TEXCOORD_0,
-                .m_index_accessor = *primitive.indices,
-            };
+            con::info("Mesh {} found", node.name.has_value() ? node.name.value() : "");
 
-            BSPSurface surface;
+            const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+            for (const auto& primitive : mesh.primitives)
+            {
+                if (!primitive.indices)
+                    throw GltfLoadException("Requires primitives indices");
+                if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
+                    throw GltfLoadException("Only triangles are supported");
+                if (!primitive.attributes.POSITION)
+                    throw GltfLoadException("Requires primitives attribute POSITION");
+                if (!primitive.attributes.NORMAL)
+                    throw GltfLoadException("Requires primitives attribute NORMAL");
+                if (!primitive.attributes.TEXCOORD_0)
+                    throw GltfLoadException("Requires primitives attribute TEXCOORD_0");
 
-            loadSurfaceMaterialData(jRoot, primitive, surface);
-            CreateVertices(accessorsForVertex, surface);
+                const AccessorsForVertex accessorsForVertex{
+                    .m_position_accessor = *primitive.attributes.POSITION,
+                    .m_normal_accessor = *primitive.attributes.NORMAL,
+                    .m_color_accessor = primitive.attributes.COLOR_0,
+                    .m_uv_accessor = *primitive.attributes.TEXCOORD_0,
+                    .m_index_accessor = *primitive.indices,
+                };
 
-            m_bsp->gfxWorld.surfaces.emplace_back(surface);
+                BSPSurface surface;
+
+                loadSurfaceMaterialData(jRoot, primitive, surface);
+                CreateVertices(accessorsForVertex, node, surface);
+
+                m_bsp->gfxWorld.surfaces.emplace_back(surface);
+            }
 
             return true;
         }
@@ -340,18 +417,12 @@ namespace
                 {
                     for (const auto childIndex : *node.children)
                         nodeQueue.emplace_back(childIndex);
+
+                    if (node.matrix || node.translation || node.rotation || node.scale)
+                        con::warn("Parent node has position data that won't be used");
                 }
 
-                if (node.mesh)
-                {
-                    con::info("Mesh {} found", node.name.has_value() ? node.name.value() : "");
-
-                    const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
-                    for (const auto& primitive : mesh.primitives)
-                    {
-                        CreateSurfaceFromPrimitive(jRoot, primitive);
-                    }
-                }
+                CreateSurfacesFromNode(jRoot, node);
             }
         }
 
@@ -521,6 +592,8 @@ namespace BSP
             if (!loader.addGLTFDataToBSP(true))
                 return nullptr;
         }
+
+        bsp->colWorld = bsp->gfxWorld;
 
         return bsp;
     }
