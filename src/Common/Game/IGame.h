@@ -1,8 +1,10 @@
 #pragma once
 
 #include "GameLanguage.h"
+#include "Zone/ZoneTypes.h"
 
 #include <cstdint>
+#include <optional>
 #include <type_traits>
 #include <vector>
 
@@ -63,6 +65,9 @@ public:
     [[nodiscard]] virtual const std::string& GetFullName() const = 0;
     [[nodiscard]] virtual const std::string& GetShortName() const = 0;
     [[nodiscard]] virtual const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const = 0;
+
+    [[nodiscard]] virtual asset_type_t GetAssetTypeCount() const = 0;
+    [[nodiscard]] virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
 
     static IGame* GetGameById(GameId gameId);
 };

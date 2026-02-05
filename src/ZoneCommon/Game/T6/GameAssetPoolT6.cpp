@@ -3,82 +3,13 @@
 #include "Pool/AssetPoolDynamic.h"
 
 #include <cassert>
-#include <type_traits>
 
 using namespace T6;
-
-namespace
-{
-    constexpr const char* ASSET_TYPE_NAMES[]{
-        "xmodelpieces",
-        "physpreset",
-        "physconstraints",
-        "destructibledef",
-        "xanim",
-        "xmodel",
-        "material",
-        "techniqueset",
-        "image",
-        "soundbank",
-        "soundpatch",
-        "clipmap_unused",
-        "clipmap",
-        "comworld",
-        "gameworldsp",
-        "gameworldmp",
-        "mapents",
-        "gfxworld",
-        "gfxlightdef",
-        "uimap",
-        "font",
-        "fonticon",
-        "menulist",
-        "menu",
-        "localize",
-        "weapon",
-        "weapondef",
-        "weaponvariant",
-        "weaponfull",
-        "attachment",
-        "attachmentunique",
-        "camo",
-        "snddriverglobals",
-        "fx",
-        "fximpacttable",
-        "aitype",
-        "mptype",
-        "mpbody",
-        "mphead",
-        "character",
-        "xmodelalias",
-        "rawfile",
-        "stringtable",
-        "leaderboard",
-        "xglobals",
-        "ddl",
-        "glasses",
-        "emblemset",
-        "script",
-        "keyvaluepairs",
-        "vehicle",
-        "memoryblock",
-        "addonmapents",
-        "tracer",
-        "skinnedverts",
-        "qdb",
-        "slug",
-        "footsteptable",
-        "footstepfxtable",
-        "zbarrier",
-    };
-} // namespace
 
 GameAssetPoolT6::GameAssetPoolT6(Zone* zone, const zone_priority_t priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
-
 #define INIT_POOL(poolName) (poolName) = std::make_unique<AssetPoolDynamic<decltype(poolName)::element_type::type>>(m_priority)
 
     INIT_POOL(m_phys_preset);
@@ -275,27 +206,4 @@ XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, const std:
     return nullptr;
 
 #undef CASE_GET_ASSET
-}
-
-std::optional<const char*> GameAssetPoolT6::AssetTypeNameByType(const asset_type_t assetType)
-{
-    if (assetType >= 0 && assetType < static_cast<int>(std::extent_v<decltype(ASSET_TYPE_NAMES)>))
-        return ASSET_TYPE_NAMES[assetType];
-
-    return std::nullopt;
-}
-
-std::optional<const char*> GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
-{
-    return AssetTypeNameByType(assetType);
-}
-
-asset_type_t GameAssetPoolT6::AssetTypeCount()
-{
-    return ASSET_TYPE_COUNT;
-}
-
-asset_type_t GameAssetPoolT6::GetAssetTypeCount() const
-{
-    return AssetTypeCount();
 }

@@ -5,7 +5,6 @@
 ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream)
     : m_search_path(searchPath),
       m_underlying_stream(underlyingStream),
-      m_asset_name_resolver(nullptr),
       m_definition(std::make_unique<ZoneDefinition>())
 
 {
@@ -16,7 +15,7 @@ ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISe
 void ZoneDefinitionParserState::SetGame(const GameId game)
 {
     m_definition->m_game = game;
-    m_asset_name_resolver = IAssetNameResolver::GetResolverForGame(game);
+    m_asset_name_resolver = AssetNameResolver(game);
 }
 
 namespace

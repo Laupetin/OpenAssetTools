@@ -37,7 +37,7 @@ set condition material FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD
 use FxEffectDefRef;
 set condition handle never;
 set string name;
-set assetref name ASSET_TYPE_FX;
+set assetref name AssetFx;
 
 // FxElemExtendedDefPtr
 use FxElemExtendedDefPtr;

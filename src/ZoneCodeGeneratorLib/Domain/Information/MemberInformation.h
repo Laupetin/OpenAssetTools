@@ -25,5 +25,5 @@ public:
     std::unique_ptr<IEvaluation> m_alloc_alignment;
     std::unique_ptr<CustomAction> m_post_load_action;
     const FastFileBlock* m_fast_file_block;
-    const EnumMember* m_asset_ref;
+    std::string m_asset_ref;
 };

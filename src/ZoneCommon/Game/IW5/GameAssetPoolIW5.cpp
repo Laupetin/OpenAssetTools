@@ -3,68 +3,13 @@
 #include "Pool/AssetPoolDynamic.h"
 
 #include <cassert>
-#include <type_traits>
 
 using namespace IW5;
-
-namespace
-{
-    constexpr const char* ASSET_TYPE_NAMES[]{
-        "physpreset",
-        "physcollmap",
-        "xanim",
-        "xmodelsurfs",
-        "xmodel",
-        "material",
-        "pixelshader",
-        "vertexshader",
-        "vertexdecl",
-        "techniqueset",
-        "image",
-        "sound",
-        "soundcurve",
-        "loadedsound",
-        "clipmap",
-        "comworld",
-        "glassworld",
-        "pathdata",
-        "vehicletrack",
-        "mapents",
-        "fxworld",
-        "gfxworld",
-        "lightdef",
-        "uimap",
-        "font",
-        "menulist",
-        "menu",
-        "localize",
-        "attachment",
-        "weapon",
-        "snddriverglobals",
-        "fx",
-        "impactfx",
-        "surfacefx",
-        "aitype",
-        "mptype",
-        "character",
-        "xmodelalias",
-        "rawfile",
-        "scriptfile",
-        "stringtable",
-        "leaderboard",
-        "structureddatadef",
-        "tracer",
-        "vehicle",
-        "addonmapents",
-    };
-}
 
 GameAssetPoolIW5::GameAssetPoolIW5(Zone* zone, const zone_priority_t priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
-
 #define INIT_POOL(poolName) (poolName) = std::make_unique<AssetPoolDynamic<decltype(poolName)::element_type::type>>(m_priority)
 
     INIT_POOL(m_phys_preset);
@@ -235,27 +180,4 @@ XAssetInfoGeneric* GameAssetPoolIW5::GetAsset(const asset_type_t type, const std
     return nullptr;
 
 #undef CASE_GET_ASSET
-}
-
-std::optional<const char*> GameAssetPoolIW5::AssetTypeNameByType(const asset_type_t assetType)
-{
-    if (assetType >= 0 && assetType < static_cast<int>(std::extent_v<decltype(ASSET_TYPE_NAMES)>))
-        return ASSET_TYPE_NAMES[assetType];
-
-    return std::nullopt;
-}
-
-std::optional<const char*> GameAssetPoolIW5::GetAssetTypeName(const asset_type_t assetType) const
-{
-    return AssetTypeNameByType(assetType);
-}
-
-asset_type_t GameAssetPoolIW5::AssetTypeCount()
-{
-    return ASSET_TYPE_COUNT;
-}
-
-asset_type_t GameAssetPoolIW5::GetAssetTypeCount() const
-{
-    return AssetTypeCount();
 }

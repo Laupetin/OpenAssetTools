@@ -13,7 +13,7 @@ set reusable attachments;
 set count attachmentUniques 95;
 set reusable attachmentUniques;
 set string szXAnims;
-set assetref szXAnims ASSET_TYPE_XANIMPARTS;
+set assetref szXAnims AssetXAnim;
 set count szXAnims NUM_WEAP_ANIMS;
 set reusable szXAnims;
 set scriptstring hideTags;

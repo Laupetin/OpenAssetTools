@@ -8,9 +8,9 @@
 #include "SearchPath/OutputPathFilesystem.h"
 #include "UnlinkerArgs.h"
 #include "UnlinkerPaths.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/ObjFileStream.h"
+#include "Zone/AssetNameResolver.h"
 #include "Zone/Definition/ZoneDefWriter.h"
 #include "ZoneLoading.h"
 
@@ -18,7 +18,6 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <regex>
 
 namespace fs = std::filesystem;
 
@@ -27,7 +26,7 @@ namespace
     class UnlinkerImpl : public Unlinker
     {
     public:
-        UnlinkerImpl(UnlinkerArgs args)
+        explicit UnlinkerImpl(UnlinkerArgs args)
             : m_args(std::move(args))
         {
         }
@@ -96,34 +95,27 @@ namespace
 
         void UpdateAssetIncludesAndExcludes(const AssetDumpingContext& context) const
         {
-            const auto assetTypeCount = context.m_zone.m_pools->GetAssetTypeCount();
+            const auto gameId = context.m_zone.m_game_id;
+            const auto* game = IGame::GetGameById(gameId);
+            const auto assetTypeCount = game->GetAssetTypeCount();
 
-            ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
+            const auto initialValue = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::EXCLUDE;
+            ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector(assetTypeCount, initialValue);
 
             std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
-            for (auto i = 0u; i < assetTypeCount; i++)
-            {
-                const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
-
-                const auto foundSpecifiedEntry = m_args.m_specified_asset_type_map.find(assetTypeName);
-                if (foundSpecifiedEntry != m_args.m_specified_asset_type_map.end())
-                {
-                    ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::INCLUDE;
-                    assert(foundSpecifiedEntry->second < handledSpecifiedAssets.size());
-                    handledSpecifiedAssets[foundSpecifiedEntry->second] = true;
-                }
-                else
-                    ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::EXCLUDE;
-            }
-
+            const AssetNameResolver assetNameResolver(gameId);
             auto anySpecifiedValueInvalid = false;
-            for (auto i = 0u; i < handledSpecifiedAssets.size(); i++)
+            for (const auto& specifiedValue : m_args.m_specified_asset_types)
             {
-                if (!handledSpecifiedAssets[i])
+                const auto maybeAssetType = assetNameResolver.GetAssetTypeByName(specifiedValue);
+                if (!maybeAssetType)
                 {
-                    con::error("Unknown asset type \"{}\"", m_args.m_specified_asset_types[i]);
+                    con::error("Unknown asset type \"{}\"", specifiedValue);
                     anySpecifiedValueInvalid = true;
+                    continue;
                 }
+
+                ObjWriting::Configuration.AssetTypesToHandleBitfield[*maybeAssetType] = !initialValue;
             }
 
             if (anySpecifiedValueInvalid)
@@ -134,7 +126,7 @@ namespace
                 std::ostringstream ss;
                 for (auto i = 0u; i < assetTypeCount; i++)
                 {
-                    const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
+                    const auto assetTypeName = std::string(*game->GetAssetTypeName(i));
 
                     if (first)
                         first = false;

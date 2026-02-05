@@ -11,7 +11,6 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 
 class AssetCreatorCollection;
 

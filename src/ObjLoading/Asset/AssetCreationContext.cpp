@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <format>
-#include <iostream>
 
 IgnoredAssetLookup::IgnoredAssetLookup() = default;
 
@@ -89,7 +88,7 @@ XAssetInfoGeneric* AssetCreationContext::AddAssetGeneric(GenericAssetRegistratio
         addedAsset = m_zone.m_pools->AddAsset(std::move(xAssetInfo));
 
     if (addedAsset == nullptr)
-        con::error("Failed to add asset of type \"{}\" to pool: \"{}\"", *m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
+        con::error(R"(Failed to add asset of type "{}" to pool: "{}")", *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType), pAssetName);
     return addedAsset;
 }
 
@@ -99,7 +98,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDefaultAssetDependency(const asset_
     if (result.HasTakenAction() && !result.HasFailed())
         return result.GetAssetInfo();
 
-    con::error("Failed to create default asset of type {}", *m_zone.m_pools->GetAssetTypeName(assetType));
+    con::error("Failed to create default asset of type {}", *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
 
     return nullptr;
 }
@@ -129,11 +128,11 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         if (!result.HasFailed())
             return result.GetAssetInfo();
 
-        con::error("Could not load asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+        con::error(R"(Could not load asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
     }
     else if (required)
     {
-        con::error("Missing asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+        con::error(R"(Missing asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
     }
 
     return nullptr;
@@ -151,7 +150,8 @@ IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(c
     const auto result = m_creators->CreateAsset(assetType, assetName, *this);
     if (!result.HasTakenAction() && !result.HasFailed())
     {
-        con::warn("Could not load indirectly referenced asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+        con::warn(
+            R"(Could not load indirectly referenced asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
     }
     return IndirectAssetReference(assetType, assetName);
 }
@@ -187,11 +187,11 @@ XAssetInfoGeneric* AssetCreationContext::ForceLoadDependencyGeneric(const asset_
         if (!result.HasFailed())
             return result.GetAssetInfo();
 
-        con::error("Could not load asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+        con::error(R"(Could not load asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
     }
     else
     {
-        con::error("Missing asset \"{}\" of type \"{}\"", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+        con::error(R"(Missing asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(assetType));
     }
 
     return nullptr;

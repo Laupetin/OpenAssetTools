@@ -8,7 +8,6 @@ MemberInformation::MemberInformation(StructureInformation* parent, StructureInfo
       m_is_script_string(false),
       m_is_reusable(false),
       m_is_leaf(false),
-      m_fast_file_block(nullptr),
-      m_asset_ref(nullptr)
+      m_fast_file_block(nullptr)
 {
 }
