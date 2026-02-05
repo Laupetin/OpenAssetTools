@@ -33,15 +33,15 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
         xAssetList.stringList.strings = nullptr;
     }
 
-    const auto assetCount = m_zone.m_pools->GetTotalAssetCount();
+    const auto assetCount = m_zone.m_pools.GetTotalAssetCount();
     if (assetCount > 0)
     {
         xAssetList.assetCount = static_cast<int>(assetCount);
         xAssetList.assets = memory.Alloc<XAsset>(assetCount);
 
-        const auto end = m_zone.m_pools->end();
+        const auto end = m_zone.m_pools.end();
         auto index = 0u;
-        for (auto i = m_zone.m_pools->begin(); i != end; ++i)
+        for (auto i = m_zone.m_pools.begin(); i != end; ++i)
         {
             auto& asset = xAssetList.assets[index++];
             asset.type = static_cast<XAssetType>((*i)->m_type);

@@ -3,188 +3,60 @@
 #include "AssetPool.h"
 #include "Zone/ZoneTypes.h"
 
-#include <algorithm>
-#include <cassert>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-template<typename T> class GlobalAssetPool
+struct LinkedAssetPool
 {
-    struct LinkedAssetPool
-    {
-        AssetPool<T>* m_asset_pool;
-        zone_priority_t m_priority;
-    };
-
-    struct GameAssetPoolEntry
-    {
-        XAssetInfo<T>* m_asset;
-        bool m_duplicate;
-        LinkedAssetPool* m_asset_pool;
-    };
-
-    static std::vector<std::unique_ptr<LinkedAssetPool>> m_linked_asset_pools;
-    static std::unordered_map<std::string, GameAssetPoolEntry> m_assets;
-
-    static void SortLinkedAssetPools()
-    {
-        std::sort(m_linked_asset_pools.begin(),
-                  m_linked_asset_pools.end(),
-                  [](const std::unique_ptr<LinkedAssetPool>& a, const std::unique_ptr<LinkedAssetPool>& b) -> bool
-                  {
-                      return a->m_priority < b->m_priority;
-                  });
-    }
-
-    static bool ReplaceAssetPoolEntry(GameAssetPoolEntry& assetEntry)
-    {
-        int occurrences = 0;
-
-        for (const auto& linkedAssetPool : m_linked_asset_pools)
-        {
-            XAssetInfo<T>* foundAsset = linkedAssetPool->m_asset_pool->GetAsset(assetEntry.m_asset->m_name);
-
-            if (foundAsset != nullptr)
-            {
-                if (++occurrences == 1)
-                {
-                    assetEntry.m_asset = foundAsset;
-                    assetEntry.m_duplicate = false;
-                    assetEntry.m_asset_pool = linkedAssetPool.get();
-                }
-                else
-                {
-                    assetEntry.m_duplicate = true;
-                    break;
-                }
-            }
-        }
-
-        return occurrences > 0;
-    }
-
-    static void LinkAsset(LinkedAssetPool* link, const std::string& normalizedAssetName, XAssetInfo<T>* asset)
-    {
-        auto existingAsset = m_assets.find(normalizedAssetName);
-
-        if (existingAsset == m_assets.end())
-        {
-            GameAssetPoolEntry entry{};
-            entry.m_asset = asset;
-            entry.m_asset_pool = link;
-            entry.m_duplicate = false;
-
-            m_assets[normalizedAssetName] = entry;
-        }
-        else
-        {
-            auto& existingEntry = existingAsset->second;
-
-            existingEntry.m_duplicate = true;
-
-            if (existingEntry.m_asset_pool->m_priority < link->m_priority)
-            {
-                existingEntry.m_asset_pool = link;
-                existingEntry.m_asset = asset;
-            }
-        }
-    }
-
-public:
-    static void LinkAssetPool(AssetPool<T>* assetPool, const zone_priority_t priority)
-    {
-        auto newLink = std::make_unique<LinkedAssetPool>();
-        newLink->m_asset_pool = assetPool;
-        newLink->m_priority = priority;
-
-        auto* newLinkPtr = newLink.get();
-        m_linked_asset_pools.emplace_back(std::move(newLink));
-        SortLinkedAssetPools();
-
-        for (auto asset : *assetPool)
-        {
-            const auto normalizedAssetName = XAssetInfo<T>::NormalizeAssetName(asset->m_name);
-            LinkAsset(newLinkPtr, normalizedAssetName, asset);
-        }
-    }
-
-    static void LinkAsset(AssetPool<T>* assetPool, const std::string& normalizedAssetName, XAssetInfo<T>* asset)
-    {
-        LinkedAssetPool* link = nullptr;
-
-        for (const auto& existingLink : m_linked_asset_pools)
-        {
-            if (existingLink->m_asset_pool == assetPool)
-            {
-                link = existingLink.get();
-                break;
-            }
-        }
-
-        assert(link != nullptr);
-        if (link == nullptr)
-            return;
-
-        LinkAsset(link, normalizedAssetName, asset);
-    }
-
-    static void UnlinkAssetPool(AssetPool<T>* assetPool)
-    {
-        auto iLinkEntry = m_linked_asset_pools.begin();
-
-        for (; iLinkEntry != m_linked_asset_pools.end(); ++iLinkEntry)
-        {
-            LinkedAssetPool* linkEntry = iLinkEntry->get();
-            if (linkEntry->m_asset_pool == assetPool)
-            {
-                break;
-            }
-        }
-
-        assert(iLinkEntry != m_linked_asset_pools.end());
-        if (iLinkEntry == m_linked_asset_pools.end())
-            return;
-
-        auto assetPoolToUnlink = std::move(*iLinkEntry);
-        m_linked_asset_pools.erase(iLinkEntry);
-
-        for (auto iAssetEntry = m_assets.begin(); iAssetEntry != m_assets.end();)
-        {
-            auto& assetEntry = *iAssetEntry;
-
-            if (assetEntry.second.m_asset_pool != assetPoolToUnlink.get())
-            {
-                ++iAssetEntry;
-                continue;
-            }
-
-            if (assetEntry.second.m_duplicate && ReplaceAssetPoolEntry(assetEntry.second))
-            {
-                ++iAssetEntry;
-                continue;
-            }
-
-            iAssetEntry = m_assets.erase(iAssetEntry);
-        }
-    }
-
-    static XAssetInfo<T>* GetAssetByName(const std::string& name)
-    {
-        const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(name);
-        const auto foundEntry = m_assets.find(normalizedName);
-        if (foundEntry == m_assets.end())
-            return nullptr;
-
-        return foundEntry->second.m_asset;
-    }
+    AssetPool* m_asset_pool;
+    zone_priority_t m_priority;
 };
 
-template<typename T>
-std::vector<std::unique_ptr<typename GlobalAssetPool<T>::LinkedAssetPool>> GlobalAssetPool<T>::m_linked_asset_pools =
-    std::vector<std::unique_ptr<LinkedAssetPool>>();
+struct GameAssetPoolEntry
+{
+    XAssetInfoGeneric* m_asset;
+    LinkedAssetPool* m_asset_pool;
+    bool m_duplicate;
+};
 
-template<typename T>
-std::unordered_map<std::string, typename GlobalAssetPool<T>::GameAssetPoolEntry> GlobalAssetPool<T>::m_assets =
-    std::unordered_map<std::string, GameAssetPoolEntry>();
+class GlobalAssetPool
+{
+public:
+    void LinkAssetPool(AssetPool* assetPool, zone_priority_t priority);
+    void LinkAsset(const AssetPool* assetPool, const std::string& normalizedAssetName, XAssetInfoGeneric* asset);
+    void UnlinkAssetPool(const AssetPool* assetPool);
+
+    XAssetInfoGeneric* GetAsset(const std::string& name);
+
+private:
+    void SortLinkedAssetPools();
+    bool ReplaceAssetPoolEntry(GameAssetPoolEntry& assetEntry) const;
+    void LinkAsset(LinkedAssetPool* link, const std::string& normalizedAssetName, XAssetInfoGeneric* asset);
+
+    std::vector<std::unique_ptr<LinkedAssetPool>> m_linked_asset_pools;
+    std::unordered_map<std::string, GameAssetPoolEntry> m_assets;
+};
+
+class GameGlobalAssetPools
+{
+public:
+    explicit GameGlobalAssetPools(GameId gameId);
+
+    void LinkAssetPool(asset_type_t assetType, AssetPool* assetPool, zone_priority_t priority) const;
+    void LinkAsset(asset_type_t assetType, const AssetPool* assetPool, const std::string& normalizedAssetName, XAssetInfoGeneric* asset) const;
+    void UnlinkAssetPool(asset_type_t assetType, const AssetPool* assetPool) const;
+
+    [[nodiscard]] XAssetInfoGeneric* GetAsset(asset_type_t assetType, const std::string& name) const;
+
+    template<AssetDefinition Asset_t> [[nodiscard]] XAssetInfo<typename Asset_t::Type>* GetAsset(const std::string& name) const
+    {
+        return reinterpret_cast<XAssetInfo<typename Asset_t::Type>*>(GetAsset(Asset_t::EnumEntry, name));
+    }
+
+    static GameGlobalAssetPools* GetGlobalPoolsForGame(GameId gameId);
+
+private:
+    std::vector<std::unique_ptr<GlobalAssetPool>> m_global_asset_pools;
+};

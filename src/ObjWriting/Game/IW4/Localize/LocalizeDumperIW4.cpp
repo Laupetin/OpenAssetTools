@@ -10,14 +10,10 @@ using namespace IW4;
 
 namespace localize
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetLocalize::Type>& pool)
-        : AbstractSingleProgressAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::Dump(AssetDumpingContext& context)
     {
-        if (m_pool.m_asset_lookup.empty())
+        auto localizeAssets = context.m_zone.m_pools.PoolAssets<AssetLocalize>();
+        if (localizeAssets.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -34,7 +30,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (const auto* localizeEntry : m_pool)
+            for (const auto* localizeEntry : localizeAssets)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }

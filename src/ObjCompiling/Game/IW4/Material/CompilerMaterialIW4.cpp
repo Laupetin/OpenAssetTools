@@ -8,7 +8,6 @@
 #include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Gdt/AbstractGdtEntryReader.h"
 #include "Gdt/IGdtQueryable.h"
-#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "StateMap/StateMapFromTechniqueExtractor.h"
 #include "StateMap/StateMapHandler.h"
@@ -18,6 +17,7 @@
 #include "Techset/TechsetDefinitionCache.h"
 #include "Utils/Logging/Log.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstring>
 #include <format>

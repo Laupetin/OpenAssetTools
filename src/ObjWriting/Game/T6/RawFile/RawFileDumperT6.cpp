@@ -77,11 +77,6 @@ namespace
 
 namespace raw_file
 {
-    DumperT6::DumperT6(const AssetPool<AssetRawFile::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetRawFile::Type>& asset)
     {
         const auto* rawFile = asset.Asset();

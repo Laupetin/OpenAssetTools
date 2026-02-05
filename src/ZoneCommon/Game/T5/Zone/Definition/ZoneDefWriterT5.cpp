@@ -1,8 +1,6 @@
 #include "ZoneDefWriterT5.h"
 
-#include "Game/T5/GameAssetPoolT5.h"
-
-#include <cassert>
+#include "Game/T5/AssetMarkerT5.h"
 
 using namespace T5;
 
@@ -11,17 +9,13 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone
 void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
     const auto* game = IGame::GetGameById(zone.m_game_id);
-    const auto* pools = dynamic_cast<GameAssetPoolT5*>(zone.m_pools.get());
-
-    assert(pools);
-    if (!pools)
-        return;
 
     // Localized strings are all collected in one string file. So only add this to the zone file.
-    if (!pools->m_localize->m_asset_lookup.empty())
+    auto localizePoolAssets = zone.m_pools.PoolAssets<AssetLocalize>();
+    if (localizePoolAssets.begin() != localizePoolAssets.end())
         stream.WriteEntry(*game->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone.m_name);
 
-    for (const auto& asset : *pools)
+    for (const auto& asset : zone.m_pools)
     {
         switch (asset->m_type)
         {

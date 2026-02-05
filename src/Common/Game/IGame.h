@@ -69,5 +69,8 @@ public:
     [[nodiscard]] virtual asset_type_t GetAssetTypeCount() const = 0;
     [[nodiscard]] virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
 
+    [[nodiscard]] virtual asset_type_t GetSubAssetTypeCount() const = 0;
+    [[nodiscard]] virtual std::optional<const char*> GetSubAssetTypeName(asset_type_t subAssetType) const = 0;
+
     static IGame* GetGameById(GameId gameId);
 };

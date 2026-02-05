@@ -131,11 +131,6 @@ namespace
 
 namespace attachment_unique
 {
-    DumperT6::DumperT6(const AssetPool<AssetAttachmentUnique::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAttachmentUnique::Type>& asset)
     {
         // Only dump raw when no gdt available

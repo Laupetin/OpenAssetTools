@@ -7,9 +7,6 @@ namespace weapon
 {
     class DumperT6 final : public AbstractAssetDumper<T6::AssetWeapon>
     {
-    public:
-        explicit DumperT6(const AssetPool<T6::AssetWeapon::Type>& pool);
-
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetWeapon::Type>& asset) override;
     };

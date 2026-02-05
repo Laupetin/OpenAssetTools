@@ -5,7 +5,6 @@
 #include "FontIcon/JsonLoaderFontIconT6.h"
 #include "Game/T6/AssetMarkerT6.h"
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/Image/ImageLoaderEmbeddedT6.h"
 #include "Game/T6/Image/ImageLoaderExternalT6.h"
@@ -236,36 +235,29 @@ namespace T6
 
     void ObjLoader::LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const
     {
-        const auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
         const auto zoneNameHash = Common::Com_HashKey(zone.m_name.c_str(), 64);
 
         LoadCommonIPaks(searchPath, zone);
 
-        if (assetPoolT6->m_key_value_pairs != nullptr)
+        for (auto* keyValuePairsEntry : zone.m_pools.PoolAssets<AssetKeyValuePairs>())
         {
-            for (auto* keyValuePairsEntry : *assetPoolT6->m_key_value_pairs)
+            const auto* keyValuePairs = keyValuePairsEntry->Asset();
+            for (auto variableIndex = 0u; variableIndex < keyValuePairs->numVariables; variableIndex++)
             {
-                const auto* keyValuePairs = keyValuePairsEntry->Asset();
-                for (auto variableIndex = 0u; variableIndex < keyValuePairs->numVariables; variableIndex++)
-                {
-                    auto* variable = &keyValuePairs->keyValuePairs[variableIndex];
+                auto* variable = &keyValuePairs->keyValuePairs[variableIndex];
 
-                    if (variable->namespaceHash == zoneNameHash && variable->keyHash == IPAK_READ_HASH)
-                    {
-                        LoadIPakForZone(searchPath, variable->value, zone);
-                    }
+                if (variable->namespaceHash == zoneNameHash && variable->keyHash == IPAK_READ_HASH)
+                {
+                    LoadIPakForZone(searchPath, variable->value, zone);
                 }
             }
         }
 
-        if (assetPoolT6->m_sound_bank != nullptr)
-        {
-            std::set<std::string> loadedSoundBanksForZone;
+        std::set<std::string> loadedSoundBanksForZone;
 
-            for (auto* sndBankAssetInfo : *assetPoolT6->m_sound_bank)
-            {
-                LoadSoundBanksFromAsset(searchPath, *sndBankAssetInfo->Asset(), zone, loadedSoundBanksForZone);
-            }
+        for (auto* sndBankAssetInfo : zone.m_pools.PoolAssets<AssetSoundBank>())
+        {
+            LoadSoundBanksFromAsset(searchPath, *sndBankAssetInfo->Asset(), zone, loadedSoundBanksForZone);
         }
     }
 

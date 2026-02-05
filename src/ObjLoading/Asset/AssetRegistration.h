@@ -34,18 +34,16 @@ protected:
     std::unordered_set<IndirectAssetReference> m_indirect_asset_references;
 };
 
-template<typename AssetType> class AssetRegistration : public GenericAssetRegistration
+template<AssetOrSubAssetDefinition Asset_t> class AssetRegistration : public GenericAssetRegistration
 {
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
 public:
-    AssetRegistration(std::string assetName)
-        : GenericAssetRegistration(AssetType::EnumEntry, std::move(assetName), nullptr)
+    explicit AssetRegistration(std::string assetName)
+        : GenericAssetRegistration(Asset_t::EnumEntry, std::move(assetName), nullptr)
     {
     }
 
-    AssetRegistration(std::string assetName, typename AssetType::Type* asset)
-        : GenericAssetRegistration(AssetType::EnumEntry, std::move(assetName), asset)
+    AssetRegistration(std::string assetName, typename Asset_t::Type* asset)
+        : GenericAssetRegistration(Asset_t::EnumEntry, std::move(assetName), asset)
     {
     }
 
@@ -54,7 +52,7 @@ public:
     AssetRegistration& operator=(const AssetRegistration& other) = delete;
     AssetRegistration& operator=(AssetRegistration&& other) noexcept = default;
 
-    void SetAsset(typename AssetType::Type* asset)
+    void SetAsset(typename Asset_t::Type* asset)
     {
         m_asset = asset;
     }

@@ -104,11 +104,6 @@ namespace
 
 namespace camo
 {
-    JsonDumperT6::JsonDumperT6(const AssetPool<AssetWeaponCamo::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void JsonDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeaponCamo::Type>& asset)
     {
         const auto fileName = GetJsonFileNameForAssetName(asset.m_name);

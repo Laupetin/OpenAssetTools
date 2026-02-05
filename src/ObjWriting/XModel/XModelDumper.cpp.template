@@ -854,11 +854,6 @@ namespace
 
 namespace xmodel
 {
-    CLASS_NAME::CLASS_NAME (const AssetPool<GAME::AssetXModel::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXModel::Type>& asset)
     {
         DumpXModelJson(context, asset);

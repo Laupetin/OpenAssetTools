@@ -51,7 +51,7 @@ std::vector<IndirectAssetReference> AssetInfoCollector::GetIndirectAssetReferenc
 
 std::optional<XAssetInfoGeneric*> AssetInfoCollector::Visit_Dependency(const asset_type_t assetType, const char* assetName)
 {
-    auto* assetInfo = m_zone.m_pools->GetAsset(assetType, assetName);
+    auto* assetInfo = m_zone.m_pools.GetAsset(assetType, assetName);
     if (assetInfo == nullptr)
         return std::nullopt;
 

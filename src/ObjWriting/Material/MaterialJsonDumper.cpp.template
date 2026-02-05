@@ -361,11 +361,6 @@ namespace
 
 namespace material
 {
-    CLASS_NAME::CLASS_NAME (const AssetPool<GAME::AssetMaterial::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void CLASS_NAME::Dump(AssetDumpingContext& context)
     {
         auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();

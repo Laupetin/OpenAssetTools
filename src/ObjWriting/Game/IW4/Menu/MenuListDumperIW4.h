@@ -11,8 +11,6 @@ namespace menu
     class MenuListDumperIW4 final : public AbstractAssetDumper<IW4::AssetMenuList>
     {
     public:
-        explicit MenuListDumperIW4(const AssetPool<IW4::AssetMenuList::Type>& pool);
-
         void Dump(AssetDumpingContext& context) override;
 
     protected:

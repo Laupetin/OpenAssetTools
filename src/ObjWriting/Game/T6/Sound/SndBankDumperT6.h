@@ -8,10 +8,9 @@ namespace sound
     class SndBankDumperT6 final : public AbstractAssetDumper<T6::AssetSoundBank>
     {
     public:
-        explicit SndBankDumperT6(const AssetPool<T6::AssetSoundBank::Type>& pool);
         void Dump(AssetDumpingContext& context) override;
 
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<Asset<9, T6::SndBank>::Type>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetSoundBank::Type>& asset) override;
     };
 } // namespace sound

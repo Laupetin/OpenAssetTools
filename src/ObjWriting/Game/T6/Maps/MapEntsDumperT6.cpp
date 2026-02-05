@@ -6,11 +6,6 @@ using namespace T6;
 
 namespace map_ents
 {
-    DumperT6::DumperT6(const AssetPool<AssetMapEnts::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMapEnts::Type>& asset)
     {
         const auto* mapEnts = asset.Asset();

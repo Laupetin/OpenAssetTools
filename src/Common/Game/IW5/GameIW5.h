@@ -13,5 +13,7 @@ namespace IW5
 
         [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
         [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
+        [[nodiscard]] asset_type_t GetSubAssetTypeCount() const override;
+        [[nodiscard]] std::optional<const char*> GetSubAssetTypeName(asset_type_t subAssetType) const override;
     };
 } // namespace IW5

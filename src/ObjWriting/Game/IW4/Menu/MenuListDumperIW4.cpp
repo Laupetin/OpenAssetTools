@@ -147,11 +147,6 @@ namespace menu
         }
     }
 
-    MenuListDumperIW4::MenuListDumperIW4(const AssetPool<AssetMenuList::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void MenuListDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenuList::Type>& asset)
     {
         const auto* menuList = asset.Asset();
@@ -178,7 +173,8 @@ namespace menu
     {
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        for (const auto* asset : m_pool)
+        auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+        for (const auto* asset : menuListAssets)
             CreateDumpingStateForMenuListIW4(zoneState, asset->Asset());
 
         AbstractAssetDumper::Dump(context);

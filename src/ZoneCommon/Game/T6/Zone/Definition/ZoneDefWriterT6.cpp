@@ -1,9 +1,7 @@
 #include "ZoneDefWriterT6.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
 
-#include <cassert>
 #include <iomanip>
 #include <sstream>
 
@@ -15,12 +13,12 @@ namespace
     {
     public:
         std::string m_key;
-        int m_hash;
+        unsigned m_hash;
 
         explicit KeyValuePairKnownKey(std::string key)
         {
             m_key = std::move(key);
-            m_hash = Common::Com_HashKey(m_key.c_str(), 64);
+            m_hash = static_cast<unsigned>(Common::Com_HashKey(m_key.c_str(), 64));
         }
     };
 
@@ -31,7 +29,7 @@ namespace
         KeyValuePairKnownKey("initial_materials"),
     };
 
-    void WriteKeyValuePair(ZoneDefinitionOutputStream& stream, const KeyValuePair& kvp)
+    void WriteKeyValuePair(const ZoneDefinitionOutputStream& stream, const KeyValuePair& kvp)
     {
         for (const auto& knownKey : KEY_VALUE_PAIR_KNOWN_KEYS)
         {
@@ -50,10 +48,10 @@ namespace
 
 void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
-    const auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
-    if (assetPoolT6 && !assetPoolT6->m_key_value_pairs->m_asset_lookup.empty())
+    auto kvpPoolAssets = zone.m_pools.PoolAssets<AssetKeyValuePairs>();
+    if (kvpPoolAssets.begin() != kvpPoolAssets.end())
     {
-        for (const auto* kvpAsset : *assetPoolT6->m_key_value_pairs)
+        for (const auto* kvpAsset : kvpPoolAssets)
         {
             const auto* keyValuePairs = kvpAsset->Asset();
             for (auto varIndex = 0u; varIndex < keyValuePairs->numVariables; varIndex++)
@@ -67,17 +65,13 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone
 void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const
 {
     const auto* game = IGame::GetGameById(zone.m_game_id);
-    const auto* pools = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
-
-    assert(pools);
-    if (!pools)
-        return;
 
     // Localized strings are all collected in one string file. So only add this to the zone file.
-    if (!pools->m_localize->m_asset_lookup.empty())
+    auto localizePoolAssets = zone.m_pools.PoolAssets<AssetLocalize>();
+    if (localizePoolAssets.begin() != localizePoolAssets.end())
         stream.WriteEntry(*game->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone.m_name);
 
-    for (const auto& asset : *pools)
+    for (const auto& asset : zone.m_pools)
     {
         switch (asset->m_type)
         {

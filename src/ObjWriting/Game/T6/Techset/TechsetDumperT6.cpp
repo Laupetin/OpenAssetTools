@@ -329,11 +329,6 @@ namespace
 
 namespace techset
 {
-    DumperT6::DumperT6(const AssetPool<AssetTechniqueSet::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::Dump(AssetDumpingContext& context)
     {
         context.GetZoneAssetDumperState<MaterialConstantZoneState>()->EnsureInitialized();

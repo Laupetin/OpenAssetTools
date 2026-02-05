@@ -1,7 +1,6 @@
 #include "MaterialConstantZoneStateT5.h"
 
 #include "Game/T5/CommonT5.h"
-#include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/GameT5.h"
 #include "ObjWriting.h"
 #include "Zone/ZoneRegistry.h"
@@ -479,11 +478,7 @@ namespace T5
     {
         for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::T5)->Zones())
         {
-            const auto* assetPools = dynamic_cast<const GameAssetPoolT5*>(zone->m_pools.get());
-            if (!assetPools)
-                return;
-
-            for (const auto* techniqueSetInfo : *assetPools->m_technique_set)
+            for (const auto* techniqueSetInfo : zone->m_pools.PoolAssets<AssetTechniqueSet>())
             {
                 const auto* techniqueSet = techniqueSetInfo->Asset();
 

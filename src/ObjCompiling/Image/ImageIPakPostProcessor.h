@@ -34,11 +34,9 @@ namespace image
         unsigned m_current_ipak_end_index;
     };
 
-    template<typename AssetType> class IPakPostProcessor final : public AbstractIPakPostProcessor
+    template<AssetDefinition Asset_t> class IPakPostProcessor final : public AbstractIPakPostProcessor
     {
     public:
-        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
         IPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                           ISearchPath& searchPath,
                           ZoneAssetCreationStateContainer& zoneStates,
@@ -49,7 +47,7 @@ namespace image
 
         [[nodiscard]] asset_type_t GetHandlingAssetType() const override
         {
-            return AssetType::EnumEntry;
+            return Asset_t::EnumEntry;
         }
     };
 } // namespace image

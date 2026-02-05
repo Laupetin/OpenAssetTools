@@ -110,12 +110,12 @@ namespace
         std::vector<AssetDto> references;
 
         // Reserve some entries already. Numbers are arbitrary.
-        const auto assetCount = zone.m_pools->GetTotalAssetCount();
+        const auto assetCount = zone.m_pools.GetTotalAssetCount();
         assets.reserve(assetCount / 2);
         references.reserve(assetCount / 8);
 
         const auto& assetTypeMapper = *ICommonAssetTypeMapper::GetCommonAssetMapperByGame(zone.m_game_id);
-        for (const auto& asset : *zone.m_pools)
+        for (const auto& asset : zone.m_pools)
         {
             if (asset->IsReference())
             {

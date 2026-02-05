@@ -108,15 +108,18 @@ namespace
         {
         }
 
-        void DumpPool(const AssetPool<SndDriverGlobals>& pool)
+        void DumpSndDriverGlobals(const XAssetInfo<SndDriverGlobals>* sndDriverGlobalsInfo)
         {
-            for (const auto* assetInfo : pool)
-            {
-                if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
-                    continue;
+            const auto* sndDriverGlobals = sndDriverGlobalsInfo->Asset();
 
-                DumpSndDriverGlobals(assetInfo);
-            }
+            DumpSndVolumesGroups(sndDriverGlobals->groups, sndDriverGlobals->groupCount);
+            DumpSndCurves(sndDriverGlobals->curves, sndDriverGlobals->curveCount);
+            DumpSndPans(sndDriverGlobals->pans, sndDriverGlobals->panCount);
+            DumpSndDuckGroups(sndDriverGlobals->duckGroups, sndDriverGlobals->duckGroupCount);
+            // DumpSndContexts(sndDriverGlobals->contexts, sndDriverGlobals->contextCount);
+            DumpSndMasters(sndDriverGlobals->masters, sndDriverGlobals->masterCount);
+            DumpSndSidechainDucks(sndDriverGlobals->voiceDucks, sndDriverGlobals->voiceDuckCount);
+            DumpSndFutz(sndDriverGlobals->futzes, sndDriverGlobals->futzCount);
         }
 
     private:
@@ -365,36 +368,15 @@ namespace
             }
         }
 
-        void DumpSndDriverGlobals(const XAssetInfo<SndDriverGlobals>* sndDriverGlobalsInfo)
-        {
-            const auto* sndDriverGlobals = sndDriverGlobalsInfo->Asset();
-
-            DumpSndVolumesGroups(sndDriverGlobals->groups, sndDriverGlobals->groupCount);
-            DumpSndCurves(sndDriverGlobals->curves, sndDriverGlobals->curveCount);
-            DumpSndPans(sndDriverGlobals->pans, sndDriverGlobals->panCount);
-            DumpSndDuckGroups(sndDriverGlobals->duckGroups, sndDriverGlobals->duckGroupCount);
-            // DumpSndContexts(sndDriverGlobals->contexts, sndDriverGlobals->contextCount);
-            DumpSndMasters(sndDriverGlobals->masters, sndDriverGlobals->masterCount);
-            DumpSndSidechainDucks(sndDriverGlobals->voiceDucks, sndDriverGlobals->voiceDuckCount);
-            DumpSndFutz(sndDriverGlobals->futzes, sndDriverGlobals->futzCount);
-        }
-
         AssetDumpingContext& m_context;
     };
 } // namespace
 
 namespace sound
 {
-    SndDriverGlobalsDumperT6::SndDriverGlobalsDumperT6(const AssetPool<AssetSoundDriverGlobals::Type>& pool)
-        : AbstractSingleProgressAssetDumper(pool)
-    {
-    }
-
-    void SndDriverGlobalsDumperT6::Dump(AssetDumpingContext& context)
+    void SndDriverGlobalsDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSoundDriverGlobals::Type>& asset)
     {
         Internal internal(context);
-        internal.DumpPool(m_pool);
-
-        context.IncrementProgress();
+        internal.DumpSndDriverGlobals(&asset);
     }
 } // namespace sound

@@ -25,11 +25,6 @@ namespace
 
 namespace sound
 {
-    LoadedSoundDumperIW5::LoadedSoundDumperIW5(const AssetPool<AssetLoadedSound::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void LoadedSoundDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLoadedSound::Type>& asset)
     {
         const auto* loadedSound = asset.Asset();

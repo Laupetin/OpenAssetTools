@@ -11,7 +11,7 @@ namespace image
     class DumperT5 final : public AbstractAssetDumper<T5::AssetImage>
     {
     public:
-        explicit DumperT5(const AssetPool<T5::AssetImage::Type>& pool);
+        DumperT5();
 
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T5::AssetImage::Type>& asset) override;

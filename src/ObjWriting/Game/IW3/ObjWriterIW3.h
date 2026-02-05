@@ -1,12 +1,12 @@
 #pragma once
 
-#include "IObjWriter.h"
+#include "ObjWriter.h"
 
 namespace IW3
 {
     class ObjWriter final : public IObjWriter
     {
-    public:
-        bool DumpZone(AssetDumpingContext& context) const override;
+    protected:
+        void RegisterAssetDumpers(AssetDumpingContext& context) override;
     };
 } // namespace IW3
