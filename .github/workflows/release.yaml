@@ -50,7 +50,7 @@ jobs:
             ${{ github.workspace }}/build/bin/Release_x86
 
   build-release-windows:
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

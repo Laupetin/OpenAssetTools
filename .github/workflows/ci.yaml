@@ -101,7 +101,7 @@ jobs:
           - build_arch: x64
             msbuild_config: x64
     name: Build-Test Windows ${{ matrix.build_arch }}
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     steps:
       - name: Install node
         uses: actions/setup-node@v6
