@@ -4,7 +4,6 @@
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameT6.h"
 #include "NormalizedJson.h"
-#include "Pool/AssetPoolDynamic.h"
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
@@ -35,7 +34,7 @@ namespace
         return techset;
     }
 
-    void GivenMaterial(const std::string& name, AssetPool<Material>& pool, MemoryManager& memory)
+    void GivenMaterial(const std::string& name, Zone& zone, MemoryManager& memory)
     {
         auto* material = memory.Alloc<Material>();
         material->info.name = memory.Dup(name.c_str());
@@ -254,7 +253,7 @@ namespace
 
         material->thermalMaterial = nullptr;
 
-        pool.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, name, material));
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, name, material));
     }
 
     TEST_CASE("DumperMaterial(T6): Can dump material", "[t6][material][assetdumper]")
@@ -469,10 +468,9 @@ namespace
         MockOutputPath mockOutput;
         AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
-        AssetPoolDynamic<Material> materialPool(0);
-        GivenMaterial("wpc/metal_ac_duct", materialPool, memory);
+        GivenMaterial("wpc/metal_ac_duct", zone, memory);
 
-        material::JsonDumperT6 dumper(materialPool);
+        material::JsonDumperT6 dumper;
         dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wpc/metal_ac_duct.json");

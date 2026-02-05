@@ -64,8 +64,8 @@ namespace
 
 namespace image
 {
-    DumperIW3::DumperIW3(const AssetPool<AssetImage::Type>& pool)
-        : AbstractAssetDumper(pool)
+    DumperIW3::DumperIW3()
+        : AbstractAssetDumper()
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {

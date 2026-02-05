@@ -4,11 +4,6 @@ using namespace IW5;
 
 namespace script
 {
-    DumperIW5::DumperIW5(const AssetPool<AssetScript::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     // See https://github.com/xensik/gsc-tool#file-format for an in-depth explanation about the .gscbin format
     void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetScript::Type>& asset)
     {

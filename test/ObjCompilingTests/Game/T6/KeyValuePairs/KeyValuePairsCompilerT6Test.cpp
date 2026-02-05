@@ -1,7 +1,6 @@
 #include "Game/T6/KeyValuePairs/KeyValuePairsCompilerT6.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
 #include "KeyValuePairs/KeyValuePairsCreator.h"
 #include "Utils/TestMemoryManager.h"
 
@@ -73,7 +72,7 @@ namespace test::game::t6::keyvaluepairs
         sut->FinalizeZone(testContext.m_context);
 
         REQUIRE(testContext.m_memory.GetAllocationCount() == 0u);
-        REQUIRE(testContext.m_zone.m_pools->GetTotalAssetCount() == 0u);
+        REQUIRE(testContext.m_zone.m_pools.GetTotalAssetCount() == 0u);
     }
 
     TEST_CASE("KeyValuePairsCompilerT6: Creates KeyValuePairs asset with identical name to the zone", "[keyvaluepairs][t6]")
@@ -86,9 +85,9 @@ namespace test::game::t6::keyvaluepairs
         sut->FinalizeZone(testContext.m_context);
 
         REQUIRE(testContext.m_memory.GetAllocationCount() > 0u);
-        REQUIRE(testContext.m_zone.m_pools->GetTotalAssetCount() == 1u);
+        REQUIRE(testContext.m_zone.m_pools.GetTotalAssetCount() == 1u);
 
-        XAssetInfo<KeyValuePairs>* assetInfo = *dynamic_cast<GameAssetPoolT6*>(testContext.m_zone.m_pools.get())->m_key_value_pairs->begin();
+        XAssetInfo<KeyValuePairs>* assetInfo = *testContext.m_zone.m_pools.PoolAssets<AssetKeyValuePairs>().begin();
         REQUIRE(assetInfo);
         REQUIRE(assetInfo->m_name == "test");
 
@@ -112,9 +111,9 @@ namespace test::game::t6::keyvaluepairs
         sut->FinalizeZone(testContext.m_context);
 
         REQUIRE(testContext.m_memory.GetAllocationCount() > 0u);
-        REQUIRE(testContext.m_zone.m_pools->GetTotalAssetCount() == 1u);
+        REQUIRE(testContext.m_zone.m_pools.GetTotalAssetCount() == 1u);
 
-        XAssetInfo<KeyValuePairs>* assetInfo = *dynamic_cast<GameAssetPoolT6*>(testContext.m_zone.m_pools.get())->m_key_value_pairs->begin();
+        XAssetInfo<KeyValuePairs>* assetInfo = *testContext.m_zone.m_pools.PoolAssets<AssetKeyValuePairs>().begin();
         REQUIRE(assetInfo);
         REQUIRE(assetInfo->m_name == "test");
 

@@ -6,11 +6,6 @@ using namespace IW4;
 
 namespace string_table
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetStringTable::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetStringTable::Type>& asset)
     {
         const auto* stringTable = asset.Asset();

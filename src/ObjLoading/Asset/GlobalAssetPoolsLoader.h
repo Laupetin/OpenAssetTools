@@ -25,11 +25,9 @@ private:
     bool m_failure;
 };
 
-template<typename AssetType> class GlobalAssetPoolsLoader : public AssetCreator<AssetType>
+template<AssetDefinition Asset_t> class GlobalAssetPoolsLoader : public AssetCreator<Asset_t>
 {
 public:
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
     explicit GlobalAssetPoolsLoader(Zone& zone)
         : m_zone(zone)
     {
@@ -37,15 +35,15 @@ public:
 
     AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
     {
-        auto* existingAsset = GlobalAssetPool<typename AssetType::Type>::GetAssetByName(assetName);
+        auto* existingAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(m_zone.m_game_id)->GetAsset<Asset_t>(assetName);
 
         if (!existingAsset)
             return AssetCreationResult::NoAction();
 
-        AssetRegistration<AssetType> registration(assetName, existingAsset->Asset());
+        AssetRegistration<Asset_t> registration(assetName, existingAsset->Asset());
 
         GlobalAssetPoolsRegistrationPreparation registrationPreparation(registration, m_zone, *existingAsset->m_zone, context);
-        AssetMarker<AssetType> marker(registrationPreparation);
+        AssetMarker<Asset_t> marker(registrationPreparation);
         marker.Mark(existingAsset->Asset());
 
         auto* newAsset = context.AddAsset(std::move(registration));

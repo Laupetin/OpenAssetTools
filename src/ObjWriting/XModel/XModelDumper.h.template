@@ -19,9 +19,6 @@ namespace xmodel
 {
     class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetXModel>
     {
-    public:
-        explicit CLASS_NAME (const AssetPool<GAME::AssetXModel::Type>& pool);
-
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetXModel::Type>& asset) override;
     };

@@ -29,13 +29,36 @@ public:
     virtual void FinalizeZone(AssetCreationContext& context) {}
 };
 
-template<typename AssetType> class AssetCreator : public IAssetCreator
+class ISubAssetCreator
 {
 public:
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+    ISubAssetCreator() = default;
+    virtual ~ISubAssetCreator() = default;
+    ISubAssetCreator(const ISubAssetCreator& other) = default;
+    ISubAssetCreator(ISubAssetCreator&& other) noexcept = default;
+    ISubAssetCreator& operator=(const ISubAssetCreator& other) = default;
+    ISubAssetCreator& operator=(ISubAssetCreator&& other) noexcept = default;
 
+    [[nodiscard]] virtual std::optional<asset_type_t> GetHandlingSubAssetType() const = 0;
+    virtual AssetCreationResult CreateSubAsset(const std::string& subAssetName, AssetCreationContext& context) = 0;
+
+    virtual void FinalizeZone(AssetCreationContext& context) {}
+};
+
+template<AssetDefinition Asset_t> class AssetCreator : public IAssetCreator
+{
+public:
     [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override
     {
-        return AssetType::EnumEntry;
-    };
+        return Asset_t::EnumEntry;
+    }
+};
+
+template<SubAssetDefinition SubAsset_t> class SubAssetCreator : public ISubAssetCreator
+{
+public:
+    [[nodiscard]] std::optional<asset_type_t> GetHandlingSubAssetType() const override
+    {
+        return SubAsset_t::EnumEntry;
+    }
 };

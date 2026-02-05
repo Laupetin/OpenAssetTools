@@ -60,11 +60,6 @@ namespace
 
 namespace tracer
 {
-    DumperT6::DumperT6(const AssetPool<AssetTracer::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTracer::Type>& asset)
     {
         // Only dump raw when no gdt available

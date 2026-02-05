@@ -11,7 +11,7 @@ namespace image
     class DumperIW4 final : public AbstractAssetDumper<IW4::AssetImage>
     {
     public:
-        explicit DumperIW4(const AssetPool<IW4::AssetImage::Type>& pool);
+        DumperIW4();
 
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW4::AssetImage::Type>& asset) override;

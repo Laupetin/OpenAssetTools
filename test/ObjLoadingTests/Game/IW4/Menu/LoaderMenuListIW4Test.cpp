@@ -65,7 +65,7 @@ namespace test::game::iw4::menu::parsing::it
 
         menuDef_t* GetMenuAsset(const std::string& menuName)
         {
-            const auto addedAsset = m_zone.m_pools->GetAsset(ASSET_TYPE_MENU, menuName);
+            const auto addedAsset = m_zone.m_pools.GetAsset(ASSET_TYPE_MENU, menuName);
             REQUIRE(addedAsset);
             REQUIRE(addedAsset->m_type == ASSET_TYPE_MENU);
 

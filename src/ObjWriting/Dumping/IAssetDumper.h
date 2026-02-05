@@ -1,6 +1,9 @@
 #pragma once
 
 #include "AssetDumpingContext.h"
+#include "Zone/ZoneTypes.h"
+
+#include <optional>
 
 class IAssetDumper
 {
@@ -12,6 +15,11 @@ public:
     IAssetDumper& operator=(const IAssetDumper& other) = default;
     IAssetDumper& operator=(IAssetDumper&& other) noexcept = default;
 
-    [[nodiscard]] virtual size_t GetProgressTotalCount() const = 0;
+    [[nodiscard]] virtual std::optional<asset_type_t> GetHandlingAssetType() const
+    {
+        return std::nullopt;
+    }
+
+    [[nodiscard]] virtual size_t GetProgressTotalCount(AssetDumpingContext& context) const = 0;
     virtual void Dump(AssetDumpingContext& context) = 0;
 };

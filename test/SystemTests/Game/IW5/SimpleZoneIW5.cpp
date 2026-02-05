@@ -1,4 +1,5 @@
-#include "Game/IW5/GameAssetPoolIW5.h"
+
+#include "Game/IW5/IW5.h"
 #include "Linker.h"
 #include "OatTestPaths.h"
 #include "SystemTestsPaths.h"
@@ -51,12 +52,11 @@ namespace
         REQUIRE(maybeZone);
 
         auto zone = std::move(*maybeZone);
-        auto pools = dynamic_cast<GameAssetPoolIW5*>(zone->m_pools.get());
 
         REQUIRE(zone->m_game_id == GameId::IW5);
         REQUIRE(zone->m_platform == GamePlatform::PC);
         REQUIRE(zone->m_name == "SimpleZoneIW5");
-        REQUIRE(pools->GetTotalAssetCount() == 1);
-        REQUIRE(pools->m_raw_file->GetAsset("SimpleZone.txt"));
+        REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
+        REQUIRE(zone->m_pools.GetAsset<IW5::AssetRawFile>("SimpleZone.txt"));
     }
 } // namespace

@@ -187,11 +187,6 @@ namespace
 
 namespace structured_data_def
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetStructuredDataDef::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetStructuredDataDef::Type>& asset)
     {
         const auto* set = asset.Asset();

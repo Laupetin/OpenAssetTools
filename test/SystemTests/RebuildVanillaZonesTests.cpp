@@ -1,4 +1,4 @@
-#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/T6.h"
 #include "OatTestPaths.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
@@ -47,8 +47,8 @@ namespace
 
         auto rebuiltZone = std::move(*maybeRebuiltZone);
 
-        const auto& pools = *zone->m_pools;
-        const auto& rebuiltPools = *rebuiltZone->m_pools;
+        const auto& pools = zone->m_pools;
+        const auto& rebuiltPools = rebuiltZone->m_pools;
 
         const auto totalAssetCount = pools.GetTotalAssetCount();
         REQUIRE(totalAssetCount == rebuiltPools.GetTotalAssetCount());

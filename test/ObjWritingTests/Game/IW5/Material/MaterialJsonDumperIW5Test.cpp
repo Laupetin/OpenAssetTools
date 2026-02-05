@@ -4,7 +4,6 @@
 #include "Game/IW5/CommonIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "NormalizedJson.h"
-#include "Pool/AssetPoolDynamic.h"
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
@@ -35,7 +34,7 @@ namespace
         return techset;
     }
 
-    void GivenMaterial(const std::string& name, AssetPool<Material>& pool, MemoryManager& memory)
+    void GivenMaterial(const std::string& name, Zone& zone, MemoryManager& memory)
     {
         auto* material = memory.Alloc<Material>();
         material->info.name = memory.Dup(name.c_str());
@@ -317,7 +316,7 @@ namespace
         stateBits6.loadBits.structured.stencilBackZFail = 0;
         stateBits6.loadBits.structured.stencilBackFunc = 0;
 
-        pool.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, name, material));
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, name, material));
     }
 
     TEST_CASE("DumperMaterial(IW5): Can dump material", "[iw5][material][assetdumper]")
@@ -592,11 +591,9 @@ namespace
         MockOutputPath mockOutput;
         AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
-        AssetPoolDynamic<Material> materialPool(0);
+        GivenMaterial("wc/me_metal_rust_02", zone, memory);
 
-        GivenMaterial("wc/me_metal_rust_02", materialPool, memory);
-
-        material::JsonDumperIW5 dumper(materialPool);
+        material::JsonDumperIW5 dumper;
         dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("materials/wc/me_metal_rust_02.json");

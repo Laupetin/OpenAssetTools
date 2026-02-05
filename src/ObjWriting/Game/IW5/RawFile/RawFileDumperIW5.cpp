@@ -10,11 +10,6 @@ using namespace IW5;
 
 namespace raw_file
 {
-    DumperIW5::DumperIW5(const AssetPool<AssetRawFile::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetRawFile::Type>& asset)
     {
         const auto* rawFile = asset.Asset();

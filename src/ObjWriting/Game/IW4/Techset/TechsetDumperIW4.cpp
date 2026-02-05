@@ -250,7 +250,8 @@ namespace
 
             if (vertexShader->name[0] == ',')
             {
-                const auto loadedVertexShaderFromOtherZone = GlobalAssetPool<MaterialVertexShader>::GetAssetByName(&vertexShader->name[1]);
+                const auto loadedVertexShaderFromOtherZone =
+                    GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
 
                 if (loadedVertexShaderFromOtherZone == nullptr)
                 {
@@ -305,7 +306,8 @@ namespace
 
             if (pixelShader->name[0] == ',')
             {
-                const auto loadedPixelShaderFromOtherZone = GlobalAssetPool<MaterialPixelShader>::GetAssetByName(&pixelShader->name[1]);
+                const auto loadedPixelShaderFromOtherZone =
+                    GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
 
                 if (loadedPixelShaderFromOtherZone == nullptr)
                 {
@@ -377,7 +379,8 @@ namespace
 
             if (vertexDecl->name && vertexDecl->name[0] == ',')
             {
-                const auto loadedVertexDeclFromOtherZone = GlobalAssetPool<MaterialVertexDeclaration>::GetAssetByName(&vertexDecl->name[1]);
+                const auto loadedVertexDeclFromOtherZone =
+                    GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetVertexDecl>(&vertexDecl->name[1]);
 
                 if (loadedVertexDeclFromOtherZone == nullptr)
                 {
@@ -488,11 +491,6 @@ namespace
 
 namespace techset
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetTechniqueSet::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
         const auto* techniqueSet = asset.Asset();

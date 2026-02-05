@@ -6,6 +6,7 @@ AssetCreatorCollection::AssetCreatorCollection(const Zone& zone)
 {
     const auto* game = IGame::GetGameById(zone.m_game_id);
     m_asset_creators_by_type.resize(game->GetAssetTypeCount());
+    m_sub_asset_creators_by_type.resize(game->GetSubAssetTypeCount());
     m_asset_post_processors_by_type.resize(game->GetAssetTypeCount());
     m_default_asset_creators_by_type.resize(game->GetAssetTypeCount());
 }
@@ -18,6 +19,16 @@ void AssetCreatorCollection::AddAssetCreator(std::unique_ptr<IAssetCreator> crea
         m_asset_creators_by_type[static_cast<unsigned>(*maybeHandlingAssetType)].emplace_back(creator.get());
 
     m_asset_creators.emplace_back(std::move(creator));
+}
+
+void AssetCreatorCollection::AddSubAssetCreator(std::unique_ptr<ISubAssetCreator> creator)
+{
+    const auto maybeHandlingSubAssetType = creator->GetHandlingSubAssetType();
+    assert(!maybeHandlingSubAssetType || static_cast<unsigned>(*maybeHandlingSubAssetType) < m_sub_asset_creators_by_type.size());
+    if (maybeHandlingSubAssetType && static_cast<unsigned>(*maybeHandlingSubAssetType) < m_sub_asset_creators_by_type.size())
+        m_sub_asset_creators_by_type[static_cast<unsigned>(*maybeHandlingSubAssetType)].emplace_back(creator.get());
+
+    m_sub_asset_creators.emplace_back(std::move(creator));
 }
 
 void AssetCreatorCollection::AddAssetPostProcessor(std::unique_ptr<IAssetPostProcessor> postProcessor)
@@ -42,9 +53,9 @@ void AssetCreatorCollection::AddDefaultAssetCreator(std::unique_ptr<IDefaultAsse
 
 AssetCreationResult AssetCreatorCollection::CreateAsset(const asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const
 {
-    assert(assetType >= 0 && static_cast<unsigned>(assetType) < m_asset_creators_by_type.size());
+    assert(assetType < m_asset_creators_by_type.size());
 
-    if (assetType >= 0 && static_cast<unsigned>(assetType) < m_asset_creators_by_type.size())
+    if (assetType < m_asset_creators_by_type.size())
     {
         for (const auto& creator : m_asset_creators_by_type[assetType])
         {
@@ -68,11 +79,29 @@ AssetCreationResult AssetCreatorCollection::CreateAsset(const asset_type_t asset
     return AssetCreationResult::NoAction();
 }
 
+AssetCreationResult
+    AssetCreatorCollection::CreateSubAsset(const asset_type_t subAssetType, const std::string& subAssetName, AssetCreationContext& context) const
+{
+    assert(subAssetType < m_sub_asset_creators_by_type.size());
+
+    if (subAssetType < m_sub_asset_creators_by_type.size())
+    {
+        for (const auto& creator : m_sub_asset_creators_by_type[subAssetType])
+        {
+            const auto result = creator->CreateSubAsset(subAssetName, context);
+            if (result.HasTakenAction())
+                return result;
+        }
+    }
+
+    return AssetCreationResult::NoAction();
+}
+
 AssetCreationResult AssetCreatorCollection::CreateDefaultAsset(const asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const
 {
-    assert(assetType >= 0 && static_cast<unsigned>(assetType) < m_default_asset_creators_by_type.size());
+    assert(assetType < m_default_asset_creators_by_type.size());
 
-    if (assetType >= 0 && static_cast<unsigned>(assetType) < m_default_asset_creators_by_type.size() && m_default_asset_creators_by_type[assetType])
+    if (assetType < m_default_asset_creators_by_type.size() && m_default_asset_creators_by_type[assetType])
     {
         return m_default_asset_creators_by_type[assetType]->CreateDefaultAsset(assetName, context);
     }

@@ -8,8 +8,6 @@ namespace techset
     class DumperT6 final : public AbstractAssetDumper<T6::AssetTechniqueSet>
     {
     public:
-        explicit DumperT6(const AssetPool<T6::AssetTechniqueSet::Type>& pool);
-
         void Dump(AssetDumpingContext& context) override;
 
     protected:

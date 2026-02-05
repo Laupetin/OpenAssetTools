@@ -405,11 +405,6 @@ namespace
 
 namespace weapon
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetWeapon::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeapon::Type>& asset)
     {
         // Only dump raw when no gdt available

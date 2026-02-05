@@ -4,7 +4,6 @@
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameT6.h"
 #include "NormalizedJson.h"
-#include "Pool/AssetPoolDynamic.h"
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
@@ -27,7 +26,7 @@ namespace
         return material;
     }
 
-    void GivenFontIcon(const std::string& name, AssetPool<FontIcon>& pool, MemoryManager& memory)
+    void GivenFontIcon(const std::string& name, Zone& zone, MemoryManager& memory)
     {
         auto* fontIcon = memory.Alloc<FontIcon>();
         fontIcon->name = memory.Dup(name.c_str());
@@ -86,7 +85,7 @@ namespace
         alias5.aliasHash = Common::Com_HashString("BUTTON_MOVESTICK");
         alias5.buttonHash = entry2.fontIconName.hash;
 
-        pool.AddAsset(std::make_unique<XAssetInfo<FontIcon>>(ASSET_TYPE_FONTICON, name, fontIcon));
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<FontIcon>>(ASSET_TYPE_FONTICON, name, fontIcon));
     }
 
     TEST_CASE("DumperFontIconJson(T6): Can dump font icon", "[t6][font-icon][assetdumper]")
@@ -148,10 +147,9 @@ namespace
         MockOutputPath mockOutput;
         AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
-        AssetPoolDynamic<FontIcon> fontIconPool(0);
-        GivenFontIcon("fonticon/test.csv", fontIconPool, memory);
+        GivenFontIcon("fonticon/test.csv", zone, memory);
 
-        font_icon::JsonDumperT6 dumper(fontIconPool);
+        font_icon::JsonDumperT6 dumper;
         dumper.Dump(context);
 
         const auto* file = mockOutput.GetMockedFile("fonticon/test.json");

@@ -17,6 +17,12 @@ namespace
         "xmodelalias",  "rawfile",       "stringtable",     "packindex",       "xglobals",       "ddl",           "glasses",
         "emblemset",
     };
+
+    constexpr const char* SUB_ASSET_TYPE_NAMES[SUB_ASSET_TYPE_COUNT]{
+        "technique",
+        "vertexshader",
+        "pixelshader",
+    };
 } // namespace
 
 namespace T5
@@ -68,6 +74,19 @@ namespace T5
     {
         if (assetType < std::extent_v<decltype(ASSET_TYPE_NAMES)>)
             return ASSET_TYPE_NAMES[assetType];
+
+        return std::nullopt;
+    }
+
+    asset_type_t Game::GetSubAssetTypeCount() const
+    {
+        return SUB_ASSET_TYPE_COUNT;
+    }
+
+    std::optional<const char*> Game::GetSubAssetTypeName(const asset_type_t subAssetType) const
+    {
+        if (subAssetType < std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
+            return SUB_ASSET_TYPE_NAMES[subAssetType];
 
         return std::nullopt;
     }

@@ -1,7 +1,7 @@
 #include "UnlinkingBinds.h"
 
 #include "Context/ModManContext.h"
-#include "IObjWriter.h"
+#include "ObjWriter.h"
 #include "SearchPath/OutputPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/PathUtils.h"
@@ -64,7 +64,7 @@ namespace
 
         const auto& loadedZone = *existingZone->get();
 
-        const auto* objWriter = IObjWriter::GetObjWriterForGame(loadedZone.m_zone->m_game_id);
+        auto* objWriter = IObjWriter::GetObjWriterForGame(loadedZone.m_zone->m_game_id);
 
         const auto outputFolderPath = fs::path(utils::GetExecutablePath()).parent_path() / "zone_dump" / zoneName;
         const auto outputFolderPathStr = outputFolderPath.string();

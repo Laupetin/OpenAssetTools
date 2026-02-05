@@ -1,11 +1,12 @@
 #pragma once
-#include "IObjWriter.h"
+
+#include "ObjWriter.h"
 
 namespace T5
 {
     class ObjWriter final : public IObjWriter
     {
     public:
-        bool DumpZone(AssetDumpingContext& context) const override;
+        void RegisterAssetDumpers(AssetDumpingContext& context) override;
     };
 } // namespace T5

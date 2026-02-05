@@ -1,6 +1,5 @@
 #include "MenuDumperIW4.h"
 
-#include "Game/IW4/GameAssetPoolIW4.h"
 #include "MenuListDumperIW4.h"
 #include "MenuWriterIW4.h"
 #include "ObjWriting.h"
@@ -25,11 +24,6 @@ namespace
 
 namespace menu
 {
-    MenuDumperIW4::MenuDumperIW4(const AssetPool<AssetMenu::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void MenuDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
         const auto* menu = asset.Asset();
@@ -38,8 +32,8 @@ namespace menu
         if (!ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
         {
             // Make sure menu paths based on menu lists are created
-            const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW4*>(asset.m_zone->m_pools.get());
-            for (auto* menuListAsset : *gameAssetPool->m_menu_list)
+            auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+            for (auto* menuListAsset : menuListAssets)
                 CreateDumpingStateForMenuListIW4(zoneState, menuListAsset->Asset());
         }
 

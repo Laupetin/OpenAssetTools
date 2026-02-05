@@ -133,11 +133,6 @@ namespace
 
 namespace font_icon
 {
-    CsvDumperT6::CsvDumperT6(const AssetPool<AssetFontIcon::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void CsvDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetFontIcon::Type>& asset)
     {
         const auto assetFile = context.OpenAssetFile(asset.m_name);

@@ -2,7 +2,7 @@
 
 #include "ContentLister/ContentPrinter.h"
 #include "IObjLoader.h"
-#include "IObjWriter.h"
+#include "ObjWriter.h"
 #include "ObjWriting.h"
 #include "SearchPath/IWD.h"
 #include "SearchPath/OutputPathFilesystem.h"
@@ -183,7 +183,7 @@ namespace
 
                 UpdateAssetIncludesAndExcludes(context);
 
-                const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game_id);
+                auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game_id);
 
                 auto result = objWriter->DumpZone(context);
 

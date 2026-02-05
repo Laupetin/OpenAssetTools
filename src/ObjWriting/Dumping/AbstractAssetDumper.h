@@ -4,23 +4,26 @@
 #include "IAssetDumper.h"
 #include "Pool/AssetPool.h"
 
-template<class AssetType> class AbstractAssetDumper : public IAssetDumper
+template<AssetDefinition Asset_t> class AbstractAssetDumper : public IAssetDumper
 {
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
 public:
-    using AssetType_t = AssetType;
+    using AssetType_t = Asset_t;
 
-    [[nodiscard]] size_t GetProgressTotalCount() const override
+    [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override
     {
-        return m_pool.m_asset_lookup.size();
+        return Asset_t::EnumEntry;
+    }
+
+    [[nodiscard]] size_t GetProgressTotalCount(AssetDumpingContext& context) const override
+    {
+        return context.m_zone.m_pools.PoolAssets<Asset_t>().size();
     }
 
     void Dump(AssetDumpingContext& context) override
     {
-        for (const auto* assetInfo : m_pool)
+        for (const auto* assetInfo : context.m_zone.m_pools.PoolAssets<Asset_t>())
         {
-            if (assetInfo->m_name[0] == ',' || !ShouldDump(*assetInfo))
+            if (assetInfo->IsReference() || !ShouldDump(*assetInfo))
             {
                 context.IncrementProgress();
                 continue;
@@ -32,38 +35,26 @@ public:
     }
 
 protected:
-    explicit AbstractAssetDumper(const AssetPool<typename AssetType::Type>& pool)
-        : m_pool(pool)
-    {
-    }
-
-    virtual bool ShouldDump(const XAssetInfo<typename AssetType::Type>& asset)
+    virtual bool ShouldDump(const XAssetInfo<typename Asset_t::Type>& asset)
     {
         return true;
     }
 
-    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<typename AssetType::Type>& asset) = 0;
-
-    const AssetPool<typename AssetType::Type>& m_pool;
+    virtual void DumpAsset(AssetDumpingContext& context, const XAssetInfo<typename Asset_t::Type>& asset) = 0;
 };
 
-template<class AssetType> class AbstractSingleProgressAssetDumper : public IAssetDumper
+template<AssetDefinition Asset_t> class AbstractSingleProgressAssetDumper : public IAssetDumper
 {
-    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
-
 public:
-    using AssetType_t = AssetType;
+    using AssetType_t = Asset_t;
 
-    [[nodiscard]] size_t GetProgressTotalCount() const override
+    [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override
     {
-        return m_pool.m_asset_lookup.empty() ? 0uz : 1uz;
+        return Asset_t::EnumEntry;
     }
 
-protected:
-    explicit AbstractSingleProgressAssetDumper(const AssetPool<typename AssetType::Type>& pool)
-        : m_pool(pool)
+    [[nodiscard]] size_t GetProgressTotalCount(AssetDumpingContext& context) const override
     {
+        return context.m_zone.m_pools.PoolAssets<Asset_t>().empty() ? 0uz : 1uz;
     }
-
-    const AssetPool<typename AssetType::Type>& m_pool;
 };

@@ -9,7 +9,7 @@ In this case:
 (actual asset, not a reference) techniqueset `trivial_floatz_2992w610`
 */
 
-#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/T6.h"
 #include "Linker.h"
 #include "OatTestPaths.h"
 #include "SystemTestsPaths.h"
@@ -103,16 +103,15 @@ namespace
         REQUIRE(maybeZone);
 
         auto zone = std::move(*maybeZone);
-        auto pools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
 
         REQUIRE(zone->m_game_id == GameId::T6);
         REQUIRE(zone->m_platform == GamePlatform::PC);
         REQUIRE(zone->m_name == "TestZone");
-        REQUIRE(pools->GetTotalAssetCount() == 3);
-        REQUIRE(pools->m_material->GetAsset("Suzanne2"));
-        REQUIRE(pools->m_technique_set->GetAsset(",trivial_floatz_2992w610"));
+        REQUIRE(zone->m_pools.GetTotalAssetCount() == 3);
+        REQUIRE(zone->m_pools.GetAsset<T6::AssetMaterial>("Suzanne2"));
+        REQUIRE(zone->m_pools.GetAsset<T6::AssetTechniqueSet>(",trivial_floatz_2992w610"));
 
-        const auto* xmodel = pools->m_xmodel->GetAsset("Suzanne2");
+        const auto* xmodel = zone->m_pools.GetAsset<T6::AssetXModel>("Suzanne2");
         REQUIRE(xmodel);
         REQUIRE(xmodel->Asset()->boneNames);
         REQUIRE(xmodel->Asset()->numRootBones == 1);

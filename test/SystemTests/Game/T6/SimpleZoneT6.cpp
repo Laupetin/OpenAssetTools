@@ -1,4 +1,4 @@
-#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/T6.h"
 #include "Linker.h"
 #include "OatTestPaths.h"
 #include "SystemTestsPaths.h"
@@ -51,12 +51,11 @@ namespace
         REQUIRE(maybeZone);
 
         auto zone = std::move(*maybeZone);
-        auto pools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
 
         REQUIRE(zone->m_game_id == GameId::T6);
         REQUIRE(zone->m_platform == GamePlatform::PC);
         REQUIRE(zone->m_name == "SimpleZoneT6");
-        REQUIRE(pools->GetTotalAssetCount() == 1);
-        REQUIRE(pools->m_raw_file->GetAsset("SimpleZone.txt"));
+        REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
+        REQUIRE(zone->m_pools.GetAsset<T6::AssetRawFile>("SimpleZone.txt"));
     }
 } // namespace

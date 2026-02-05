@@ -2,7 +2,6 @@
 
 #include "ContentLoaderIW5.h"
 #include "Game/GameLanguage.h"
-#include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/ZoneConstantsIW5.h"
@@ -62,7 +61,7 @@ namespace
                 return nullptr;
             }
 
-            return rsa;
+            return std::move(rsa);
         }
         else
         {
@@ -167,7 +166,6 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Create new zone
     auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW5, inspectResult->m_platform);
     auto* zonePtr = zone.get();
-    zone->m_pools = std::make_unique<GameAssetPoolIW5>(zonePtr, 0);
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.

@@ -1109,11 +1109,6 @@ namespace
 
 namespace material
 {
-    DecompilingGdtDumperIW4::DecompilingGdtDumperIW4(const AssetPool<AssetMaterial::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DecompilingGdtDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMaterial::Type>& asset)
     {
         if (!context.m_gdt)

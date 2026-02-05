@@ -82,11 +82,6 @@ namespace
 
 namespace phys_preset
 {
-    InfoStringDumperT6::InfoStringDumperT6(const AssetPool<AssetPhysPreset::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void InfoStringDumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysPreset::Type>& asset)
     {
         // Only dump raw when no gdt available

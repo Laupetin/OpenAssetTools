@@ -1,7 +1,5 @@
 #include "MenuDumperIW5.h"
 
-#include "Game/IW5/GameAssetPoolIW5.h"
-#include "Game/IW5/Menu/MenuDumperIW5.h"
 #include "MenuWriterIW5.h"
 #include "ObjWriting.h"
 
@@ -18,8 +16,8 @@ namespace
     const MenuList* GetParentMenuList(const XAssetInfo<menuDef_t>& asset)
     {
         const auto* menu = asset.Asset();
-        const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW5*>(asset.m_zone->m_pools.get());
-        for (const auto* menuList : *gameAssetPool->m_menu_list)
+        auto zoneMenuListPool = asset.m_zone->m_pools.PoolAssets<AssetMenuList>();
+        for (const auto* menuList : zoneMenuListPool)
         {
             const auto* menuListAsset = menuList->Asset();
 
@@ -51,11 +49,6 @@ namespace
 
 namespace menu
 {
-    MenuDumperIW5::MenuDumperIW5(const AssetPool<AssetMenu::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
         const auto* menu = asset.Asset();

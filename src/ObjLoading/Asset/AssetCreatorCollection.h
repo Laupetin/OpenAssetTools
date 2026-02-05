@@ -12,6 +12,7 @@
 
 class AssetCreationContext;
 class IAssetCreator;
+class ISubAssetCreator;
 class IAssetPostProcessor;
 class AssetCreationResult;
 class IDefaultAssetCreator;
@@ -22,17 +23,24 @@ public:
     explicit AssetCreatorCollection(const Zone& zone);
 
     void AddAssetCreator(std::unique_ptr<IAssetCreator> creator);
+    void AddSubAssetCreator(std::unique_ptr<ISubAssetCreator> creator);
     void AddAssetPostProcessor(std::unique_ptr<IAssetPostProcessor> postProcessor);
     void AddDefaultAssetCreator(std::unique_ptr<IDefaultAssetCreator> defaultAssetCreator);
 
     AssetCreationResult CreateAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
+    AssetCreationResult CreateSubAsset(asset_type_t subAssetType, const std::string& subAssetName, AssetCreationContext& context) const;
     AssetCreationResult CreateDefaultAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
     void FinalizeZone(AssetCreationContext& context) const;
 
 private:
     std::vector<std::vector<IAssetCreator*>> m_asset_creators_by_type;
     std::vector<std::unique_ptr<IAssetCreator>> m_asset_creators;
+
+    std::vector<std::vector<ISubAssetCreator*>> m_sub_asset_creators_by_type;
+    std::vector<std::unique_ptr<ISubAssetCreator>> m_sub_asset_creators;
+
     std::vector<std::vector<IAssetPostProcessor*>> m_asset_post_processors_by_type;
     std::vector<std::unique_ptr<IAssetPostProcessor>> m_asset_post_processors;
+
     std::vector<std::unique_ptr<IDefaultAssetCreator>> m_default_asset_creators_by_type;
 };

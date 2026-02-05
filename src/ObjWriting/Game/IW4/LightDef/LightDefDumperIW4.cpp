@@ -6,11 +6,6 @@ using namespace IW4;
 
 namespace light_def
 {
-    DumperIW4::DumperIW4(const AssetPool<AssetLightDef::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLightDef::Type>& asset)
     {
         const auto* lightDef = asset.Asset();

@@ -2,7 +2,6 @@
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/SoundConstantsT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
@@ -205,7 +204,7 @@ namespace
         {
             for (const auto& zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
             {
-                auto& sndBankPool = *dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get())->m_sound_bank;
+                auto sndBankPool = zone->m_pools.PoolAssets<AssetSoundBank>();
                 for (auto* entry : sndBankPool)
                 {
                     const auto& sndBank = *entry->Asset();
@@ -905,11 +904,6 @@ namespace
 
 namespace sound
 {
-    SndBankDumperT6::SndBankDumperT6(const AssetPool<AssetSoundBank::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void SndBankDumperT6::Dump(AssetDumpingContext& context)
     {
         auto* hashes = context.GetZoneAssetDumperState<LoadedSoundBankHashes>();

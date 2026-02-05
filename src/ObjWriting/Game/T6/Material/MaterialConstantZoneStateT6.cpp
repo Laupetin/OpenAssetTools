@@ -1,7 +1,6 @@
 #include "MaterialConstantZoneStateT6.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "ObjWriting.h"
 #include "Zone/ZoneRegistry.h"
@@ -479,11 +478,7 @@ namespace T6
     {
         for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
         {
-            const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
-            if (!t6AssetPools)
-                return;
-
-            for (const auto* techniqueSetInfo : *t6AssetPools->m_technique_set)
+            for (const auto* techniqueSetInfo : zone->m_pools.PoolAssets<AssetTechniqueSet>())
             {
                 const auto* techniqueSet = techniqueSetInfo->Asset();
 

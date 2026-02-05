@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr static size_t GSC_MAX_SIZE = 0xC000000;
+    constexpr size_t GSC_MAX_SIZE = 0xC000000;
 
     void DumpGsc(AssetDumpingContext& context, const XAssetInfo<RawFile>& asset, std::ostream& stream)
     {
@@ -96,11 +96,6 @@ namespace
 
 namespace raw_file
 {
-    DumperT5::DumperT5(const AssetPool<AssetRawFile::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetRawFile::Type>& asset)
     {
         const auto* rawFile = asset.Asset();

@@ -1,7 +1,6 @@
 #include "MaterialConstantZoneStateIW4.h"
 
 #include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/GameAssetPoolIW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "ObjWriting.h"
 #include "Zone/ZoneRegistry.h"
@@ -205,18 +204,14 @@ namespace IW4
     {
         for (const auto* zone : ZoneRegistry::GetRegistryForGame(GameId::IW4)->Zones())
         {
-            const auto* assetPools = dynamic_cast<const GameAssetPoolIW4*>(zone->m_pools.get());
-            if (!assetPools)
-                return;
-
-            for (const auto* vertexShaderAsset : *assetPools->m_material_vertex_shader)
+            for (const auto* vertexShaderAsset : zone->m_pools.PoolAssets<AssetVertexShader>())
             {
                 const auto* vertexShader = vertexShaderAsset->Asset();
                 if (ShouldDumpFromStruct(vertexShader))
                     ExtractNamesFromShader(vertexShader->prog.loadDef.program, static_cast<size_t>(vertexShader->prog.loadDef.programSize) * sizeof(uint32_t));
             }
 
-            for (const auto* pixelShaderAsset : *assetPools->m_material_pixel_shader)
+            for (const auto* pixelShaderAsset : zone->m_pools.PoolAssets<AssetPixelShader>())
             {
                 const auto* pixelShader = pixelShaderAsset->Asset();
                 if (ShouldDumpFromStruct(pixelShader))

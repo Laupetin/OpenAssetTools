@@ -5,25 +5,15 @@
 #include "Utils/Logging/Log.h"
 
 #include <format>
-#include <iostream>
 
 using namespace IW3;
 
 namespace localize
 {
-    DumperIW3::DumperIW3(const AssetPool<IW3::AssetLocalize::Type>& pool)
-        : AbstractSingleProgressAssetDumper(pool)
-    {
-    }
-
-    size_t DumperIW3::GetProgressTotalCount() const
-    {
-        return m_pool.m_asset_lookup.empty() ? 0uz : 1uz;
-    }
-
     void DumperIW3::Dump(AssetDumpingContext& context)
     {
-        if (m_pool.m_asset_lookup.empty())
+        auto localizeAssets = context.m_zone.m_pools.PoolAssets<AssetLocalize>();
+        if (localizeAssets.empty())
             return;
 
         const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
@@ -40,7 +30,7 @@ namespace localize
 
             stringFileDumper.SetNotes("");
 
-            for (const auto* localizeEntry : m_pool)
+            for (const auto* localizeEntry : localizeAssets)
             {
                 stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
             }

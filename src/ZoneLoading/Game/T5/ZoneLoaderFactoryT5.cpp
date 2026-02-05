@@ -2,7 +2,6 @@
 
 #include "ContentLoaderT5.h"
 #include "Game/GameLanguage.h"
-#include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/GameT5.h"
 #include "Game/T5/T5.h"
 #include "Game/T5/ZoneConstantsT5.h"
@@ -70,7 +69,6 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     // Create new zone
     auto zone = std::make_unique<Zone>(fileName, 0, GameId::T5, inspectResult->m_platform);
     auto* zonePtr = zone.get();
-    zone->m_pools = std::make_unique<GameAssetPoolT5>(zonePtr, 0);
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.

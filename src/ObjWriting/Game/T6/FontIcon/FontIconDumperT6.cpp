@@ -9,12 +9,12 @@ using namespace T6;
 
 namespace font_icon
 {
-    std::unique_ptr<IAssetDumper> CreateDumperT6(const AssetPool<AssetFontIcon::Type>& pool)
+    std::unique_ptr<IAssetDumper> CreateDumperT6()
     {
 #ifdef DUMP_FONT_ICON_AS_CSV
-        return std::make_unique<CsvDumperT6>(pool);
+        return std::make_unique<CsvDumperT6>();
 #else
-        return std::make_unique<JsonDumperT6>(pool);
+        return std::make_unique<JsonDumperT6>();
 #endif
     }
 } // namespace font_icon

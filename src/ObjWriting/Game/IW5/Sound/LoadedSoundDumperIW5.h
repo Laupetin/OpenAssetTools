@@ -7,9 +7,6 @@ namespace sound
 {
     class LoadedSoundDumperIW5 final : public AbstractAssetDumper<IW5::AssetLoadedSound>
     {
-    public:
-        explicit LoadedSoundDumperIW5(const AssetPool<IW5::AssetLoadedSound::Type>& pool);
-
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetLoadedSound::Type>& asset) override;
     };

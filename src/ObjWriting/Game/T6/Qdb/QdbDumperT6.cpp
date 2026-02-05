@@ -4,11 +4,6 @@ using namespace T6;
 
 namespace qdb
 {
-    DumperT6::DumperT6(const AssetPool<AssetQdb::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetQdb::Type>& asset)
     {
         const auto* qdb = asset.Asset();

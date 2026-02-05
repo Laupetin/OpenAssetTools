@@ -4,11 +4,6 @@ using namespace T6;
 
 namespace slug
 {
-    DumperT6::DumperT6(const AssetPool<AssetSlug::Type>& pool)
-        : AbstractAssetDumper(pool)
-    {
-    }
-
     void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetSlug::Type>& asset)
     {
         const auto* slug = asset.Asset();
