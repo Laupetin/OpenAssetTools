@@ -248,6 +248,7 @@ namespace
             if (faceCount > UINT16_MAX)
                 throw GltfLoadException("Face count exceeded the UINT16_MAX");
 
+            surface.vertexCount = vertexCount;
             surface.triCount = faceCount;
             surface.indexOfFirstIndex = static_cast<int>(m_bsp->gfxWorld.indices.size());
             surface.indexOfFirstVertex = static_cast<int>(m_bsp->gfxWorld.vertices.size());

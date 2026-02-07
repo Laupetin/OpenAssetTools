@@ -37,6 +37,7 @@ namespace BSP
     struct BSPSurface
     {
         BSPMaterial material;
+        uint16_t vertexCount;
         uint16_t triCount;
         int indexOfFirstVertex;
         int indexOfFirstIndex;
