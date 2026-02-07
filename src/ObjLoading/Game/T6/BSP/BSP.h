@@ -24,6 +24,8 @@ namespace BSP
         vec4_t color;
         vec2_t texCoord;
         vec3_t normal;
+        vec3_t tangent;
+        vec3_t binormal;
     };
 
     struct BSPMaterial

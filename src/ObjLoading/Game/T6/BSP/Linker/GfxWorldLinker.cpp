@@ -27,11 +27,10 @@ namespace BSP
             gfxVertex->color.packed = pack32::Vec4PackGfxColor(bspVertex.color.v);
             gfxVertex->texCoord.packed = pack32::Vec2PackTexCoordsUV(bspVertex.texCoord.v);
             gfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.normal.v);
-            // gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
-            gfxVertex->tangent.packed = 0;
+            gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
+            gfxVertex->binormalSign = bspVertex.binormal.v[0] > 0.0f ? 1.0f : -1.0f;
 
-            // unimplemented variables
-            gfxVertex->binormalSign = 0.0f;
+            // lightmap isn't implemented currently
             gfxVertex->lmapCoord.packed = 0;
         }
         gfxWorld->draw.vd0.data = reinterpret_cast<char*>(vertexBuffer);
