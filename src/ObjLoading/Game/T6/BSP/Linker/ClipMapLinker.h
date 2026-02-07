@@ -33,7 +33,7 @@ namespace BSP
         size_t highestLeafObjectCount = 0;
         void addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex);
         int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree);
-        void loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
+        bool loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
         bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
         bool loadWorldCollision(clipMap_t* clipMap, BSPData* bsp);
     };

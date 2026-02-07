@@ -402,7 +402,7 @@ namespace BSP
         }
     }
 
-    void ClipMapLinker::loadBSPTree(clipMap_t* clipMap, BSPData* bsp)
+    bool ClipMapLinker::loadBSPTree(clipMap_t* clipMap, BSPData* bsp)
     {
         vec3_t worldMins;
         vec3_t worldMaxs;
@@ -418,7 +418,11 @@ namespace BSP
             BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
         std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
-        assert(!tree->isLeaf);
+        if (!tree->isLeaf)
+        {
+            con::error("Map size is too small for BSP generation!");
+            return false;
+        }
 
         for (int partitionIdx = 0; partitionIdx < clipMap->partitionCount; partitionIdx++)
         {
@@ -466,6 +470,8 @@ namespace BSP
             clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
 
         con::info("Highest leaf object count: {}", highestLeafObjectCount);
+
+        return true;
     }
 
     bool ClipMapLinker::loadPartitions(clipMap_t* clipMap, BSPData* bsp)
@@ -600,7 +606,8 @@ namespace BSP
         if (!loadPartitions(clipMap, bsp))
             return false;
 
-        loadBSPTree(clipMap, bsp);
+        if (!loadBSPTree(clipMap, bsp))
+            return false;
 
         return true;
     }
