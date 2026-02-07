@@ -68,11 +68,13 @@ namespace BSP
             gfxSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
             gfxSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
 
-            gfxSurface->tris.triCount = static_cast<uint16_t>(bspSurface.triCount);
+            gfxSurface->tris.triCount = bspSurface.triCount;
             gfxSurface->tris.baseIndex = bspSurface.indexOfFirstIndex;
+            gfxSurface->tris.vertexCount = bspSurface.vertexCount;
+            gfxSurface->tris.firstVertex = bspSurface.indexOfFirstVertex;
 
             gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
-            gfxSurface->tris.vertexDataOffset1 = 0;
+            gfxSurface->tris.vertexDataOffset1 = 0; // vd1 is unused
 
             std::string surfMaterialName;
             if (bspSurface.material.materialType == MATERIAL_TYPE_TEXTURE)
@@ -105,17 +107,15 @@ namespace BSP
                 uint16_t vertIndex = gfxWorld->draw.indices[gfxSurface->tris.baseIndex + indexIdx];
                 BSPUtil::updateAABBWithPoint(firstVert[vertIndex].xyz, gfxSurface->bounds[0], gfxSurface->bounds[1]);
             }
+            gfxSurface->tris.mins.x = gfxSurface->bounds[0].x;
+            gfxSurface->tris.mins.y = gfxSurface->bounds[0].y;
+            gfxSurface->tris.mins.z = gfxSurface->bounds[0].z;
+            gfxSurface->tris.maxs.x = gfxSurface->bounds[1].x;
+            gfxSurface->tris.maxs.y = gfxSurface->bounds[1].y;
+            gfxSurface->tris.maxs.z = gfxSurface->bounds[1].z;
 
-            // unused values
-            gfxSurface->tris.mins.x = 0.0f;
-            gfxSurface->tris.mins.y = 0.0f;
-            gfxSurface->tris.mins.z = 0.0f;
-            gfxSurface->tris.maxs.x = 0.0f;
-            gfxSurface->tris.maxs.y = 0.0f;
-            gfxSurface->tris.maxs.z = 0.0f;
+            // unknown value
             gfxSurface->tris.himipRadiusInvSq = 0.0f;
-            gfxSurface->tris.vertexCount = 0;
-            gfxSurface->tris.firstVertex = 0;
         }
 
         // doesn't seem to matter what order the sorted surfs go in
@@ -484,13 +484,12 @@ namespace BSP
 
     void GfxWorldLinker::loadWorldBounds(GfxWorld* gfxWorld)
     {
-        gfxWorld->mins.x = 0.0f;
-        gfxWorld->mins.y = 0.0f;
-        gfxWorld->mins.z = 0.0f;
-        gfxWorld->maxs.x = 0.0f;
-        gfxWorld->maxs.y = 0.0f;
-        gfxWorld->maxs.z = 0.0f;
-
+        gfxWorld->mins.x = gfxWorld->dpvs.surfaces[0].bounds[0].x;
+        gfxWorld->mins.y = gfxWorld->dpvs.surfaces[0].bounds[0].y;
+        gfxWorld->mins.z = gfxWorld->dpvs.surfaces[0].bounds[0].z;
+        gfxWorld->maxs.x = gfxWorld->dpvs.surfaces[0].bounds[1].x;
+        gfxWorld->maxs.y = gfxWorld->dpvs.surfaces[0].bounds[1].y;
+        gfxWorld->maxs.z = gfxWorld->dpvs.surfaces[0].bounds[1].z;
         for (int surfIdx = 0; surfIdx < gfxWorld->surfaceCount; surfIdx++)
         {
             BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[surfIdx].bounds[0], gfxWorld->dpvs.surfaces[surfIdx].bounds[1], gfxWorld->mins, gfxWorld->maxs);
@@ -664,7 +663,7 @@ namespace BSP
         gfxWorld->dpvsDyn.dynEntClientCount[0] = dynEntCount + 256; // the game allocs 256 empty dynents, as they may be used ingame
         gfxWorld->dpvsDyn.dynEntClientCount[1] = 0;
 
-        // +100: there is a crash that happens when regdolls are created, and dynEntClientWordCount[0] is the issue.
+        // +100: there is a crash that happens when ragdolls are created, and dynEntClientWordCount[0] is the issue.
         // Making the value much larger than required fixes it, but unsure what the root cause is
         gfxWorld->dpvsDyn.dynEntClientWordCount[0] = ((gfxWorld->dpvsDyn.dynEntClientCount[0] + 31) >> 5) + 100;
         gfxWorld->dpvsDyn.dynEntClientWordCount[1] = 0;
