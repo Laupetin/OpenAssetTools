@@ -7,6 +7,7 @@
 #include "XModel/Gltf/Internal/GltfBuffer.h"
 #include "XModel/Gltf/Internal/GltfBufferView.h"
 #include "XModel/Gltf/JsonGltf.h"
+#include "XModel/Tangentspace.h"
 
 #pragma warning(push, 0)
 #include <Eigen>
@@ -182,9 +183,9 @@ namespace
             Eigen::Vector3d scale(localScale[0], localScale[1], localScale[2]);
 
             Eigen::Affine3d transform = Eigen::Affine3d::Identity();
-            transform.translate(translation);
-            transform.rotate(rotation);
             transform.scale(scale);
+            transform.rotate(rotation);
+            transform.translate(translation);
 
             return transform.matrix();
         }
@@ -292,6 +293,22 @@ namespace
 
                 m_bsp->gfxWorld.vertices.emplace_back(vertex);
             }
+
+            // generate tangent and binormal vectors
+            tangent_space::VertexData vertexData{
+                &m_bsp->gfxWorld.vertices[surface.indexOfFirstVertex].pos,
+                sizeof(BSPVertex),
+                &m_bsp->gfxWorld.vertices[surface.indexOfFirstVertex].normal,
+                sizeof(BSPVertex),
+                &m_bsp->gfxWorld.vertices[surface.indexOfFirstVertex].texCoord,
+                sizeof(BSPVertex),
+                &m_bsp->gfxWorld.vertices[surface.indexOfFirstVertex].tangent,
+                sizeof(BSPVertex),
+                &m_bsp->gfxWorld.vertices[surface.indexOfFirstVertex].binormal,
+                sizeof(BSPVertex),
+                &m_bsp->gfxWorld.indices[surface.indexOfFirstIndex],
+            };
+            tangent_space::CalculateTangentSpace(vertexData, faceCount, vertexCount);
 
             return vertexOffset;
         }
