@@ -44,10 +44,7 @@ namespace BSP
         assert(indexCount % 3 == 0);
         gfxWorld->draw.indexCount = static_cast<int>(indexCount);
         gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount);
-        for (size_t indexIdx = 0; indexIdx < indexCount; indexIdx++)
-        {
-            gfxWorld->draw.indices[indexIdx] = bsp->gfxWorld.indices.at(indexIdx);
-        }
+        memcpy(gfxWorld->draw.indices, bsp->gfxWorld.indices.data(), sizeof(uint16_t) * indexCount);
     }
 
     bool GfxWorldLinker::loadMapSurfaces(BSPData* bsp, GfxWorld* gfxWorld)
@@ -118,7 +115,7 @@ namespace BSP
             gfxSurface->tris.himipRadiusInvSq = 0.0f;
         }
 
-        // doesn't seem to matter what order the sorted surfs go in
+        // Some code uses Sorted surfs to index surfaces, so for simplicity keep the indexes sequential and from 0
         gfxWorld->dpvs.sortedSurfIndex = m_memory.Alloc<uint16_t>(surfaceCount);
         for (size_t surfIdx = 0; surfIdx < surfaceCount; surfIdx++)
             gfxWorld->dpvs.sortedSurfIndex[surfIdx] = static_cast<uint16_t>(surfIdx);
@@ -128,13 +125,13 @@ namespace BSP
 
         // set all surface types to lit opaque
         gfxWorld->dpvs.litSurfsBegin = 0;
-        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
 
         // visdata is written to by the game
         // all visdata is alligned by 128
@@ -340,10 +337,13 @@ namespace BSP
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
         for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
         {
+
             gfxWorld->shadowGeom[lightIdx].smodelCount = 0;
-            gfxWorld->shadowGeom[lightIdx].surfaceCount = 0;
             gfxWorld->shadowGeom[lightIdx].smodelIndex = nullptr;
-            gfxWorld->shadowGeom[lightIdx].sortedSurfIndex = nullptr;
+
+            // sorted surfs is written to by the game
+            gfxWorld->shadowGeom[lightIdx].surfaceCount = gfxWorld->dpvs.staticSurfaceCount;
+            gfxWorld->shadowGeom[lightIdx].sortedSurfIndex = m_memory.Alloc<uint16_t>(gfxWorld->dpvs.staticSurfaceCount);
         }
 
         gfxWorld->lightRegion = m_memory.Alloc<GfxLightRegion>(gfxWorld->primaryLightCount);
@@ -362,7 +362,7 @@ namespace BSP
 
     void GfxWorldLinker::loadLightGrid(GfxWorld* gfxWorld)
     {
-        // there is almost no basis for the values in this code, they were chosen based on what looks correct when reverse engineering.
+        // the values in this code were chosen based on what looked correct when reverse engineering.
 
         // mins and maxs define the range that the lightgrid will work in.
         // unknown how these values are calculated, but the below values are larger
