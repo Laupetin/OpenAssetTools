@@ -316,11 +316,10 @@ namespace BSP
         {
             cLeaf_s leaf;
 
-            leaf.cluster = 0;       // always use cluster 0
-            leaf.brushContents = 0; // no brushes used so contents is 0
-            leaf.terrainContents = BSPEditableConstants::LEAF_TERRAIN_CONTENTS;
+            leaf.cluster = 0; // always use cluster 0
 
-            // unused when leafBrushNode == 0
+            // no brushes used so data is set to 0
+            leaf.brushContents = 0;
             leaf.mins.x = 0.0f;
             leaf.mins.y = 0.0f;
             leaf.mins.z = 0.0f;
@@ -329,6 +328,8 @@ namespace BSP
             leaf.maxs.z = 0.0f;
             leaf.leafBrushNode = 0;
 
+            // -1 as it uses tris
+            leaf.terrainContents = -1;
             if (tree->leaf->getObjectCount() > 0)
             {
                 size_t parentCount = 0;
@@ -412,7 +413,7 @@ namespace BSP
             BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
         std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
-        if (!tree->isLeaf)
+        if (tree->isLeaf)
         {
             con::error("Map size is too small for BSP generation!");
             return false;
