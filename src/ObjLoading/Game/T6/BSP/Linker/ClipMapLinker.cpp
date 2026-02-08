@@ -123,23 +123,18 @@ namespace BSP
     void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
-        auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp->bspName);
-        assert(gfxWorldAsset != nullptr);
-        GfxWorld* gfxWorld = gfxWorldAsset->Asset();
-
-        // Right now there is only one submodel, the world sub model
-        assert(gfxWorld->modelCount == 1);
-
         clipMap->numSubModels = 1;
         clipMap->cmodels = m_memory.Alloc<cmodel_t>(clipMap->numSubModels);
-
-        GfxBrushModel* gfxModel = &gfxWorld->models[0];
-        clipMap->cmodels[0].mins.x = gfxModel->bounds[0].x;
-        clipMap->cmodels[0].mins.y = gfxModel->bounds[0].y;
-        clipMap->cmodels[0].mins.z = gfxModel->bounds[0].z;
-        clipMap->cmodels[0].maxs.x = gfxModel->bounds[1].x;
-        clipMap->cmodels[0].maxs.y = gfxModel->bounds[1].y;
-        clipMap->cmodels[0].maxs.z = gfxModel->bounds[1].z;
+        for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
+        {
+            vec3_t vertex = clipMap->verts[vertIdx];
+            if (vertIdx == 0)
+            {
+                clipMap->cmodels[0].mins = vertex;
+                clipMap->cmodels[0].maxs = vertex;
+            }
+            BSPUtil::updateAABBWithPoint(vertex, clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs);
+        }
         clipMap->cmodels[0].radius = BSPUtil::distBetweenPoints(clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs) / 2;
 
         // The world sub model has no leafs associated with it
@@ -155,8 +150,7 @@ namespace BSP
         clipMap->cmodels[0].leaf.maxs.z = 0.0f;
         clipMap->cmodels[0].leaf.leafBrushNode = 0;
         clipMap->cmodels[0].leaf.cluster = 0;
-
-        clipMap->cmodels[0].info = nullptr; // always set to 0
+        clipMap->cmodels[0].info = nullptr;
     }
 
     void ClipMapLinker::loadXModelCollision(clipMap_t* clipMap)
@@ -632,8 +626,6 @@ namespace BSP
 
         loadRopesAndConstraints(clipMap);
 
-        loadSubModelCollision(clipMap, bsp);
-
         loadDynEnts(clipMap);
 
         loadXModelCollision(clipMap);
@@ -646,14 +638,16 @@ namespace BSP
         clipMap->info.materials[0].contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
         clipMap->info.materials[0].surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
 
+        if (!loadWorldCollision(clipMap, bsp))
+            return nullptr;
+
+        loadSubModelCollision(clipMap, bsp); // requires tri verts
+
         // set all edges to walkable
         // might do weird stuff on walls, but from testing doesnt seem to do anything
         int walkableEdgeSize = (3 * clipMap->triCount + 31) / 32 * 4;
-        clipMap->triEdgeIsWalkable = new char[walkableEdgeSize];
+        clipMap->triEdgeIsWalkable = m_memory.Alloc<char>(walkableEdgeSize);
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
-
-        if (!loadWorldCollision(clipMap, bsp))
-            return nullptr;
 
         return clipMap;
     }
