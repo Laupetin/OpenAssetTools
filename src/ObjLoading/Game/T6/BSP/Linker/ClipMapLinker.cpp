@@ -220,6 +220,8 @@ namespace BSP
         if (remainder > 0)
             parentCount++;
 
+        // the material index of the AABB tree is only checked for the parent node, so
+
         size_t parentAABBArrayIndex = AABBTreeVec.size();
         AABBTreeVec.resize(AABBTreeVec.size() + parentCount);
         size_t unaddedObjectCount = leafObjectCount;
@@ -232,7 +234,7 @@ namespace BSP
             else
                 unaddedObjectCount -= BSPGameConstants::MAX_AABB_TREE_CHILDREN;
 
-            // add the parent AABB
+            // calculate parent AABB mins and maxs
             vec3_t parentMins;
             vec3_t parentMaxs;
             for (size_t objectIdx = 0; objectIdx < childObjectCount; objectIdx++)
@@ -259,7 +261,7 @@ namespace BSP
             CollisionAabbTree parentAABB;
             parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
             parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
-            parentAABB.materialIndex = 0; // always use the first material
+            parentAABB.materialIndex = 0;
             parentAABB.childCount = static_cast<uint16_t>(childObjectCount);
             parentAABB.u.firstChildIndex = static_cast<int>(childObjectStartIndex);
             AABBTreeVec.at(parentAABBArrayIndex + parentIdx) = parentAABB;
@@ -505,8 +507,10 @@ namespace BSP
         // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
         std::vector<CollisionPartition> partitionVec;
         std::vector<uint16_t> uniqueIndicesVec;
-        for (BSPSurface& surface : bsp->colWorld.surfaces)
+        for (size_t surfIdx = 0; surfIdx < bsp->colWorld.surfaces.size(); surfIdx++)
         {
+            BSPSurface& surface = bsp->colWorld.surfaces[surfIdx];
+
             // partitions are made for each triangle, not one for each surface.
             //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
             //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
@@ -528,6 +532,8 @@ namespace BSP
                 uniqueIndicesVec.emplace_back(tri[2]);
 
                 partitionVec.emplace_back(partition);
+
+                partitionToSurfaceMap.emplace_back(surfIdx);
             }
         }
         clipMap->partitionCount = static_cast<int>(partitionVec.size());
@@ -607,6 +613,29 @@ namespace BSP
         return true;
     }
 
+    bool ClipMapLinker::loadMaterials(clipMap_t* clipMap, BSPData* bsp)
+    {
+        // Clipmap materials define the properties of a material (bullet penetration, no collision, water, etc)
+
+        if (bsp->colWorld.materials.size() > UINT16_MAX)
+        {
+            con::error("Collision map exceeds 0xFFFF materials");
+            return false;
+        }
+
+        clipMap->info.numMaterials = static_cast<unsigned int>(bsp->colWorld.materials.size());
+        clipMap->info.materials = m_memory.Alloc<ClipMaterial>(clipMap->info.numMaterials);
+        for (size_t matIdx = 0; matIdx < bsp->colWorld.materials.size(); matIdx++)
+        {
+            ClipMaterial* clipMat = &clipMap->info.materials[matIdx];
+            BSPMaterial bspMat = bsp->colWorld.materials.at(matIdx);
+
+            clipMat->name = m_memory.Dup(bspMat.materialName.c_str());
+            clipMat->contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
+            clipMat->surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
+        }
+    }
+
     clipMap_t* ClipMapLinker::linkClipMap(BSPData* bsp)
     {
         clipMap_t* clipMap = m_memory.Alloc<clipMap_t>();
@@ -631,13 +660,7 @@ namespace BSP
 
         loadXModelCollision(clipMap);
 
-        // Clipmap materials define the properties of a material (bullet penetration, no collision, water, etc)
-        // Right now there is no way to define properties per material so only one material is used
-        clipMap->info.numMaterials = 1;
-        clipMap->info.materials = m_memory.Alloc<ClipMaterial>(clipMap->info.numMaterials);
-        clipMap->info.materials[0].name = m_memory.Dup(BSPLinkingConstants::MISSING_IMAGE_NAME);
-        clipMap->info.materials[0].contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
-        clipMap->info.materials[0].surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
+        loadMaterials(clipMap, bsp);
 
         if (!loadWorldCollision(clipMap, bsp))
             return nullptr;

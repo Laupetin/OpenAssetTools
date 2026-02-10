@@ -31,10 +31,13 @@ namespace BSP
         std::vector<cLeaf_s> leafVec;
         std::vector<CollisionAabbTree> AABBTreeVec;
         size_t highestLeafObjectCount = 0;
+        std::vector<unsigned> partitionToSurfaceMap;
+        std::vector<unsigned> surfaceToMaterialMap;
         void addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex);
         int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree);
         bool loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
         bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
         bool loadWorldCollision(clipMap_t* clipMap, BSPData* bsp);
+        bool loadMaterials(clipMap_t* clipMap, BSPData* bsp);
     };
 } // namespace BSP

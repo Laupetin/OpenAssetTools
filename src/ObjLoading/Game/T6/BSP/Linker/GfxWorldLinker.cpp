@@ -73,22 +73,21 @@ namespace BSP
             gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
             gfxSurface->tris.vertexDataOffset1 = 0; // vd1 is unused
 
-            std::string surfMaterialName;
-            if (bspSurface.material.materialType == MATERIAL_TYPE_TEXTURE)
-                surfMaterialName = bspSurface.material.materialName;
-            else // MATERIAL_TYPE_COLOUR || MATERIAL_TYPE_EMPTY
-                surfMaterialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
+            BSPMaterial bspMaterial = bsp->colWorld.materials.at(bspSurface.materialIndex);
 
-            auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(surfMaterialName);
+            std::string materialName;
+            if (bspMaterial.materialType == MATERIAL_TYPE_EMPTY)
+                materialName = BSPLinkingConstants::MISSING_IMAGE_NAME;
+            else if (bspMaterial.materialType == MATERIAL_TYPE_COLOUR)
+                materialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
+            else // MATERIAL_TYPE_TEXTURE
+                materialName = bspMaterial.materialName;
+
+            auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(materialName);
             if (surfMaterialAsset == nullptr)
             {
-                std::string missingImageName = BSPLinkingConstants::MISSING_IMAGE_NAME;
-                surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(missingImageName);
-                if (surfMaterialAsset == nullptr)
-                {
-                    con::error("unable to load the missing image texture {}!", missingImageName);
-                    return false;
-                }
+                surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(BSPLinkingConstants::MISSING_IMAGE_NAME);
+                assert(surfMaterialAsset != nullptr);
             }
             gfxSurface->material = surfMaterialAsset->Asset();
 

@@ -36,7 +36,7 @@ namespace BSP
 
     struct BSPSurface
     {
-        BSPMaterial material;
+        size_t materialIndex;
         uint16_t vertexCount;
         uint16_t triCount;
         int indexOfFirstVertex;
@@ -48,6 +48,7 @@ namespace BSP
         std::vector<BSPSurface> surfaces;
         std::vector<BSPVertex> vertices;
         std::vector<uint16_t> indices;
+        std::vector<BSPMaterial> materials;
     };
 
     struct BSPData
