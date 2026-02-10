@@ -83,6 +83,7 @@ namespace
     private:
         const Input& m_input;
         BSPData* m_bsp;
+        size_t m_color_mat_idx;
         std::vector<std::unique_ptr<Accessor>> m_accessors;
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
         std::vector<std::unique_ptr<Buffer>> m_buffers;
@@ -316,27 +317,15 @@ namespace
 
         void loadSurfaceMaterialData(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive, BSPSurface& surface)
         {
-            BSPMaterialType matType;
             if (!primitive.material)
-                if (!primitive.attributes.COLOR_0)
-                {
-                    // matType = MATERIAL_TYPE_EMPTY;
-                    throw GltfLoadException("Primitive requires material or colour data.");
-                }
-                else
-                    matType = MATERIAL_TYPE_COLOUR;
-            else
-                matType = MATERIAL_TYPE_TEXTURE;
-            surface.material.materialType = matType;
-
-            if (matType == MATERIAL_TYPE_TEXTURE)
             {
-                if (!jRoot.materials || *primitive.material >= jRoot.materials->size())
-                    throw GltfLoadException("Invalid material index");
-                surface.material.materialName = jRoot.materials.value()[primitive.material.value()].name.value();
+                if (!primitive.attributes.COLOR_0)
+                    throw GltfLoadException("Primitive requires material or colour data.");
+
+                surface.materialIndex = m_color_mat_idx;
             }
             else
-                surface.material.materialName = "";
+                surface.materialIndex = *primitive.material;
         }
 
         bool CreateSurfacesFromNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
@@ -412,6 +401,36 @@ namespace
             }
 
             return rootNodes;
+        }
+
+        void LoadMaterials(const JsonRoot& jRoot)
+        {
+            if (!jRoot.materials)
+                return;
+            m_bsp->gfxWorld.materials.reserve((*jRoot.materials).size());
+            for (auto& jsMaterial : *jRoot.materials)
+            {
+                BSPMaterial material;
+
+                if (jsMaterial.name && (*jsMaterial.name).length() != 0)
+                {
+                    material.materialType = MATERIAL_TYPE_TEXTURE;
+                    material.materialName = *jsMaterial.name;
+                }
+                else
+                {
+                    material.materialType = MATERIAL_TYPE_EMPTY;
+                    material.materialName = "";
+                }
+
+                m_bsp->gfxWorld.materials.emplace_back(material);
+            }
+
+            m_color_mat_idx = m_bsp->gfxWorld.materials.size();
+            BSPMaterial colorMaterial;
+            colorMaterial.materialType = MATERIAL_TYPE_COLOUR;
+            colorMaterial.materialName = "";
+            m_bsp->gfxWorld.materials.emplace_back(colorMaterial);
         }
 
         void TraverseNodes(const JsonRoot& jRoot)
@@ -551,6 +570,7 @@ namespace
                 CreateBufferViews(jRoot);
                 CreateAccessors(jRoot);
 
+                LoadMaterials(jRoot);
                 TraverseNodes(jRoot);
             }
             catch (const GltfLoadException& e)
