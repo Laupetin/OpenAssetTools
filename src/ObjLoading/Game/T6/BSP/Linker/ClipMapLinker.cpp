@@ -212,6 +212,26 @@ namespace BSP
         if (leafObjectCount > highestLeafObjectCount)
             highestLeafObjectCount = leafObjectCount;
 
+        std::vector<unsigned int> uniqueMaterials;
+        for (size_t objIdx = 0; objIdx < leafObjectCount; objIdx++)
+        {
+            int partitionIdx = tree->leaf->getObject(objIdx)->partitionIndex;
+            unsigned materialIndex = partitionToMaterialMap[partitionIdx];
+            bool foundIdx = false;
+            for (unsigned int uniqueMat : uniqueMaterials)
+            {
+                if (uniqueMat == materialIndex)
+                {
+                    foundIdx = true;
+                    break;
+                }
+            }
+            if (!foundIdx)
+                uniqueMaterials.emplace_back(materialIndex);
+        }
+
+        con::info("{} {}", uniqueMaterials.size(), uniqueMaterials[0]);
+
         // BO2 has a maximum limit of 128 children per AABB tree (essentially),
         // so this is fixed by adding multiple parent AABB trees that hold 128 children each
         size_t result = leafObjectCount / BSPGameConstants::MAX_AABB_TREE_CHILDREN;
@@ -533,7 +553,7 @@ namespace BSP
 
                 partitionVec.emplace_back(partition);
 
-                partitionToSurfaceMap.emplace_back(surfIdx);
+                partitionToMaterialMap.emplace_back(surface.materialIndex);
             }
         }
         clipMap->partitionCount = static_cast<int>(partitionVec.size());
