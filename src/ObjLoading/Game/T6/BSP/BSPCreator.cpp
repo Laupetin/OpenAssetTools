@@ -125,10 +125,10 @@ namespace
                 throw GltfLoadException(std::format("Element count of {} accessor does not match expected vertex count of {}", accessorType, vertexCount));
         }
 
-        Eigen::Matrix4d createNodeMatrix(const gltf::JsonNode& node)
+        Eigen::Matrix4f createNodeMatrix(const gltf::JsonNode& node)
         {
             if (node.matrix)
-                return Eigen::Matrix4d({
+                return Eigen::Matrix4f({
                     {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
                     {(*node.matrix)[1], (*node.matrix)[5], (*node.matrix)[9],  (*node.matrix)[13]},
                     {(*node.matrix)[2], (*node.matrix)[6], (*node.matrix)[10], (*node.matrix)[14]},
@@ -179,11 +179,11 @@ namespace
                 localScale[2] = 1.0f;
             }
 
-            Eigen::Vector3d translation(localTranslation[0], localTranslation[1], localTranslation[2]);
-            Eigen::Quaterniond rotation(localRotation[0], localRotation[1], localRotation[2], localRotation[3]);
-            Eigen::Vector3d scale(localScale[0], localScale[1], localScale[2]);
+            Eigen::Vector3f translation(localTranslation[0], localTranslation[1], localTranslation[2]);
+            Eigen::Quaternionf rotation(localRotation[0], localRotation[1], localRotation[2], localRotation[3]);
+            Eigen::Vector3f scale(localScale[0], localScale[1], localScale[2]);
 
-            Eigen::Affine3d transform = Eigen::Affine3d::Identity();
+            Eigen::Affine3f transform = Eigen::Affine3f::Identity();
             transform.scale(scale);
             transform.rotate(rotation);
             transform.translate(translation);
@@ -249,8 +249,8 @@ namespace
             if (faceCount > UINT16_MAX)
                 throw GltfLoadException("Face count exceeded the UINT16_MAX");
 
-            surface.vertexCount = vertexCount;
-            surface.triCount = faceCount;
+            surface.vertexCount = static_cast<uint16_t>(vertexCount);
+            surface.triCount = static_cast<uint16_t>(faceCount);
             surface.indexOfFirstIndex = static_cast<int>(m_bsp->gfxWorld.indices.size());
             surface.indexOfFirstVertex = static_cast<int>(m_bsp->gfxWorld.vertices.size());
 
@@ -266,12 +266,12 @@ namespace
                     throw GltfLoadException("Index number exceeded the UINT16_MAX");
 
                 RhcToLhcIndices(indices);
-                m_bsp->gfxWorld.indices.emplace_back(indices[0]);
-                m_bsp->gfxWorld.indices.emplace_back(indices[1]);
-                m_bsp->gfxWorld.indices.emplace_back(indices[2]);
+                m_bsp->gfxWorld.indices.emplace_back(static_cast<uint16_t>(indices[0]));
+                m_bsp->gfxWorld.indices.emplace_back(static_cast<uint16_t>(indices[1]));
+                m_bsp->gfxWorld.indices.emplace_back(static_cast<uint16_t>(indices[2]));
             }
 
-            Eigen::Matrix4d nodeMatrix = createNodeMatrix(node);
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             const auto vertexOffset = static_cast<unsigned>(m_bsp->gfxWorld.vertices.size());
             m_bsp->gfxWorld.vertices.reserve(vertexOffset + vertexCount);
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
@@ -284,8 +284,8 @@ namespace
                     assert(false);
                 }
 
-                Eigen::Vector4d position(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1.0f);
-                Eigen::Vector4d transformedPosition = nodeMatrix * position;
+                Eigen::Vector4f position(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1.0f);
+                Eigen::Vector4f transformedPosition = nodeMatrix * position;
                 vertex.pos.x = transformedPosition.x();
                 vertex.pos.y = transformedPosition.y();
                 vertex.pos.z = transformedPosition.z();
@@ -578,6 +578,8 @@ namespace
                 con::error("Failed to load GLTF: {}", e.Str());
                 return false;
             }
+
+            return true;
         }
 
         BSPLoader(const Input& input, BSPData* bsp)

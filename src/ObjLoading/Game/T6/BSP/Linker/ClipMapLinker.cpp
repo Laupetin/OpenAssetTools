@@ -654,6 +654,8 @@ namespace BSP
             clipMat->contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
             clipMat->surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
         }
+
+        return true;
     }
 
     clipMap_t* ClipMapLinker::linkClipMap(BSPData* bsp)
