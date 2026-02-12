@@ -351,7 +351,7 @@ namespace BSP
             leaf.leafBrushNode = 0;
 
             // -1 as it uses tris
-            leaf.terrainContents = -1;
+            leaf.terrainContents = 1;
             if (tree->leaf->getObjectCount() > 0)
             {
                 size_t parentCount = 0;
