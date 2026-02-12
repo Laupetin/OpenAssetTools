@@ -184,9 +184,9 @@ namespace
             Eigen::Vector3f scale(localScale[0], localScale[1], localScale[2]);
 
             Eigen::Affine3f transform = Eigen::Affine3f::Identity();
-            transform.scale(scale);
-            transform.rotate(rotation);
             transform.translate(translation);
+            transform.rotate(rotation);
+            transform.scale(scale);
 
             return transform.matrix();
         }
