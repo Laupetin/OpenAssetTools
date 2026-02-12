@@ -44,6 +44,7 @@ namespace BSP
         assert(indexCount % 3 == 0);
         gfxWorld->draw.indexCount = static_cast<int>(indexCount);
         gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount);
+        static_assert(sizeof(bsp->gfxWorld.indices.data()[0]) == sizeof(uint16_t));
         memcpy(gfxWorld->draw.indices, bsp->gfxWorld.indices.data(), sizeof(uint16_t) * indexCount);
     }
 
