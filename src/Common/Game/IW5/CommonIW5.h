@@ -1,26 +1,39 @@
 #pragma once
 
 #include "IW5.h"
+#include "Utils/Djb2.h"
 
 namespace IW5
 {
     class Common
     {
     public:
-        static int StringTable_HashString(const char* str);
-
-        static constexpr uint32_t R_HashString(const char* str, uint32_t hash)
+        static constexpr int StringTable_HashString(const char* str)
         {
-            for (const auto* pos = str; *pos; pos++)
+            if (!str)
+                return 0;
+
+            // Lets do djb2 with 31 instead of 33 because why not
+            // and leave out the starting value while we are at it
+            uint32_t hash = 0;
+            for (char c = *str; c; c = *str++)
             {
-                hash = 33 * hash ^ (*pos | 0x20);
+                // Or with 0x20 is equivalent to converting ASCII to lowercase
+                hash = hash * 31 + (c | 0x20);
             }
 
-            return hash;
+            return static_cast<int>(hash);
+        }
+
+        static constexpr uint32_t R_HashString(const char* str, const uint32_t hash)
+        {
+            return djb2_xor_nocase(str, hash);
         }
 
         static constexpr uint32_t R_HashString(const char* string)
         {
+            // Using djb2 with a 0 starting value makes a worse hash func apparently
+            // but who am I to judge
             return R_HashString(string, 0u);
         }
 
