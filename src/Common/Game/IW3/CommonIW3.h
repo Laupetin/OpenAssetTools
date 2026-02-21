@@ -1,28 +1,24 @@
 #pragma once
 
 #include "IW3.h"
+#include "Utils/Djb2.h"
+
+#include <iostream>
 
 namespace IW3
 {
     class Common
     {
     public:
-        static constexpr uint32_t R_HashString(const char* string, const uint32_t hash)
+        static constexpr uint32_t R_HashString(const char* str, const uint32_t hash)
         {
-            const char* v2 = string; // edx@1
-            char v3 = *string;       // cl@1
-            uint32_t result = hash;
-
-            for (; *v2; v3 = *v2)
-            {
-                ++v2;
-                result = 33 * result ^ (v3 | 0x20);
-            }
-            return result;
+            return djb2_xor_nocase(str, hash);
         }
 
         static constexpr uint32_t R_HashString(const char* string)
         {
+            // Using djb2 with a 0 starting value makes a worse hash func apparently
+            // but who am I to judge
             return R_HashString(string, 0u);
         }
 

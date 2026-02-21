@@ -1,6 +1,7 @@
 #pragma once
 
 #include "T6.h"
+#include "Utils/Djb2.h"
 
 #include <cctype>
 
@@ -28,51 +29,22 @@ namespace T6
 
         static constexpr int Com_HashString(const char* str)
         {
+            // Hashing aesthetics seem to be a thing
             if (!str)
                 return 0;
 
-            auto result = 0x1505;
-            auto offset = 0;
-            while (str[offset])
-            {
-                const auto c = tolower(str[offset++]);
-                result = c + 33 * result;
-            }
-
-            return result;
+            return static_cast<int>(djb2_lower(str));
         }
 
-        static constexpr int Com_HashString(const char* str, const int len)
+        static constexpr uint32_t R_HashString(const char* str, const uint32_t hash)
         {
-            if (!str)
-                return 0;
-
-            int result = 0x1505;
-            int offset = 0;
-            while (str[offset])
-            {
-                if (len > 0 && offset >= len)
-                    break;
-
-                const int c = tolower(str[offset++]);
-                result = c + 33 * result;
-            }
-
-            return result;
-        }
-
-        static constexpr uint32_t R_HashString(const char* str, uint32_t hash)
-        {
-            for (const auto* pos = str; *pos; pos++)
-            {
-                hash = 33 * hash ^ (*pos | 0x20);
-            }
-
-            return hash;
+            return djb2_xor_nocase(str, hash);
         }
 
         static constexpr uint32_t R_HashString(const char* string)
         {
+            // Using djb2 with a 0 starting value makes a worse hash func apparently
+            // but who am I to judge
             return R_HashString(string, 0u);
         }
 
@@ -80,6 +52,9 @@ namespace T6
         {
             if (!str || !*str)
                 return 0;
+
+            // Seems to be somewhat based on sdbm
+            // http://www.cse.yorku.ca/~oz/hash.html
 
             auto result = 0x1505;
             auto offset = 0u;
