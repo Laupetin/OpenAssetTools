@@ -770,10 +770,23 @@ namespace T6
         TECHNIQUE_COUNT
     };
 
+    enum MaterialWorldVertexFormat : unsigned char
+    {
+        MTL_WORLDVERT_TEX_1_NRM_1 = 0x0,
+        MTL_WORLDVERT_TEX_2_NRM_1 = 0x1,
+        MTL_WORLDVERT_TEX_2_NRM_2 = 0x2,
+        MTL_WORLDVERT_TEX_3_NRM_1 = 0x3,
+        MTL_WORLDVERT_TEX_3_NRM_2 = 0x4,
+        MTL_WORLDVERT_TEX_3_NRM_3 = 0x5,
+        MTL_WORLDVERT_TEX_4_NRM_1 = 0x6,
+        MTL_WORLDVERT_TEX_4_NRM_2 = 0x7,
+        MTL_WORLDVERT_TEX_4_NRM_3 = 0x8,
+    };
+
     struct MaterialTechniqueSet
     {
         const char* name;
-        char worldVertFormat;
+        MaterialWorldVertexFormat worldVertFormat;
         MaterialTechnique* techniques[36];
     };
 
@@ -2988,6 +3001,15 @@ namespace T6
         VERTEX_SHADER_MODEL_UNLIT,
     };
 
+    enum CustomSamplers
+    {
+        CUSTOM_SAMPLER_REFLECTION_PROBE = 0,
+        CUSTOM_SAMPLER_LIGHTMAP_PRIMARY,
+        CUSTOM_SAMPLER_LIGHTMAP_SECONDARY,
+
+        CUSTOM_SAMPLER_COUNT
+    };
+
     enum MaterialType : unsigned char
     {
         MTL_TYPE_DEFAULT = 0x0,
@@ -3022,6 +3044,20 @@ namespace T6
         MaterialShaderArgument* args;
     };
 
+    enum TechniqueFlags
+    {
+        TECHNIQUE_FLAG_1 = 0x1,
+        TECHNIQUE_FLAG_2 = 0x2,
+        TECHNIQUE_FLAG_4 = 0x4,
+        TECHNIQUE_FLAG_8 = 0x8,
+        TECHNIQUE_FLAG_10 = 0x10,
+        TECHNIQUE_FLAG_20 = 0x20,
+        TECHNIQUE_FLAG_40 = 0x40,
+        TECHNIQUE_FLAG_80 = 0x80,
+        TECHNIQUE_FLAG_100 = 0x100,
+        TECHNIQUE_FLAG_200 = 0x200,
+    };
+
     struct MaterialTechnique
     {
         const char* name;
@@ -3029,14 +3065,6 @@ namespace T6
         uint16_t passCount;
         MaterialPass passArray[1];
     };
-
-    /* struct __cppobj ID3D11View : ID3D11DeviceChild
-    {
-    };*/
-
-    /* struct __cppobj ID3D11ShaderResourceView : ID3D11View
-    {
-    };*/
 
     struct type_align32(4) GfxImageLoadDef
     {
@@ -3705,14 +3733,6 @@ namespace T6
         GfxImage* primary;
         GfxImage* secondary;
     };
-
-    /* struct __cppobj ID3D11Resource : ID3D11DeviceChild
-    {
-    };*/
-
-    /* struct __cppobj ID3D11Buffer : ID3D11Resource
-    {
-    };*/
 
     struct type_align(4) GfxLightGridEntry
     {
@@ -5780,8 +5800,8 @@ namespace T6
 
     struct MaterialStreamRouting
     {
-        char source;
-        char dest;
+        unsigned char source;
+        unsigned char dest;
     };
 
     struct MaterialVertexStreamRouting
@@ -5792,7 +5812,7 @@ namespace T6
 
     struct MaterialVertexDeclaration
     {
-        char streamCount;
+        unsigned char streamCount;
         bool hasOptionalSource;
         bool isLoaded;
         MaterialVertexStreamRouting routing;
@@ -6147,8 +6167,8 @@ namespace T6
     struct MaterialArgumentCodeConst
     {
         uint16_t index;
-        char firstRow;
-        char rowCount;
+        unsigned char firstRow;
+        unsigned char rowCount;
     };
 
     union MaterialArgumentDef
@@ -6164,14 +6184,19 @@ namespace T6
         MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
         MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
         MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2,
+
         MTL_ARG_CODE_PRIM_BEGIN = 0x3,
+
         MTL_ARG_CODE_VERTEX_CONST = 0x3,
         MTL_ARG_CODE_PIXEL_SAMPLER = 0x4,
         MTL_ARG_CODE_PIXEL_CONST = 0x5,
+
         MTL_ARG_CODE_PRIM_END = 0x6,
+
         MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
         MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
-        MLT_ARG_COUNT = 0x8,
+
+        MLT_ARG_COUNT,
     };
 
     struct MaterialShaderArgument
@@ -6881,10 +6906,6 @@ namespace T6
         vec3_t offset;
         vec3_t halfLengths;
     };
-
-    /* struct __cppobj ID3D11InputLayout : ID3D11DeviceChild
-    {
-    };*/
 
     struct GfxLightRegionAxis
     {

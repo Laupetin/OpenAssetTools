@@ -2,25 +2,7 @@
 
 #include "Utils/Pack.h"
 
-#include <cctype>
-
 using namespace IW4;
-
-int Common::StringTable_HashString(const char* str)
-{
-    if (!str)
-        return 0;
-
-    auto result = 0;
-    auto offset = 0;
-    while (str[offset])
-    {
-        const auto c = tolower(str[offset++]);
-        result = c + 31 * result;
-    }
-
-    return result;
-}
 
 PackedTexCoords Common::Vec2PackTexCoords(const float (&in)[2])
 {

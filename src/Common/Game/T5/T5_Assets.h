@@ -1448,8 +1448,8 @@ namespace T5
     struct MaterialArgumentCodeConst
     {
         uint16_t index;
-        char firstRow;
-        char rowCount;
+        unsigned char firstRow;
+        unsigned char rowCount;
     };
 
     union MaterialArgumentDef
@@ -1465,11 +1465,15 @@ namespace T5
         MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
         MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
         MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2,
+
         MTL_ARG_CODE_PRIM_BEGIN = 0x3,
+
         MTL_ARG_CODE_VERTEX_CONST = 0x3,
         MTL_ARG_CODE_PIXEL_SAMPLER = 0x4,
         MTL_ARG_CODE_PIXEL_CONST = 0x5,
+
         MTL_ARG_CODE_PRIM_END = 0x6,
+
         MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
         MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
 
@@ -1668,10 +1672,23 @@ namespace T5
         TECHNIQUE_COUNT
     };
 
+    enum MaterialWorldVertexFormat : unsigned char
+    {
+        MTL_WORLDVERT_TEX_1_NRM_1 = 0x0,
+        MTL_WORLDVERT_TEX_2_NRM_1 = 0x1,
+        MTL_WORLDVERT_TEX_2_NRM_2 = 0x2,
+        MTL_WORLDVERT_TEX_3_NRM_1 = 0x3,
+        MTL_WORLDVERT_TEX_3_NRM_2 = 0x4,
+        MTL_WORLDVERT_TEX_3_NRM_3 = 0x5,
+        MTL_WORLDVERT_TEX_4_NRM_1 = 0x6,
+        MTL_WORLDVERT_TEX_4_NRM_2 = 0x7,
+        MTL_WORLDVERT_TEX_4_NRM_3 = 0x8,
+    };
+
     struct MaterialTechniqueSet
     {
         const char* name;
-        char worldVertFormat;
+        MaterialWorldVertexFormat worldVertFormat;
         char unused[1];
         uint16_t techsetFlags;
         MaterialTechnique* techniques[130];
