@@ -82,6 +82,7 @@ jobs:
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
         run: |
+          ./CommonTests
           ./ObjCommonTests
           ./ObjCompilingTests
           ./ObjLoadingTests
@@ -138,6 +139,8 @@ jobs:
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
         run: |
           $combinedExitCode = 0
+          ./CommonTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ObjCommonTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ObjCompilingTests
