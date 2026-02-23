@@ -51,6 +51,27 @@ namespace BSP
         std::vector<BSPMaterial> materials;
     };
 
+    enum BSPLightType
+    {
+        LIGHT_TYPE_DIRECTIONAL,
+        LIGHT_TYPE_POINT,
+        LIGHT_TYPE_SPOT
+    };
+
+    struct BSPLight
+    {
+        BSPLightType type;
+        vec3_t pos;
+        vec3_t direction;
+        vec3_t colour;
+        float range;
+        float intensity;
+
+        // only used on spot and dir lights
+        float innerConeAngle;
+        float outerConeAngle;
+    };
+
     struct BSPData
     {
         std::string name;
@@ -58,6 +79,8 @@ namespace BSP
 
         BSPWorld gfxWorld;
         BSPWorld colWorld;
+
+        std::vector<BSPLight> lights;
     };
 
     // BSPGameConstants:
@@ -70,7 +93,7 @@ namespace BSP
 
         enum BSPDefaultLights
         {
-            STATIC_LIGHT_INDEX = 0,
+            EMPTY_LIGHT_INDEX = 0,
             SUN_LIGHT_INDEX = 1,
             BSP_DEFAULT_LIGHT_COUNT = 2
         };
@@ -161,10 +184,10 @@ namespace BSP
         constexpr int DEFAULT_SMODEL_REFLECTION_PROBE = 0;
 
         // Default surface values
-        constexpr int DEFAULT_SURFACE_LIGHT = BSPGameConstants::SUN_LIGHT_INDEX;
+        constexpr int DEFAULT_SURFACE_LIGHT = 2;
         constexpr int DEFAULT_SURFACE_LIGHTMAP = 0;
         constexpr int DEFAULT_SURFACE_REFLECTION_PROBE = 0;
-        constexpr int DEFAULT_SURFACE_FLAGS = (GFX_SURFACE_CASTS_SUN_SHADOW | GFX_SURFACE_CASTS_SHADOW);
+        constexpr int DEFAULT_SURFACE_FLAGS = 0;
 
         // material flags determine the features of a surface
         // unsure which flag type changes what right now
