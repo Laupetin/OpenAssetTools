@@ -22,7 +22,7 @@ namespace BSP
         bool loadMapSurfaces(BSPData* projInfo, GfxWorld* gfxWorld);
         void loadXModels(BSPData* projInfo, GfxWorld* gfxWorld);
         void cleanGfxWorld(GfxWorld* gfxWorld);
-        void loadGfxLights(GfxWorld* gfxWorld);
+        void loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld);
         void loadLightGrid(GfxWorld* gfxWorld);
         void loadGfxCells(GfxWorld* gfxWorld);
         void loadModels(GfxWorld* gfxWorld);

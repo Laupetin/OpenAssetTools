@@ -1,5 +1,8 @@
 #include "ComWorldLinker.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 namespace BSP
 {
     ComWorldLinker::ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
@@ -9,28 +12,184 @@ namespace BSP
     {
     }
 
+    bool ComWorldLinker::createLightDefs()
+    {
+        T6::GfxLightDef* lightDefCube = m_memory.Alloc<T6::GfxLightDef>();
+        lightDefCube->name = m_memory.Dup("white_light_cube");
+        lightDefCube->lmapLookupStart = 0;            // always 0
+        lightDefCube->attenuation.samplerState = 115; // always 115
+        auto imageCubeAsset = m_context.LoadDependency<T6::AssetImage>("whitesquare_ft");
+        if (imageCubeAsset == nullptr)
+            return false;
+        lightDefCube->attenuation.image = imageCubeAsset->Asset();
+        m_context.AddAsset<T6::AssetLightDef>(lightDefCube->name, lightDefCube);
+
+        T6::GfxLightDef* lightDef2d = m_memory.Alloc<T6::GfxLightDef>();
+        lightDef2d->name = m_memory.Dup("white_light");
+        lightDef2d->lmapLookupStart = 0;            // always 0
+        lightDef2d->attenuation.samplerState = 115; // always 115
+        auto image2dAsset = m_context.LoadDependency<T6::AssetImage>("whitesquare");
+        if (image2dAsset == nullptr)
+            return false;
+        lightDef2d->attenuation.image = image2dAsset->Asset();
+        m_context.AddAsset<T6::AssetLightDef>(lightDef2d->name, lightDef2d);
+
+        return true;
+    }
+
+    // does not set: type, cosHalfFovOuter, cosHalfFovInner, cosHalfFovExpanded, roundness, defName
+    void setLightCommonValues(ComPrimaryLight* light, BSPLight* bspLight)
+    {
+        light->origin.x = bspLight->pos.x;
+        light->origin.y = bspLight->pos.y;
+        light->origin.z = bspLight->pos.z;
+
+        light->color.x = bspLight->colour.x;
+        light->color.y = bspLight->colour.y;
+        light->color.z = bspLight->colour.z;
+        light->diffuseColor.x = bspLight->colour.x;
+        light->diffuseColor.y = bspLight->colour.y;
+        light->diffuseColor.z = bspLight->colour.z;
+        light->diffuseColor.w = 0.0f;
+
+        light->dir.x = bspLight->direction.x;
+        light->dir.y = bspLight->direction.y;
+        light->dir.z = bspLight->direction.z;
+
+        light->dAttenuation = bspLight->intensity; // not too sure if this is correct or not
+
+        light->radius = bspLight->range;
+
+        light->falloff.x = 0.0f;
+        light->falloff.y = bspLight->range;
+        light->falloff.z = 0.0f;
+        light->falloff.w = 0.0f;
+
+        // allways 0
+        light->angle.x = 0.0f;
+        light->angle.y = 0.0f;
+        light->angle.z = 0.0f;
+        light->angle.w = 0.0f;
+
+        // 1.0f - light cannot rotate
+        // -1.0f - infinitely rotate
+        // between 1 and -1 -  limit that it can rotate each game update
+        light->translationLimit = 1.0f;
+
+        // 0 - light cannot move
+        // 1 <= x > 0 - limit that it can move each game update
+        light->rotationLimit = 0.0f;
+
+        // default values from official map
+        light->cookieControl0.x = 0.0f;
+        light->cookieControl0.y = 0.0f;
+        light->cookieControl0.z = 1.0f;
+        light->cookieControl0.w = 1.0f;
+        light->cookieControl1.x = 0.0f;
+        light->cookieControl1.y = 0.0f;
+        light->cookieControl1.z = 0.0f;
+        light->cookieControl1.w = 0.0f;
+        light->cookieControl2.x = 0.0f;
+        light->cookieControl2.y = 0.0f;
+        light->cookieControl2.z = 0.0f;
+        light->cookieControl2.w = 0.0f;
+
+        // values taken from an mp_overflow light
+        light->aAbB.x = 0.5303301215171814f;
+        light->aAbB.y = 0.7071067690849304f;
+        light->aAbB.z = 0.5303301215171814f;
+        light->aAbB.w = 0.7071067690849304f;
+
+        light->canUseShadowMap = false;
+        light->shadowmapVolume = 0;
+        light->exponent = 0;
+        light->priority = 0;
+        light->cullDist = 10000;
+        light->useCookie = 0;
+        light->mipDistance = 0.0f;
+    }
+
     ComWorld* ComWorldLinker::linkComWorld(BSPData* bsp)
     {
+        BSPLight eeeee;
+        eeeee.type = LIGHT_TYPE_POINT;
+        eeeee.pos = vec3_t{22.35f, (-493.42f), 10.96f};
+        eeeee.direction = vec3_t{0.0f, 0.0f, 0.0f};
+        eeeee.colour = vec3_t{1.0f, 1.0f, 1.0f};
+        eeeee.range = 1000.0f;
+        eeeee.intensity = 1515948.33f;
+        eeeee.innerConeAngle = 0.0f;
+        eeeee.outerConeAngle = 0.0f;
+        bsp->lights.emplace_back(eeeee);
+
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
         comWorld->name = m_memory.Dup(bsp->bspName.c_str());
         comWorld->isInUse = 1;
-        comWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
-        comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(comWorld->primaryLightCount);
 
-        // first (static) light is always empty
+        size_t totalLightCount = bsp->lights.size() + BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
+        comWorld->primaryLightCount = static_cast<unsigned int>(totalLightCount);
+        comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(totalLightCount);
 
-        ComPrimaryLight* sunLight = &comWorld->primaryLights[1];
-        const vec4_t sunLightColor = BSPEditableConstants::SUNLIGHT_COLOR;
-        const vec3_t sunLightDirection = BSPEditableConstants::SUNLIGHT_DIRECTION;
-        sunLight->type = GFX_LIGHT_TYPE_DIR;
-        sunLight->diffuseColor.r = sunLightColor.r;
-        sunLight->diffuseColor.g = sunLightColor.g;
-        sunLight->diffuseColor.b = sunLightColor.b;
-        sunLight->diffuseColor.a = sunLightColor.a;
-        sunLight->dir.x = sunLightDirection.x;
-        sunLight->dir.y = sunLightDirection.y;
-        sunLight->dir.z = sunLightDirection.z;
+        if (!createLightDefs())
+        {
+            con::error("Unable to create lightdef assets.");
+            return nullptr;
+        }
+
+        for (size_t lightIdx = 0; lightIdx < totalLightCount; lightIdx++)
+        {
+            ComPrimaryLight* light = &comWorld->primaryLights[lightIdx];
+
+            if (lightIdx == BSPGameConstants::EMPTY_LIGHT_INDEX)
+                continue; // first (empty) light has no data
+            else if (lightIdx == BSPGameConstants::SUN_LIGHT_INDEX)
+            {
+                const vec4_t sunLightColor = BSPEditableConstants::SUNLIGHT_COLOR;
+                const vec3_t sunLightDirection = BSPEditableConstants::SUNLIGHT_DIRECTION;
+                light->type = GFX_LIGHT_TYPE_DIR;
+                light->diffuseColor.r = sunLightColor.r;
+                light->diffuseColor.g = sunLightColor.g;
+                light->diffuseColor.a = sunLightColor.a;
+                light->dir.x = sunLightDirection.x;
+                light->dir.y = sunLightDirection.y;
+                light->dir.z = sunLightDirection.z;
+            }
+            else
+            {
+                BSPLight* bspLight = &bsp->lights.at(lightIdx - BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT);
+
+                // cosHalfFovOuter, cosHalfFovInner, cosHalfFovExpanded
+                setLightCommonValues(light, bspLight);
+                if (bspLight->type == LIGHT_TYPE_DIRECTIONAL)
+                {
+                    light->type = GFX_LIGHT_TYPE_DIR;
+                    light->defName = "white_light";
+                    light->roundness = 1.0f;
+                    light->cosHalfFovInner = cosf(bspLight->innerConeAngle);
+                    light->cosHalfFovOuter = cosf(bspLight->outerConeAngle);
+                    light->cosHalfFovExpanded = cosf(bspLight->outerConeAngle);
+                }
+                else if (bspLight->type == LIGHT_TYPE_SPOT)
+                {
+                    light->type = GFX_LIGHT_TYPE_SPOT;
+                    light->defName = "white_light";
+                    light->roundness = 1.0f;
+                    light->cosHalfFovInner = cosf(bspLight->innerConeAngle);
+                    light->cosHalfFovOuter = cosf(bspLight->outerConeAngle);
+                    light->cosHalfFovExpanded = cosf(bspLight->outerConeAngle);
+                }
+                else // LIGHT_TYPE_POINT
+                {
+                    light->type = GFX_LIGHT_TYPE_OMNI;
+                    light->defName = "white_light_cube";
+                    light->roundness = 0.0f;
+                    light->cosHalfFovInner = cosf(30 * (M_PI / 180.0));
+                    light->cosHalfFovOuter = cosf(60 * (M_PI / 180.0));
+                    light->cosHalfFovExpanded = cosf(60 * (M_PI / 180.0));
+                }
+            }
+        }
 
         return comWorld;
     }

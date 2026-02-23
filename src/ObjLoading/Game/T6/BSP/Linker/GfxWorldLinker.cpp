@@ -328,10 +328,10 @@ namespace BSP
         gfxWorld->sunLight = m_memory.Alloc<GfxLight>();
     }
 
-    void GfxWorldLinker::loadGfxLights(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // there must be 2 or more lights, first is the static light and second is the sun light
-        gfxWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
+        gfxWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT + static_cast<unsigned int>(bsp->lights.size());
         gfxWorld->sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
 
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
@@ -401,7 +401,7 @@ namespace BSP
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
             entryArray[i].colorsIndex = 0; // always index first colour
-            entryArray[i].primaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
+            entryArray[i].primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
             entryArray[i].visibility = 0;
         }
         gfxWorld->lightGrid.entries = entryArray;
@@ -758,7 +758,7 @@ namespace BSP
 
         loadLightGrid(gfxWorld);
 
-        loadGfxLights(gfxWorld);
+        loadGfxLights(bsp, gfxWorld);
 
         loadModels(gfxWorld);
 
