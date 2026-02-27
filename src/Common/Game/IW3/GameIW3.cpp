@@ -8,18 +8,20 @@ using namespace IW3;
 
 namespace
 {
-    constexpr const char* ASSET_TYPE_NAMES[ASSET_TYPE_COUNT]{
+    constexpr const char* ASSET_TYPE_NAMES[]{
         "xmodelpieces",   "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loadedsound",
         "clipmap_unused", "clipmap",    "comworld",    "gameworldsp", "gameworldmp",      "mapents",      "gfxworld", "lightdef", "uimap",      "font",
         "menulist",       "menu",       "localize",    "weapon",      "snddriverglobals", "fx",           "impactfx", "aitype",   "mptype",     "character",
         "xmodelalias",    "rawfile",    "stringtable",
     };
+    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
-    constexpr const char* SUB_ASSET_TYPE_NAMES[SUB_ASSET_TYPE_COUNT]{
+    constexpr const char* SUB_ASSET_TYPE_NAMES[]{
         "technique",
         "vertexshader",
         "pixelshader",
     };
+    static_assert(std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)> == SUB_ASSET_TYPE_COUNT);
 } // namespace
 
 namespace IW3
