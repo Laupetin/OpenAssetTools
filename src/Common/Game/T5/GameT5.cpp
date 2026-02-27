@@ -21,6 +21,7 @@ namespace
 
     constexpr const char* SUB_ASSET_TYPE_NAMES[]{
         "technique",
+        "vertexdecl",
         "vertexshader",
         "pixelshader",
     };

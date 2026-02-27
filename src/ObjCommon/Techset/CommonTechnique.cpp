@@ -207,4 +207,18 @@ namespace techset
 
         return std::nullopt;
     }
+
+    CommonVertexDeclaration::CommonVertexDeclaration(std::vector<CommonStreamRouting> routing)
+        : m_routing(std::move(routing))
+    {
+    }
+
+    void CommonVertexDeclaration::SortRoutingEntries()
+    {
+        std::ranges::sort(m_routing,
+                          [](const CommonStreamRouting& r1, const CommonStreamRouting& r2)
+                          {
+                              return r1.m_source < r2.m_source;
+                          });
+    }
 } // namespace techset
