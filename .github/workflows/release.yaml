@@ -43,7 +43,7 @@ jobs:
           chmod +x build/bin/Release_x86/{ImageConverter,Unlinker,Linker}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: oat-linux
           path: |
@@ -71,7 +71,7 @@ jobs:
         run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: oat-windows
           path: |
