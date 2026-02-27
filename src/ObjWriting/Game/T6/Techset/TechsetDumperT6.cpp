@@ -73,9 +73,7 @@ namespace
             }
         }
 
-        return techset::CommonVertexDeclaration{
-            .m_routing = std::move(commonRouting),
-        };
+        return techset::CommonVertexDeclaration(std::move(commonRouting));
     }
 
     techset::CommonShaderArg ConvertToCommonArg(const MaterialShaderArgument& arg)

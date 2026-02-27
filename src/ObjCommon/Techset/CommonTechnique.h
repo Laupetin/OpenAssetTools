@@ -234,6 +234,11 @@ namespace techset
     class CommonVertexDeclaration
     {
     public:
+        CommonVertexDeclaration() = default;
+        explicit CommonVertexDeclaration(std::vector<CommonStreamRouting> routing);
+
+        void SortRoutingEntries();
+
         std::vector<CommonStreamRouting> m_routing;
     };
 

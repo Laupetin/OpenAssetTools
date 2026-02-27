@@ -5,6 +5,7 @@
 #include "Image/ImageIwdPostProcessor.h"
 #include "KeyValuePairs/KeyValuePairsCompilerT6.h"
 #include "Techset/TechsetCompilerT6.h"
+#include "Techset/VertexDeclCompilerT6.h"
 
 #include <memory>
 
@@ -22,6 +23,8 @@ namespace
 
         collection.AddAssetCreator(key_value_pairs::CreateCompilerT6(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
         collection.AddAssetCreator(techset::CreateCompilerT6(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT6(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
