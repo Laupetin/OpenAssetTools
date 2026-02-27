@@ -29,7 +29,12 @@ namespace d3d11
     ConstantBufferVariable::ConstantBufferVariable()
         : m_offset(0u),
           m_size(0u),
-          m_flags(0u)
+          m_flags(0u),
+          m_is_used(false),
+          m_variable_class(VariableClass::UNKNOWN),
+          m_element_count(0),
+          m_row_count(0),
+          m_column_count(0)
     {
     }
 } // namespace d3d11
@@ -39,9 +44,6 @@ namespace
     constexpr auto TAG_RDEF = FileUtils::MakeMagic32('R', 'D', 'E', 'F');
     constexpr auto TAG_SHDR = FileUtils::MakeMagic32('S', 'H', 'D', 'R');
 
-    constexpr auto VERSION_5_0 = 0x500;
-    constexpr auto VERSION_5_1 = 0x501;
-    constexpr auto TARGET_VERSION_MASK = 0xFFFF;
     constexpr auto CHUNK_TABLE_OFFSET = 28u;
 
     struct FileRdefHeader
@@ -50,7 +52,9 @@ namespace
         uint32_t constantBufferOffset;
         uint32_t boundResourceCount;
         uint32_t boundResourceOffset;
-        uint32_t target;
+        uint8_t minorVersion;
+        uint8_t majorVersion;
+        uint16_t type;
         uint32_t flags;
         uint32_t creatorOffset;
     };
@@ -172,6 +176,17 @@ namespace
         D3D11_SRV_DIMENSION_BUFFEREX
     };
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_shader_input_flags
+    enum D3D_SHADER_INPUT_FLAGS
+    {
+        D3D_SIF_USERPACKED = 0x1,
+        D3D_SIF_COMPARISON_SAMPLER = 0x2,
+        D3D_SIF_TEXTURE_COMPONENT_0 = 0x4,
+        D3D_SIF_TEXTURE_COMPONENT_1 = 0x8,
+        D3D_SIF_TEXTURE_COMPONENTS = 0xc,
+        D3D_SIF_UNUSED = 0x10,
+    };
+
     struct FileBoundResource
     {
         uint32_t nameOffset;
@@ -181,7 +196,7 @@ namespace
         uint32_t numSamples;
         uint32_t bindPoint;
         uint32_t bindCount;
-        uint32_t uFlags;
+        uint32_t uFlags; // D3D_SHADER_INPUT_FLAGS
     };
 
     struct FileBoundResource_5_1 : FileBoundResource
@@ -218,6 +233,15 @@ namespace
         D3D_CBUFFER_TYPE type;
     };
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_shader_variable_flags
+    enum D3D_SHADER_VARIABLE_FLAGS
+    {
+        D3D_SVF_USERPACKED = 1,
+        D3D_SVF_USED = 2,
+        D3D_SVF_INTERFACE_POINTER = 4,
+        D3D_SVF_INTERFACE_PARAMETER = 8,
+    };
+
     struct FileConstantBufferVariable
     {
         uint32_t nameOffset;
@@ -230,12 +254,45 @@ namespace
 
     struct FileConstantBufferVariable_5_0 : FileConstantBufferVariable
     {
-        // Wine project does not seem to know what this is
-        uint32_t unknown[4];
+        uint32_t resourceBinding;
+        uint32_t resourceCount;
+        uint32_t samplerBinding;
+        uint32_t samplerCount;
     };
 
     static_assert(sizeof(FileConstantBufferVariable) == 24);
     static_assert(sizeof(FileConstantBufferVariable_5_0) == 40);
+
+    enum D3D_SHADER_VARIABLE_CLASS : uint16_t
+    {
+        D3D_SVC_SCALAR = 0,
+        D3D_SVC_VECTOR,
+        D3D_SVC_MATRIX_ROWS,
+        D3D_SVC_MATRIX_COLUMNS,
+        D3D_SVC_OBJECT,
+        D3D_SVC_STRUCT,
+        D3D_SVC_INTERFACE_CLASS,
+        D3D_SVC_INTERFACE_POINTER,
+        D3D10_SVC_SCALAR,
+        D3D10_SVC_VECTOR,
+        D3D10_SVC_MATRIX_ROWS,
+        D3D10_SVC_MATRIX_COLUMNS,
+        D3D10_SVC_OBJECT,
+        D3D10_SVC_STRUCT,
+        D3D11_SVC_INTERFACE_CLASS,
+        D3D11_SVC_INTERFACE_POINTER
+    };
+
+    struct FileRdefType
+    {
+        D3D_SHADER_VARIABLE_CLASS class_;
+        uint16_t baseType;
+        uint16_t rowCount;
+        uint16_t columnCount;
+        uint16_t elementCount;
+        uint16_t fieldCount;
+        uint32_t fieldsOffset;
+    };
 
     enum FileProgramType : uint32_t
     {
@@ -260,6 +317,16 @@ namespace
     };
 
     static_assert(sizeof(FileShaderHeader) == 4);
+
+    constexpr bool IsAtLeastVersion(const uint8_t expectedMajor, const uint8_t expectedMinor, const uint8_t actualMajor, const uint8_t actualMinor)
+    {
+        if (actualMajor < expectedMajor)
+            return false;
+        if (actualMinor < expectedMinor)
+            return false;
+
+        return true;
+    }
 
     uint32_t ReadU32(const uint8_t*& ptr)
     {
@@ -451,6 +518,39 @@ namespace
         return true;
     }
 
+    VariableClass GetVariableClass(const D3D_SHADER_VARIABLE_CLASS variableClass)
+    {
+        switch (variableClass)
+        {
+        case D3D_SVC_SCALAR:
+        case D3D10_SVC_SCALAR:
+            return VariableClass::SCALAR;
+        case D3D_SVC_VECTOR:
+        case D3D10_SVC_VECTOR:
+            return VariableClass::VECTOR;
+        case D3D_SVC_MATRIX_ROWS:
+        case D3D10_SVC_MATRIX_ROWS:
+            return VariableClass::MATRIX_ROWS;
+        case D3D_SVC_MATRIX_COLUMNS:
+        case D3D10_SVC_MATRIX_COLUMNS:
+            return VariableClass::MATRIX_COLUMNS;
+        case D3D_SVC_OBJECT:
+        case D3D10_SVC_OBJECT:
+            return VariableClass::OBJECT;
+        case D3D_SVC_STRUCT:
+        case D3D10_SVC_STRUCT:
+            return VariableClass::STRUCT;
+        case D3D_SVC_INTERFACE_CLASS:
+        case D3D11_SVC_INTERFACE_CLASS:
+            return VariableClass::INTERFACE_CLASS;
+        case D3D_SVC_INTERFACE_POINTER:
+        case D3D11_SVC_INTERFACE_POINTER:
+            return VariableClass::INTERFACE_POINTER;
+        default:
+            return VariableClass::UNKNOWN;
+        }
+    }
+
     bool PopulateConstantBufferVariable(ConstantBufferVariable& constantBufferVariable,
                                         const FileConstantBufferVariable& fileConstantBufferVariable,
                                         const uint8_t* shaderByteCode,
@@ -467,6 +567,17 @@ namespace
         constantBufferVariable.m_offset = fileConstantBufferVariable.startOffset;
         constantBufferVariable.m_size = fileConstantBufferVariable.size;
         constantBufferVariable.m_flags = fileConstantBufferVariable.flags;
+        constantBufferVariable.m_is_used = fileConstantBufferVariable.flags & D3D_SVF_USED;
+
+        if (fileConstantBufferVariable.typeOffset + sizeof(FileRdefType) > chunkSize)
+            return false;
+
+        const auto type = reinterpret_cast<const FileRdefType*>(shaderByteCode + chunkOffset + fileConstantBufferVariable.typeOffset);
+
+        constantBufferVariable.m_variable_class = GetVariableClass(type->class_);
+        constantBufferVariable.m_element_count = static_cast<uint16_t>(type->elementCount);
+        constantBufferVariable.m_column_count = static_cast<uint16_t>(type->columnCount);
+        constantBufferVariable.m_row_count = static_cast<uint16_t>(type->rowCount);
 
         return true;
     }
@@ -500,7 +611,8 @@ namespace
                                 const size_t shaderByteCodeSize,
                                 const size_t chunkOffset,
                                 const size_t chunkSize,
-                                const unsigned targetVersion)
+                                const uint8_t major,
+                                const uint8_t minor)
     {
         const auto nameString = reinterpret_cast<const char*>(shaderByteCode + chunkOffset + fileConstantBuffer.nameOffset);
 
@@ -513,10 +625,10 @@ namespace
         constantBuffer.m_flags = fileConstantBuffer.flags;
         constantBuffer.m_type = GetType(fileConstantBuffer.type);
 
-        if (targetVersion < VERSION_5_0)
+        if (IsAtLeastVersion(5, 0, major, minor))
         {
-            const auto* variables = reinterpret_cast<const FileConstantBufferVariable*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
-            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable) * fileConstantBuffer.variableCount > chunkSize)
+            const auto* variables = reinterpret_cast<const FileConstantBufferVariable_5_0*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
+            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable_5_0) * fileConstantBuffer.variableCount > chunkSize)
                 return false;
 
             for (auto variableIndex = 0u; variableIndex < fileConstantBuffer.variableCount; variableIndex++)
@@ -532,8 +644,8 @@ namespace
         }
         else
         {
-            const auto* variables = reinterpret_cast<const FileConstantBufferVariable_5_0*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
-            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable_5_0) * fileConstantBuffer.variableCount > chunkSize)
+            const auto* variables = reinterpret_cast<const FileConstantBufferVariable*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
+            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable) * fileConstantBuffer.variableCount > chunkSize)
                 return false;
 
             for (auto variableIndex = 0u; variableIndex < fileConstantBuffer.variableCount; variableIndex++)
@@ -562,7 +674,6 @@ namespace
 
         const auto* header = reinterpret_cast<const FileRdefHeader*>(shaderByteCode + chunkOffset);
 
-        const auto targetVersion = header->target & TARGET_VERSION_MASK;
         const auto creatorString = reinterpret_cast<const char*>(shaderByteCode + chunkOffset + header->creatorOffset);
 
         if (!StringFitsInChunk(creatorString, shaderByteCode, shaderByteCodeSize))
@@ -570,23 +681,7 @@ namespace
 
         shaderInfo.m_creator = std::string(creatorString);
 
-        if (targetVersion < VERSION_5_1)
-        {
-            const auto* boundResources = reinterpret_cast<const FileBoundResource*>(shaderByteCode + chunkOffset + header->boundResourceOffset);
-            if (header->boundResourceOffset + sizeof(FileBoundResource) * header->boundResourceCount > chunkSize)
-                return false;
-
-            for (auto boundResourceIndex = 0u; boundResourceIndex < header->boundResourceCount; boundResourceIndex++)
-            {
-                const auto& fileBoundResource = boundResources[boundResourceIndex];
-                BoundResource boundResource;
-
-                PopulateBoundResource(boundResource, fileBoundResource, shaderByteCode, shaderByteCodeSize, chunkOffset);
-
-                shaderInfo.m_bound_resources.emplace_back(std::move(boundResource));
-            }
-        }
-        else
+        if (IsAtLeastVersion(5, 1, header->majorVersion, header->minorVersion))
         {
             const auto* boundResources = reinterpret_cast<const FileBoundResource_5_1*>(shaderByteCode + chunkOffset + header->boundResourceOffset);
             if (header->boundResourceOffset + sizeof(FileBoundResource_5_1) * header->boundResourceCount > chunkSize)
@@ -603,6 +698,22 @@ namespace
                 shaderInfo.m_bound_resources.emplace_back(std::move(boundResource));
             }
         }
+        else
+        {
+            const auto* boundResources = reinterpret_cast<const FileBoundResource*>(shaderByteCode + chunkOffset + header->boundResourceOffset);
+            if (header->boundResourceOffset + sizeof(FileBoundResource) * header->boundResourceCount > chunkSize)
+                return false;
+
+            for (auto boundResourceIndex = 0u; boundResourceIndex < header->boundResourceCount; boundResourceIndex++)
+            {
+                const auto& fileBoundResource = boundResources[boundResourceIndex];
+                BoundResource boundResource;
+
+                PopulateBoundResource(boundResource, fileBoundResource, shaderByteCode, shaderByteCodeSize, chunkOffset);
+
+                shaderInfo.m_bound_resources.emplace_back(std::move(boundResource));
+            }
+        }
 
         const auto* constantBuffers = reinterpret_cast<const FileConstantBuffer*>(shaderByteCode + chunkOffset + header->constantBufferOffset);
         if (header->constantBufferOffset + sizeof(FileConstantBuffer) * header->constantBufferCount > chunkSize)
@@ -613,7 +724,8 @@ namespace
             const auto& fileConstantBuffer = constantBuffers[constantBufferIndex];
             ConstantBuffer constantBuffer;
 
-            if (!PopulateConstantBuffer(constantBuffer, fileConstantBuffer, shaderByteCode, shaderByteCodeSize, chunkOffset, chunkSize, targetVersion))
+            if (!PopulateConstantBuffer(
+                    constantBuffer, fileConstantBuffer, shaderByteCode, shaderByteCodeSize, chunkOffset, chunkSize, header->majorVersion, header->minorVersion))
                 return false;
 
             shaderInfo.m_constant_buffers.emplace_back(std::move(constantBuffer));
@@ -684,5 +796,5 @@ std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const void* shader, co
     if (!PopulateShaderInfoFromBytes(*shaderInfo, static_cast<const uint8_t*>(shader), shaderSize))
         return nullptr;
 
-    return shaderInfo;
+    return std::move(shaderInfo);
 }

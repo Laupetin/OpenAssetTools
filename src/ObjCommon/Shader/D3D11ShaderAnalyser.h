@@ -18,6 +18,19 @@ namespace d3d11
         COMPUTE_SHADER
     };
 
+    enum class VariableClass : std::uint8_t
+    {
+        UNKNOWN,
+        SCALAR,
+        VECTOR,
+        MATRIX_ROWS,
+        MATRIX_COLUMNS,
+        OBJECT,
+        STRUCT,
+        INTERFACE_CLASS,
+        INTERFACE_POINTER
+    };
+
     class ConstantBufferVariable
     {
     public:
@@ -32,6 +45,11 @@ namespace d3d11
         unsigned m_offset;
         unsigned m_size;
         unsigned m_flags;
+        bool m_is_used;
+        VariableClass m_variable_class;
+        std::uint16_t m_element_count;
+        std::uint16_t m_row_count;
+        std::uint16_t m_column_count;
     };
 
     enum class ConstantBufferType : std::uint8_t
