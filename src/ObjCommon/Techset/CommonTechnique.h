@@ -172,10 +172,17 @@ namespace techset
         std::unordered_map<std::string, CommonStreamDestination> m_destination_abbreviation_lookup;
     };
 
+    struct CommonShaderArgCodeConstValue
+    {
+        CommonCodeConstSource m_index;
+        unsigned m_first_row;
+        unsigned m_row_count;
+    };
+
     union CommonShaderArgValue
     {
         std::array<float, 4> literal_value;
-        CommonCodeConstSource code_const_source;
+        CommonShaderArgCodeConstValue code_const_source;
         CommonCodeSamplerSource code_sampler_source;
         unsigned name_hash;
     };
@@ -186,12 +193,23 @@ namespace techset
         unsigned m_destination_register;
     };
 
+    // In case of a constant: Offset in constant buffer
+    // In case of a sampler: Index of sampler + index of texture
+    union CommonShaderArgLocationDx11
+    {
+        unsigned constant_buffer_offset;
+
+        struct
+        {
+            unsigned texture_index;
+            unsigned sampler_index;
+        };
+    };
+
     class CommonShaderArgDestinationDx11
     {
     public:
-        // In case of a constant: Offset in constant buffer
-        // In case of a sampler: Index of sampler
-        unsigned m_location;
+        CommonShaderArgLocationDx11 m_location;
         unsigned m_size;
         unsigned m_buffer;
     };
@@ -202,31 +220,26 @@ namespace techset
         CommonShaderArgDestinationDx11 dx11;
     };
 
-    enum class CommonShaderArgType : std::uint8_t
-    {
-        // Value is set to a float4 value in the pass
-        LITERAL_CONST,
-        // Value is set to a float4 value in the material
-        MATERIAL_CONST,
-        // Value is set to a float4 value calculated in code
-        CODE_CONST,
-        // Value is set to a sampler from the material
-        MATERIAL_SAMPLER,
-        // Value is set to a sampler generated in code
-        CODE_SAMPLER
-    };
-
     class CommonShaderArg
     {
     public:
-        CommonShaderArgType m_type;
+        CommonShaderArg() = default;
+        CommonShaderArg(CommonShaderArgumentType type, const CommonShaderArgDestination& destination, const CommonShaderArgValue& value);
+
+        [[nodiscard]] CommonCodeSourceUpdateFrequency GetFrequency(const CommonCodeSourceInfos& infos) const;
+
+        CommonShaderArgumentType m_type;
         CommonShaderArgDestination m_destination;
         CommonShaderArgValue m_value;
+        std::optional<CommonCodeSourceUpdateFrequency> m_bin;
     };
 
     class CommonStreamRouting
     {
     public:
+        CommonStreamRouting() = default;
+        CommonStreamRouting(CommonStreamSource source, CommonStreamDestination destination);
+
         CommonStreamSource m_source;
         CommonStreamDestination m_destination;
     };
@@ -242,36 +255,61 @@ namespace techset
         std::vector<CommonStreamRouting> m_routing;
     };
 
+    class CommonTechniqueShaderBin
+    {
+    public:
+        const void* m_shader_bin;
+        size_t m_shader_bin_size;
+    };
+
     class CommonTechniqueShader
     {
     public:
+        CommonTechniqueShader();
+        CommonTechniqueShader(CommonTechniqueShaderType type, std::string name);
+
+        CommonTechniqueShaderType m_type;
         std::string m_name;
-        const void* m_shader_bin;
-        size_t m_shader_bin_size;
+        std::optional<CommonTechniqueShaderBin> m_bin;
+    };
+
+    class CommonPass
+    {
+    public:
+        using FrequencyCounts_t = std::array<size_t, std::to_underlying(CommonCodeSourceUpdateFrequency::COUNT)>;
+
+        CommonPass() = default;
+        CommonPass(uint32_t samplerFlags,
+                   std::string stateMap,
+                   CommonTechniqueShader vertexShader,
+                   CommonTechniqueShader pixelShader,
+                   CommonVertexDeclaration vertexDeclaration);
+
+        [[nodiscard]] FrequencyCounts_t GetFrequencyCounts(const CommonCodeSourceInfos& infos) const;
+
+        uint32_t m_sampler_flags;
+        std::string m_state_map;
+        CommonTechniqueShader m_vertex_shader;
+        CommonTechniqueShader m_pixel_shader;
+        CommonVertexDeclaration m_vertex_declaration;
         std::vector<CommonShaderArg> m_args;
+    };
+
+    class CommonTechnique
+    {
+    public:
+        CommonTechnique() = default;
+        explicit CommonTechnique(std::string name);
+        CommonTechnique(std::string name, uint64_t flags);
+
+        std::string m_name;
+        uint64_t m_flags;
+        std::vector<CommonPass> m_passes;
     };
 
     enum class DxVersion : std::uint8_t
     {
         DX9,
         DX11
-    };
-
-    class CommonPass
-    {
-    public:
-        uint32_t m_sampler_flags;
-        DxVersion m_dx_version;
-        CommonTechniqueShader m_vertex_shader;
-        CommonTechniqueShader m_pixel_shader;
-        CommonVertexDeclaration m_vertex_declaration;
-    };
-
-    class CommonTechnique
-    {
-    public:
-        std::string m_name;
-        uint64_t m_flags;
-        std::vector<CommonPass> m_passes;
     };
 } // namespace techset

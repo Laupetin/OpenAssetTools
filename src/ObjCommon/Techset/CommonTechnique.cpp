@@ -208,6 +208,48 @@ namespace techset
         return std::nullopt;
     }
 
+    CommonShaderArg::CommonShaderArg(const CommonShaderArgumentType type, const CommonShaderArgDestination& destination, const CommonShaderArgValue& value)
+        : m_type(type),
+          m_destination(destination),
+          m_value(value)
+    {
+    }
+
+    CommonCodeSourceUpdateFrequency CommonShaderArg::GetFrequency(const CommonCodeSourceInfos& infos) const
+    {
+        switch (m_type.m_value_type)
+        {
+        case CommonShaderValueType::CODE_CONST:
+        {
+            const auto info = infos.GetInfoForCodeConstSource(m_value.code_const_source.m_index);
+            assert(info);
+            return info->updateFrequency;
+        }
+
+        case CommonShaderValueType::CODE_SAMPLER:
+        {
+            const auto info = infos.GetInfoForCodeSamplerSource(m_value.code_sampler_source);
+            assert(info);
+            return info->updateFrequency;
+        }
+
+        case CommonShaderValueType::MATERIAL_CONST:
+        case CommonShaderValueType::LITERAL_CONST:
+        case CommonShaderValueType::MATERIAL_SAMPLER:
+            return CommonCodeSourceUpdateFrequency::RARELY;
+
+        default:
+            assert(false);
+            return CommonCodeSourceUpdateFrequency::RARELY;
+        }
+    }
+
+    CommonStreamRouting::CommonStreamRouting(const CommonStreamSource source, const CommonStreamDestination destination)
+        : m_source(source),
+          m_destination(destination)
+    {
+    }
+
     CommonVertexDeclaration::CommonVertexDeclaration(std::vector<CommonStreamRouting> routing)
         : m_routing(std::move(routing))
     {
@@ -220,5 +262,53 @@ namespace techset
                           {
                               return r1.m_source < r2.m_source;
                           });
+    }
+
+    CommonTechniqueShader::CommonTechniqueShader()
+        : m_type(CommonTechniqueShaderType::VERTEX)
+    {
+    }
+
+    CommonTechniqueShader::CommonTechniqueShader(const CommonTechniqueShaderType type, std::string name)
+        : m_type(type),
+          m_name(std::move(name))
+    {
+    }
+
+    CommonPass::CommonPass(const uint32_t samplerFlags,
+                           std::string stateMap,
+                           CommonTechniqueShader vertexShader,
+                           CommonTechniqueShader pixelShader,
+                           CommonVertexDeclaration vertexDeclaration)
+        : m_sampler_flags(samplerFlags),
+          m_state_map(std::move(stateMap)),
+          m_vertex_shader(std::move(vertexShader)),
+          m_pixel_shader(std::move(pixelShader)),
+          m_vertex_declaration(std::move(vertexDeclaration))
+    {
+    }
+
+    CommonPass::FrequencyCounts_t CommonPass::GetFrequencyCounts(const CommonCodeSourceInfos& infos) const
+    {
+        FrequencyCounts_t result;
+        for (auto& count : result)
+            count = 0;
+
+        for (auto& arg : m_args)
+            result[std::to_underlying(arg.GetFrequency(infos))]++;
+
+        return result;
+    }
+
+    CommonTechnique::CommonTechnique(std::string name)
+        : m_name(std::move(name)),
+          m_flags(0)
+    {
+    }
+
+    CommonTechnique::CommonTechnique(std::string name, const uint64_t flags)
+        : m_name(std::move(name)),
+          m_flags(flags)
+    {
     }
 } // namespace techset
