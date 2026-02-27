@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Asset/IZoneAssetCreationState.h"
-#include "StateMap/StateMapDefinition.h"
-#include "Utils/ClassUtils.h"
+#include "Techset/StateMap/StateMapDefinition.h"
 
 #include <memory>
 #include <string>
@@ -13,10 +12,10 @@ namespace techset
     class TechniqueStateMapCache final : public IZoneAssetCreationState
     {
     public:
-        _NODISCARD const state_map::StateMapDefinition* GetCachedStateMap(const std::string& name) const;
+        [[nodiscard]] const state_map::StateMapDefinition* GetCachedStateMap(const std::string& name) const;
         void AddStateMapToCache(std::unique_ptr<state_map::StateMapDefinition> stateMap);
 
-        _NODISCARD const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const;
+        [[nodiscard]] const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const;
         void SetTechniqueUsesStateMap(std::string techniqueName, const state_map::StateMapDefinition* stateMap);
 
     private:

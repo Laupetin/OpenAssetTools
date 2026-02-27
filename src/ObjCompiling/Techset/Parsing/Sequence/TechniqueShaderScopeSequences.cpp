@@ -1,6 +1,7 @@
 #include "TechniqueShaderScopeSequences.h"
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Techset/CommonShaderArgCreator.h"
 
 #include <cassert>
 
@@ -10,21 +11,34 @@ namespace techset
 {
     class SequenceEndShader final : public TechniqueParser::sequence_t
     {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+
     public:
         SequenceEndShader()
         {
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('}'),
+                create.Char('}').Capture(CAPTURE_FIRST_TOKEN),
             });
         }
 
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            assert(state->m_in_shader == true);
-            state->m_in_shader = false;
+            assert(state->m_current_pass);
+            assert(state->m_current_shader);
+
+            if (state->m_current_shader_type == CommonTechniqueShaderType::VERTEX)
+                state->m_current_pass->m_vertex_shader = std::move(*state->m_current_shader);
+            else
+                state->m_current_pass->m_pixel_shader = std::move(*state->m_current_shader);
+
+            state->m_current_shader = std::nullopt;
+
+            auto leaveShaderResult = state->m_shader_arg_creator.LeaveShader();
+            if (!leaveShaderResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), leaveShaderResult.error());
         }
     };
 
@@ -134,40 +148,126 @@ namespace techset
             });
         }
 
-        static void ProcessCodeArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg, const bool isSampler)
+    protected:
+        void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            std::vector<std::string> accessors;
-            while (result.HasNextCapture(CAPTURE_CODE_ACCESSOR))
-                accessors.emplace_back(result.NextCapture(CAPTURE_CODE_ACCESSOR).IdentifierValue());
+            assert(state->m_current_shader);
 
-            ShaderArgumentCodeSource source;
-            if (result.HasNextCapture(CAPTURE_CODE_INDEX))
+            const auto& shaderArgumentNameToken = result.NextCapture(CAPTURE_SHADER_ARGUMENT);
+
+            CommonShaderArgCreatorDestination destination;
+            if (result.HasNextCapture(CAPTURE_SHADER_INDEX))
             {
-                const auto& codeIndexToken = result.NextCapture(CAPTURE_CODE_INDEX);
-                if (codeIndexToken.IntegerValue() < 0)
-                    throw ParsingException(codeIndexToken.GetPos(), "Index cannot be negative");
-                source = ShaderArgumentCodeSource(std::move(accessors), static_cast<size_t>(codeIndexToken.IntegerValue()));
+                const auto& shaderArgumentIndexToken = result.NextCapture(CAPTURE_SHADER_INDEX);
+                if (shaderArgumentIndexToken.IntegerValue() < 0)
+                    throw ParsingException(shaderArgumentIndexToken.GetPos(), "Index cannot be negative");
+                const auto index = static_cast<unsigned>(shaderArgumentIndexToken.IntegerValue());
+                destination = CommonShaderArgCreatorDestination(shaderArgumentNameToken.IdentifierValue(), index);
             }
             else
-                source = ShaderArgumentCodeSource(std::move(accessors));
+                destination = CommonShaderArgCreatorDestination(shaderArgumentNameToken.IdentifierValue());
 
-            std::string errorMessage;
-            if (!isSampler)
+            const auto typeTag = result.NextTag();
+            assert(typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER || typeTag == TAG_LITERAL || typeTag == TAG_MATERIAL);
+
+            if (typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER)
             {
-                if (!state->m_acceptor->AcceptShaderConstantArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
-                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+                ProcessCodeArgument(state, result, destination, typeTag == TAG_SAMPLER);
+            }
+            else if (typeTag == TAG_LITERAL)
+            {
+                ProcessLiteralArgument(state, result, destination);
             }
             else
             {
-                if (!state->m_acceptor->AcceptShaderSamplerArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
-                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+                ProcessMaterialArgument(state, result, destination);
             }
         }
 
-        static void ProcessLiteralArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg)
+    private:
+        static void ProcessCodeArgument(const TechniqueParserState* state,
+                                        SequenceResult<SimpleParserValue>& result,
+                                        const CommonShaderArgCreatorDestination& destination,
+                                        const bool isSampler)
         {
-            float value[4];
-            for (float& i : value)
+            const auto accessor = GetAccessorValue(result);
+
+            union
+            {
+                CommonCodeConstSource constSource;
+                CommonCodeSamplerSource samplerSource;
+            };
+
+            unsigned sourceIndex = 0u;
+
+            if (isSampler)
+            {
+                const auto maybeSamplerSource = state->m_code_source_infos.GetCodeSamplerSourceForAccessor(accessor);
+                if (!maybeSamplerSource.has_value())
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Unknown code sampler");
+
+                samplerSource = *maybeSamplerSource;
+            }
+            else
+            {
+                const auto maybeConstSource = state->m_code_source_infos.GetCodeConstSourceForAccessor(accessor);
+                if (!maybeConstSource.has_value())
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Unknown code constant");
+
+                constSource = *maybeConstSource;
+            }
+
+            if (result.HasNextCapture(CAPTURE_CODE_INDEX))
+            {
+                if (isSampler)
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Code sampler is not an array");
+
+                const auto& codeIndexToken = result.NextCapture(CAPTURE_CODE_INDEX);
+                const auto indexIntValue = codeIndexToken.IntegerValue();
+                if (indexIntValue < 0)
+                    throw ParsingException(codeIndexToken.GetPos(), "Index cannot be negative");
+
+                sourceIndex = static_cast<unsigned>(indexIntValue);
+
+                size_t codeArraySize = state->m_code_source_infos.GetInfoForCodeConstSource(constSource)->arrayCount;
+
+                if (codeArraySize == 0)
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Code constant is not an array");
+
+                if (codeArraySize <= sourceIndex)
+                {
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(),
+                                           std::format("Array overflow: Code array has size {}", codeArraySize));
+                }
+            }
+
+            result::Expected<NoResult, std::string> shaderCreatorResult(NoResult{});
+            if (isSampler)
+                shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderSamplerArgument(destination, samplerSource);
+            else
+                shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderConstantArgument(destination, constSource, sourceIndex);
+
+            if (!shaderCreatorResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(shaderCreatorResult.error()));
+        }
+
+        static std::string GetAccessorValue(SequenceResult<SimpleParserValue>& result)
+        {
+            std::ostringstream accessorStream;
+
+            accessorStream << result.NextCapture(CAPTURE_CODE_ACCESSOR).IdentifierValue();
+            while (result.HasNextCapture(CAPTURE_CODE_ACCESSOR))
+                accessorStream << '.' << result.NextCapture(CAPTURE_CODE_ACCESSOR).IdentifierValue();
+
+            return accessorStream.str();
+        }
+
+        static void ProcessLiteralArgument(const TechniqueParserState* state,
+                                           SequenceResult<SimpleParserValue>& result,
+                                           const CommonShaderArgCreatorDestination& destination)
+        {
+            std::array<float, 4> argValue;
+            for (float& i : argValue)
             {
                 const auto& literalValueToken = result.NextCapture(CAPTURE_LITERAL_VALUE);
 
@@ -177,56 +277,30 @@ namespace techset
                     i = static_cast<float>(literalValueToken.IntegerValue());
             }
 
-            const ShaderArgumentLiteralSource source(value);
-            std::string errorMessage;
-            if (!state->m_acceptor->AcceptShaderLiteralArgument(state->m_current_shader, std::move(arg), source, errorMessage))
-                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+            auto shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderLiteralArgument(destination, argValue);
+
+            if (!shaderCreatorResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(shaderCreatorResult.error()));
         }
 
-        static void ProcessMaterialArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg)
+        static void ProcessMaterialArgument(const TechniqueParserState* state,
+                                            SequenceResult<SimpleParserValue>& result,
+                                            const CommonShaderArgCreatorDestination& destination)
         {
-            std::string errorMessage;
+            result::Expected<NoResult, std::string> shaderCreatorResult(NoResult{});
             if (result.HasNextCapture(CAPTURE_MATERIAL_HASH))
             {
-                ShaderArgumentMaterialSource source(static_cast<size_t>(result.NextCapture(CAPTURE_MATERIAL_HASH).IntegerValue()));
-                if (!state->m_acceptor->AcceptShaderMaterialArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
-                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+                shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderMaterialArgument(
+                    destination, static_cast<unsigned>(result.NextCapture(CAPTURE_MATERIAL_HASH).IntegerValue()));
             }
             else
             {
-                ShaderArgumentMaterialSource source(result.NextCapture(CAPTURE_MATERIAL_NAME).IdentifierValue());
-                if (!state->m_acceptor->AcceptShaderMaterialArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
-                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+                const auto stringValue = result.NextCapture(CAPTURE_MATERIAL_NAME).IdentifierValue();
+                shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderMaterialArgument(destination, stringValue);
             }
-        }
 
-    protected:
-        void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
-        {
-            assert(state->m_in_shader == true);
-
-            const auto& shaderArgumentNameToken = result.NextCapture(CAPTURE_SHADER_ARGUMENT);
-
-            ShaderArgument arg;
-            if (result.HasNextCapture(CAPTURE_SHADER_INDEX))
-            {
-                const auto& shaderArgumentIndexToken = result.NextCapture(CAPTURE_SHADER_INDEX);
-                if (shaderArgumentIndexToken.IntegerValue() < 0)
-                    throw ParsingException(shaderArgumentIndexToken.GetPos(), "Index cannot be negative");
-                const auto index = static_cast<unsigned>(shaderArgumentIndexToken.IntegerValue());
-                arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue(), index);
-            }
-            else
-                arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue());
-
-            const auto typeTag = result.NextTag();
-            assert(typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER || typeTag == TAG_LITERAL || typeTag == TAG_MATERIAL);
-            if (typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER)
-                ProcessCodeArgument(state, result, std::move(arg), typeTag == TAG_SAMPLER);
-            else if (typeTag == TAG_LITERAL)
-                ProcessLiteralArgument(state, result, std::move(arg));
-            else
-                ProcessMaterialArgument(state, result, std::move(arg));
+            if (!shaderCreatorResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(shaderCreatorResult.error()));
         }
     };
 } // namespace techset

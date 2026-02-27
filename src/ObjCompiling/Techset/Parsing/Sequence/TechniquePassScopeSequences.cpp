@@ -26,20 +26,22 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            assert(state->m_in_pass == true);
+            assert(state->m_current_pass);
+            assert(state->m_technique);
 
-            std::string errorMessage;
-            if (!state->m_acceptor->AcceptEndPass(errorMessage))
-                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), errorMessage);
+            auto finalizeResult = state->m_shader_arg_creator.FinalizePass(*state->m_technique, *state->m_current_pass);
+            if (!finalizeResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), finalizeResult.error());
 
-            state->m_in_pass = false;
+            state->m_current_pass->m_vertex_declaration.SortRoutingEntries();
+            state->m_technique->m_passes.emplace_back(std::move(*state->m_current_pass));
+            state->m_current_pass = std::nullopt;
         }
     };
 
     class SequenceStateMap final : public TechniqueParser::sequence_t
     {
-        static constexpr auto CAPTURE_START = 1;
-        static constexpr auto CAPTURE_STATE_MAP_NAME = 2;
+        static constexpr auto CAPTURE_STATE_MAP_NAME = 1;
 
     public:
         SequenceStateMap()
@@ -47,7 +49,7 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Keyword("stateMap").Capture(CAPTURE_START),
+                create.Keyword("stateMap"),
                 create.String().Capture(CAPTURE_STATE_MAP_NAME),
                 create.Char(';'),
             });
@@ -56,13 +58,9 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const auto& firstToken = result.NextCapture(CAPTURE_START);
+            assert(state->m_current_pass);
 
-            std::string errorMessage;
-            const auto acceptorResult = state->m_acceptor->AcceptStateMap(result.NextCapture(CAPTURE_STATE_MAP_NAME).StringValue(), errorMessage);
-
-            if (!acceptorResult)
-                throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
+            state->m_current_pass->m_state_map = result.NextCapture(CAPTURE_STATE_MAP_NAME).StringValue();
         }
     };
 
@@ -71,7 +69,7 @@ namespace techset
         static constexpr auto TAG_VERTEX_SHADER = 1;
         static constexpr auto TAG_PIXEL_SHADER = 2;
 
-        static constexpr auto CAPTURE_START = 1;
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_VERSION = 2;
         static constexpr auto CAPTURE_VERSION_MAJOR = 3;
         static constexpr auto CAPTURE_VERSION_MINOR = 4;
@@ -88,7 +86,7 @@ namespace techset
                         create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
                         create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
                     })
-                    .Capture(CAPTURE_START),
+                    .Capture(CAPTURE_FIRST_TOKEN),
                 create.Or({
                     create.And({
                         create.Integer().Capture(CAPTURE_VERSION_MAJOR),
@@ -106,31 +104,23 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const auto& firstToken = result.NextCapture(CAPTURE_START);
-
             // Don't care about shader version since it's stated in the shader bin anyway
 
             const auto& shaderNameToken = result.NextCapture(CAPTURE_SHADER_NAME);
 
-            bool acceptorResult;
-            std::string errorMessage;
             const auto shaderTag = result.NextTag();
             assert(shaderTag == TAG_VERTEX_SHADER || shaderTag == TAG_PIXEL_SHADER);
+
             if (shaderTag == TAG_VERTEX_SHADER)
-            {
-                acceptorResult = state->m_acceptor->AcceptVertexShader(shaderNameToken.StringValue(), errorMessage);
-                state->m_current_shader = ShaderSelector::VERTEX_SHADER;
-            }
+                state->m_current_shader_type = CommonTechniqueShaderType::VERTEX;
             else
-            {
-                acceptorResult = state->m_acceptor->AcceptPixelShader(shaderNameToken.StringValue(), errorMessage);
-                state->m_current_shader = ShaderSelector::PIXEL_SHADER;
-            }
+                state->m_current_shader_type = CommonTechniqueShaderType::PIXEL;
 
-            state->m_in_shader = true;
+            state->m_current_shader = CommonTechniqueShader(state->m_current_shader_type, shaderNameToken.StringValue());
 
-            if (!acceptorResult)
-                throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
+            auto enterResult = state->m_shader_arg_creator.EnterShader(state->m_current_shader->m_type, state->m_current_shader->m_name);
+            if (!enterResult.has_value())
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), enterResult.error());
         }
     };
 
@@ -191,13 +181,23 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
-            const std::string destinationString = CreateRoutingString(result, CAPTURE_STREAM_DESTINATION_NAME, CAPTURE_STREAM_DESTINATION_INDEX);
-            const std::string sourceString = CreateRoutingString(result, CAPTURE_STREAM_SOURCE_NAME, CAPTURE_STREAM_SOURCE_INDEX);
+            assert(state->m_current_pass);
 
-            std::string errorMessage;
-            if (!state->m_acceptor->AcceptVertexStreamRouting(destinationString, sourceString, errorMessage))
-                throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
+            const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
+
+            const std::string destinationString = CreateRoutingString(result, CAPTURE_STREAM_DESTINATION_NAME, CAPTURE_STREAM_DESTINATION_INDEX);
+            const auto maybeDestination = state->m_routing_infos.GetDestinationByName(destinationString);
+
+            if (!maybeDestination.has_value())
+                throw ParsingException(firstToken.GetPos(), "Unknown routing destination");
+
+            const std::string sourceString = CreateRoutingString(result, CAPTURE_STREAM_SOURCE_NAME, CAPTURE_STREAM_SOURCE_INDEX);
+            const auto maybeSource = state->m_routing_infos.GetSourceByName(sourceString);
+
+            if (!maybeSource.has_value())
+                throw ParsingException(firstToken.GetPos(), "Unknown routing source");
+
+            state->m_current_pass->m_vertex_declaration.m_routing.emplace_back(*maybeSource, *maybeDestination);
         }
     };
 } // namespace techset
