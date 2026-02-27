@@ -277,6 +277,11 @@ namespace T5
     };
     static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
+    static inline techset::CommonStreamRoutingInfos commonRoutingInfos(streamRoutingSources,
+                                                                       std::extent_v<decltype(streamRoutingSources)>,
+                                                                       streamRoutingDestinations,
+                                                                       std::extent_v<decltype(streamRoutingDestinations)>);
+
     static techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
         {
          .value = CONST_SRC_CODE_LIGHT_POSITION,
@@ -1733,6 +1738,28 @@ namespace T5
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          },
     };
+
+    // See MaterialShaderArgumentType
+    static inline techset::CommonShaderArgumentType commonArgumentTypes[]{
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_SAMPLER},
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER    },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
+    };
+    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MLT_ARG_COUNT);
+
+    static inline techset::CommonCodeSourceInfos commonCodeSourceInfos(commonCodeConstSources,
+                                                                       std::extent_v<decltype(commonCodeConstSources)>,
+                                                                       commonCodeSamplerSources,
+                                                                       std::extent_v<decltype(commonCodeSamplerSources)>,
+                                                                       nullptr,
+                                                                       0,
+                                                                       commonArgumentTypes,
+                                                                       std::extent_v<decltype(commonArgumentTypes)>);
 
     inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",    ""   },
