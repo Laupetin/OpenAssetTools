@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace techset
@@ -27,12 +30,46 @@ namespace techset
         const char* abbreviation;
     };
 
+    enum class CommonTechniqueShaderType : std::uint8_t
+    {
+        VERTEX,
+        PIXEL
+    };
+
+    enum class CommonShaderValueType : std::uint8_t
+    {
+        // Value is set to a float4 value in the pass
+        LITERAL_CONST,
+        // Value is set to a float4 value in the material
+        MATERIAL_CONST,
+        // Value is set to a float4 value calculated in code
+        CODE_CONST,
+        // Value is set to a sampler from the material
+        MATERIAL_SAMPLER,
+        // Value is set to a sampler generated in code
+        CODE_SAMPLER
+    };
+
+    constexpr bool IsConstValueType(const CommonShaderValueType valueType)
+    {
+        return valueType == CommonShaderValueType::LITERAL_CONST || valueType == CommonShaderValueType::MATERIAL_CONST
+               || valueType == CommonShaderValueType::CODE_CONST;
+    }
+
+    constexpr bool IsSamplerValueType(const CommonShaderValueType valueType)
+    {
+        return valueType == CommonShaderValueType::MATERIAL_SAMPLER || valueType == CommonShaderValueType::CODE_SAMPLER;
+    }
+
     enum class CommonCodeSourceUpdateFrequency : std::uint8_t
     {
         PER_PRIM,
         PER_OBJECT,
         RARELY,
         CUSTOM,
+        IGNORE,
+
+        COUNT
     };
 
     struct CommonCodeConstSourceInfo
@@ -41,6 +78,8 @@ namespace techset
         const char* accessor;
         std::uint8_t arrayCount;
         CommonCodeSourceUpdateFrequency updateFrequency;
+        std::optional<unsigned> techFlags;
+        std::optional<CommonCodeConstSource> transposedMatrix;
     };
 
     struct CommonCodeSamplerSourceInfo
@@ -48,6 +87,24 @@ namespace techset
         CommonCodeSamplerSource value;
         const char* accessor;
         CommonCodeSourceUpdateFrequency updateFrequency;
+        std::optional<unsigned> techFlags;
+        std::optional<unsigned> customSamplerIndex;
+    };
+
+    struct CommonShaderArgumentType
+    {
+        friend bool operator==(const CommonShaderArgumentType& lhs, const CommonShaderArgumentType& rhs)
+        {
+            return lhs.m_shader_type == rhs.m_shader_type && lhs.m_value_type == rhs.m_value_type;
+        }
+
+        friend bool operator!=(const CommonShaderArgumentType& lhs, const CommonShaderArgumentType& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        CommonTechniqueShaderType m_shader_type;
+        CommonShaderValueType m_value_type;
     };
 
     class CommonCodeSourceInfos
@@ -56,14 +113,36 @@ namespace techset
         CommonCodeSourceInfos(const CommonCodeConstSourceInfo* codeConstSourceInfos,
                               size_t codeConstCount,
                               const CommonCodeSamplerSourceInfo* codeSamplerSourceInfos,
-                              size_t codeSamplerCount);
+                              size_t codeSamplerCount,
+                              const char** ignoreArgAccessors,
+                              size_t ignoredArgAccessorCount,
+                              const CommonShaderArgumentType* argumentTypes,
+                              size_t argumentTypeCount);
 
         [[nodiscard]] std::optional<CommonCodeConstSourceInfo> GetInfoForCodeConstSource(CommonCodeConstSource codeConstSource) const;
         [[nodiscard]] std::optional<CommonCodeSamplerSourceInfo> GetInfoForCodeSamplerSource(CommonCodeSamplerSource codeSamplerSource) const;
 
+        /**
+         * \brief Some games like T6 do not create args for certain variables. This checks whether an accessor identifies one of these variables.
+         * \param accessor The accessor of the variable
+         * \return \c true if the accessor should be ignored
+         */
+        [[nodiscard]] bool IsArgAccessorIgnored(const std::string& accessor) const;
+
+        [[nodiscard]] std::optional<CommonCodeConstSource> GetCodeConstSourceForAccessor(const std::string& accessor) const;
+        [[nodiscard]] std::optional<CommonCodeSamplerSource> GetCodeSamplerSourceForAccessor(const std::string& accessor) const;
+
+        [[nodiscard]] std::optional<size_t> GetArgumentTypeNumericValue(const CommonShaderArgumentType& argumentType) const;
+
     private:
         std::vector<CommonCodeConstSourceInfo> m_code_const_source_infos;
         std::vector<CommonCodeSamplerSourceInfo> m_code_sampler_source_infos;
+        std::unordered_set<std::string> m_ignored_arg_accessors;
+
+        std::unordered_map<std::string, CommonCodeConstSource> m_code_const_lookup;
+        std::unordered_map<std::string, CommonCodeSamplerSource> m_code_sampler_lookup;
+
+        std::vector<CommonShaderArgumentType> m_argument_types;
     };
 
     class CommonStreamRoutingInfos
@@ -79,10 +158,18 @@ namespace techset
         [[nodiscard]] bool IsSourceOptional(CommonStreamSource source) const;
         [[nodiscard]] const char* GetDestinationName(CommonStreamDestination destination) const;
         [[nodiscard]] const char* GetDestinationAbbreviation(CommonStreamDestination destination) const;
+        [[nodiscard]] std::optional<CommonStreamSource> GetSourceByName(const std::string& name) const;
+        [[nodiscard]] std::optional<CommonStreamSource> GetSourceByAbbreviation(const std::string& abbreviation) const;
+        [[nodiscard]] std::optional<CommonStreamDestination> GetDestinationByName(const std::string& name) const;
+        [[nodiscard]] std::optional<CommonStreamDestination> GetDestinationByAbbreviation(const std::string& abbreviation) const;
 
     private:
         std::vector<CommonStreamRoutingSourceInfo> m_sources;
         std::vector<CommonStreamRoutingDestinationInfo> m_destinations;
+        std::unordered_map<std::string, CommonStreamSource> m_source_name_lookup;
+        std::unordered_map<std::string, CommonStreamDestination> m_destination_name_lookup;
+        std::unordered_map<std::string, CommonStreamSource> m_source_abbreviation_lookup;
+        std::unordered_map<std::string, CommonStreamDestination> m_destination_abbreviation_lookup;
     };
 
     union CommonShaderArgValue

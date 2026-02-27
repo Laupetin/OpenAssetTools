@@ -270,13 +270,6 @@ namespace
 
     void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
     {
-        static techset::CommonCodeSourceInfos codeSourceInfos(commonCodeConstSources,
-                                                              std::extent_v<decltype(commonCodeConstSources)>,
-                                                              commonCodeSamplerSources,
-                                                              std::extent_v<decltype(commonCodeSamplerSources)>);
-        static techset::CommonStreamRoutingInfos routingInfos(
-            streamRoutingSources, std::extent_v<decltype(streamRoutingSources)>, streamRoutingDestinations, std::extent_v<decltype(streamRoutingDestinations)>);
-
         auto* techniqueState = context.GetZoneAssetDumperState<techset::TechniqueDumpingZoneState>();
         const auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
         for (const auto* technique : techset.techniques)
@@ -285,7 +278,7 @@ namespace
             {
                 const auto commonTechnique = ConvertToCommonTechnique(*technique);
 
-                techset::DumpCommonTechnique(context, commonTechnique, codeSourceInfos, routingInfos, *materialConstantState);
+                techset::DumpCommonTechnique(context, commonTechnique, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState);
             }
         }
     }
