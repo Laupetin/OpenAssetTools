@@ -8,7 +8,7 @@ using namespace T6;
 
 namespace
 {
-    constexpr const char* ASSET_TYPE_NAMES[ASSET_TYPE_COUNT]{
+    constexpr const char* ASSET_TYPE_NAMES[]{
         "xmodelpieces",
         "physpreset",
         "physconstraints",
@@ -70,12 +70,14 @@ namespace
         "footstepfxtable",
         "zbarrier",
     };
+    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
-    constexpr const char* SUB_ASSET_TYPE_NAMES[SUB_ASSET_TYPE_COUNT]{
+    constexpr const char* SUB_ASSET_TYPE_NAMES[]{
         "technique",
         "vertexshader",
         "pixelshader",
     };
+    static_assert(std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)> == SUB_ASSET_TYPE_COUNT);
 } // namespace
 
 namespace T6
