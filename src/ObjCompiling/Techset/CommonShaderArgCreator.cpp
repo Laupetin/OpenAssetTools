@@ -626,6 +626,9 @@ namespace
                     return std::move(result);
             }
 
+            if (constInfo->techFlags)
+                m_tech_flags |= *constInfo->techFlags;
+
             return NoResult{};
         }
 
@@ -635,11 +638,20 @@ namespace
             if (!maybeCodeSampler)
                 return result::Unexpected(std::format("Missing assignment to shader texture {}", textureResource.m_name));
 
+            const auto samplerInfo = m_common_code_source_infos.GetInfoForCodeSamplerSource(*maybeCodeSampler);
+            if (!samplerInfo)
+                return result::Unexpected(std::format("Missing info for code sampler {}", textureResource.m_name));
+
             techset::CommonShaderArgDestination commonDestination;
             commonDestination.dx11.m_location.texture_index = textureResource.m_bind_point;
             commonDestination.dx11.m_location.sampler_index = samplerBindPoint;
             commonDestination.dx11.m_size = textureResource.m_bind_count;
             commonDestination.dx11.m_buffer = 0;
+
+            if (samplerInfo->techFlags)
+                m_tech_flags |= *samplerInfo->techFlags;
+            if (samplerInfo->customSamplerIndex)
+                m_sampler_flags |= (1 << *samplerInfo->customSamplerIndex);
 
             return AcceptShaderSamplerArgument(commonDestination, *maybeCodeSampler);
         }
