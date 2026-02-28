@@ -20,8 +20,10 @@ namespace
                             const DxVersion dxVersion,
                             const CommonCodeSourceInfos& codeSourceInfos,
                             const CommonStreamRoutingInfos& routingInfos,
-                            const AbstractMaterialConstantZoneState& constantZoneState)
+                            const AbstractMaterialConstantZoneState& constantZoneState,
+                            const bool debug)
             : AbstractTextDumper(stream),
+              m_debug(debug),
               m_dx_version(dxVersion),
               m_code_source_infos(codeSourceInfos),
               m_routing_infos(routingInfos),
@@ -31,8 +33,7 @@ namespace
 
         void DumpTechnique(const CommonTechnique& technique)
         {
-#ifdef TECHSET_DEBUG
-            if (technique.m_flags)
+            if (m_debug && technique.m_flags)
             {
                 for (auto i = 0u; i < sizeof(CommonTechnique::m_flags) * 8u; i++)
                 {
@@ -44,7 +45,6 @@ namespace
                     }
                 }
             }
-#endif
 
             for (const auto& pass : technique.m_passes)
                 DumpPass(technique, pass);
@@ -56,17 +56,18 @@ namespace
             m_stream << "{\n";
             IncIndent();
 
-#ifdef TECHSET_DEBUG
-            for (auto i = 0u; i < sizeof(CommonPass::m_sampler_flags) * 8u; i++)
+            if (m_debug)
             {
-                const auto mask = 1ull << i;
-                if (pass.m_sampler_flags & mask)
+                for (auto i = 0u; i < sizeof(CommonPass::m_sampler_flags) * 8u; i++)
                 {
-                    Indent();
-                    m_stream << std::format("// CUSTOM SAMPLER FLAGS: 0x{:x}\n", mask);
+                    const auto mask = 1ull << i;
+                    if (pass.m_sampler_flags & mask)
+                    {
+                        Indent();
+                        m_stream << std::format("// CUSTOM SAMPLER FLAGS: 0x{:x}\n", mask);
+                    }
                 }
             }
-#endif
 
             DumpStateMap();
             DumpShader(technique, pass, pass.m_vertex_shader, CommonTechniqueShaderType::VERTEX, m_dx_version);
@@ -337,12 +338,10 @@ namespace
                         Indent();
                         m_stream << std::format("{} = constant.{};\n", codeDestAccessor, codeAccessor);
                     }
-                    else
+                    else if (m_debug)
                     {
-#ifdef TECHSET_DEBUG
                         Indent();
                         m_stream << std::format("// Omitted due to matching accessors: {} = constant.{};\n", codeDestAccessor, codeAccessor);
-#endif
                     }
                 }
                 else
@@ -363,12 +362,10 @@ namespace
                         Indent();
                         m_stream << std::format("{} = sampler.{};\n", codeDestAccessor, samplerSourceInfo->accessor);
                     }
-                    else
+                    else if (m_debug)
                     {
-#ifdef TECHSET_DEBUG
                         Indent();
                         m_stream << std::format("// Omitted due to matching accessors: {} = sampler.{};\n", codeDestAccessor, samplerSourceInfo->accessor);
-#endif
                     }
                 }
                 else
@@ -429,6 +426,7 @@ namespace
             }
         }
 
+        bool m_debug;
         DxVersion m_dx_version;
         const CommonCodeSourceInfos& m_code_source_infos;
         const CommonStreamRoutingInfos& m_routing_infos;
@@ -443,12 +441,13 @@ namespace techset
                              const DxVersion dxVersion,
                              const CommonCodeSourceInfos& codeSourceInfos,
                              const CommonStreamRoutingInfos& routingInfos,
-                             const AbstractMaterialConstantZoneState& constantZoneState)
+                             const AbstractMaterialConstantZoneState& constantZoneState,
+                             const bool debug)
     {
         const auto techniqueFile = context.OpenAssetFile(GetFileNameForTechniqueName(technique.m_name));
         if (techniqueFile)
         {
-            TechniqueFileWriter writer(*techniqueFile, dxVersion, codeSourceInfos, routingInfos, constantZoneState);
+            TechniqueFileWriter writer(*techniqueFile, dxVersion, codeSourceInfos, routingInfos, constantZoneState, debug);
             writer.DumpTechnique(technique);
         }
     }

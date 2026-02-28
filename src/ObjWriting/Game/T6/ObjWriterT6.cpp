@@ -35,7 +35,13 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
     RegisterAssetDumper(std::make_unique<xmodel::DumperT6>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT6>());
-    RegisterAssetDumper(std::make_unique<techset::DumperT6>());
+    RegisterAssetDumper(std::make_unique<techset::DumperT6>(
+#ifdef TECHSET_DEBUG
+        true
+#else
+        false
+#endif
+        ));
     RegisterAssetDumper(std::make_unique<image::DumperT6>());
     RegisterAssetDumper(std::make_unique<sound::SndBankDumperT6>());
     // REGISTER_DUMPER(AssetDumperSndPatch, m_sound_patch)

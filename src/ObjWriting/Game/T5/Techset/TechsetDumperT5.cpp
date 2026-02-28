@@ -209,7 +209,7 @@ namespace
         return commonTechnique;
     }
 
-    void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
+    void DumpTechniques(AssetDumpingContext& context, const MaterialTechniqueSet& techset, const bool debug)
     {
         auto* techniqueState = context.GetZoneAssetDumperState<techset::TechniqueDumpingZoneState>();
         const auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
@@ -220,7 +220,7 @@ namespace
                 const auto commonTechnique = ConvertToCommonTechnique(*technique);
 
                 techset::DumpCommonTechnique(
-                    context, commonTechnique, techset::DxVersion::DX9, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState);
+                    context, commonTechnique, techset::DxVersion::DX9, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState, debug);
             }
         }
     }
@@ -250,6 +250,11 @@ namespace
 
 namespace techset
 {
+    DumperT5::DumperT5(const bool debug)
+        : m_debug(debug)
+    {
+    }
+
     void DumperT5::Dump(AssetDumpingContext& context)
     {
         context.GetZoneAssetDumperState<MaterialConstantZoneState>()->EnsureInitialized();
@@ -260,7 +265,7 @@ namespace techset
     {
         const auto* techniqueSet = asset.Asset();
         DumpTechset(context, *techniqueSet);
-        DumpTechniques(context, *techniqueSet);
+        DumpTechniques(context, *techniqueSet, m_debug);
         DumpShaders(context, *techniqueSet);
     }
 } // namespace techset
