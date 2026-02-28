@@ -11,5 +11,6 @@ namespace techset
                              DxVersion dxVersion,
                              const CommonCodeSourceInfos& codeSourceInfos,
                              const CommonStreamRoutingInfos& routingInfos,
-                             const AbstractMaterialConstantZoneState& constantZoneState);
+                             const AbstractMaterialConstantZoneState& constantZoneState,
+                             bool debug);
 } // namespace techset
