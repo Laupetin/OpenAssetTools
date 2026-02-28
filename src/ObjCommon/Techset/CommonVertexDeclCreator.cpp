@@ -2,7 +2,7 @@
 
 #include "Utils/Logging/Log.h"
 
-#include <algorithm>
+#include <string>
 
 namespace
 {
@@ -11,16 +11,12 @@ namespace
         if (offset >= assetName.size())
             return false;
 
-        if (offset + 1 < assetName.size() && isdigit(assetName[offset + 1]))
-        {
-            abbreviation = std::string(assetName, offset, 2);
-            offset += 2;
-        }
-        else
-        {
-            abbreviation = std::string(assetName, offset, 1);
-            offset += 1;
-        }
+        auto digitCount = 0;
+        while (offset + digitCount + 1 < assetName.size() && isdigit(assetName[offset + digitCount + 1]))
+            digitCount++;
+
+        abbreviation = std::string(assetName, offset, digitCount + 1);
+        offset += digitCount + 1;
 
         return true;
     }
