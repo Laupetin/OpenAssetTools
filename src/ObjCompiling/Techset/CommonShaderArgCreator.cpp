@@ -230,6 +230,9 @@ namespace
             }
 
             m_args.emplace_back(argumentType, commonDestination, techset::CommonShaderArgValue{.code_const_source = value});
+            if (maybeInfo->techFlags)
+                m_tech_flags |= *maybeInfo->techFlags;
+
             return NoResult{};
         }
 
@@ -241,7 +244,16 @@ namespace
                 .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER,
             };
 
+            const auto maybeInfo = m_common_code_source_infos.GetInfoForCodeSamplerSource(codeSamplerSource);
+            if (!maybeInfo)
+                return result::Unexpected<std::string>("Could not find info for code sampler");
+
             m_args.emplace_back(argumentType, commonDestination, techset::CommonShaderArgValue{.code_sampler_source = codeSamplerSource});
+            if (maybeInfo->techFlags)
+                m_tech_flags |= *maybeInfo->techFlags;
+            if (maybeInfo->customSamplerIndex)
+                m_sampler_flags |= (1 << *maybeInfo->customSamplerIndex);
+
             return NoResult{};
         }
 
