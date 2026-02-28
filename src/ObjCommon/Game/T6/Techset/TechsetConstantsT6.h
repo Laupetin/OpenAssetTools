@@ -1577,7 +1577,6 @@ namespace T6
          .value = TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY,
          .accessor = "lightmapSamplerPrimary",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
-         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_PRIMARY,
          },
         {
          .value = TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY,

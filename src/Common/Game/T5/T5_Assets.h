@@ -1504,6 +1504,29 @@ namespace T5
         const char* techniqueSetPrefix;
     };
 
+    enum TechniqueFlags
+    {
+        TECHNIQUE_FLAG_1 = 0x1,
+        TECHNIQUE_FLAG_2 = 0x2,
+        TECHNIQUE_FLAG_4 = 0x4,
+
+        // Vertex decl has optional source
+        TECHNIQUE_FLAG_8 = 0x8,
+
+        TECHNIQUE_FLAG_10 = 0x10,
+        TECHNIQUE_FLAG_20 = 0x20,
+        TECHNIQUE_FLAG_40 = 0x40,
+
+        // Any material that has statebits according to any of the following sets this:
+        // - GFXS1_DEPTHWRITE set
+        // - Any depth test (No GFXS1_DEPTHTEST_DISABLE set)
+        // - Any polygon offset that is not GFXS1_POLYGON_OFFSET_0
+        TECHNIQUE_FLAG_80 = 0x80,
+
+        TECHNIQUE_FLAG_100 = 0x100,
+        TECHNIQUE_FLAG_200 = 0x200,
+    };
+
     struct MaterialPass
     {
         MaterialVertexDeclaration* vertexDecl;

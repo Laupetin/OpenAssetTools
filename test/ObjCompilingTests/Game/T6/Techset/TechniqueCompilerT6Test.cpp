@@ -72,7 +72,7 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
 
     SECTION("Can compile simple technique")
     {
-        searchPath.AddFileData("techniques/example_zprepass.tech", R"TECHNIQUE(
+        searchPath.AddFileData("techniques/pimp_technique_zprepass_example.tech", R"TECHNIQUE(
 {
   stateMap "passthrough";
 
@@ -91,14 +91,16 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
         GivenVertexShaderFile("simple.hlsl", searchPath);
         GivenPixelShaderFile("simple.hlsl", searchPath);
 
-        auto result = loader->CreateSubAsset("example_zprepass", context);
+        auto result = loader->CreateSubAsset("pimp_technique_zprepass_example", context);
         REQUIRE(result.HasBeenSuccessful());
 
         const auto* assetInfo = reinterpret_cast<XAssetInfo<MaterialTechnique>*>(result.GetAssetInfo());
         const auto* technique = assetInfo->Asset();
 
-        CHECK(technique->name == "example_zprepass"s);
-        CHECK(technique->flags == 0x84);
+        CHECK(technique->name == "pimp_technique_zprepass_example"s);
+
+        // Usually would be 0x80 set as well, but that's only set when postprocessing with materials
+        CHECK(technique->flags == 0x04);
 
         REQUIRE(technique->passCount == 1);
         auto& pass = technique->passArray[0];
@@ -186,7 +188,9 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
         const auto* technique = assetInfo->Asset();
 
         CHECK(technique->name == "example_lit_sun_shadow"s);
-        CHECK(technique->flags == 0x88);
+
+        // Usually would be 0x80 set as well, but that's only set when postprocessing with materials
+        CHECK(technique->flags == 0x08);
 
         REQUIRE(technique->passCount == 1);
         auto& pass = technique->passArray[0];

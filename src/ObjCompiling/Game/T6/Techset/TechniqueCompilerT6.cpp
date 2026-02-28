@@ -151,6 +151,22 @@ namespace
         }
 
         ConvertMaterialArgs(pass, commonPass, memory, context);
+        pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
+    }
+
+    bool AnyDeclHasOptionalSource(const MaterialTechnique& technique)
+    {
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+        {
+            const auto& pass = technique.passArray[passIndex];
+            if (!pass.vertexDecl)
+                continue;
+
+            if (pass.vertexDecl->hasOptionalSource)
+                return true;
+        }
+
+        return false;
     }
 
     void UpdateTechniqueFlags(MaterialTechnique& technique, const techset::CommonTechnique& commonTechnique)
@@ -165,6 +181,9 @@ namespace
         {
             technique.flags |= TECHNIQUE_FLAG_4;
         }
+
+        if (AnyDeclHasOptionalSource(technique))
+            technique.flags |= TECHNIQUE_FLAG_8;
     }
 
     MaterialTechnique* ConvertTechnique(const techset::CommonTechnique& commonTechnique, AssetCreationContext& context, MemoryManager& memory)
@@ -176,14 +195,14 @@ namespace
 
         technique->name = memory.Dup(commonTechnique.m_name.c_str());
 
-        // Take common flags and apply further logic
-        technique->flags = static_cast<decltype(MaterialTechnique::flags)>(commonTechnique.m_flags);
-        UpdateTechniqueFlags(*technique, commonTechnique);
-
         technique->passCount = passCount;
 
         for (auto passIndex = 0u; passIndex < passCount; passIndex++)
             ConvertMaterialPass(technique->passArray[passIndex], commonTechnique.m_passes[passIndex], context, memory);
+
+        // Take common flags and apply further logic
+        technique->flags = static_cast<decltype(MaterialTechnique::flags)>(commonTechnique.m_flags);
+        UpdateTechniqueFlags(*technique, commonTechnique);
 
         return technique;
     }
