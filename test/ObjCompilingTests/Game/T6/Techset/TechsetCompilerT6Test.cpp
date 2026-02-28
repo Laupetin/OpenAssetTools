@@ -2,6 +2,7 @@
 
 #include "Game/T6/T6.h"
 #include "SearchPath/MockSearchPath.h"
+#include "Techset/TechsetCommon.h"
 #include "Utils/TestMemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -12,7 +13,20 @@
 using namespace T6;
 using namespace std::string_literals;
 
-TEST_CASE("Game::T6::Techset::TechsetCompilerT6", "[techset][t6]")
+namespace
+{
+    MaterialTechnique* GivenTechnique(const std::string& name, AssetCreationContext& context, MemoryManager& memory)
+    {
+        auto* technique = memory.Alloc<MaterialTechnique>();
+        technique->name = memory.Dup(name.c_str());
+
+        context.AddSubAsset<SubAssetTechnique>(name, technique);
+
+        return technique;
+    }
+} // namespace
+
+TEST_CASE("TechsetCompilerT6", "[techset][t6][compiler]")
 {
     Zone zone("test", 0, GameId::T6, GamePlatform::PC);
     AssetCreatorCollection creators(zone);
@@ -20,7 +34,7 @@ TEST_CASE("Game::T6::Techset::TechsetCompilerT6", "[techset][t6]")
     AssetCreationContext context(zone, &creators, &ignoredAssets);
     MockSearchPath searchPath;
     TestMemoryManager memory;
-    const auto sut = ::techset::CreateCompilerT6(memory, searchPath);
+    const auto sut = techset::CreateCompilerT6(memory, searchPath);
 
     SECTION("Sets correct worldVertFormat")
     {
@@ -54,12 +68,82 @@ TEST_CASE("Game::T6::Techset::TechsetCompilerT6", "[techset][t6]")
         }));
 
         CAPTURE(techsetName);
-        searchPath.AddFileData(std::format("techsets/{}.techset", techsetName), "");
+        searchPath.AddFileData(techset::GetFileNameForTechsetName(techsetName), "");
 
         const auto result = sut->CreateAsset(techsetName, context);
         REQUIRE(result.HasBeenSuccessful());
 
         const auto* techset = static_cast<MaterialTechniqueSet*>(result.GetAssetInfo()->m_ptr);
         CHECK(techset->worldVertFormat == expectedWorldVertFormat);
+    }
+
+    SECTION("Can parse simple techset")
+    {
+        searchPath.AddFileData(techset::GetFileNameForTechsetName("simple"), R"TECHSET(
+"depth prepass":
+  example_zprepass;
+
+"lit sun shadow":
+  example_lit_sun_shadow;
+)TECHSET");
+
+        auto* exampleZPrepass = GivenTechnique("example_zprepass", context, memory);
+        auto* exampleLitSunShadow = GivenTechnique("example_lit_sun_shadow", context, memory);
+
+        const auto result = sut->CreateAsset("simple", context);
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* techset = static_cast<MaterialTechniqueSet*>(result.GetAssetInfo()->m_ptr);
+        CHECK(techset->name == "simple"s);
+        CHECK(techset->worldVertFormat == MTL_WORLDVERT_TEX_1_NRM_1);
+
+        size_t techniqueCount = 0;
+        for (auto* technique : techset->techniques)
+        {
+            if (technique)
+                techniqueCount++;
+        }
+
+        CHECK(techniqueCount == 2);
+        CHECK(techset->techniques[TECHNIQUE_DEPTH_PREPASS] == exampleZPrepass);
+        CHECK(techset->techniques[TECHNIQUE_LIT_SUN_SHADOW] == exampleLitSunShadow);
+    }
+
+    SECTION("Can parse techset with same technique used multiple times")
+    {
+        searchPath.AddFileData(techset::GetFileNameForTechsetName("simple"), R"TECHSET(
+"depth prepass":
+"build shadowmap depth":
+  example_zprepass;
+
+"lit":
+"lit sun":
+"lit sun shadow":
+  example_lit_sun_shadow;
+)TECHSET");
+
+        auto* exampleZPrepass = GivenTechnique("example_zprepass", context, memory);
+        auto* exampleLitSunShadow = GivenTechnique("example_lit_sun_shadow", context, memory);
+
+        const auto result = sut->CreateAsset("simple", context);
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* techset = static_cast<MaterialTechniqueSet*>(result.GetAssetInfo()->m_ptr);
+        CHECK(techset->name == "simple"s);
+        CHECK(techset->worldVertFormat == MTL_WORLDVERT_TEX_1_NRM_1);
+
+        size_t techniqueCount = 0;
+        for (auto* technique : techset->techniques)
+        {
+            if (technique)
+                techniqueCount++;
+        }
+
+        CHECK(techniqueCount == 5);
+        CHECK(techset->techniques[TECHNIQUE_DEPTH_PREPASS] == exampleZPrepass);
+        CHECK(techset->techniques[TECHNIQUE_BUILD_SHADOWMAP_DEPTH] == exampleZPrepass);
+        CHECK(techset->techniques[TECHNIQUE_LIT] == exampleLitSunShadow);
+        CHECK(techset->techniques[TECHNIQUE_LIT_SUN] == exampleLitSunShadow);
+        CHECK(techset->techniques[TECHNIQUE_LIT_SUN_SHADOW] == exampleLitSunShadow);
     }
 }
