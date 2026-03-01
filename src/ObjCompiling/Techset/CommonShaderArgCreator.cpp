@@ -203,15 +203,14 @@ namespace
             if (!maybeInfo)
                 return result::Unexpected<std::string>("Could not find info for code constant");
 
+            const auto isMatrix = maybeInfo->transposedMatrix.has_value();
             techset::CommonShaderArgCodeConstValue value{
                 .m_index = 0,
                 .m_first_row = 0,
-                .m_row_count = 1,
+                .m_row_count = isMatrix ? 4u : 1u,
             };
 
-            // All matrices have a transposed version
-            // this checks whether this is a matrix
-            if (maybeInfo->transposedMatrix)
+            if (isMatrix)
             {
                 if (sourceIndex >= 4)
                     return result::Unexpected(std::format("Index for matrix code const is out of bounds: {} (must be < 4)", sourceIndex));
