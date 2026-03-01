@@ -8,6 +8,7 @@
 #include "SearchPath/MockSearchPath.h"
 #include "Shader/ShaderCommon.h"
 #include "Utils/MemoryManager.h"
+#include "catch2/generators/catch_generators.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -72,7 +73,8 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
 
     SECTION("Can compile simple technique")
     {
-        searchPath.AddFileData("techniques/pimp_technique_zprepass_example.tech", R"TECHNIQUE(
+        const auto [inputName, inputData] = GENERATE(Catch::Generators::table<const char*, const char*>({
+            {"auto-create args", R"TECHNIQUE(
 {
   stateMap "passthrough";
 
@@ -86,7 +88,28 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
 
   vertex.position = code.position;
 }
-)TECHNIQUE");
+)TECHNIQUE"},
+            {"manual args",      R"TECHNIQUE(
+{
+  stateMap "passthrough";
+
+  vertexShader 4.0 "simple.hlsl"
+  {
+    worldMatrix = constant.worldMatrix;
+    viewProjectionMatrix = constant.viewProjectionMatrix;
+  }
+
+  pixelShader 4.0 "simple.hlsl"
+  {
+  }
+
+  vertex.position = code.position;
+}
+)TECHNIQUE"},
+        }));
+
+        CAPTURE(inputName);
+        searchPath.AddFileData("techniques/pimp_technique_zprepass_example.tech", inputData);
 
         GivenVertexShaderFile("simple.hlsl", searchPath);
         GivenPixelShaderFile("simple.hlsl", searchPath);
@@ -147,7 +170,8 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
 
     SECTION("Can compile advanced technique")
     {
-        searchPath.AddFileData("techniques/example_lit_sun_shadow.tech", R"TECHNIQUE(
+        const auto [inputName, inputData] = GENERATE(Catch::Generators::table<const char*, const char*>({
+            {"auto-create args", R"TECHNIQUE(
 {
   stateMap "passthrough";
 
@@ -176,7 +200,47 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
   vertex.texcoord[4] = code.texcoord[3];
   vertex.texcoord[5] = code.normalTransform[0];
 }
-)TECHNIQUE");
+)TECHNIQUE"},
+            {"manual args",      R"TECHNIQUE(
+{
+  stateMap "passthrough";
+
+  vertexShader 4.0 "advanced.hlsl"
+  {
+    worldMatrix = constant.worldMatrix;
+    viewProjectionMatrix = constant.viewProjectionMatrix;
+    shadowLookupMatrix = constant.shadowLookupMatrix;
+  }
+
+  pixelShader 4.0 "advanced.hlsl"
+  {
+    normalMapSampler = material.normalMap;
+    normalMapSampler1 = material.normalMap1;
+    colorMapSampler = material.colorMap;
+    colorMapSampler1 = material.colorMap1;
+    colorMapSampler3 = material.colorMap3;
+    colorMapSampler2 = material.colorMap2;
+    shadowmapSamplerSun = sampler.shadowmapSamplerSun;
+    shadowmapSwitchPartition = constant.shadowmapSwitchPartition;
+    sunShadowmapPixelSize = constant.sunShadowmapPixelSize;
+    alphaRevealParms1 = material.alphaRevealParms1;
+  }
+
+  vertex.position = code.position;
+  vertex.color[0] = code.color;
+  vertex.texcoord[0] = code.texcoord[0];
+  vertex.normal = code.normal;
+  vertex.texcoord[2] = code.tangent;
+  vertex.texcoord[1] = code.texcoord[1];
+  vertex.texcoord[3] = code.texcoord[2];
+  vertex.texcoord[4] = code.texcoord[3];
+  vertex.texcoord[5] = code.normalTransform[0];
+}
+)TECHNIQUE"},
+        }));
+
+        CAPTURE(inputName);
+        searchPath.AddFileData("techniques/example_lit_sun_shadow.tech", inputData);
 
         GivenVertexShaderFile("advanced.hlsl", searchPath);
         GivenPixelShaderFile("advanced.hlsl", searchPath);
