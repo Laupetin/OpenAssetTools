@@ -207,14 +207,19 @@ namespace
         return technique;
     }
 
-    void ApplyTechFlagsFromMaterial(const Material& material)
+    void ApplyTechFlagsFromMaterial(const Material& material, const Zone& zone)
     {
-        if (!material.techniqueSet || material.stateBitsTable)
+        if (!material.techniqueSet || !material.techniqueSet->name || !material.stateBitsTable)
+            return;
+
+        // Find the techniqueset asset from our zone since the material may link to a different one
+        const auto techniqueSetAsset = zone.m_pools.GetAsset<AssetTechniqueSet>(material.techniqueSet->name);
+        if (!techniqueSetAsset)
             return;
 
         for (auto techType = 0u; techType < TECHNIQUE_COUNT; techType++)
         {
-            auto* technique = material.techniqueSet->techniques[techType];
+            auto* technique = techniqueSetAsset->Asset()->techniques[techType];
             const auto stateBitsEntry = material.stateBitsEntry[techType];
 
             if (!technique || stateBitsEntry < 0 || static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry) >= material.stateBitsCount)
@@ -307,7 +312,7 @@ namespace
             const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
             for (auto* materialAsset : materials)
             {
-                ApplyTechFlagsFromMaterial(*materialAsset->Asset());
+                ApplyTechFlagsFromMaterial(*materialAsset->Asset(), m_zone);
             }
         }
 
