@@ -408,12 +408,20 @@ namespace
         {
             assert(m_shader_info);
 
-            auto bufferIndex = 0uz;
             auto usedConstantIndex = 0uz;
-            const auto bufferCount = m_shader_info->m_constant_buffers.size();
-            while (bufferIndex < bufferCount)
+            for (const auto& buffer : m_shader_info->m_constant_buffers)
             {
-                const auto& buffer = m_shader_info->m_constant_buffers[bufferIndex];
+                const auto bufferBinding =
+                    std::ranges::find_if(m_shader_info->m_bound_resources,
+                                         [buffer](const d3d11::BoundResource& boundResource)
+                                         {
+                                             return boundResource.m_type == d3d11::BoundResourceType::CBUFFER && boundResource.m_name == buffer.m_name;
+                                         });
+                if (bufferBinding == m_shader_info->m_bound_resources.end())
+                {
+                    errorMessage = std::format("Failed to find binding for constant buffer {}", buffer.m_name);
+                    return false;
+                }
 
                 auto variableIterator = buffer.m_variables.begin();
                 const auto variableEnd = buffer.m_variables.end();
@@ -439,15 +447,13 @@ namespace
                     const auto variableElementSize = variableIterator->m_size / variableElementCount;
                     commonDestination.dx11.m_location.constant_buffer_offset = variableIterator->m_offset + variableElementSize * inputArgumentIndex;
                     commonDestination.dx11.m_size = variableElementSize;
-                    commonDestination.dx11.m_buffer = static_cast<unsigned>(bufferIndex);
+                    commonDestination.dx11.m_buffer = bufferBinding->m_bind_point;
                     isTransposed = variableIterator->m_variable_class == d3d11::VariableClass::MATRIX_COLUMNS;
 
                     m_const_arg_added[usedConstantIndex] = true;
 
                     return true;
                 }
-
-                bufferIndex++;
             }
 
             return false;
@@ -514,12 +520,20 @@ namespace
 
         result::Expected<NoResult, std::string> AutoCreateMissingArgs() override
         {
-            size_t bufferIndex = 0;
             size_t usedConstantCount = 0;
             size_t textureCount = 0;
 
             for (const auto& buffer : m_shader_info->m_constant_buffers)
             {
+                const auto bufferBinding =
+                    std::ranges::find_if(m_shader_info->m_bound_resources,
+                                         [buffer](const d3d11::BoundResource& boundResource)
+                                         {
+                                             return boundResource.m_type == d3d11::BoundResourceType::CBUFFER && boundResource.m_name == buffer.m_name;
+                                         });
+                if (bufferBinding == m_shader_info->m_bound_resources.end())
+                    return result::Unexpected(std::format("Failed to find binding for constant buffer {}", buffer.m_name));
+
                 for (const auto& variable : buffer.m_variables)
                 {
                     if (!variable.m_is_used)
@@ -528,12 +542,10 @@ namespace
                     if (m_const_arg_added[usedConstantCount++])
                         continue;
 
-                    auto result = AutoCreateConstantArg(variable, bufferIndex);
+                    auto result = AutoCreateConstantArg(variable, bufferBinding->m_bind_point);
                     if (!result)
                         return std::move(result);
                 }
-
-                bufferIndex++;
             }
 
             for (const auto& maybeTextureResource : m_shader_info->m_bound_resources)
