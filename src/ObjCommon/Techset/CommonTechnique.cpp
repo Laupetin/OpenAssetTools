@@ -52,8 +52,9 @@ namespace techset
     {
         for (const auto& codeConstSourceInfo : m_code_const_source_infos)
         {
-            const auto codeConstSourceInfoEnd = static_cast<unsigned>(codeConstSourceInfo.value) + codeConstSourceInfo.arrayCount;
-            if (codeConstSourceInfo.value <= codeConstSource && codeConstSourceInfoEnd >= codeConstSource)
+            const auto arrayCount = std::max<uint8_t>(codeConstSourceInfo.arrayCount, 1);
+            const auto codeConstSourceInfoEnd = static_cast<unsigned>(codeConstSourceInfo.value) + arrayCount;
+            if (codeConstSourceInfo.value <= codeConstSource && codeConstSourceInfoEnd > codeConstSource)
                 return codeConstSourceInfo;
 
             if (codeConstSourceInfoEnd > codeConstSource)
