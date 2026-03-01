@@ -8,7 +8,7 @@ using namespace IW4;
 
 namespace
 {
-    constexpr const char* ASSET_TYPE_NAMES[ASSET_TYPE_COUNT]{
+    constexpr const char* ASSET_TYPE_NAMES[]{
         "physpreset",  "physcollmap", "xanim",        "xmodelsurfs", "xmodel",
         "material",    "pixelshader", "vertexshader", "vertexdecl",  "techniqueset",
         "image",       "sound",       "soundcurve",   "loadedsound", "clipmap_unused",
@@ -19,10 +19,12 @@ namespace
         "xmodelalias", "rawfile",     "stringtable",  "leaderboard", "structureddatadef",
         "tracer",      "vehicle",     "addonmapents",
     };
+    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
-    constexpr const char* SUB_ASSET_TYPE_NAMES[SUB_ASSET_TYPE_COUNT]{
+    constexpr const char* SUB_ASSET_TYPE_NAMES[]{
         "technique",
     };
+    static_assert(std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)> == SUB_ASSET_TYPE_COUNT);
 } // namespace
 
 namespace IW4

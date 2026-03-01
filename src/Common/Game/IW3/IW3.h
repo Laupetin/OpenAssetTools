@@ -53,6 +53,7 @@ namespace IW3
     enum SubAssetType
     {
         SUB_ASSET_TYPE_TECHNIQUE,
+        SUB_ASSET_TYPE_VERTEX_DECL,
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
 

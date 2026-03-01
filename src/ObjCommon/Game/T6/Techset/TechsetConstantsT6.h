@@ -2,10 +2,11 @@
 
 #include "Game/T6/T6.h"
 #include "Techset/CommonTechnique.h"
+#include "Techset/CommonTechset.h"
 
 namespace T6
 {
-    inline const char* techniqueTypeNames[]{
+    static inline const char* techniqueTypeNames[]{
         "depth prepass",
         "build shadowmap depth",
         "unlit",
@@ -44,8 +45,9 @@ namespace T6
         "debug performance",
     };
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
+    static inline techset::CommonTechniqueTypeNames commonTechniqueTypeNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
 
-    static techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
+    static inline techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
         {
          .name = "position",
          .abbreviation = "p",
@@ -104,7 +106,7 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(streamRoutingSources)> == STREAM_SRC_COUNT);
 
-    static techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
+    static inline techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
         {
          .name = "position",
          .abbreviation = "p",
@@ -188,7 +190,12 @@ namespace T6
     };
     static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
-    static techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
+    static inline techset::CommonStreamRoutingInfos commonRoutingInfos(streamRoutingSources,
+                                                                       std::extent_v<decltype(streamRoutingSources)>,
+                                                                       streamRoutingDestinations,
+                                                                       std::extent_v<decltype(streamRoutingDestinations)>);
+
+    static inline techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
         {
          .value = CONST_SRC_CODE_LIGHT_POSITION,
          .accessor = "lightPosition",
@@ -212,6 +219,7 @@ namespace T6
          .accessor = "lightSpotFactors",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_10,
          },
         {
          .value = CONST_SRC_CODE_LIGHT_ATTENUATION,
@@ -542,6 +550,7 @@ namespace T6
          .accessor = "particleCloudVelWorld",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .techFlags = TECHNIQUE_FLAG_100,
          },
         {
          .value = CONST_SRC_CODE_DEPTH_FROM_CLIP,
@@ -1322,196 +1331,228 @@ namespace T6
          .accessor = "worldMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_WORLD_MATRIX,
          .accessor = "inverseWorldMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX,
          .accessor = "transposeWorldMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX,
          .accessor = "inverseTransposeWorldMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_VIEW_MATRIX,
          .accessor = "viewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_VIEW_MATRIX,
          .accessor = "inverseViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX,
          .accessor = "transposeViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX,
          .accessor = "inverseTransposeViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_PROJECTION_MATRIX,
          .accessor = "projectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX,
          .accessor = "inverseProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX,
          .accessor = "transposeProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX,
          .accessor = "inverseTransposeProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_WORLD_VIEW_MATRIX,
          .accessor = "worldViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX,
          .accessor = "inverseWorldViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX,
          .accessor = "transposeWorldViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX,
          .accessor = "inverseTransposeWorldViewMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_VIEW_PROJECTION_MATRIX,
          .accessor = "viewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX,
          .accessor = "inverseViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
          .accessor = "transposeViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
          .accessor = "inverseTransposeViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX,
          .accessor = "worldViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX,
          .accessor = "inverseWorldViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX,
          .accessor = "transposeWorldViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX,
          .accessor = "inverseTransposeWorldViewProjectionMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX,
          .accessor = "shadowLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX,
          .accessor = "inverseShadowLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
          .accessor = "transposeShadowLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
          .accessor = "inverseTransposeShadowLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          .accessor = "worldOutdoorLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          .accessor = "inverseWorldOutdoorLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          .accessor = "transposeWorldOutdoorLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          .accessor = "inverseTransposeWorldOutdoorLookupMatrix",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
          },
     };
 
-    static techset::CommonCodeSamplerSourceInfo commonCodeSamplerSources[]{
+    static inline techset::CommonCodeSamplerSourceInfo commonCodeSamplerSources[]{
         {
          .value = TEXTURE_SRC_CODE_BLACK,
          .accessor = "black",
@@ -1541,6 +1582,7 @@ namespace T6
          .value = TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY,
          .accessor = "lightmapSamplerSecondary",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_SECONDARY,
          },
         {
          .value = TEXTURE_SRC_CODE_SHADOWMAP_SUN,
@@ -1561,11 +1603,13 @@ namespace T6
          .value = TEXTURE_SRC_CODE_RESOLVED_POST_SUN,
          .accessor = "resolvedPostSun",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_1,
          },
         {
          .value = TEXTURE_SRC_CODE_RESOLVED_SCENE,
          .accessor = "resolvedScene",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_2,
          },
         {
          .value = TEXTURE_SRC_CODE_POST_EFFECT_SRC,
@@ -1606,16 +1650,19 @@ namespace T6
          .value = TEXTURE_SRC_CODE_FLOATZ,
          .accessor = "floatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_40,
          },
         {
          .value = TEXTURE_SRC_CODE_PROCESSED_FLOATZ,
          .accessor = "processedFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_40,
          },
         {
          .value = TEXTURE_SRC_CODE_RAW_FLOATZ,
          .accessor = "rawFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = TECHNIQUE_FLAG_40,
          },
         {
          .value = TEXTURE_SRC_CODE_STENCIL,
@@ -1646,6 +1693,7 @@ namespace T6
          .value = TEXTURE_SRC_CODE_REFLECTION_PROBE,
          .accessor = "reflectionProbeSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_REFLECTION_PROBE,
          },
         {
          .value = TEXTURE_SRC_CODE_FEATHER_FLOAT_Z,
@@ -1789,7 +1837,34 @@ namespace T6
          },
     };
 
-    inline MaterialTypeInfo g_materialTypeInfo[]{
+    // See MaterialShaderArgumentType
+    static inline techset::CommonShaderArgumentType commonArgumentTypes[]{
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_SAMPLER},
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER    },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
+    };
+    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MLT_ARG_COUNT);
+
+    static inline const char* commonIgnoredArgAccessors[]{
+        "combined_dlight",
+        "combined_glight",
+    };
+
+    static inline techset::CommonCodeSourceInfos commonCodeSourceInfos(commonCodeConstSources,
+                                                                       std::extent_v<decltype(commonCodeConstSources)>,
+                                                                       commonCodeSamplerSources,
+                                                                       std::extent_v<decltype(commonCodeSamplerSources)>,
+                                                                       commonIgnoredArgAccessors,
+                                                                       std::extent_v<decltype(commonIgnoredArgAccessors)>,
+                                                                       commonArgumentTypes,
+                                                                       std::extent_v<decltype(commonArgumentTypes)>);
+
+    static inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",     ""    },
         {"m/",   "m_"  },
         {"mc/",  "mc_" },

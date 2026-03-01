@@ -2,14 +2,15 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
-#include "StateMap/StateMapLayout.h"
+#include "Techset/CommonTechset.h"
+#include "Techset/StateMap/StateMapLayout.h"
 
 #include <type_traits>
 #include <unordered_map>
 
 namespace IW4
 {
-    inline const char* techniqueTypeNames[]{
+    static inline const char* techniqueTypeNames[]{
         "depth prepass",
         "build floatz",
         "build shadowmap depth",
@@ -60,8 +61,9 @@ namespace IW4
         "debug bumpmap instanced",
     };
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
+    static inline techset::CommonTechniqueTypeNames commonTechniqueTypeNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
 
-    static const char* materialStreamDestinationNames[]{
+    static inline const char* materialStreamDestinationNames[]{
         "position",
         "normal",
         "color[0]",
@@ -78,7 +80,7 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
 
-    static const char* materialStreamDestinationAbbreviation[]{
+    static inline const char* materialStreamDestinationAbbreviation[]{
         "p",
         "n",
         "c0",
@@ -95,7 +97,7 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(materialStreamDestinationAbbreviation)> == STREAM_DST_COUNT);
 
-    static const char* materialStreamSourceNames[]{
+    static inline const char* materialStreamSourceNames[]{
         "position",
         "color",
         "texcoord[0]",
@@ -108,7 +110,7 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
 
-    static const char* materialStreamSourceAbbreviation[]{
+    static inline const char* materialStreamSourceAbbreviation[]{
         "p",
         "c",
         "t0",
@@ -121,18 +123,18 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(materialStreamSourceAbbreviation)> == STREAM_SRC_COUNT);
 
-    inline CodeSamplerSource s_lightmapSamplers[]{
+    static inline CodeSamplerSource s_lightmapSamplers[]{
         {"primary", TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY, nullptr, 0, 0},
         {"secondary", TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY, nullptr, 0, 0},
         {},
     };
 
-    inline CodeSamplerSource s_lightSamplers[]{
+    static inline CodeSamplerSource s_lightSamplers[]{
         {"attenuation", TEXTURE_SRC_CODE_LIGHT_ATTENUATION, nullptr, 0, 0},
         {},
     };
 
-    inline CodeSamplerSource s_codeSamplers[]{
+    static inline CodeSamplerSource s_codeSamplers[]{
         {"white", TEXTURE_SRC_CODE_WHITE, nullptr, 0, 0},
         {"black", TEXTURE_SRC_CODE_BLACK, nullptr, 0, 0},
         {"identityNormalMap", TEXTURE_SRC_CODE_IDENTITY_NORMAL_MAP, nullptr, 0, 0},
@@ -155,7 +157,7 @@ namespace IW4
         {},
     };
 
-    inline CodeSamplerSource s_defaultCodeSamplers[]{
+    static inline CodeSamplerSource s_defaultCodeSamplers[]{
         {"shadowmapSamplerSun", TEXTURE_SRC_CODE_SHADOWMAP_SUN, nullptr, 0, 0},
         {"shadowmapSamplerSpot", TEXTURE_SRC_CODE_SHADOWMAP_SPOT, nullptr, 0, 0},
         {"feedbackSampler", TEXTURE_SRC_CODE_FEEDBACK, nullptr, 0, 0},
@@ -177,7 +179,7 @@ namespace IW4
         {},
     };
 
-    inline CodeConstantSource s_sunConsts[]{
+    static inline CodeConstantSource s_sunConsts[]{
         {"position", CONST_SRC_CODE_LIGHT_POSITION, nullptr, 0, 0},
         {"diffuse", CONST_SRC_CODE_LIGHT_DIFFUSE, nullptr, 0, 0},
         {"specular", CONST_SRC_CODE_LIGHT_SPECULAR, nullptr, 0, 0},
@@ -187,14 +189,14 @@ namespace IW4
         {},
     };
 
-    inline CodeConstantSource s_nearPlaneConsts[]{
+    static inline CodeConstantSource s_nearPlaneConsts[]{
         {"org", CONST_SRC_CODE_NEARPLANE_ORG, nullptr, 0, 0},
         {"dx", CONST_SRC_CODE_NEARPLANE_DX, nullptr, 0, 0},
         {"dy", CONST_SRC_CODE_NEARPLANE_DY, nullptr, 0, 0},
         {},
     };
 
-    inline CodeConstantSource s_codeConsts[]{
+    static inline CodeConstantSource s_codeConsts[]{
         {"nearPlane", CONST_SRC_NONE, s_nearPlaneConsts, 0, 0},
         {"light", CONST_SRC_NONE, s_sunConsts, 0, 0},
         {"baseLightingCoords", CONST_SRC_CODE_BASE_LIGHTING_COORDS, nullptr, 0, 0},
@@ -313,7 +315,7 @@ namespace IW4
         {},
     };
 
-    inline CodeConstantSource s_defaultCodeConsts[]{
+    static inline CodeConstantSource s_defaultCodeConsts[]{
         {"nearPlaneOrg", CONST_SRC_CODE_NEARPLANE_ORG, nullptr, 0, 0},
         {"nearPlaneDx", CONST_SRC_CODE_NEARPLANE_DX, nullptr, 0, 0},
         {"nearPlaneDy", CONST_SRC_CODE_NEARPLANE_DY, nullptr, 0, 0},
@@ -328,7 +330,7 @@ namespace IW4
         {},
     };
 
-    inline MaterialUpdateFrequency s_codeConstUpdateFreq[]{
+    static inline MaterialUpdateFrequency s_codeConstUpdateFreq[]{
         MTL_UPDATE_RARELY,     // LIGHT_POSITION
         MTL_UPDATE_RARELY,     // LIGHT_DIFFUSE
         MTL_UPDATE_RARELY,     // LIGHT_SPECULAR
@@ -464,7 +466,7 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(s_codeConstUpdateFreq)> == CONST_SRC_TOTAL_COUNT);
 
-    inline MaterialUpdateFrequency s_codeSamplerUpdateFreq[]{
+    static inline MaterialUpdateFrequency s_codeSamplerUpdateFreq[]{
         MTL_UPDATE_RARELY,     // BLACK
         MTL_UPDATE_RARELY,     // WHITE
         MTL_UPDATE_RARELY,     // IDENTITY_NORMAL_MAP
@@ -495,14 +497,14 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(s_codeSamplerUpdateFreq)> == TEXTURE_SRC_CODE_COUNT);
 
-    inline MaterialTextureSource g_customSamplerSrc[]{
+    static inline MaterialTextureSource g_customSamplerSrc[]{
         TEXTURE_SRC_CODE_REFLECTION_PROBE,   // CUSTOM_SAMPLER_REFLECTION_PROBE
         TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY,   // CUSTOM_SAMPLER_LIGHTMAP_PRIMARY
         TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY, // CUSTOM_SAMPLER_LIGHTMAP_SECONDARY
     };
     static_assert(std::extent_v<decltype(g_customSamplerSrc)> == CUSTOM_SAMPLER_COUNT);
 
-    inline MaterialTypeInfo g_materialTypeInfo[]{
+    static inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",    ""   },
         {"m/",  "m_" },
         {"mc/", "mc_"},
@@ -523,7 +525,7 @@ namespace IW4
         return std::make_pair(Common::R_HashString(name, 0u), KnownMaterialTextureMap{name, additionalPropertySuffix});
     }
 
-    inline std::unordered_map knownTextureMaps{
+    static inline std::unordered_map knownTextureMaps{
         MakeKnownTextureMap("colorMap", "Color"),
         MakeKnownTextureMap("colorMap0", "Color00"),
         MakeKnownTextureMap("colorMap1", "Color01"),
@@ -538,7 +540,7 @@ namespace IW4
         return std::make_pair(Common::R_HashString(name, 0u), name);
     }
 
-    inline std::unordered_map knownConstantNames{
+    static inline std::unordered_map knownConstantNames{
         MakeKnownConstantName("distortionScale"),
         MakeKnownConstantName("eyeOffsetParms"),
         MakeKnownConstantName("falloffBeginColor"),
@@ -560,7 +562,7 @@ namespace IW4
         WIREFRAME
     };
 
-    inline state_map::StateMapLayoutEntries stateMapEntryLayout({
+    static inline state_map::StateMapLayoutEntries stateMapEntryLayout({
         {"alphaTest",              0, GFXS0_ATEST_MASK | GFXS0_ATEST_DISABLE,                            {"mtlAlphaTest"}                                            },
         {"blendFunc",              0, GFXS0_BLEND_RGB_MASK,                                              {"mtlBlendOp", "mtlSrcBlend", "mtlDestBlend"}               },
         {"separateAlphaBlendFunc", 0, GFXS0_BLEND_ALPHA_MASK,                                            {"mtlBlendOpAlpha", "mtlSrcBlendAlpha", "mtlDestBlendAlpha"}},
@@ -598,7 +600,7 @@ namespace IW4
          }                                                                                                                                                           }
     });
 
-    inline state_map::StateMapLayoutVars stateMapVarLayout({
+    static inline state_map::StateMapLayoutVars stateMapVarLayout({
         {"mtlAlphaTest",
          0, {
              {"Always", GFXS0_ATEST_DISABLE},
@@ -818,5 +820,5 @@ namespace IW4
          }},
     });
 
-    inline state_map::StateMapLayout stateMapLayout(std::extent_v<decltype(GfxStateBits::loadBits.raw)>, stateMapEntryLayout, stateMapVarLayout);
+    static inline state_map::StateMapLayout stateMapLayout(std::extent_v<decltype(GfxStateBits::loadBits.raw)>, stateMapEntryLayout, stateMapVarLayout);
 } // namespace IW4

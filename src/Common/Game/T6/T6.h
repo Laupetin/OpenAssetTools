@@ -83,6 +83,7 @@ namespace T6
     enum SubAssetType
     {
         SUB_ASSET_TYPE_TECHNIQUE,
+        SUB_ASSET_TYPE_VERTEX_DECL,
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
 
@@ -288,8 +289,9 @@ namespace T6
     using AssetZBarrier = Asset<ASSET_TYPE_ZBARRIER, ZBarrierDef>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
-    using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialTechnique>;
-    using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialTechnique>;
+    using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
+    using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
+    using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace T6
 
 DEFINE_ASSET_NAME_ACCESSOR(T6::AssetPhysPreset, name);

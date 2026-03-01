@@ -67,11 +67,15 @@ AssetCreationContext::AssetCreationContext(Zone& zone, const AssetCreatorCollect
     : ZoneAssetCreationStateContainer(zone),
       m_zone(zone),
       m_forced_asset_pools(std::make_unique<ZoneAssetPools>(zone, zone.m_priority)),
-      m_sub_asset_pools(IGame::GetGameById(zone.m_game_id)->GetSubAssetTypeCount()),
       m_creators(creators),
       m_ignored_asset_lookup(ignoredAssetLookup),
       m_forced_load_depth(0u)
 {
+    const auto subAssetTypeCount = IGame::GetGameById(zone.m_game_id)->GetSubAssetTypeCount();
+    m_sub_asset_pools.resize(subAssetTypeCount);
+
+    for (asset_type_t subAssetType = 0; subAssetType < subAssetTypeCount; subAssetType++)
+        m_sub_asset_pools[subAssetType] = std::make_unique<AssetPool>();
 }
 
 XAssetInfoGeneric* AssetCreationContext::AddAssetGeneric(GenericAssetRegistration registration) const
@@ -170,6 +174,10 @@ XAssetInfoGeneric* AssetCreationContext::LoadSubAssetGeneric(const asset_type_t 
             return result.GetAssetInfo();
 
         con::error(R"(Could not load sub asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetSubAssetTypeName(subAssetType));
+    }
+    else
+    {
+        con::error(R"(Missing sub asset "{}" of type "{}")", assetName, *IGame::GetGameById(m_zone.m_game_id)->GetSubAssetTypeName(subAssetType));
     }
 
     return nullptr;
