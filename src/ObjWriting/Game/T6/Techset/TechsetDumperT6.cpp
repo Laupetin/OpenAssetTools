@@ -194,7 +194,7 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
-        techset::CommonTechniqueShader result{};
+        techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::VERTEX, std::string());
         if (!vertexShader)
             return result;
 
@@ -214,7 +214,7 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
-        techset::CommonTechniqueShader result{};
+        techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::PIXEL, std::string());
         if (!pixelShader)
             return result;
 
