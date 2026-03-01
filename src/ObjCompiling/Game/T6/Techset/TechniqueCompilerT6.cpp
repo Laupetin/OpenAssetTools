@@ -207,6 +207,27 @@ namespace
         return technique;
     }
 
+    void ApplyTechFlagsFromMaterial(const Material& material)
+    {
+        if (!material.techniqueSet || material.stateBitsTable)
+            return;
+
+        for (auto techType = 0u; techType < TECHNIQUE_COUNT; techType++)
+        {
+            auto* technique = material.techniqueSet->techniques[techType];
+            const auto stateBitsEntry = material.stateBitsEntry[techType];
+
+            if (!technique || stateBitsEntry < 0 || static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry) >= material.stateBitsCount)
+                continue;
+
+            const auto& stateBits = material.stateBitsTable[static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry)].loadBits;
+            const bool shouldSetFlag80 = stateBits.structured.depthTestDisabled == 0 || stateBits.structured.depthWrite > 0
+                                         || stateBits.structured.depthTest > 0 || stateBits.structured.polygonOffset > 0;
+            if (shouldSetFlag80)
+                technique->flags |= TECHNIQUE_FLAG_80;
+        }
+    }
+
     class TechniqueShaderLoaderT6 final : public techset::ITechniqueShaderLoader
     {
     public:
@@ -256,8 +277,9 @@ namespace
     class TechniqueCompilerT6 final : public SubAssetCreator<SubAssetTechnique>
     {
     public:
-        TechniqueCompilerT6(MemoryManager& memory, ISearchPath& searchPath)
+        TechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
             : m_memory(memory),
+              m_zone(zone),
               m_search_path(searchPath)
         {
         }
@@ -280,16 +302,26 @@ namespace
             return AssetCreationResult::Success(context.AddSubAsset(AssetRegistration<SubAssetTechnique>(subAssetName, convertedTechnique)));
         }
 
+        void FinalizeZone(AssetCreationContext& context) override
+        {
+            const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
+            for (auto* materialAsset : materials)
+            {
+                ApplyTechFlagsFromMaterial(*materialAsset->Asset());
+            }
+        }
+
     private:
         MemoryManager& m_memory;
+        Zone& m_zone;
         ISearchPath& m_search_path;
     };
 } // namespace
 
 namespace techset
 {
-    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
     {
-        return std::make_unique<TechniqueCompilerT6>(memory, searchPath);
+        return std::make_unique<TechniqueCompilerT6>(memory, zone, searchPath);
     }
 } // namespace techset

@@ -317,11 +317,12 @@ namespace
             if (arg.m_type.m_value_type == CommonShaderValueType::CODE_CONST)
             {
                 auto constSourceInfo = m_code_source_infos.GetInfoForCodeConstSource(arg.m_value.code_const_source.m_index);
+                const auto isMatrix = constSourceInfo && constSourceInfo->transposedMatrix.has_value();
 
                 if (isTransposed)
                 {
-                    assert(constSourceInfo);
-                    if (constSourceInfo && constSourceInfo->transposedMatrix)
+                    assert(isMatrix);
+                    if (isMatrix)
                         constSourceInfo = m_code_source_infos.GetInfoForCodeConstSource(*constSourceInfo->transposedMatrix);
                 }
 
@@ -332,6 +333,10 @@ namespace
                         codeAccessor = constSourceInfo->accessor;
                     else
                         codeAccessor = std::format("{}[{}]", constSourceInfo->accessor, arg.m_value.code_const_source.m_index - constSourceInfo->value);
+
+                    // Assert that the value uses 4 rows when matrix and 1 otherwise.
+                    // If this is untrue, there must be more code handling the selected rows
+                    assert((isMatrix && arg.m_value.code_const_source.m_row_count == 4) || arg.m_value.code_const_source.m_row_count == 1);
 
                     if (codeDestAccessor != codeAccessor)
                     {

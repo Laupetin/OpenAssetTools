@@ -111,6 +111,8 @@ AssetCreationResult AssetCreatorCollection::CreateDefaultAsset(const asset_type_
 
 void AssetCreatorCollection::FinalizeZone(AssetCreationContext& context) const
 {
+    for (const auto& creator : m_sub_asset_creators)
+        creator->FinalizeZone(context);
     for (const auto& creator : m_asset_creators)
         creator->FinalizeZone(context);
     for (const auto& postProcessor : m_asset_post_processors)

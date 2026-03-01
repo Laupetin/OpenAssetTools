@@ -8,5 +8,5 @@
 
 namespace techset
 {
-    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, ISearchPath& searchPath);
+    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath);
 }

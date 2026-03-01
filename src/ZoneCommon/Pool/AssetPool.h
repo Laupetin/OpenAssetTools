@@ -102,12 +102,12 @@ public:
     {
     }
 
-    AssetPoolIterator<Asset_t> begin()
+    AssetPoolIterator<Asset_t> begin() const
     {
         return AssetPoolIterator<Asset_t>(m_asset_pool.begin());
     }
 
-    AssetPoolIterator<Asset_t> end()
+    AssetPoolIterator<Asset_t> end() const
     {
         return AssetPoolIterator<Asset_t>(m_asset_pool.end());
     }

@@ -69,7 +69,7 @@ TEST_CASE("TechniqueCompilerT6", "[t6][techset][compiler]")
     creatorCollection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
     creatorCollection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
 
-    auto loader = techset::CreateTechniqueCompilerT6(memory, searchPath);
+    auto loader = techset::CreateTechniqueCompilerT6(memory, zone, searchPath);
 
     SECTION("Can compile simple technique")
     {
