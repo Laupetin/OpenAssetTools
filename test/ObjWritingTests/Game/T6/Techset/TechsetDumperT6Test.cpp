@@ -309,6 +309,7 @@ TEST_CASE("TechsetDumperT6", "[t6][techset][dumper]")
 // TECHNIQUE FLAGS: 0x4
 // TECHNIQUE FLAGS: 0x80
 {
+  // MaterialType: 2; PrecompiledIndex: 3
   stateMap "passthrough"; // TODO
 
   vertexShader 4.0 "simple.hlsl"
@@ -339,6 +340,7 @@ TEST_CASE("TechsetDumperT6", "[t6][techset][dumper]")
 {
   // CUSTOM SAMPLER FLAGS: 0x1
   // CUSTOM SAMPLER FLAGS: 0x2
+  // MaterialType: 0; PrecompiledIndex: 0
   stateMap "passthrough"; // TODO
 
   vertexShader 4.0 "advanced.hlsl"

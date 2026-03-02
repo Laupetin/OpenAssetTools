@@ -283,7 +283,8 @@ namespace techset
                    std::string stateMap,
                    CommonTechniqueShader vertexShader,
                    CommonTechniqueShader pixelShader,
-                   CommonVertexDeclaration vertexDeclaration);
+                   CommonVertexDeclaration vertexDeclaration,
+                   std::string comment);
 
         [[nodiscard]] FrequencyCounts_t GetFrequencyCounts(const CommonCodeSourceInfos& infos) const;
 
@@ -292,6 +293,7 @@ namespace techset
         CommonTechniqueShader m_vertex_shader;
         CommonTechniqueShader m_pixel_shader;
         CommonVertexDeclaration m_vertex_declaration;
+        std::string m_comment;
         std::vector<CommonShaderArg> m_args;
     };
 

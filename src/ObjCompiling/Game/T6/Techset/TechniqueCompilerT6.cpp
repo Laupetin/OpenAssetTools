@@ -8,12 +8,218 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
+#include <optional>
 #include <sstream>
+#include <vector>
 
 using namespace T6;
 
 namespace
 {
+    class PrecompiledIndexMapping
+    {
+    public:
+        [[nodiscard]] bool
+            Matches(const MaterialType materialType, const std::vector<techset::CommonStreamSource>& passCodeConsts, const unsigned samplerFlags) const
+        {
+            if (m_material_type && materialType != *m_material_type)
+                return false;
+            if (m_vertex_const_constraints.size() > passCodeConsts.size())
+                return false;
+
+            auto passCodeConstIndex = 0u;
+            for (const auto codeConstConstraint : m_vertex_const_constraints)
+            {
+                if (passCodeConsts[passCodeConstIndex++] != codeConstConstraint)
+                    return false;
+            }
+
+            auto expectedSamplerFlags = 0u;
+            for (const auto customSampler : m_custom_sampler_constraints)
+                expectedSamplerFlags |= (1 << customSampler);
+
+            return samplerFlags == expectedSamplerFlags;
+        }
+
+        VertexShaderPrecompiledIndex m_value;
+        std::optional<MaterialType> m_material_type;
+        std::vector<MaterialConstantSource> m_vertex_const_constraints;
+        std::vector<CustomSampler> m_custom_sampler_constraints;
+    };
+
+    // clang-format off
+    inline PrecompiledIndexMapping precompiledIndexMappings[]{
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },                                       
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+            },
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+            },
+            .m_custom_sampler_constraints = {},
+         },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            }, 
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+            },                                              
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            },
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT,
+            .m_material_type = MTL_TYPE_MODEL_VERTCOL,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            },
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+            },                 
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+            }, 
+            .m_custom_sampler_constraints = {},
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            },
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            }, 
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+            },
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            },
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_LIT_LIGHTMAP_VC,
+            .m_material_type = MTL_TYPE_MODEL_LIGHTMAP_VC,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_0,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_1,
+                CONST_SRC_CODE_GRID_LIGHTING_SH_2,
+            }, 
+            .m_custom_sampler_constraints = {
+                CUSTOM_SAMPLER_REFLECTION_PROBE,
+            }, 
+        },
+        {
+            .m_value = VERTEX_SHADER_MODEL_UNLIT,
+            .m_material_type = std::nullopt,
+            .m_vertex_const_constraints = {
+                CONST_SRC_CODE_WORLD_MATRIX,
+            },                                              
+            .m_custom_sampler_constraints = {},
+        },
+    };
+    // clang-format on
+
     unsigned ConvertArgumentType(const techset::CommonShaderArgumentType& type)
     {
         if (type.m_shader_type == techset::CommonTechniqueShaderType::VERTEX)
@@ -233,6 +439,41 @@ namespace
         }
     }
 
+    void ApplyPrecompiledIndex(MaterialPass& pass)
+    {
+        if (!pass.args)
+            return;
+
+        std::vector<techset::CommonStreamSource> codeConstants;
+        const auto argCount = static_cast<unsigned>(pass.perPrimArgCount);
+        for (auto argIndex = 0u; argIndex < argCount; argIndex++)
+        {
+            const auto& arg = pass.args[argIndex];
+            if (arg.type != MTL_ARG_CODE_VERTEX_CONST)
+                continue;
+
+            const auto codeConst = static_cast<techset::CommonStreamSource>(arg.u.codeConst.index);
+
+            // Make sure we are agnostic of the used transposed versions
+            const auto codeConstInfo = commonCodeSourceInfos.GetInfoForCodeConstSource(codeConst);
+            if (codeConstInfo && codeConstInfo->transposedMatrix)
+                codeConstants.emplace_back(std::min(codeConst, *codeConstInfo->transposedMatrix));
+            else
+                codeConstants.emplace_back(codeConst);
+        }
+
+        const auto end = std::end(precompiledIndexMappings);
+        const auto foundMapping = std::find_if(std::begin(precompiledIndexMappings),
+                                               end,
+                                               [&codeConstants, pass](const PrecompiledIndexMapping& mapping) -> bool
+                                               {
+                                                   return mapping.Matches(pass.materialType, codeConstants, pass.customSamplerFlags);
+                                               });
+
+        if (foundMapping != end)
+            pass.precompiledIndex = foundMapping->m_value;
+    }
+
     class TechniqueShaderLoaderT6 final : public techset::ITechniqueShaderLoader
     {
     public:
@@ -313,6 +554,16 @@ namespace
             for (auto* materialAsset : materials)
             {
                 ApplyTechFlagsFromMaterial(*materialAsset->Asset(), m_zone);
+            }
+
+            const auto techniques = context.PoolSubAssets<SubAssetTechnique>();
+            for (auto* techniqueSubAsset : techniques)
+            {
+                auto& technique = *techniqueSubAsset->Asset();
+                for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+                {
+                    ApplyPrecompiledIndex(technique.passArray[passIndex]);
+                }
             }
         }
 

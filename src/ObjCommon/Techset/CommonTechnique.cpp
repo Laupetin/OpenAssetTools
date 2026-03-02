@@ -280,12 +280,14 @@ namespace techset
                            std::string stateMap,
                            CommonTechniqueShader vertexShader,
                            CommonTechniqueShader pixelShader,
-                           CommonVertexDeclaration vertexDeclaration)
+                           CommonVertexDeclaration vertexDeclaration,
+                           std::string comment)
         : m_sampler_flags(samplerFlags),
           m_state_map(std::move(stateMap)),
           m_vertex_shader(std::move(vertexShader)),
           m_pixel_shader(std::move(pixelShader)),
-          m_vertex_declaration(std::move(vertexDeclaration))
+          m_vertex_declaration(std::move(vertexDeclaration)),
+          m_comment(std::move(comment))
     {
     }
 

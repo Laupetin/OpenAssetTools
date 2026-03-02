@@ -67,6 +67,12 @@ namespace
                         m_stream << std::format("// CUSTOM SAMPLER FLAGS: 0x{:x}\n", mask);
                     }
                 }
+
+                if (!pass.m_comment.empty())
+                {
+                    Indent();
+                    m_stream << std::format("// {}\n", pass.m_comment);
+                }
             }
 
             DumpStateMap();

@@ -232,19 +232,28 @@ namespace
         return result;
     }
 
-    techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique)
+    techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique, const bool debug)
     {
         techset::CommonTechnique commonTechnique(technique.name ? technique.name : std::string(), technique.flags);
 
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
         {
             const auto& pass = technique.passArray[passIndex];
+
+            std::string comment;
+            if (debug)
+            {
+                comment = std::format(
+                    "MaterialType: {}; PrecompiledIndex: {}", static_cast<unsigned>(pass.materialType), static_cast<unsigned>(pass.precompiledIndex));
+            }
+
             techset::CommonPass commonPass(pass.customSamplerFlags,
                                            // No clue what the actual state map was
                                            "passthrough",
                                            ConvertToCommonShader(pass.vertexShader),
                                            ConvertToCommonShader(pass.pixelShader),
-                                           ConvertToCommonVertexDeclaration(pass.vertexDecl));
+                                           ConvertToCommonVertexDeclaration(pass.vertexDecl),
+                                           std::move(comment));
 
             if (pass.args)
             {
@@ -268,7 +277,7 @@ namespace
         {
             if (technique && techniqueState->ShouldDumpTechnique(technique))
             {
-                const auto commonTechnique = ConvertToCommonTechnique(*technique);
+                const auto commonTechnique = ConvertToCommonTechnique(*technique, debug);
 
                 techset::DumpCommonTechnique(
                     context, commonTechnique, techset::DxVersion::DX11, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState, debug);

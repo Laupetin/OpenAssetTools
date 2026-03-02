@@ -193,7 +193,8 @@ namespace
                                            "passthrough",
                                            ConvertToCommonShader(pass.vertexShader),
                                            ConvertToCommonShader(pass.pixelShader),
-                                           ConvertToCommonVertexDeclaration(pass.vertexDecl));
+                                           ConvertToCommonVertexDeclaration(pass.vertexDecl),
+                                           std::string());
 
             if (pass.args)
             {

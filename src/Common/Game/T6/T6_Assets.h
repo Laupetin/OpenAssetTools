@@ -3001,7 +3001,7 @@ namespace T6
         VERTEX_SHADER_MODEL_UNLIT,
     };
 
-    enum CustomSamplers
+    enum CustomSampler
     {
         CUSTOM_SAMPLER_REFLECTION_PROBE = 0,
         CUSTOM_SAMPLER_LIGHTMAP_SECONDARY,
@@ -6191,7 +6191,7 @@ namespace T6
         unsigned int nameHash;
     };
 
-    enum MaterialShaderArgumentType
+    enum MaterialShaderArgumentType : uint16_t
     {
         MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
         MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
@@ -6213,7 +6213,7 @@ namespace T6
 
     struct MaterialShaderArgument
     {
-        uint16_t type;
+        MaterialShaderArgumentType type;
         MaterialArgumentLocation location;
         uint16_t size;
         uint16_t buffer;
