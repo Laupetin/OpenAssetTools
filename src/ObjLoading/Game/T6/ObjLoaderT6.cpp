@@ -29,6 +29,8 @@
 #include "Slug/LoaderSlugT6.h"
 #include "Sound/LoaderSoundBankT6.h"
 #include "StringTable/LoaderStringTableT6.h"
+#include "Techset/PixelShaderLoaderT6.h"
+#include "Techset/VertexShaderLoaderT6.h"
 #include "Tracer/GdtLoaderTracerT6.h"
 #include "Tracer/RawLoaderTracerT6.h"
 #include "Utils/Logging/Log.h"
@@ -434,6 +436,9 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
             collection.AddAssetCreator(z_barrier::CreateRawLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(z_barrier::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
+
+            collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
+            collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
         }
     } // namespace
 

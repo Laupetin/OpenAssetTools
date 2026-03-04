@@ -42,7 +42,7 @@ public:
 class ZoneAssetCreationStateContainer
 {
 public:
-    ZoneAssetCreationStateContainer(Zone& zone)
+    explicit ZoneAssetCreationStateContainer(Zone& zone)
         : m_injection(*this, zone)
     {
     }

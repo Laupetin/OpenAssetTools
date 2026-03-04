@@ -67,7 +67,7 @@ private:
     std::vector<std::unique_ptr<XAssetInfoGeneric>> m_assets;
 };
 
-template<AssetDefinition Asset_t> class AssetPoolIterator
+template<AssetOrSubAssetDefinition Asset_t> class AssetPoolIterator
 {
 public:
     explicit AssetPoolIterator(AssetPool::Iterator i)
@@ -94,7 +94,7 @@ private:
     AssetPool::Iterator m_iterator;
 };
 
-template<AssetDefinition Asset_t> class AssetPoolIterators
+template<AssetOrSubAssetDefinition Asset_t> class AssetPoolIterators
 {
 public:
     explicit AssetPoolIterators(AssetPool& assetPool)
@@ -102,12 +102,12 @@ public:
     {
     }
 
-    AssetPoolIterator<Asset_t> begin()
+    AssetPoolIterator<Asset_t> begin() const
     {
         return AssetPoolIterator<Asset_t>(m_asset_pool.begin());
     }
 
-    AssetPoolIterator<Asset_t> end()
+    AssetPoolIterator<Asset_t> end() const
     {
         return AssetPoolIterator<Asset_t>(m_asset_pool.end());
     }

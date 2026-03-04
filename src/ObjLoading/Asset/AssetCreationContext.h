@@ -3,6 +3,7 @@
 #include "Asset/IZoneAssetCreationState.h"
 #include "AssetRegistration.h"
 #include "Game/IAsset.h"
+#include "Pool/AssetPool.h"
 #include "Pool/XAssetInfo.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/ZoneTypes.h"
@@ -88,6 +89,11 @@ public:
     }
 
     XAssetInfoGeneric* ForceLoadDependencyGeneric(asset_type_t assetType, const std::string& assetName);
+
+    template<SubAssetDefinition SubAsset_t> [[nodiscard]] AssetPoolIterators<SubAsset_t> PoolSubAssets() const
+    {
+        return AssetPoolIterators<SubAsset_t>(*m_sub_asset_pools[SubAsset_t::EnumEntry]);
+    }
 
 private:
     [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName);

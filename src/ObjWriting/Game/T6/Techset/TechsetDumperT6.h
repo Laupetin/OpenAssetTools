@@ -8,9 +8,14 @@ namespace techset
     class DumperT6 final : public AbstractAssetDumper<T6::AssetTechniqueSet>
     {
     public:
+        explicit DumperT6(bool debug);
+
         void Dump(AssetDumpingContext& context) override;
 
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<T6::AssetTechniqueSet::Type>& asset) override;
+
+    private:
+        bool m_debug;
     };
 } // namespace techset

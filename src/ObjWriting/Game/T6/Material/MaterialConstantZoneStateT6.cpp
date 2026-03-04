@@ -409,6 +409,7 @@ namespace
         "colorMap",
         "colorMap1",
         "colorMap2",
+        "colorMap3",
         "colorMap2D",
         "colorMapPostSun",
         "colorMapPostSunSampler",
