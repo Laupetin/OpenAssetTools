@@ -18,6 +18,74 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonAsset, version, generator);
 
+    class JsonPunctualSpotLightProperties
+    {
+    public:
+        std::optional<float> innerConeAngle;
+        std::optional<float> outerConeAngle;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPunctualSpotLightProperties, innerConeAngle, outerConeAngle);
+
+    enum class JsonPunctualLightType
+    {
+        DIRECTIONAL,
+        POINT,
+        SPOT
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(JsonPunctualLightType,
+                                 {
+                                     {JsonPunctualLightType::DIRECTIONAL, "directional"},
+                                     {JsonPunctualLightType::POINT,       "point"      },
+                                     {JsonPunctualLightType::SPOT,        "spot"       },
+    });
+
+    class JsonPunctualLight
+    {
+    public:
+        std::optional<std::array<float, 3>> color;
+        std::optional<float> intensity;
+        std::optional<std::string> name;
+        std::optional<float> range;
+        std::optional<JsonPunctualSpotLightProperties> spot;
+        JsonPunctualLightType type;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPunctualLight, color, intensity, name, range, spot, type);
+
+    class JsonPunctualLightsExt
+    {
+    public:
+        std::optional<std::vector<JsonPunctualLight>> lights;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPunctualLightsExt, lights);
+
+    class JsonExtension
+    {
+    public:
+        std::optional<JsonPunctualLightsExt> KHR_lights_punctual;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonExtension, KHR_lights_punctual);
+
+    class JsonPunctualLightIndex
+    {
+    public:
+        int light;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPunctualLightIndex, light);
+
+    class JsonNodeExt
+    {
+    public:
+        std::optional<JsonPunctualLightIndex> KHR_lights_punctual;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExt, KHR_lights_punctual);
+
     class JsonNode
     {
     public:
@@ -29,9 +97,11 @@ namespace gltf
         std::optional<std::vector<unsigned>> children;
         std::optional<unsigned> skin;
         std::optional<unsigned> mesh;
+
+        std::optional<JsonNodeExt> extensions;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, matrix, children, skin, mesh);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, matrix, children, skin, mesh, extensions);
 
     class JsonBuffer
     {
@@ -338,8 +408,9 @@ namespace gltf
         std::optional<unsigned> scene;
         std::optional<std::vector<JsonScene>> scenes;
         std::optional<std::vector<JsonTexture>> textures;
+        std::optional<JsonExtension> extensions;
     };
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
-        JsonRoot, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, skins, scene, scenes, textures);
+        JsonRoot, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, skins, scene, scenes, textures, extensions);
 } // namespace gltf
