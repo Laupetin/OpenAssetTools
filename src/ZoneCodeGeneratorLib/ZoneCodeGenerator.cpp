@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    bool ReadHeaderData()
+    [[nodiscard]] bool ReadHeaderData() const
     {
         for (const auto& headerFile : m_args.m_header_paths)
         {
@@ -62,7 +62,7 @@ private:
         return true;
     }
 
-    bool ReadCommandsData()
+    [[nodiscard]] bool ReadCommandsData() const
     {
         for (const auto& commandsFile : m_args.m_command_paths)
         {

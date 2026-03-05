@@ -18,6 +18,10 @@ public:
     std::vector<std::string> m_command_paths;
     std::string m_output_directory;
 
+    // Generate a build log that is always written for the compiler to determine
+    // the last output time.
+    std::string m_build_log_file;
+
     std::vector<std::string> m_template_names;
 
 private:
