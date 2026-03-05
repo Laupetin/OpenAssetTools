@@ -8,11 +8,132 @@
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
+#include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <sstream>
 
 namespace fs = std::filesystem;
+
+namespace
+{
+    class CodeGeneratorOutput final
+    {
+    public:
+        explicit CodeGeneratorOutput(fs::path path)
+            : m_path(std::move(path)),
+              m_open(false),
+              m_has_existing_file(false)
+        {
+        }
+
+        ~CodeGeneratorOutput()
+        {
+            Close();
+        }
+
+        bool Open()
+        {
+            if (m_open)
+                return false;
+
+            auto parentFolder(m_path);
+            parentFolder.remove_filename();
+            create_directories(parentFolder);
+
+            m_has_existing_file = fs::is_regular_file(m_path);
+
+            if (!m_has_existing_file)
+            {
+                m_file_stream = std::ofstream(m_path, std::fstream::out | std::fstream::binary);
+                if (!m_file_stream.is_open())
+                    return false;
+            }
+
+            m_open = true;
+            return true;
+        }
+
+        std::ostream& Stream()
+        {
+            if (!m_has_existing_file)
+                return m_file_stream;
+
+            return m_memory;
+        }
+
+        CodeGeneratorOutputResult Close()
+        {
+            if (!m_open)
+                return CodeGeneratorOutputResult::FAILURE;
+
+            m_open = false;
+
+            if (m_has_existing_file)
+            {
+                const auto renderedContent = std::move(m_memory).str();
+                m_memory = std::ostringstream();
+
+                if (!FileIsDirty(renderedContent))
+                    return CodeGeneratorOutputResult::OUTPUT_WAS_UP_TO_DATE;
+
+                std::ofstream stream(m_path, std::fstream::out | std::fstream::binary);
+                if (!stream.is_open())
+                    return CodeGeneratorOutputResult::FAILURE;
+
+                stream.write(renderedContent.data(), renderedContent.size());
+                stream.close();
+            }
+
+            return CodeGeneratorOutputResult::OUTPUT_WRITTEN;
+        }
+
+    private:
+        [[nodiscard]] bool FileIsDirty(const std::string& renderedContent) const
+        {
+            const auto fileSize = static_cast<size_t>(fs::file_size(m_path));
+            const size_t contentSize = renderedContent.size();
+            if (fileSize != contentSize)
+                return true;
+
+            std::ifstream oldFileStream(m_path, std::fstream::in | std::fstream::binary);
+            if (!oldFileStream.is_open())
+                return true;
+
+            char buffer[4096];
+            size_t currentContentOffset = 0;
+            while (currentContentOffset < contentSize)
+            {
+                const auto expectedReadCount = std::min<size_t>(sizeof(buffer), contentSize - currentContentOffset);
+                oldFileStream.read(buffer, expectedReadCount);
+                if (oldFileStream.gcount() != expectedReadCount)
+                {
+                    oldFileStream.close();
+                    return true;
+                }
+
+                if (memcmp(buffer, renderedContent.data() + currentContentOffset, expectedReadCount) != 0)
+                {
+                    oldFileStream.close();
+                    return true;
+                }
+
+                currentContentOffset += expectedReadCount;
+            }
+
+            oldFileStream.close();
+            return false;
+        }
+
+        fs::path m_path;
+
+        bool m_open;
+        bool m_has_existing_file;
+        std::ofstream m_file_stream;
+        std::ostringstream m_memory;
+    };
+} // namespace
 
 CodeGenerator::CodeGenerator(const ZoneCodeGeneratorArguments* args)
     : m_args(args)
@@ -28,58 +149,66 @@ void CodeGenerator::SetupTemplates()
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
 
-bool CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
+CodeGeneratorOutputResult CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
+    bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerTemplate(context))
     {
-        fs::path p(m_args->m_output_directory);
-        p.append(codeFile.m_file_name);
+        fs::path outputPath(m_args->m_output_directory);
+        outputPath.append(codeFile.m_file_name);
 
-        auto parentFolder(p);
-        parentFolder.remove_filename();
-        create_directories(parentFolder);
-
-        std::ofstream stream(p, std::fstream::out | std::fstream::binary);
-
-        if (!stream.is_open())
+        CodeGeneratorOutput out(outputPath);
+        if (!out.Open())
         {
-            con::error("Failed to open file '{}'", p.string());
-            return false;
+            con::error("Failed to open file '{}'", outputPath.string());
+            return CodeGeneratorOutputResult::FAILURE;
         }
 
-        codeTemplate->RenderOncePerTemplateFile(stream, codeFile.m_tag, context);
+        codeTemplate->RenderOncePerTemplateFile(out.Stream(), codeFile.m_tag, context);
 
-        stream.close();
+        const auto fileResult = out.Close();
+        if (fileResult == CodeGeneratorOutputResult::FAILURE)
+        {
+            con::error("Failed to write file '{}'", outputPath.string());
+            return CodeGeneratorOutputResult::FAILURE;
+        }
+
+        if (fileResult == CodeGeneratorOutputResult::OUTPUT_WRITTEN)
+            wroteAtLeastOneFile = true;
     }
 
-    return true;
+    return wroteAtLeastOneFile ? CodeGeneratorOutputResult::OUTPUT_WRITTEN : CodeGeneratorOutputResult::OUTPUT_WAS_UP_TO_DATE;
 }
 
-bool CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
+CodeGeneratorOutputResult CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
+    bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerAsset(context))
     {
-        fs::path p(m_args->m_output_directory);
-        p.append(codeFile.m_file_name);
+        fs::path outputPath(m_args->m_output_directory);
+        outputPath.append(codeFile.m_file_name);
 
-        auto parentFolder(p);
-        parentFolder.remove_filename();
-        create_directories(parentFolder);
-
-        std::ofstream stream(p, std::fstream::out | std::fstream::binary);
-
-        if (!stream.is_open())
+        CodeGeneratorOutput out(outputPath);
+        if (!out.Open())
         {
-            con::error("Failed to open file '{}'", p.string());
-            return false;
+            con::error("Failed to open file '{}'", outputPath.string());
+            return CodeGeneratorOutputResult::FAILURE;
         }
 
-        codeTemplate->RenderOncePerAssetFile(stream, codeFile.m_tag, context);
+        codeTemplate->RenderOncePerAssetFile(out.Stream(), codeFile.m_tag, context);
 
-        stream.close();
+        const auto fileResult = out.Close();
+        if (fileResult == CodeGeneratorOutputResult::FAILURE)
+        {
+            con::error("Failed to write file '{}'", outputPath.string());
+            return CodeGeneratorOutputResult::FAILURE;
+        }
+
+        if (fileResult == CodeGeneratorOutputResult::OUTPUT_WRITTEN)
+            wroteAtLeastOneFile = true;
     }
 
-    return true;
+    return wroteAtLeastOneFile ? CodeGeneratorOutputResult::OUTPUT_WRITTEN : CodeGeneratorOutputResult::OUTPUT_WAS_UP_TO_DATE;
 }
 
 bool CodeGenerator::GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset)
@@ -135,24 +264,36 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
         for (auto* asset : assets)
         {
             auto context = OncePerAssetRenderingContext::BuildContext(repository, asset);
-            if (!GenerateCodeOncePerAsset(*context, foundTemplate->second.get()))
+            const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
+            switch (result)
             {
+            case CodeGeneratorOutputResult::OUTPUT_WRITTEN:
+                con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                break;
+            case CodeGeneratorOutputResult::OUTPUT_WAS_UP_TO_DATE:
+                con::info("Code was up to date for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                break;
+            case CodeGeneratorOutputResult::FAILURE:
                 con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
                 return false;
             }
-
-            con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
         }
 
         {
             auto context = OncePerTemplateRenderingContext::BuildContext(repository);
-            if (!GenerateCodeOncePerTemplate(*context, foundTemplate->second.get()))
+            const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
+            switch (result)
             {
+            case CodeGeneratorOutputResult::OUTPUT_WRITTEN:
+                con::info("Successfully generated code with preset '{}'", foundTemplate->first);
+                break;
+            case CodeGeneratorOutputResult::OUTPUT_WAS_UP_TO_DATE:
+                con::info("Code was up to date for preset '{}'", foundTemplate->first);
+                break;
+            case CodeGeneratorOutputResult::FAILURE:
                 con::error("Failed to generate code with preset '{}'", foundTemplate->first);
                 return false;
             }
-
-            con::info("Successfully generated code with preset '{}'", foundTemplate->first);
         }
     }
     const auto end = std::chrono::steady_clock::now();

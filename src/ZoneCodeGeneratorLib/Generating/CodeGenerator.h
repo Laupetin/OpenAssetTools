@@ -3,9 +3,17 @@
 #include "ICodeTemplate.h"
 #include "ZoneCodeGeneratorArguments.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+enum class CodeGeneratorOutputResult : std::uint8_t
+{
+    OUTPUT_WRITTEN,
+    OUTPUT_WAS_UP_TO_DATE,
+    FAILURE
+};
 
 class CodeGenerator
 {
@@ -17,8 +25,8 @@ public:
 private:
     void SetupTemplates();
 
-    bool GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
-    bool GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    CodeGeneratorOutputResult GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    CodeGeneratorOutputResult GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
 
     static bool GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 
