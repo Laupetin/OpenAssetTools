@@ -32,6 +32,7 @@ namespace utils
     class TextFileCheckDirtyOutput final
     {
     public:
+        TextFileCheckDirtyOutput();
         explicit TextFileCheckDirtyOutput(std::filesystem::path path);
         ~TextFileCheckDirtyOutput();
         TextFileCheckDirtyOutput(const TextFileCheckDirtyOutput& other) = delete;

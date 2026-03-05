@@ -67,6 +67,12 @@ namespace utils
         return true;
     }
 
+    TextFileCheckDirtyOutput::TextFileCheckDirtyOutput()
+        : m_open(false),
+          m_has_existing_file(false)
+    {
+    }
+
     TextFileCheckDirtyOutput::TextFileCheckDirtyOutput(fs::path path)
         : m_path(std::move(path)),
           m_open(false),

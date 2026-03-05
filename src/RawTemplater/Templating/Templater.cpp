@@ -8,6 +8,7 @@
 #include "SetDefineStreamProxy.h"
 #include "TemplatingStreamProxy.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/FileUtils.h"
 #include "Utils/Logging/Log.h"
 
 #include <filesystem>
@@ -198,9 +199,9 @@ namespace templating
                     if (m_first_line)
                         m_first_line = false;
                     else
-                        m_output_stream << '\n';
+                        m_output.Stream() << '\n';
 
-                    m_output_stream << nextLine.m_line;
+                    m_output.Stream() << nextLine.m_line;
                 }
                 else
                 {
@@ -229,19 +230,35 @@ namespace templating
 
                 const auto cachedData = m_output_cache.str();
                 if (!cachedData.empty())
-                    m_output_stream << cachedData;
+                    m_output.Stream() << cachedData;
             }
 
-            con::info("Templated file \"{}\"", m_output_file);
+            const auto outputResult = m_output.Close();
+            switch (outputResult)
+            {
+            case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+                con::info("Templated file: \"{}\"", m_output_file);
+                if (buildLogFile)
+                    *buildLogFile << "Templated file: \"" << m_output_file << "\"\n";
+                break;
 
-            if (buildLogFile)
-                *buildLogFile << "Templated file \"" << m_output_file << "\"\n";
+            case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+                con::info("File was up to date: \"{}\"", m_output_file);
+                if (buildLogFile)
+                    *buildLogFile << "File was up to date: \"" << m_output_file << "\"\n";
+                break;
+
+            case utils::TextFileCheckDirtyResult::FAILURE:
+                con::error("Failed to write file: \"{}\"", m_output_file);
+                if (buildLogFile)
+                    *buildLogFile << "Failed to write file: \"" << m_output_file << "\"\n";
+                break;
+            }
 
             m_first_line = true;
             m_write_output_to_file = false;
             m_output_cache.clear();
             m_output_cache.str(std::string());
-            m_output_stream.close();
 
             return true;
         }
@@ -327,7 +344,7 @@ namespace templating
             m_write_output_to_file = true;
             const auto cachedData = m_output_cache.str();
             if (!cachedData.empty())
-                m_output_stream << cachedData;
+                m_output.Stream() << cachedData;
             m_output_cache.clear();
             m_output_cache.str(std::string());
 
@@ -353,8 +370,8 @@ namespace templating
             if (!parentDir.empty())
                 create_directories(parentDir);
 
-            m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
-            if (!m_output_stream.is_open())
+            m_output = utils::TextFileCheckDirtyOutput(m_output_file);
+            if (!m_output.Open())
             {
                 con::error("Failed to open output file \"{}\"", m_output_file);
                 return false;
@@ -371,12 +388,12 @@ namespace templating
         std::string m_filename;
         std::string m_output_file;
         std::string m_default_output_file;
-        const fs::path m_output_directory;
+        fs::path m_output_directory;
 
         bool m_first_line;
         bool m_skip_pass;
         bool m_write_output_to_file;
-        std::ofstream m_output_stream;
+        utils::TextFileCheckDirtyOutput m_output;
         std::ostringstream m_output_cache;
     };
 } // namespace templating
