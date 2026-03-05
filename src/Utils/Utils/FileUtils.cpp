@@ -2,62 +2,67 @@
 
 #include <sstream>
 
-bool FileUtils::ParsePathsString(const std::string& pathsString, std::set<std::string>& output)
+namespace fs = std::filesystem;
+
+namespace utils
 {
-    std::ostringstream currentPath;
-    auto pathStart = true;
-    auto quotationPos = 0; // 0 = before quotations, 1 = in quotations, 2 = after quotations
-
-    for (auto character : pathsString)
+    bool ParsePathsString(const std::string& pathsString, std::set<std::string>& output)
     {
-        switch (character)
+        std::ostringstream currentPath;
+        auto pathStart = true;
+        auto quotationPos = 0; // 0 = before quotations, 1 = in quotations, 2 = after quotations
+
+        for (const auto character : pathsString)
         {
-        case '"':
-            if (quotationPos == 0 && pathStart)
+            switch (character)
             {
-                quotationPos = 1;
-            }
-            else if (quotationPos == 1)
-            {
-                quotationPos = 2;
-                pathStart = false;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-
-        case ';':
-            if (quotationPos != 1)
-            {
-                auto path = currentPath.str();
-                if (!path.empty())
+            case '"':
+                if (quotationPos == 0 && pathStart)
                 {
-                    output.insert(path);
-                    currentPath = std::ostringstream();
+                    quotationPos = 1;
                 }
+                else if (quotationPos == 1)
+                {
+                    quotationPos = 2;
+                    pathStart = false;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
 
-                pathStart = true;
-                quotationPos = 0;
-            }
-            else
-            {
+            case ';':
+                if (quotationPos != 1)
+                {
+                    auto path = currentPath.str();
+                    if (!path.empty())
+                    {
+                        output.insert(path);
+                        currentPath = std::ostringstream();
+                    }
+
+                    pathStart = true;
+                    quotationPos = 0;
+                }
+                else
+                {
+                    currentPath << character;
+                }
+                break;
+
+            default:
                 currentPath << character;
+                pathStart = false;
+                break;
             }
-            break;
-
-        default:
-            currentPath << character;
-            pathStart = false;
-            break;
         }
-    }
 
-    if (currentPath.tellp() > 0)
-    {
-        output.insert(currentPath.str());
-    }
+        if (currentPath.tellp() > 0)
+        {
+            output.insert(currentPath.str());
+        }
 
-    return true;
-}
+        return true;
+    }
+} // namespace utils

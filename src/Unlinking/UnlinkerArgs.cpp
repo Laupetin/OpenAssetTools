@@ -330,7 +330,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     // --search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SEARCH_PATH), m_user_search_paths))
+        if (!utils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SEARCH_PATH), m_user_search_paths))
         {
             return false;
         }

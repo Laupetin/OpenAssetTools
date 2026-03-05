@@ -1,12 +1,13 @@
 #pragma once
+
 #include "Utils/FileUtils.h"
 
 #include <cstdint>
 
-constexpr uint32_t WAV_WAVE_ID = FileUtils::MakeMagic32('W', 'A', 'V', 'E');
-constexpr uint32_t WAV_CHUNK_ID_RIFF = FileUtils::MakeMagic32('R', 'I', 'F', 'F');
-constexpr uint32_t WAV_CHUNK_ID_FMT = FileUtils::MakeMagic32('f', 'm', 't', ' ');
-constexpr uint32_t WAV_CHUNK_ID_DATA = FileUtils::MakeMagic32('d', 'a', 't', 'a');
+constexpr uint32_t WAV_WAVE_ID = utils::MakeMagic32('W', 'A', 'V', 'E');
+constexpr uint32_t WAV_CHUNK_ID_RIFF = utils::MakeMagic32('R', 'I', 'F', 'F');
+constexpr uint32_t WAV_CHUNK_ID_FMT = utils::MakeMagic32('f', 'm', 't', ' ');
+constexpr uint32_t WAV_CHUNK_ID_DATA = utils::MakeMagic32('d', 'a', 't', 'a');
 
 struct WavChunkHeader
 {

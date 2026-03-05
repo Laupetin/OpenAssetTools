@@ -12,7 +12,7 @@
 
 namespace
 {
-    constexpr auto FLAC_MAGIC = FileUtils::MakeMagic32('f', 'L', 'a', 'C');
+    constexpr auto FLAC_MAGIC = utils::MakeMagic32('f', 'L', 'a', 'C');
 
     enum class MetaDataBlockType : unsigned
     {

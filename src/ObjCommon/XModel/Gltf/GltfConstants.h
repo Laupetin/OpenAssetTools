@@ -7,12 +7,12 @@
 
 namespace gltf
 {
-    constexpr uint32_t GLTF_MAGIC = FileUtils::MakeMagic32('g', 'l', 'T', 'F');
+    constexpr uint32_t GLTF_MAGIC = utils::MakeMagic32('g', 'l', 'T', 'F');
     constexpr uint32_t GLTF_VERSION = 2u;
     constexpr auto GLTF_VERSION_STRING = "2.0";
 
-    constexpr uint32_t CHUNK_MAGIC_JSON = FileUtils::MakeMagic32('J', 'S', 'O', 'N');
-    constexpr uint32_t CHUNK_MAGIC_BIN = FileUtils::MakeMagic32('B', 'I', 'N', '\x00');
+    constexpr uint32_t CHUNK_MAGIC_JSON = utils::MakeMagic32('J', 'S', 'O', 'N');
+    constexpr uint32_t CHUNK_MAGIC_BIN = utils::MakeMagic32('B', 'I', 'N', '\x00');
 
     constexpr auto GLTF_LENGTH_OFFSET = 8u;
     constexpr auto GLTF_JSON_CHUNK_LENGTH_OFFSET = 12u;

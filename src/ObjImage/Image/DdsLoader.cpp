@@ -1,7 +1,6 @@
 #include "DdsLoader.h"
 
 #include "Image/DdsTypes.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/FileUtils.h"
 #include "Utils/Logging/Log.h"
 
@@ -15,7 +14,7 @@ namespace
 {
     class DdsLoaderInternal
     {
-        static constexpr auto DDS_MAGIC = FileUtils::MakeMagic32('D', 'D', 'S', ' ');
+        static constexpr auto DDS_MAGIC = utils::MakeMagic32('D', 'D', 'S', ' ');
 
     public:
         explicit DdsLoaderInternal(std::istream& stream)
@@ -105,29 +104,29 @@ namespace
         {
             switch (pf.dwFourCC)
             {
-            case FileUtils::MakeMagic32('D', 'X', 'T', '1'):
+            case utils::MakeMagic32('D', 'X', 'T', '1'):
                 m_format = &ImageFormat::FORMAT_BC1;
                 return true;
 
-            case FileUtils::MakeMagic32('D', 'X', 'T', '3'):
+            case utils::MakeMagic32('D', 'X', 'T', '3'):
                 m_format = &ImageFormat::FORMAT_BC2;
                 return true;
 
-            case FileUtils::MakeMagic32('D', 'X', 'T', '5'):
+            case utils::MakeMagic32('D', 'X', 'T', '5'):
                 m_format = &ImageFormat::FORMAT_BC3;
                 return true;
 
-            case FileUtils::MakeMagic32('A', 'T', 'I', '1'):
-            case FileUtils::MakeMagic32('B', 'C', '4', 'U'):
+            case utils::MakeMagic32('A', 'T', 'I', '1'):
+            case utils::MakeMagic32('B', 'C', '4', 'U'):
                 m_format = &ImageFormat::FORMAT_BC4;
                 return true;
 
-            case FileUtils::MakeMagic32('A', 'T', 'I', '2'):
-            case FileUtils::MakeMagic32('B', 'C', '5', 'U'):
+            case utils::MakeMagic32('A', 'T', 'I', '2'):
+            case utils::MakeMagic32('B', 'C', '5', 'U'):
                 m_format = &ImageFormat::FORMAT_BC5;
                 return true;
 
-            case FileUtils::MakeMagic32('D', 'X', '1', '0'):
+            case utils::MakeMagic32('D', 'X', '1', '0'):
                 return ReadDxt10Header();
 
             default:
