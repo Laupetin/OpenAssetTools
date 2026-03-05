@@ -225,50 +225,50 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     // --asset-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_ASSET_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_ASSET_SEARCH_PATH), m_asset_search_paths))
+        if (!utils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_ASSET_SEARCH_PATH), m_asset_search_paths))
             return false;
     }
     else
     {
-        if (!FileUtils::ParsePathsString(DEFAULT_ASSET_SEARCH_PATH, m_asset_search_paths))
+        if (!utils::ParsePathsString(DEFAULT_ASSET_SEARCH_PATH, m_asset_search_paths))
             return false;
     }
 
     // --add-assets-search-path
     for (const auto& specifiedValue : m_argument_parser.GetParametersForOption(OPTION_ADD_ASSET_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(specifiedValue, m_asset_search_paths))
+        if (!utils::ParsePathsString(specifiedValue, m_asset_search_paths))
             return false;
     }
 
     // --gdt-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_GDT_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_GDT_SEARCH_PATH), m_gdt_search_paths))
+        if (!utils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_GDT_SEARCH_PATH), m_gdt_search_paths))
             return false;
     }
     else
     {
-        if (!FileUtils::ParsePathsString(DEFAULT_GDT_SEARCH_PATH, m_gdt_search_paths))
+        if (!utils::ParsePathsString(DEFAULT_GDT_SEARCH_PATH, m_gdt_search_paths))
             return false;
     }
 
     // --source-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_SOURCE_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SOURCE_SEARCH_PATH), m_source_search_paths))
+        if (!utils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SOURCE_SEARCH_PATH), m_source_search_paths))
             return false;
     }
     else
     {
-        if (!FileUtils::ParsePathsString(DEFAULT_SOURCE_SEARCH_PATH, m_source_search_paths))
+        if (!utils::ParsePathsString(DEFAULT_SOURCE_SEARCH_PATH, m_source_search_paths))
             return false;
     }
 
     // --add-source-search-path
     for (const auto& specifiedValue : m_argument_parser.GetParametersForOption(OPTION_ADD_SOURCE_SEARCH_PATH))
     {
-        if (!FileUtils::ParsePathsString(specifiedValue, m_source_search_paths))
+        if (!utils::ParsePathsString(specifiedValue, m_source_search_paths))
             return false;
     }
 

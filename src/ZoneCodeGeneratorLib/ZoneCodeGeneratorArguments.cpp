@@ -85,6 +85,13 @@ const CommandLineOption* const OPTION_GENERATE =
     .WithParameter("preset")
     .Reusable()
     .Build();
+
+const CommandLineOption* const OPTION_BUILD_LOG =
+    CommandLineOption::Builder::Create()
+    .WithLongName("build-log")
+    .WithDescription("Specify a file to write a build log to.")
+    .WithParameter("logFilePath")
+    .Build();
 // clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
@@ -97,6 +104,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_OUTPUT_FOLDER,
     OPTION_PRINT,
     OPTION_GENERATE,
+    OPTION_BUILD_LOG,
 };
 
 namespace
@@ -169,6 +177,10 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
         m_output_directory = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
     else
         m_output_directory = ".";
+
+    // --build-log
+    if (m_argument_parser.IsOptionSpecified(OPTION_BUILD_LOG))
+        m_build_log_file = m_argument_parser.GetValueForOption(OPTION_BUILD_LOG);
 
     // -h; --header
     if (m_argument_parser.IsOptionSpecified(OPTION_HEADER))

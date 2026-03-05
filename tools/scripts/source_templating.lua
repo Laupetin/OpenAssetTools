@@ -8,6 +8,7 @@ function useSourceTemplating(projectName)
         local templateFile = templateFiles[i]
         local relativeTemplatePath = path.getrelative(projectFolder, templateFile)
         local relativeResultPath = path.replaceextension(relativeTemplatePath, "")
+        local relativeLogFilePath = path.replaceextension(relativeTemplatePath, ".log")
         local resultExtension = path.getextension(relativeResultPath)
 
         local data = io.readfile(templateFile)
@@ -38,7 +39,11 @@ function useSourceTemplating(projectName)
             buildcommands {
                 '"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
                 .. ' -o "%{prj.location}/"'
+				.. " --build-log \"" .. relativeLogFilePath .. "\""
                 .. " %{file.relpath}"
+            }
+            buildoutputs {
+                "%{prj.location}/" .. relativeLogFilePath
             }
             for i = 1, #games do
                 local gameName = games[i]

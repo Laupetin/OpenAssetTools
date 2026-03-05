@@ -222,7 +222,7 @@ namespace d3d9
 
         const char* constantTableComment;
         size_t constantTableCommentSize;
-        if (!FindComment(shaderByteCode, shaderByteCodeSize, FileUtils::MakeMagic32('C', 'T', 'A', 'B'), constantTableComment, constantTableCommentSize))
+        if (!FindComment(shaderByteCode, shaderByteCodeSize, utils::MakeMagic32('C', 'T', 'A', 'B'), constantTableComment, constantTableCommentSize))
             return false;
 
         if (constantTableCommentSize < sizeof(ConstantTable))

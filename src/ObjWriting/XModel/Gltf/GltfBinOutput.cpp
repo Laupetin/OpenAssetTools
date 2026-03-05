@@ -23,7 +23,7 @@ void BinOutput::AlignToFour(const char value) const
     const auto offset = m_stream.tellp();
     if (offset % 4 > 0)
     {
-        const uint32_t alignmentValue = FileUtils::MakeMagic32(value, value, value, value);
+        const uint32_t alignmentValue = utils::MakeMagic32(value, value, value, value);
         Write(&alignmentValue, 4u - (offset % 4u));
     }
 }

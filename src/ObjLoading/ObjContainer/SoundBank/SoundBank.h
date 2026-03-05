@@ -25,7 +25,7 @@ public:
 
 class SoundBank final : public ObjContainerReferenceable
 {
-    static constexpr uint32_t MAGIC = FileUtils::MakeMagic32('2', 'U', 'X', '#');
+    static constexpr uint32_t MAGIC = utils::MakeMagic32('2', 'U', 'X', '#');
     static constexpr uint32_t VERSION = 14u;
 
     std::string m_file_name;

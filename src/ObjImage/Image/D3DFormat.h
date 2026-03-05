@@ -41,15 +41,15 @@ namespace oat
         D3DFMT_V16U16 = 64,
         D3DFMT_A2W10V10U10 = 67,
 
-        D3DFMT_UYVY = FileUtils::MakeMagic32('U', 'Y', 'V', 'Y'),
-        D3DFMT_R8G8_B8G8 = FileUtils::MakeMagic32('R', 'G', 'B', 'G'),
-        D3DFMT_YUY2 = FileUtils::MakeMagic32('Y', 'U', 'Y', '2'),
-        D3DFMT_G8R8_G8B8 = FileUtils::MakeMagic32('G', 'R', 'G', 'B'),
-        D3DFMT_DXT1 = FileUtils::MakeMagic32('D', 'X', 'T', '1'),
-        D3DFMT_DXT2 = FileUtils::MakeMagic32('D', 'X', 'T', '2'),
-        D3DFMT_DXT3 = FileUtils::MakeMagic32('D', 'X', 'T', '3'),
-        D3DFMT_DXT4 = FileUtils::MakeMagic32('D', 'X', 'T', '4'),
-        D3DFMT_DXT5 = FileUtils::MakeMagic32('D', 'X', 'T', '5'),
+        D3DFMT_UYVY = utils::MakeMagic32('U', 'Y', 'V', 'Y'),
+        D3DFMT_R8G8_B8G8 = utils::MakeMagic32('R', 'G', 'B', 'G'),
+        D3DFMT_YUY2 = utils::MakeMagic32('Y', 'U', 'Y', '2'),
+        D3DFMT_G8R8_G8B8 = utils::MakeMagic32('G', 'R', 'G', 'B'),
+        D3DFMT_DXT1 = utils::MakeMagic32('D', 'X', 'T', '1'),
+        D3DFMT_DXT2 = utils::MakeMagic32('D', 'X', 'T', '2'),
+        D3DFMT_DXT3 = utils::MakeMagic32('D', 'X', 'T', '3'),
+        D3DFMT_DXT4 = utils::MakeMagic32('D', 'X', 'T', '4'),
+        D3DFMT_DXT5 = utils::MakeMagic32('D', 'X', 'T', '5'),
 
         D3DFMT_D16_LOCKABLE = 70,
         D3DFMT_D32 = 71,
@@ -78,7 +78,7 @@ namespace oat
 
         D3DFMT_Q16W16V16U16 = 110,
 
-        D3DFMT_MULTI2_ARGB8 = FileUtils::MakeMagic32('M', 'E', 'T', '1'),
+        D3DFMT_MULTI2_ARGB8 = utils::MakeMagic32('M', 'E', 'T', '1'),
 
         // Floating point surface formats
 

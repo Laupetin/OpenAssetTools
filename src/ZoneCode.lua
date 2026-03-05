@@ -347,6 +347,7 @@ function ZoneCode:project()
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}"'
+                    .. ' --build-log "%{wks.location}/src/ZoneCode/Game/%{file.basename}.log"'
                     .. ' -g ZoneLoad'
                     .. ' -g ZoneMark'
                     .. ' -g ZoneWrite'
@@ -357,6 +358,9 @@ function ZoneCode:project()
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt"),
                 path.join(ProjectFolder(), "Common/Game/%{file.basename}/%{file.basename}_Assets.h"),
                 TargetDirectoryBuildTools .. "/" .. ExecutableByOs('ZoneCodeGenerator')
+            }
+            buildoutputs {
+                "%{wks.location}/src/ZoneCode/Game/%{file.basename}.log"
             }
         filter {}
         

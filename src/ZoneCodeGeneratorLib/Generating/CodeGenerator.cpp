@@ -5,6 +5,7 @@
 #include "Templates/ZoneLoadTemplate.h"
 #include "Templates/ZoneMarkTemplate.h"
 #include "Templates/ZoneWriteTemplate.h"
+#include "Utils/FileUtils.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
@@ -28,58 +29,66 @@ void CodeGenerator::SetupTemplates()
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
 
-bool CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
+utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
+    bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerTemplate(context))
     {
-        fs::path p(m_args->m_output_directory);
-        p.append(codeFile.m_file_name);
+        fs::path outputPath(m_args->m_output_directory);
+        outputPath.append(codeFile.m_file_name);
 
-        auto parentFolder(p);
-        parentFolder.remove_filename();
-        create_directories(parentFolder);
-
-        std::ofstream stream(p, std::fstream::out | std::fstream::binary);
-
-        if (!stream.is_open())
+        utils::TextFileCheckDirtyOutput out(outputPath);
+        if (!out.Open())
         {
-            con::error("Failed to open file '{}'", p.string());
-            return false;
+            con::error("Failed to open file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
         }
 
-        codeTemplate->RenderOncePerTemplateFile(stream, codeFile.m_tag, context);
+        codeTemplate->RenderOncePerTemplateFile(out.Stream(), codeFile.m_tag, context);
 
-        stream.close();
+        const auto fileResult = out.Close();
+        if (fileResult == utils::TextFileCheckDirtyResult::FAILURE)
+        {
+            con::error("Failed to write file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
+        }
+
+        if (fileResult == utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN)
+            wroteAtLeastOneFile = true;
     }
 
-    return true;
+    return wroteAtLeastOneFile ? utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN : utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE;
 }
 
-bool CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
+utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
+    bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerAsset(context))
     {
-        fs::path p(m_args->m_output_directory);
-        p.append(codeFile.m_file_name);
+        fs::path outputPath(m_args->m_output_directory);
+        outputPath.append(codeFile.m_file_name);
 
-        auto parentFolder(p);
-        parentFolder.remove_filename();
-        create_directories(parentFolder);
-
-        std::ofstream stream(p, std::fstream::out | std::fstream::binary);
-
-        if (!stream.is_open())
+        utils::TextFileCheckDirtyOutput out(outputPath);
+        if (!out.Open())
         {
-            con::error("Failed to open file '{}'", p.string());
-            return false;
+            con::error("Failed to open file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
         }
 
-        codeTemplate->RenderOncePerAssetFile(stream, codeFile.m_tag, context);
+        codeTemplate->RenderOncePerAssetFile(out.Stream(), codeFile.m_tag, context);
 
-        stream.close();
+        const auto fileResult = out.Close();
+        if (fileResult == utils::TextFileCheckDirtyResult::FAILURE)
+        {
+            con::error("Failed to write file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
+        }
+
+        if (fileResult == utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN)
+            wroteAtLeastOneFile = true;
     }
 
-    return true;
+    return wroteAtLeastOneFile ? utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN : utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE;
 }
 
 bool CodeGenerator::GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset)
@@ -135,28 +144,55 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
         for (auto* asset : assets)
         {
             auto context = OncePerAssetRenderingContext::BuildContext(repository, asset);
-            if (!GenerateCodeOncePerAsset(*context, foundTemplate->second.get()))
+            const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
+            switch (result)
             {
+            case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+                con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                break;
+            case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+                con::info("Code was up to date for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                break;
+            case utils::TextFileCheckDirtyResult::FAILURE:
                 con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
                 return false;
             }
-
-            con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
         }
 
         {
             auto context = OncePerTemplateRenderingContext::BuildContext(repository);
-            if (!GenerateCodeOncePerTemplate(*context, foundTemplate->second.get()))
+            const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
+            switch (result)
             {
+            case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+                con::info("Successfully generated code with preset '{}'", foundTemplate->first);
+                break;
+            case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+                con::info("Code was up to date for preset '{}'", foundTemplate->first);
+                break;
+            case utils::TextFileCheckDirtyResult::FAILURE:
                 con::error("Failed to generate code with preset '{}'", foundTemplate->first);
                 return false;
             }
-
-            con::info("Successfully generated code with preset '{}'", foundTemplate->first);
         }
     }
     const auto end = std::chrono::steady_clock::now();
-    con::debug("Generating code took {}ms", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    const auto timeInMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    con::debug("Generating code took {}ms", timeInMs);
+
+    if (!m_args->m_build_log_file.empty())
+    {
+        std::ofstream buildLogFile(m_args->m_build_log_file);
+        if (buildLogFile.is_open())
+        {
+            buildLogFile << "Generating code took " << timeInMs << "ms\n";
+            buildLogFile.close();
+        }
+        else
+        {
+            con::error("Failed to open build log file");
+        }
+    }
 
     return true;
 }

@@ -41,8 +41,8 @@ namespace d3d11
 
 namespace
 {
-    constexpr auto TAG_RDEF = FileUtils::MakeMagic32('R', 'D', 'E', 'F');
-    constexpr auto TAG_SHDR = FileUtils::MakeMagic32('S', 'H', 'D', 'R');
+    constexpr auto TAG_RDEF = utils::MakeMagic32('R', 'D', 'E', 'F');
+    constexpr auto TAG_SHDR = utils::MakeMagic32('S', 'H', 'D', 'R');
 
     constexpr auto CHUNK_TABLE_OFFSET = 28u;
 

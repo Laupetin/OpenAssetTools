@@ -32,7 +32,7 @@ class SoundBankWriterImpl : public SoundBankWriter
 {
     static constexpr char BRANDING[] = "Created with OAT - OpenAssetTools";
     static constexpr int64_t DATA_OFFSET = 0x800;
-    static constexpr uint32_t MAGIC = FileUtils::MakeMagic32('2', 'U', 'X', '#');
+    static constexpr uint32_t MAGIC = utils::MakeMagic32('2', 'U', 'X', '#');
     static constexpr uint32_t VERSION = 14u;
 
     inline static const std::string PAD_DATA = std::string(16, '\x00');
