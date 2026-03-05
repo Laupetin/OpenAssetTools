@@ -21,4 +21,36 @@ namespace utils
      * \return \c true if the user input was valid and could be processed successfully, otherwise \c false.
      */
     bool ParsePathsString(const std::string& pathsString, std::set<std::string>& output);
+
+    enum class TextFileCheckDirtyResult : std::uint8_t
+    {
+        OUTPUT_WRITTEN,
+        OUTPUT_WAS_UP_TO_DATE,
+        FAILURE
+    };
+
+    class TextFileCheckDirtyOutput final
+    {
+    public:
+        explicit TextFileCheckDirtyOutput(std::filesystem::path path);
+        ~TextFileCheckDirtyOutput();
+        TextFileCheckDirtyOutput(const TextFileCheckDirtyOutput& other) = delete;
+        TextFileCheckDirtyOutput(TextFileCheckDirtyOutput&& other) noexcept = default;
+        TextFileCheckDirtyOutput& operator=(const TextFileCheckDirtyOutput& other) = delete;
+        TextFileCheckDirtyOutput& operator=(TextFileCheckDirtyOutput&& other) noexcept = default;
+
+        bool Open();
+        std::ostream& Stream();
+        TextFileCheckDirtyResult Close();
+
+    private:
+        [[nodiscard]] bool FileIsDirty(const std::string& renderedContent) const;
+
+        std::filesystem::path m_path;
+
+        bool m_open;
+        bool m_has_existing_file;
+        std::ofstream m_file_stream;
+        std::ostringstream m_memory;
+    };
 } // namespace utils

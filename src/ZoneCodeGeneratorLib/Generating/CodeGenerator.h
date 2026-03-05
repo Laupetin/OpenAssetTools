@@ -1,19 +1,12 @@
 #pragma once
 
 #include "ICodeTemplate.h"
+#include "Utils/FileUtils.h"
 #include "ZoneCodeGeneratorArguments.h"
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
-
-enum class CodeGeneratorOutputResult : std::uint8_t
-{
-    OUTPUT_WRITTEN,
-    OUTPUT_WAS_UP_TO_DATE,
-    FAILURE
-};
 
 class CodeGenerator
 {
@@ -25,8 +18,8 @@ public:
 private:
     void SetupTemplates();
 
-    CodeGeneratorOutputResult GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
-    CodeGeneratorOutputResult GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    utils::TextFileCheckDirtyResult GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    utils::TextFileCheckDirtyResult GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
 
     static bool GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 
