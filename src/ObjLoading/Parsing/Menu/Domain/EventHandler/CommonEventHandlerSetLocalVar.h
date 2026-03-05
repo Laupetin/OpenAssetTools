@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ICommonEventHandlerElement.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
@@ -26,6 +27,6 @@ namespace menu
         CommonEventHandlerSetLocalVar();
         CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ISimpleExpression> value);
 
-        _NODISCARD CommonEventHandlerElementType GetType() const override;
+        [[nodiscard]] CommonEventHandlerElementType GetType() const override;
     };
 } // namespace menu

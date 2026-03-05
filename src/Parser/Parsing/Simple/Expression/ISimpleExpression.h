@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 #include <string>
 
 class SimpleExpressionValue;
@@ -18,7 +16,7 @@ public:
     ISimpleExpressionScopeValues& operator=(const ISimpleExpressionScopeValues& other) = default;
     ISimpleExpressionScopeValues& operator=(ISimpleExpressionScopeValues&& other) noexcept = default;
 
-    _NODISCARD virtual SimpleExpressionValue ValueByName(const std::string& name) const = 0;
+    [[nodiscard]] virtual SimpleExpressionValue ValueByName(const std::string& name) const = 0;
 };
 
 class ISimpleExpression
@@ -33,10 +31,10 @@ public:
     ISimpleExpression& operator=(const ISimpleExpression& other) = default;
     ISimpleExpression& operator=(ISimpleExpression&& other) noexcept = default;
 
-    _NODISCARD virtual bool Equals(const ISimpleExpression* other) const = 0;
-    _NODISCARD virtual bool IsStatic() const = 0;
-    _NODISCARD virtual SimpleExpressionValue EvaluateStatic() const = 0;
-    _NODISCARD virtual SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const = 0;
+    [[nodiscard]] virtual bool Equals(const ISimpleExpression* other) const = 0;
+    [[nodiscard]] virtual bool IsStatic() const = 0;
+    [[nodiscard]] virtual SimpleExpressionValue EvaluateStatic() const = 0;
+    [[nodiscard]] virtual SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const = 0;
 };
 
 // Include SimpleExpressionValue after definition to avoid "base class not defined"

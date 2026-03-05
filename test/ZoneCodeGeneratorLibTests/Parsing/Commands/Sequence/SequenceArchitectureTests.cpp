@@ -1,7 +1,6 @@
 #include "Parsing/Commands/Sequence/SequenceArchitecture.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
-#include "Utils/ClassUtils.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>

@@ -3,7 +3,6 @@
 #include "Expression/SimpleExpressionMatchers.h"
 #include "Matcher/SimpleMatcherFactory.h"
 #include "Parsing/Impl/AbstractParser.h"
-#include "Utils/ClassUtils.h"
 
 class SimpleExpressionInterpreterParserState
 {
@@ -39,7 +38,7 @@ public:
     {
     }
 
-    _NODISCARD std::unique_ptr<ISimpleExpression> GetParsedExpression() const
+    [[nodiscard]] std::unique_ptr<ISimpleExpression> GetParsedExpression() const
     {
         return std::move(m_state->m_expression);
     }

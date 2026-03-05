@@ -3,7 +3,6 @@
 #include "Parsing/Matcher/AbstractMatcher.h"
 #include "Parsing/Matcher/MatcherResult.h"
 #include "Parsing/ParsingException.h"
-#include "Utils/ClassUtils.h"
 
 #include <concepts>
 #include <unordered_map>
@@ -41,7 +40,7 @@ public:
         }
     }
 
-    _NODISCARD int PeekTag() const
+    [[nodiscard]] int PeekTag() const
     {
         if (m_tag_offset < m_tags.size())
             return m_tags[m_tag_offset];
@@ -72,7 +71,7 @@ public:
         return AbstractMatcher<TokenType>::NO_ID;
     }
 
-    _NODISCARD bool HasNextCapture(int captureId)
+    [[nodiscard]] bool HasNextCapture(int captureId)
     {
         auto foundEntry = m_captures.find(captureId);
 

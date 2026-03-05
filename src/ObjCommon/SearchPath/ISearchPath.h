@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SearchPathSearchOptions.h"
-#include "Utils/ClassUtils.h"
 
 #include <cstdint>
 #include <functional>

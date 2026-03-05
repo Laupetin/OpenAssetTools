@@ -7,7 +7,6 @@
 #include "Domain/Environment/Architecture.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "Domain/Information/StructureInformation.h"
-#include "Utils/ClassUtils.h"
 
 #include <vector>
 

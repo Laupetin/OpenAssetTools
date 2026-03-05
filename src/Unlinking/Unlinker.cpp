@@ -9,7 +9,6 @@
 #include "UnlinkerArgs.h"
 #include "UnlinkerPaths.h"
 #include "Utils/Logging/Log.h"
-#include "Utils/ObjFileStream.h"
 #include "Zone/AssetNameResolver.h"
 #include "Zone/Definition/ZoneDefWriter.h"
 #include "ZoneLoading.h"

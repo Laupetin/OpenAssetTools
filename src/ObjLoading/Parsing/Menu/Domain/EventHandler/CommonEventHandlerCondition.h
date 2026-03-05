@@ -20,6 +20,6 @@ namespace menu
                                     std::unique_ptr<CommonEventHandlerSet> conditionElements,
                                     std::unique_ptr<CommonEventHandlerSet> elseElements);
 
-        _NODISCARD CommonEventHandlerElementType GetType() const override;
+        [[nodiscard]] CommonEventHandlerElementType GetType() const override;
     };
 } // namespace menu

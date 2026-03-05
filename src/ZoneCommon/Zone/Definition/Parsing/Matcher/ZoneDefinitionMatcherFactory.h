@@ -10,9 +10,9 @@ class ZoneDefinitionMatcherFactory final : public AbstractMatcherFactory<ZoneDef
 public:
     explicit ZoneDefinitionMatcherFactory(const IMatcherForLabelSupplier<ZoneDefinitionParserValue>* labelSupplier);
 
-    _NODISCARD MatcherFactoryWrapper<ZoneDefinitionParserValue> Type(ZoneDefinitionParserValueType type) const;
-    _NODISCARD MatcherFactoryWrapper<ZoneDefinitionParserValue> Keyword(std::string keyword) const;
-    _NODISCARD MatcherFactoryWrapper<ZoneDefinitionParserValue> Field() const;
-    _NODISCARD MatcherFactoryWrapper<ZoneDefinitionParserValue> String() const;
-    _NODISCARD MatcherFactoryWrapper<ZoneDefinitionParserValue> Char(char c) const;
+    [[nodiscard]] MatcherFactoryWrapper<ZoneDefinitionParserValue> Type(ZoneDefinitionParserValueType type) const;
+    [[nodiscard]] MatcherFactoryWrapper<ZoneDefinitionParserValue> Keyword(std::string keyword) const;
+    [[nodiscard]] MatcherFactoryWrapper<ZoneDefinitionParserValue> Field() const;
+    [[nodiscard]] MatcherFactoryWrapper<ZoneDefinitionParserValue> String() const;
+    [[nodiscard]] MatcherFactoryWrapper<ZoneDefinitionParserValue> Char(char c) const;
 };

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 #include <cstddef>
 #include <map>
 #include <vector>
@@ -41,7 +39,7 @@ public:
         return false;
     }
 
-    _NODISCARD size_t GetDistinctPositionByInputPosition(const size_t inputPosition) const
+    [[nodiscard]] size_t GetDistinctPositionByInputPosition(const size_t inputPosition) const
     {
         if (inputPosition >= m_distinct_position_by_input_position.size())
             return 0;
@@ -49,7 +47,7 @@ public:
         return m_distinct_position_by_input_position[inputPosition];
     }
 
-    _NODISCARD T GetDistinctValueByInputPosition(const size_t inputPosition) const
+    [[nodiscard]] T GetDistinctValueByInputPosition(const size_t inputPosition) const
     {
         if (inputPosition >= m_distinct_values.size())
             return T{};
@@ -57,7 +55,7 @@ public:
         return m_distinct_values[inputPosition];
     }
 
-    _NODISCARD size_t GetInputPositionByDistinctPosition(const size_t distinctPosition) const
+    [[nodiscard]] size_t GetInputPositionByDistinctPosition(const size_t distinctPosition) const
     {
         if (distinctPosition >= m_input_position_by_distinct_position.size())
             return 0;
@@ -65,17 +63,17 @@ public:
         return m_input_position_by_distinct_position[distinctPosition];
     }
 
-    _NODISCARD const std::vector<T>& GetDistinctValues() const
+    [[nodiscard]] const std::vector<T>& GetDistinctValues() const
     {
         return m_distinct_values;
     }
 
-    _NODISCARD size_t GetInputValueCount() const
+    [[nodiscard]] size_t GetInputValueCount() const
     {
         return m_input_entry_index;
     }
 
-    _NODISCARD size_t GetDistinctValueCount() const
+    [[nodiscard]] size_t GetDistinctValueCount() const
     {
         return m_distinct_entry_index;
     }

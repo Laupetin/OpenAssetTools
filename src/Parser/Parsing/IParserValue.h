@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TokenPos.h"
-#include "Utils/ClassUtils.h"
 
 class IParserValue
 {
@@ -15,6 +14,6 @@ public:
     IParserValue& operator=(const IParserValue& other) = default;
     IParserValue& operator=(IParserValue&& other) noexcept = default;
 
-    _NODISCARD virtual bool IsEof() const = 0;
-    _NODISCARD virtual const TokenPos& GetPos() const = 0;
+    [[nodiscard]] virtual bool IsEof() const = 0;
+    [[nodiscard]] virtual const TokenPos& GetPos() const = 0;
 };

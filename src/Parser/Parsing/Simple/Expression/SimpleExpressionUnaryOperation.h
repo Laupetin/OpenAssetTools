@@ -44,10 +44,10 @@ public:
 
     SimpleExpressionUnaryOperation(const SimpleExpressionUnaryOperationType* operationType, std::unique_ptr<ISimpleExpression> operand);
 
-    _NODISCARD bool OperandNeedsParenthesis() const;
+    [[nodiscard]] bool OperandNeedsParenthesis() const;
 
-    _NODISCARD bool Equals(const ISimpleExpression* other) const override;
-    _NODISCARD bool IsStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
+    [[nodiscard]] bool Equals(const ISimpleExpression* other) const override;
+    [[nodiscard]] bool IsStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
 };

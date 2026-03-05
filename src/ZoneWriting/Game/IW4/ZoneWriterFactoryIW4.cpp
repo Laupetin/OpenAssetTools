@@ -4,6 +4,7 @@
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/ZoneConstantsIW4.h"
+#include "Utils/ClassUtils.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepWriteTimestamp.h"

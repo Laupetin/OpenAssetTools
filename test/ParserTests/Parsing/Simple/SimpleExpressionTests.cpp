@@ -5,7 +5,6 @@
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Utils/ClassUtils.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -51,7 +50,7 @@ namespace test::parsing::simple::expression
         {
         }
 
-        _NODISCARD SimpleExpressionTestState* GetState() const
+        [[nodiscard]] SimpleExpressionTestState* GetState() const
         {
             return m_state.get();
         }
@@ -129,7 +128,7 @@ namespace test::parsing::simple::expression
             return m_sequence->MatchSequence(m_lexer.get(), m_state, m_consumed_token_count);
         }
 
-        _NODISCARD bool PerformIntegrationTest() const
+        [[nodiscard]] bool PerformIntegrationTest() const
         {
             REQUIRE(m_lexer);
             REQUIRE(m_parser);

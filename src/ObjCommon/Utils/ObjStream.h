@@ -2,8 +2,6 @@
 // ReSharper disable IdentifierTypo
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -12,7 +10,7 @@
 template<class Elem, class Traits> class basic_objbuf : public std::basic_streambuf<Elem, Traits>
 {
 public:
-    _NODISCARD virtual bool is_open() const = 0;
+    [[nodiscard]] virtual bool is_open() const = 0;
     virtual bool close() = 0;
 };
 
@@ -62,12 +60,12 @@ public:
     }
 
     // ReSharper disable once CppHidingFunction
-    _NODISCARD myob* rdbuf() const
+    [[nodiscard]] myob* rdbuf() const
     {
         return const_cast<myob*>(m_ob.get());
     }
 
-    _NODISCARD bool is_open() const
+    [[nodiscard]] bool is_open() const
     {
         return m_ob->is_open();
     }
@@ -126,12 +124,12 @@ public:
     }
 
     // ReSharper disable once CppHidingFunction
-    _NODISCARD myob* rdbuf() const
+    [[nodiscard]] myob* rdbuf() const
     {
         return const_cast<myob*>(m_ob.get());
     }
 
-    _NODISCARD bool is_open() const
+    [[nodiscard]] bool is_open() const
     {
         return m_ob->is_open();
     }
@@ -190,12 +188,12 @@ public:
     }
 
     // ReSharper disable once CppHidingFunction
-    _NODISCARD myob* rdbuf() const
+    [[nodiscard]] myob* rdbuf() const
     {
         return const_cast<myob*>(m_ob.get());
     }
 
-    _NODISCARD bool is_open() const
+    [[nodiscard]] bool is_open() const
     {
         return m_ob->is_open();
     }

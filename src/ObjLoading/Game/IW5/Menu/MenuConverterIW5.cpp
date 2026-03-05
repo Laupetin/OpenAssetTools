@@ -11,7 +11,6 @@
 #include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/StringUtils.h"
 
 #include <cassert>
@@ -26,7 +25,7 @@ namespace
 {
     class MenuConverter final : public AbstractMenuConverter, public IMenuConverter
     {
-        _NODISCARD static rectDef_s ConvertRectDef(const CommonRect& rect)
+        [[nodiscard]] static rectDef_s ConvertRectDef(const CommonRect& rect)
         {
             return rectDef_s{
                 static_cast<float>(rect.x),
@@ -38,7 +37,7 @@ namespace
             };
         }
 
-        _NODISCARD static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& rectRelativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& rectRelativeTo)
         {
             return rectDef_s{
                 static_cast<float>(rectRelativeTo.x + rect.x),
@@ -409,7 +408,7 @@ namespace
             }
         }
 
-        _NODISCARD Statement_s* ConvertExpression(const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertExpression(const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (!expression)
                 return nullptr;

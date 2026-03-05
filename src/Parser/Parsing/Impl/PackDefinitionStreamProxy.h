@@ -3,7 +3,6 @@
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IPackValueSupplier.h"
 #include "Parsing/IParserLineStream.h"
-#include "Utils/ClassUtils.h"
 
 #include <stack>
 
@@ -21,8 +20,8 @@ private:
     IParserLineStream* const m_stream;
     std::stack<int> m_current_pack;
 
-    _NODISCARD bool MatchPackDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
-    _NODISCARD bool MatchDirectives(const ParserLine& line);
+    [[nodiscard]] bool MatchPackDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    [[nodiscard]] bool MatchDirectives(const ParserLine& line);
 
 public:
     explicit PackDefinitionStreamProxy(IParserLineStream* stream);
@@ -30,8 +29,8 @@ public:
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;
     void PopCurrentFile() override;
-    _NODISCARD bool IsOpen() const override;
-    _NODISCARD bool Eof() const override;
+    [[nodiscard]] bool IsOpen() const override;
+    [[nodiscard]] bool Eof() const override;
 
-    _NODISCARD int GetCurrentPack() const override;
+    [[nodiscard]] int GetCurrentPack() const override;
 };

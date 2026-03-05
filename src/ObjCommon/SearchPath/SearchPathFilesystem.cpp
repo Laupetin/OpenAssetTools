@@ -1,7 +1,6 @@
 #include "SearchPathFilesystem.h"
 
 #include "Utils/Logging/Log.h"
-#include "Utils/ObjFileStream.h"
 
 #include <algorithm>
 #include <filesystem>

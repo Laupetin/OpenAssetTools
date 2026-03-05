@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Zone/ZoneTypes.h"
 
 #include <cstddef>
@@ -24,16 +23,16 @@ public:
     void AddScriptString(const std::string& value);
     scr_string_t AddOrGetScriptString(const char* value);
     scr_string_t AddOrGetScriptString(const std::string& value);
-    _NODISCARD scr_string_t GetScriptString(const char* value) const;
-    _NODISCARD scr_string_t GetScriptString(const std::string& value) const;
+    [[nodiscard]] scr_string_t GetScriptString(const char* value) const;
+    [[nodiscard]] scr_string_t GetScriptString(const std::string& value) const;
 
-    _NODISCARD size_t Count() const;
-    _NODISCARD bool Empty() const;
+    [[nodiscard]] size_t Count() const;
+    [[nodiscard]] bool Empty() const;
 
-    _NODISCARD const char* CValue(size_t index) const;
-    _NODISCARD const std::string& Value(size_t index) const;
-    _NODISCARD const std::string& Value(size_t index, bool& isNull) const;
-    _NODISCARD const std::string& operator[](size_t index) const;
-    _NODISCARD std::vector<std::string>::const_iterator begin() const;
-    _NODISCARD std::vector<std::string>::const_iterator end() const;
+    [[nodiscard]] const char* CValue(size_t index) const;
+    [[nodiscard]] const std::string& Value(size_t index) const;
+    [[nodiscard]] const std::string& Value(size_t index, bool& isNull) const;
+    [[nodiscard]] const std::string& operator[](size_t index) const;
+    [[nodiscard]] std::vector<std::string>::const_iterator begin() const;
+    [[nodiscard]] std::vector<std::string>::const_iterator end() const;
 };

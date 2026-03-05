@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 namespace menu
 {
     enum class CommonEventHandlerElementType
@@ -23,6 +21,6 @@ namespace menu
         ICommonEventHandlerElement& operator=(const ICommonEventHandlerElement& other) = default;
         ICommonEventHandlerElement& operator=(ICommonEventHandlerElement&& other) noexcept = default;
 
-        _NODISCARD virtual CommonEventHandlerElementType GetType() const = 0;
+        [[nodiscard]] virtual CommonEventHandlerElementType GetType() const = 0;
     };
 } // namespace menu

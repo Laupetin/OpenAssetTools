@@ -4,6 +4,7 @@
 #include "Game/T6/GameT6.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/ZoneConstantsT6.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/ICapturedDataProvider.h"
 #include "Writing/Processor/OutputProcessorXChunks.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"

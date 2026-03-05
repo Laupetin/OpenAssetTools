@@ -5,7 +5,6 @@
 #include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Utils/ClassUtils.h"
 
 namespace menu
 {
@@ -28,6 +27,6 @@ namespace menu
     public:
         MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode);
         MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState);
-        _NODISCARD MenuFileParserState* GetState() const;
+        [[nodiscard]] MenuFileParserState* GetState() const;
     };
 } // namespace menu

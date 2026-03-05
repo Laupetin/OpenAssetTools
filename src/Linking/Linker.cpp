@@ -7,7 +7,6 @@
 #include "SearchPath/OutputPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/Logging/Log.h"
-#include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/AssetList/AssetListReader.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"

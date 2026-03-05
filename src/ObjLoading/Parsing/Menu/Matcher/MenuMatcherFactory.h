@@ -23,21 +23,21 @@ namespace menu
     public:
         explicit MenuMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier);
 
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> StringChain() const;
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Text() const;
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> TextNoChain() const;
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> StringChain() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Text() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextNoChain() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
 
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> TextExpression() const;
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> IntExpression() const;
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> NumericExpression() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextExpression() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> IntExpression() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> NumericExpression() const;
 
-        _NODISCARD static int TokenNumericIntValue(const SimpleParserValue& value);
-        _NODISCARD static double TokenNumericFloatingPointValue(const SimpleParserValue& value);
-        _NODISCARD static std::string& TokenTextValue(const SimpleParserValue& value);
+        [[nodiscard]] static int TokenNumericIntValue(const SimpleParserValue& value);
+        [[nodiscard]] static double TokenNumericFloatingPointValue(const SimpleParserValue& value);
+        [[nodiscard]] static std::string& TokenTextValue(const SimpleParserValue& value);
 
-        _NODISCARD static std::string TokenTextExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
-        _NODISCARD static int TokenIntExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
-        _NODISCARD static double TokenNumericExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
+        [[nodiscard]] static std::string TokenTextExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
+        [[nodiscard]] static int TokenIntExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
+        [[nodiscard]] static double TokenNumericExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
     };
 } // namespace menu

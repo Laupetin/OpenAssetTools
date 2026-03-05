@@ -7,7 +7,6 @@
 #include "Parsing/Header/Block/IHeaderBlock.h"
 #include "Parsing/IPackValueSupplier.h"
 #include "Persistence/IDataRepository.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/NamespaceBuilder.h"
 
 #include <memory>
@@ -23,7 +22,7 @@ class HeaderParserState
 public:
     explicit HeaderParserState(const IPackValueSupplier* packValueSupplier);
 
-    _NODISCARD IHeaderBlock* GetBlock() const;
+    [[nodiscard]] IHeaderBlock* GetBlock() const;
     void PushBlock(std::unique_ptr<IHeaderBlock> block);
     void PopBlock();
 

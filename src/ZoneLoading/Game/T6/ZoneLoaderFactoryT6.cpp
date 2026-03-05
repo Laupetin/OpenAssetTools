@@ -16,6 +16,7 @@
 #include "Loading/Steps/StepVerifyFileName.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/Logging/Log.h"
 #include "Zone/XChunk/XChunkProcessorInflate.h"

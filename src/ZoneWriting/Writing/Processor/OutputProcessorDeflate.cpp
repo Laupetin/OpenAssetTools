@@ -1,6 +1,5 @@
 #include "OutputProcessorDeflate.h"
 
-#include "Utils/ClassUtils.h"
 #include "Writing/WritingException.h"
 
 #include <cstdint>

@@ -3,7 +3,6 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Parsing/Mock/MockSequence.h"
-#include "Utils/ClassUtils.h"
 
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -52,7 +51,7 @@ namespace test::parsing::matcher
             m_sequence->AddMockLabeledMatchers(matchers, label);
         }
 
-        _NODISCARD factory_t Factory() const
+        [[nodiscard]] factory_t Factory() const
         {
             return HeaderMatcherFactory(m_sequence->GetLabelSupplier());
         }
@@ -69,7 +68,7 @@ namespace test::parsing::matcher
             return m_sequence->MatchSequence(m_lexer.get(), m_mock_state.get(), m_consumed_token_count);
         }
 
-        _NODISCARD unsigned GetConsumedTokenCount() const
+        [[nodiscard]] unsigned GetConsumedTokenCount() const
         {
             return m_consumed_token_count;
         }

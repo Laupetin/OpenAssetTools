@@ -5,7 +5,6 @@
 #include "IHeaderBlock.h"
 #include "IHeaderBlockNameHolder.h"
 #include "IHeaderBlockVariableDefining.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <string>

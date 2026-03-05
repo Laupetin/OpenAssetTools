@@ -2,7 +2,6 @@
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
 #include "Parsing/Menu/Sequence/EventHandlerSetScopeSequences.h"
 #include "Parsing/Mock/MockLexer.h"
-#include "Utils/ClassUtils.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>

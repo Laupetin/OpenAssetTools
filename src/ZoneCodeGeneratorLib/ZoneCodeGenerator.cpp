@@ -81,7 +81,7 @@ private:
         prettyPrinter.PrintAll();
     }
 
-    _NODISCARD bool GenerateCode() const
+    [[nodiscard]] bool GenerateCode() const
     {
         CodeGenerator codeGenerator(&m_args);
         return codeGenerator.GenerateCode(m_repository.get());

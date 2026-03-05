@@ -11,7 +11,6 @@
 #include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/StringUtils.h"
 
 #include <cassert>
@@ -409,7 +408,7 @@ namespace
             }
         }
 
-        _NODISCARD Statement_s* ConvertExpression(const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertExpression(const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (!expression)
                 return nullptr;

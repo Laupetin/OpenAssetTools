@@ -1,7 +1,6 @@
 #include "FlacDecoder.h"
 
 #include "Utils/Alignment.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/FileUtils.h"
 #include "Utils/Logging/Log.h"
@@ -42,7 +41,7 @@ namespace
         {
         }
 
-        _NODISCARD char const* what() const noexcept override
+        [[nodiscard]] char const* what() const noexcept override
         {
             return m_message.c_str();
         }

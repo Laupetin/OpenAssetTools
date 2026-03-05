@@ -3,7 +3,6 @@
 #include "Asset/AssetCreationContext.h"
 #include "MenuConversionException.h"
 #include "SearchPath/ISearchPath.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/MemoryManager.h"
 
 namespace menu
@@ -13,7 +12,7 @@ namespace menu
     protected:
         AbstractMenuConverter(bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context);
 
-        _NODISCARD const char* ConvertString(const std::string& str) const;
+        [[nodiscard]] const char* ConvertString(const std::string& str) const;
         static void PrintConversionExceptionDetails(const MenuConversionException& e);
 
         bool m_disable_optimizations;

@@ -55,12 +55,12 @@ public:
         return !m_tokens.empty() && m_pop_count < m_tokens.size() ? m_tokens[m_pop_count].GetPos() : m_eof.GetPos();
     }
 
-    _NODISCARD size_t GetPopCount() const
+    [[nodiscard]] size_t GetPopCount() const
     {
         return m_pop_count;
     }
 
-    _NODISCARD ParserLine GetLineForPos(const TokenPos& pos) const override
+    [[nodiscard]] ParserLine GetLineForPos(const TokenPos& pos) const override
     {
         return ParserLine();
     }

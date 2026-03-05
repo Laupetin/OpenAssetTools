@@ -4,7 +4,6 @@
 #include "Parsing/Matcher/MatcherAnd.h"
 #include "Parsing/Matcher/MatcherLabel.h"
 #include "SequenceResult.h"
-#include "Utils/ClassUtils.h"
 
 #include <cassert>
 #include <unordered_map>
@@ -59,7 +58,7 @@ public:
     AbstractSequence& operator=(const AbstractSequence& other) = default;
     AbstractSequence& operator=(AbstractSequence&& other) noexcept = default;
 
-    _NODISCARD matcher_t* GetMatcherForLabel(const int label) const override
+    [[nodiscard]] matcher_t* GetMatcherForLabel(const int label) const override
     {
         if (label == 0)
             return m_entry.get();
@@ -72,7 +71,7 @@ public:
         return nullptr;
     }
 
-    _NODISCARD bool MatchSequence(ILexer<TokenType>* lexer, ParserState* state, unsigned& consumedTokenCount) const
+    [[nodiscard]] bool MatchSequence(ILexer<TokenType>* lexer, ParserState* state, unsigned& consumedTokenCount) const
     {
         if (!m_entry)
             return false;

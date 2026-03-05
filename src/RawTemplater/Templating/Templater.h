@@ -1,6 +1,6 @@
 #pragma once
+
 #include "Parsing/IParserLineStream.h"
-#include "Utils/ClassUtils.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@ namespace templating
         Templater(std::istream& stream, std::string fileName);
 
         void SetBuildLogFile(std::ostream* buildLogFile);
-        _NODISCARD bool TemplateToDirectory(const std::string& outputDirectory) const;
+        [[nodiscard]] bool TemplateToDirectory(const std::string& outputDirectory) const;
 
     private:
         std::istream& m_stream;
