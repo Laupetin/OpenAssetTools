@@ -1,0 +1,25 @@
+#options GAME(IW4)
+
+#filename "Game/" + GAME + "/Techset/VertexShaderDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See VertexShaderDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "VertexShaderDumper" + GAME
+
+namespace techset
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetVertexShader>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetVertexShader::Type>& asset) override;
+    };
+} // namespace techset
