@@ -102,6 +102,7 @@ namespace
             {
                 if (!shader.m_name.empty())
                 {
+                    Indent();
                     m_stream << std::format("// ERROR: Cannot dump shader {} as its data is not loaded\n", shader.m_name);
                     con::error("Technique {}: Cannot dump shader {} as its data is not loaded", technique.m_name, shader.m_name);
                 }
