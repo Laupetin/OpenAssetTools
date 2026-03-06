@@ -197,27 +197,6 @@ ZoneCode.Assets = {
     }
 }
 
-function ZoneCode:outputForAssets(assetList)
-    buildoutputs {
-        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetLoader%{file.basename}.h",
-        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetMarker%{file.basename}.h",
-        "%{wks.location}/src/ZoneCode/Game/%{file.basename}/AssetWriter%{file.basename}.h",
-    }
-
-    for i = 1, #assetList do
-        local assetNameLower = string.lower(assetList[i])
-        buildoutputs {
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_load_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_load_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_mark_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_mark_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_write_db.cpp",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_write_db.h",
-            "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_%{string.lower(file.basename)}_struct_test.cpp",
-        }
-    end
-end
-
 function ZoneCode:allTestFiles()
     result = {}
 
@@ -362,25 +341,5 @@ function ZoneCode:project()
             buildoutputs {
                 "%{wks.location}/src/ZoneCode/Game/%{file.basename}.log"
             }
-        filter {}
-        
-        filter "files:**/IW3.gen"
-            self:outputForAssets(self.Assets.IW3)
-        filter {}
-        
-        filter "files:**/IW4.gen"
-            self:outputForAssets(self.Assets.IW4)
-        filter {}
-        
-        filter "files:**/IW5.gen"
-            self:outputForAssets(self.Assets.IW5)
-        filter {}
-        
-        filter "files:**/T5.gen"
-            self:outputForAssets(self.Assets.T5)
-        filter {}
-        
-        filter "files:**/T6.gen"
-            self:outputForAssets(self.Assets.T6)
         filter {}
 end
