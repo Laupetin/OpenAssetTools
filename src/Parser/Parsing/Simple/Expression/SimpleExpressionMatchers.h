@@ -7,7 +7,6 @@
 #include "Parsing/Simple/SimpleParserValue.h"
 #include "SimpleExpressionBinaryOperation.h"
 #include "SimpleExpressionUnaryOperation.h"
-#include "Utils/ClassUtils.h"
 
 #include <Parsing/Simple/SimpleLexer.h>
 #include <memory>
@@ -47,8 +46,8 @@ protected:
     virtual std::unique_ptr<matcher_t> ParseOperandExtension(const supplier_t* labelSupplier) const;
     virtual std::unique_ptr<ISimpleExpression> ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const;
 
-    _NODISCARD virtual std::vector<const SimpleExpressionUnaryOperationType*> EnabledUnaryOperations() const;
-    _NODISCARD virtual std::vector<const SimpleExpressionBinaryOperationType*> EnabledBinaryOperations() const;
+    [[nodiscard]] virtual std::vector<const SimpleExpressionUnaryOperationType*> EnabledUnaryOperations() const;
+    [[nodiscard]] virtual std::vector<const SimpleExpressionBinaryOperationType*> EnabledBinaryOperations() const;
 
 private:
     std::unique_ptr<matcher_t> ParseBinaryOperationType(const supplier_t* labelSupplier) const;

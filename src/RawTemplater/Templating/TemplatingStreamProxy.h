@@ -2,7 +2,6 @@
 
 #include "Parsing/Impl/AbstractDirectiveStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
-#include "Utils/ClassUtils.h"
 
 namespace templating
 {
@@ -34,8 +33,8 @@ namespace templating
         ParserLine NextLine() override;
         bool IncludeFile(const std::string& filename) override;
         void PopCurrentFile() override;
-        _NODISCARD bool IsOpen() const override;
-        _NODISCARD bool Eof() const override;
+        [[nodiscard]] bool IsOpen() const override;
+        [[nodiscard]] bool Eof() const override;
 
     private:
         static constexpr const char* SWITCH_DIRECTIVE = "switch";
@@ -43,11 +42,11 @@ namespace templating
         static constexpr const char* FILENAME_DIRECTIVE = "filename";
         static constexpr const char* SKIP_DIRECTIVE = "skip";
 
-        _NODISCARD bool MatchSwitchDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
-        _NODISCARD bool MatchOptionsDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
-        _NODISCARD bool MatchFilenameDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
-        _NODISCARD bool MatchSkipDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
-        _NODISCARD bool MatchDirectives(const ParserLine& line) const;
+        [[nodiscard]] bool MatchSwitchDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        [[nodiscard]] bool MatchOptionsDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        [[nodiscard]] bool MatchFilenameDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        [[nodiscard]] bool MatchSkipDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        [[nodiscard]] bool MatchDirectives(const ParserLine& line) const;
 
         IParserLineStream* const m_stream;
         ITemplaterControl* const m_templater_control;

@@ -7,7 +7,6 @@
 #include "Parsing/ParsingException.h"
 #include "SetDefineStreamProxy.h"
 #include "TemplatingStreamProxy.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/FileUtils.h"
 #include "Utils/Logging/Log.h"
 
@@ -75,8 +74,8 @@ namespace templating
         virtual const std::string& GetName() = 0;
         virtual void Advance() = 0;
         virtual void Apply(DefinesStreamProxy* definesProxy) = 0;
-        _NODISCARD virtual bool IsFinished() const = 0;
-        _NODISCARD virtual TemplatingVariationType GetVariationType() const = 0;
+        [[nodiscard]] virtual bool IsFinished() const = 0;
+        [[nodiscard]] virtual TemplatingVariationType GetVariationType() const = 0;
     };
 
     class SwitchVariation final : public ITemplatingVariation
@@ -108,12 +107,12 @@ namespace templating
                 definesProxy->AddDefine(DefinesStreamProxy::Define(m_name, "1"));
         }
 
-        _NODISCARD bool IsFinished() const override
+        [[nodiscard]] bool IsFinished() const override
         {
             return m_finished;
         }
 
-        _NODISCARD TemplatingVariationType GetVariationType() const override
+        [[nodiscard]] TemplatingVariationType GetVariationType() const override
         {
             return TemplatingVariationType::SWITCH;
         }
@@ -149,12 +148,12 @@ namespace templating
                 definesProxy->AddDefine(DefinesStreamProxy::Define(m_name, m_values[m_value_offset]));
         }
 
-        _NODISCARD bool IsFinished() const override
+        [[nodiscard]] bool IsFinished() const override
         {
             return m_value_offset >= m_values.size();
         }
 
-        _NODISCARD TemplatingVariationType GetVariationType() const override
+        [[nodiscard]] TemplatingVariationType GetVariationType() const override
         {
             return TemplatingVariationType::OPTIONS;
         }
@@ -280,7 +279,7 @@ namespace templating
             }
         }
 
-        _NODISCARD bool HasActiveVariations() const
+        [[nodiscard]] bool HasActiveVariations() const
         {
             return !m_active_variations.empty();
         }

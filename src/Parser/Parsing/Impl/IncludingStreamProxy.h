@@ -15,11 +15,11 @@ class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
     IParserLineStream* const m_stream;
     std::set<std::string> m_included_files;
 
-    _NODISCARD static bool
+    [[nodiscard]] static bool
         ExtractIncludeFilename(const ParserLine& line, size_t includeDirectivePosition, size_t& filenameStartPosition, size_t& filenameEndPosition);
-    _NODISCARD bool MatchIncludeDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos) const;
-    _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos);
-    _NODISCARD bool MatchDirectives(const ParserLine& line);
+    [[nodiscard]] bool MatchIncludeDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos) const;
+    [[nodiscard]] bool MatchPragmaOnceDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos);
+    [[nodiscard]] bool MatchDirectives(const ParserLine& line);
 
 public:
     explicit IncludingStreamProxy(IParserLineStream* stream);
@@ -27,6 +27,6 @@ public:
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;
     void PopCurrentFile() override;
-    _NODISCARD bool IsOpen() const override;
-    _NODISCARD bool Eof() const override;
+    [[nodiscard]] bool IsOpen() const override;
+    [[nodiscard]] bool Eof() const override;
 };

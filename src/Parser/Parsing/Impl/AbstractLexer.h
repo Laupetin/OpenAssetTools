@@ -3,7 +3,6 @@
 #include "Parsing/ILexer.h"
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/ParsingException.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/StringUtils.h"
 
 #include <cassert>

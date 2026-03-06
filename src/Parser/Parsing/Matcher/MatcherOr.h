@@ -2,6 +2,7 @@
 
 #include "AbstractMatcher.h"
 #include "Parsing/IParserValue.h"
+#include "Utils/ClassUtils.h"
 
 #include <iterator>
 #include <memory>

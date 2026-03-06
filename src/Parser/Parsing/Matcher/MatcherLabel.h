@@ -2,7 +2,6 @@
 
 #include "AbstractMatcher.h"
 #include "Parsing/IParserValue.h"
-#include "Utils/ClassUtils.h"
 
 #include <cassert>
 
@@ -19,7 +18,7 @@ public:
     IMatcherForLabelSupplier& operator=(const IMatcherForLabelSupplier& other) = default;
     IMatcherForLabelSupplier& operator=(IMatcherForLabelSupplier&& other) noexcept = default;
 
-    _NODISCARD virtual AbstractMatcher<TokenType>* GetMatcherForLabel(int label) const = 0;
+    [[nodiscard]] virtual AbstractMatcher<TokenType>* GetMatcherForLabel(int label) const = 0;
 };
 
 template<typename TokenType> class MatcherLabel final : public AbstractMatcher<TokenType>

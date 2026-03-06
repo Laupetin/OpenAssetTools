@@ -1,5 +1,4 @@
 #pragma once
-#include "Utils/ClassUtils.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -25,8 +24,8 @@ struct CommonStructuredDataEnum
     explicit CommonStructuredDataEnum(std::string name);
     CommonStructuredDataEnum(std::string name, int reservedEntryCount);
 
-    _NODISCARD size_t ElementCount() const;
-    _NODISCARD uint32_t CalculateChecksum(uint32_t initialValue) const;
+    [[nodiscard]] size_t ElementCount() const;
+    [[nodiscard]] uint32_t CalculateChecksum(uint32_t initialValue) const;
 
     void SortEntriesByOffset();
     void SortEntriesByName();

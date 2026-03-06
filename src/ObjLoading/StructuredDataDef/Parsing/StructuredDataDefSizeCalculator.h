@@ -1,7 +1,6 @@
 #pragma once
 
 #include "StructuredDataDef/CommonStructuredDataDef.h"
-#include "Utils/ClassUtils.h"
 
 #include <exception>
 #include <string>
@@ -15,8 +14,8 @@ namespace sdd
     public:
         explicit SizeCalculationException(std::string message);
 
-        _NODISCARD const std::string& Message() const;
-        _NODISCARD char const* what() const noexcept override;
+        [[nodiscard]] const std::string& Message() const;
+        [[nodiscard]] char const* what() const noexcept override;
     };
 
     class StructuredDataDefSizeCalculator

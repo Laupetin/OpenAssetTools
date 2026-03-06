@@ -4,6 +4,7 @@
 #include "Game/T5/GameT5.h"
 #include "Game/T5/T5.h"
 #include "Game/T5/ZoneConstantsT5.h"
+#include "Utils/ClassUtils.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"

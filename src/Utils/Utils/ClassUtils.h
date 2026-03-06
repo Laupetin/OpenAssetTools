@@ -4,30 +4,6 @@
 
 #define STR(x) #x
 
-#if defined(_MSVC_LANG)
-#define _CPP_VERSION _MSVC_LANG
-#elif defined(__cplusplus)
-#define _CPP_VERSION __cplusplus
-#else
-#define _CPP_VERSION 0
-#endif
-
-#ifdef _NODISCARD
-#undef _NODISCARD
-#endif
-
-#ifdef _NORETURN
-#undef _NORETURN
-#endif
-
-#if _CPP_VERSION >= 201703L
-#define _NODISCARD [[nodiscard]]
-#define _NORETURN [[noreturn]]
-#else
-#define _NODISCARD
-#define _NORETURN
-#endif
-
 template<class T> struct Movable
 {
     mutable T m_val;

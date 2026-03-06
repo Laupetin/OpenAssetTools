@@ -1,7 +1,6 @@
 #include "StructuredDataDefSizeCalculator.h"
 
 #include "Utils/Alignment.h"
-#include "Utils/ClassUtils.h"
 
 #include <cassert>
 #include <sstream>
@@ -32,7 +31,7 @@ class StructuredDataDefSizeCalculatorInternal
     std::vector<bool> m_indexed_array_calculated;
     std::vector<bool> m_enumed_array_calculated;
 
-    _NORETURN void ThrowCircularDependencyException(const size_t structIndex) const
+    [[noreturn]] void ThrowCircularDependencyException(const size_t structIndex) const
     {
         assert(structIndex < m_def.m_structs.size());
 

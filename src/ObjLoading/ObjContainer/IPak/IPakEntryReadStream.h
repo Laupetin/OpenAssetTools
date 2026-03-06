@@ -99,7 +99,7 @@ public:
     IPakEntryReadStream(std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
     ~IPakEntryReadStream() override;
 
-    _NODISCARD bool is_open() const override;
+    [[nodiscard]] bool is_open() const override;
     bool close() override;
 
 protected:

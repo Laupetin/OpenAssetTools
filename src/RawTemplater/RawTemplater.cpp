@@ -17,7 +17,7 @@ class RawTemplater::Impl
     bool m_write_build_log;
     std::ofstream m_build_log_file;
 
-    _NODISCARD bool GenerateCode(const std::string& filename)
+    [[nodiscard]] bool GenerateCode(const std::string& filename)
     {
         std::ifstream file(filename, std::ios::in | std::ios::binary);
         if (!file.is_open())

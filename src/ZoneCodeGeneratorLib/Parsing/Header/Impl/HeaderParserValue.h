@@ -2,7 +2,6 @@
 
 #include "Parsing/IParserValue.h"
 #include "Parsing/TokenPos.h"
-#include "Utils/ClassUtils.h"
 
 #include <string>
 

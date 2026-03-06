@@ -4,6 +4,7 @@
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/ZoneConstantsIW3.h"
+#include "Utils/ClassUtils.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"

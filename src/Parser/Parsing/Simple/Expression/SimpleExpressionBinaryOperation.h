@@ -93,11 +93,11 @@ public:
                                     std::unique_ptr<ISimpleExpression> operand1,
                                     std::unique_ptr<ISimpleExpression> operand2);
 
-    _NODISCARD bool Operand1NeedsParenthesis() const;
-    _NODISCARD bool Operand2NeedsParenthesis() const;
+    [[nodiscard]] bool Operand1NeedsParenthesis() const;
+    [[nodiscard]] bool Operand2NeedsParenthesis() const;
 
-    _NODISCARD bool Equals(const ISimpleExpression* other) const override;
-    _NODISCARD bool IsStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
+    [[nodiscard]] bool Equals(const ISimpleExpression* other) const override;
+    [[nodiscard]] bool IsStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
 };

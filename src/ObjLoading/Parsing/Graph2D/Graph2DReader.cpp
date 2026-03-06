@@ -170,12 +170,12 @@ namespace graph2d
         }
 
     public:
-        _NODISCARD GenericGraph2D& GetResult() const
+        [[nodiscard]] GenericGraph2D& GetResult() const
         {
             return m_state->m_result;
         }
 
-        _NODISCARD bool HasExpectedKnotCount() const
+        [[nodiscard]] bool HasExpectedKnotCount() const
         {
             return GetExpectedKnotCount() == GetActualKnotCount();
         }

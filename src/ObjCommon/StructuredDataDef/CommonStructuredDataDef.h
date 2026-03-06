@@ -2,7 +2,6 @@
 
 #include "CommonStructuredDataEnum.h"
 #include "CommonStructuredDataStruct.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <vector>
@@ -23,5 +22,5 @@ public:
     CommonStructuredDataDef();
     explicit CommonStructuredDataDef(int version);
 
-    _NODISCARD uint32_t CalculateChecksum() const;
+    [[nodiscard]] uint32_t CalculateChecksum() const;
 };

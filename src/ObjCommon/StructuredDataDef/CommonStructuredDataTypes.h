@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 #include <cstddef>
 
 enum class CommonStructuredDataTypeCategory
@@ -36,8 +34,8 @@ struct CommonStructuredDataType
     explicit CommonStructuredDataType(CommonStructuredDataTypeCategory category);
     CommonStructuredDataType(CommonStructuredDataTypeCategory category, size_t extraInfo);
 
-    _NODISCARD size_t GetAlignmentInBits() const;
-    _NODISCARD size_t GetSizeInBits(const CommonStructuredDataDef& def) const;
+    [[nodiscard]] size_t GetAlignmentInBits() const;
+    [[nodiscard]] size_t GetSizeInBits(const CommonStructuredDataDef& def) const;
 
     friend bool operator<(const CommonStructuredDataType& lhs, const CommonStructuredDataType& rhs);
     friend bool operator<=(const CommonStructuredDataType& lhs, const CommonStructuredDataType& rhs);

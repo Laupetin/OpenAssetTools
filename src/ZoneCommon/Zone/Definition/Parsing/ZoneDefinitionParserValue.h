@@ -2,7 +2,6 @@
 
 #include "Parsing/IParserValue.h"
 #include "Parsing/TokenPos.h"
-#include "Utils/ClassUtils.h"
 
 #include <string>
 
@@ -49,11 +48,11 @@ public:
     ZoneDefinitionParserValue& operator=(const ZoneDefinitionParserValue& other) = delete;
     ZoneDefinitionParserValue& operator=(ZoneDefinitionParserValue&& other) noexcept;
 
-    _NODISCARD bool IsEof() const override;
-    _NODISCARD const TokenPos& GetPos() const override;
+    [[nodiscard]] bool IsEof() const override;
+    [[nodiscard]] const TokenPos& GetPos() const override;
 
-    _NODISCARD char CharacterValue() const;
-    _NODISCARD std::string& StringValue() const;
-    _NODISCARD std::string& FieldValue() const;
-    _NODISCARD size_t FieldHash() const;
+    [[nodiscard]] char CharacterValue() const;
+    [[nodiscard]] std::string& StringValue() const;
+    [[nodiscard]] std::string& FieldValue() const;
+    [[nodiscard]] size_t FieldHash() const;
 };

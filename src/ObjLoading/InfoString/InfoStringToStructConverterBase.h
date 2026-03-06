@@ -4,7 +4,6 @@
 #include "Asset/AssetRegistration.h"
 #include "InfoString/InfoString.h"
 #include "Pool/XAssetInfo.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/MemoryManager.h"
 #include "Zone/ZoneScriptStrings.h"

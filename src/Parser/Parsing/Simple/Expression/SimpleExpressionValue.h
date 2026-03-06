@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ISimpleExpression.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <string>
@@ -31,9 +30,9 @@ public:
     explicit SimpleExpressionValue(double doubleValue);
     explicit SimpleExpressionValue(int intValue);
 
-    _NODISCARD bool Equals(const ISimpleExpression* other) const override;
-    _NODISCARD bool IsStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
-    _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
-    _NODISCARD bool IsTruthy() const;
+    [[nodiscard]] bool Equals(const ISimpleExpression* other) const override;
+    [[nodiscard]] bool IsStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateStatic() const override;
+    [[nodiscard]] SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
+    [[nodiscard]] bool IsTruthy() const;
 };

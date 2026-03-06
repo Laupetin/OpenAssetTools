@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 #include <functional>
 #include <memory>
 #include <string>
@@ -16,7 +14,7 @@ public:
     ParserLine();
     ParserLine(std::shared_ptr<std::string> filename, int lineNumber, std::string line);
 
-    _NODISCARD bool IsEof() const;
+    [[nodiscard]] bool IsEof() const;
 };
 
 class IParserLineStream
@@ -33,6 +31,6 @@ public:
     virtual ParserLine NextLine() = 0;
     virtual bool IncludeFile(const std::string& filename) = 0;
     virtual void PopCurrentFile() = 0;
-    _NODISCARD virtual bool IsOpen() const = 0;
-    _NODISCARD virtual bool Eof() const = 0;
+    [[nodiscard]] virtual bool IsOpen() const = 0;
+    [[nodiscard]] virtual bool Eof() const = 0;
 };

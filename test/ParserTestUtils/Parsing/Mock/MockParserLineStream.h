@@ -31,6 +31,6 @@ public:
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;
     void PopCurrentFile() override;
-    _NODISCARD bool IsOpen() const override;
-    _NODISCARD bool Eof() const override;
+    [[nodiscard]] bool IsOpen() const override;
+    [[nodiscard]] bool Eof() const override;
 };

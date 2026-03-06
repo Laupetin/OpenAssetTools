@@ -5,7 +5,6 @@
 #include "Parsing/Simple/SimpleParserValue.h"
 #include "StructuredDataDef/CommonStructuredDataDef.h"
 #include "StructuredDataDefParserState.h"
-#include "Utils/ClassUtils.h"
 
 namespace sdd
 {
@@ -24,6 +23,6 @@ namespace sdd
 
     public:
         explicit StructuredDataDefParser(SimpleLexer* lexer);
-        _NODISCARD std::vector<std::unique_ptr<CommonStructuredDataDef>> GetDefs() const;
+        [[nodiscard]] std::vector<std::unique_ptr<CommonStructuredDataDef>> GetDefs() const;
     };
 } // namespace sdd

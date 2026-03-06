@@ -2,7 +2,6 @@
 
 #include "DataDefinition.h"
 #include "DeclarationModifier.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 #include <vector>

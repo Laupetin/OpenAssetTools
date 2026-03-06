@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TokenPos.h"
-#include "Utils/ClassUtils.h"
 
 #include <exception>
 #include <string>
@@ -15,8 +14,8 @@ class ParsingException final : public std::exception
 public:
     ParsingException(TokenPos position, std::string message);
 
-    _NODISCARD TokenPos Position() const;
-    _NODISCARD const std::string& Message() const;
-    _NODISCARD std::string FullMessage() const;
-    _NODISCARD char const* what() const noexcept override;
+    [[nodiscard]] TokenPos Position() const;
+    [[nodiscard]] const std::string& Message() const;
+    [[nodiscard]] std::string FullMessage() const;
+    [[nodiscard]] char const* what() const noexcept override;
 };

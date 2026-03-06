@@ -3,7 +3,6 @@
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
-#include "Utils/ClassUtils.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -52,7 +51,7 @@ namespace test::parsing::commands::sequence::sequence_action
             REQUIRE(m_arg_struct3 != nullptr);
         }
 
-        _NODISCARD bool CreateInformation() const
+        [[nodiscard]] bool CreateInformation() const
         {
             auto createStructureInformation = std::make_unique<CreateStructureInformationPostProcessor>();
             auto createMemberInformation = std::make_unique<CreateMemberInformationPostProcessor>();

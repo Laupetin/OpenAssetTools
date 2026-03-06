@@ -2,7 +2,6 @@
 
 #include "IEvaluation.h"
 #include "OperationType.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 

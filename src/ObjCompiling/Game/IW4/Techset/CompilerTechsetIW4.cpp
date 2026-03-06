@@ -1041,7 +1041,7 @@ namespace
         {
         }
 
-        _NODISCARD const LoadedTechnique* LoadMaterialTechnique(const std::string& techniqueName) const
+        [[nodiscard]] const LoadedTechnique* LoadMaterialTechnique(const std::string& techniqueName) const
         {
             auto* technique = m_zone_state.FindLoadedTechnique(techniqueName);
             if (technique)

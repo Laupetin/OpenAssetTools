@@ -56,7 +56,7 @@ namespace
         IwdFile& operator=(const IwdFile& other) = default;
         IwdFile& operator=(IwdFile&& other) noexcept = default;
 
-        _NODISCARD bool is_open() const override
+        [[nodiscard]] bool is_open() const override
         {
             return m_open;
         }

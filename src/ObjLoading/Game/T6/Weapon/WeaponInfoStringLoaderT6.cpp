@@ -160,7 +160,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertBounceSounds(const cspField_t& field, const std::string& value) const
+        [[nodiscard]] bool ConvertBounceSounds(const cspField_t& field, const std::string& value) const
         {
             auto*** bounceSound = reinterpret_cast<const char***>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
             if (value.empty())
@@ -179,7 +179,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
+        [[nodiscard]] bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
         {
             std::vector<std::array<std::string, 2>> pairs;
             if (!ParseAsArray(value, pairs))
@@ -228,7 +228,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertWeaponCamo(const cspField_t& field, const std::string& value)
+        [[nodiscard]] bool ConvertWeaponCamo(const cspField_t& field, const std::string& value)
         {
             if (value.empty())
             {
@@ -250,7 +250,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertAttachments(const cspField_t& field, const std::string& value)
+        [[nodiscard]] bool ConvertAttachments(const cspField_t& field, const std::string& value)
         {
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
@@ -295,13 +295,13 @@ namespace
             return true;
         }
 
-        _NODISCARD static bool HasMoreThanOneAttachmentSetInMask(const int mask)
+        [[nodiscard]] static bool HasMoreThanOneAttachmentSetInMask(const int mask)
         {
             // Check if int has more than 1 bit set
             return (mask & (mask - 1)) != 0;
         }
 
-        _NODISCARD bool ConvertAttachmentUniques(const cspField_t& field, const std::string& value)
+        [[nodiscard]] bool ConvertAttachmentUniques(const cspField_t& field, const std::string& value)
         {
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))

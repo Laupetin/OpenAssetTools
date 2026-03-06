@@ -59,7 +59,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertBounceSounds(const cspField_t& field, const std::string& value) const
+        [[nodiscard]] bool ConvertBounceSounds(const cspField_t& field, const std::string& value) const
         {
             auto** bounceSound = reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
             if (value.empty())
@@ -81,7 +81,7 @@ namespace
             return true;
         }
 
-        _NODISCARD bool ConvertNotetrackMap(const cspField_t& field, const std::string& value, const char* mapName, const size_t keyAndValueCount)
+        [[nodiscard]] bool ConvertNotetrackMap(const cspField_t& field, const std::string& value, const char* mapName, const size_t keyAndValueCount)
         {
             std::vector<std::array<std::string, 2>> pairs;
             if (!ParseAsArray(value, pairs))
