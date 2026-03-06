@@ -1848,7 +1848,7 @@ namespace T6
         {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
         {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
     };
-    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MLT_ARG_COUNT);
+    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MTL_ARG_COUNT);
 
     static inline const char* commonIgnoredArgAccessors[]{
         "combined_dlight",
