@@ -33,6 +33,7 @@
 #include MATERIAL_CONSTANT_ZONE_STATE_HEADER
 #include TECHSET_CONSTANTS_HEADER
 
+#include "Pool/GlobalAssetPool.h"
 #include "Techset/CommonTechniqueDumper.h"
 #include "Techset/CommonTechsetDumper.h"
 #include "Techset/CommonVertexDeclCreator.h"
@@ -267,6 +268,15 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
+#if defined(FEATURE_IW4)
+        if (vertexShader && vertexShader->name && vertexShader->name[0] == ',')
+        {
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
+            if (globalAsset)
+                vertexShader = globalAsset->Asset();
+        }
+#endif
+
         techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::VERTEX, std::string());
         if (!vertexShader)
             return result;
@@ -291,6 +301,15 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
+#if defined(FEATURE_IW4)
+        if (pixelShader && pixelShader->name && pixelShader->name[0] == ',')
+        {
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
+            if (globalAsset)
+                pixelShader = globalAsset->Asset();
+        }
+#endif
+
         techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::PIXEL, std::string());
         if (!pixelShader)
             return result;
