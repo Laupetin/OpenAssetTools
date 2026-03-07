@@ -1,4 +1,4 @@
-#options GAME(T6)
+#options GAME(IW4, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetCompiler" + GAME + ".cpp"
 
@@ -69,6 +69,7 @@ namespace
         return static_cast<MaterialWorldVertexFormat>(0);
     }
 
+#if defined(FEATURE_T6)
     MaterialType GetMaterialType(const std::string& name)
     {
         for (unsigned materialTypeIndex = MTL_TYPE_MODEL; materialTypeIndex < MTL_TYPE_COUNT; materialTypeIndex++)
@@ -87,6 +88,7 @@ namespace
             technique.passArray[passIndex].materialType = materialType;
         }
     }
+#endif
 
     MaterialTechniqueSet* ConvertTechniqueSet(const techset::CommonTechset& commonTechset, MemoryManager& memory)
     {
@@ -114,7 +116,9 @@ namespace
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
+#if defined(FEATURE_T6)
             const auto materialType = GetMaterialType(assetName);
+#endif
 
             for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
             {
@@ -128,10 +132,12 @@ namespace
 
                 techset->techniques[techniqueIndex] = technique->Asset();
 
+#if defined(FEATURE_T6)
                 // Another techset may override this for the technique
                 // but the game determines the material type by techset name.
                 // So this may just be a constraint that cannot be changed.
                 ApplyMaterialTypeToTechnique(*techset->techniques[techniqueIndex], materialType);
+#endif
             }
 
             return AssetCreationResult::Success(context.AddAsset(AssetRegistration<AssetTechniqueSet>(assetName, techset)));
