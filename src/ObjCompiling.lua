@@ -50,6 +50,9 @@ function ObjCompiling:project()
 				path.join(folder, "ObjCompiling")
 			}
 		}
+
+		ObjCommon:use()
+		useSourceTemplating("ObjCompiling")
 		
 		self:include(includes)
 		minilzo:include(includes)

@@ -326,7 +326,7 @@ namespace
                                                       const techset::CommonShaderArgCreatorDestination& input) override
         {
             assert(m_shader_info);
-            // TODO
+
             return false;
         }
 
@@ -577,7 +577,6 @@ namespace
                     return std::move(result);
             }
 
-            // TODO
             return NoResult{};
         }
 

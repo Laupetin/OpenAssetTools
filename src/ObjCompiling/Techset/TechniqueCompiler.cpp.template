@@ -1,19 +1,50 @@
-#include "TechniqueCompilerT6.h"
+#options GAME(T6)
 
-#include "Game/T6/T6.h"
-#include "Game/T6/Techset/TechsetConstantsT6.h"
-#include "PrecompiledIndexT6.h"
+#filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
+
+#set COMPILER_HEADER "\"TechniqueCompiler" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set TECHSET_CONSTANTS_HEADER "\"Game/" + GAME + "/Techset/TechsetConstants" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See TechniqueCompiler.cpp.template.
+// Do not modify, changes will be lost.
+
+#include COMPILER_HEADER
+
+#include GAME_HEADER
+#include TECHSET_CONSTANTS_HEADER
 #include "Techset/CommonShaderArgCreator.h"
 #include "Techset/CommonTechniqueLoader.h"
 #include "Techset/LiteralConstsZoneState.h"
 #include "Utils/StringUtils.h"
+
+#if defined(FEATURE_T6)
+#set PRECOMPILED_INDEX_HEADER "\"Game/" + GAME + "/Techset/PrecompiledIndex" + GAME + ".h\""
+#include PRECOMPILED_INDEX_HEADER
+#endif
 
 #include <cassert>
 #include <optional>
 #include <sstream>
 #include <vector>
 
-using namespace T6;
+using namespace GAME;
+
+#set SHADER_LOADER_CLASS_NAME "TechniqueShaderLoader" + GAME
+#set COMPILER_CLASS_NAME "TechniqueCompiler" + GAME
 
 namespace
 {
@@ -236,10 +267,10 @@ namespace
         }
     }
 
-    class TechniqueShaderLoaderT6 final : public techset::ITechniqueShaderLoader
+    class SHADER_LOADER_CLASS_NAME final : public techset::ITechniqueShaderLoader
     {
     public:
-        explicit TechniqueShaderLoaderT6(AssetCreationContext& context)
+        explicit SHADER_LOADER_CLASS_NAME(AssetCreationContext& context)
             : m_context(context)
         {
         }
@@ -282,10 +313,10 @@ namespace
         AssetCreationContext& m_context;
     };
 
-    class TechniqueCompilerT6 final : public SubAssetCreator<SubAssetTechnique>
+    class COMPILER_CLASS_NAME final : public SubAssetCreator<SubAssetTechnique>
     {
     public:
-        TechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
+        COMPILER_CLASS_NAME(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
             : m_memory(memory),
               m_zone(zone),
               m_search_path(searchPath)
@@ -295,7 +326,7 @@ namespace
         AssetCreationResult CreateSubAsset(const std::string& subAssetName, AssetCreationContext& context) override
         {
             bool failure = false;
-            TechniqueShaderLoaderT6 shaderLoader(context);
+            SHADER_LOADER_CLASS_NAME shaderLoader(context);
             const auto commonShaderArgCreator = techset::CommonShaderArgCreator::CreateDx11(shaderLoader, context, commonCodeSourceInfos);
 
             const auto commonTechnique =
@@ -336,10 +367,12 @@ namespace
     };
 } // namespace
 
+#set CREATE_COMPILER_METHOD "CreateTechniqueCompiler" + GAME
+
 namespace techset
 {
-    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
+    std::unique_ptr<ISubAssetCreator> CREATE_COMPILER_METHOD(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
     {
-        return std::make_unique<TechniqueCompilerT6>(memory, zone, searchPath);
+        return std::make_unique<COMPILER_CLASS_NAME>(memory, zone, searchPath);
     }
 } // namespace techset

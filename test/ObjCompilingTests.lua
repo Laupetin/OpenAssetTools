@@ -3,6 +3,7 @@ ObjCompilingTests = {}
 function ObjCompilingTests:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
+			"%{wks.location}/src/ObjCompiling",
 			path.join(TestFolder(), "ObjCompilingTests")
 		}
 	end
