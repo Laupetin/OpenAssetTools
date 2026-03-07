@@ -1,4 +1,4 @@
-#options GAME(T6)
+#options GAME(IW4, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".h"
 
