@@ -1,11 +1,37 @@
-#include "TechsetCompilerT6.h"
+#options GAME(T6)
 
-#include "Game/T6/T6.h"
-#include "Game/T6/Techset/TechsetConstantsT6.h"
+#filename "Game/" + GAME + "/Techset/TechsetCompiler" + GAME + ".cpp"
+
+#set COMPILER_HEADER "\"TechsetCompiler" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set TECHSET_CONSTANTS_HEADER "\"Game/" + GAME + "/Techset/TechsetConstants" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See TechsetCompiler.cpp.template.
+// Do not modify, changes will be lost.
+
+#include COMPILER_HEADER
+
+#include GAME_HEADER
+#include TECHSET_CONSTANTS_HEADER
 #include "Techset/CommonTechsetLoader.h"
 #include "Techset/TechsetCommon.h"
 
-using namespace T6;
+using namespace GAME;
+
+#set COMPILER_CLASS_NAME "TechsetCompiler" + GAME
 
 namespace
 {
@@ -71,10 +97,10 @@ namespace
         return techset;
     }
 
-    class TechsetCompilerT6 final : public AssetCreator<AssetTechniqueSet>
+    class COMPILER_CLASS_NAME final : public AssetCreator<AssetTechniqueSet>
     {
     public:
-        TechsetCompilerT6(ISearchPath& searchPath, MemoryManager& memory)
+        COMPILER_CLASS_NAME(ISearchPath& searchPath, MemoryManager& memory)
             : m_search_path(searchPath),
               m_memory(memory)
         {
@@ -106,8 +132,6 @@ namespace
                 // but the game determines the material type by techset name.
                 // So this may just be a constraint that cannot be changed.
                 ApplyMaterialTypeToTechnique(*techset->techniques[techniqueIndex], materialType);
-
-                // Precompiled index?
             }
 
             return AssetCreationResult::Success(context.AddAsset(AssetRegistration<AssetTechniqueSet>(assetName, techset)));
@@ -119,10 +143,12 @@ namespace
     };
 } // namespace
 
+#set CREATE_COMPILER_METHOD "CreateTechsetCompiler" + GAME
+
 namespace techset
 {
-    std::unique_ptr<IAssetCreator> CreateCompilerT6(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<IAssetCreator> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
     {
-        return std::make_unique<TechsetCompilerT6>(searchPath, memory);
+        return std::make_unique<COMPILER_CLASS_NAME>(searchPath, memory);
     }
 } // namespace techset

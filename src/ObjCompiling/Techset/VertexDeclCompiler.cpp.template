@@ -1,0 +1,97 @@
+#options GAME(T6)
+
+#filename "Game/" + GAME + "/Techset/VertexDeclCompiler" + GAME + ".cpp"
+
+#set COMPILER_HEADER "\"VertexDeclCompiler" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set TECHSET_CONSTANTS_HEADER "\"Game/" + GAME + "/Techset/TechsetConstants" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See VertexDeclCompiler.cpp.template.
+// Do not modify, changes will be lost.
+
+#include COMPILER_HEADER
+
+#include GAME_HEADER
+#include TECHSET_CONSTANTS_HEADER
+#include "Techset/CommonVertexDeclCreator.h"
+#include "Utils/Logging/Log.h"
+
+using namespace GAME;
+
+#set COMPILER_CLASS_NAME "VertexDeclCompiler" + GAME
+
+#if defined(FEATURE_T6)
+#define ABSTRACT_CREATOR_NAME SubAssetCreator
+#define OVERRIDEN_CREATOR_METHOD CreateSubAsset
+#define ASSET_NAME SubAssetVertexDecl
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define ABSTRACT_CREATOR_NAME AssetCreator
+#define OVERRIDEN_CREATOR_METHOD CreateAsset
+#define ASSET_NAME AssetVertexDecl
+#define INTERFACE_NAME IAssetCreator
+#endif
+
+namespace
+{
+    class COMPILER_CLASS_NAME final : public ABSTRACT_CREATOR_NAME<ASSET_NAME>
+    {
+    public:
+        explicit COMPILER_CLASS_NAME(MemoryManager& memory)
+            : m_memory(memory)
+        {
+        }
+
+        AssetCreationResult OVERRIDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto commonVertexDecl = techset::CreateVertexDeclFromName(assetName, commonRoutingInfos);
+            if (!commonVertexDecl)
+                return AssetCreationResult::Failure();
+
+            if (commonVertexDecl->m_routing.size() > std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
+            {
+                con::error("Vertex declaration can only have up to {} routing entries", std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
+                return AssetCreationResult::Failure();
+            }
+
+            auto* vertexDecl = m_memory.Alloc<MaterialVertexDeclaration>();
+
+            for (const auto& commonRoutingEntry : commonVertexDecl->m_routing)
+            {
+                vertexDecl->routing.data[vertexDecl->streamCount].source = commonRoutingEntry.m_source;
+                vertexDecl->routing.data[vertexDecl->streamCount].dest = commonRoutingEntry.m_destination;
+                vertexDecl->hasOptionalSource = vertexDecl->hasOptionalSource || commonRoutingEntry.m_source >= STREAM_SRC_OPTIONAL_BEGIN;
+
+                vertexDecl->streamCount++;
+            }
+
+            return AssetCreationResult::Success(context.AddSubAsset(AssetRegistration<ASSET_NAME>(assetName, vertexDecl)));
+        }
+
+    private:
+        MemoryManager& m_memory;
+    };
+} // namespace
+
+#set CREATE_COMPILER_METHOD "CreateVertexDeclCompiler" + GAME
+
+namespace techset
+{
+    std::unique_ptr<INTERFACE_NAME> CREATE_COMPILER_METHOD(MemoryManager& memory)
+    {
+        return std::make_unique<COMPILER_CLASS_NAME>(memory);
+    }
+} // namespace techset
