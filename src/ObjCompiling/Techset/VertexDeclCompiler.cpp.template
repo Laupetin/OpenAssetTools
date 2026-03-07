@@ -1,4 +1,4 @@
-#options GAME(T6)
+#options GAME(IW4, T6)
 
 #filename "Game/" + GAME + "/Techset/VertexDeclCompiler" + GAME + ".cpp"
 
@@ -16,6 +16,7 @@
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
+#define IS_SUB_ASSET
 #endif
 
 // This file was templated.
@@ -33,14 +34,16 @@ using namespace GAME;
 
 #set COMPILER_CLASS_NAME "VertexDeclCompiler" + GAME
 
-#if defined(FEATURE_T6)
+#if defined(IS_SUB_ASSET)
 #define ABSTRACT_CREATOR_NAME SubAssetCreator
 #define OVERRIDEN_CREATOR_METHOD CreateSubAsset
+#define ADD_ASSET_METHOD AddSubAsset
 #define ASSET_NAME SubAssetVertexDecl
 #define INTERFACE_NAME ISubAssetCreator
 #else
 #define ABSTRACT_CREATOR_NAME AssetCreator
 #define OVERRIDEN_CREATOR_METHOD CreateAsset
+#define ADD_ASSET_METHOD AddAsset
 #define ASSET_NAME AssetVertexDecl
 #define INTERFACE_NAME IAssetCreator
 #endif
@@ -69,6 +72,10 @@ namespace
 
             auto* vertexDecl = m_memory.Alloc<MaterialVertexDeclaration>();
 
+#ifndef IS_SUB_ASSET
+            vertexDecl->name = m_memory.Dup(assetName.c_str());
+#endif
+
             for (const auto& commonRoutingEntry : commonVertexDecl->m_routing)
             {
                 vertexDecl->routing.data[vertexDecl->streamCount].source = commonRoutingEntry.m_source;
@@ -78,7 +85,7 @@ namespace
                 vertexDecl->streamCount++;
             }
 
-            return AssetCreationResult::Success(context.AddSubAsset(AssetRegistration<ASSET_NAME>(assetName, vertexDecl)));
+            return AssetCreationResult::Success(context.ADD_ASSET_METHOD(AssetRegistration<ASSET_NAME>(assetName, vertexDecl)));
         }
 
     private:
