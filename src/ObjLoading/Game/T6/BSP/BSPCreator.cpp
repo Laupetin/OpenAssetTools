@@ -125,6 +125,8 @@ namespace
                 throw GltfLoadException(std::format("Element count of {} accessor does not match expected vertex count of {}", accessorType, vertexCount));
         }
 
+        using Transform3f = Eigen::Transform<float, 3, Eigen::Affine>;
+
         Eigen::Matrix4f createNodeMatrix(const gltf::JsonNode& node)
         {
             if (node.matrix)
@@ -180,18 +182,15 @@ namespace
             }
 
             Eigen::Vector3f translation(localTranslation[0], localTranslation[1], localTranslation[2]);
-            Eigen::Quaternionf rotation(localRotation[0], localRotation[1], localRotation[2], localRotation[3]);
+            Eigen::Quaternionf rotation(localRotation[3], localRotation[0], localRotation[1], localRotation[2]); // GLTF is XYZW, Eigen is WXYZ
             Eigen::Vector3f scale(localScale[0], localScale[1], localScale[2]);
 
-            Eigen::Affine3f transform = Eigen::Affine3f::Identity();
-            transform.translate(translation);
-            transform.rotate(rotation);
-            transform.scale(scale);
-
-            return transform.matrix();
+            Transform3f T;
+            T = T.fromPositionOrientationScale(translation, rotation, scale);
+            return T.matrix();
         }
 
-        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, BSPSurface& surface)
+        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface)
         {
             // clang-format off
             const auto* positionAccessor = GetAccessorForIndex(
@@ -271,7 +270,6 @@ namespace
                 m_bsp->gfxWorld.indices.emplace_back(static_cast<uint16_t>(indices[2]));
             }
 
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             const auto vertexOffset = static_cast<unsigned>(m_bsp->gfxWorld.vertices.size());
             m_bsp->gfxWorld.vertices.reserve(vertexOffset + vertexCount);
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
@@ -315,7 +313,7 @@ namespace
             return vertexOffset;
         }
 
-        void loadSurfaceMaterialData(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive, BSPSurface& surface)
+        void loadSurfaceLightData(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive, BSPSurface& surface)
         {
             if (!primitive.material)
             {
@@ -330,8 +328,52 @@ namespace
 
         bool CreateSurfacesFromNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
-            if (!node.mesh)
+            if (!node.mesh && !node.extensions)
                 return false;
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            if (node.extensions && node.extensions->KHR_lights_punctual)
+            {
+                int lightIndex = node.extensions->KHR_lights_punctual->light;
+
+                assert(lightIndex >= 0);
+                if (m_bsp->lights[lightIndex].hasPosBeenSet == true)
+                    con::warn("Internal error, multiple nodes reference the same light. Light positions/rotations are likely incorrect.");
+
+                Eigen::Vector4f position(0, 0, 0, 1.0f);
+                Eigen::Vector4f transformedPosition = nodeMatrix * position;
+                m_bsp->lights[lightIndex].pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
+                RhcToLhcCoordinates(m_bsp->lights[lightIndex].pos.v);
+
+                // BO2 uses -Z up and the default light direction is straight down
+                Eigen::Vector3f defaultDirection(0.0f, 0.0f, 1.0f);
+                Eigen::Vector3f outputDirection;
+
+                if (node.rotation)
+                {
+                    Eigen::Quaternionf rotationQuat(
+                        (*node.rotation)[3], (*node.rotation)[0], (*node.rotation)[1], (*node.rotation)[2]); // GLTF is XYZW, Eigen is WXYZ
+                    outputDirection = rotationQuat * defaultDirection;
+                }
+                else if (node.matrix)
+                {
+                    con::error("matrix rotation unimpelemted");
+                    assert(false);
+                    // Eigen::Quaternionf rotationQuat;
+                    // rotationQuat = nodeMatrix;
+                    // outputDirection = rotationQuat * defaultDirection;
+                }
+                else
+                    outputDirection = defaultDirection;
+                outputDirection.normalize();
+                m_bsp->lights[lightIndex].direction = vec3_t{outputDirection.x(), outputDirection.y(), outputDirection.z()};
+                RhcToLhcCoordinates(m_bsp->lights[lightIndex].direction.v);
+
+                m_bsp->lights[lightIndex].hasPosBeenSet = true;
+
+                return true;
+            }
 
             con::info("Mesh {} found", node.name.has_value() ? node.name.value() : "");
 
@@ -359,8 +401,14 @@ namespace
 
                 BSPSurface surface;
 
-                loadSurfaceMaterialData(jRoot, primitive, surface);
-                CreateVertices(accessorsForVertex, node, surface);
+                if (primitive.material)
+                    surface.materialIndex = *primitive.material;
+                else if (primitive.attributes.COLOR_0)
+                    surface.materialIndex = m_color_mat_idx;
+                else
+                    throw GltfLoadException("Primitive requires material or colour data.");
+
+                CreateVertices(accessorsForVertex, node, nodeMatrix, surface);
 
                 m_bsp->gfxWorld.surfaces.emplace_back(surface);
             }
@@ -431,6 +479,78 @@ namespace
             colorMaterial.materialType = MATERIAL_TYPE_COLOUR;
             colorMaterial.materialName = "";
             m_bsp->gfxWorld.materials.emplace_back(colorMaterial);
+        }
+
+        void LoadLights(const JsonRoot& jRoot)
+        {
+            if (!jRoot.extensions)
+                return;
+            if (!jRoot.extensions->KHR_lights_punctual)
+                return;
+            if (!jRoot.extensions->KHR_lights_punctual->lights)
+                return;
+            const std::vector<JsonPunctualLight>& jsLightArray = jRoot.extensions->KHR_lights_punctual->lights.value();
+
+            m_bsp->lights.reserve(jsLightArray.size());
+            for (const JsonPunctualLight& jsLight : jsLightArray)
+            {
+                if (jsLight.type == JsonPunctualLightType::POINT)
+                    con::error("Any point lights will be converted to a spotlight as point lights are unsupported right now.");
+
+                BSPLight light{};
+
+                // position and direction data will be set during node traversal
+                light.hasPosBeenSet = false;
+
+                if (!jsLight.color)
+                {
+                    light.colour.x = 1.0f;
+                    light.colour.y = 1.0f;
+                    light.colour.z = 1.0f;
+                }
+                else
+                {
+                    light.colour.x = (*jsLight.color)[0];
+                    light.colour.y = (*jsLight.color)[1];
+                    light.colour.z = (*jsLight.color)[2];
+                }
+
+                if (!jsLight.intensity)
+                    light.intensity = 100000.0f; // adjusted from GLTF spec to better match BO2
+                else
+                    light.intensity = *jsLight.intensity;
+
+                if (!jsLight.range)
+                    light.range = 1000.0f; // adjusted from GLTF spec to better match BO2
+                else
+                    light.range = *jsLight.range;
+
+                if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
+                {
+                    light.type = LIGHT_TYPE_DIRECTIONAL;
+                }
+                else if (jsLight.type == JsonPunctualLightType::POINT)
+                {
+                    light.type = LIGHT_TYPE_POINT;
+                }
+                else // JsonPunctualLightType::SPOT
+                {
+                    light.type = LIGHT_TYPE_SPOT;
+                    assert(jsLight.spot);
+
+                    if (!jsLight.spot->innerConeAngle)
+                        light.innerConeAngle = 0.0f;
+                    else
+                        light.innerConeAngle = *jsLight.spot->innerConeAngle;
+
+                    if (!jsLight.spot->outerConeAngle)
+                        light.outerConeAngle = 3.14159265359f / 4.0f; /// 45 degrees
+                    else
+                        light.outerConeAngle = *jsLight.spot->outerConeAngle;
+                }
+
+                m_bsp->lights.emplace_back(light);
+            }
         }
 
         void TraverseNodes(const JsonRoot& jRoot)
@@ -570,6 +690,7 @@ namespace
                 CreateBufferViews(jRoot);
                 CreateAccessors(jRoot);
 
+                LoadLights(jRoot);
                 LoadMaterials(jRoot);
                 TraverseNodes(jRoot);
             }

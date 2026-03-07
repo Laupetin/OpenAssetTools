@@ -61,13 +61,15 @@ namespace BSP
     struct BSPLight
     {
         BSPLightType type;
-        vec3_t pos;
-        vec3_t direction;
         vec3_t colour;
         float range;
         float intensity;
 
-        // only used on spot and dir lights
+        vec3_t pos;
+        vec3_t direction;
+        bool hasPosBeenSet;
+
+        // angle is in radians. only used on spot/dir lights
         float innerConeAngle;
         float outerConeAngle;
     };

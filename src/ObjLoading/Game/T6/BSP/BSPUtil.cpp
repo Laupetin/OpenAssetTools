@@ -103,28 +103,23 @@ namespace BSP
         return sqrtf((x * x) + (y * y) + (z * z));
     }
 
-    // angles are in euler degrees
     void BSPUtil::convertAnglesToAxis(vec3_t* angles, vec3_t* axis)
     {
-        float xRadians = angles->x * 0.017453292f; // M_PI / 180.0f
-        float yRadians = angles->y * 0.017453292f; // M_PI / 180.0f
-        float zRadians = angles->z * 0.017453292f; // M_PI / 180.0f
-
-        float cosX = cos(xRadians);
-        float sinX = sin(xRadians);
-        float cosY = cos(yRadians);
-        float sinY = sin(yRadians);
-        float cosZ = cos(zRadians);
-        float sinZ = sin(zRadians);
+        float cosX = cos(angles->x);
+        float sinX = sin(angles->x);
+        float cosY = cos(angles->y);
+        float sinY = sin(angles->y);
+        float cosZ = cos(angles->z);
+        float sinZ = sin(angles->z);
 
         axis[0].x = cosX * cosY;
         axis[0].y = cosX * sinY;
         axis[0].z = -sinX;
-        axis[1].x = (sinZ * sinX * cosY) - (cosZ * sinY);
-        axis[1].y = (sinZ * sinX * sinY) + (cosZ * cosY);
+        axis[1].x = ((sinZ * sinX) * cosY) - (cosZ * sinY);
+        axis[1].y = ((sinZ * sinX) * sinY) + (cosZ * cosY);
         axis[1].z = sinZ * cosX;
-        axis[2].x = (cosZ * sinX * cosY) + (sinZ * sinY);
-        axis[2].y = (cosZ * sinX * sinY) - (sinZ * cosY);
+        axis[2].x = ((cosZ * sinX) * cosY) + (sinZ * sinY);
+        axis[2].y = ((cosZ * sinX) * sinY) - (sinZ * cosY);
         axis[2].z = cosZ * cosX;
     }
 

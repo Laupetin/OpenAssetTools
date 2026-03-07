@@ -1,5 +1,7 @@
 #include "ComWorldLinker.h"
 
+#include "../BSPUtil.h"
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -44,24 +46,31 @@ namespace BSP
         light->origin.y = bspLight->pos.y;
         light->origin.z = bspLight->pos.z;
 
-        light->color.x = bspLight->colour.x;
-        light->color.y = bspLight->colour.y;
-        light->color.z = bspLight->colour.z;
-        light->diffuseColor.x = bspLight->colour.x;
-        light->diffuseColor.y = bspLight->colour.y;
-        light->diffuseColor.z = bspLight->colour.z;
-        light->diffuseColor.w = 0.0f;
+        // colour also effects the brightness of the light, it's unclear what the min/max is
+        vec3_t BSPColor;
+        BSPColor.x = bspLight->colour.x;
+        BSPColor.y = bspLight->colour.y;
+        BSPColor.z = bspLight->colour.z;
+        light->color.x = BSPColor.x;
+        light->color.y = BSPColor.y;
+        light->color.z = BSPColor.z;
+        light->diffuseColor.x = BSPColor.x;
+        light->diffuseColor.y = BSPColor.y;
+        light->diffuseColor.z = BSPColor.z;
+        light->diffuseColor.w = 0.0f; // always 0
 
+        // the forward dir of the light, default is (0, 0, 1) to face down (-Z up)
         light->dir.x = bspLight->direction.x;
         light->dir.y = bspLight->direction.y;
         light->dir.z = bspLight->direction.z;
 
-        light->dAttenuation = bspLight->intensity; // not too sure if this is correct or not
+        light->dAttenuation = bspLight->intensity; // not 100% sure if these values are calculated the same
 
+        // the radius of the light's lens
         light->radius = bspLight->range;
 
         light->falloff.x = 0.0f;
-        light->falloff.y = bspLight->range;
+        light->falloff.y = bspLight->range; // only Y is set
         light->falloff.z = 0.0f;
         light->falloff.w = 0.0f;
 
@@ -71,16 +80,17 @@ namespace BSP
         light->angle.z = 0.0f;
         light->angle.w = 0.0f;
 
+        // 0 - light cannot move
+        // 1 <= x > 0 - limit that it can move each game update
+        light->translationLimit = 0.0f;
+
         // 1.0f - light cannot rotate
         // -1.0f - infinitely rotate
         // between 1 and -1 -  limit that it can rotate each game update
-        light->translationLimit = 1.0f;
-
-        // 0 - light cannot move
-        // 1 <= x > 0 - limit that it can move each game update
-        light->rotationLimit = 0.0f;
+        light->rotationLimit = 1.0f;
 
         // default values from official map
+        light->useCookie = 0;
         light->cookieControl0.x = 0.0f;
         light->cookieControl0.y = 0.0f;
         light->cookieControl0.z = 1.0f;
@@ -94,39 +104,32 @@ namespace BSP
         light->cookieControl2.z = 0.0f;
         light->cookieControl2.w = 0.0f;
 
-        // values taken from an mp_overflow light
+        // these are possibly the result of cos(), unsure how the angle is generated though
+        // values taken from official maps
         light->aAbB.x = 0.5303301215171814f;
         light->aAbB.y = 0.7071067690849304f;
         light->aAbB.z = 0.5303301215171814f;
         light->aAbB.w = 0.7071067690849304f;
 
-        light->canUseShadowMap = false;
-        light->shadowmapVolume = 0;
+        // light won't light the surface unless canUseShadowMap is set to 1
+        // may be to do with lights casting shadows on other lights
+        light->canUseShadowMap = 1;
+        light->shadowmapVolume = 0; // ignored if this is set to 0
+
         light->exponent = 0;
         light->priority = 0;
-        light->cullDist = 10000;
-        light->useCookie = 0;
+        light->cullDist = 1000;
         light->mipDistance = 0.0f;
     }
 
     ComWorld* ComWorldLinker::linkComWorld(BSPData* bsp)
     {
-        BSPLight eeeee;
-        eeeee.type = LIGHT_TYPE_POINT;
-        eeeee.pos = vec3_t{22.35f, (-493.42f), 10.96f};
-        eeeee.direction = vec3_t{0.0f, 0.0f, 0.0f};
-        eeeee.colour = vec3_t{1.0f, 1.0f, 1.0f};
-        eeeee.range = 1000.0f;
-        eeeee.intensity = 1515948.33f;
-        eeeee.innerConeAngle = 0.0f;
-        eeeee.outerConeAngle = 0.0f;
-        bsp->lights.emplace_back(eeeee);
-
         // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
         comWorld->name = m_memory.Dup(bsp->bspName.c_str());
         comWorld->isInUse = 1;
 
+        // first two lights are the empty light and the sun light.
         size_t totalLightCount = bsp->lights.size() + BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
         comWorld->primaryLightCount = static_cast<unsigned int>(totalLightCount);
         comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(totalLightCount);
@@ -158,9 +161,6 @@ namespace BSP
             else
             {
                 BSPLight* bspLight = &bsp->lights.at(lightIdx - BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT);
-
-                // cosHalfFovOuter, cosHalfFovInner, cosHalfFovExpanded
-                setLightCommonValues(light, bspLight);
                 if (bspLight->type == LIGHT_TYPE_DIRECTIONAL)
                 {
                     light->type = GFX_LIGHT_TYPE_DIR;
@@ -184,10 +184,11 @@ namespace BSP
                     light->type = GFX_LIGHT_TYPE_OMNI;
                     light->defName = "white_light_cube";
                     light->roundness = 0.0f;
-                    light->cosHalfFovInner = cosf(30 * (M_PI / 180.0));
-                    light->cosHalfFovOuter = cosf(60 * (M_PI / 180.0));
-                    light->cosHalfFovExpanded = cosf(60 * (M_PI / 180.0));
+                    light->cosHalfFovInner = cosf(30.0f * (M_PI / 180.0f));
+                    light->cosHalfFovOuter = cosf(55.0f * (M_PI / 180.0f));
+                    light->cosHalfFovExpanded = cosf(55.0f * (M_PI / 180.0f));
                 }
+                setLightCommonValues(light, bspLight);
             }
         }
 
