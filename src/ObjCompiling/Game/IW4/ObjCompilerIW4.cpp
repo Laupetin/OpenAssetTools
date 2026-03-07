@@ -1,10 +1,10 @@
 #include "ObjCompilerIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Techset/VertexDeclCompilerIW4.h"
 #include "Image/ImageIwdPostProcessor.h"
 #include "Material/CompilerMaterialIW4.h"
 #include "Techset/CompilerTechsetIW4.h"
-#include "Techset/CompilerVertexDeclIW4.h"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace
         collection.AddAssetCreator(material::CreateCompilerIW4(memory, searchPath, gdt));
         collection.AddAssetCreator(techset::CreateLoaderIW4(memory, searchPath));
 #endif
-        collection.AddAssetCreator(vertex_decl::CreateLoaderIW4(memory));
+        collection.AddAssetCreator(techset::CreateVertexDeclCompilerIW4(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
