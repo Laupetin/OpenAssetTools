@@ -1,6 +1,7 @@
 #include "ObjCompilerIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Techset/TechniqueCompilerIW4.h"
 #include "Game/IW4/Techset/TechsetCompilerIW4.h"
 #include "Game/IW4/Techset/VertexDeclCompilerIW4.h"
 #include "Image/ImageIwdPostProcessor.h"
@@ -21,6 +22,8 @@ namespace
 #endif
         collection.AddAssetCreator(techset::CreateVertexDeclCompilerIW4(memory));
         collection.AddAssetCreator(techset::CreateTechsetCompilerIW4(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW4(memory, zone, searchPath));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
