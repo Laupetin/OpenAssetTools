@@ -327,7 +327,21 @@ namespace
         {
             assert(m_shader_info);
 
-            return false;
+            const auto foundConstant =
+                std::ranges::find_if(m_shader_info->m_constants,
+                                     [input](const d3d9::ShaderConstant& constant)
+                                     {
+                                         return constant.m_register_set == d3d9::RegisterSet::FLOAT_4 && constant.m_name == input.m_argument_name;
+                                     });
+
+            if (foundConstant == m_shader_info->m_constants.end())
+                return false;
+
+            const auto variableElementCount = std::max<unsigned>(foundConstant->m_register_count, 1);
+
+            commonDestination.dx9.m_destination_register = foundConstant->m_register_index;
+
+            return true;
         }
 
         [[nodiscard]] bool FindDestinationForSampler(techset::CommonShaderArgDestination& commonDestination,
@@ -335,8 +349,20 @@ namespace
                                                      const techset::CommonShaderArgCreatorDestination& input) override
         {
             assert(m_shader_info);
-            // TODO
-            return false;
+
+            const auto foundConstant =
+                std::ranges::find_if(m_shader_info->m_constants,
+                                     [input](const d3d9::ShaderConstant& constant)
+                                     {
+                                         return constant.m_register_set == d3d9::RegisterSet::SAMPLER && constant.m_name == input.m_argument_name;
+                                     });
+
+            if (foundConstant == m_shader_info->m_constants.end())
+                return false;
+
+            commonDestination.dx9.m_destination_register = foundConstant->m_register_index;
+
+            return true;
         }
 
         result::Expected<NoResult, std::string> AutoCreateMissingArgs() override
