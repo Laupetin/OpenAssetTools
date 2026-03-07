@@ -36,13 +36,13 @@ using namespace GAME;
 
 #if defined(IS_SUB_ASSET)
 #define ABSTRACT_CREATOR_NAME SubAssetCreator
-#define OVERRIDEN_CREATOR_METHOD CreateSubAsset
+#define OVERRIDDEN_CREATOR_METHOD CreateSubAsset
 #define ADD_ASSET_METHOD AddSubAsset
 #define ASSET_NAME SubAssetVertexDecl
 #define INTERFACE_NAME ISubAssetCreator
 #else
 #define ABSTRACT_CREATOR_NAME AssetCreator
-#define OVERRIDEN_CREATOR_METHOD CreateAsset
+#define OVERRIDDEN_CREATOR_METHOD CreateAsset
 #define ADD_ASSET_METHOD AddAsset
 #define ASSET_NAME AssetVertexDecl
 #define INTERFACE_NAME IAssetCreator
@@ -58,7 +58,7 @@ namespace
         {
         }
 
-        AssetCreationResult OVERRIDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
+        AssetCreationResult OVERRIDDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
         {
             const auto commonVertexDecl = techset::CreateVertexDeclFromName(assetName, commonRoutingInfos);
             if (!commonVertexDecl)
