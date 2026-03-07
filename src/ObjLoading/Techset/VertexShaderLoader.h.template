@@ -1,6 +1,6 @@
 #options GAME(IW4, T6)
 
-#filename "Game/" + GAME + "/Techset/TechsetCompiler" + GAME + ".h"
+#filename "Game/" + GAME + "/Techset/VertexShaderLoader" + GAME + ".h"
 
 #if GAME == "IW3"
 #define FEATURE_IW3
@@ -15,7 +15,7 @@
 #endif
 
 // This file was templated.
-// See TechsetCompiler.h.template.
+// See VertexShaderLoader.h.template.
 // Do not modify, changes will be lost.
 
 #pragma once
@@ -26,9 +26,15 @@
 
 #include <memory>
 
-#set CREATE_COMPILER_METHOD "CreateTechsetCompiler" + GAME
+#set CREATE_LOADER_METHOD "CreateVertexShaderLoader" + GAME
+
+#if defined(FEATURE_T6)
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define INTERFACE_NAME IAssetCreator
+#endif
 
 namespace techset
 {
-    std::unique_ptr<IAssetCreator> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
-}
+    std::unique_ptr<INTERFACE_NAME> CREATE_LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace techset

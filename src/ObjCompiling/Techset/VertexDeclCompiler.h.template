@@ -2,8 +2,6 @@
 
 #filename "Game/" + GAME + "/Techset/VertexDeclCompiler" + GAME + ".h"
 
-#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
-
 #if GAME == "IW3"
 #define FEATURE_IW3
 #elif GAME == "IW4"
