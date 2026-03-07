@@ -1,0 +1,40 @@
+#options GAME(IW4, T6)
+
+#filename "Game/" + GAME + "/Techset/PixelShaderLoader" + GAME + ".h"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See PixelShaderLoader.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+#set CREATE_LOADER_METHOD "CreatePixelShaderLoader" + GAME
+
+#if defined(FEATURE_T6)
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define INTERFACE_NAME IAssetCreator
+#endif
+
+namespace techset
+{
+    std::unique_ptr<INTERFACE_NAME> CREATE_LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace techset

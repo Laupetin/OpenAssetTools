@@ -6208,7 +6208,7 @@ namespace T6
         MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
         MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
 
-        MLT_ARG_COUNT,
+        MTL_ARG_COUNT,
     };
 
     struct MaterialShaderArgument

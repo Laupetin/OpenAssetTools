@@ -34,7 +34,7 @@ TEST_CASE("TechsetCompilerT6", "[techset][t6][compiler]")
     AssetCreationContext context(zone, &creators, &ignoredAssets);
     MockSearchPath searchPath;
     TestMemoryManager memory;
-    const auto sut = techset::CreateCompilerT6(memory, searchPath);
+    const auto sut = techset::CreateTechsetCompilerT6(memory, searchPath);
 
     SECTION("Sets correct worldVertFormat")
     {
