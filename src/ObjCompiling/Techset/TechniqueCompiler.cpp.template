@@ -35,6 +35,7 @@
 #include TECHSET_CONSTANTS_HEADER
 #include "Techset/CommonShaderArgCreator.h"
 #include "Techset/CommonTechniqueLoader.h"
+#include "Techset/CommonVertexDeclCreator.h"
 #include "Techset/LiteralConstsZoneState.h"
 #include "Utils/StringUtils.h"
 
@@ -211,7 +212,7 @@ namespace
         pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
     }
 
-    bool AnyDeclHasOptionalSource(const MaterialTechnique& technique)
+    bool AnyDeclHasOptionalSource(const MaterialTechnique& technique, AssetCreationContext& context)
     {
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
         {
@@ -219,36 +220,52 @@ namespace
             if (!pass.vertexDecl)
                 continue;
 
+#if defined(SHADERS_ARE_SUBASSETS)
             if (pass.vertexDecl->hasOptionalSource)
                 return true;
+#else
+            if (pass.vertexDecl->name && pass.vertexDecl->name[0] == ',')
+            {
+                if (techset::HasOptionalSourceByName(&pass.vertexDecl->name[1], commonRoutingInfos).value_or(false))
+                    return true;
+            }
+            else if (pass.vertexDecl->hasOptionalSource)
+                return true;
+#endif
         }
 
         return false;
     }
 
-    void UpdateTechniqueFlags(MaterialTechnique& technique, const techset::CommonTechnique& commonTechnique)
+    void UpdateTechniqueFlags(MaterialTechnique& technique, const techset::CommonTechnique& commonTechnique, AssetCreationContext& context)
     {
-#if defined(FEATURE_IW4)
-        // TODO
-#elif defined(FEATURE_T6)
         std::string lowerTechniqueName(commonTechnique.m_name);
         utils::MakeStringLowerCase(lowerTechniqueName);
 
+#if defined(FEATURE_IW4)
+        // Not a particularly cool way to do this but...
+        // the game actually does this :shrug:
+        if (lowerTechniqueName == "zprepass")
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
+        else if (lowerTechniqueName == "build_floatz")
+            technique.flags |= MTL_TECHFLAG_BUILD_FLOATZ;
+        else if (lowerTechniqueName == "build_shadowmap_depth" || lowerTechniqueName == "build_shadowmap_model")
+            technique.flags |= MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL;
+
+        if (technique.flags & MTL_TECHFLAG_USES_FLOATZ && lowerTechniqueName.starts_with("distortion_"))
+            technique.flags = (technique.flags & ~MTL_TECHFLAG_USES_FLOATZ) | MTL_TECHFLAG_USES_DISTORTION_FLOATZ;
+#elif defined(FEATURE_T6)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass" || lowerTechniqueName.starts_with("pimp_technique_zprepass_")
             || lowerTechniqueName.starts_with("pimp_technique_layer_zprepass_") || lowerTechniqueName.starts_with("pimp_technique_buildshadowmap_"))
         {
-            technique.flags |= TECHNIQUE_FLAG_4;
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
         }
 #endif
 
-        if (AnyDeclHasOptionalSource(technique))
-#if defined(FEATURE_IW4)
-            technique.flags |= TECHNIQUE_FLAG_20;
-#elif defined(FEATURE_T6)
-            technique.flags |= TECHNIQUE_FLAG_8;
-#endif
+        if (AnyDeclHasOptionalSource(technique, context))
+            technique.flags |= MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE;
     }
 
     MaterialTechnique* ConvertTechnique(const techset::CommonTechnique& commonTechnique, AssetCreationContext& context, MemoryManager& memory)
@@ -267,7 +284,7 @@ namespace
 
         // Take common flags and apply further logic
         technique->flags = static_cast<decltype(MaterialTechnique::flags)>(commonTechnique.m_flags);
-        UpdateTechniqueFlags(*technique, commonTechnique);
+        UpdateTechniqueFlags(*technique, commonTechnique, context);
 
         return technique;
     }

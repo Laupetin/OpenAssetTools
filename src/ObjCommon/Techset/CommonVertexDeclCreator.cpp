@@ -24,6 +24,34 @@ namespace
 
 namespace techset
 {
+    std::optional<bool> HasOptionalSourceByName(const std::string& name, const CommonStreamRoutingInfos& routingInfos)
+    {
+        size_t currentOffset = 0u;
+
+        std::string sourceAbbreviation;
+        while (NextAbbreviation(name, sourceAbbreviation, currentOffset))
+        {
+            std::string destinationAbbreviation;
+            if (!NextAbbreviation(name, destinationAbbreviation, currentOffset))
+            {
+                con::error("Failed to detect vertex decl destination abbreviation: {}", name);
+                return std::nullopt;
+            }
+
+            const auto maybeSource = routingInfos.GetSourceByAbbreviation(sourceAbbreviation);
+            if (!maybeSource)
+            {
+                con::error("Unknown vertex decl source abbreviation: {}", sourceAbbreviation);
+                return std::nullopt;
+            }
+
+            if (routingInfos.IsSourceOptional(*maybeSource))
+                return true;
+        }
+
+        return false;
+    }
+
     std::optional<CommonVertexDeclaration> CreateVertexDeclFromName(const std::string& name, const CommonStreamRoutingInfos& routingInfos)
     {
         CommonVertexDeclaration result;

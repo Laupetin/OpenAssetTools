@@ -93,7 +93,7 @@ namespace IW4
         {
          .name = "texcoord[1]",
          .abbreviation = "t1",
-         .optional = false,
+         .optional = true,
          },
         {
          .name = "texcoord[2]",
@@ -204,6 +204,7 @@ namespace IW4
          .accessor = "lightSpotFactors",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS,
          },
         {
          .value = CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT,
@@ -1029,11 +1030,13 @@ namespace IW4
          .value = TEXTURE_SRC_CODE_RESOLVED_POST_SUN,
          .accessor = "resolvedPostSun",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN,
          },
         {
          .value = TEXTURE_SRC_CODE_RESOLVED_SCENE,
          .accessor = "resolvedScene",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_SCENE,
          },
         {
          .value = TEXTURE_SRC_CODE_POST_EFFECT_0,
@@ -1059,16 +1062,19 @@ namespace IW4
          .value = TEXTURE_SRC_CODE_FLOATZ,
          .accessor = "floatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_PROCESSED_FLOATZ,
          .accessor = "processedFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_RAW_FLOATZ,
          .accessor = "rawFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_HALF_PARTICLES,

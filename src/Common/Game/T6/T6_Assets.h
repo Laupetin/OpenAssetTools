@@ -3045,16 +3045,16 @@ namespace T6
 
     enum TechniqueFlags
     {
-        TECHNIQUE_FLAG_1 = 0x1,
-        TECHNIQUE_FLAG_2 = 0x2,
-        TECHNIQUE_FLAG_4 = 0x4,
+        MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN = 0x1,
+        MTL_TECHFLAG_NEEDS_RESOLVED_SCENE = 0x2,
+        MTL_TECHFLAG_ZPREPASS = 0x4,
 
         // Vertex decl has optional source
-        TECHNIQUE_FLAG_8 = 0x8,
+        MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE = 0x8,
 
-        TECHNIQUE_FLAG_10 = 0x10,
+        MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS = 0x10,
         TECHNIQUE_FLAG_20 = 0x20,
-        TECHNIQUE_FLAG_40 = 0x40,
+        MTL_TECHFLAG_USES_FLOATZ = 0x40,
 
         // Any material that has statebits according to any of the following sets this:
         // - GFXS1_DEPTHWRITE set

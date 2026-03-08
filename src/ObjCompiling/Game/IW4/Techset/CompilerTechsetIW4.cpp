@@ -1060,13 +1060,13 @@ namespace
             // The other ones might be handled by the game in the same fashion because there is not recognizable pattern that connects the shaders with the same
             // flags
             static std::unordered_map<std::string, size_t> flagsByTechniqueName({
-                {"zprepass",                       TECHNIQUE_FLAG_4 | TECHNIQUE_FLAG_200 },
-                {"build_floatz",                   TECHNIQUE_FLAG_8                      },
-                {"build_shadowmap_depth",          TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
-                {"build_shadowmap_model",          TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
-                {"distortion_scale_ua_zfeather",   TECHNIQUE_FLAG_100                    },
-                {"distortion_scale_zfeather",      TECHNIQUE_FLAG_100                    },
-                {"distortion_scale_zfeather_dtex", TECHNIQUE_FLAG_100                    },
+                {"zprepass",                       MTL_TECHFLAG_ZPREPASS | TECHNIQUE_FLAG_200 },
+                {"build_floatz",                   MTL_TECHFLAG_BUILD_FLOATZ                      },
+                {"build_shadowmap_depth",          MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL | TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model",          MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL | TECHNIQUE_FLAG_200},
+                {"distortion_scale_ua_zfeather",   MTL_TECHFLAG_USES_DISTORTION_FLOATZ                    },
+                {"distortion_scale_zfeather",      MTL_TECHFLAG_USES_DISTORTION_FLOATZ                    },
+                {"distortion_scale_zfeather_dtex", MTL_TECHFLAG_USES_DISTORTION_FLOATZ                    },
                 {"alternate_scene_overlay",        TECHNIQUE_FLAG_200                    },
                 {"blur_apply",                     TECHNIQUE_FLAG_200                    },
                 {"build_floatz",                   TECHNIQUE_FLAG_200                    },
@@ -1117,7 +1117,7 @@ namespace
                 const auto& pass = technique.passArray[i];
                 if (pass.vertexDecl && pass.vertexDecl->hasOptionalSource)
                 {
-                    technique.flags |= TECHNIQUE_FLAG_20;
+                    technique.flags |= MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE;
                     break;
                 }
             }
@@ -1130,16 +1130,16 @@ namespace
                 switch (arg.m_arg.u.codeSampler)
                 {
                 case TEXTURE_SRC_CODE_RESOLVED_POST_SUN:
-                    techniqueFlags |= TECHNIQUE_FLAG_1;
+                    techniqueFlags |= MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN;
                     break;
                 case TEXTURE_SRC_CODE_RESOLVED_SCENE:
-                    techniqueFlags |= TECHNIQUE_FLAG_2;
+                    techniqueFlags |= MTL_TECHFLAG_NEEDS_RESOLVED_SCENE;
                     break;
                 case TEXTURE_SRC_CODE_FLOATZ:
                 case TEXTURE_SRC_CODE_PROCESSED_FLOATZ:
                 case TEXTURE_SRC_CODE_RAW_FLOATZ:
-                    if ((techniqueFlags & TECHNIQUE_FLAG_100) == 0)
-                        techniqueFlags |= TECHNIQUE_FLAG_80;
+                    if ((techniqueFlags & MTL_TECHFLAG_USES_DISTORTION_FLOATZ) == 0)
+                        techniqueFlags |= MTL_TECHFLAG_USES_FLOATZ;
                     break;
                 default:
                     break;
@@ -1151,7 +1151,7 @@ namespace
                 {
                 case CONST_SRC_CODE_LIGHT_SPOTDIR:
                 case CONST_SRC_CODE_LIGHT_SPOTFACTORS:
-                    techniqueFlags |= TECHNIQUE_FLAG_40;
+                    techniqueFlags |= MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS;
                     break;
                 default:
                     break;
