@@ -449,7 +449,7 @@ namespace IW3
         unsigned int numsides;
         cbrushside_t* sides;
         int16_t axialMaterialNum[2][3];
-        char* baseAdjacentSide;
+        cbrushedge_t* baseAdjacentSide;
         int16_t firstAdjacentSideOffsets[2][3];
         char edgeCount[2][3];
         int totalEdgeCount;
@@ -1765,7 +1765,7 @@ namespace IW3
         unsigned int numsides;
         cbrushside_t* sides;
         int16_t axialMaterialNum[2][3];
-        char* baseAdjacentSide;
+        cbrushedge_t* baseAdjacentSide;
         int16_t firstAdjacentSideOffsets[2][3];
         char edgeCount[2][3];
     };
