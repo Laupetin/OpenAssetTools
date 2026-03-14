@@ -1,0 +1,117 @@
+#options GAME(IW4, T6)
+
+#filename "Game/" + GAME + "/Techset/PixelShaderLoader" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"PixelShaderLoader" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_DX9
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IS_DX9
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IS_DX9
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IS_DX11
+#define IS_SUB_ASSET
+#endif
+
+#include LOADER_HEADER
+
+#include GAME_HEADER
+#include "Shader/ShaderCommon.h"
+#include "Utils/Logging/Log.h"
+
+#include <format>
+#include <iostream>
+
+using namespace GAME;
+
+#set LOADER_CLASS_NAME "PixelShaderLoader" + GAME
+
+#if defined(IS_SUB_ASSET)
+#define ABSTRACT_CREATOR_NAME SubAssetCreator
+#define OVERRIDDEN_CREATOR_METHOD CreateSubAsset
+#define ADD_ASSET_METHOD AddSubAsset
+#define ASSET_NAME SubAssetPixelShader
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define ABSTRACT_CREATOR_NAME AssetCreator
+#define OVERRIDDEN_CREATOR_METHOD CreateAsset
+#define ADD_ASSET_METHOD AddAsset
+#define ASSET_NAME AssetPixelShader
+#define INTERFACE_NAME IAssetCreator
+#endif
+
+namespace
+{
+    class LOADER_CLASS_NAME final : public ABSTRACT_CREATOR_NAME<ASSET_NAME>
+    {
+    public:
+        LOADER_CLASS_NAME(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult OVERRIDDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = shader::GetFileNameForPixelShaderAssetName(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+#if defined(IS_DX9)
+            if (file.m_length % sizeof(uint32_t) != 0)
+            {
+                con::error("Invalid pixel shader \"{}\": Size must be dividable by {}", assetName, sizeof(uint32_t));
+                return AssetCreationResult::Failure();
+            }
+#endif
+
+            auto* pixelShader = m_memory.Alloc<MaterialPixelShader>();
+            pixelShader->name = m_memory.Dup(assetName.c_str());
+            pixelShader->prog.loadDef.programSize = static_cast<decltype(GfxPixelShaderLoadDef::programSize)>(
+#if defined(IS_DX9)
+                file.m_length / sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>)
+#else
+                file.m_length
+#endif
+            );
+            pixelShader->prog.ps = nullptr;
+
+            auto* fileBuffer = m_memory.Alloc<char>(static_cast<size_t>(file.m_length));
+            file.m_stream->read(fileBuffer, file.m_length);
+            if (file.m_stream->gcount() != file.m_length)
+                return AssetCreationResult::Failure();
+
+#if defined(IS_DX9)
+            pixelShader->prog.loadDef.program = reinterpret_cast<decltype(GfxPixelShaderLoadDef::program)>(fileBuffer);
+#else
+            pixelShader->prog.loadDef.program = fileBuffer;
+#endif
+            return AssetCreationResult::Success(context.ADD_ASSET_METHOD<ASSET_NAME>(assetName, pixelShader));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+#set CREATE_LOADER_METHOD "CreatePixelShaderLoader" + GAME
+
+namespace techset
+{
+    std::unique_ptr<INTERFACE_NAME> CREATE_LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<LOADER_CLASS_NAME>(memory, searchPath);
+    }
+} // namespace techset

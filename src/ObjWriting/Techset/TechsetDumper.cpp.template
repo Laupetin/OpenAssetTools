@@ -1,19 +1,56 @@
-#include "TechsetDumperT6.h"
+#options GAME(IW4, T6)
 
-#include "Game/T6/Material/MaterialConstantZoneStateT6.h"
-#include "Game/T6/Techset/TechsetConstantsT6.h"
-#include "Shader/ShaderCommon.h"
+#filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"TechsetDumper" + GAME + ".h\""
+#set MATERIAL_CONSTANT_ZONE_STATE_HEADER "\"Game/" + GAME + "/Material/MaterialConstantZoneState" + GAME + ".h\""
+#set TECHSET_CONSTANTS_HEADER "\"Game/" + GAME + "/Techset/TechsetConstants" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_DX9
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IS_DX9
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IS_DX9
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IS_DX11
+#define DUMP_SHADERS "1"
+#endif
+
+// This file was templated.
+// See TechsetDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
+
+#include MATERIAL_CONSTANT_ZONE_STATE_HEADER
+#include TECHSET_CONSTANTS_HEADER
+
+#include "Pool/GlobalAssetPool.h"
 #include "Techset/CommonTechniqueDumper.h"
 #include "Techset/CommonTechsetDumper.h"
-#include "Techset/ShaderDumpingZoneState.h"
+#include "Techset/CommonVertexDeclCreator.h"
 #include "Techset/TechniqueDumpingZoneState.h"
+#if defined(DUMP_SHADERS)
+#include "Shader/ShaderCommon.h"
+#include "Techset/ShaderDumpingZoneState.h"
+#endif
 
 #include <cassert>
+#include <format>
 
-using namespace T6;
+using namespace GAME;
 
 namespace
 {
+#if defined(DUMP_SHADERS)
     void DumpPixelShader(const AssetDumpingContext& context, const MaterialPixelShader& pixelShader)
     {
         const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForPixelShaderAssetName(pixelShader.name));
@@ -21,7 +58,12 @@ namespace
         if (!shaderFile)
             return;
 
+#if defined(FEATURE_T6)
         shaderFile->write(pixelShader.prog.loadDef.program, pixelShader.prog.loadDef.programSize);
+#else
+        shaderFile->write(reinterpret_cast<const char*>(pixelShader.prog.loadDef.program),
+                          static_cast<std::streamsize>(pixelShader.prog.loadDef.programSize) * sizeof(GfxPixelShaderLoadDef::program));
+#endif
     }
 
     void DumpVertexShader(const AssetDumpingContext& context, const MaterialVertexShader& vertexShader)
@@ -31,7 +73,12 @@ namespace
         if (!shaderFile)
             return;
 
+#if defined(FEATURE_T6)
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
+#else
+        shaderFile->write(reinterpret_cast<const char*>(vertexShader.prog.loadDef.program),
+                          static_cast<std::streamsize>(vertexShader.prog.loadDef.programSize) * sizeof(GfxVertexShaderLoadDef::program));
+#endif
     }
 
     void DumpShaders(AssetDumpingContext& context, const MaterialTechniqueSet& techset)
@@ -55,12 +102,17 @@ namespace
             }
         }
     }
+#endif
 
     techset::CommonVertexDeclaration ConvertToCommonVertexDeclaration(const MaterialVertexDeclaration* vertexDecl)
     {
         std::vector<techset::CommonStreamRouting> commonRouting;
 
+#if defined(FEATURE_IW4)
+        if (vertexDecl && vertexDecl->name && vertexDecl->name[0] != ',')
+#else
         if (vertexDecl)
+#endif
         {
             const auto streamCount = std::min(static_cast<size_t>(vertexDecl->streamCount), std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
             for (auto streamIndex = 0u; streamIndex < streamCount; streamIndex++)
@@ -70,12 +122,24 @@ namespace
                                            static_cast<techset::CommonStreamDestination>(routing.dest));
             }
         }
+#if defined(FEATURE_IW4)
+        else if (vertexDecl && vertexDecl->name)
+        {
+            auto result = techset::CreateVertexDeclFromName(&vertexDecl->name[1], commonRoutingInfos);
+            if (result.has_value())
+                return std::move(*result);
+        }
+#endif
 
         return techset::CommonVertexDeclaration(std::move(commonRouting));
     }
 
     techset::CommonShaderArg ConvertToCommonArg(const MaterialShaderArgument& arg)
     {
+#if defined(IS_DX9)
+        const techset::CommonShaderArgDestination destination = {.dx9 = {.m_destination_register = arg.dest}};
+
+#endif
         switch (arg.type)
         {
         case MTL_ARG_CODE_VERTEX_CONST:
@@ -87,6 +151,7 @@ namespace
                 .m_row_count = arg.u.codeConst.rowCount,
             };
             const techset::CommonShaderArgValue value{.code_const_source = codeConstValue};
+#if defined(IS_DX11)
             const techset::CommonShaderArgLocationDx11 location{
                 .constant_buffer_offset = arg.location.offset,
             };
@@ -97,6 +162,7 @@ namespace
                          .m_buffer = arg.buffer,
                          }
             };
+#endif
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
@@ -107,6 +173,7 @@ namespace
             const techset::CommonShaderArgValue value{
                 .name_hash = arg.u.nameHash,
             };
+#if defined(IS_DX11)
             const techset::CommonShaderArgLocationDx11 location{
                 .constant_buffer_offset = arg.location.offset,
             };
@@ -117,6 +184,7 @@ namespace
                          .m_buffer = arg.buffer,
                          }
             };
+#endif
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
@@ -126,6 +194,7 @@ namespace
             const techset::CommonShaderArgValue value{
                 .code_sampler_source = static_cast<techset::CommonCodeSamplerSource>(arg.u.codeSampler),
             };
+#if defined(IS_DX11)
             const techset::CommonShaderArgLocationDx11 location{
                 .texture_index = arg.location.textureIndex,
                 .sampler_index = arg.location.samplerIndex,
@@ -137,6 +206,7 @@ namespace
                          .m_buffer = arg.buffer,
                          }
             };
+#endif
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
@@ -146,6 +216,7 @@ namespace
             const techset::CommonShaderArgValue value{
                 .name_hash = arg.u.nameHash,
             };
+#if defined(IS_DX11)
             const techset::CommonShaderArgLocationDx11 location{
                 .texture_index = arg.location.textureIndex,
                 .sampler_index = arg.location.samplerIndex,
@@ -157,6 +228,7 @@ namespace
                          .m_buffer = arg.buffer,
                          }
             };
+#endif
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
@@ -176,6 +248,7 @@ namespace
                 };
             }
 
+#if defined(IS_DX11)
             const techset::CommonShaderArgLocationDx11 location{
                 .constant_buffer_offset = arg.location.offset,
             };
@@ -186,6 +259,7 @@ namespace
                          .m_buffer = arg.buffer,
                          }
             };
+#endif
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
@@ -194,6 +268,15 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
+#if defined(FEATURE_IW4)
+        if (vertexShader && vertexShader->name && vertexShader->name[0] == ',')
+        {
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
+            if (globalAsset)
+                vertexShader = globalAsset->Asset();
+        }
+#endif
+
         techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::VERTEX, std::string());
         if (!vertexShader)
             return result;
@@ -205,7 +288,11 @@ namespace
         {
             result.m_bin = techset::CommonTechniqueShaderBin{
                 .m_shader_bin = vertexShader->prog.loadDef.program,
+#if defined(IS_DX9)
+                .m_shader_bin_size = vertexShader->prog.loadDef.programSize * sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>),
+#else
                 .m_shader_bin_size = vertexShader->prog.loadDef.programSize,
+#endif
             };
         }
 
@@ -214,6 +301,15 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
+#if defined(FEATURE_IW4)
+        if (pixelShader && pixelShader->name && pixelShader->name[0] == ',')
+        {
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
+            if (globalAsset)
+                pixelShader = globalAsset->Asset();
+        }
+#endif
+
         techset::CommonTechniqueShader result(techset::CommonTechniqueShaderType::PIXEL, std::string());
         if (!pixelShader)
             return result;
@@ -225,7 +321,11 @@ namespace
         {
             result.m_bin = techset::CommonTechniqueShaderBin{
                 .m_shader_bin = pixelShader->prog.loadDef.program,
+#if defined(IS_DX9)
+                .m_shader_bin_size = pixelShader->prog.loadDef.programSize * sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>),
+#else
                 .m_shader_bin_size = pixelShader->prog.loadDef.programSize,
+#endif
             };
         }
 
@@ -241,11 +341,13 @@ namespace
             const auto& pass = technique.passArray[passIndex];
 
             std::string comment;
+#ifdef FEATURE_T6
             if (debug)
             {
                 comment = std::format(
                     "MaterialType: {}; PrecompiledIndex: {}", static_cast<unsigned>(pass.materialType), static_cast<unsigned>(pass.precompiledIndex));
             }
+#endif
 
             techset::CommonPass commonPass(pass.customSamplerFlags,
                                            // No clue what the actual state map was
@@ -279,8 +381,17 @@ namespace
             {
                 const auto commonTechnique = ConvertToCommonTechnique(*technique, debug);
 
-                techset::DumpCommonTechnique(
-                    context, commonTechnique, techset::DxVersion::DX11, commonCodeSourceInfos, commonRoutingInfos, *materialConstantState, debug);
+                techset::DumpCommonTechnique(context,
+                                             commonTechnique,
+#if defined(IS_DX9)
+                                             techset::DxVersion::DX9,
+#elif defined(IS_DX11)
+                                             techset::DxVersion::DX11,
+#endif
+                                             commonCodeSourceInfos,
+                                             commonRoutingInfos,
+                                             *materialConstantState,
+                                             debug);
             }
         }
     }
@@ -307,24 +418,28 @@ namespace
     }
 } // namespace
 
+#set CLASS_NAME "Dumper" + GAME
+
 namespace techset
 {
-    DumperT6::DumperT6(const bool debug)
+    CLASS_NAME::CLASS_NAME(const bool debug)
         : m_debug(debug)
     {
     }
 
-    void DumperT6::Dump(AssetDumpingContext& context)
+    void CLASS_NAME::Dump(AssetDumpingContext& context)
     {
         context.GetZoneAssetDumperState<MaterialConstantZoneState>()->EnsureInitialized();
         AbstractAssetDumper::Dump(context);
     }
 
-    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTechniqueSet::Type>& asset)
     {
         const auto* techniqueSet = asset.Asset();
         DumpTechset(context, *techniqueSet);
         DumpTechniques(context, *techniqueSet, m_debug);
+#if defined(DUMP_SHADERS)
         DumpShaders(context, *techniqueSet);
+#endif
     }
 } // namespace techset

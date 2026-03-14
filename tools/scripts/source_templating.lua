@@ -12,19 +12,19 @@ function useSourceTemplating(projectName)
         local resultExtension = path.getextension(relativeResultPath)
 
         local data = io.readfile(templateFile)
-        local gameOptionsStart, gameOptionsCount = string.find(data, "#options%s+GAME%s*%(")
+        local gameOptionsStart, gameOptionsEnd = string.find(data, "#options%s+GAME%s*%(")
 
         if gameOptionsStart == nil then
             error("Source template " .. relativeTemplatePath .. " must define an option called GAME")
         end
 
-        local gameOptionsPos, gameOptionsLenPlusOne = string.find(data, "[%a%d%s,]+%)", gameOptionsStart + gameOptionsCount)
+        local gameOptionsArgsStart, gameOptionsArgsEnd = string.find(data, "[%a%d%s,]+%)", gameOptionsEnd + 1)
 
-        if gameOptionsPos ~= gameOptionsStart + gameOptionsCount then
+        if gameOptionsArgsStart ~= gameOptionsEnd + 1 then
             error("Source template " .. relativeTemplatePath .. " must define an option called GAME")
         end
 
-        local gameOptions = string.sub(data, gameOptionsPos, gameOptionsLenPlusOne - 1)
+        local gameOptions = string.sub(data, gameOptionsArgsStart, gameOptionsArgsEnd - 1)
         local games = string.explode(gameOptions, ",%s*")
 
         files {

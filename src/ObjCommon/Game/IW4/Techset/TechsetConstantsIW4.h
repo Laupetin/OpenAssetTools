@@ -2,6 +2,7 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
+#include "Techset/CommonTechnique.h"
 #include "Techset/CommonTechset.h"
 #include "Techset/StateMap/StateMapLayout.h"
 
@@ -63,446 +64,1087 @@ namespace IW4
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
     static inline techset::CommonTechniqueTypeNames commonTechniqueTypeNames(techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
 
-    static inline const char* materialStreamDestinationNames[]{
-        "position",
-        "normal",
-        "color[0]",
-        "color[1]",
-        "depth",
-        "texcoord[0]",
-        "texcoord[1]",
-        "texcoord[2]",
-        "texcoord[3]",
-        "texcoord[4]",
-        "texcoord[5]",
-        "texcoord[6]",
-        "texcoord[7]",
+    static inline techset::CommonStreamRoutingSourceInfo streamRoutingSources[]{
+        {
+         .name = "position",
+         .abbreviation = "p",
+         .optional = false,
+         },
+        {
+         .name = "color",
+         .abbreviation = "c",
+         .optional = false,
+         },
+        {
+         .name = "texcoord[0]",
+         .abbreviation = "t0",
+         .optional = false,
+         },
+        {
+         .name = "normal",
+         .abbreviation = "n",
+         .optional = false,
+         },
+        {
+         .name = "tangent",
+         .abbreviation = "t",
+         .optional = false,
+         },
+        {
+         .name = "texcoord[1]",
+         .abbreviation = "t1",
+         .optional = true,
+         },
+        {
+         .name = "texcoord[2]",
+         .abbreviation = "t2",
+         .optional = true,
+         },
+        {
+         .name = "normalTransform[0]",
+         .abbreviation = "n0",
+         .optional = true,
+         },
+        {
+         .name = "normalTransform[1]",
+         .abbreviation = "n1",
+         .optional = true,
+         },
     };
-    static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
+    static_assert(std::extent_v<decltype(streamRoutingSources)> == STREAM_SRC_COUNT);
 
-    static inline const char* materialStreamDestinationAbbreviation[]{
-        "p",
-        "n",
-        "c0",
-        "c1",
-        "d",
-        "t0",
-        "t1",
-        "t2",
-        "t3",
-        "t4",
-        "t5",
-        "t6",
-        "t7",
+    static inline techset::CommonStreamRoutingDestinationInfo streamRoutingDestinations[]{
+        {
+         .name = "position",
+         .abbreviation = "p",
+         },
+        {
+         .name = "normal",
+         .abbreviation = "n",
+         },
+        {
+         .name = "color[0]",
+         .abbreviation = "c0",
+         },
+        {
+         .name = "color[1]",
+         .abbreviation = "c1",
+         },
+        {
+         .name = "depth",
+         .abbreviation = "d",
+         },
+        {
+         .name = "texcoord[0]",
+         .abbreviation = "t0",
+         },
+        {
+         .name = "texcoord[1]",
+         .abbreviation = "t1",
+         },
+        {
+         .name = "texcoord[2]",
+         .abbreviation = "t2",
+         },
+        {
+         .name = "texcoord[3]",
+         .abbreviation = "t3",
+         },
+        {
+         .name = "texcoord[4]",
+         .abbreviation = "t4",
+         },
+        {
+         .name = "texcoord[5]",
+         .abbreviation = "t5",
+         },
+        {
+         .name = "texcoord[6]",
+         .abbreviation = "t6",
+         },
+        {
+         .name = "texcoord[7]",
+         .abbreviation = "t7",
+         },
     };
-    static_assert(std::extent_v<decltype(materialStreamDestinationAbbreviation)> == STREAM_DST_COUNT);
+    static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);
 
-    static inline const char* materialStreamSourceNames[]{
-        "position",
-        "color",
-        "texcoord[0]",
-        "normal",
-        "tangent",
-        "texcoord[1]",
-        "texcoord[2]",
-        "normalTransform[0]",
-        "normalTransform[1]",
-    };
-    static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
+    static inline techset::CommonStreamRoutingInfos commonRoutingInfos(streamRoutingSources,
+                                                                       std::extent_v<decltype(streamRoutingSources)>,
+                                                                       streamRoutingDestinations,
+                                                                       std::extent_v<decltype(streamRoutingDestinations)>);
 
-    static inline const char* materialStreamSourceAbbreviation[]{
-        "p",
-        "c",
-        "t0",
-        "n",
-        "t",
-        "t1",
-        "t2",
-        "n0",
-        "n1",
+    static inline techset::CommonCodeConstSourceInfo commonCodeConstSources[]{
+        {
+         .value = CONST_SRC_CODE_LIGHT_POSITION,
+         .accessor = "lightPosition",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_DIFFUSE,
+         .accessor = "lightDiffuse",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_SPECULAR,
+         .accessor = "lightSpecular",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_SPOTDIR,
+         .accessor = "lightSpotDir",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_SPOTFACTORS,
+         .accessor = "lightSpotFactors",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT,
+         .accessor = "lightFalloffPlacement",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_COLOR,
+         .accessor = "particleCloudColor",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_GAMETIME,
+         .accessor = "gameTime",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_PIXEL_COST_FRACS,
+         .accessor = "pixelCostFracs",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_PIXEL_COST_DECODE,
+         .accessor = "pixelCostDecode",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FILTER_TAP_0,
+         .accessor = "filterTap",
+         .arrayCount = 8,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_MATRIX_R,
+         .accessor = "colorMatrixR",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_MATRIX_G,
+         .accessor = "colorMatrixG",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_MATRIX_B,
+         .accessor = "colorMatrixB",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_SHADOWMAP_POLYGON_OFFSET,
+         .accessor = "shadowmapPolygonOffset",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_RENDER_TARGET_SIZE,
+         .accessor = "renderTargetSize",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DOF_EQUATION_VIEWMODEL_AND_FAR_BLUR,
+         .accessor = "dofEquationViewModelAndFarBlur",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DOF_EQUATION_SCENE,
+         .accessor = "dofEquationScene",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DOF_LERP_SCALE,
+         .accessor = "dofLerpScale",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DOF_LERP_BIAS,
+         .accessor = "dofLerpBias",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DOF_ROW_DELTA,
+         .accessor = "dofRowDelta",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_MOTION_MATRIX_X,
+         .accessor = "motionMatrixX",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_MOTION_MATRIX_Y,
+         .accessor = "motionMatrixY",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_MOTION_MATRIX_W,
+         .accessor = "motionMatrixW",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION,
+         .accessor = "shadowmapSwitchPartition",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_SHADOWMAP_SCALE,
+         .accessor = "shadowmapScale",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_ZNEAR,
+         .accessor = "zNear",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHTING_LOOKUP_SCALE,
+         .accessor = "lightingLookupScale",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_DEBUG_BUMPMAP,
+         .accessor = "debugBumpmap",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_MATERIAL_COLOR,
+         .accessor = "materialColor",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG,
+         .accessor = "fogConsts",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_COLOR_LINEAR,
+         .accessor = "fogColorLinear",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_COLOR_GAMMA,
+         .accessor = "fogColorGamma",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_SUN_CONSTS,
+         .accessor = "fogSunConsts",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_SUN_COLOR_LINEAR,
+         .accessor = "fogSunColorLinear",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_SUN_COLOR_GAMMA,
+         .accessor = "fogSunColorGamma",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FOG_SUN_DIR,
+         .accessor = "fogSunDir",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_GLOW_SETUP,
+         .accessor = "glowSetup",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_GLOW_APPLY,
+         .accessor = "glowApply",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_BIAS,
+         .accessor = "colorBias",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_TINT_BASE,
+         .accessor = "colorTintBase",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_TINT_DELTA,
+         .accessor = "colorTintDelta",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COLOR_TINT_QUADRATIC_DELTA,
+         .accessor = "colorTintQuadraticDelta",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_OUTDOOR_FEATHER_PARMS,
+         .accessor = "outdoorFeatherParms",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_ENVMAP_PARMS,
+         .accessor = "envMapParms",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_SUN_SHADOWMAP_PIXEL_ADJUST,
+         .accessor = "sunShadowmapPixelAdjust",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_SPOT_SHADOWMAP_PIXEL_ADJUST,
+         .accessor = "spotShadowmapPixelAdjust",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_COMPOSITE_FX_DISTORTION,
+         .accessor = "fullscreenDistortion",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_POSTFX_FADE_EFFECT,
+         .accessor = "fadeEffect",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_VIEWPORT_DIMENSIONS,
+         .accessor = "viewportDimensions",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_FRAMEBUFFER_READ,
+         .accessor = "framebufferRead",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_BASE_LIGHTING_COORDS,
+         .accessor = "baseLightingCoords",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         },
+        {
+         .value = CONST_SRC_CODE_LIGHT_PROBE_AMBIENT,
+         .accessor = "lightprobeAmbient",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         },
+        {
+         .value = CONST_SRC_CODE_NEARPLANE_ORG,
+         .accessor = "nearPlaneOrg",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_NEARPLANE_DX,
+         .accessor = "nearPlaneDx",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_NEARPLANE_DY,
+         .accessor = "nearPlaneDy",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_CLIP_SPACE_LOOKUP_SCALE,
+         .accessor = "clipSpaceLookupScale",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_CLIP_SPACE_LOOKUP_OFFSET,
+         .accessor = "clipSpaceLookupOffset",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX0,
+         .accessor = "particleCloudMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX1,
+         .accessor = "particleCloudMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX2,
+         .accessor = "particleCloudMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR0,
+         .accessor = "particleCloudSparkColor0",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR1,
+         .accessor = "particleCloudSparkColor1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR2,
+         .accessor = "particleCloudSparkColor2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM0,
+         .accessor = "particleFountainParms0",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM1,
+         .accessor = "particleFountainParms1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_DEPTH_FROM_CLIP,
+         .accessor = "depthFromClip",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_CODE_MESH_ARG_0,
+         .accessor = "codeMeshArg",
+         .arrayCount = 2,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = CONST_SRC_CODE_VIEW_MATRIX,
+         .accessor = "viewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_VIEW_MATRIX,
+         .accessor = "inverseViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX,
+         .accessor = "transposeViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_VIEW_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX,
+         .accessor = "inverseTransposeViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_VIEW_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_PROJECTION_MATRIX,
+         .accessor = "projectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX,
+         .accessor = "inverseProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX,
+         .accessor = "transposeProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX,
+         .accessor = "inverseTransposeProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_VIEW_PROJECTION_MATRIX,
+         .accessor = "viewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX,
+         .accessor = "inverseViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
+         .accessor = "transposeViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_VIEW_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX,
+         .accessor = "inverseTransposeViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX,
+         .accessor = "shadowLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX,
+         .accessor = "inverseShadowLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
+         .accessor = "transposeShadowLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX,
+         .accessor = "inverseTransposeShadowLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         .accessor = "worldOutdoorLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         .accessor = "inverseWorldOutdoorLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         .accessor = "transposeWorldOutdoorLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         .accessor = "inverseTransposeWorldOutdoorLookupMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_MATRIX0,
+         .accessor = "worldMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_MATRIX0,
+         .accessor = "inverseWorldMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX0,
+         .accessor = "transposeWorldMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX0,
+         .accessor = "inverseTransposeWorldMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_MATRIX0,
+         .accessor = "worldViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX0,
+         .accessor = "inverseWorldViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX0,
+         .accessor = "transposeWorldViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX0,
+         .accessor = "inverseTransposeWorldViewMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX0,
+         .accessor = "worldViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         .accessor = "inverseWorldViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         .accessor = "transposeWorldViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         .accessor = "inverseTransposeWorldViewProjectionMatrix",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX0,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_MATRIX1,
+         .accessor = "worldMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_MATRIX1,
+         .accessor = "inverseWorldMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX1,
+         .accessor = "transposeWorldMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX1,
+         .accessor = "inverseTransposeWorldMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_MATRIX1,
+         .accessor = "worldViewMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX1,
+         .accessor = "inverseWorldViewMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX1,
+         .accessor = "transposeWorldViewMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX1,
+         .accessor = "inverseTransposeWorldViewMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX1,
+         .accessor = "worldViewProjectionMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         .accessor = "inverseWorldViewProjectionMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         .accessor = "transposeWorldViewProjectionMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         .accessor = "inverseTransposeWorldViewProjectionMatrix1",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX1,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_MATRIX2,
+         .accessor = "worldMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_MATRIX2,
+         .accessor = "inverseWorldMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX2,
+         .accessor = "transposeWorldMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX2,
+         .accessor = "inverseTransposeWorldMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_MATRIX2,
+         .accessor = "worldViewMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX2,
+         .accessor = "inverseWorldViewMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX2,
+         .accessor = "transposeWorldViewMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX2,
+         .accessor = "inverseTransposeWorldViewMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX2,
+         .accessor = "worldViewProjectionMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         .accessor = "inverseWorldViewProjectionMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         .accessor = "transposeWorldViewProjectionMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX2,
+         },
+        {
+         .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         .accessor = "inverseTransposeWorldViewProjectionMatrix2",
+         .arrayCount = 0,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .transposedMatrix = CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX2,
+         },
     };
-    static_assert(std::extent_v<decltype(materialStreamSourceAbbreviation)> == STREAM_SRC_COUNT);
 
-    static inline CodeSamplerSource s_lightmapSamplers[]{
-        {"primary", TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY, nullptr, 0, 0},
-        {"secondary", TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY, nullptr, 0, 0},
-        {},
+    static inline techset::CommonCodeSamplerSourceInfo commonCodeSamplerSources[]{
+        {
+         .value = TEXTURE_SRC_CODE_BLACK,
+         .accessor = "black",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_WHITE,
+         .accessor = "white",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_IDENTITY_NORMAL_MAP,
+         .accessor = "identityNormalMap",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_MODEL_LIGHTING,
+         .accessor = "modelLightingSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY,
+         .accessor = "lightmapSamplerPrimary",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_PRIMARY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY,
+         .accessor = "lightmapSamplerSecondary",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_SECONDARY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_SHADOWMAP_SUN,
+         .accessor = "shadowmapSamplerSun",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_SHADOWMAP_SPOT,
+         .accessor = "shadowmapSamplerSpot",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_FEEDBACK,
+         .accessor = "feedbackSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_RESOLVED_POST_SUN,
+         .accessor = "resolvedPostSun",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_RESOLVED_SCENE,
+         .accessor = "resolvedScene",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_SCENE,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_POST_EFFECT_0,
+         .accessor = "postEffect0",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_POST_EFFECT_1,
+         .accessor = "postEffect1",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_LIGHT_ATTENUATION,
+         .accessor = "attenuationSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_OUTDOOR,
+         .accessor = "outdoor",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_FLOATZ,
+         .accessor = "floatZSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_PROCESSED_FLOATZ,
+         .accessor = "processedFloatZSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_RAW_FLOATZ,
+         .accessor = "rawFloatZSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_HALF_PARTICLES,
+         .accessor = "halfParticleColorSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_HALF_PARTICLES_Z,
+         .accessor = "halfParticleDepthSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_CASE_TEXTURE,
+         .accessor = "caseTexture" /* ? */,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_CINEMATIC_Y,
+         .accessor = "cinematicYSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_CINEMATIC_CR,
+         .accessor = "cinematicCrSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_CINEMATIC_CB,
+         .accessor = "cinematicCbSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_CINEMATIC_A,
+         .accessor = "cinematicASampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_REFLECTION_PROBE,
+         .accessor = "reflectionProbeSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_REFLECTION_PROBE,
+         },
+        {
+         .value = TEXTURE_SRC_CODE_ALTERNATE_SCENE,
+         .accessor = "alternateSceneSampler",
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         },
     };
 
-    static inline CodeSamplerSource s_lightSamplers[]{
-        {"attenuation", TEXTURE_SRC_CODE_LIGHT_ATTENUATION, nullptr, 0, 0},
-        {},
+    // See MaterialShaderArgumentType
+    static inline techset::CommonShaderArgumentType commonArgumentTypes[]{
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_SAMPLER},
+        {.m_shader_type = techset::CommonTechniqueShaderType::VERTEX, .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER    },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::CODE_CONST      },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
+        {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
     };
+    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MTL_ARG_COUNT);
 
-    static inline CodeSamplerSource s_codeSamplers[]{
-        {"white", TEXTURE_SRC_CODE_WHITE, nullptr, 0, 0},
-        {"black", TEXTURE_SRC_CODE_BLACK, nullptr, 0, 0},
-        {"identityNormalMap", TEXTURE_SRC_CODE_IDENTITY_NORMAL_MAP, nullptr, 0, 0},
-        {"lightmap", TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY, s_lightmapSamplers, 0, 0},
-        {"outdoor", TEXTURE_SRC_CODE_OUTDOOR, nullptr, 0, 0},
-        {"shadowmapSun", TEXTURE_SRC_CODE_SHADOWMAP_SUN, nullptr, 0, 0},
-        {"shadowmapSpot", TEXTURE_SRC_CODE_SHADOWMAP_SPOT, nullptr, 0, 0},
-        {"feedback", TEXTURE_SRC_CODE_FEEDBACK, nullptr, 0, 0},
-        {"resolvedPostSun", TEXTURE_SRC_CODE_RESOLVED_POST_SUN, nullptr, 0, 0},
-        {"resolvedScene", TEXTURE_SRC_CODE_RESOLVED_SCENE, nullptr, 0, 0},
-        {"postEffect0", TEXTURE_SRC_CODE_POST_EFFECT_0, nullptr, 0, 0},
-        {"postEffect1", TEXTURE_SRC_CODE_POST_EFFECT_1, nullptr, 0, 0},
-        {"light", TEXTURE_SRC_CODE_LIGHT_ATTENUATION, s_lightSamplers, 0, 0},
-        {"floatZ", TEXTURE_SRC_CODE_FLOATZ, nullptr, 0, 0},
-        {"processedFloatZ", TEXTURE_SRC_CODE_PROCESSED_FLOATZ, nullptr, 0, 0},
-        {"rawFloatZ", TEXTURE_SRC_CODE_RAW_FLOATZ, nullptr, 0, 0},
-        {"halfParticleColorSampler", TEXTURE_SRC_CODE_HALF_PARTICLES, nullptr, 0, 0},
-        {"halfParticleDepthSampler", TEXTURE_SRC_CODE_HALF_PARTICLES_Z, nullptr, 0, 0},
-        {"alternateScene", TEXTURE_SRC_CODE_ALTERNATE_SCENE, nullptr, 0, 0},
-        {},
-    };
-
-    static inline CodeSamplerSource s_defaultCodeSamplers[]{
-        {"shadowmapSamplerSun", TEXTURE_SRC_CODE_SHADOWMAP_SUN, nullptr, 0, 0},
-        {"shadowmapSamplerSpot", TEXTURE_SRC_CODE_SHADOWMAP_SPOT, nullptr, 0, 0},
-        {"feedbackSampler", TEXTURE_SRC_CODE_FEEDBACK, nullptr, 0, 0},
-        {"floatZSampler", TEXTURE_SRC_CODE_FLOATZ, nullptr, 0, 0},
-        {"processedFloatZSampler", TEXTURE_SRC_CODE_PROCESSED_FLOATZ, nullptr, 0, 0},
-        {"rawFloatZSampler", TEXTURE_SRC_CODE_RAW_FLOATZ, nullptr, 0, 0},
-        {"halfParticleColorSampler", TEXTURE_SRC_CODE_HALF_PARTICLES, nullptr, 0, 0},
-        {"halfParticleDepthSampler", TEXTURE_SRC_CODE_HALF_PARTICLES_Z, nullptr, 0, 0},
-        {"attenuationSampler", TEXTURE_SRC_CODE_LIGHT_ATTENUATION, nullptr, 0, 0},
-        {"lightmapSamplerPrimary", TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY, nullptr, 0, 0},
-        {"lightmapSamplerSecondary", TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY, nullptr, 0, 0},
-        {"modelLightingSampler", TEXTURE_SRC_CODE_MODEL_LIGHTING, nullptr, 0, 0},
-        {"cinematicYSampler", TEXTURE_SRC_CODE_CINEMATIC_Y, nullptr, 0, 0},
-        {"cinematicCrSampler", TEXTURE_SRC_CODE_CINEMATIC_CR, nullptr, 0, 0},
-        {"cinematicCbSampler", TEXTURE_SRC_CODE_CINEMATIC_CB, nullptr, 0, 0},
-        {"cinematicASampler", TEXTURE_SRC_CODE_CINEMATIC_A, nullptr, 0, 0},
-        {"reflectionProbeSampler", TEXTURE_SRC_CODE_REFLECTION_PROBE, nullptr, 0, 0},
-        {"alternateSceneSampler", TEXTURE_SRC_CODE_ALTERNATE_SCENE, nullptr, 0, 0},
-        {},
-    };
-
-    static inline CodeConstantSource s_sunConsts[]{
-        {"position", CONST_SRC_CODE_LIGHT_POSITION, nullptr, 0, 0},
-        {"diffuse", CONST_SRC_CODE_LIGHT_DIFFUSE, nullptr, 0, 0},
-        {"specular", CONST_SRC_CODE_LIGHT_SPECULAR, nullptr, 0, 0},
-        {"spotDir", CONST_SRC_CODE_LIGHT_SPOTDIR, nullptr, 0, 0},
-        {"spotFactors", CONST_SRC_CODE_LIGHT_SPOTFACTORS, nullptr, 0, 0},
-        {"falloffPlacement", CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT, nullptr, 0, 0},
-        {},
-    };
-
-    static inline CodeConstantSource s_nearPlaneConsts[]{
-        {"org", CONST_SRC_CODE_NEARPLANE_ORG, nullptr, 0, 0},
-        {"dx", CONST_SRC_CODE_NEARPLANE_DX, nullptr, 0, 0},
-        {"dy", CONST_SRC_CODE_NEARPLANE_DY, nullptr, 0, 0},
-        {},
-    };
-
-    static inline CodeConstantSource s_codeConsts[]{
-        {"nearPlane", CONST_SRC_NONE, s_nearPlaneConsts, 0, 0},
-        {"light", CONST_SRC_NONE, s_sunConsts, 0, 0},
-        {"baseLightingCoords", CONST_SRC_CODE_BASE_LIGHTING_COORDS, nullptr, 0, 0},
-        {"lightprobeAmbient", CONST_SRC_CODE_LIGHT_PROBE_AMBIENT, nullptr, 0, 0},
-        {"fullscreenDistortion", CONST_SRC_CODE_COMPOSITE_FX_DISTORTION, nullptr, 0, 0},
-        {"fadeEffect", CONST_SRC_CODE_POSTFX_FADE_EFFECT, nullptr, 0, 0},
-        {"lightingLookupScale", CONST_SRC_CODE_LIGHTING_LOOKUP_SCALE, nullptr, 0, 0},
-        {"debugBumpmap", CONST_SRC_CODE_DEBUG_BUMPMAP, nullptr, 0, 0},
-        {"pixelCostFracs", CONST_SRC_CODE_PIXEL_COST_FRACS, nullptr, 0, 0},
-        {"pixelCostDecode", CONST_SRC_CODE_PIXEL_COST_DECODE, nullptr, 0, 0},
-        {"materialColor", CONST_SRC_CODE_MATERIAL_COLOR, nullptr, 0, 0},
-        {"fogConsts", CONST_SRC_CODE_FOG, nullptr, 0, 0},
-        {"fogColorLinear", CONST_SRC_CODE_FOG_COLOR_LINEAR, nullptr, 0, 0},
-        {"fogColorGamma", CONST_SRC_CODE_FOG_COLOR_GAMMA, nullptr, 0, 0},
-        {"fogSunConsts", CONST_SRC_CODE_FOG_SUN_CONSTS, nullptr, 0, 0},
-        {"fogSunColorLinear", CONST_SRC_CODE_FOG_SUN_COLOR_LINEAR, nullptr, 0, 0},
-        {"fogSunColorGamma", CONST_SRC_CODE_FOG_SUN_COLOR_GAMMA, nullptr, 0, 0},
-        {"fogSunDir", CONST_SRC_CODE_FOG_SUN_DIR, nullptr, 0, 0},
-        {"glowSetup", CONST_SRC_CODE_GLOW_SETUP, nullptr, 0, 0},
-        {"glowApply", CONST_SRC_CODE_GLOW_APPLY, nullptr, 0, 0},
-        {"filterTap", CONST_SRC_CODE_FILTER_TAP_0, nullptr, 8, 1},
-        {"codeMeshArg", CONST_SRC_CODE_CODE_MESH_ARG_0, nullptr, 2, 1},
-        {"renderTargetSize", CONST_SRC_CODE_RENDER_TARGET_SIZE, nullptr, 0, 0},
-        {"shadowmapSwitchPartition", CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION, nullptr, 0, 0},
-        {"shadowmapScale", CONST_SRC_CODE_SHADOWMAP_SCALE, nullptr, 0, 0},
-        {"shadowmapPolygonOffset", CONST_SRC_CODE_SHADOWMAP_POLYGON_OFFSET, nullptr, 0, 0},
-        {"zNear", CONST_SRC_CODE_ZNEAR, nullptr, 0, 0},
-        {"clipSpaceLookupScale", CONST_SRC_CODE_CLIP_SPACE_LOOKUP_SCALE, nullptr, 0, 0},
-        {"clipSpaceLookupOffset", CONST_SRC_CODE_CLIP_SPACE_LOOKUP_OFFSET, nullptr, 0, 0},
-        {"dofEquationViewModelAndFarBlur", CONST_SRC_CODE_DOF_EQUATION_VIEWMODEL_AND_FAR_BLUR, nullptr, 0, 0},
-        {"dofEquationScene", CONST_SRC_CODE_DOF_EQUATION_SCENE, nullptr, 0, 0},
-        {"dofLerpScale", CONST_SRC_CODE_DOF_LERP_SCALE, nullptr, 0, 0},
-        {"dofLerpBias", CONST_SRC_CODE_DOF_LERP_BIAS, nullptr, 0, 0},
-        {"dofRowDelta", CONST_SRC_CODE_DOF_ROW_DELTA, nullptr, 0, 0},
-        {"depthFromClip", CONST_SRC_CODE_DEPTH_FROM_CLIP, nullptr, 0, 0},
-        {"outdoorFeatherParms", CONST_SRC_CODE_OUTDOOR_FEATHER_PARMS, nullptr, 0, 0},
-        {"envMapParms", CONST_SRC_CODE_ENVMAP_PARMS, nullptr, 0, 0},
-        {"colorMatrixR", CONST_SRC_CODE_COLOR_MATRIX_R, nullptr, 0, 0},
-        {"colorMatrixG", CONST_SRC_CODE_COLOR_MATRIX_G, nullptr, 0, 0},
-        {"colorMatrixB", CONST_SRC_CODE_COLOR_MATRIX_B, nullptr, 0, 0},
-        {"colorBias", CONST_SRC_CODE_COLOR_BIAS, nullptr, 0, 0},
-        {"colorTintBase", CONST_SRC_CODE_COLOR_TINT_BASE, nullptr, 0, 0},
-        {"colorTintDelta", CONST_SRC_CODE_COLOR_TINT_DELTA, nullptr, 0, 0},
-        {"colorTintQuadraticDelta", CONST_SRC_CODE_COLOR_TINT_QUADRATIC_DELTA, nullptr, 0, 0},
-        {"motionMatrixX", CONST_SRC_CODE_MOTION_MATRIX_X, nullptr, 0, 0},
-        {"motionMatrixY", CONST_SRC_CODE_MOTION_MATRIX_Y, nullptr, 0, 0},
-        {"motionMatrixW", CONST_SRC_CODE_MOTION_MATRIX_W, nullptr, 0, 0},
-        {"gameTime", CONST_SRC_CODE_GAMETIME, nullptr, 0, 0},
-        {"particleCloudColor", CONST_SRC_CODE_PARTICLE_CLOUD_COLOR, nullptr, 0, 0},
-        {"particleCloudMatrix", CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX0, nullptr, 0, 0},
-        {"particleCloudMatrix1", CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX1, nullptr, 0, 0},
-        {"particleCloudMatrix2", CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX2, nullptr, 0, 0},
-        {"particleCloudSparkColor0", CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR0, nullptr, 0, 0},
-        {"particleCloudSparkColor1", CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR1, nullptr, 0, 0},
-        {"particleCloudSparkColor2", CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR2, nullptr, 0, 0},
-        {"particleFountainParms0", CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM0, nullptr, 0, 0},
-        {"particleFountainParms1", CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM1, nullptr, 0, 0},
-        {"viewportDimensions", CONST_SRC_CODE_VIEWPORT_DIMENSIONS, nullptr, 0, 0},
-        {"framebufferRead", CONST_SRC_CODE_FRAMEBUFFER_READ, nullptr, 0, 0},
-        {"viewMatrix", CONST_SRC_CODE_VIEW_MATRIX, nullptr, 0, 0},
-        {"inverseViewMatrix", CONST_SRC_CODE_INVERSE_VIEW_MATRIX, nullptr, 0, 0},
-        {"transposeViewMatrix", CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX, nullptr, 0, 0},
-        {"inverseTransposeViewMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX, nullptr, 0, 0},
-        {"projectionMatrix", CONST_SRC_CODE_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"inverseProjectionMatrix", CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"transposeProjectionMatrix", CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"inverseTransposeProjectionMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"viewProjectionMatrix", CONST_SRC_CODE_VIEW_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"inverseViewProjectionMatrix", CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"transposeViewProjectionMatrix", CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"inverseTransposeViewProjectionMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX, nullptr, 0, 0},
-        {"shadowLookupMatrix", CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"inverseShadowLookupMatrix", CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"transposeShadowLookupMatrix", CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"inverseTransposeShadowLookupMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"worldOutdoorLookupMatrix", CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"inverseWorldOutdoorLookupMatrix", CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"transposeWorldOutdoorLookupMatrix", CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"inverseTransposeWorldOutdoorLookupMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX, nullptr, 0, 0},
-        {"worldMatrix", CONST_SRC_CODE_WORLD_MATRIX0, nullptr, 0, 0},
-        {"inverseWorldMatrix", CONST_SRC_CODE_INVERSE_WORLD_MATRIX0, nullptr, 0, 0},
-        {"transposeWorldMatrix", CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX0, nullptr, 0, 0},
-        {"inverseTransposeWorldMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX0, nullptr, 0, 0},
-        {"worldViewMatrix", CONST_SRC_CODE_WORLD_VIEW_MATRIX0, nullptr, 0, 0},
-        {"inverseWorldViewMatrix", CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX0, nullptr, 0, 0},
-        {"transposeWorldViewMatrix", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX0, nullptr, 0, 0},
-        {"inverseTransposeWorldViewMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX0, nullptr, 0, 0},
-        {"worldViewProjectionMatrix", CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX0, nullptr, 0, 0},
-        {"inverseWorldViewProjectionMatrix", CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX0, nullptr, 0, 0},
-        {"transposeWorldViewProjectionMatrix", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0, nullptr, 0, 0},
-        {"inverseTransposeWorldViewProjectionMatrix", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0, nullptr, 0, 0},
-        {"worldMatrix1", CONST_SRC_CODE_WORLD_MATRIX1, nullptr, 0, 0},
-        {"inverseWorldMatrix1", CONST_SRC_CODE_INVERSE_WORLD_MATRIX1, nullptr, 0, 0},
-        {"transposeWorldMatrix1", CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX1, nullptr, 0, 0},
-        {"inverseTransposeWorldMatrix1", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX1, nullptr, 0, 0},
-        {"worldViewMatrix1", CONST_SRC_CODE_WORLD_VIEW_MATRIX1, nullptr, 0, 0},
-        {"inverseWorldViewMatrix1", CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX1, nullptr, 0, 0},
-        {"transposeWorldViewMatrix1", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX1, nullptr, 0, 0},
-        {"inverseTransposeWorldViewMatrix1", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX1, nullptr, 0, 0},
-        {"worldViewProjectionMatrix1", CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX1, nullptr, 0, 0},
-        {"inverseWorldViewProjectionMatrix1", CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX1, nullptr, 0, 0},
-        {"transposeWorldViewProjectionMatrix1", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1, nullptr, 0, 0},
-        {"inverseTransposeWorldViewProjectionMatrix1", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1, nullptr, 0, 0},
-        {"worldMatrix2", CONST_SRC_CODE_WORLD_MATRIX2, nullptr, 0, 0},
-        {"inverseWorldMatrix2", CONST_SRC_CODE_INVERSE_WORLD_MATRIX2, nullptr, 0, 0},
-        {"transposeWorldMatrix2", CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX2, nullptr, 0, 0},
-        {"inverseTransposeWorldMatrix2", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX2, nullptr, 0, 0},
-        {"worldViewMatrix2", CONST_SRC_CODE_WORLD_VIEW_MATRIX2, nullptr, 0, 0},
-        {"inverseWorldViewMatrix2", CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX2, nullptr, 0, 0},
-        {"transposeWorldViewMatrix2", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX2, nullptr, 0, 0},
-        {"inverseTransposeWorldViewMatrix2", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX2, nullptr, 0, 0},
-        {"worldViewProjectionMatrix2", CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX2, nullptr, 0, 0},
-        {"inverseWorldViewProjectionMatrix2", CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX2, nullptr, 0, 0},
-        {"transposeWorldViewProjectionMatrix2", CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2, nullptr, 0, 0},
-        {"inverseTransposeWorldViewProjectionMatrix2", CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2, nullptr, 0, 0},
-        {},
-    };
-
-    static inline CodeConstantSource s_defaultCodeConsts[]{
-        {"nearPlaneOrg", CONST_SRC_CODE_NEARPLANE_ORG, nullptr, 0, 0},
-        {"nearPlaneDx", CONST_SRC_CODE_NEARPLANE_DX, nullptr, 0, 0},
-        {"nearPlaneDy", CONST_SRC_CODE_NEARPLANE_DY, nullptr, 0, 0},
-        {"lightPosition", CONST_SRC_CODE_LIGHT_POSITION, nullptr, 0, 0},
-        {"lightDiffuse", CONST_SRC_CODE_LIGHT_DIFFUSE, nullptr, 0, 0},
-        {"lightSpecular", CONST_SRC_CODE_LIGHT_SPECULAR, nullptr, 0, 0},
-        {"lightSpotDir", CONST_SRC_CODE_LIGHT_SPOTDIR, nullptr, 0, 0},
-        {"lightSpotFactors", CONST_SRC_CODE_LIGHT_SPOTFACTORS, nullptr, 0, 0},
-        {"lightFalloffPlacement", CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT, nullptr, 0, 0},
-        {"sunShadowmapPixelAdjust", CONST_SRC_CODE_SUN_SHADOWMAP_PIXEL_ADJUST, nullptr, 0, 0},
-        {"spotShadowmapPixelAdjust", CONST_SRC_CODE_SPOT_SHADOWMAP_PIXEL_ADJUST, nullptr, 0, 0},
-        {},
-    };
-
-    static inline MaterialUpdateFrequency s_codeConstUpdateFreq[]{
-        MTL_UPDATE_RARELY,     // LIGHT_POSITION
-        MTL_UPDATE_RARELY,     // LIGHT_DIFFUSE
-        MTL_UPDATE_RARELY,     // LIGHT_SPECULAR
-        MTL_UPDATE_RARELY,     // LIGHT_SPOTDIR
-        MTL_UPDATE_RARELY,     // LIGHT_SPOTFACTORS
-        MTL_UPDATE_RARELY,     // LIGHT_FALLOFF_PLACEMENT
-        MTL_UPDATE_RARELY,     // PARTICLE_CLOUD_COLOR
-        MTL_UPDATE_RARELY,     // GAMETIME
-        MTL_UPDATE_RARELY,     // PIXEL_COST_FRACS
-        MTL_UPDATE_RARELY,     // PIXEL_COST_DECODE
-        MTL_UPDATE_RARELY,     // FILTER_TAP_0
-        MTL_UPDATE_RARELY,     // FILTER_TAP_1
-        MTL_UPDATE_RARELY,     // FILTER_TAP_2
-        MTL_UPDATE_RARELY,     // FILTER_TAP_3
-        MTL_UPDATE_RARELY,     // FILTER_TAP_4
-        MTL_UPDATE_RARELY,     // FILTER_TAP_5
-        MTL_UPDATE_RARELY,     // FILTER_TAP_6
-        MTL_UPDATE_RARELY,     // FILTER_TAP_7
-        MTL_UPDATE_RARELY,     // COLOR_MATRIX_R
-        MTL_UPDATE_RARELY,     // COLOR_MATRIX_G
-        MTL_UPDATE_RARELY,     // COLOR_MATRIX_B
-        MTL_UPDATE_RARELY,     // SHADOWMAP_POLYGON_OFFSET
-        MTL_UPDATE_RARELY,     // RENDER_TARGET_SIZE
-        MTL_UPDATE_RARELY,     // DOF_EQUATION_VIEWMODEL_AND_FAR_BLUR
-        MTL_UPDATE_RARELY,     // DOF_EQUATION_SCENE
-        MTL_UPDATE_RARELY,     // DOF_LERP_SCALE
-        MTL_UPDATE_RARELY,     // DOF_LERP_BIAS
-        MTL_UPDATE_RARELY,     // DOF_ROW_DELTA
-        MTL_UPDATE_RARELY,     // MOTION_MATRIX_X
-        MTL_UPDATE_RARELY,     // MOTION_MATRIX_Y
-        MTL_UPDATE_RARELY,     // MOTION_MATRIX_W
-        MTL_UPDATE_RARELY,     // SHADOWMAP_SWITCH_PARTITION
-        MTL_UPDATE_RARELY,     // SHADOWMAP_SCALE
-        MTL_UPDATE_RARELY,     // ZNEAR
-        MTL_UPDATE_RARELY,     // LIGHTING_LOOKUP_SCALE
-        MTL_UPDATE_RARELY,     // DEBUG_BUMPMAP
-        MTL_UPDATE_RARELY,     // MATERIAL_COLOR
-        MTL_UPDATE_RARELY,     // FOG
-        MTL_UPDATE_RARELY,     // FOG_COLOR_LINEAR
-        MTL_UPDATE_RARELY,     // FOG_COLOR_GAMMA
-        MTL_UPDATE_RARELY,     // FOG_SUN_CONSTS
-        MTL_UPDATE_RARELY,     // FOG_SUN_COLOR_LINEAR
-        MTL_UPDATE_RARELY,     // FOG_SUN_COLOR_GAMMA
-        MTL_UPDATE_RARELY,     // FOG_SUN_DIR
-        MTL_UPDATE_RARELY,     // GLOW_SETUP
-        MTL_UPDATE_RARELY,     // GLOW_APPLY
-        MTL_UPDATE_RARELY,     // COLOR_BIAS
-        MTL_UPDATE_RARELY,     // COLOR_TINT_BASE
-        MTL_UPDATE_RARELY,     // COLOR_TINT_DELTA
-        MTL_UPDATE_RARELY,     // COLOR_TINT_QUADRATIC_DELTA
-        MTL_UPDATE_RARELY,     // OUTDOOR_FEATHER_PARMS
-        MTL_UPDATE_RARELY,     // ENVMAP_PARMS
-        MTL_UPDATE_RARELY,     // SUN_SHADOWMAP_PIXEL_ADJUST
-        MTL_UPDATE_RARELY,     // SPOT_SHADOWMAP_PIXEL_ADJUST
-        MTL_UPDATE_RARELY,     // COMPOSITE_FX_DISTORTION
-        MTL_UPDATE_RARELY,     // POSTFX_FADE_EFFECT
-        MTL_UPDATE_RARELY,     // VIEWPORT_DIMENSIONS
-        MTL_UPDATE_RARELY,     // FRAMEBUFFER_READ
-        MTL_UPDATE_PER_PRIM,   // BASE_LIGHTING_COORDS
-        MTL_UPDATE_PER_PRIM,   // LIGHT_PROBE_AMBIENT
-        MTL_UPDATE_RARELY,     // NEARPLANE_ORG
-        MTL_UPDATE_RARELY,     // NEARPLANE_DX
-        MTL_UPDATE_RARELY,     // NEARPLANE_DY
-        MTL_UPDATE_RARELY,     // CLIP_SPACE_LOOKUP_SCALE
-        MTL_UPDATE_RARELY,     // CLIP_SPACE_LOOKUP_OFFSET
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_MATRIX0
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_MATRIX1
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_MATRIX2
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_SPARK_COLOR0
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_SPARK_COLOR1
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_CLOUD_SPARK_COLOR2
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_FOUNTAIN_PARM0
-        MTL_UPDATE_PER_OBJECT, // PARTICLE_FOUNTAIN_PARM1
-        MTL_UPDATE_PER_OBJECT, // DEPTH_FROM_CLIP
-        MTL_UPDATE_PER_OBJECT, // CODE_MESH_ARG_0
-        MTL_UPDATE_PER_OBJECT, // CODE_MESH_ARG_1
-        MTL_UPDATE_PER_OBJECT, // VIEW_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_VIEW_MATRIX
-        MTL_UPDATE_PER_OBJECT, // TRANSPOSE_VIEW_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_TRANSPOSE_VIEW_MATRIX
-        MTL_UPDATE_PER_OBJECT, // PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // TRANSPOSE_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_TRANSPOSE_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // VIEW_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_VIEW_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // TRANSPOSE_VIEW_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX
-        MTL_UPDATE_PER_OBJECT, // SHADOW_LOOKUP_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_SHADOW_LOOKUP_MATRIX
-        MTL_UPDATE_PER_OBJECT, // TRANSPOSE_SHADOW_LOOKUP_MATRIX
-        MTL_UPDATE_PER_OBJECT, // INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX
-        MTL_UPDATE_PER_PRIM,   // WORLD_OUTDOOR_LOOKUP_MATRIX
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX
-        MTL_UPDATE_PER_PRIM,   // WORLD_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_PROJECTION_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_PROJECTION_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0
-        MTL_UPDATE_PER_PRIM,   // WORLD_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_PROJECTION_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_PROJECTION_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1
-        MTL_UPDATE_PER_PRIM,   // WORLD_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // WORLD_VIEW_PROJECTION_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_WORLD_VIEW_PROJECTION_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2
-        MTL_UPDATE_PER_PRIM,   // INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2
-    };
-    static_assert(std::extent_v<decltype(s_codeConstUpdateFreq)> == CONST_SRC_TOTAL_COUNT);
-
-    static inline MaterialUpdateFrequency s_codeSamplerUpdateFreq[]{
-        MTL_UPDATE_RARELY,     // BLACK
-        MTL_UPDATE_RARELY,     // WHITE
-        MTL_UPDATE_RARELY,     // IDENTITY_NORMAL_MAP
-        MTL_UPDATE_RARELY,     // MODEL_LIGHTING
-        MTL_UPDATE_CUSTOM,     // LIGHTMAP_PRIMARY
-        MTL_UPDATE_CUSTOM,     // LIGHTMAP_SECONDARY
-        MTL_UPDATE_RARELY,     // SHADOWMAP_SUN
-        MTL_UPDATE_RARELY,     // SHADOWMAP_SPOT
-        MTL_UPDATE_PER_OBJECT, // FEEDBACK
-        MTL_UPDATE_RARELY,     // RESOLVED_POST_SUN
-        MTL_UPDATE_RARELY,     // RESOLVED_SCENE
-        MTL_UPDATE_RARELY,     // POST_EFFECT_0
-        MTL_UPDATE_RARELY,     // POST_EFFECT_1
-        MTL_UPDATE_PER_OBJECT, // LIGHT_ATTENUATION
-        MTL_UPDATE_RARELY,     // OUTDOOR
-        MTL_UPDATE_RARELY,     // FLOATZ
-        MTL_UPDATE_RARELY,     // PROCESSED_FLOATZ
-        MTL_UPDATE_RARELY,     // RAW_FLOATZ
-        MTL_UPDATE_RARELY,     // HALF_PARTICLES
-        MTL_UPDATE_RARELY,     // HALF_PARTICLES_Z
-        MTL_UPDATE_PER_OBJECT, // CASE_TEXTURE
-        MTL_UPDATE_PER_OBJECT, // CINEMATIC_Y
-        MTL_UPDATE_PER_OBJECT, // CINEMATIC_CR
-        MTL_UPDATE_PER_OBJECT, // CINEMATIC_CB
-        MTL_UPDATE_PER_OBJECT, // CINEMATIC_A
-        MTL_UPDATE_CUSTOM,     // REFLECTION_PROBE
-        MTL_UPDATE_RARELY,     // ALTERNATE_SCENE
-    };
-    static_assert(std::extent_v<decltype(s_codeSamplerUpdateFreq)> == TEXTURE_SRC_CODE_COUNT);
-
-    static inline MaterialTextureSource g_customSamplerSrc[]{
-        TEXTURE_SRC_CODE_REFLECTION_PROBE,   // CUSTOM_SAMPLER_REFLECTION_PROBE
-        TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY,   // CUSTOM_SAMPLER_LIGHTMAP_PRIMARY
-        TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY, // CUSTOM_SAMPLER_LIGHTMAP_SECONDARY
-    };
-    static_assert(std::extent_v<decltype(g_customSamplerSrc)> == CUSTOM_SAMPLER_COUNT);
+    static inline techset::CommonCodeSourceInfos commonCodeSourceInfos(commonCodeConstSources,
+                                                                       std::extent_v<decltype(commonCodeConstSources)>,
+                                                                       commonCodeSamplerSources,
+                                                                       std::extent_v<decltype(commonCodeSamplerSources)>,
+                                                                       nullptr,
+                                                                       0,
+                                                                       commonArgumentTypes,
+                                                                       std::extent_v<decltype(commonArgumentTypes)>);
 
     static inline MaterialTypeInfo g_materialTypeInfo[]{
         {"",    ""   },

@@ -2,6 +2,7 @@
 
 #include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/Material/MaterialJsonDumperT6.h"
+#include "Game/T6/Techset/TechsetDumperT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Image/ImageDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
@@ -16,7 +17,6 @@
 #include "Sound/SndBankDumperT6.h"
 #include "Sound/SndDriverGlobalsDumperT6.h"
 #include "StringTable/StringTableDumperT6.h"
-#include "Techset/TechsetDumperT6.h"
 #include "Tracer/TracerDumperT6.h"
 #include "Vehicle/VehicleDumperT6.h"
 #include "Weapon/AttachmentDumperT6.h"

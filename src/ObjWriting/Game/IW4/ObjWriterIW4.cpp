@@ -1,6 +1,9 @@
 #include "ObjWriterIW4.h"
 
 #include "Game/IW4/Material/MaterialJsonDumperIW4.h"
+#include "Game/IW4/Techset/PixelShaderDumperIW4.h"
+#include "Game/IW4/Techset/TechsetDumperIW4.h"
+#include "Game/IW4/Techset/VertexShaderDumperIW4.h"
 #include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Image/ImageDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
@@ -13,13 +16,10 @@
 #include "PhysCollmap/PhysCollmapDumperIW4.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW4.h"
 #include "RawFile/RawFileDumperIW4.h"
-#include "Shader/PixelShaderDumperIW4.h"
-#include "Shader/VertexShaderDumperIW4.h"
 #include "Sound/LoadedSoundDumperIW4.h"
 #include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
 #include "StructuredDataDef/StructuredDataDefDumperIW4.h"
-#include "Techset/TechsetDumperIW4.h"
 #include "Tracer/TracerDumperIW4.h"
 #include "Vehicle/VehicleDumperIW4.h"
 #include "Weapon/WeaponDumperIW4.h"
@@ -36,9 +36,15 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
     RegisterAssetDumper(std::make_unique<material::DecompilingGdtDumperIW4>());
 #endif
-    RegisterAssetDumper(std::make_unique<shader::PixelShaderDumperIW4>());
-    RegisterAssetDumper(std::make_unique<shader::VertexShaderDumperIW4>());
-    RegisterAssetDumper(std::make_unique<techset::DumperIW4>());
+    RegisterAssetDumper(std::make_unique<techset::PixelShaderDumperIW4>());
+    RegisterAssetDumper(std::make_unique<techset::VertexShaderDumperIW4>());
+    RegisterAssetDumper(std::make_unique<techset::DumperIW4>(
+#ifdef TECHSET_DEBUG
+        true
+#else
+        false
+#endif
+        ));
     RegisterAssetDumper(std::make_unique<image::DumperIW4>());
     // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
     RegisterAssetDumper(std::make_unique<sound_curve::DumperIW4>());

@@ -102,8 +102,9 @@ namespace
             {
                 if (!shader.m_name.empty())
                 {
+                    Indent();
                     m_stream << std::format("// ERROR: Cannot dump shader {} as its data is not loaded\n", shader.m_name);
-                    con::error("Technique {}: Cannot dump shader {} as its data is not loaded\n", technique.m_name, shader.m_name);
+                    con::error("Technique {}: Cannot dump shader {} as its data is not loaded", technique.m_name, shader.m_name);
                 }
 
                 return;
@@ -201,7 +202,7 @@ namespace
                 codeDestAccessor = targetShaderArg->m_name;
 
             const auto isTransposed = targetShaderArg->m_class == d3d9::ParameterClass::MATRIX_COLUMNS;
-            DumpShaderArg(technique, arg, codeDestAccessor, isTransposed);
+            DumpShaderArg(technique, arg, codeDestAccessor, isTransposed, targetShaderArg->m_register_count);
         }
 
         void DumpShaderArgDx11(const CommonTechnique& technique, const CommonShaderArg& arg, const d3d11::ShaderInfo& shaderInfo) const
@@ -283,7 +284,8 @@ namespace
                 }
 
                 const auto isTransposed = variable->m_variable_class == d3d11::VariableClass::MATRIX_COLUMNS;
-                DumpShaderArg(technique, arg, codeDestAccessor, isTransposed);
+
+                DumpShaderArg(technique, arg, codeDestAccessor, isTransposed, variable->m_row_count);
             }
             else
             {
@@ -314,11 +316,15 @@ namespace
                                static_cast<unsigned>(arg.m_type.m_value_type));
                     return;
                 }
-                DumpShaderArg(technique, arg, boundTextureResource->m_name, false);
+                DumpShaderArg(technique, arg, boundTextureResource->m_name, false, 0);
             }
         }
 
-        void DumpShaderArg(const CommonTechnique& technique, const CommonShaderArg& arg, std::string codeDestAccessor, const bool isTransposed) const
+        void DumpShaderArg(const CommonTechnique& technique,
+                           const CommonShaderArg& arg,
+                           std::string codeDestAccessor,
+                           const bool isTransposed,
+                           const size_t shaderRowCount) const
         {
             if (arg.m_type.m_value_type == CommonShaderValueType::CODE_CONST)
             {
@@ -340,9 +346,10 @@ namespace
                     else
                         codeAccessor = std::format("{}[{}]", constSourceInfo->accessor, arg.m_value.code_const_source.m_index - constSourceInfo->value);
 
-                    // Assert that the value uses 4 rows when matrix and 1 otherwise.
-                    // If this is untrue, there must be more code handling the selected rows
-                    assert((isMatrix && arg.m_value.code_const_source.m_row_count == 4) || arg.m_value.code_const_source.m_row_count == 1);
+                    // Assert that when a code const is not a matrix, the game uses one row of it per arg
+                    // If it is a matrix, the game uses as many rows as can be seen in the shader
+                    assert(isMatrix || arg.m_value.code_const_source.m_row_count == 1);
+                    assert(!isMatrix || arg.m_value.code_const_source.m_row_count == shaderRowCount);
 
                     if (codeDestAccessor != codeAccessor)
                     {

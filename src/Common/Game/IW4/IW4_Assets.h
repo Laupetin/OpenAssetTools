@@ -1207,9 +1207,13 @@ namespace IW4
         STREAM_SRC_COLOR = 0x1,
         STREAM_SRC_TEXCOORD_0 = 0x2,
         STREAM_SRC_NORMAL = 0x3,
-        STREAM_SRC_TANGENT = 0x4,
-        STREAM_SRC_OPTIONAL_BEGIN = 0x5,
+
         STREAM_SRC_PRE_OPTIONAL_BEGIN = 0x4,
+
+        STREAM_SRC_TANGENT = 0x4,
+
+        STREAM_SRC_OPTIONAL_BEGIN = 0x5,
+
         STREAM_SRC_TEXCOORD_1 = 0x5,
         STREAM_SRC_TEXCOORD_2 = 0x6,
         STREAM_SRC_NORMAL_TRANSFORM_0 = 0x7,
@@ -1586,18 +1590,20 @@ namespace IW4
 
     enum TechniqueFlags
     {
-        // Guesses purely based on data analysis:
-        TECHNIQUE_FLAG_1 = 0x1,   // uses resolvedPostSun code sampler // MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN
-        TECHNIQUE_FLAG_2 = 0x2,   // uses resolvedScene code sampler MTL_TECHFLAG_NEEDS_RESOLVED_SCENE
-        TECHNIQUE_FLAG_4 = 0x4,   // zprepass only
-        TECHNIQUE_FLAG_8 = 0x8,   // build_floatz only
-        TECHNIQUE_FLAG_10 = 0x10, // build_shadowmap_depth + build_shadowmap_model only
-        TECHNIQUE_FLAG_20 =
-            0x20, // techniques with _i_ in its name (all use texcoord[1] in decl -> other optional stream sources are not used at all so might be any optional)
-        TECHNIQUE_FLAG_40 = 0x40,   // uses code constant light.spotDir or light.spotFactors
-        TECHNIQUE_FLAG_80 = 0x80,   // uses floatZ sampler and does not have 0x100 flag
-        TECHNIQUE_FLAG_100 = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather + distortion_scale_zfeather
-        TECHNIQUE_FLAG_200 = 0x200, // ?
+        MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN = 0x1,
+        MTL_TECHFLAG_NEEDS_RESOLVED_SCENE = 0x2,
+
+        // These 3 are set so rare, it seems like they are just based on name just like other games do
+        MTL_TECHFLAG_ZPREPASS = 0x4,
+        MTL_TECHFLAG_BUILD_FLOATZ = 0x8,
+        MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL = 0x10,
+
+        MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE = 0x20,
+
+        MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS = 0x40,
+        MTL_TECHFLAG_USES_FLOATZ = 0x80,             // uses floatZ sampler and does not have 0x100 flag
+        MTL_TECHFLAG_USES_DISTORTION_FLOATZ = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather + distortion_scale_zfeather
+        TECHNIQUE_FLAG_200 = 0x200,                  // ?
     };
 
     struct MaterialTechnique

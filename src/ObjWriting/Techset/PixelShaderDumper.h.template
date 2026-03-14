@@ -1,0 +1,25 @@
+#options GAME(IW4)
+
+#filename "Game/" + GAME + "/Techset/PixelShaderDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See PixelShaderDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "PixelShaderDumper" + GAME
+
+namespace techset
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetPixelShader>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetPixelShader::Type>& asset) override;
+    };
+} // namespace techset

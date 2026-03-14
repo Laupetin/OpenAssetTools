@@ -219,7 +219,7 @@ namespace T6
          .accessor = "lightSpotFactors",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_10,
+         .techFlags = MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS,
          },
         {
          .value = CONST_SRC_CODE_LIGHT_ATTENUATION,
@@ -1603,13 +1603,13 @@ namespace T6
          .value = TEXTURE_SRC_CODE_RESOLVED_POST_SUN,
          .accessor = "resolvedPostSun",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_1,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN,
          },
         {
          .value = TEXTURE_SRC_CODE_RESOLVED_SCENE,
          .accessor = "resolvedScene",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_2,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_SCENE,
          },
         {
          .value = TEXTURE_SRC_CODE_POST_EFFECT_SRC,
@@ -1650,19 +1650,19 @@ namespace T6
          .value = TEXTURE_SRC_CODE_FLOATZ,
          .accessor = "floatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_40,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_PROCESSED_FLOATZ,
          .accessor = "processedFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_40,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_RAW_FLOATZ,
          .accessor = "rawFloatZSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_40,
+         .techFlags = MTL_TECHFLAG_USES_FLOATZ,
          },
         {
          .value = TEXTURE_SRC_CODE_STENCIL,
@@ -1848,7 +1848,7 @@ namespace T6
         {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::MATERIAL_CONST  },
         {.m_shader_type = techset::CommonTechniqueShaderType::PIXEL,  .m_value_type = techset::CommonShaderValueType::LITERAL_CONST   },
     };
-    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MLT_ARG_COUNT);
+    static_assert(std::extent_v<decltype(commonArgumentTypes)> == MTL_ARG_COUNT);
 
     static inline const char* commonIgnoredArgAccessors[]{
         "combined_dlight",

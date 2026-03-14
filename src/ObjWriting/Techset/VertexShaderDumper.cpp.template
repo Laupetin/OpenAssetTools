@@ -1,0 +1,46 @@
+#options GAME(IW4)
+
+#filename "Game/" + GAME + "/Techset/VertexShaderDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"VertexShaderDumper" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_DX9
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IS_DX9
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IS_DX9
+#endif
+
+// This file was templated.
+// See VertexShaderDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
+
+#include "Shader/ShaderCommon.h"
+
+#include <type_traits>
+
+using namespace GAME;
+
+#set CLASS_NAME "VertexShaderDumper" + GAME
+
+namespace techset
+{
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetVertexShader::Type>& asset)
+    {
+        const auto& shader = *asset.Asset();
+        const auto shaderFile = context.OpenAssetFile(shader::GetFileNameForVertexShaderAssetName(shader.name));
+
+        if (!shaderFile)
+            return;
+
+        shaderFile->write(reinterpret_cast<const char*>(shader.prog.loadDef.program),
+                          static_cast<std::streamsize>(shader.prog.loadDef.programSize)
+                              * sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>));
+    }
+} // namespace techset

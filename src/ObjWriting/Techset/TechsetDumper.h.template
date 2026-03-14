@@ -1,0 +1,33 @@
+#options GAME(IW4, T6)
+
+#filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See TechsetDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "Dumper" + GAME
+
+namespace techset
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetTechniqueSet>
+    {
+    public:
+        explicit CLASS_NAME(bool debug);
+
+        void Dump(AssetDumpingContext& context) override;
+
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetTechniqueSet::Type>& asset) override;
+
+    private:
+        bool m_debug;
+    };
+} // namespace techset

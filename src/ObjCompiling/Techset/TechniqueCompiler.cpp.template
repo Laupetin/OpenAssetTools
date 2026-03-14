@@ -1,19 +1,58 @@
-#include "TechniqueCompilerT6.h"
+#options GAME(IW4, T6)
 
-#include "Game/T6/T6.h"
-#include "Game/T6/Techset/TechsetConstantsT6.h"
-#include "PrecompiledIndexT6.h"
+#filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
+
+#set COMPILER_HEADER "\"TechniqueCompiler" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set TECHSET_CONSTANTS_HEADER "\"Game/" + GAME + "/Techset/TechsetConstants" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_DX9
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IS_DX9
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IS_DX9
+#define SHADERS_ARE_SUBASSETS
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IS_DX11
+#define SHADERS_ARE_SUBASSETS
+#endif
+
+// This file was templated.
+// See TechniqueCompiler.cpp.template.
+// Do not modify, changes will be lost.
+
+#include COMPILER_HEADER
+
+#include GAME_HEADER
+#include TECHSET_CONSTANTS_HEADER
 #include "Techset/CommonShaderArgCreator.h"
 #include "Techset/CommonTechniqueLoader.h"
+#include "Techset/CommonVertexDeclCreator.h"
 #include "Techset/LiteralConstsZoneState.h"
 #include "Utils/StringUtils.h"
+
+#if defined(FEATURE_T6)
+#set PRECOMPILED_INDEX_HEADER "\"Game/" + GAME + "/Techset/PrecompiledIndex" + GAME + ".h\""
+#include PRECOMPILED_INDEX_HEADER
+#endif
 
 #include <cassert>
 #include <optional>
 #include <sstream>
 #include <vector>
 
-using namespace T6;
+using namespace GAME;
+
+#set SHADER_LOADER_CLASS_NAME "TechniqueShaderLoader" + GAME
+#set COMPILER_CLASS_NAME "TechniqueCompiler" + GAME
 
 namespace
 {
@@ -100,6 +139,9 @@ namespace
 
             arg.type = static_cast<decltype(MaterialShaderArgument::type)>(ConvertArgumentType(commonArg.m_type));
 
+#if defined(IS_DX9)
+            arg.dest = static_cast<decltype(MaterialShaderArgument::dest)>(commonArg.m_destination.dx9.m_destination_register);
+#else
             arg.size = static_cast<decltype(MaterialShaderArgument::size)>(commonArg.m_destination.dx11.m_size);
             arg.buffer = static_cast<decltype(MaterialShaderArgument::buffer)>(commonArg.m_destination.dx11.m_buffer);
 
@@ -115,6 +157,7 @@ namespace
                 arg.location.samplerIndex =
                     static_cast<decltype(MaterialArgumentLocation::samplerIndex)>(commonArg.m_destination.dx11.m_location.sampler_index);
             }
+#endif
 
             ConvertArgumentValue(arg.u, commonArg, memory, context);
         }
@@ -130,7 +173,11 @@ namespace
         }
 
         const std::string declName(nameStream.str());
+#if defined(SHADERS_ARE_SUBASSETS)
         auto* vertexDeclAsset = context.LoadSubAsset<SubAssetVertexDecl>(declName);
+#else
+        auto* vertexDeclAsset = context.LoadDependency<AssetVertexDecl>(declName);
+#endif
         assert(vertexDeclAsset);
         pass.vertexDecl = vertexDeclAsset ? vertexDeclAsset->Asset() : nullptr;
     }
@@ -141,14 +188,22 @@ namespace
 
         if (!commonPass.m_vertex_shader.m_name.empty())
         {
+#if defined(SHADERS_ARE_SUBASSETS)
             auto* vertexShaderAsset = context.LoadSubAsset<SubAssetVertexShader>(commonPass.m_vertex_shader.m_name);
+#else
+            auto* vertexShaderAsset = context.LoadDependency<AssetVertexShader>(commonPass.m_vertex_shader.m_name);
+#endif
             assert(vertexShaderAsset);
             pass.vertexShader = vertexShaderAsset ? vertexShaderAsset->Asset() : nullptr;
         }
 
         if (!commonPass.m_pixel_shader.m_name.empty())
         {
+#if defined(SHADERS_ARE_SUBASSETS)
             auto* pixelShaderAsset = context.LoadSubAsset<SubAssetPixelShader>(commonPass.m_pixel_shader.m_name);
+#else
+            auto* pixelShaderAsset = context.LoadDependency<AssetPixelShader>(commonPass.m_pixel_shader.m_name);
+#endif
             assert(pixelShaderAsset);
             pass.pixelShader = pixelShaderAsset ? pixelShaderAsset->Asset() : nullptr;
         }
@@ -157,7 +212,43 @@ namespace
         pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
     }
 
-    bool AnyDeclHasOptionalSource(const MaterialTechnique& technique)
+#ifdef FEATURE_IW4
+    // Not sure if this is actually how this is calculated.
+    // It produces identical results at least though.
+    constexpr MaterialConstantSource ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200[]{
+        CONST_SRC_CODE_RENDER_TARGET_SIZE,
+        CONST_SRC_CODE_VIEWPORT_DIMENSIONS,
+    };
+
+    bool ShouldApplyFlag200(const MaterialTechnique& technique)
+    {
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+        {
+            const auto& pass = technique.passArray[passIndex];
+            if (!pass.args)
+                continue;
+
+            const unsigned argCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
+            for (auto argIndex = 0u; argIndex < argCount; argIndex++)
+            {
+                const auto& arg = pass.args[argIndex];
+                if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST)
+                    return false;
+
+                if (arg.type == MTL_ARG_CODE_PIXEL_CONST)
+                {
+                    const auto foundAllowedConstant = std::ranges::find(ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200, arg.u.codeConst.index);
+                    if (foundAllowedConstant == std::end(ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200))
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+#endif
+
+    bool AnyDeclHasOptionalSource(const MaterialTechnique& technique, AssetCreationContext& context)
     {
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
         {
@@ -165,28 +256,55 @@ namespace
             if (!pass.vertexDecl)
                 continue;
 
+#if defined(SHADERS_ARE_SUBASSETS)
             if (pass.vertexDecl->hasOptionalSource)
                 return true;
+#else
+            if (pass.vertexDecl->name && pass.vertexDecl->name[0] == ',')
+            {
+                if (techset::HasOptionalSourceByName(&pass.vertexDecl->name[1], commonRoutingInfos).value_or(false))
+                    return true;
+            }
+            else if (pass.vertexDecl->hasOptionalSource)
+                return true;
+#endif
         }
 
         return false;
     }
 
-    void UpdateTechniqueFlags(MaterialTechnique& technique, const techset::CommonTechnique& commonTechnique)
+    void UpdateTechniqueFlags(MaterialTechnique& technique, const techset::CommonTechnique& commonTechnique, AssetCreationContext& context)
     {
         std::string lowerTechniqueName(commonTechnique.m_name);
         utils::MakeStringLowerCase(lowerTechniqueName);
 
+#if defined(FEATURE_IW4)
+        // Not a particularly cool way to do this but...
+        // the game actually does this :shrug:
+        if (lowerTechniqueName == "zprepass")
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
+        else if (lowerTechniqueName == "build_floatz")
+            technique.flags |= MTL_TECHFLAG_BUILD_FLOATZ;
+        else if (lowerTechniqueName == "build_shadowmap_depth" || lowerTechniqueName == "build_shadowmap_model")
+            technique.flags |= MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL;
+
+        if (technique.flags & MTL_TECHFLAG_USES_FLOATZ && lowerTechniqueName.starts_with("distortion_"))
+            technique.flags = (technique.flags & ~MTL_TECHFLAG_USES_FLOATZ) | MTL_TECHFLAG_USES_DISTORTION_FLOATZ;
+            
+        if (ShouldApplyFlag200(technique))
+            technique.flags |= TECHNIQUE_FLAG_200;
+#elif defined(FEATURE_T6)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass" || lowerTechniqueName.starts_with("pimp_technique_zprepass_")
             || lowerTechniqueName.starts_with("pimp_technique_layer_zprepass_") || lowerTechniqueName.starts_with("pimp_technique_buildshadowmap_"))
         {
-            technique.flags |= TECHNIQUE_FLAG_4;
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
         }
+#endif
 
-        if (AnyDeclHasOptionalSource(technique))
-            technique.flags |= TECHNIQUE_FLAG_8;
+        if (AnyDeclHasOptionalSource(technique, context))
+            technique.flags |= MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE;
     }
 
     MaterialTechnique* ConvertTechnique(const techset::CommonTechnique& commonTechnique, AssetCreationContext& context, MemoryManager& memory)
@@ -205,11 +323,12 @@ namespace
 
         // Take common flags and apply further logic
         technique->flags = static_cast<decltype(MaterialTechnique::flags)>(commonTechnique.m_flags);
-        UpdateTechniqueFlags(*technique, commonTechnique);
+        UpdateTechniqueFlags(*technique, commonTechnique, context);
 
         return technique;
     }
 
+#if defined(FEATURE_T6)
     void ApplyTechFlagsFromMaterial(const Material& material, const Zone& zone)
     {
         if (!material.techniqueSet || !material.techniqueSet->name || !material.stateBitsTable)
@@ -235,18 +354,23 @@ namespace
                 technique->flags |= TECHNIQUE_FLAG_80;
         }
     }
+#endif
 
-    class TechniqueShaderLoaderT6 final : public techset::ITechniqueShaderLoader
+    class SHADER_LOADER_CLASS_NAME final : public techset::ITechniqueShaderLoader
     {
     public:
-        explicit TechniqueShaderLoaderT6(AssetCreationContext& context)
+        explicit SHADER_LOADER_CLASS_NAME(AssetCreationContext& context)
             : m_context(context)
         {
         }
 
         std::optional<techset::CommonTechniqueShaderBin> LoadVertexShader(const std::string& name) override
         {
+#if defined(SHADERS_ARE_SUBASSETS)
             auto* shaderAsset = m_context.LoadSubAsset<SubAssetVertexShader>(name);
+#else
+            auto* shaderAsset = m_context.ForceLoadDependency<AssetVertexShader>(name);
+#endif
             if (!shaderAsset)
                 return std::nullopt;
 
@@ -257,13 +381,22 @@ namespace
 
             return techset::CommonTechniqueShaderBin{
                 .m_shader_bin = shader->prog.loadDef.program,
+#if defined(IS_DX9)
+                .m_shader_bin_size =
+                    static_cast<size_t>(shader->prog.loadDef.programSize) * sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>),
+#else
                 .m_shader_bin_size = shader->prog.loadDef.programSize,
+#endif
             };
         }
 
         std::optional<techset::CommonTechniqueShaderBin> LoadPixelShader(const std::string& name) override
         {
+#if defined(SHADERS_ARE_SUBASSETS)
             auto* shaderAsset = m_context.LoadSubAsset<SubAssetPixelShader>(name);
+#else
+            auto* shaderAsset = m_context.ForceLoadDependency<AssetPixelShader>(name);
+#endif
             if (!shaderAsset)
                 return std::nullopt;
 
@@ -274,7 +407,12 @@ namespace
 
             return techset::CommonTechniqueShaderBin{
                 .m_shader_bin = shader->prog.loadDef.program,
+#if defined(IS_DX9)
+                .m_shader_bin_size =
+                    static_cast<size_t>(shader->prog.loadDef.programSize) * sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>),
+#else
                 .m_shader_bin_size = shader->prog.loadDef.programSize,
+#endif
             };
         }
 
@@ -282,10 +420,10 @@ namespace
         AssetCreationContext& m_context;
     };
 
-    class TechniqueCompilerT6 final : public SubAssetCreator<SubAssetTechnique>
+    class COMPILER_CLASS_NAME final : public SubAssetCreator<SubAssetTechnique>
     {
     public:
-        TechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
+        COMPILER_CLASS_NAME(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
             : m_memory(memory),
               m_zone(zone),
               m_search_path(searchPath)
@@ -295,8 +433,12 @@ namespace
         AssetCreationResult CreateSubAsset(const std::string& subAssetName, AssetCreationContext& context) override
         {
             bool failure = false;
-            TechniqueShaderLoaderT6 shaderLoader(context);
+            SHADER_LOADER_CLASS_NAME shaderLoader(context);
+#if defined(IS_DX9)
+            const auto commonShaderArgCreator = techset::CommonShaderArgCreator::CreateDx9(shaderLoader, context, commonCodeSourceInfos);
+#else
             const auto commonShaderArgCreator = techset::CommonShaderArgCreator::CreateDx11(shaderLoader, context, commonCodeSourceInfos);
+#endif
 
             const auto commonTechnique =
                 techset::LoadCommonTechnique(subAssetName, commonCodeSourceInfos, commonRoutingInfos, *commonShaderArgCreator, m_search_path, failure);
@@ -312,6 +454,9 @@ namespace
 
         void FinalizeZone(AssetCreationContext& context) override
         {
+#if defined(FEATURE_IW4)
+            // TODO
+#elif defined(FEATURE_T6)
             const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
             for (auto* materialAsset : materials)
             {
@@ -327,6 +472,7 @@ namespace
                     ApplyPrecompiledIndex(technique.passArray[passIndex]);
                 }
             }
+#endif
         }
 
     private:
@@ -336,10 +482,12 @@ namespace
     };
 } // namespace
 
+#set CREATE_COMPILER_METHOD "CreateTechniqueCompiler" + GAME
+
 namespace techset
 {
-    std::unique_ptr<ISubAssetCreator> CreateTechniqueCompilerT6(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
+    std::unique_ptr<ISubAssetCreator> CREATE_COMPILER_METHOD(MemoryManager& memory, Zone& zone, ISearchPath& searchPath)
     {
-        return std::make_unique<TechniqueCompilerT6>(memory, zone, searchPath);
+        return std::make_unique<COMPILER_CLASS_NAME>(memory, zone, searchPath);
     }
 } // namespace techset
