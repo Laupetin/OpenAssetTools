@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, T6)
+#options GAME(IW3, IW4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/VertexDeclCompiler" + GAME + ".h"
 
@@ -11,6 +11,7 @@
 #define FEATURE_IW5
 #elif GAME == "T5"
 #define FEATURE_T5
+#define IS_SUB_ASSET
 #elif GAME == "T6"
 #define FEATURE_T6
 #define IS_SUB_ASSET
