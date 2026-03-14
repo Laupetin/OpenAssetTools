@@ -77,7 +77,7 @@ jobs:
           [[ "${{ matrix.build_arch }}" == "x86" ]] && export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig:$PKG_CONFIG_PATH || true
           echo "Package config path: $PKG_CONFIG_PATH"
           scripts/build.sh release ${{ matrix.build_arch }}
-          chmod +x build/bin/Release_${{ matrix.build_arch }}/{ImageConverter,Unlinker,Linker}
+          chmod +x build/bin/Release_${{ matrix.build_arch }}/{ModMan,ImageConverter,Unlinker,Linker}
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
