@@ -212,6 +212,42 @@ namespace
         pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
     }
 
+#ifdef FEATURE_IW4
+    // Not sure if this is actually how this is calculated.
+    // It produces identical results at least though.
+    constexpr MaterialConstantSource ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200[]{
+        CONST_SRC_CODE_RENDER_TARGET_SIZE,
+        CONST_SRC_CODE_VIEWPORT_DIMENSIONS,
+    };
+
+    bool ShouldApplyFlag200(const MaterialTechnique& technique)
+    {
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+        {
+            const auto& pass = technique.passArray[passIndex];
+            if (!pass.args)
+                continue;
+
+            const unsigned argCount = pass.perPrimArgCount + pass.perObjArgCount + pass.stableArgCount;
+            for (auto argIndex = 0u; argIndex < argCount; argIndex++)
+            {
+                const auto& arg = pass.args[argIndex];
+                if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST)
+                    return false;
+
+                if (arg.type == MTL_ARG_CODE_PIXEL_CONST)
+                {
+                    const auto foundAllowedConstant = std::ranges::find(ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200, arg.u.codeConst.index);
+                    if (foundAllowedConstant == std::end(ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200))
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+#endif
+
     bool AnyDeclHasOptionalSource(const MaterialTechnique& technique, AssetCreationContext& context)
     {
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
@@ -254,6 +290,9 @@ namespace
 
         if (technique.flags & MTL_TECHFLAG_USES_FLOATZ && lowerTechniqueName.starts_with("distortion_"))
             technique.flags = (technique.flags & ~MTL_TECHFLAG_USES_FLOATZ) | MTL_TECHFLAG_USES_DISTORTION_FLOATZ;
+            
+        if (ShouldApplyFlag200(technique))
+            technique.flags |= TECHNIQUE_FLAG_200;
 #elif defined(FEATURE_T6)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
