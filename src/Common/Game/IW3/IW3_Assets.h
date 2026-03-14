@@ -1240,7 +1240,7 @@ namespace IW3
 
     struct MaterialVertexDeclaration
     {
-        char streamCount;
+        unsigned char streamCount;
         bool hasOptionalSource;
         bool isLoaded;
         MaterialVertexStreamRouting routing;

@@ -738,11 +738,13 @@ namespace IW3
          .value = TEXTURE_SRC_CODE_RESOLVED_POST_SUN,
          .accessor = "resolvedPostSun",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN,
          },
         {
          .value = TEXTURE_SRC_CODE_RESOLVED_SCENE,
          .accessor = "resolvedScene",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .techFlags = MTL_TECHFLAG_NEEDS_RESOLVED_SCENE,
          },
         {
          .value = TEXTURE_SRC_CODE_POST_EFFECT_0,

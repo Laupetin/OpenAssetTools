@@ -1,4 +1,4 @@
-#options GAME(IW4, T6)
+#options GAME(IW3, IW4, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
 
@@ -9,6 +9,7 @@
 #if GAME == "IW3"
 #define FEATURE_IW3
 #define IS_DX9
+#define SHADERS_ARE_SUBASSETS
 #elif GAME == "IW4"
 #define FEATURE_IW4
 #define IS_DX9
@@ -278,7 +279,10 @@ namespace
         std::string lowerTechniqueName(commonTechnique.m_name);
         utils::MakeStringLowerCase(lowerTechniqueName);
 
-#if defined(FEATURE_IW4)
+#if defined(FEATURE_IW3)
+        if (lowerTechniqueName == "zprepass")
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
+#elif defined(FEATURE_IW4)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass")
@@ -290,7 +294,7 @@ namespace
 
         if (technique.flags & MTL_TECHFLAG_USES_FLOATZ && lowerTechniqueName.starts_with("distortion_"))
             technique.flags = (technique.flags & ~MTL_TECHFLAG_USES_FLOATZ) | MTL_TECHFLAG_USES_DISTORTION_FLOATZ;
-            
+
         if (ShouldApplyFlag200(technique))
             technique.flags |= TECHNIQUE_FLAG_200;
 #elif defined(FEATURE_T6)
@@ -454,9 +458,7 @@ namespace
 
         void FinalizeZone(AssetCreationContext& context) override
         {
-#if defined(FEATURE_IW4)
-            // TODO
-#elif defined(FEATURE_T6)
+#if defined(FEATURE_T6)
             const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
             for (auto* materialAsset : materials)
             {

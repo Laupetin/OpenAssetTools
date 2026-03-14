@@ -6,6 +6,8 @@
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/Image/ImageLoaderEmbeddedIW3.h"
 #include "Game/IW3/Image/ImageLoaderExternalIW3.h"
+#include "Game/IW3/Techset/PixelShaderLoaderIW3.h"
+#include "Game/IW3/Techset/VertexShaderLoaderIW3.h"
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "Material/LoaderMaterialIW3.h"
@@ -118,6 +120,9 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
         collection.AddAssetCreator(raw_file::CreateLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(string_table::CreateLoaderIW3(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderIW3(memory, searchPath));
+        collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderIW3(memory, searchPath));
     }
 } // namespace
 
