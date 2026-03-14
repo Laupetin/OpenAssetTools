@@ -12,6 +12,8 @@ interface PublicDirFile {
   relativePath: string;
 }
 
+const textEncoder = new TextEncoder();
+
 function getPublicDirFiles(publicDir?: string): PublicDirFile[] {
   if (!publicDir) return [];
 
@@ -41,12 +43,14 @@ function createVarName(fileName: string) {
 function transformAsset(asset: MinimalOutputAsset) {
   const varName = createVarName(asset.fileName);
 
-  let bytes: string;
+  let buffer: Uint8Array;
   if (typeof asset.source === "string") {
-    bytes = [...asset.source].map((v) => String(v.charCodeAt(0))).join(",");
+    buffer = textEncoder.encode(asset.source);
   } else {
-    bytes = [...asset.source].map((v) => String(v)).join(",");
+    buffer = asset.source;
   }
+
+  const bytes = [...buffer].map((v) => String(v)).join(",");
 
   return `constexpr const unsigned char ${varName}[] {${bytes}};
 `;
@@ -54,7 +58,8 @@ function transformAsset(asset: MinimalOutputAsset) {
 
 function transformChunk(chunk: MinimalOutputChunk) {
   const varName = createVarName(chunk.fileName);
-  const bytes = [...chunk.code].map((v) => String(v.charCodeAt(0))).join(",");
+  const buffer = textEncoder.encode(chunk.code);
+  const bytes = [...buffer].map((v) => String(v)).join(",");
 
   return `constexpr const unsigned char ${varName}[] {${bytes}};
 `;
