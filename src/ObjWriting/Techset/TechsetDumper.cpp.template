@@ -1,4 +1,4 @@
-#options GAME(IW4, T6)
+#options GAME(IW3, IW4, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
 
@@ -9,6 +9,7 @@
 #if GAME == "IW3"
 #define FEATURE_IW3
 #define IS_DX9
+#define DUMP_SHADERS "1"
 #elif GAME == "IW4"
 #define FEATURE_IW4
 #define IS_DX9
@@ -58,7 +59,7 @@ namespace
         if (!shaderFile)
             return;
 
-#if defined(FEATURE_T6)
+#if defined(IS_DX11)
         shaderFile->write(pixelShader.prog.loadDef.program, pixelShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(pixelShader.prog.loadDef.program),
@@ -73,7 +74,7 @@ namespace
         if (!shaderFile)
             return;
 
-#if defined(FEATURE_T6)
+#if defined(IS_DX11)
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(vertexShader.prog.loadDef.program),

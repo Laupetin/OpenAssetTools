@@ -1,6 +1,7 @@
 #include "ObjWriterIW3.h"
 
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
+#include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
@@ -17,7 +18,13 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperXAnimParts)
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW3>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW3>());
-    // REGISTER_DUMPER(AssetDumperMaterialTechniqueSet)
+    RegisterAssetDumper(std::make_unique<techset::DumperIW3>(
+#ifdef TECHSET_DEBUG
+        true
+#else
+        false
+#endif
+        ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
     // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
     // REGISTER_DUMPER(AssetDumperSndCurve)
