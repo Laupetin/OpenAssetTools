@@ -24,6 +24,7 @@ public:
     virtual void Add(std::unique_ptr<StructDefinition> structDefinition) = 0;
     virtual void Add(std::unique_ptr<UnionDefinition> unionDefinition) = 0;
     virtual void Add(std::unique_ptr<TypedefDefinition> typedefDefinition) = 0;
+    virtual void Add(std::unique_ptr<TypeInformation> typeInformation) = 0;
     virtual void Add(std::unique_ptr<StructureInformation> structureInformation) = 0;
     virtual void Add(std::unique_ptr<FastFileBlock> fastFileBlock) = 0;
 
@@ -41,6 +42,7 @@ public:
 
     [[nodiscard]] virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
     [[nodiscard]] virtual StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const = 0;
+    [[nodiscard]] virtual TypeInformation* GetTypeInformationFor(const DataDefinition* definition) const = 0;
     [[nodiscard]] virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
     [[nodiscard]] virtual const FastFileBlock* GetFastFileBlockByName(const std::string& name) const = 0;
 };

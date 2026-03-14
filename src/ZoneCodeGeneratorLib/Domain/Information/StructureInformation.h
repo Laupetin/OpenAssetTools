@@ -5,6 +5,7 @@
 #include "Domain/Extension/CustomAction.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "MemberInformation.h"
+#include "TypeInformation.h"
 
 #include <memory>
 #include <vector>
@@ -14,9 +15,10 @@ class MemberInformation;
 class StructureInformation
 {
 public:
-    explicit StructureInformation(DefinitionWithMembers* definition);
+    StructureInformation(DefinitionWithMembers* definition, TypeInformation* typeInfo);
 
     DefinitionWithMembers* m_definition;
+    TypeInformation* m_type_info;
     std::string m_asset_name;
 
     std::vector<StructureInformation*> m_usages;
@@ -32,7 +34,6 @@ public:
     bool m_array_pointer_reference_exists;
     bool m_array_reference_exists;
     bool m_reference_from_non_default_normal_block_exists;
-    bool m_reusable_reference_exists;
 
     std::unique_ptr<CustomAction> m_post_load_action;
     const FastFileBlock* m_block;

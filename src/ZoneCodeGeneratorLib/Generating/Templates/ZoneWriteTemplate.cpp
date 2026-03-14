@@ -715,7 +715,7 @@ namespace
             if (member->m_is_reusable)
                 return true;
 
-            if (member->m_type == nullptr || !member->m_type->m_reusable_reference_exists)
+            if (member->m_type_info == nullptr || !member->m_type_info->m_reusable_reference_exists)
                 return false;
 
             return true;

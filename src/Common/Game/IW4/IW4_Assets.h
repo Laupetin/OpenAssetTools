@@ -3008,7 +3008,7 @@ namespace IW4
         uint16_t numsides;
         uint16_t glassPieceIndex;
         cbrushside_t* sides;
-        char* baseAdjacentSide;
+        cbrushedge_t* baseAdjacentSide;
         int16_t axialMaterialNum[2][3];
         char firstAdjacentSideOffsets[2][3];
         char edgeCount[2][3];
