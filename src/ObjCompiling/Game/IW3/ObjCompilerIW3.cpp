@@ -1,6 +1,9 @@
 #include "ObjCompilerIW3.h"
 
 #include "Game/IW3/IW3.h"
+#include "Game/IW3/Techset/TechniqueCompilerIW3.h"
+#include "Game/IW3/Techset/TechsetCompilerIW3.h"
+#include "Game/IW3/Techset/VertexDeclCompilerIW3.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -13,7 +16,10 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        // No compilers yet
+        collection.AddAssetCreator(techset::CreateTechsetCompilerIW3(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW3(memory, zone, searchPath));
+        collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerIW3(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -39,5 +45,6 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              IOutputPath& outDir,
                                              IOutputPath& cacheDir) const
 {
+    ConfigureCompilers(collection, zone, searchPath);
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }

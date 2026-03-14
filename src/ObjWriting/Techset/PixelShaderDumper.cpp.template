@@ -4,10 +4,7 @@
 
 #set DUMPER_HEADER "\"PixelShaderDumper" + GAME + ".h\""
 
-#if GAME == "IW3"
-#define FEATURE_IW3
-#define IS_DX9
-#elif GAME == "IW4"
+#if GAME == "IW4"
 #define FEATURE_IW4
 #define IS_DX9
 #elif GAME == "IW5"

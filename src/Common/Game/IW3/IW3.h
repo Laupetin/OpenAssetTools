@@ -187,6 +187,11 @@ namespace IW3
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
+
+    using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
+    using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
+    using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
+    using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace IW3
 
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXModelPieces, name);
