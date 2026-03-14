@@ -24,7 +24,7 @@ InMemoryRepository::~InMemoryRepository()
 void InMemoryRepository::Add(std::unique_ptr<EnumDefinition> enumsDefinition)
 {
     auto* raw = enumsDefinition.release();
-    m_enums.push_back(raw);
+    m_enums.emplace_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
 
     for (const auto& enumMember : raw->m_members)
@@ -34,35 +34,42 @@ void InMemoryRepository::Add(std::unique_ptr<EnumDefinition> enumsDefinition)
 void InMemoryRepository::Add(std::unique_ptr<StructDefinition> structDefinition)
 {
     auto* raw = structDefinition.release();
-    m_structs.push_back(raw);
+    m_structs.emplace_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
 }
 
 void InMemoryRepository::Add(std::unique_ptr<UnionDefinition> unionDefinition)
 {
     auto* raw = unionDefinition.release();
-    m_unions.push_back(raw);
+    m_unions.emplace_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
 }
 
 void InMemoryRepository::Add(std::unique_ptr<TypedefDefinition> typedefDefinition)
 {
     auto* raw = typedefDefinition.release();
-    m_typedefs.push_back(raw);
+    m_typedefs.emplace_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
 }
 
 void InMemoryRepository::Add(std::unique_ptr<StructureInformation> structureInformation)
 {
     auto* raw = structureInformation.release();
-    m_structures_information.push_back(raw);
+    m_structures_information.emplace_back(raw);
     m_structure_information_by_definition[raw->m_definition] = raw;
+}
+
+void InMemoryRepository::Add(std::unique_ptr<TypeInformation> typeInformation)
+{
+    auto* raw = typeInformation.release();
+    m_types_information.emplace_back(raw);
+    m_type_information_by_definition[raw->m_definition] = raw;
 }
 
 void InMemoryRepository::Add(std::unique_ptr<FastFileBlock> fastFileBlock)
 {
     auto* raw = fastFileBlock.release();
-    m_fast_file_blocks.push_back(raw);
+    m_fast_file_blocks.emplace_back(raw);
     m_fast_file_blocks_by_name[raw->m_name] = raw;
 }
 
@@ -131,6 +138,16 @@ StructureInformation* InMemoryRepository::GetInformationFor(const DefinitionWith
     const auto foundEntry = m_structure_information_by_definition.find(definitionWithMembers);
 
     if (foundEntry != m_structure_information_by_definition.end())
+        return foundEntry->second;
+
+    return nullptr;
+}
+
+TypeInformation* InMemoryRepository::GetTypeInformationFor(const DataDefinition* definition) const
+{
+    const auto foundEntry = m_type_information_by_definition.find(definition);
+
+    if (foundEntry != m_type_information_by_definition.end())
         return foundEntry->second;
 
     return nullptr;

@@ -27,37 +27,37 @@ namespace
 
             for (const auto& member : currentStructure->m_ordered_members)
             {
-                if (member->m_type == nullptr)
-                    continue;
-
                 const MemberComputations computations(member.get());
 
                 if (computations.ShouldIgnore())
                     continue;
 
-                if (computations.IsArray() || member->m_member->m_type_declaration->m_declaration_modifiers.empty())
-                    member->m_type->m_embedded_reference_exists = true;
+                if (member->m_is_reusable && member->m_type_info)
+                    member->m_type_info->m_reusable_reference_exists = true;
 
-                if (computations.ContainsNonEmbeddedReference())
-                    member->m_type->m_non_embedded_reference_exists = true;
+                if (member->m_type)
+                {
+                    if (computations.IsArray() || member->m_member->m_type_declaration->m_declaration_modifiers.empty())
+                        member->m_type->m_embedded_reference_exists = true;
 
-                if (computations.ContainsSinglePointerReference())
-                    member->m_type->m_single_pointer_reference_exists = true;
+                    if (computations.ContainsNonEmbeddedReference())
+                        member->m_type->m_non_embedded_reference_exists = true;
 
-                if (computations.ContainsArrayPointerReference())
-                    member->m_type->m_array_pointer_reference_exists = true;
+                    if (computations.ContainsSinglePointerReference())
+                        member->m_type->m_single_pointer_reference_exists = true;
 
-                if (computations.ContainsArrayReference())
-                    member->m_type->m_array_reference_exists = true;
+                    if (computations.ContainsArrayPointerReference())
+                        member->m_type->m_array_pointer_reference_exists = true;
 
-                if (computations.IsNotInDefaultNormalBlock())
-                    member->m_type->m_reference_from_non_default_normal_block_exists = true;
+                    if (computations.ContainsArrayReference())
+                        member->m_type->m_array_reference_exists = true;
 
-                if (member->m_is_reusable)
-                    member->m_type->m_reusable_reference_exists = true;
+                    if (computations.IsNotInDefaultNormalBlock())
+                        member->m_type->m_reference_from_non_default_normal_block_exists = true;
 
-                member->m_type->m_usages.push_back(currentStructure);
-                processingQueue.push(member->m_type);
+                    member->m_type->m_usages.push_back(currentStructure);
+                    processingQueue.push(member->m_type);
+                }
             }
         }
 

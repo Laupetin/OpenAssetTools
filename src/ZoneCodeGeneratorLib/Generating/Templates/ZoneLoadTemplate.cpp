@@ -661,7 +661,7 @@ namespace
 
         void PrintFillStruct_Struct(const StructureInformation& info)
         {
-            if (info.m_reusable_reference_exists)
+            if (info.m_type_info && info.m_type_info->m_reusable_reference_exists)
             {
                 LINEF("m_stream.AddPointerLookup({0}, fillAccessor.BlockBuffer(0));", MakeTypeVarName(info.m_definition))
                 LINE("")

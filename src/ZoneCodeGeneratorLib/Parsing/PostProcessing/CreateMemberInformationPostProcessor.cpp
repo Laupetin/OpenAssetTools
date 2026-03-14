@@ -4,7 +4,7 @@
 
 namespace
 {
-    bool CreateMemberInformationForStructure(IDataRepository* repository, StructureInformation* structure)
+    bool CreateMemberInformationForStructure(const IDataRepository* repository, StructureInformation* structure)
     {
         for (const auto& member : structure->m_definition->m_members)
         {
@@ -21,7 +21,8 @@ namespace
             if (memberDefinition != nullptr)
                 typeInfo = repository->GetInformationFor(memberDefinition);
 
-            structure->m_ordered_members.emplace_back(std::make_unique<MemberInformation>(structure, typeInfo, member.get()));
+            structure->m_ordered_members.emplace_back(
+                std::make_unique<MemberInformation>(structure, typeInfo, repository->GetTypeInformationFor(member->m_type_declaration->m_type), member.get()));
         }
 
         return true;

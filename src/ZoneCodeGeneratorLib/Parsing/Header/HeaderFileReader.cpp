@@ -9,6 +9,7 @@
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
+#include "Parsing/PostProcessing/CreateTypeInformationPostProcessor.h"
 #include "Parsing/PostProcessing/IPostProcessor.h"
 #include "Utils/Logging/Log.h"
 
@@ -66,6 +67,7 @@ void HeaderFileReader::SetupStreamProxies()
 void HeaderFileReader::SetupPostProcessors()
 {
     // Order is important
+    m_post_processors.emplace_back(std::make_unique<CreateTypeInformationPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<CreateStructureInformationPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<CreateMemberInformationPostProcessor>());
 }
