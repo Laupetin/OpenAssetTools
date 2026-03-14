@@ -2,6 +2,7 @@
 
 #include "Shader/D3D11ShaderAnalyser.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Utils/Alignment.h"
 #include "Utils/Djb2.h"
 #include "Utils/Logging/Log.h"
 
@@ -422,19 +423,20 @@ namespace
             if (!constInfo)
                 return result::Unexpected(std::format("Missing info for code const {}", shaderArg.m_name));
 
-            const auto variableElementCount = std::max<unsigned>(shaderArg.m_type_elements, 1);
+            const auto elementSize = ElementSizeForArg(shaderArg);
+            const auto elementCount = utils::Align(shaderArg.m_register_count, elementSize) / elementSize;
             const auto infoArrayCount = std::max<unsigned>(constInfo->arrayCount, 1);
-            if (variableElementCount > infoArrayCount)
+            if (elementCount > infoArrayCount)
             {
                 return result::Unexpected(std::format("Could not auto create argument for constant {} as it has more elements ({}) than the code constant ({})",
                                                       shaderArg.m_name,
-                                                      variableElementCount,
+                                                      elementCount,
                                                       infoArrayCount));
             }
 
             techset::CommonShaderArgDestination commonDestination;
             const auto isTransposed = shaderArg.m_class == d3d9::ParameterClass::MATRIX_COLUMNS;
-            for (auto elementIndex = 0u; elementIndex < variableElementCount; elementIndex++)
+            for (auto elementIndex = 0u; elementIndex < elementCount; elementIndex++)
             {
                 commonDestination.dx9.m_destination_register = shaderArg.m_register_index + elementIndex;
                 auto result = AcceptShaderConstantArgument(commonDestination, isTransposed, shaderArg.m_register_count, *maybeCodeConst, elementIndex);
@@ -446,6 +448,18 @@ namespace
                 m_tech_flags |= *constInfo->techFlags;
 
             return NoResult{};
+        }
+
+        [[nodiscard]] static unsigned ElementSizeForArg(const d3d9::ShaderConstant& arg)
+        {
+            switch (arg.m_class)
+            {
+            case d3d9::ParameterClass::MATRIX_COLUMNS:
+            case d3d9::ParameterClass::MATRIX_ROWS:
+                return 4;
+            default:
+                return 1;
+            }
         }
 
         result::Expected<NoResult, std::string> AutoCreateSamplerArg(const d3d9::ShaderConstant& shaderArg)
