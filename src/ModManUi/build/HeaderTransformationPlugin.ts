@@ -1,5 +1,5 @@
 import type { Plugin, UserConfig } from "vite";
-import type { OutputAsset, OutputChunk } from "rollup";
+import type { OutputAsset, OutputChunk } from "rolldown";
 import path from "node:path";
 import fs from "node:fs";
 
