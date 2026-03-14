@@ -15,7 +15,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | XAnimParts           | ❌              | ❌              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
-| MaterialTechniqueSet | ❌              | ❌              |                                                                              |
+| MaterialTechniqueSet | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ❌              | ❌              |                                                                              |
 | SndCurve             | ❌              | ❌              |                                                                              |
@@ -46,10 +46,10 @@ The following section specify which assets are supported to be dumped to disk (u
 | XAnimParts                | ❌              | ❌              |                                                                              |
 | XModel                    | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material                  | ✅              | ✅              |                                                                              |
-| MaterialPixelShader       | ✅              | ✅              | Shaders are compiled. Only dumps/loads shader bytecode.                      |
-| MaterialVertexShader      | ✅              | ✅              | Shaders are compiled. Only dumps/loads shader bytecode.                      |
-| MaterialVertexDeclaration | ✅              | ✅              | Vertex declarations are dumped/loaded as part of a technique.                |
-| MaterialTechniqueSet      | ⁉️              | ⁉️              | Statemaps are currently not exported.                                        |
+| MaterialPixelShader       | ✅              | ✅              | Only dumps/loads shader bytecode.                                            |
+| MaterialVertexShader      | ✅              | ✅              | Only dumps/loads shader bytecode.                                            |
+| MaterialVertexDeclaration | ✅              | ✅              |                                                                              |
+| MaterialTechniqueSet      | ✅              | ✅              |                                                                              |
 | GfxImage                  | ✅              | ❌              | A few special image encodings are not yet supported.                         |
 | snd_alias_list_t          | ❌              | ❌              |                                                                              |
 | SndCurve                  | ✅              | ✅              |                                                                              |
@@ -132,7 +132,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | XAnimParts           | ❌              | ❌              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
-| MaterialTechniqueSet | ❌              | ❌              |                                                                              |
+| MaterialTechniqueSet | ✅              | ❌              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ❌              | A few special image encodings are not yet supported.                         |
 | SndBank              | ❌              | ❌              |                                                                              |
 | SndPatch             | ❌              | ❌              |                                                                              |
@@ -169,7 +169,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | XAnimParts             | ❌              | ❌              |                                                                                                                                                                |
 | XModel                 | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`.                                                                                   |
 | Material               | ✅              | ✅              | Dumping/Loading is currently possible for materials in their compiled form. There is currently no material pipeline.                                           |
-| MaterialTechniqueSet   | ✅              | ❌              | Only dumps compiled shaders.                                                                                                                                   |
+| MaterialTechniqueSet   | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                                                                                                                 |
 | GfxImage               | ✅              | ✅              | A few special image encodings are not yet supported.                                                                                                           |
 | SndBank                | ✅              | ✅              | The current implementation is subject to change.                                                                                                               |
 | SndPatch               | ❌              | ❌              |                                                                                                                                                                |
