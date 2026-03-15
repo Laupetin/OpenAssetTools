@@ -79,6 +79,7 @@ namespace techset
         std::uint8_t arrayCount;
         CommonCodeSourceUpdateFrequency updateFrequency;
         std::optional<unsigned> techFlags;
+        std::optional<CommonTechniqueShaderType> techFlagShaderType;
         std::optional<CommonCodeConstSource> transposedMatrix;
     };
 

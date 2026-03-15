@@ -231,6 +231,7 @@ namespace
                                static_cast<unsigned>(arg.m_type.m_value_type));
                     return;
                 }
+
                 const auto buffer = std::ranges::find_if(shaderInfo.m_constant_buffers,
                                                          [&boundResource](const d3d11::ConstantBuffer& constantBuffer)
                                                          {
@@ -409,14 +410,14 @@ namespace
                 Indent();
 
                 std::string materialPropertyName;
-                if (m_constant_zone_state.GetConstantName(arg.m_value.name_hash, materialPropertyName)
-                    || m_constant_zone_state.GetTextureDefName(arg.m_value.name_hash, materialPropertyName))
-                {
-                    m_stream << std::format("{} = material.{};\n", codeDestAccessor, materialPropertyName);
-                }
-                else if (m_constant_zone_state.HashString(codeDestAccessor) == arg.m_value.name_hash)
+                if (m_constant_zone_state.HashString(codeDestAccessor) == arg.m_value.name_hash)
                 {
                     m_stream << std::format("{} = material.{};\n", codeDestAccessor, codeDestAccessor);
+                }
+                else if (m_constant_zone_state.GetConstantName(arg.m_value.name_hash, materialPropertyName)
+                         || m_constant_zone_state.GetTextureDefName(arg.m_value.name_hash, materialPropertyName))
+                {
+                    m_stream << std::format("{} = material.{};\n", codeDestAccessor, materialPropertyName);
                 }
                 else
                 {

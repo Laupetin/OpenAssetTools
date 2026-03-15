@@ -1533,8 +1533,10 @@ namespace T5
         // - Any polygon offset that is not GFXS1_POLYGON_OFFSET_0
         TECHNIQUE_FLAG_80 = 0x80,
 
-        TECHNIQUE_FLAG_100 = 0x100,
-        TECHNIQUE_FLAG_200 = 0x200,
+        // Uses marksHitNormal
+        MTL_TECHFLAG_USES_MARKS_HIT_NORMAL = 0x100,
+        // Uses __characterCharredAmount or destructibleParms. Not sure how those two relate?
+        MTL_TECHFLAG_200 = 0x200,
     };
 
     struct MaterialPass

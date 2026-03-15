@@ -315,6 +315,7 @@ namespace T5
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .techFlags = MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::PIXEL,
          },
         {
          .value = CONST_SRC_CODE_LIGHT_ATTENUATION,
@@ -730,6 +731,7 @@ namespace T5
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .techFlags = MTL_TECHFLAG_USES_GRASS,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_GRASS_FORCE0,
@@ -737,6 +739,7 @@ namespace T5
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .techFlags = MTL_TECHFLAG_USES_GRASS,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_GRASS_FORCE1,
@@ -744,6 +747,7 @@ namespace T5
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .techFlags = MTL_TECHFLAG_USES_GRASS,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_GRASS_WIND_FORCE0,
@@ -751,6 +755,7 @@ namespace T5
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .techFlags = MTL_TECHFLAG_USES_GRASS,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_MOTIONBLUR_DIRECTION_AND_MAGNITUDE,
@@ -841,7 +846,8 @@ namespace T5
          .accessor = "destructibleParms",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_200,
+         .techFlags = MTL_TECHFLAG_200,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_CLOUD_WORLD_AREA,
@@ -866,7 +872,8 @@ namespace T5
          .accessor = "__characterCharredAmount",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
-         .techFlags = TECHNIQUE_FLAG_200,
+         .techFlags = MTL_TECHFLAG_200,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_TREECANOPY_PARMS,
@@ -879,6 +886,8 @@ namespace T5
          .accessor = "marksHitNormal",
          .arrayCount = 0,
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .techFlags = MTL_TECHFLAG_USES_MARKS_HIT_NORMAL,
+         .techFlagShaderType = techset::CommonTechniqueShaderType::VERTEX,
          },
         {
          .value = CONST_SRC_CODE_POSTFX_CONTROL0,
@@ -1587,7 +1596,7 @@ namespace T5
          .value = TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY,
          .accessor = "lightmapSamplerPrimary",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
-         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_SECONDARY,
+         .customSamplerIndex = CUSTOM_SAMPLER_LIGHTMAP_PRIMARY,
          },
         {
          .value = TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY,
@@ -1709,6 +1718,7 @@ namespace T5
          .value = TEXTURE_SRC_CODE_REFLECTION_PROBE,
          .accessor = "reflectionProbeSampler",
          .updateFrequency = techset::CommonCodeSourceUpdateFrequency::CUSTOM,
+         .customSamplerIndex = CUSTOM_SAMPLER_REFLECTION_PROBE,
          },
         {
          .value = TEXTURE_SRC_CODE_FEATHER_FLOAT_Z,
