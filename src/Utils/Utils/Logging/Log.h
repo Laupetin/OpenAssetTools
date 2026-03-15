@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 #include <format>
 #include <string>
@@ -15,10 +16,16 @@ namespace con
     };
 
     extern LogLevel _globalLogLevel;
+    extern std::atomic_size_t _warningCount;
+    extern std::atomic_size_t _errorCount;
 
     void init();
     void set_log_level(LogLevel value);
     void set_use_color(bool value);
+
+    void reset_counts();
+    [[nodiscard]] size_t warning_count();
+    [[nodiscard]] size_t error_count();
 
     void _debug_internal(const std::string& str);
     void _info_internal(const std::string& str);
@@ -55,6 +62,7 @@ namespace con
 
     inline void warn(const std::string& str)
     {
+        ++_warningCount;
         if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
             return;
         _warn_internal(str);
@@ -62,6 +70,7 @@ namespace con
 
     template<class Arg0, class... OtherArgs> void warn(std::format_string<Arg0, OtherArgs...> fmt, Arg0&& arg0, OtherArgs&&... otherArgs)
     {
+        ++_warningCount;
         if (static_cast<unsigned>(_globalLogLevel) > static_cast<unsigned>(LogLevel::WARN))
             return;
         _warn_internal(std::vformat(fmt.get(), std::make_format_args(arg0, otherArgs...)));
@@ -69,11 +78,13 @@ namespace con
 
     inline void error(const std::string& str)
     {
+        ++_errorCount;
         _error_internal(str);
     }
 
     template<class Arg0, class... OtherArgs> void error(std::format_string<Arg0, OtherArgs...> fmt, Arg0&& arg0, OtherArgs&&... otherArgs)
     {
+        ++_errorCount;
         _error_internal(std::vformat(fmt.get(), std::make_format_args(arg0, otherArgs...)));
     }
 } // namespace con

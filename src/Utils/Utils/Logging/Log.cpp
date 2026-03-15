@@ -48,6 +48,8 @@ namespace
 namespace con
 {
     LogLevel _globalLogLevel = LogLevel::INFO;
+    std::atomic_size_t _warningCount(0);
+    std::atomic_size_t _errorCount(0);
 
     void init()
     {
@@ -68,6 +70,22 @@ namespace con
     {
         colorSet = true;
         globalUseColor = value && CanUseColor();
+    }
+
+    void reset_counts()
+    {
+        _warningCount = 0;
+        _errorCount = 0;
+    }
+
+    size_t warning_count()
+    {
+        return _warningCount;
+    }
+
+    size_t error_count()
+    {
+        return _errorCount;
     }
 
     void _debug_internal(const std::string& str)

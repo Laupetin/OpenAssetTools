@@ -155,7 +155,7 @@ namespace
     class LinkerImpl final : public Linker
     {
     public:
-        LinkerImpl(LinkerArgs args)
+        explicit LinkerImpl(LinkerArgs args)
             : m_args(std::move(args))
         {
         }
@@ -186,6 +186,8 @@ namespace
             }
 
             UnloadZones();
+
+            Summarize(result);
 
             return result;
         }
@@ -462,6 +464,12 @@ namespace
             }
 
             return true;
+        }
+
+        static void Summarize(const bool result)
+        {
+            const char* resultStr = result ? "Finished" : "Failed";
+            con::info("{} with {} warnings, {} errors", resultStr, con::warning_count(), con::error_count());
         }
 
         LinkerArgs m_args;
