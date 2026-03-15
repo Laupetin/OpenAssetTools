@@ -1,6 +1,9 @@
 #include "ObjCompilerT5.h"
 
 #include "Game/T5/T5.h"
+#include "Game/T5/Techset/TechniqueCompilerT5.h"
+#include "Game/T5/Techset/TechsetCompilerT5.h"
+#include "Game/T5/Techset/VertexDeclCompilerT5.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -13,7 +16,10 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        // No compilers yet
+        collection.AddAssetCreator(techset::CreateTechsetCompilerT5(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT5(memory, zone, searchPath));
+        collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT5(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -39,5 +45,6 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              IOutputPath& outDir,
                                              IOutputPath& cacheDir) const
 {
+    ConfigureCompilers(collection, zone, searchPath);
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }

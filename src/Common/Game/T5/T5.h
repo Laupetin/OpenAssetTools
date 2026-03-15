@@ -207,6 +207,11 @@ namespace T5
     using AssetDDL = Asset<ASSET_TYPE_DDL, ddlRoot_t>;
     using AssetGlasses = Asset<ASSET_TYPE_GLASSES, Glasses>;
     using AssetEmblemSet = Asset<ASSET_TYPE_EMBLEMSET, EmblemSet>;
+
+    using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
+    using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
+    using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
+    using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace T5
 
 DEFINE_ASSET_NAME_ACCESSOR(T5::AssetPhysPreset, name);

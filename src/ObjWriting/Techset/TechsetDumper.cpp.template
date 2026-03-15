@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, T6)
+#options GAME(IW3, IW4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
 
@@ -19,6 +19,7 @@
 #elif GAME == "T5"
 #define FEATURE_T5
 #define IS_DX9
+#define DUMP_SHADERS "1"
 #elif GAME == "T6"
 #define FEATURE_T6
 #define IS_DX11

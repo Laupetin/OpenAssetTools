@@ -1487,6 +1487,16 @@ namespace T5
         MaterialArgumentDef u;
     };
 
+    enum CustomSampler
+    {
+        CUSTOM_SAMPLER_REFLECTION_PROBE = 0x0,
+        CUSTOM_SAMPLER_LIGHTMAP_PRIMARY = 0x1,
+        CUSTOM_SAMPLER_LIGHTMAP_SECONDARY = 0x2,
+        CUSTOM_SAMPLER_LIGHTMAP_SECONDARYB = 0x3,
+
+        CUSTOM_SAMPLER_COUNT
+    };
+
     enum MaterialType : unsigned char
     {
         MTL_TYPE_DEFAULT = 0x0,
@@ -1506,16 +1516,16 @@ namespace T5
 
     enum TechniqueFlags
     {
-        TECHNIQUE_FLAG_1 = 0x1,
-        TECHNIQUE_FLAG_2 = 0x2,
-        TECHNIQUE_FLAG_4 = 0x4,
+        MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN = 0x1,
+        MTL_TECHFLAG_NEEDS_RESOLVED_SCENE = 0x2,
+        MTL_TECHFLAG_ZPREPASS = 0x4,
 
         // Vertex decl has optional source
-        TECHNIQUE_FLAG_8 = 0x8,
+        MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE = 0x8,
 
-        TECHNIQUE_FLAG_10 = 0x10,
-        TECHNIQUE_FLAG_20 = 0x20,
-        TECHNIQUE_FLAG_40 = 0x40,
+        MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS = 0x10,
+        MTL_TECHFLAG_USES_GRASS = 0x20,
+        MTL_TECHFLAG_USES_FLOATZ = 0x40,
 
         // Any material that has statebits according to any of the following sets this:
         // - GFXS1_DEPTHWRITE set
@@ -1523,8 +1533,10 @@ namespace T5
         // - Any polygon offset that is not GFXS1_POLYGON_OFFSET_0
         TECHNIQUE_FLAG_80 = 0x80,
 
-        TECHNIQUE_FLAG_100 = 0x100,
-        TECHNIQUE_FLAG_200 = 0x200,
+        // Uses marksHitNormal
+        MTL_TECHFLAG_USES_MARKS_HIT_NORMAL = 0x100,
+        // Uses __characterCharredAmount or destructibleParms. Not sure how those two relate?
+        MTL_TECHFLAG_200 = 0x200,
     };
 
     struct MaterialPass

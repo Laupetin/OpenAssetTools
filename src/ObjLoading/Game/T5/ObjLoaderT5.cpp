@@ -6,6 +6,8 @@
 #include "Game/T5/Image/ImageLoaderEmbeddedT5.h"
 #include "Game/T5/Image/ImageLoaderExternalT5.h"
 #include "Game/T5/T5.h"
+#include "Game/T5/Techset/PixelShaderLoaderT5.h"
+#include "Game/T5/Techset/VertexShaderLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "Localize/LoaderLocalizeT5.h"
 #include "Material/LoaderMaterialT5.h"
@@ -136,6 +138,9 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGlasses>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderEmblemSet>(memory));
+
+        collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT5(memory, searchPath));
+        collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT5(memory, searchPath));
     }
 } // namespace
 

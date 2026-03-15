@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, T6)
+#options GAME(IW3, IW4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
 
@@ -297,6 +297,14 @@ namespace
 
         if (ShouldApplyFlag200(technique))
             technique.flags |= TECHNIQUE_FLAG_200;
+#elif defined(FEATURE_T5)
+        // Not a particularly cool way to do this but...
+        // the game actually does this :shrug:
+        if (lowerTechniqueName == "zprepass" || lowerTechniqueName.starts_with("pimp_technique_zprepass_")
+            || lowerTechniqueName.starts_with("pimp_technique_layer_zprepass_"))
+        {
+            technique.flags |= MTL_TECHFLAG_ZPREPASS;
+        }
 #elif defined(FEATURE_T6)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
@@ -332,7 +340,7 @@ namespace
         return technique;
     }
 
-#if defined(FEATURE_T6)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
     void ApplyTechFlagsFromMaterial(const Material& material, const Zone& zone)
     {
         if (!material.techniqueSet || !material.techniqueSet->name || !material.stateBitsTable)
@@ -458,13 +466,15 @@ namespace
 
         void FinalizeZone(AssetCreationContext& context) override
         {
-#if defined(FEATURE_T6)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
             for (auto* materialAsset : materials)
             {
                 ApplyTechFlagsFromMaterial(*materialAsset->Asset(), m_zone);
             }
+#endif
 
+#if defined(FEATURE_T6)
             const auto techniques = context.PoolSubAssets<SubAssetTechnique>();
             for (auto* techniqueSubAsset : techniques)
             {
