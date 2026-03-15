@@ -3,6 +3,7 @@
 #include "Asset/IZoneAssetCreationState.h"
 #include "AssetRegistration.h"
 #include "Game/IAsset.h"
+#include "Game/IGame.h"
 #include "Pool/AssetPool.h"
 #include "Pool/XAssetInfo.h"
 #include "Zone/AssetList/AssetList.h"
@@ -99,6 +100,7 @@ private:
     [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName);
 
     Zone& m_zone;
+    IGame& m_game;
     std::unique_ptr<ZoneAssetPools> m_forced_asset_pools;
     std::vector<std::unique_ptr<AssetPool>> m_sub_asset_pools;
     const AssetCreatorCollection* m_creators;
