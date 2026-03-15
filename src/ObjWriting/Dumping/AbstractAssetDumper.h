@@ -3,6 +3,7 @@
 #include "Game/IAsset.h"
 #include "IAssetDumper.h"
 #include "Pool/AssetPool.h"
+#include "Utils/Logging/Log.h"
 
 template<AssetDefinition Asset_t> class AbstractAssetDumper : public IAssetDumper
 {
@@ -21,6 +22,8 @@ public:
 
     void Dump(AssetDumpingContext& context) override
     {
+        const auto assetTypeName = IGame::GetGameById(context.m_zone.m_game_id)->GetAssetTypeName(Asset_t::EnumEntry).value_or("unknown");
+
         for (const auto* assetInfo : context.m_zone.m_pools.PoolAssets<Asset_t>())
         {
             if (assetInfo->IsReference() || !ShouldDump(*assetInfo))
@@ -30,6 +33,7 @@ public:
             }
 
             DumpAsset(context, *assetInfo);
+            con::info("Dumped {} \"{}\"", assetTypeName, assetInfo->m_name);
             context.IncrementProgress();
         }
     }
