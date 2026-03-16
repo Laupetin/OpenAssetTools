@@ -335,29 +335,13 @@ namespace
                 m_bsp->lights[lightIndex].pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
                 RhcToLhcCoordinates(m_bsp->lights[lightIndex].pos.v);
 
-                // BO2 uses -Z up and the default light direction is straight down
-                Eigen::Vector3f defaultDirection(0.0f, 0.0f, 1.0f);
-                Eigen::Vector3f outputDirection;
-
-                if (node.rotation)
-                {
-                    Eigen::Quaternionf rotationQuat(
-                        (*node.rotation)[3], (*node.rotation)[0], (*node.rotation)[1], (*node.rotation)[2]); // GLTF is XYZW, Eigen is WXYZ
-                    outputDirection = rotationQuat * defaultDirection;
-                }
-                else if (node.matrix)
-                {
-                    con::error("matrix rotation unimpelemted");
-                    assert(false);
-                    // Eigen::Quaternionf rotationQuat;
-                    // rotationQuat = nodeMatrix;
-                    // outputDirection = rotationQuat * defaultDirection;
-                }
-                else
-                    outputDirection = defaultDirection;
+                // GLTF spec uses +Y up and the default light direction is straight down
+                Eigen::Vector3f defaultDirection(0.0f, -1.0f, 0.0f);
+                Eigen::Affine3f affineTransform(nodeMatrix);
+                Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
+                Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
                 outputDirection.normalize();
                 m_bsp->lights[lightIndex].direction = vec3_t{outputDirection.x(), outputDirection.y(), outputDirection.z()};
-                RhcToLhcCoordinates(m_bsp->lights[lightIndex].direction.v);
 
                 m_bsp->lights[lightIndex].hasPosBeenSet = true;
 
@@ -399,6 +383,8 @@ namespace
                     return true;
                 }
             }
+
+            return false;
         }
 
         static std::vector<unsigned> GetRootNodes(const JsonRoot& jRoot)
@@ -533,12 +519,12 @@ namespace
                 }
 
                 if (!jsLight.intensity)
-                    light.intensity = 100000.0f; // adjusted from GLTF spec to better match BO2
+                    light.intensity = 100000.0f; // adjusted from spec to better match BO2
                 else
                     light.intensity = *jsLight.intensity;
 
                 if (!jsLight.range)
-                    light.range = 1000.0f; // adjusted from GLTF spec to better match BO2
+                    light.range = 1000.0f; // adjusted from spec to better match BO2
                 else
                     light.range = *jsLight.range;
 
@@ -553,15 +539,15 @@ namespace
                 else // JsonPunctualLightType::SPOT
                 {
                     light.type = LIGHT_TYPE_SPOT;
-                    assert(jsLight.spot);
 
+                    assert(jsLight.spot);
                     if (!jsLight.spot->innerConeAngle)
                         light.innerConeAngle = 0.0f;
                     else
                         light.innerConeAngle = *jsLight.spot->innerConeAngle;
 
                     if (!jsLight.spot->outerConeAngle)
-                        light.outerConeAngle = 3.14159265359f / 4.0f; /// 45 degrees
+                        light.outerConeAngle = 3.14159265359f / 4.0f; /// spec of 45 degrees
                     else
                         light.outerConeAngle = *jsLight.spot->outerConeAngle;
                 }
