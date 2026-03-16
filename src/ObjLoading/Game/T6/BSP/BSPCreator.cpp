@@ -28,7 +28,7 @@ namespace
         unsigned m_position_accessor;
         unsigned m_normal_accessor;
         std::optional<unsigned> m_color_accessor;
-        unsigned m_uv_accessor;
+        std::optional<unsigned> m_uv_accessor;
         unsigned m_index_accessor;
     };
 
@@ -83,7 +83,6 @@ namespace
     private:
         const Input& m_input;
         BSPData* m_bsp;
-        size_t m_color_mat_idx;
         std::vector<std::unique_ptr<Accessor>> m_accessors;
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
         std::vector<std::unique_ptr<Buffer>> m_buffers;
@@ -190,7 +189,8 @@ namespace
             return T.matrix();
         }
 
-        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface)
+        unsigned CreateVertices(
+            const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface, vec4_t vertexColor)
         {
             // clang-format off
             const auto* positionAccessor = GetAccessorForIndex(
@@ -203,6 +203,7 @@ namespace
             assert(positionAccessor != nullptr);
 
             const auto vertexCount = positionAccessor->GetCount();
+            NullAccessor nullAccessor(vertexCount);
             OnesAccessor onesAccessor(vertexCount);
 
             // clang-format off
@@ -220,9 +221,8 @@ namespace
                 accessorsForVertex.m_uv_accessor,
                 { JsonAccessorType::VEC2 },
                 { JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT }
-            ).value_or(nullptr);
+            ).value_or(&nullAccessor);
             VerifyAccessorVertexCount("TEXCOORD_0", uvAccessor, vertexCount);
-            assert(uvAccessor != nullptr);
 
             const auto* colorAccessor = GetAccessorForIndex(
                 "COLOR_0",
@@ -282,6 +282,11 @@ namespace
                     assert(false);
                 }
 
+                vertex.color.x *= vertexColor.x;
+                vertex.color.y *= vertexColor.y;
+                vertex.color.z *= vertexColor.z;
+                vertex.color.w *= vertexColor.w;
+
                 Eigen::Vector4f position(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1.0f);
                 Eigen::Vector4f transformedPosition = nodeMatrix * position;
                 vertex.pos.x = transformedPosition.x();
@@ -313,24 +318,8 @@ namespace
             return vertexOffset;
         }
 
-        void loadSurfaceLightData(const JsonRoot& jRoot, const JsonMeshPrimitives& primitive, BSPSurface& surface)
+        bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
-            if (!primitive.material)
-            {
-                if (!primitive.attributes.COLOR_0)
-                    throw GltfLoadException("Primitive requires material or colour data.");
-
-                surface.materialIndex = m_color_mat_idx;
-            }
-            else
-                surface.materialIndex = *primitive.material;
-        }
-
-        bool CreateSurfacesFromNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
-        {
-            if (!node.mesh && !node.extensions)
-                return false;
-
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             if (node.extensions && node.extensions->KHR_lights_punctual)
@@ -375,48 +364,45 @@ namespace
                 return true;
             }
 
-            con::info("Mesh {} found", node.name.has_value() ? node.name.value() : "");
-
-            const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
-            for (const auto& primitive : mesh.primitives)
+            if (node.mesh)
             {
-                if (!primitive.indices)
-                    throw GltfLoadException("Requires primitives indices");
-                if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
-                    throw GltfLoadException("Only triangles are supported");
-                if (!primitive.attributes.POSITION)
-                    throw GltfLoadException("Requires primitives attribute POSITION");
-                if (!primitive.attributes.NORMAL)
-                    throw GltfLoadException("Requires primitives attribute NORMAL");
-                if (!primitive.attributes.TEXCOORD_0)
-                    throw GltfLoadException("Requires primitives attribute TEXCOORD_0");
+                assert(jRoot.meshes);
+                const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+                for (const auto& primitive : mesh.primitives)
+                {
+                    if (!primitive.indices)
+                        throw GltfLoadException("Requires primitives indices");
+                    if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
+                        throw GltfLoadException("Only triangles are supported");
+                    if (!primitive.attributes.POSITION)
+                        throw GltfLoadException("Requires primitives attribute POSITION");
+                    if (!primitive.attributes.NORMAL)
+                        throw GltfLoadException("Requires primitives attribute NORMAL");
 
-                const AccessorsForVertex accessorsForVertex{
-                    .m_position_accessor = *primitive.attributes.POSITION,
-                    .m_normal_accessor = *primitive.attributes.NORMAL,
-                    .m_color_accessor = primitive.attributes.COLOR_0,
-                    .m_uv_accessor = *primitive.attributes.TEXCOORD_0,
-                    .m_index_accessor = *primitive.indices,
-                };
+                    const AccessorsForVertex accessorsForVertex{
+                        .m_position_accessor = *primitive.attributes.POSITION,
+                        .m_normal_accessor = *primitive.attributes.NORMAL,
+                        .m_color_accessor = primitive.attributes.COLOR_0,
+                        .m_uv_accessor = primitive.attributes.TEXCOORD_0,
+                        .m_index_accessor = *primitive.indices,
+                    };
 
-                BSPSurface surface;
+                    BSPSurface surface;
+                    if (primitive.material)
+                        surface.materialIndex = *primitive.material;
+                    else
+                        surface.materialIndex = m_bsp->gfxWorld.materials.size() - 1; // last material is used for colour only meshes
+                    vec4_t vertexColour = m_bsp->gfxWorld.materials.at(surface.materialIndex).materialColour;
+                    CreateVertices(accessorsForVertex, node, nodeMatrix, surface, vertexColour);
 
-                if (primitive.material)
-                    surface.materialIndex = *primitive.material;
-                else if (primitive.attributes.COLOR_0)
-                    surface.materialIndex = m_color_mat_idx;
-                else
-                    throw GltfLoadException("Primitive requires material or colour data.");
-
-                CreateVertices(accessorsForVertex, node, nodeMatrix, surface);
-
-                m_bsp->gfxWorld.surfaces.emplace_back(surface);
+                    m_bsp->gfxWorld.surfaces.emplace_back(surface);
+                    return true;
+                }
             }
-
-            return true;
         }
 
         static std::vector<unsigned> GetRootNodes(const JsonRoot& jRoot)
+
         {
             if (!jRoot.nodes || jRoot.nodes->empty())
                 return {};
@@ -453,31 +439,62 @@ namespace
 
         void LoadMaterials(const JsonRoot& jRoot)
         {
-            if (!jRoot.materials)
-                return;
-            m_bsp->gfxWorld.materials.reserve((*jRoot.materials).size());
-            for (auto& jsMaterial : *jRoot.materials)
+            if (jRoot.materials)
             {
-                BSPMaterial material;
-
-                if (jsMaterial.name && (*jsMaterial.name).length() != 0)
+                m_bsp->gfxWorld.materials.reserve((*jRoot.materials).size());
+                for (auto& jsMaterial : *jRoot.materials)
                 {
-                    material.materialType = MATERIAL_TYPE_TEXTURE;
-                    material.materialName = *jsMaterial.name;
-                }
-                else
-                {
-                    material.materialType = MATERIAL_TYPE_EMPTY;
-                    material.materialName = "";
-                }
+                    BSPMaterial material;
 
-                m_bsp->gfxWorld.materials.emplace_back(material);
+                    if (jsMaterial.name && (*jsMaterial.name).length() != 0)
+                        material.materialName = *jsMaterial.name;
+                    else
+                        material.materialName = "";
+
+                    if (jsMaterial.pbrMetallicRoughness)
+                    {
+                        if (jsMaterial.pbrMetallicRoughness->baseColorFactor)
+                        {
+                            material.materialColour.x = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[0];
+                            material.materialColour.y = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[1];
+                            material.materialColour.z = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[2];
+                            material.materialColour.w = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[3];
+                        }
+                        else
+                        {
+
+                            material.materialColour.x = 1.0f;
+                            material.materialColour.y = 1.0f;
+                            material.materialColour.z = 1.0f;
+                            material.materialColour.w = 1.0f;
+                        }
+
+                        if (jsMaterial.pbrMetallicRoughness->baseColorTexture)
+                            material.materialType = MATERIAL_TYPE_TEXTURE;
+                        else
+                            material.materialType = MATERIAL_TYPE_COLOUR;
+                    }
+                    else
+                    {
+                        material.materialType = MATERIAL_TYPE_COLOUR;
+                        material.materialColour.x = 1.0f;
+                        material.materialColour.y = 1.0f;
+                        material.materialColour.z = 1.0f;
+                        material.materialColour.w = 1.0f;
+                    }
+
+                    m_bsp->gfxWorld.materials.emplace_back(material);
+                }
             }
 
-            m_color_mat_idx = m_bsp->gfxWorld.materials.size();
+            // last material is used when a primitve has no material/colour data
             BSPMaterial colorMaterial;
             colorMaterial.materialType = MATERIAL_TYPE_COLOUR;
             colorMaterial.materialName = "";
+            colorMaterial.materialColour.x = 1.0f;
+            colorMaterial.materialColour.y = 1.0f;
+            colorMaterial.materialColour.z = 1.0f;
+            colorMaterial.materialColour.w = 1.0f;
             m_bsp->gfxWorld.materials.emplace_back(colorMaterial);
         }
 
@@ -579,7 +596,7 @@ namespace
                         con::warn("Parent node has position data that won't be used");
                 }
 
-                CreateSurfacesFromNode(jRoot, node);
+                addNodeToBSP(jRoot, node);
             }
         }
 
@@ -692,7 +709,7 @@ namespace
 
                 LoadLights(jRoot);
                 LoadMaterials(jRoot);
-                TraverseNodes(jRoot);
+                TraverseNodes(jRoot); // requires materials and lights
             }
             catch (const GltfLoadException& e)
             {

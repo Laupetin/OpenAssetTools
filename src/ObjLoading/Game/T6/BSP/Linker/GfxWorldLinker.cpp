@@ -74,15 +74,13 @@ namespace BSP
             gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
             gfxSurface->tris.vertexDataOffset1 = 0; // vd1 is unused
 
-            BSPMaterial bspMaterial = bsp->colWorld.materials.at(bspSurface.materialIndex);
+            BSPMaterial bspMaterial = bsp->gfxWorld.materials.at(bspSurface.materialIndex);
 
             std::string materialName;
-            if (bspMaterial.materialType == MATERIAL_TYPE_EMPTY)
-                materialName = BSPLinkingConstants::MISSING_IMAGE_NAME;
-            else if (bspMaterial.materialType == MATERIAL_TYPE_COLOUR)
-                materialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
-            else // MATERIAL_TYPE_TEXTURE
+            if (bspMaterial.materialType == MATERIAL_TYPE_TEXTURE)
                 materialName = bspMaterial.materialName;
+            else // MATERIAL_TYPE_COLOUR
+                materialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
 
             auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(materialName);
             if (surfMaterialAsset == nullptr)
@@ -401,7 +399,7 @@ namespace BSP
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
             entryArray[i].colorsIndex = 0; // always index first colour
-            entryArray[i].primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
+            entryArray[i].primaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
             entryArray[i].visibility = 0;
         }
         gfxWorld->lightGrid.entries = entryArray;
