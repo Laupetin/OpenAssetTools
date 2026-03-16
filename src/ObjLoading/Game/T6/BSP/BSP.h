@@ -14,8 +14,7 @@ namespace BSP
     enum BSPMaterialType
     {
         MATERIAL_TYPE_COLOUR,
-        MATERIAL_TYPE_TEXTURE,
-        MATERIAL_TYPE_EMPTY
+        MATERIAL_TYPE_TEXTURE
     };
 
     struct BSPVertex
@@ -30,8 +29,9 @@ namespace BSP
 
     struct BSPMaterial
     {
-        BSPMaterialType materialType;
         std::string materialName;
+        BSPMaterialType materialType;
+        vec4_t materialColour;
     };
 
     struct BSPSurface
@@ -132,7 +132,7 @@ namespace BSP
     namespace BSPLinkingConstants
     {
         constexpr const char* MISSING_IMAGE_NAME = ",mc/lambert1";
-        constexpr const char* COLOR_ONLY_IMAGE_NAME = ",white";
+        constexpr const char* COLOR_ONLY_IMAGE_NAME = ",mc/lambert1";
 
         constexpr const char* DEFAULT_SPAWN_POINT_STRING = R"({
     "attackers": [
@@ -186,7 +186,7 @@ namespace BSP
         constexpr int DEFAULT_SMODEL_REFLECTION_PROBE = 0;
 
         // Default surface values
-        constexpr int DEFAULT_SURFACE_LIGHT = 2;
+        constexpr int DEFAULT_SURFACE_LIGHT = 1;
         constexpr int DEFAULT_SURFACE_LIGHTMAP = 0;
         constexpr int DEFAULT_SURFACE_REFLECTION_PROBE = 0;
         constexpr int DEFAULT_SURFACE_FLAGS = 0;
