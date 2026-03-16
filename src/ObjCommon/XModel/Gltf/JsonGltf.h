@@ -277,10 +277,11 @@ namespace gltf
     {
     public:
         std::optional<JsonTextureInfo> baseColorTexture;
+        std::optional<std::array<float, 4>> baseColorFactor;
         std::optional<float> metallicFactor;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPbrMetallicRoughness, baseColorTexture, metallicFactor);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPbrMetallicRoughness, baseColorTexture, baseColorFactor, metallicFactor);
 
     class JsonNormalTextureInfo
     {
@@ -388,9 +389,12 @@ namespace gltf
     {
     public:
         std::optional<std::string> uri;
+
+        std::optional<unsigned int> bufferView;
+        std::optional<std::string> mimeType;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonImage, uri);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonImage, uri, bufferView, mimeType);
 
     class JsonRoot
     {
