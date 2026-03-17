@@ -42,6 +42,9 @@ namespace
             const auto result = UnlinkZones(paths);
 
             UnloadZones();
+
+            Summarize(result);
+
             return result;
         }
 
@@ -305,6 +308,12 @@ namespace
             }
 
             return true;
+        }
+
+        static void Summarize(const bool result)
+        {
+            const char* resultStr = result ? "Finished" : "Failed";
+            con::info("{} with {} warnings, {} errors", resultStr, con::warning_count(), con::error_count());
         }
 
         UnlinkerArgs m_args;

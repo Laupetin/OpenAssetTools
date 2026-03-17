@@ -48,6 +48,8 @@ namespace
 namespace con
 {
     LogLevel _globalLogLevel = LogLevel::INFO;
+    std::atomic_size_t _warningCount(0);
+    std::atomic_size_t _errorCount(0);
 
     void init()
     {
@@ -70,6 +72,22 @@ namespace con
         globalUseColor = value && CanUseColor();
     }
 
+    void reset_counts()
+    {
+        _warningCount = 0;
+        _errorCount = 0;
+    }
+
+    size_t warning_count()
+    {
+        return _warningCount;
+    }
+
+    size_t error_count()
+    {
+        return _errorCount;
+    }
+
     void _debug_internal(const std::string& str)
     {
         if (globalUseColor)
@@ -89,16 +107,16 @@ namespace con
     void _warn_internal(const std::string& str)
     {
         if (globalUseColor)
-            std::cout << std::format("\x1B[33m{}\x1B[0m\n", str);
+            std::cout << std::format("\x1B[33mWARN: {}\x1B[0m\n", str);
         else
-            std::cout << std::format("{}\n", str);
+            std::cout << std::format("WARN: {}\n", str);
     }
 
     void _error_internal(const std::string& str)
     {
         if (globalUseColor)
-            std::cerr << std::format("\x1B[31m{}\x1B[0m\n", str);
+            std::cerr << std::format("\x1B[31mERROR: {}\x1B[0m\n", str);
         else
-            std::cerr << std::format("{}\n", str);
+            std::cerr << std::format("ERROR: {}\n", str);
     }
 } // namespace con
