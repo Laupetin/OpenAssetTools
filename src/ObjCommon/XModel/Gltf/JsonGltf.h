@@ -78,13 +78,22 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPunctualLightIndex, light);
 
-    class JsonNodeExt
+    class JsonNodeExtension
     {
     public:
         std::optional<JsonPunctualLightIndex> KHR_lights_punctual;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExt, KHR_lights_punctual);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtension, KHR_lights_punctual);
+
+    class JsonNodeExtras
+    {
+    public:
+        std::optional<std::string> xmodel;
+        std::optional<std::string> spawnpoint;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint);
 
     class JsonNode
     {
@@ -98,10 +107,11 @@ namespace gltf
         std::optional<unsigned> skin;
         std::optional<unsigned> mesh;
 
-        std::optional<JsonNodeExt> extensions;
+        std::optional<JsonNodeExtension> extensions;
+        std::optional<JsonNodeExtras> extras;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, matrix, children, skin, mesh, extensions);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, matrix, children, skin, mesh, extensions, extras);
 
     class JsonBuffer
     {
