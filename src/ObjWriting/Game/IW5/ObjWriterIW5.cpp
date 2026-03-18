@@ -1,6 +1,9 @@
 #include "ObjWriterIW5.h"
 
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
+#include "Game/IW5/Techset/PixelShaderDumperIW5.h"
+#include "Game/IW5/Techset/TechsetDumperIW5.h"
+#include "Game/IW5/Techset/VertexShaderDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Image/ImageDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
@@ -25,10 +28,15 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperXModelSurfs)
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW5>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW5>());
-    // REGISTER_DUMPER(AssetDumperMaterialPixelShader)
-    // REGISTER_DUMPER(AssetDumperMaterialVertexShader)
-    // REGISTER_DUMPER(AssetDumperMaterialVertexDeclaration)
-    // REGISTER_DUMPER(AssetDumperMaterialTechniqueSet)
+    RegisterAssetDumper(std::make_unique<techset::PixelShaderDumperIW5>());
+    RegisterAssetDumper(std::make_unique<techset::VertexShaderDumperIW5>());
+    RegisterAssetDumper(std::make_unique<techset::DumperIW5>(
+#ifdef TECHSET_DEBUG
+        true
+#else
+        false
+#endif
+        ));
     RegisterAssetDumper(std::make_unique<image::DumperIW5>());
     // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
     // REGISTER_DUMPER(AssetDumperSndCurve)

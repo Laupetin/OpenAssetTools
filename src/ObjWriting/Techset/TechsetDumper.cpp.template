@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, T5, T6)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
 
@@ -110,7 +110,7 @@ namespace
     {
         std::vector<techset::CommonStreamRouting> commonRouting;
 
-#if defined(FEATURE_IW4)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         if (vertexDecl && vertexDecl->name && vertexDecl->name[0] != ',')
 #else
         if (vertexDecl)
@@ -124,7 +124,7 @@ namespace
                                            static_cast<techset::CommonStreamDestination>(routing.dest));
             }
         }
-#if defined(FEATURE_IW4)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         else if (vertexDecl && vertexDecl->name)
         {
             auto result = techset::CreateVertexDeclFromName(&vertexDecl->name[1], commonRoutingInfos);
@@ -270,10 +270,10 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
-#if defined(FEATURE_IW4)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         if (vertexShader && vertexShader->name && vertexShader->name[0] == ',')
         {
-            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::GAME)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
             if (globalAsset)
                 vertexShader = globalAsset->Asset();
         }
@@ -303,10 +303,10 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
-#if defined(FEATURE_IW4)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         if (pixelShader && pixelShader->name && pixelShader->name[0] == ',')
         {
-            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::IW4)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
+            auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::GAME)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
             if (globalAsset)
                 pixelShader = globalAsset->Asset();
         }
