@@ -17,6 +17,7 @@ namespace BSP
         static size_t allignBy128(size_t size);
         static float distBetweenPoints(vec3_t& p1, vec3_t& p2);
         static void convertAnglesToAxis(vec3_t* angles, vec3_t* axis);
+        static vec3_t convertForwardVectorToViewAngles(vec3_t& forwardVec);
         static void matrixTranspose3x3(const vec3_t* in, vec3_t* out);
         static vec3_t convertStringToVec3(std::string& str);
         static std::string convertVec3ToString(vec3_t& vec);

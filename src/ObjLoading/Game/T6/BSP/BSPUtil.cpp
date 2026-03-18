@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <format>
+#include <numbers>
 
 namespace BSP
 {
@@ -123,6 +124,28 @@ namespace BSP
         axis[2].z = cosZ * cosX;
     }
 
+    vec3_t BSPUtil::convertForwardVectorToViewAngles(vec3_t& forwardVec)
+    {
+        vec3_t viewAngles;
+
+        float xAndYDist = sqrtf((forwardVec.x * forwardVec.x) + (forwardVec.y * forwardVec.y));
+        float atanXRadians = atan2f(forwardVec.z, xAndYDist);
+        float atanXDegrees = atanXRadians * (-180.0f / std::numbers::pi_v<float>);
+        if (atanXDegrees < 0.0f)
+            atanXDegrees += 360.0f;
+        viewAngles.x = atanXDegrees;
+
+        float atanYRadians = atan2f(forwardVec.y, forwardVec.x);
+        float atanYDegrees = atanYRadians * (180.0f / std::numbers::pi_v<float>);
+        if (atanYDegrees < 0.0f)
+            atanYDegrees += 360.0f;
+        viewAngles.y = atanYDegrees;
+
+        viewAngles.z = 0.0f;
+
+        return viewAngles;
+    }
+
     void BSPUtil::matrixTranspose3x3(const vec3_t* in, vec3_t* out)
     {
         out[0].x = in[0].x;
@@ -161,7 +184,7 @@ namespace BSP
 
     std::string BSPUtil::convertVec3ToString(vec3_t& vec)
     {
-        std::string result = std::format("{} {} {}", vec.x, vec.y, vec.z);
+        std::string result = std::format("{} {} {}", roundf(vec.x), roundf(vec.y), roundf(vec.z));
         return result;
     }
 

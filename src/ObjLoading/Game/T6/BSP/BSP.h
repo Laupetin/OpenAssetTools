@@ -74,6 +74,35 @@ namespace BSP
         float outerConeAngle;
     };
 
+    struct BSPXModel
+    {
+        std::string name;
+
+        vec3_t origin;
+        float scale;
+        vec3_t forward;
+        vec3_t right;
+        vec3_t up;
+
+        bool areBoundsValid;
+        vec3_t mins;
+        vec3_t maxs;
+    };
+
+    enum BSPSpawnPointType
+    {
+        SPAWNPOINT_TYPE_DEFENDER,
+        SPAWNPOINT_TYPE_ATTACKER,
+        SPAWNPOINT_TYPE_ALL,
+    };
+
+    struct BSPSpawnPoint
+    {
+        vec3_t origin;
+        vec3_t forward;
+        BSPSpawnPointType type;
+    };
+
     struct BSPData
     {
         std::string name;
@@ -83,6 +112,8 @@ namespace BSP
         BSPWorld colWorld;
 
         std::vector<BSPLight> lights;
+        std::vector<BSPXModel> xmodels;
+        std::vector<BSPSpawnPoint> spawnpoints;
     };
 
     // BSPGameConstants:
@@ -99,32 +130,6 @@ namespace BSP
             SUN_LIGHT_INDEX = 1,
             BSP_DEFAULT_LIGHT_COUNT = 2
         };
-
-        inline const char* DEFENDER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_allies",
-                                                           "mp_ctf_spawn_allies_start",
-                                                           "mp_sd_spawn_defender",
-                                                           "mp_dom_spawn_allies_start",
-                                                           "mp_dem_spawn_defender_start",
-                                                           "mp_dem_spawn_defenderOT_start",
-                                                           "mp_dem_spawn_defender",
-                                                           "mp_tdm_spawn_allies_start",
-                                                           "mp_tdm_spawn_team1_start",
-                                                           "mp_tdm_spawn_team2_start",
-                                                           "mp_tdm_spawn_team3_start"};
-
-        inline const char* ATTACKER_SPAWN_POINT_NAMES[] = {"mp_ctf_spawn_axis",
-                                                           "mp_ctf_spawn_axis_start",
-                                                           "mp_sd_spawn_attacker",
-                                                           "mp_dom_spawn_axis_start",
-                                                           "mp_dem_spawn_attacker_start",
-                                                           "mp_dem_spawn_attackerOT_start",
-                                                           "mp_dem_spawn_defender",
-                                                           "mp_tdm_spawn_axis_start",
-                                                           "mp_tdm_spawn_team4_start",
-                                                           "mp_tdm_spawn_team5_start",
-                                                           "mp_tdm_spawn_team6_start"};
-
-        inline const char* FFA_SPAWN_POINT_NAMES[] = {"mp_tdm_spawn", "mp_dm_spawn", "mp_dom_spawn"};
     } // namespace BSPGameConstants
 
     // BSPLinkingConstants:
@@ -133,45 +138,6 @@ namespace BSP
     {
         constexpr const char* MISSING_IMAGE_NAME = ",mc/lambert1";
         constexpr const char* COLOR_ONLY_IMAGE_NAME = ",mc/lambert1";
-
-        constexpr const char* DEFAULT_SPAWN_POINT_STRING = R"({
-    "attackers": [
-		{
-			"origin": "0 0 0",
-			"angles": "0 0 0"
-		}
-    ],
-	"defenders": [
-		{
-			"origin": "0 0 0",
-			"angles": "0 0 0"
-		}
-    ],
-	"FFA": [
-		{
-			"origin": "0 0 0",
-			"angles": "0 0 0"
-		}
-	]
-    })";
-
-        constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
-    "entities": [
-        {
-            "classname": "worldspawn"
-        },
-        {
-            "angles": "0 0 0",
-            "classname": "info_player_start",
-            "origin": "0 0 0"
-        },
-        {
-            "angles": "0 0 0",
-            "classname": "mp_global_intermission",
-            "origin": "0 0 0"
-        }
-    ]
-    })";
     } // namespace BSPLinkingConstants
 
     // BSPEditableConstants:
