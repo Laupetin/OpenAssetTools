@@ -507,7 +507,7 @@ namespace
                     if (jsMaterial.name && (*jsMaterial.name).length() != 0)
                         material.materialName = *jsMaterial.name;
                     else
-                        material.materialName = "";
+                        throw GltfLoadException("Materials must have a name.");
 
                     if (jsMaterial.pbrMetallicRoughness)
                     {
