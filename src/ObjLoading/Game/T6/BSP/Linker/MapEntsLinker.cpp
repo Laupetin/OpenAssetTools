@@ -7,7 +7,7 @@ using namespace nlohmann;
 
 namespace
 {
-    bool parseMapEntsJSON(json& entArrayJs, std::string& entityString)
+    bool addJSONToEntString(json& entArrayJs, std::string& entityString)
     {
         for (size_t entIdx = 0; entIdx < entArrayJs.size(); entIdx++)
         {
@@ -39,28 +39,99 @@ namespace
         return true;
     }
 
-    void parseSpawnpointJSON(json& entArrayJs, std::string& entityString, const char* spawnpointNames[], size_t nameCount)
-    {
-        for (auto& element : entArrayJs.items())
-        {
-            std::string origin;
-            std::string angles;
-            auto& entity = element.value();
-            entity.at("origin").get_to(origin);
-            entity.at("angles").get_to(angles);
+    inline const std::vector<const char*> DEFENDER_SPAWN_POINT_NAMES = {"mp_ctf_spawn_allies",
+                                                                        "mp_ctf_spawn_allies_start",
+                                                                        "mp_sd_spawn_defender",
+                                                                        "mp_dom_spawn_allies_start",
+                                                                        "mp_dem_spawn_defender_start",
+                                                                        "mp_dem_spawn_defenderOT_start",
+                                                                        "mp_dem_spawn_defender",
+                                                                        "mp_tdm_spawn_allies_start",
+                                                                        "mp_tdm_spawn_team1_start",
+                                                                        "mp_tdm_spawn_team2_start",
+                                                                        "mp_tdm_spawn_team3_start"};
 
-            for (size_t nameIdx = 0; nameIdx < nameCount; nameIdx++)
+    inline const std::vector<const char*> ATTACKER_SPAWN_POINT_NAMES = {"mp_ctf_spawn_axis",
+                                                                        "mp_ctf_spawn_axis_start",
+                                                                        "mp_sd_spawn_attacker",
+                                                                        "mp_dom_spawn_axis_start",
+                                                                        "mp_dem_spawn_attacker_start",
+                                                                        "mp_dem_spawn_attackerOT_start",
+                                                                        "mp_dem_spawn_attacker",
+                                                                        "mp_tdm_spawn_axis_start",
+                                                                        "mp_tdm_spawn_team4_start",
+                                                                        "mp_tdm_spawn_team5_start",
+                                                                        "mp_tdm_spawn_team6_start"};
+
+    inline const std::vector<const char*> FFA_SPAWN_POINT_NAMES = {"mp_tdm_spawn", "mp_dm_spawn", "mp_dom_spawn"};
+
+    void addSpawnsToEntString(BSP::BSPData* bsp, std::string& entityString)
+    {
+        if (bsp->spawnpoints.size() == 0)
+        {
+            BSP::BSPSpawnPoint defaultSpawnPoint;
+            defaultSpawnPoint.origin.x = 0.0f;
+            defaultSpawnPoint.origin.y = 0.0f;
+            defaultSpawnPoint.origin.z = 0.0f;
+            defaultSpawnPoint.forward.x = 1.0f;
+            defaultSpawnPoint.forward.y = 0.0f;
+            defaultSpawnPoint.forward.z = 0.0f;
+            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_DEFENDER;
+            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
+            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ATTACKER;
+            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
+            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ALL;
+            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
+        }
+
+        size_t defenderNameCount = std::extent<decltype(DEFENDER_SPAWN_POINT_NAMES)>::value;
+        size_t attackerNameCount = std::extent<decltype(ATTACKER_SPAWN_POINT_NAMES)>::value;
+        size_t ffaNameCount = std::extent<decltype(FFA_SPAWN_POINT_NAMES)>::value;
+
+        for (auto& spawnPoint : bsp->spawnpoints)
+        {
+            vec3_t origin = spawnPoint.origin;
+            vec3_t angles = BSP::BSPUtil::convertForwardVectorToViewAngles(spawnPoint.forward);
+
+            std::string originStr = std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(origin));
+            std::string anglesStr = std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles));
+
+            const std::vector<const char*>* spawnPointList;
+            if (spawnPoint.type == BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_DEFENDER)
+                spawnPointList = &DEFENDER_SPAWN_POINT_NAMES;
+            else if (spawnPoint.type == BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ATTACKER)
+                spawnPointList = &ATTACKER_SPAWN_POINT_NAMES;
+            else // SPAWNPOINT_TYPE_ALL
+                spawnPointList = &FFA_SPAWN_POINT_NAMES;
+
+            for (const char* spawnName : *spawnPointList)
             {
                 entityString.append("{\n");
-                entityString.append(std::format("\"origin\" \"{}\"\n", origin));
-                entityString.append(std::format("\"angles\" \"{}\"\n", angles));
-                entityString.append(std::format("\"classname\" \"{}\"\n", spawnpointNames[nameIdx]));
+                entityString.append(originStr);
+                entityString.append(anglesStr);
+                entityString.append(std::format("\"classname\" \"{}\"\n", spawnName));
                 entityString.append("}\n");
             }
         }
     }
 
-    std::string loadMapEnts() {}
+    constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
+    "entities": [
+        {
+            "classname": "worldspawn"
+        },
+        {
+            "angles": "0 0 0",
+            "classname": "info_player_start",
+            "origin": "0 0 0"
+        },
+        {
+            "angles": "0 0 0",
+            "classname": "mp_global_intermission",
+            "origin": "0 0 0"
+        }
+    ]
+    })";
 } // namespace
 
 namespace BSP
@@ -83,35 +154,17 @@ namespace BSP
             if (!entFile.IsOpen())
             {
                 con::warn("Can't find entity file {}, using default entities instead", entityFilePath);
-                entJs = json::parse(BSPLinkingConstants::DEFAULT_MAP_ENTS_STRING);
+                entJs = json::parse(DEFAULT_MAP_ENTS_STRING);
             }
             else
             {
                 entJs = json::parse(*entFile.m_stream);
             }
             std::string entityString;
-            if (!parseMapEntsJSON(entJs["entities"], entityString))
+            if (!addJSONToEntString(entJs["entities"], entityString))
                 return nullptr;
 
-            json spawnJs;
-            std::string spawnFileName = "spawns.json";
-            std::string spawnFilePath = BSPUtil::getFileNameForBSPAsset(spawnFileName);
-            const auto spawnFile = m_search_path.Open(spawnFilePath);
-            if (!spawnFile.IsOpen())
-            {
-                con::warn("Cant find spawn file {}, setting spawns to 0 0 0", spawnFilePath);
-                spawnJs = json::parse(BSPLinkingConstants::DEFAULT_SPAWN_POINT_STRING);
-            }
-            else
-            {
-                spawnJs = json::parse(*spawnFile.m_stream);
-            }
-            size_t defenderNameCount = std::extent<decltype(BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES)>::value;
-            size_t attackerNameCount = std::extent<decltype(BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES)>::value;
-            size_t ffaNameCount = std::extent<decltype(BSPGameConstants::FFA_SPAWN_POINT_NAMES)>::value;
-            parseSpawnpointJSON(spawnJs["attackers"], entityString, BSPGameConstants::DEFENDER_SPAWN_POINT_NAMES, defenderNameCount);
-            parseSpawnpointJSON(spawnJs["defenders"], entityString, BSPGameConstants::ATTACKER_SPAWN_POINT_NAMES, attackerNameCount);
-            parseSpawnpointJSON(spawnJs["FFA"], entityString, BSPGameConstants::FFA_SPAWN_POINT_NAMES, ffaNameCount);
+            addSpawnsToEntString(bsp, entityString);
 
             MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
             mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
@@ -119,7 +172,7 @@ namespace BSP
             mapEnts->entityString = m_memory.Dup(entityString.c_str());
             mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character
 
-            // don't need these
+            // don't need these, unused by the game
             mapEnts->trigger.count = 0;
             mapEnts->trigger.models = nullptr;
             mapEnts->trigger.hullCount = 0;

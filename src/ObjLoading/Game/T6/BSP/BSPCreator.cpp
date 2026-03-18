@@ -191,8 +191,7 @@ namespace
             return T.matrix();
         }
 
-        unsigned CreateVertices(
-            const AccessorsForVertex& accessorsForVertex, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface, vec4_t vertexColor)
+        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface, vec4_t vertexColor)
         {
             // clang-format off
             const auto* positionAccessor = GetAccessorForIndex(
@@ -320,77 +319,148 @@ namespace
             return vertexOffset;
         }
 
-        bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addLightNode(const gltf::JsonNode& node)
         {
+            assert(m_is_world_gfx);
+            assert(node.extensions);
+            assert(node.extensions->KHR_lights_punctual);
+
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
-            if (m_is_world_gfx && node.extensions && node.extensions->KHR_lights_punctual)
+            int lightIndex = node.extensions->KHR_lights_punctual->light;
+
+            assert(lightIndex >= 0);
+            if (m_bsp->lights[lightIndex].hasPosBeenSet == true)
+                con::warn("Internal error, multiple nodes reference the same light. Light positions/rotations are likely incorrect.");
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            m_bsp->lights[lightIndex].pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
+            RhcToLhcCoordinates(m_bsp->lights[lightIndex].pos.v);
+
+            // GLTF spec uses +Y up and the default light direction is straight down
+            Eigen::Vector3f defaultDirection(0.0f, -1.0f, 0.0f);
+            Eigen::Affine3f affineTransform(nodeMatrix);
+            Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
+            Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
+            outputDirection.normalize();
+            m_bsp->lights[lightIndex].direction = vec3_t{outputDirection.x(), outputDirection.y(), outputDirection.z()};
+
+            m_bsp->lights[lightIndex].hasPosBeenSet = true;
+
+            return true;
+        }
+
+        bool addMeshNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            assert(node.mesh);
+            assert(jRoot.meshes);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+            for (const auto& primitive : mesh.primitives)
             {
-                int lightIndex = node.extensions->KHR_lights_punctual->light;
+                if (!primitive.indices)
+                    throw GltfLoadException("Requires primitives indices");
+                if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
+                    throw GltfLoadException("Only triangles are supported");
+                if (!primitive.attributes.POSITION)
+                    throw GltfLoadException("Requires primitives attribute POSITION");
+                if (!primitive.attributes.NORMAL)
+                    throw GltfLoadException("Requires primitives attribute NORMAL");
 
-                assert(lightIndex >= 0);
-                if (m_bsp->lights[lightIndex].hasPosBeenSet == true)
-                    con::warn("Internal error, multiple nodes reference the same light. Light positions/rotations are likely incorrect.");
+                const AccessorsForVertex accessorsForVertex{
+                    .m_position_accessor = *primitive.attributes.POSITION,
+                    .m_normal_accessor = *primitive.attributes.NORMAL,
+                    .m_color_accessor = primitive.attributes.COLOR_0,
+                    .m_uv_accessor = primitive.attributes.TEXCOORD_0,
+                    .m_index_accessor = *primitive.indices,
+                };
 
-                Eigen::Vector4f position(0, 0, 0, 1.0f);
-                Eigen::Vector4f transformedPosition = nodeMatrix * position;
-                m_bsp->lights[lightIndex].pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
-                RhcToLhcCoordinates(m_bsp->lights[lightIndex].pos.v);
+                BSPSurface surface;
+                if (primitive.material)
+                    surface.materialIndex = *primitive.material;
+                else
+                    surface.materialIndex = m_curr_bsp_world->materials.size() - 1; // last material is used for colour only meshes
+                vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
+                CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
 
-                // GLTF spec uses +Y up and the default light direction is straight down
-                Eigen::Vector3f defaultDirection(0.0f, -1.0f, 0.0f);
-                Eigen::Affine3f affineTransform(nodeMatrix);
-                Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
-                Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
-                outputDirection.normalize();
-                m_bsp->lights[lightIndex].direction = vec3_t{outputDirection.x(), outputDirection.y(), outputDirection.z()};
+                m_curr_bsp_world->surfaces.emplace_back(surface);
+            }
 
-                m_bsp->lights[lightIndex].hasPosBeenSet = true;
+            return true;
+        }
 
-                return true;
+        bool addXModelNode(const gltf::JsonNode& node)
+        {
+            return true;
+        }
+
+        bool addSpawnPointNode(const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->spawnpoint);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+            BSPSpawnPoint spawnPoint;
+
+            if (!node.extras->spawnpoint->compare("attacker"))
+                spawnPoint.type = SPAWNPOINT_TYPE_ATTACKER;
+            else if (!node.extras->spawnpoint->compare("defender"))
+                spawnPoint.type = SPAWNPOINT_TYPE_DEFENDER;
+            else if (!node.extras->spawnpoint->compare("all"))
+                spawnPoint.type = SPAWNPOINT_TYPE_ALL;
+            else
+            {
+                con::warn("Ignoring spawn point with an invalid type (must be attacker, defender or all)");
+                return false;
+            }
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            spawnPoint.origin.x = transformedPosition.x();
+            spawnPoint.origin.y = transformedPosition.y();
+            spawnPoint.origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(spawnPoint.origin.v);
+
+            // GLTF default direction is +Y up
+            Eigen::Vector3f defaultDirection(0.0f, 1.0f, 0.0f);
+            Eigen::Affine3f affineTransform(nodeMatrix);
+            Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
+            Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
+            outputDirection.normalize();
+            spawnPoint.forward.x = outputDirection.x();
+            spawnPoint.forward.y = outputDirection.y();
+            spawnPoint.forward.z = outputDirection.z();
+            RhcToLhcCoordinates(spawnPoint.forward.v);
+
+            m_bsp->spawnpoints.emplace_back(spawnPoint);
+
+            return true;
+        }
+
+        bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            if (m_is_world_gfx && node.extensions && node.extensions->KHR_lights_punctual)
+                return addLightNode(node);
+
+            if (node.extras)
+            {
+                if (m_is_world_gfx && node.extras->xmodel)
+                    return addXModelNode(node);
+
+                if (m_is_world_gfx && node.extras->spawnpoint)
+                    return addSpawnPointNode(node);
             }
 
             if (node.mesh)
-            {
-                assert(jRoot.meshes);
-                const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
-                for (const auto& primitive : mesh.primitives)
-                {
-                    if (!primitive.indices)
-                        throw GltfLoadException("Requires primitives indices");
-                    if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
-                        throw GltfLoadException("Only triangles are supported");
-                    if (!primitive.attributes.POSITION)
-                        throw GltfLoadException("Requires primitives attribute POSITION");
-                    if (!primitive.attributes.NORMAL)
-                        throw GltfLoadException("Requires primitives attribute NORMAL");
-
-                    const AccessorsForVertex accessorsForVertex{
-                        .m_position_accessor = *primitive.attributes.POSITION,
-                        .m_normal_accessor = *primitive.attributes.NORMAL,
-                        .m_color_accessor = primitive.attributes.COLOR_0,
-                        .m_uv_accessor = primitive.attributes.TEXCOORD_0,
-                        .m_index_accessor = *primitive.indices,
-                    };
-
-                    BSPSurface surface;
-                    if (primitive.material)
-                        surface.materialIndex = *primitive.material;
-                    else
-                        surface.materialIndex = m_curr_bsp_world->materials.size() - 1; // last material is used for colour only meshes
-                    vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
-                    CreateVertices(accessorsForVertex, node, nodeMatrix, surface, vertexColour);
-
-                    m_curr_bsp_world->surfaces.emplace_back(surface);
-                    return true;
-                }
-            }
+                return addMeshNode(jRoot, node);
 
             return false;
         }
 
         static std::vector<unsigned> GetRootNodes(const JsonRoot& jRoot)
-
         {
             if (!jRoot.nodes || jRoot.nodes->empty())
                 return {};
@@ -488,14 +558,16 @@ namespace
 
         void LoadLights(const JsonRoot& jRoot)
         {
+            if (!m_is_world_gfx)
+                return;
             if (!jRoot.extensions)
                 return;
             if (!jRoot.extensions->KHR_lights_punctual)
                 return;
             if (!jRoot.extensions->KHR_lights_punctual->lights)
                 return;
-            const std::vector<JsonPunctualLight>& jsLightArray = jRoot.extensions->KHR_lights_punctual->lights.value();
 
+            const std::vector<JsonPunctualLight>& jsLightArray = jRoot.extensions->KHR_lights_punctual->lights.value();
             m_bsp->lights.reserve(jsLightArray.size());
             for (const JsonPunctualLight& jsLight : jsLightArray)
             {
