@@ -6,6 +6,8 @@
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Image/ImageLoaderEmbeddedIW5.h"
 #include "Game/IW5/Image/ImageLoaderExternalIW5.h"
+#include "Game/IW5/Techset/PixelShaderLoaderIW5.h"
+#include "Game/IW5/Techset/VertexShaderLoaderIW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"
 #include "Leaderboard/LoaderLeaderboardIW5.h"
 #include "Localize/LoaderLocalizeIW5.h"
@@ -129,9 +131,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
         collection.AddAssetCreator(xmodel::CreateLoaderIW5(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW5(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderPixelShader>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderVertexShader>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderVertexDecl>(memory));
+        collection.AddAssetCreator(techset::CreateVertexShaderLoaderIW5(memory, searchPath));
+        collection.AddAssetCreator(techset::CreatePixelShaderLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW5(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW5(memory, searchPath));
