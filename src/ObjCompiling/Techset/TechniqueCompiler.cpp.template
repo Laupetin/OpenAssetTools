@@ -70,6 +70,9 @@ namespace
             case techset::CommonShaderValueType::CODE_CONST:
                 return MTL_ARG_CODE_VERTEX_CONST;
             case techset::CommonShaderValueType::MATERIAL_SAMPLER:
+#if defined(FEATURE_IW5)
+                return MTL_ARG_MATERIAL_VERTEX_SAMPLER;
+#endif
             case techset::CommonShaderValueType::CODE_SAMPLER:
             default:
                 assert(false);
@@ -118,6 +121,9 @@ namespace
         case techset::CommonShaderValueType::MATERIAL_CONST:
         case techset::CommonShaderValueType::MATERIAL_SAMPLER:
             argValue.nameHash = static_cast<decltype(MaterialArgumentDef::nameHash)>(commonArg.m_value.name_hash);
+            break;
+        case techset::CommonShaderValueType::COUNT:
+            assert(false);
             break;
         }
     }

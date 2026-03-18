@@ -12,6 +12,16 @@
 
 namespace
 {
+    enum class ArgumentType : std::uint8_t
+    {
+        VERTEX_CONSTANT,
+        VERTEX_SAMPLER,
+        PIXEL_CONSTANT,
+        PIXEL_SAMPLER,
+
+        COUNT
+    };
+
     const char* ShaderTypeName(const techset::CommonTechniqueShaderType shaderType)
     {
         switch (shaderType)
@@ -20,6 +30,9 @@ namespace
             return "vertex";
         case techset::CommonTechniqueShaderType::PIXEL:
             return "pixel";
+        case techset::CommonTechniqueShaderType::COUNT:
+            assert(false);
+            break;
         }
 
         return "<unknown>";
@@ -36,6 +49,9 @@ namespace
         case techset::CommonShaderValueType::CODE_SAMPLER:
         case techset::CommonShaderValueType::MATERIAL_SAMPLER:
             return "sampler";
+        case techset::CommonShaderValueType::COUNT:
+            assert(false);
+            break;
         }
 
         return "<unknown>";
@@ -47,11 +63,13 @@ namespace
         explicit BaseCommonShaderArgCreator(techset::ITechniqueShaderLoader& shaderLoader, techset::CommonCodeSourceInfos& commonCodeSourceInfos)
             : m_shader_loader(shaderLoader),
               m_common_code_source_infos(commonCodeSourceInfos),
+              m_supported_argument_types(0),
               m_shader_type(techset::CommonTechniqueShaderType::VERTEX),
               m_bin{},
               m_tech_flags(0),
               m_sampler_flags(0)
         {
+            DetermineSupportedArgumentTypes();
         }
 
         result::Expected<NoResult, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
@@ -307,21 +325,36 @@ namespace
             return NoResult{};
         }
 
-        static bool IsArgumentTypeSupported(const techset::CommonShaderArgumentType& argumentType)
+        [[nodiscard]] bool IsArgumentTypeSupported(const techset::CommonShaderArgumentType& argumentType) const
         {
-            if (argumentType.m_shader_type == techset::CommonTechniqueShaderType::PIXEL)
-                return true;
+            const auto mask = 1 << (std::to_underlying(argumentType.m_shader_type) * std::to_underlying(techset::CommonShaderValueType::COUNT)
+                                    + std::to_underlying(argumentType.m_value_type));
 
-            switch (argumentType.m_value_type)
+            return m_supported_argument_types & mask;
+        }
+
+        void DetermineSupportedArgumentTypes()
+        {
+            // Ensure we have enough bits for the flags
+            static_assert(std::to_underlying(techset::CommonTechniqueShaderType::COUNT) * std::to_underlying(techset::CommonShaderValueType::COUNT)
+                          <= sizeof(m_supported_argument_types) * 8);
+
+            m_supported_argument_types = 0;
+            for (auto shaderType = 0u; shaderType < std::to_underlying(techset::CommonTechniqueShaderType::COUNT); shaderType++)
             {
-            case techset::CommonShaderValueType::LITERAL_CONST:
-            case techset::CommonShaderValueType::MATERIAL_CONST:
-            case techset::CommonShaderValueType::CODE_CONST:
-                return true;
-            case techset::CommonShaderValueType::MATERIAL_SAMPLER:
-            case techset::CommonShaderValueType::CODE_SAMPLER:
-            default:
-                return false;
+                for (auto valueType = 0u; valueType < std::to_underlying(techset::CommonShaderValueType::COUNT); valueType++)
+                {
+                    techset::CommonShaderArgumentType argumentType{
+                        .m_shader_type = static_cast<techset::CommonTechniqueShaderType>(shaderType),
+                        .m_value_type = static_cast<techset::CommonShaderValueType>(valueType),
+                    };
+
+                    if (m_common_code_source_infos.GetArgumentTypeNumericValue(argumentType).has_value())
+                    {
+                        const auto flag = 1 << (shaderType * std::to_underlying(techset::CommonShaderValueType::COUNT) + valueType);
+                        m_supported_argument_types |= flag;
+                    }
+                }
             }
         }
 
@@ -340,6 +373,7 @@ namespace
 
         techset::ITechniqueShaderLoader& m_shader_loader;
         techset::CommonCodeSourceInfos& m_common_code_source_infos;
+        std::uint16_t m_supported_argument_types;
 
         techset::CommonTechniqueShaderType m_shader_type;
         std::string m_shader_name;
