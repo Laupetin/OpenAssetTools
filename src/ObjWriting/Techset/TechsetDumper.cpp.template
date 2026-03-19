@@ -213,6 +213,9 @@ namespace
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
 
+#if defined(FEATURE_IW5)
+        case MTL_ARG_MATERIAL_VERTEX_SAMPLER:
+#endif
         case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
         {
             const techset::CommonShaderArgValue value{
@@ -235,7 +238,6 @@ namespace
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
 
-        default:
         case MTL_ARG_LITERAL_VERTEX_CONST:
         case MTL_ARG_LITERAL_PIXEL_CONST:
         {
@@ -265,6 +267,10 @@ namespace
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
+
+        default:
+            assert(false);
+            return techset::CommonShaderArg();
         }
     }
 
