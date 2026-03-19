@@ -237,6 +237,8 @@ namespace IW5
     using AssetTracer = Asset<ASSET_TYPE_TRACER, TracerDef>;
     using AssetVehicle = Asset<ASSET_TYPE_VEHICLE, VehicleDef>;
     using AssetAddonMapEnts = Asset<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>;
+
+    using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
 } // namespace IW5
 
 DEFINE_ASSET_NAME_ACCESSOR(IW5::AssetPhysPreset, name);

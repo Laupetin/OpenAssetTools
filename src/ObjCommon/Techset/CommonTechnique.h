@@ -33,7 +33,9 @@ namespace techset
     enum class CommonTechniqueShaderType : std::uint8_t
     {
         VERTEX,
-        PIXEL
+        PIXEL,
+
+        COUNT
     };
 
     enum class CommonShaderValueType : std::uint8_t
@@ -47,7 +49,9 @@ namespace techset
         // Value is set to a sampler from the material
         MATERIAL_SAMPLER,
         // Value is set to a sampler generated in code
-        CODE_SAMPLER
+        CODE_SAMPLER,
+
+        COUNT
     };
 
     constexpr bool IsConstValueType(const CommonShaderValueType valueType)

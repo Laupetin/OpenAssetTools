@@ -1327,15 +1327,6 @@ namespace IW4
         CUSTOM_SAMPLER_COUNT
     };
 
-    struct CodeSamplerSource
-    {
-        const char* name;
-        MaterialTextureSource source;
-        CodeSamplerSource* subtable;
-        int arrayCount;
-        int arrayStride;
-    };
-
     enum MaterialType
     {
         MTL_TYPE_DEFAULT = 0x0,

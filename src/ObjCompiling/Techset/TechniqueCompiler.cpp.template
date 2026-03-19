@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, T5, T6)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
 
@@ -70,6 +70,9 @@ namespace
             case techset::CommonShaderValueType::CODE_CONST:
                 return MTL_ARG_CODE_VERTEX_CONST;
             case techset::CommonShaderValueType::MATERIAL_SAMPLER:
+#if defined(FEATURE_IW5)
+                return MTL_ARG_MATERIAL_VERTEX_SAMPLER;
+#endif
             case techset::CommonShaderValueType::CODE_SAMPLER:
             default:
                 assert(false);
@@ -118,6 +121,9 @@ namespace
         case techset::CommonShaderValueType::MATERIAL_CONST:
         case techset::CommonShaderValueType::MATERIAL_SAMPLER:
             argValue.nameHash = static_cast<decltype(MaterialArgumentDef::nameHash)>(commonArg.m_value.name_hash);
+            break;
+        case techset::CommonShaderValueType::COUNT:
+            assert(false);
             break;
         }
     }
@@ -213,7 +219,7 @@ namespace
         pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
     }
 
-#ifdef FEATURE_IW4
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
     // Not sure if this is actually how this is calculated.
     // It produces identical results at least though.
     constexpr MaterialConstantSource ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200[]{
@@ -282,7 +288,7 @@ namespace
 #if defined(FEATURE_IW3)
         if (lowerTechniqueName == "zprepass")
             technique.flags |= MTL_TECHFLAG_ZPREPASS;
-#elif defined(FEATURE_IW4)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass")
