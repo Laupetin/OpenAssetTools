@@ -43,12 +43,26 @@ namespace BSP
         int indexOfFirstIndex;
     };
 
+    struct BSPXModel
+    {
+        std::string name;
+
+        vec3_t origin;
+        vec4_t rotationQuaternion;
+        float scale;
+
+        bool areBoundsValid;
+        vec3_t mins;
+        vec3_t maxs;
+    };
+
     struct BSPWorld
     {
         std::vector<BSPSurface> surfaces;
         std::vector<BSPVertex> vertices;
         std::vector<uint16_t> indices;
         std::vector<BSPMaterial> materials;
+        std::vector<BSPXModel> xmodels;
     };
 
     enum BSPLightType
@@ -74,21 +88,6 @@ namespace BSP
         float outerConeAngle;
     };
 
-    struct BSPXModel
-    {
-        std::string name;
-
-        vec3_t origin;
-        float scale;
-        vec3_t forward;
-        vec3_t right;
-        vec3_t up;
-
-        bool areBoundsValid;
-        vec3_t mins;
-        vec3_t maxs;
-    };
-
     enum BSPSpawnPointType
     {
         SPAWNPOINT_TYPE_DEFENDER,
@@ -112,7 +111,6 @@ namespace BSP
         BSPWorld colWorld;
 
         std::vector<BSPLight> lights;
-        std::vector<BSPXModel> xmodels;
         std::vector<BSPSpawnPoint> spawnpoints;
     };
 

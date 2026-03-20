@@ -20,7 +20,7 @@ namespace BSP
 
         void loadDrawData(BSPData* projInfo, GfxWorld* gfxWorld);
         bool loadMapSurfaces(BSPData* projInfo, GfxWorld* gfxWorld);
-        void loadXModels(BSPData* projInfo, GfxWorld* gfxWorld);
+        bool loadXModels(BSPData* projInfo, GfxWorld* gfxWorld);
         void cleanGfxWorld(GfxWorld* gfxWorld);
         void loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld);
         void loadLightGrid(GfxWorld* gfxWorld);

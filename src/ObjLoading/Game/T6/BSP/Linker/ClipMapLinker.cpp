@@ -154,54 +154,77 @@ namespace BSP
         clipMap->cmodels[0].info = nullptr;
     }
 
-    void ClipMapLinker::loadXModelCollision(clipMap_t* clipMap)
+    bool ClipMapLinker::loadXModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
-        // Right now XModels aren't supported
-        clipMap->numStaticModels = 0;
-        clipMap->staticModelList = nullptr;
-
-        // WIP code left in for future support
-        /*
-        auto gfxWorldAsset = m_context.LoadDependency<AssetGfxWorld>(bsp->bspName);
-        assert(gfxWorldAsset != nullptr);
-        GfxWorld* gfxWorld = gfxWorldAsset->Asset();
-
-        clipMap->numStaticModels = gfxWorld->dpvs.smodelCount;
+        clipMap->numStaticModels = bsp->colWorld.xmodels.size();
         clipMap->staticModelList = new cStaticModel_s[clipMap->numStaticModels];
 
         for (unsigned int i = 0; i < clipMap->numStaticModels; i++)
         {
-            GfxStaticModelDrawInst* gfxModelDrawInst = &gfxWorld->dpvs.smodelDrawInsts[i];
-            GfxStaticModelInst* gfxModelInst = &gfxWorld->dpvs.smodelInsts[i];
             cStaticModel_s* currModel = &clipMap->staticModelList[i];
+            BSPXModel& bspModel = bsp->colWorld.xmodels.at(i);
+
+            vec3_t xmodelAxis[3];
+            BSPUtil::convertQuaternionToAxis(&bspModel.rotationQuaternion, xmodelAxis);
+
+            auto xModelAsset = m_context.LoadDependency<AssetXModel>(bspModel.name);
+            if (xModelAsset == nullptr)
+            {
+                con::error("Unable to load xmodel asset: \"{}\"", bspModel.name);
+                return false;
+            }
+            else
+                currModel->xmodel = (XModel*)xModelAsset->Asset();
+
+            currModel->origin.x = bspModel.origin.x;
+            currModel->origin.y = bspModel.origin.y;
+            currModel->origin.z = bspModel.origin.z;
+
+            currModel->contents = 1;
+            // currModel->contents = currModel->xmodel->contents;
+
+            if (!xModelAsset->IsReference())
+            {
+                BSPUtil::calculateXmodelBounds(currModel->xmodel, xmodelAxis, currModel->absmin, currModel->absmax);
+                currModel->absmin.x = (currModel->absmin.x * bspModel.scale) + bspModel.origin.x;
+                currModel->absmin.y = (currModel->absmin.y * bspModel.scale) + bspModel.origin.y;
+                currModel->absmin.z = (currModel->absmin.z * bspModel.scale) + bspModel.origin.z;
+                currModel->absmax.x = (currModel->absmax.x * bspModel.scale) + bspModel.origin.x;
+                currModel->absmax.y = (currModel->absmax.y * bspModel.scale) + bspModel.origin.y;
+                currModel->absmax.z = (currModel->absmax.z * bspModel.scale) + bspModel.origin.z;
+            }
+            else
+            {
+                if (bspModel.areBoundsValid)
+                {
+                    currModel->absmin = bspModel.mins;
+                    currModel->absmax = bspModel.maxs;
+                }
+                else
+                {
+                    con::warn("Unable to determine the bounds of xmodel: \"{}\"", bspModel.name);
+                    currModel->absmin.x = bspModel.origin.x - 1.0f;
+                    currModel->absmin.y = bspModel.origin.y - 1.0f;
+                    currModel->absmin.z = bspModel.origin.z - 1.0f;
+                    currModel->absmax.x = bspModel.origin.x + 1.0f;
+                    currModel->absmax.y = bspModel.origin.y + 1.0f;
+                    currModel->absmax.z = bspModel.origin.z + 1.0f;
+                }
+            }
+
+            BSPUtil::matrixTranspose3x3(xmodelAxis, currModel->invScaledAxis);
+            currModel->invScaledAxis[0].x = (1.0f / bspModel.scale) * currModel->invScaledAxis[0].x;
+            currModel->invScaledAxis[0].y = (1.0f / bspModel.scale) * currModel->invScaledAxis[0].y;
+            currModel->invScaledAxis[0].z = (1.0f / bspModel.scale) * currModel->invScaledAxis[0].z;
+            currModel->invScaledAxis[1].x = (1.0f / bspModel.scale) * currModel->invScaledAxis[1].x;
+            currModel->invScaledAxis[1].y = (1.0f / bspModel.scale) * currModel->invScaledAxis[1].y;
+            currModel->invScaledAxis[1].z = (1.0f / bspModel.scale) * currModel->invScaledAxis[1].z;
+            currModel->invScaledAxis[2].x = (1.0f / bspModel.scale) * currModel->invScaledAxis[2].x;
+            currModel->invScaledAxis[2].y = (1.0f / bspModel.scale) * currModel->invScaledAxis[2].y;
+            currModel->invScaledAxis[2].z = (1.0f / bspModel.scale) * currModel->invScaledAxis[2].z;
 
             memset(&currModel->writable, 0, sizeof(cStaticModelWritable));
-            currModel->xmodel = gfxModelDrawInst->model;
-            currModel->contents = gfxModelDrawInst->model->contents;
-            currModel->origin.x = gfxModelDrawInst->placement.origin.x;
-            currModel->origin.y = gfxModelDrawInst->placement.origin.y;
-            currModel->origin.z = gfxModelDrawInst->placement.origin.z;
-
-            // TODO: this does not account for model rotation or scale
-            currModel->absmin.x = gfxModelInst->mins.x;
-            currModel->absmin.y = gfxModelInst->mins.y;
-            currModel->absmin.z = gfxModelInst->mins.z;
-            currModel->absmax.x = gfxModelInst->maxs.x;
-            currModel->absmax.y = gfxModelInst->maxs.y;
-            currModel->absmax.z = gfxModelInst->maxs.z;
-
-            BSPUtil::matrixTranspose3x3(gfxModelDrawInst->placement.axis, currModel->invScaledAxis);
-            currModel->invScaledAxis[0].x = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].x;
-            currModel->invScaledAxis[0].y = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].y;
-            currModel->invScaledAxis[0].z = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[0].z;
-            currModel->invScaledAxis[1].x = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[1].x;
-            currModel->invScaledAxis[1].y = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[1].y;
-            currModel->invScaledAxis[1].z = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[1].z;
-            currModel->invScaledAxis[2].x = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[2].x;
-            currModel->invScaledAxis[2].y = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[2].y;
-            currModel->invScaledAxis[2].z = (1.0f / gfxModelDrawInst->placement.scale) * currModel->invScaledAxis[2].z;
         }
-        */
     }
 
     // out_mins and out_maxs are initialised in the function
@@ -691,7 +714,7 @@ namespace BSP
 
         loadDynEnts(clipMap);
 
-        loadXModelCollision(clipMap);
+        loadXModelCollision(clipMap, bsp);
 
         loadMaterials(clipMap, bsp);
 

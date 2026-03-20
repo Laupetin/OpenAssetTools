@@ -104,7 +104,43 @@ namespace BSP
         return sqrtf((x * x) + (y * y) + (z * z));
     }
 
-    void BSPUtil::convertAnglesToAxis(vec3_t* angles, vec3_t* axis)
+    void BSPUtil::calculateXmodelBounds(XModel* xmodel, vec3_t axis[3], vec3_t& out_mins, vec3_t& out_maxs)
+    {
+        out_mins.x = 0.0f;
+        out_mins.y = 0.0f;
+        out_mins.z = 0.0f;
+        out_maxs.x = 0.0f;
+        out_maxs.y = 0.0f;
+        out_maxs.z = 0.0f;
+
+        for (auto surfaceIndex = 0u; surfaceIndex < xmodel->lodInfo[0].numsurfs; surfaceIndex++)
+        {
+            const auto& surface = xmodel->surfs[surfaceIndex + xmodel->lodInfo[0].surfIndex];
+
+            if (!surface.verts0)
+                continue;
+
+            for (auto vertIndex = 0u; vertIndex < surface.vertCount; vertIndex++)
+            {
+                const auto& vertex = surface.verts0[vertIndex].xyz;
+
+                vec3_t rotatedVert;
+                rotatedVert.x = (vertex.x * axis[0].x) + (vertex.y * axis[1].x) + (vertex.z * axis[2].x);
+                rotatedVert.y = (vertex.x * axis[0].y) + (vertex.y * axis[1].y) + (vertex.z * axis[2].y);
+                rotatedVert.z = (vertex.x * axis[0].z) + (vertex.y * axis[1].z) + (vertex.z * axis[2].z);
+
+                if (vertIndex == 0 && surfaceIndex == 0)
+                {
+                    out_mins = rotatedVert;
+                    out_maxs = rotatedVert;
+                }
+                else
+                    BSPUtil::updateAABBWithPoint(rotatedVert, out_mins, out_maxs);
+            }
+        }
+    }
+
+    void BSPUtil::convertAnglesToAxis(vec3_t* angles, vec3_t axis[3])
     {
         float cosX = cos(angles->x);
         float sinX = sin(angles->x);
@@ -122,6 +158,38 @@ namespace BSP
         axis[2].x = ((cosZ * sinX) * cosY) + (sinZ * sinY);
         axis[2].y = ((cosZ * sinX) * sinY) - (sinZ * cosY);
         axis[2].z = cosZ * cosX;
+    }
+
+    void BSPUtil::convertQuaternionToAxis(vec4_t* quat, vec3_t axis[3])
+    {
+        float quatX = quat->v[0];
+        float quatY = quat->v[1];
+        float quatZ = quat->v[2];
+        float quatW = quat->v[3];
+
+        float xx = (quatX * 2.0) * quatX;
+        float xy = (quatX * 2.0) * quatY;
+        float xz = (quatX * 2.0) * quatZ;
+        float xw = (quatX * 2.0) * quatW;
+
+        float yy = (quatY * 2.0) * quatY;
+        float yz = (quatY * 2.0) * quatZ;
+        float yw = (quatY * 2.0) * quatW;
+
+        float zz = (quatZ * 2.0) * quatZ;
+        float zw = (quatZ * 2.0) * quatW;
+
+        axis->x = 1.0f - (zz + yy);
+        axis->y = zw + xy;
+        axis->z = xz - yw;
+
+        axis[1].x = xy - zw;
+        axis[1].y = 1.0f - (zz + xx);
+        axis[1].z = yz + xw;
+
+        axis[2].x = yw + xz;
+        axis[2].y = yz - xw;
+        axis[2].z = 1.0f - (yy + xx);
     }
 
     vec3_t BSPUtil::convertForwardVectorToViewAngles(vec3_t& forwardVec)
