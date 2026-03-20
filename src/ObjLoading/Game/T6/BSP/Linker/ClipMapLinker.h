@@ -24,7 +24,7 @@ namespace BSP
         void loadDynEnts(clipMap_t* clipMap);
         void loadRopesAndConstraints(clipMap_t* clipMap);
         void loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp);
-        void loadXModelCollision(clipMap_t* clipMap);
+        bool loadXModelCollision(clipMap_t* clipMap, BSPData* bsp);
 
         std::vector<cplane_s> planeVec;
         std::vector<cNode_t> nodeVec;

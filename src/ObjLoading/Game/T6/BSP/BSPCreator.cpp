@@ -32,6 +32,16 @@ namespace
         unsigned m_index_accessor;
     };
 
+    void RhcToLhcQuaternion(float (&coords)[4])
+    {
+        const float two[4]{coords[0], coords[1], coords[2], coords[3]};
+
+        coords[0] = two[0];
+        coords[1] = -two[2];
+        coords[2] = two[1];
+        coords[3] = two[3];
+    }
+
     void RhcToLhcCoordinates(float (&coords)[3])
     {
         const float two[3]{coords[0], coords[1], coords[2]};
@@ -392,8 +402,110 @@ namespace
             return true;
         }
 
-        bool addXModelNode(const gltf::JsonNode& node)
+        void calculateXmodelBounds(BSPXModel& xmodel, std::optional<int> meshIndex, Eigen::Matrix4f& nodeMatrix, const JsonRoot& jRoot)
         {
+            if (meshIndex)
+            {
+                xmodel.areBoundsValid = true;
+                Eigen::Vector4f position(0, 0, 0, 1.0f);
+                Eigen::Vector4f transformedPosition = nodeMatrix * position;
+                xmodel.mins.x = transformedPosition.x();
+                xmodel.mins.y = transformedPosition.y();
+                xmodel.mins.z = transformedPosition.z();
+                xmodel.maxs.x = transformedPosition.x();
+                xmodel.maxs.y = transformedPosition.y();
+                xmodel.maxs.z = transformedPosition.z();
+                RhcToLhcCoordinates(xmodel.mins.v);
+                RhcToLhcCoordinates(xmodel.maxs.v);
+
+                const auto& mesh = jRoot.meshes.value()[*meshIndex];
+                for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
+                {
+                    const auto& primitive = mesh.primitives.at(primIdx);
+
+                    if (!primitive.attributes.POSITION)
+                        throw GltfLoadException("Requires primitives attribute POSITION");
+
+                    // clang-format off
+                    const auto* positionAccessor = GetAccessorForIndex(
+                        "POSITION",
+                        primitive.attributes.POSITION,
+                        { JsonAccessorType::VEC3 },
+                        { JsonAccessorComponentType::FLOAT }
+                    ).value_or(nullptr);
+                    // clang-format on
+                    assert(positionAccessor != nullptr);
+
+                    for (size_t vertexIndex = 0u; vertexIndex < positionAccessor->GetCount(); vertexIndex++)
+                    {
+                        vec3_t vertex;
+                        if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.v))
+                            assert(false);
+
+                        Eigen::Vector4f position(vertex.x, vertex.y, vertex.z, 1.0f);
+                        Eigen::Vector4f transformedPosition = nodeMatrix * position;
+                        vertex.x = transformedPosition.x();
+                        vertex.y = transformedPosition.y();
+                        vertex.z = transformedPosition.z();
+                        RhcToLhcCoordinates(vertex.v);
+
+                        if (vertexIndex == 0 && primIdx == 0)
+                        {
+                            xmodel.mins = vertex;
+                            xmodel.maxs = vertex;
+                        }
+                        else
+                            BSPUtil::updateAABBWithPoint(vertex, xmodel.mins, xmodel.maxs);
+                    }
+                }
+            }
+            else
+            {
+                xmodel.areBoundsValid = false;
+                xmodel.mins.x = 0.0f;
+                xmodel.mins.y = 0.0f;
+                xmodel.mins.z = 0.0f;
+                xmodel.maxs.x = 0.0f;
+                xmodel.maxs.y = 0.0f;
+                xmodel.maxs.z = 0.0f;
+            }
+        }
+
+        bool addXModelNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->xmodel);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+            BSPXModel xmodel;
+
+            if (node.extras->xmodel->size() == 0)
+                throw GltfLoadException("Xmodel has no name.");
+            xmodel.name = *node.extras->xmodel;
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            xmodel.origin.x = transformedPosition.x();
+            xmodel.origin.y = transformedPosition.y();
+            xmodel.origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(xmodel.origin.v);
+
+            Eigen::Affine3f affineTransform(nodeMatrix);
+            Eigen::Quaternionf rotationQuat(affineTransform.rotation());
+            rotationQuat.normalize();
+            xmodel.rotationQuaternion.x = rotationQuat.x();
+            xmodel.rotationQuaternion.y = rotationQuat.y();
+            xmodel.rotationQuaternion.z = rotationQuat.z();
+            xmodel.rotationQuaternion.w = rotationQuat.w(); // Eigen is WXYZ, game is XYZW
+            RhcToLhcQuaternion(xmodel.rotationQuaternion.v);
+
+            con::warn("XModels don't support scale currently, keep it at 1 in your editor");
+            xmodel.scale = 1.0f;
+
+            calculateXmodelBounds(xmodel, node.mesh, nodeMatrix, jRoot);
+
+            m_curr_bsp_world->xmodels.emplace_back(xmodel);
+
             return true;
         }
 
@@ -447,8 +559,8 @@ namespace
 
             if (node.extras)
             {
-                if (m_is_world_gfx && node.extras->xmodel)
-                    return addXModelNode(node);
+                if (node.extras->xmodel)
+                    return addXModelNode(jRoot, node);
 
                 if (m_is_world_gfx && node.extras->spawnpoint)
                     return addSpawnPointNode(node);

@@ -145,79 +145,90 @@ namespace BSP
         return true;
     }
 
-    void GfxWorldLinker::loadXModels(BSPData* bsp, GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadXModels(BSPData* bsp, GfxWorld* gfxWorld)
     {
-        /*
-        Models are unsupported right now
-        Code is left in in case it is supported later on
-
-        unsigned int modelCount = projInfo->modelCount;
+        size_t modelCount = bsp->gfxWorld.xmodels.size();
         gfxWorld->dpvs.smodelCount = modelCount;
         gfxWorld->dpvs.smodelInsts = new GfxStaticModelInst[modelCount];
         gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
 
-        for (unsigned int i = 0; i < modelCount; i++)
+        for (size_t modelIdx = 0; modelIdx < modelCount; modelIdx++)
         {
-                auto currModel = &gfxWorld->dpvs.smodelDrawInsts[i];
-                auto currModelInst = &gfxWorld->dpvs.smodelInsts[i];
-                customMapModel* inModel = &projInfo->models[i];
+            auto currModel = &gfxWorld->dpvs.smodelDrawInsts[modelIdx];
+            auto currModelInst = &gfxWorld->dpvs.smodelInsts[modelIdx];
+            BSPXModel& bspModel = bsp->gfxWorld.xmodels.at(modelIdx);
 
-                auto xModelAsset = m_context.LoadDependency<AssetXModel>(inModel->name);
-                if (xModelAsset == nullptr)
+            auto xModelAsset = m_context.LoadDependency<AssetXModel>(bspModel.name);
+            if (xModelAsset == nullptr)
+            {
+                con::error("Unable to load xmodel asset: \"{}\"", bspModel.name);
+                return false;
+            }
+            else
+                currModel->model = (XModel*)xModelAsset->Asset();
+
+            currModel->placement.origin.x = bspModel.origin.x;
+            currModel->placement.origin.y = bspModel.origin.y;
+            currModel->placement.origin.z = bspModel.origin.z;
+            BSPUtil::convertQuaternionToAxis(&bspModel.rotationQuaternion, currModel->placement.axis);
+            currModel->placement.scale = bspModel.scale;
+
+            currModel->cullDist = 10000.0f;
+            currModel->flags = 0;
+            currModel->primaryLightIndex = 0;
+            currModel->reflectionProbeIndex = 0;
+            currModel->smid = modelIdx;
+
+            // unknown use / unused
+            memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
+            currModel->invScaleSq = 0.0f;
+            currModel->lightingHandle = 0; // overwritten to by the game
+            currModel->colorsIndex = 0;
+            currModel->visibility = 0;
+
+            // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
+            // TODO: calculate lighting and store it here
+            currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
+            currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
+            currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
+            currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
+            currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
+            currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
+            currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
+            currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
+
+            if (!xModelAsset->IsReference())
+            {
+                BSPUtil::calculateXmodelBounds(currModel->model, currModel->placement.axis, currModelInst->mins, currModelInst->maxs);
+                currModelInst->mins.x = (currModelInst->mins.x * bspModel.scale) + bspModel.origin.x;
+                currModelInst->mins.y = (currModelInst->mins.y * bspModel.scale) + bspModel.origin.y;
+                currModelInst->mins.z = (currModelInst->mins.z * bspModel.scale) + bspModel.origin.z;
+                currModelInst->maxs.x = (currModelInst->maxs.x * bspModel.scale) + bspModel.origin.x;
+                currModelInst->maxs.y = (currModelInst->maxs.y * bspModel.scale) + bspModel.origin.y;
+                currModelInst->maxs.z = (currModelInst->maxs.z * bspModel.scale) + bspModel.origin.z;
+            }
+            else
+            {
+                if (bspModel.areBoundsValid)
                 {
-                    printf("XModel %s not found!\n", inModel->name.c_str());
-                    currModel->model = nullptr;
+                    currModelInst->mins = bspModel.mins;
+                    currModelInst->maxs = bspModel.maxs;
                 }
                 else
-                    currModel->model = (XModel*)xModelAsset->Asset();
-
-                currModel->placement.origin.x = inModel->origin.x;
-                currModel->placement.origin.y = inModel->origin.y;
-                currModel->placement.origin.z = inModel->origin.z;
-                currModel->placement.origin = BSPUtil::convertToBO2Coords(currModel->placement.origin);
-                currModel->placement.scale = inModel->scale;
-
-                BSPUtil::convertAnglesToAxis(&inModel->rotation, currModel->placement.axis);
-
-                // mins and maxs are calculated in world space not local space
-                // TODO: this does not account for model rotation or scale
-                currModelInst->mins.x = currModel->model->mins.x + currModel->placement.origin.x;
-                currModelInst->mins.y = currModel->model->mins.y + currModel->placement.origin.y;
-                currModelInst->mins.z = currModel->model->mins.z + currModel->placement.origin.z;
-                currModelInst->maxs.x = currModel->model->maxs.x + currModel->placement.origin.x;
-                currModelInst->maxs.y = currModel->model->maxs.y + currModel->placement.origin.y;
-                currModelInst->maxs.z = currModel->model->maxs.z + currModel->placement.origin.z;
-
-                currModel->cullDist = DEFAULT_SMODEL_CULL_DIST;
-                currModel->flags = DEFAULT_SMODEL_FLAGS;
-                currModel->primaryLightIndex = DEFAULT_SMODEL_LIGHT;
-                currModel->reflectionProbeIndex = DEFAULT_SMODEL_REFLECTION_PROBE;
-
-                // unknown use / unused
-                currModel->smid = i;
-                memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
-                currModel->invScaleSq = 0.0f;
-                currModel->lightingHandle = 0;
-                currModel->colorsIndex = 0;
-                currModel->visibility = 0;
-
-                // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
-                // TODO: calculate lighting and store it here
-                currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
+                {
+                    con::warn("Unable to determine the bounds of xmodel: \"{}\"", bspModel.name);
+                    currModelInst->mins.x = bspModel.origin.x - 1.0f;
+                    currModelInst->mins.y = bspModel.origin.y - 1.0f;
+                    currModelInst->mins.z = bspModel.origin.z - 1.0f;
+                    currModelInst->maxs.x = bspModel.origin.x + 1.0f;
+                    currModelInst->maxs.y = bspModel.origin.y + 1.0f;
+                    currModelInst->maxs.z = bspModel.origin.z + 1.0f;
+                }
+            }
+            currModelInst->lightingOrigin.x = 0.0f;
+            currModelInst->lightingOrigin.y = 0.0f;
+            currModelInst->lightingOrigin.z = 0.0f;
         }
-        */
-
-        unsigned int modelCount = 0;
-        gfxWorld->dpvs.smodelCount = modelCount;
-        gfxWorld->dpvs.smodelInsts = m_memory.Alloc<GfxStaticModelInst>(modelCount);
-        gfxWorld->dpvs.smodelDrawInsts = m_memory.Alloc<GfxStaticModelDrawInst>(modelCount);
 
         // visdata is written to by the game
         // all visdata is alligned by 128
@@ -228,7 +239,7 @@ namespace BSP
         gfxWorld->dpvs.smodelVisData[2] = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelVisDataCameraSaved = m_memory.Alloc<char>(allignedModelCount);
         gfxWorld->dpvs.smodelCastsShadow = m_memory.Alloc<char>(allignedModelCount);
-        for (unsigned int i = 0; i < modelCount; i++)
+        for (size_t i = 0; i < modelCount; i++)
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & STATIC_MODEL_FLAG_NO_SHADOW) == 0)
                 gfxWorld->dpvs.smodelCastsShadow[i] = 1;
@@ -236,14 +247,16 @@ namespace BSP
                 gfxWorld->dpvs.smodelCastsShadow[i] = 0;
         }
 
-        // official maps set this to 0
-        gfxWorld->dpvs.usageCount = 0;
+        return true;
     }
 
     void GfxWorldLinker::cleanGfxWorld(GfxWorld* gfxWorld)
     {
         // checksum is generated by the game
         gfxWorld->checksum = 0;
+
+        // official maps set this to 0
+        gfxWorld->dpvs.usageCount = 0;
 
         // Remove Coronas
         gfxWorld->coronaCount = 0;
@@ -735,7 +748,8 @@ namespace BSP
         if (!loadMapSurfaces(bsp, gfxWorld))
             return nullptr;
 
-        loadXModels(bsp, gfxWorld);
+        if (!loadXModels(bsp, gfxWorld))
+            return nullptr;
 
         if (!loadLightmapData(gfxWorld))
             return nullptr;

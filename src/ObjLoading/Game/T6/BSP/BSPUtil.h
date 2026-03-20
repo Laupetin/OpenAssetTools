@@ -16,7 +16,9 @@ namespace BSP
         static vec3_t calcHalfSizeOfAABB(vec3_t& mins, vec3_t& maxs);
         static size_t allignBy128(size_t size);
         static float distBetweenPoints(vec3_t& p1, vec3_t& p2);
-        static void convertAnglesToAxis(vec3_t* angles, vec3_t* axis);
+        static void calculateXmodelBounds(XModel* xmodel, vec3_t axis[3], vec3_t& out_mins, vec3_t& out_maxs);
+        static void convertAnglesToAxis(vec3_t* angles, vec3_t axis[3]);
+        static void convertQuaternionToAxis(vec4_t* quat, vec3_t axis[3]);
         static vec3_t convertForwardVectorToViewAngles(vec3_t& forwardVec);
         static void matrixTranspose3x3(const vec3_t* in, vec3_t* out);
         static vec3_t convertStringToVec3(std::string& str);
