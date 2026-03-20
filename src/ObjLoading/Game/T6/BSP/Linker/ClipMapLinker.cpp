@@ -156,6 +156,10 @@ namespace BSP
 
     bool ClipMapLinker::loadXModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
+        // it seems like for players to be able to collide with xmodels, it requires xmodel->collmaps to be valid.
+        // A lot of XModels don't implement collmaps (OAT also doesn't generate these collmaps), and
+        //  even official maps instead use terrain or brushes to cover where the collision should be.
+
         clipMap->numStaticModels = bsp->colWorld.xmodels.size();
         clipMap->staticModelList = new cStaticModel_s[clipMap->numStaticModels];
 
@@ -180,11 +184,9 @@ namespace BSP
             currModel->origin.y = bspModel.origin.y;
             currModel->origin.z = bspModel.origin.z;
 
-            currModel->contents = 1;
-            // currModel->contents = currModel->xmodel->contents;
-
             if (!xModelAsset->IsReference())
             {
+                currModel->contents = currModel->xmodel->contents;
                 BSPUtil::calculateXmodelBounds(currModel->xmodel, xmodelAxis, currModel->absmin, currModel->absmax);
                 currModel->absmin.x = (currModel->absmin.x * bspModel.scale) + bspModel.origin.x;
                 currModel->absmin.y = (currModel->absmin.y * bspModel.scale) + bspModel.origin.y;
@@ -192,9 +194,13 @@ namespace BSP
                 currModel->absmax.x = (currModel->absmax.x * bspModel.scale) + bspModel.origin.x;
                 currModel->absmax.y = (currModel->absmax.y * bspModel.scale) + bspModel.origin.y;
                 currModel->absmax.z = (currModel->absmax.z * bspModel.scale) + bspModel.origin.z;
+
+                if (currModel->xmodel->numCollmaps == 0)
+                    con::warn("Xmodel \"{}\" has no colision data", bspModel.name);
             }
             else
             {
+                currModel->contents = 1;
                 if (bspModel.areBoundsValid)
                 {
                     currModel->absmin = bspModel.mins;
@@ -225,6 +231,8 @@ namespace BSP
 
             memset(&currModel->writable, 0, sizeof(cStaticModelWritable));
         }
+
+        return true;
     }
 
     // out_mins and out_maxs are initialised in the function
@@ -714,9 +722,11 @@ namespace BSP
 
         loadDynEnts(clipMap);
 
-        loadXModelCollision(clipMap, bsp);
+        if (!loadXModelCollision(clipMap, bsp))
+            return nullptr;
 
-        loadMaterials(clipMap, bsp);
+        if (!loadMaterials(clipMap, bsp))
+            return nullptr;
 
         if (!loadWorldCollision(clipMap, bsp))
             return nullptr;
