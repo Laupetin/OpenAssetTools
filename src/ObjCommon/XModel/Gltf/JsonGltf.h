@@ -301,6 +301,15 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNormalTextureInfo, index);
 
+    class JsonMaterialExtras
+    {
+    public:
+        std::optional<std::string> type;
+        std::optional<std::string> flags;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMaterialExtras, type, flags);
+
     class JsonMaterial
     {
     public:
@@ -308,9 +317,11 @@ namespace gltf
         std::optional<JsonPbrMetallicRoughness> pbrMetallicRoughness;
         std::optional<JsonNormalTextureInfo> normalTexture;
         std::optional<bool> doubleSided;
+
+        std::optional<JsonMaterialExtras> extras;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMaterial, name, pbrMetallicRoughness, normalTexture, doubleSided);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMaterial, name, pbrMetallicRoughness, normalTexture, doubleSided, extras);
 
     enum class JsonMeshPrimitivesMode
     {
