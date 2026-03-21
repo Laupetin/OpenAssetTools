@@ -7,6 +7,7 @@
 #include "Localize/LocalizeDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
+#include "XAnim/XAnimDumperT5.h"
 
 using namespace T5;
 
@@ -15,7 +16,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperPhysPreset, m_phys_preset)
     // REGISTER_DUMPER(AssetDumperPhysConstraints, m_phys_constraints)
     // REGISTER_DUMPER(AssetDumperDestructibleDef, m_destructible_def)
-    // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
+    RegisterAssetDumper(std::make_unique<xanim::DumperT5>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperT5>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT5>());
     RegisterAssetDumper(std::make_unique<techset::DumperT5>(
