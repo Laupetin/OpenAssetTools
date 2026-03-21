@@ -184,9 +184,11 @@ namespace BSP
             currModel->origin.y = bspModel.origin.y;
             currModel->origin.z = bspModel.origin.z;
 
+            // tracing only checks if this is equal to 0 or not
+            currModel->contents = 1;
+
             if (!xModelAsset->IsReference())
             {
-                currModel->contents = currModel->xmodel->contents;
                 BSPUtil::calculateXmodelBounds(currModel->xmodel, xmodelAxis, currModel->absmin, currModel->absmax);
                 currModel->absmin.x = (currModel->absmin.x * bspModel.scale) + bspModel.origin.x;
                 currModel->absmin.y = (currModel->absmin.y * bspModel.scale) + bspModel.origin.y;
@@ -200,7 +202,6 @@ namespace BSP
             }
             else
             {
-                currModel->contents = 1;
                 if (bspModel.areBoundsValid)
                 {
                     currModel->absmin = bspModel.mins;
@@ -260,7 +261,7 @@ namespace BSP
         std::vector<size_t> objectIndexes;
     };
 
-    void ClipMapLinker::addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex)
+    void ClipMapLinker::addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents)
     {
         assert(tree->isLeaf);
         BSPLeaf* bspLeaf = tree->leaf.get();
@@ -376,6 +377,9 @@ namespace BSP
 
             parentAABBArrayIndex += parentCount;
         }
+
+        for (auto& matData : uniqueMaterials)
+            *out_treeContents |= clipMap->info.materials[matData.materialIndex].contentFlags;
     }
 
     constexpr vec3_t normalX = {1.0f, 0.0f, 0.0f};
@@ -404,19 +408,21 @@ namespace BSP
             leaf.maxs.z = 0.0f;
             leaf.leafBrushNode = 0;
 
-            leaf.terrainContents = 1; // todo: use correct contents
             if (tree->leaf->getObjectCount() > 0)
             {
                 size_t parentCount = 0;
                 size_t parentStartIndex = 0;
-                addAABBTreeFromLeaf(clipMap, tree, &parentCount, &parentStartIndex);
+                int treeContents;
+                addAABBTreeFromLeaf(clipMap, tree, &parentCount, &parentStartIndex, &treeContents);
                 leaf.collAabbCount = static_cast<uint16_t>(parentCount);
                 leaf.firstCollAabbIndex = static_cast<uint16_t>(parentStartIndex);
+                leaf.terrainContents = treeContents;
             }
             else
             {
                 leaf.firstCollAabbIndex = 0;
                 leaf.collAabbCount = 0;
+                leaf.terrainContents = 0;
             }
 
             uint16_t leafIndex = static_cast<uint16_t>(leafVec.size());
@@ -693,8 +699,8 @@ namespace BSP
             BSPMaterial bspMat = bsp->colWorld.materials.at(matIdx);
 
             clipMat->name = m_memory.Dup(bspMat.materialName.c_str());
-            clipMat->contentFlags = BSPEditableConstants::MATERIAL_CONTENT_FLAGS;
-            clipMat->surfaceFlags = BSPEditableConstants::MATERIAL_SURFACE_FLAGS;
+            clipMat->contentFlags = bspMat.contentFlags;
+            clipMat->surfaceFlags = bspMat.surfaceFlags;
         }
 
         return true;
@@ -728,7 +734,7 @@ namespace BSP
         if (!loadMaterials(clipMap, bsp))
             return nullptr;
 
-        if (!loadWorldCollision(clipMap, bsp))
+        if (!loadWorldCollision(clipMap, bsp)) // requires materials
             return nullptr;
 
         loadSubModelCollision(clipMap, bsp); // requires tri verts
