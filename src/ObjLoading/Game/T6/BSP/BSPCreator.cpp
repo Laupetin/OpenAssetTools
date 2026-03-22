@@ -22,6 +22,8 @@
 #include <numbers>
 #include <string>
 
+using namespace BSPFlags;
+
 namespace
 {
     struct AccessorsForVertex
@@ -95,6 +97,7 @@ namespace
         BSPData* m_bsp;
         BSPWorld* m_curr_bsp_world;
         bool m_is_world_gfx;
+        size_t m_emptyMaterialIndex;
 
         std::vector<std::unique_ptr<Accessor>> m_accessors;
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
@@ -362,6 +365,53 @@ namespace
             return true;
         }
 
+        size_t createMaterialWithFlags(size_t originalMaterialIdx, const std::string& flags, bool& isNoDrawFlagSet)
+        {
+            BSPMaterial newMaterial = m_curr_bsp_world->materials.at(originalMaterialIdx);
+
+            bool matchedAnyFlag = false;
+            std::vector<std::string> flagStrVec = utils::StringSplit(flags, ',');
+            for (std::string& flag : flagStrVec)
+            {
+                bool foundMatchingName = false;
+                utils::MakeStringLowerCase(flag);
+                utils::StringTrim(flag);
+                size_t typeNameCount = std::extent<decltype(BSPFlags::materialFlags)>::value;
+                for (size_t typeIdx = 0; typeIdx < typeNameCount; typeIdx++)
+                {
+                    BSPFlags::SurfaceType surfType = BSPFlags::materialFlags[typeIdx];
+                    if (!flag.compare(BSPFlags::surfaceTypeToNameMap[surfType]))
+                    {
+                        BSPFlags::s_SurfaceTypeFlags flags = BSPFlags::surfaceTypeToFlagMap[surfType];
+                        newMaterial.surfaceFlags |= flags.surfaceFlags;
+                        newMaterial.contentFlags |= flags.contentFlags;
+                        foundMatchingName = true;
+                        matchedAnyFlag = true;
+                        break;
+                    }
+                }
+                if (!foundMatchingName)
+                    con::warn("invalid surface using material {} flag name: {}", newMaterial.materialName, flag);
+            }
+            if (!matchedAnyFlag)
+                return originalMaterialIdx;
+
+            // the first content flag bit must be set to 1 for the surface to have collision
+            if ((newMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NONSOLID].surfaceFlags) != 0)
+                newMaterial.contentFlags &= 0xFFFFFFFE;
+            else
+                newMaterial.contentFlags |= 1;
+
+            if ((newMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) != 0)
+                isNoDrawFlagSet = true;
+            else
+                isNoDrawFlagSet = false;
+
+            size_t newMaterialIndex = m_curr_bsp_world->materials.size();
+            m_curr_bsp_world->materials.emplace_back(newMaterial);
+            return newMaterialIndex;
+        }
+
         bool addMeshNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
             assert(node.mesh);
@@ -389,11 +439,25 @@ namespace
                     .m_index_accessor = *primitive.indices,
                 };
 
-                BSPSurface surface;
+                size_t materialIndex;
                 if (primitive.material)
-                    surface.materialIndex = *primitive.material;
+                {
+                    size_t originalMaterialIdx = *primitive.material;
+                    if (node.extras && node.extras->flags)
+                    {
+                        bool isNoDrawFlagSet = false;
+                        materialIndex = createMaterialWithFlags(originalMaterialIdx, *node.extras->flags, isNoDrawFlagSet);
+                        if (isNoDrawFlagSet && m_is_world_gfx)
+                            continue; // noDraw flag doesn't work, so remove the surface from the graphics data instead
+                    }
+                    else
+                        materialIndex = originalMaterialIdx;
+                }
                 else
-                    surface.materialIndex = m_curr_bsp_world->materials.size() - 1; // last material is used for colour only meshes
+                    materialIndex = m_emptyMaterialIndex;
+
+                BSPSurface surface;
+                surface.materialIndex = materialIndex;
                 vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
                 CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
 
@@ -608,78 +672,6 @@ namespace
             return rootNodes;
         }
 
-        void setMaterialFlags(BSPMaterial& material, const JsonMaterial& jsMaterial)
-        {
-            if (!jsMaterial.extras)
-            {
-                material.surfaceFlags = 1;
-                material.contentFlags = 1;
-                return;
-            }
-            if (!jsMaterial.extras->flags && !jsMaterial.extras->type)
-            {
-                material.surfaceFlags = 1;
-                material.contentFlags = 1;
-                return;
-            }
-
-            material.surfaceFlags = 0;
-            material.contentFlags = 0;
-            if (jsMaterial.extras->type)
-            {
-                std::string typeStr = *jsMaterial.extras->type;
-
-                size_t typeNameCount = std::extent<decltype(BSPFlags::materialTypes)>::value;
-                for (size_t typeIdx = 0; typeIdx < typeNameCount; typeIdx++)
-                {
-                    BSPFlags::SurfaceType surfType = BSPFlags::materialTypes[typeIdx];
-                    if (!typeStr.compare(BSPFlags::surfaceTypeToNameMap[surfType]))
-                    {
-                        BSPFlags::s_SurfaceTypeFlags flags = BSPFlags::surfaceTypeToFlagMap[surfType];
-                        material.surfaceFlags = flags.surfaceFlags;
-                        material.contentFlags = flags.contentFlags;
-                        break;
-                    }
-                }
-            }
-            if (material.surfaceFlags == 0 && material.contentFlags == 0)
-                con::warn("invalid material {} type name: {}", material.materialName, *jsMaterial.extras->type);
-
-            if (jsMaterial.extras->flags)
-            {
-                std::string flagsStr = *jsMaterial.extras->flags;
-
-                std::vector<std::string> flagStrVec = utils::StringSplit(flagsStr, ',');
-                for (std::string& flag : flagStrVec)
-                {
-                    bool foundMatchingName = false;
-                    utils::MakeStringLowerCase(flag);
-                    utils::StringTrim(flag);
-                    size_t typeNameCount = std::extent<decltype(BSPFlags::materialFlags)>::value;
-                    for (size_t typeIdx = 0; typeIdx < typeNameCount; typeIdx++)
-                    {
-                        BSPFlags::SurfaceType surfType = BSPFlags::materialFlags[typeIdx];
-                        if (!flag.compare(BSPFlags::surfaceTypeToNameMap[surfType]))
-                        {
-                            BSPFlags::s_SurfaceTypeFlags flags = BSPFlags::surfaceTypeToFlagMap[surfType];
-                            material.surfaceFlags |= flags.surfaceFlags;
-                            material.contentFlags |= flags.contentFlags;
-                            foundMatchingName = true;
-                            break;
-                        }
-                    }
-                    if (!foundMatchingName)
-                        con::warn("invalid material {} flag name: {}", material.materialName, flag);
-                }
-            }
-
-            // the first content flag bit must be set to 1 for the surface to have collision
-            if ((material.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NONSOLID].surfaceFlags) != 0)
-                material.contentFlags &= 0xFFFFFFFE;
-            else
-                material.contentFlags |= 1;
-        }
-
         void LoadMaterials(const JsonRoot& jRoot)
         {
             if (jRoot.materials)
@@ -726,23 +718,43 @@ namespace
                         material.materialColour.w = 1.0f;
                     }
 
-                    setMaterialFlags(material, jsMaterial);
+                    material.surfaceFlags = 0;
+                    material.contentFlags = 1;
+                    if (jsMaterial.extras && jsMaterial.extras->type)
+                    {
+                        bool foundType = false;
+                        size_t typeNameCount = std::extent<decltype(BSPFlags::materialTypes)>::value;
+                        for (size_t typeIdx = 0; typeIdx < typeNameCount; typeIdx++)
+                        {
+                            BSPFlags::SurfaceType surfType = BSPFlags::materialTypes[typeIdx];
+                            if (!jsMaterial.extras->type->compare(BSPFlags::surfaceTypeToNameMap[surfType]))
+                            {
+                                BSPFlags::s_SurfaceTypeFlags flags = BSPFlags::surfaceTypeToFlagMap[surfType];
+                                material.surfaceFlags |= flags.surfaceFlags;
+                                material.contentFlags |= flags.contentFlags;
+                                foundType = true;
+                                break;
+                            }
+                        }
+                        if (!foundType)
+                            con::warn("invalid material {} type name: {}", material.materialName, *jsMaterial.extras->type);
+                    }
 
                     m_curr_bsp_world->materials.emplace_back(material);
                 }
             }
 
-            // last material is used when a primitve has no material/colour data
-            BSPMaterial colorMaterial;
-            colorMaterial.materialType = MATERIAL_TYPE_COLOUR;
-            colorMaterial.surfaceFlags = 1;
-            colorMaterial.contentFlags = 1;
-            colorMaterial.materialName = "";
-            colorMaterial.materialColour.x = 1.0f;
-            colorMaterial.materialColour.y = 1.0f;
-            colorMaterial.materialColour.z = 1.0f;
-            colorMaterial.materialColour.w = 1.0f;
-            m_curr_bsp_world->materials.emplace_back(colorMaterial);
+            m_emptyMaterialIndex = m_curr_bsp_world->materials.size();
+            BSPMaterial emptyMaterial;
+            emptyMaterial.materialType = MATERIAL_TYPE_COLOUR;
+            emptyMaterial.surfaceFlags = 0;
+            emptyMaterial.contentFlags = 1;
+            emptyMaterial.materialName = "";
+            emptyMaterial.materialColour.x = 1.0f;
+            emptyMaterial.materialColour.y = 1.0f;
+            emptyMaterial.materialColour.z = 1.0f;
+            emptyMaterial.materialColour.w = 1.0f;
+            m_curr_bsp_world->materials.emplace_back(emptyMaterial);
         }
 
         void LoadLights(const JsonRoot& jRoot)
@@ -1037,6 +1049,9 @@ namespace BSP
                 return nullptr;
             if (!loader.addGLTFDataToBSP(input, true))
                 return nullptr;
+            if (!seperateColFile)
+                if (!loader.addGLTFDataToBSP(input, false))
+                    return nullptr;
         }
         else
         {
@@ -1045,6 +1060,9 @@ namespace BSP
                 return nullptr;
             if (!loader.addGLTFDataToBSP(input, true))
                 return nullptr;
+            if (!seperateColFile)
+                if (!loader.addGLTFDataToBSP(input, false))
+                    return nullptr;
         }
 
         if (seperateColFile)
@@ -1066,8 +1084,6 @@ namespace BSP
                     return nullptr;
             }
         }
-        else
-            bsp->colWorld = bsp->gfxWorld;
 
         return bsp;
     }
