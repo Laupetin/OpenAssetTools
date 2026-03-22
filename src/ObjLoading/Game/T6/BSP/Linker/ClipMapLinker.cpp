@@ -390,10 +390,28 @@ namespace BSP
     // Nodes are indexed by their index in the node array
     // Leafs are indexed by (-1 - <leaf index>)
     // See https://developer.valvesoftware.com/wiki/BSP_(Source)
-    int16_t ClipMapLinker::loadBSPNode(clipMap_t* clipMap, BSPTree* tree)
+    int16_t ClipMapLinker::loadBSPNode(clipMap_t* clipMap, BSPTree* tree, bool isRoot)
     {
         if (tree->isLeaf)
         {
+            if (isRoot)
+            {
+                cplane_s plane;
+                plane.dist = 0;
+                plane.normal = normalX;
+                plane.type = 0;
+                plane.signbits = 0;
+                plane.pad[0] = 0;
+                plane.pad[1] = 0;
+                planeVec.emplace_back(plane);
+
+                cNode_t node;
+                node.plane = nullptr; // initalised after the BSP tree has been loaded
+                node.children[0] = -1;
+                node.children[1] = -1;
+                nodeVec.emplace_back(node);
+            }
+
             cLeaf_s leaf;
 
             leaf.cluster = 0; // always use cluster 0
@@ -469,8 +487,8 @@ namespace BSP
 
             cNode_t node;
             node.plane = nullptr; // initalised after the BSP tree has been loaded
-            node.children[0] = loadBSPNode(clipMap, tree->node->front.get());
-            node.children[1] = loadBSPNode(clipMap, tree->node->back.get());
+            node.children[0] = loadBSPNode(clipMap, tree->node->front.get(), false);
+            node.children[1] = loadBSPNode(clipMap, tree->node->back.get(), false);
 
             nodeVec.at(nodeIndex) = node;
 
@@ -494,11 +512,6 @@ namespace BSP
             BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
         }
         std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
-        if (tree->isLeaf)
-        {
-            con::error("Map size is too small for BSP generation!");
-            return false;
-        }
 
         for (int partitionIdx = 0; partitionIdx < clipMap->partitionCount; partitionIdx++)
         {
@@ -512,7 +525,7 @@ namespace BSP
         }
 
         // load planes, nodes, leafs, and AABB trees
-        loadBSPNode(clipMap, tree.get());
+        loadBSPNode(clipMap, tree.get(), true);
 
         clipMap->info.planeCount = static_cast<int>(planeVec.size());
         clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
