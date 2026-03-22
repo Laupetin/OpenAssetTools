@@ -91,11 +91,12 @@ namespace gltf
     public:
         std::optional<std::string> xmodel;
         std::optional<std::string> spawnpoint;
+        std::optional<std::string> pathnode;
 
         std::optional<std::string> flags;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint, flags);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint, flags, pathnode);
 
     class JsonNode
     {
