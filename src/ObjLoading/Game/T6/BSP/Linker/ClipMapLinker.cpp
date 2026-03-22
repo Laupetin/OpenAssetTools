@@ -161,7 +161,7 @@ namespace BSP
         //  even official maps instead use terrain or brushes to cover where the collision should be.
 
         clipMap->numStaticModels = bsp->colWorld.xmodels.size();
-        clipMap->staticModelList = new cStaticModel_s[clipMap->numStaticModels];
+        clipMap->staticModelList = m_memory.Alloc<cStaticModel_s>(clipMap->numStaticModels);
 
         for (unsigned int i = 0; i < clipMap->numStaticModels; i++)
         {

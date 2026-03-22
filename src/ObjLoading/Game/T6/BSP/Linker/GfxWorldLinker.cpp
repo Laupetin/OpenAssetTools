@@ -158,8 +158,8 @@ namespace BSP
     {
         size_t modelCount = bsp->gfxWorld.xmodels.size();
         gfxWorld->dpvs.smodelCount = modelCount;
-        gfxWorld->dpvs.smodelInsts = new GfxStaticModelInst[modelCount];
-        gfxWorld->dpvs.smodelDrawInsts = new GfxStaticModelDrawInst[modelCount];
+        gfxWorld->dpvs.smodelInsts = m_memory.Alloc<GfxStaticModelInst>(modelCount);
+        gfxWorld->dpvs.smodelDrawInsts = m_memory.Alloc<GfxStaticModelDrawInst>(modelCount);
 
         for (size_t modelIdx = 0; modelIdx < modelCount; modelIdx++)
         {
