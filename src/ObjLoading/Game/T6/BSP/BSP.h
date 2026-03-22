@@ -58,6 +58,8 @@ namespace BSP
         bool areBoundsValid;
         vec3_t mins;
         vec3_t maxs;
+
+        bool doesCastShadow;
     };
 
     struct BSPWorld

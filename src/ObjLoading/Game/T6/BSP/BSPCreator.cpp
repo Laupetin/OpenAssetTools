@@ -548,6 +548,18 @@ namespace
                 throw GltfLoadException("Xmodel has no name.");
             xmodel.name = *node.extras->xmodel;
 
+            xmodel.doesCastShadow = true;
+            if (node.extras->flags)
+            {
+                std::vector<std::string> flagStrVec = utils::StringSplit(*node.extras->flags, ',');
+                for (std::string& flag : flagStrVec)
+                    if (!flag.compare(surfaceTypeToNameMap[SURF_TYPE_NOCASTSHADOW]))
+                    {
+                        xmodel.doesCastShadow = false;
+                        break;
+                    }
+            }
+
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
             xmodel.origin.x = transformedPosition.x();
