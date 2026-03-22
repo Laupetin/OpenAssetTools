@@ -291,7 +291,7 @@ namespace BSP
             {
                 uniqueMatData data;
                 data.materialIndex = materialIndex;
-                data.objectIndexes = std::vector<size_t>();
+                data.objectIndexes.emplace_back(objIdx);
                 uniqueMaterials.emplace_back(data);
             }
         }
@@ -378,6 +378,7 @@ namespace BSP
             parentAABBArrayIndex += parentCount;
         }
 
+        *out_treeContents = 0;
         for (auto& matData : uniqueMaterials)
             *out_treeContents |= clipMap->info.materials[matData.materialIndex].contentFlags;
     }
@@ -430,7 +431,7 @@ namespace BSP
             {
                 size_t parentCount = 0;
                 size_t parentStartIndex = 0;
-                int treeContents;
+                int treeContents = 0;
                 addAABBTreeFromLeaf(clipMap, tree, &parentCount, &parentStartIndex, &treeContents);
                 leaf.collAabbCount = static_cast<uint16_t>(parentCount);
                 leaf.firstCollAabbIndex = static_cast<uint16_t>(parentStartIndex);
