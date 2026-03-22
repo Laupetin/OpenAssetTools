@@ -108,6 +108,11 @@ namespace BSP
         BSPSpawnPointType type;
     };
 
+    struct BSPPathNode
+    {
+        vec3_t origin;
+    };
+
     struct BSPData
     {
         std::string name;
@@ -118,6 +123,7 @@ namespace BSP
 
         std::vector<BSPLight> lights;
         std::vector<BSPSpawnPoint> spawnpoints;
+        std::vector<BSPPathNode> pathnodes;
     };
 
     // BSPGameConstants:

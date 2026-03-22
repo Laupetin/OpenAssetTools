@@ -586,6 +586,26 @@ namespace
             return true;
         }
 
+        bool addPathNode_Node(const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->pathnode);
+
+            BSPPathNode pathnode;
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            pathnode.origin.x = transformedPosition.x();
+            pathnode.origin.y = transformedPosition.y();
+            pathnode.origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(pathnode.origin.v);
+
+            m_bsp->pathnodes.emplace_back(pathnode);
+
+            return true;
+        }
+
         bool addSpawnPointNode(const gltf::JsonNode& node)
         {
             assert(node.extras);
@@ -641,6 +661,9 @@ namespace
 
                 if (m_is_world_gfx && node.extras->spawnpoint)
                     return addSpawnPointNode(node);
+
+                if (m_is_world_gfx && node.extras->pathnode)
+                    return addPathNode_Node(node);
             }
 
             if (node.mesh)

@@ -116,6 +116,17 @@ namespace
         }
     }
 
+    void addPathNodesToEntString(BSP::BSPData* bsp, std::string& entityString)
+    {
+        for (auto& pathnode : bsp->pathnodes)
+        {
+            entityString.append("{\n");
+            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(pathnode.origin)));
+            entityString.append(std::format("\"classname\" \"{}\"\n", "node_pathnode"));
+            entityString.append("}\n");
+        }
+    }
+
     constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
     "entities": [
         {
@@ -166,6 +177,8 @@ namespace BSP
                 return nullptr;
 
             addSpawnsToEntString(bsp, entityString);
+
+            addPathNodesToEntString(bsp, entityString);
 
             MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
             mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
