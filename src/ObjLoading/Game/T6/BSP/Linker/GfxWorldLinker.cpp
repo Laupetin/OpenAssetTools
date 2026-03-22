@@ -198,17 +198,6 @@ namespace BSP
             currModel->colorsIndex = 0;
             currModel->visibility = 0;
 
-            // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
-            // TODO: calculate lighting and store it here
-            currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
-            currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
-            currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
-            currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
-            currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
-            currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
-            currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
-            currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
-
             if (!xModelAsset->IsReference())
             {
                 BSPUtil::calculateXmodelBounds(currModel->model, currModel->placement.axis, currModelInst->mins, currModelInst->maxs);
@@ -218,6 +207,21 @@ namespace BSP
                 currModelInst->maxs.x = (currModelInst->maxs.x * bspModel.scale) + bspModel.origin.x;
                 currModelInst->maxs.y = (currModelInst->maxs.y * bspModel.scale) + bspModel.origin.y;
                 currModelInst->maxs.z = (currModelInst->maxs.z * bspModel.scale) + bspModel.origin.z;
+
+                for (uint16_t lodIdx = 0; lodIdx < currModel->model->numLods; lodIdx++)
+                {
+                    uint16_t vertCount = 0;
+                    for (auto surfaceIndex = 0u; surfaceIndex < currModel->model->lodInfo[lodIdx].numsurfs; surfaceIndex++)
+                    {
+                        const auto& surface = currModel->model->surfs[surfaceIndex + currModel->model->lodInfo[lodIdx].surfIndex];
+                        vertCount += surface.vertCount;
+                    }
+
+                    currModel->lmapVertexInfo[lodIdx].numLmapVertexColors = vertCount;
+                    currModel->lmapVertexInfo[lodIdx].lmapVertexColors = m_memory.Alloc<unsigned int>(vertCount);
+                    // a value of 1 makes shadowed surfaces slightly easier to see
+                    memset(currModel->lmapVertexInfo[lodIdx].lmapVertexColors, 1, sizeof(unsigned int) * vertCount);
+                }
             }
             else
             {
@@ -236,6 +240,16 @@ namespace BSP
                     currModelInst->maxs.y = bspModel.origin.y + 1.0f;
                     currModelInst->maxs.z = bspModel.origin.z + 1.0f;
                 }
+
+                // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
+                currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
+                currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
+                currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
+                currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
+                currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
+                currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
+                currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
+                currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
             }
             currModelInst->lightingOrigin.x = 0.0f;
             currModelInst->lightingOrigin.y = 0.0f;
