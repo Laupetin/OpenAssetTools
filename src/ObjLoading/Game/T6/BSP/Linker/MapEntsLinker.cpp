@@ -69,6 +69,7 @@ namespace
     {
         if (bsp->spawnpoints.size() == 0)
         {
+            con::info("No spawnpoints found, setting all spawns to (0, 0, 0)");
             BSP::BSPSpawnPoint defaultSpawnPoint;
             defaultSpawnPoint.origin.x = 0.0f;
             defaultSpawnPoint.origin.y = 0.0f;
