@@ -182,9 +182,12 @@ namespace BSP
             BSPUtil::convertQuaternionToAxis(&bspModel.rotationQuaternion, currModel->placement.axis);
             currModel->placement.scale = bspModel.scale;
 
-            currModel->cullDist = 10000.0f;
             currModel->flags = 0;
-            currModel->primaryLightIndex = 0;
+            if (!bspModel.doesCastShadow)
+                currModel->flags |= STATIC_MODEL_FLAG_NO_SHADOW;
+
+            currModel->cullDist = 10000.0f;
+            currModel->primaryLightIndex = 1;
             currModel->reflectionProbeIndex = 0;
             currModel->smid = modelIdx;
 
@@ -357,13 +360,21 @@ namespace BSP
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
         for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
         {
-
+            // smodelCount and smodelIndex is filled next loop
             gfxWorld->shadowGeom[lightIdx].smodelCount = 0;
-            gfxWorld->shadowGeom[lightIdx].smodelIndex = nullptr;
+            gfxWorld->shadowGeom[lightIdx].smodelIndex = m_memory.Alloc<uint16_t>(gfxWorld->dpvs.smodelCount);
 
-            // sorted surfs is written to by the game
+            // sorted surfs and surfaceCount is recalculated each frame
             gfxWorld->shadowGeom[lightIdx].surfaceCount = gfxWorld->dpvs.staticSurfaceCount;
             gfxWorld->shadowGeom[lightIdx].sortedSurfIndex = m_memory.Alloc<uint16_t>(gfxWorld->dpvs.staticSurfaceCount);
+        }
+        for (unsigned int modelIdx = 0; modelIdx < gfxWorld->dpvs.smodelCount; modelIdx++)
+        {
+            if ((gfxWorld->dpvs.smodelDrawInsts[modelIdx].flags & STATIC_MODEL_FLAG_NO_SHADOW) != 0)
+                continue;
+            char lightIndex = gfxWorld->dpvs.smodelDrawInsts[modelIdx].primaryLightIndex;
+            gfxWorld->shadowGeom[lightIndex].smodelIndex[gfxWorld->shadowGeom[lightIndex].smodelCount] = modelIdx;
+            gfxWorld->shadowGeom[lightIndex].smodelCount++;
         }
 
         gfxWorld->lightRegion = m_memory.Alloc<GfxLightRegion>(gfxWorld->primaryLightCount);
@@ -779,7 +790,7 @@ namespace BSP
 
         loadLightGrid(gfxWorld);
 
-        loadGfxLights(bsp, gfxWorld);
+        loadGfxLights(bsp, gfxWorld); // requires xmodels and surfaces
 
         loadModels(gfxWorld);
 
