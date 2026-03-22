@@ -61,11 +61,6 @@ namespace BSP
             BSPSurface& bspSurface = bsp->gfxWorld.surfaces.at(surfIdx);
             GfxSurface* gfxSurface = &gfxWorld->dpvs.surfaces[surfIdx];
 
-            gfxSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
-            gfxSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
-            gfxSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
-            gfxSurface->flags = BSPEditableConstants::DEFAULT_SURFACE_FLAGS;
-
             gfxSurface->tris.triCount = bspSurface.triCount;
             gfxSurface->tris.baseIndex = bspSurface.indexOfFirstIndex;
             gfxSurface->tris.vertexCount = bspSurface.vertexCount;
@@ -108,6 +103,20 @@ namespace BSP
             gfxSurface->tris.maxs.x = gfxSurface->bounds[1].x;
             gfxSurface->tris.maxs.y = gfxSurface->bounds[1].y;
             gfxSurface->tris.maxs.z = gfxSurface->bounds[1].z;
+
+            gfxSurface->flags = 0;
+            if ((bspMaterial.contentFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_SKY].contentFlags) != 0)
+                gfxSurface->flags |= GFX_SURFACE_IS_SKY;
+            if ((bspMaterial.contentFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].contentFlags) != 0)
+                gfxSurface->flags |= GFX_SURFACE_NO_DRAW;
+            if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_CASTSUNSHADOW].surfaceFlags) != 0)
+                gfxSurface->flags |= GFX_SURFACE_CASTS_SUN_SHADOW;
+            if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NOCASTSHADOW].surfaceFlags) == 0)
+                gfxSurface->flags |= GFX_SURFACE_CASTS_SHADOW;
+
+            gfxSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
+            gfxSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
+            gfxSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
 
             // unknown value
             gfxSurface->tris.himipRadiusInvSq = 0.0f;
