@@ -123,13 +123,13 @@ namespace BSP
 
         // set all surface types to lit opaque
         gfxWorld->dpvs.litSurfsBegin = 0;
-        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount - 1);
-        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount - 1);
+        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
 
         // visdata is written to by the game
         // all visdata is alligned by 128
