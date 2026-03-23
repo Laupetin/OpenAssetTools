@@ -1038,7 +1038,7 @@ namespace
 
 namespace BSP
 {
-    std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath)
+    std::unique_ptr<BSPData> createBSPData(std::string& mapName, ISearchPath& searchPath, bool isZombiesMap)
     {
         bool seperateColFile = true;
         bool isGfxFileGltf = true;
@@ -1075,6 +1075,7 @@ namespace BSP
         std::unique_ptr<BSPData> bsp = std::make_unique<BSPData>();
         bsp->name = mapName;
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
+        bsp->isZombiesMap = isZombiesMap;
 
         BSPLoader loader(bsp.get());
         if (isGfxFileGltf)

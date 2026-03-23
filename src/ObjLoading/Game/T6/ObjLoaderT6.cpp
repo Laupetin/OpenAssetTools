@@ -446,7 +446,7 @@ namespace T6
             collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
 
             if (definition.m_map_type != ZoneDefinitionMapType::NONE)
-                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
+                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone, definition.m_map_type));
         }
     } // namespace
 
