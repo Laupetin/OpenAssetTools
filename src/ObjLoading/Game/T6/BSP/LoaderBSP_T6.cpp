@@ -11,10 +11,11 @@ namespace
     class BSPLoader final : public IAssetCreator
     {
     public:
-        BSPLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        BSPLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone, ZoneDefinitionMapType mapType)
             : m_memory(memory),
               m_search_path(searchPath),
-              m_zone(zone)
+              m_zone(zone),
+              m_mapType(mapType)
         {
         }
 
@@ -32,7 +33,7 @@ namespace
 
         bool FinalizeZone(AssetCreationContext& context) override
         {
-            std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path);
+            std::unique_ptr<BSPData> bsp = BSP::createBSPData(m_zone.m_name, m_search_path, m_mapType == ZoneDefinitionMapType::ZM);
             if (bsp == nullptr)
                 return false;
 
@@ -48,13 +49,14 @@ namespace
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
         Zone& m_zone;
+        ZoneDefinitionMapType m_mapType;
     };
 } // namespace
 
 namespace BSP
 {
-    std::unique_ptr<IAssetCreator> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<IAssetCreator> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone, ZoneDefinitionMapType mapType)
     {
-        return std::make_unique<BSPLoader>(memory, searchPath, zone);
+        return std::make_unique<BSPLoader>(memory, searchPath, zone, mapType);
     }
 } // namespace BSP

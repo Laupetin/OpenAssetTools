@@ -117,6 +117,7 @@ namespace BSP
     {
         std::string name;
         std::string bspName;
+        bool isZombiesMap;
 
         BSPWorld gfxWorld;
         BSPWorld colWorld;

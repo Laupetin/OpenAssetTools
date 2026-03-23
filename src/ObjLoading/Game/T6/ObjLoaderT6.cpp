@@ -443,7 +443,7 @@ namespace T6
             collection.AddAssetCreator(z_barrier::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
 
             if (definition.m_map_type != ZoneDefinitionMapType::NONE)
-                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone));
+                collection.AddAssetCreator(BSP::CreateLoaderT6(memory, searchPath, zone, definition.m_map_type));
         }
     } // namespace
 
