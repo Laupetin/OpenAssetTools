@@ -30,11 +30,11 @@ namespace techset
 
         const auto shaderSize = static_cast<size_t>(file.m_length);
         auto shaderData = std::make_unique<char[]>(shaderSize);
-        file.m_stream->read(shaderData.get(), shaderSize);
+        file.m_stream->read(shaderData.get(), static_cast<std::streamsize>(shaderSize));
         file.m_stream.reset();
 
         *ppData = shaderData.get();
-        *pBytes = shaderSize;
+        *pBytes = static_cast<UINT>(shaderSize);
 
         m_file_buffers_in_use.push_back(std::move(shaderData));
 
