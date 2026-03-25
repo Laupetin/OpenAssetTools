@@ -5,12 +5,15 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <utility>
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <dlfcn.h>
 #endif
 
 namespace
@@ -64,6 +67,19 @@ namespace
 #define OAT_D3DCOMPILE_DEBUG_NAME_FOR_SOURCE 0x00400000
 #define OAT_D3DCOMPILE_DEBUG_NAME_FOR_BINARY 0x00800000
 
+#ifndef _WIN32
+#ifdef __x86_64__
+#define __stdcall __attribute__((ms_abi))
+#else
+#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 2)) || defined(__APPLE__)
+#define __stdcall __attribute__((__stdcall__)) __attribute__((__force_align_arg_pointer__))
+#else
+#define __stdcall __attribute__((__stdcall__))
+#endif
+#endif
+#endif
+#define STDMETHODCALLTYPE __stdcall
+
     enum OAT_D3D_INCLUDE_TYPE : uint32_t
     {
         OAT_D3D_INCLUDE_LOCAL = 0,
@@ -72,9 +88,10 @@ namespace
 
     struct OAT_ID3DInclude
     {
-        virtual OAT_HRESULT __stdcall Open(
-            OAT_D3D_INCLUDE_TYPE includeType, const char* fileName, const void* parentData, const void** data, unsigned int* size) = 0;
-        virtual OAT_HRESULT __stdcall Close(const void* data) = 0;
+        // clang-format off
+        virtual OAT_HRESULT STDMETHODCALLTYPE Open(OAT_D3D_INCLUDE_TYPE includeType, const char* fileName, const void* parentData, const void** data, unsigned int* size) = 0;
+        virtual OAT_HRESULT STDMETHODCALLTYPE Close(const void* data) = 0;
+        // clang-format on
     };
 
     struct OAT_GUID
@@ -89,18 +106,18 @@ namespace
 
     struct OAT_IUnknown
     {
-        virtual OAT_HRESULT __stdcall QueryInterface(const OAT_IID& riid, void** object) = 0;
+        virtual OAT_HRESULT STDMETHODCALLTYPE QueryInterface(const OAT_IID& riid, void** object) = 0;
 
-        virtual OAT_ULONG __stdcall AddRef() = 0;
+        virtual OAT_ULONG STDMETHODCALLTYPE AddRef() = 0;
 
-        virtual OAT_ULONG __stdcall Release() = 0;
+        virtual OAT_ULONG STDMETHODCALLTYPE Release() = 0;
     };
 
     struct OAT_ID3DBlob : OAT_IUnknown
     {
-        virtual void* __stdcall GetBufferPointer() = 0;
+        virtual void* STDMETHODCALLTYPE GetBufferPointer() = 0;
 
-        virtual OAT_SIZE_T __stdcall GetBufferSize() = 0;
+        virtual OAT_SIZE_T STDMETHODCALLTYPE GetBufferSize() = 0;
     };
 
     struct OAT_D3D_SHADER_MACRO
@@ -109,17 +126,17 @@ namespace
         const char* Definition;
     };
 
-    typedef OAT_HRESULT(__stdcall* D3DCompile_t)(const void* data,
-                                                 OAT_SIZE_T dataSize,
-                                                 const char* filename,
-                                                 const OAT_D3D_SHADER_MACRO* defines,
-                                                 OAT_ID3DInclude* include,
-                                                 const char* entrypoint,
-                                                 const char* target,
-                                                 unsigned int flags,
-                                                 unsigned int effectFlags,
-                                                 OAT_ID3DBlob** shader,
-                                                 OAT_ID3DBlob** errorMessages);
+    typedef OAT_HRESULT(STDMETHODCALLTYPE* D3DCompile_t)(const void* data,
+                                                         OAT_SIZE_T dataSize,
+                                                         const char* filename,
+                                                         const OAT_D3D_SHADER_MACRO* defines,
+                                                         OAT_ID3DInclude* include,
+                                                         const char* entrypoint,
+                                                         const char* target,
+                                                         unsigned int flags,
+                                                         unsigned int effectFlags,
+                                                         OAT_ID3DBlob** shader,
+                                                         OAT_ID3DBlob** errorMessages);
 
     constexpr size_t MAX_SHADER_SIZE = 0x1900000u;
 
@@ -132,7 +149,7 @@ namespace
         }
 
         OAT_HRESULT
-        __stdcall Open(OAT_D3D_INCLUDE_TYPE includeType, const char* fileName, const void* parentData, const void** data, unsigned int* size) override
+        STDMETHODCALLTYPE Open(OAT_D3D_INCLUDE_TYPE includeType, const char* fileName, const void* parentData, const void** data, unsigned int* size) override
         {
             const auto fullFileName = shader::GetSourceFileNameForShaderAssetName(fileName);
             auto file = m_search_path.Open(fullFileName);
@@ -158,7 +175,7 @@ namespace
             return OAT_S_OK;
         }
 
-        OAT_HRESULT __stdcall Close(const void* data) override
+        OAT_HRESULT STDMETHODCALLTYPE Close(const void* data) override
         {
             for (auto i = m_file_buffers_in_use.begin(); i != m_file_buffers_in_use.end(); ++i)
             {
@@ -185,6 +202,13 @@ namespace
     {
 #ifdef _WIN32
         con::warn("Could not initialize shader compilation. Make sure DirectX is installed on your machine if you want to make use of it.");
+#else
+#ifdef ARCH_x86
+#define REQUIRED_VKD3D "lib32-vkd3d"
+#else
+#define REQUIRED_VKD3D "vkd3d"
+#endif
+        con::warn("Could not initialize shader compilation. Make sure " REQUIRED_VKD3D " is installed if you want to make use of it.");
 #endif
     }
 
@@ -201,6 +225,23 @@ namespace
         }
 
         const auto d3dCompileAddress = GetProcAddress(d3dCompiler, "D3DCompile");
+        if (!d3dCompileAddress)
+        {
+            PrintInitializationFailedMessage();
+            return;
+        }
+
+        d3dCompile = reinterpret_cast<D3DCompile_t>(d3dCompileAddress);
+        compilationAvailable = true;
+#else
+        const auto libvkd3dUtils = dlopen("libvkd3d-utils.so", RTLD_NOW);
+        if (!libvkd3dUtils)
+        {
+            PrintInitializationFailedMessage();
+            return;
+        }
+
+        const auto d3dCompileAddress = dlsym(libvkd3dUtils, "D3DCompile");
         if (!d3dCompileAddress)
         {
             PrintInitializationFailedMessage();
