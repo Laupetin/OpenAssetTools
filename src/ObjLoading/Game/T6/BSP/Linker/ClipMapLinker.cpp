@@ -120,40 +120,6 @@ namespace BSP
         clipMap->ropes = m_memory.Alloc<rope_t>(clipMap->max_ropes);
     }
 
-    void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
-    {
-        // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
-        clipMap->numSubModels = 1;
-        clipMap->cmodels = m_memory.Alloc<cmodel_t>(clipMap->numSubModels);
-        for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
-        {
-            vec3_t vertex = clipMap->verts[vertIdx];
-            if (vertIdx == 0)
-            {
-                clipMap->cmodels[0].mins = vertex;
-                clipMap->cmodels[0].maxs = vertex;
-            }
-            else
-                BSPUtil::updateAABBWithPoint(vertex, clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs);
-        }
-        clipMap->cmodels[0].radius = BSPUtil::distBetweenPoints(clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs) / 2;
-
-        // The world sub model has no leafs associated with it
-        clipMap->cmodels[0].leaf.firstCollAabbIndex = 0;
-        clipMap->cmodels[0].leaf.collAabbCount = 0;
-        clipMap->cmodels[0].leaf.brushContents = 0;
-        clipMap->cmodels[0].leaf.terrainContents = 0;
-        clipMap->cmodels[0].leaf.mins.x = 0.0f;
-        clipMap->cmodels[0].leaf.mins.y = 0.0f;
-        clipMap->cmodels[0].leaf.mins.z = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.x = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.y = 0.0f;
-        clipMap->cmodels[0].leaf.maxs.z = 0.0f;
-        clipMap->cmodels[0].leaf.leafBrushNode = 0;
-        clipMap->cmodels[0].leaf.cluster = 0;
-        clipMap->cmodels[0].info = nullptr;
-    }
-
     bool ClipMapLinker::loadXModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // it seems like for players to be able to collide with xmodels, it requires xmodel->collmaps to be valid.
@@ -236,6 +202,115 @@ namespace BSP
         return true;
     }
 
+    void calculatePartitionAABB(clipMap_t* clipMap, CollisionPartition* partition, vec3_t& out_mins, vec3_t& out_maxs);
+    void addAABBTreeFromPartitions(
+        clipMap_t* clipMap, std::vector<int>& partitions, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents);
+
+    void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
+    {
+        // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
+        clipMap->numSubModels = static_cast<unsigned int>(bsp->models.size() + 1);
+        clipMap->cmodels = m_memory.Alloc<cmodel_t>(clipMap->numSubModels);
+
+        // first model is always the world model
+        for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
+        {
+            vec3_t vertex = clipMap->verts[vertIdx];
+            if (vertIdx == 0)
+            {
+                clipMap->cmodels[0].mins = vertex;
+                clipMap->cmodels[0].maxs = vertex;
+            }
+            else
+                BSPUtil::updateAABBWithPoint(vertex, clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs);
+        }
+        clipMap->cmodels[0].radius = BSPUtil::distBetweenPoints(clipMap->cmodels[0].mins, clipMap->cmodels[0].maxs) / 2;
+        // The world sub model has no data apart from the bounds
+        clipMap->cmodels[0].leaf.firstCollAabbIndex = 0;
+        clipMap->cmodels[0].leaf.collAabbCount = 0;
+        clipMap->cmodels[0].leaf.brushContents = 0;
+        clipMap->cmodels[0].leaf.terrainContents = 0;
+        clipMap->cmodels[0].leaf.mins.x = 0.0f;
+        clipMap->cmodels[0].leaf.mins.y = 0.0f;
+        clipMap->cmodels[0].leaf.mins.z = 0.0f;
+        clipMap->cmodels[0].leaf.maxs.x = 0.0f;
+        clipMap->cmodels[0].leaf.maxs.y = 0.0f;
+        clipMap->cmodels[0].leaf.maxs.z = 0.0f;
+        clipMap->cmodels[0].leaf.leafBrushNode = 0;
+        clipMap->cmodels[0].leaf.cluster = 0;
+        clipMap->cmodels[0].info = nullptr;
+
+        for (size_t modelIdx = 0; modelIdx < bsp->models.size(); modelIdx++)
+        {
+            auto clipModel = &clipMap->cmodels[modelIdx + 1];
+            auto& bspMpdel = bsp->models.at(modelIdx);
+
+            if (bspMpdel.isGfxModel)
+            {
+                clipModel->mins.x = 0.0f;
+                clipModel->mins.y = 0.0f;
+                clipModel->mins.z = 0.0f;
+                clipModel->maxs.x = 0.0f;
+                clipModel->maxs.y = 0.0f;
+                clipModel->maxs.z = 0.0f;
+                clipModel->radius = 0.0f;
+                clipModel->leaf.brushContents = 0;
+                clipModel->leaf.mins.x = 0.0f;
+                clipModel->leaf.mins.y = 0.0f;
+                clipModel->leaf.mins.z = 0.0f;
+                clipModel->leaf.maxs.x = 0.0f;
+                clipModel->leaf.maxs.y = 0.0f;
+                clipModel->leaf.maxs.z = 0.0f;
+                clipModel->leaf.leafBrushNode = 0;
+                clipModel->leaf.cluster = 0;
+                clipModel->info = nullptr;
+                continue;
+            }
+
+            std::vector<int> partitionIndexes;
+            for (size_t surfIdx = 0; surfIdx < bspMpdel.surfaceCount; surfIdx++)
+            {
+                ColSurface& surf = collisionSurfaceVec.at(bspMpdel.surfaceIndex + surfIdx);
+                for (size_t partitionIdx = 0; partitionIdx < surf.partitionCount; partitionIdx++)
+                {
+                    size_t clipMapPartitionIndex = surf.partitionStartIndex + partitionIdx;
+                    partitionIndexes.emplace_back(clipMapPartitionIndex);
+                    vec3_t mins;
+                    vec3_t maxs;
+                    calculatePartitionAABB(clipMap, &clipMap->partitions[clipMapPartitionIndex], mins, maxs);
+                    if (surfIdx == 0 && partitionIdx == 0)
+                    {
+                        clipModel->mins = mins;
+                        clipModel->maxs = maxs;
+                    }
+                    else
+                        BSPUtil::updateAABB(mins, maxs, clipModel->mins, clipModel->maxs);
+                }
+            }
+            clipModel->radius = BSPUtil::distBetweenPoints(clipModel->mins, clipModel->maxs) / 2;
+
+            int terrainContents = 0;
+            size_t firstCollAabbIndex = 0;
+            size_t collAabbCount = 0;
+            addAABBTreeFromPartitions(clipMap, partitionIndexes, &collAabbCount, &firstCollAabbIndex, &terrainContents);
+            clipModel->leaf.terrainContents = terrainContents;
+            clipModel->leaf.firstCollAabbIndex = static_cast<uint16_t>(firstCollAabbIndex);
+            clipModel->leaf.collAabbCount = static_cast<uint16_t>(collAabbCount);
+
+            // no brush
+            clipModel->leaf.brushContents = 0;
+            clipModel->leaf.mins.x = 0.0f;
+            clipModel->leaf.mins.y = 0.0f;
+            clipModel->leaf.mins.z = 0.0f;
+            clipModel->leaf.maxs.x = 0.0f;
+            clipModel->leaf.maxs.y = 0.0f;
+            clipModel->leaf.maxs.z = 0.0f;
+            clipModel->leaf.leafBrushNode = 0;
+            clipModel->leaf.cluster = 0;
+            clipModel->info = nullptr;
+        }
+    }
+
     // out_mins and out_maxs are initialised in the function
     void calculatePartitionAABB(clipMap_t* clipMap, CollisionPartition* partition, vec3_t& out_mins, vec3_t& out_maxs)
     {
@@ -257,10 +332,129 @@ namespace BSP
 
     struct uniqueMatData
     {
-        unsigned int materialIndex;
-        std::vector<size_t> objectIndexes;
+        size_t materialIndex;
+        std::vector<int> partitionIndexes;
     };
 
+    void ClipMapLinker::addAABBTreeFromPartitions(
+        clipMap_t* clipMap, std::vector<int>& partitions, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents)
+    {
+        size_t partitionCount = partitions.size();
+        assert(partitionCount > 0);
+        if (partitionCount > highestPartitionCountForAABB)
+            highestPartitionCountForAABB = partitionCount;
+
+        std::vector<uniqueMatData> uniqueMaterials;
+        for (size_t partArrayIdx = 0; partArrayIdx < partitionCount; partArrayIdx++)
+        {
+            int partitionIdx = partitions.at(partArrayIdx);
+            size_t materialIndex = collisionSurfaceVec.at(partitionToColSurfaceMap.at(partitionIdx)).materialIndex;
+            bool foundIdx = false;
+            for (auto& uniqueMat : uniqueMaterials)
+            {
+                if (uniqueMat.materialIndex == materialIndex)
+                {
+                    uniqueMat.partitionIndexes.emplace_back(partitionIdx);
+                    foundIdx = true;
+                    break;
+                }
+            }
+            if (!foundIdx)
+            {
+                uniqueMatData data;
+                data.materialIndex = materialIndex;
+                data.partitionIndexes.emplace_back(partitionIdx);
+                uniqueMaterials.emplace_back(data);
+            }
+        }
+
+        // BO2 has a maximum limit of 128 children per AABB tree (essentially),
+        // so this is fixed by adding multiple parent AABB trees that hold 128 children each
+        size_t totalParentCount = 0;
+        for (auto& matData : uniqueMaterials)
+        {
+            size_t objCount = matData.partitionIndexes.size();
+            size_t result = objCount / BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+            size_t remainder = objCount % BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+            if (remainder > 0)
+                result++;
+            totalParentCount += result;
+        }
+
+        // every parent node needs to be contiguous in memory
+        size_t parentAABBArrayIndex = AABBTreeVec.size();
+        AABBTreeVec.resize(AABBTreeVec.size() + totalParentCount);
+        *out_parentCount = totalParentCount;
+        *out_parentStartIndex = parentAABBArrayIndex;
+
+        for (auto& matData : uniqueMaterials)
+        {
+            size_t matPartCount = matData.partitionIndexes.size();
+            size_t parentCount = matPartCount / BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+            size_t remainder = matPartCount % BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+            if (remainder > 0)
+                parentCount++;
+
+            size_t unaddedObjectCount = matPartCount;
+            size_t addedObjectCount = 0;
+            for (size_t parentIdx = 0; parentIdx < parentCount; parentIdx++)
+            {
+                size_t currChildObjectCount = BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+                if (unaddedObjectCount <= BSPGameConstants::MAX_AABB_TREE_CHILDREN)
+                    currChildObjectCount = unaddedObjectCount;
+                else
+                    unaddedObjectCount -= BSPGameConstants::MAX_AABB_TREE_CHILDREN;
+
+                vec3_t parentMins;
+                vec3_t parentMaxs;
+                size_t childObjectStartIndex = AABBTreeVec.size();
+                for (size_t objectIdx = 0; objectIdx < currChildObjectCount; objectIdx++)
+                {
+                    // create a child AABBTree with the partition and add it to AABBTreeVec
+                    int partitionIndex = matData.partitionIndexes.at(addedObjectCount + objectIdx);
+                    CollisionPartition* partition = &clipMap->partitions[partitionIndex];
+                    vec3_t childMins;
+                    vec3_t childMaxs;
+                    calculatePartitionAABB(clipMap, partition, childMins, childMaxs);
+
+                    CollisionAabbTree childAABBTree;
+                    childAABBTree.materialIndex = static_cast<uint16_t>(matData.materialIndex);
+                    childAABBTree.childCount = 0;
+                    childAABBTree.u.partitionIndex = partitionIndex;
+                    childAABBTree.origin = BSPUtil::calcMiddleOfAABB(childMins, childMaxs);
+                    childAABBTree.halfSize = BSPUtil::calcHalfSizeOfAABB(childMins, childMaxs);
+                    AABBTreeVec.emplace_back(childAABBTree);
+
+                    // update the parent AABB with the child AABB
+                    if (objectIdx == 0)
+                    {
+                        parentMins = childMins;
+                        parentMaxs = childMaxs;
+                    }
+                    else
+                        BSPUtil::updateAABB(childMins, childMaxs, parentMins, parentMaxs);
+                }
+
+                CollisionAabbTree parentAABB;
+                parentAABB.materialIndex = static_cast<uint16_t>(matData.materialIndex);
+                parentAABB.origin = BSPUtil::calcMiddleOfAABB(parentMins, parentMaxs);
+                parentAABB.halfSize = BSPUtil::calcHalfSizeOfAABB(parentMins, parentMaxs);
+                parentAABB.childCount = static_cast<uint16_t>(currChildObjectCount);
+                parentAABB.u.firstChildIndex = static_cast<int>(childObjectStartIndex);
+                AABBTreeVec.at(parentAABBArrayIndex + parentIdx) = parentAABB;
+
+                addedObjectCount += currChildObjectCount;
+            }
+
+            parentAABBArrayIndex += parentCount;
+        }
+
+        *out_treeContents = 0;
+        for (auto& matData : uniqueMaterials)
+            *out_treeContents |= clipMap->info.materials[matData.materialIndex].contentFlags;
+    }
+
+    /*
     void ClipMapLinker::addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents)
     {
         assert(tree->isLeaf);
@@ -268,15 +462,15 @@ namespace BSP
 
         size_t leafObjectCount = bspLeaf->getObjectCount();
         assert(leafObjectCount > 0);
-        if (leafObjectCount > highestLeafObjectCount)
-            highestLeafObjectCount = leafObjectCount;
+        if (leafObjectCount > highestPartitionCountForAABB)
+            highestPartitionCountForAABB = leafObjectCount;
 
         // the material index of the AABB tree is only checked for the parent node, so each parent has only children with the same material
         std::vector<uniqueMatData> uniqueMaterials;
         for (size_t objIdx = 0; objIdx < leafObjectCount; objIdx++)
         {
             int partitionIdx = bspLeaf->getObject(objIdx)->partitionIndex;
-            unsigned materialIndex = partitionToMaterialMap[partitionIdx];
+            size_t materialIndex = collisionSurfaceVec.at(partitionToColSurfaceMap.at(partitionIdx)).materialIndex;
             bool foundIdx = false;
             for (auto& uniqueMat : uniqueMaterials)
             {
@@ -382,6 +576,7 @@ namespace BSP
         for (auto& matData : uniqueMaterials)
             *out_treeContents |= clipMap->info.materials[matData.materialIndex].contentFlags;
     }
+    */
 
     constexpr vec3_t normalX = {1.0f, 0.0f, 0.0f};
     constexpr vec3_t normalY = {0.0f, 1.0f, 0.0f};
@@ -432,7 +627,10 @@ namespace BSP
                 size_t parentCount = 0;
                 size_t parentStartIndex = 0;
                 int treeContents = 0;
-                addAABBTreeFromLeaf(clipMap, tree, &parentCount, &parentStartIndex, &treeContents);
+                std::vector<int> partitions;
+                for (size_t objIdx = 0; objIdx < tree->leaf->getObjectCount(); objIdx++)
+                    partitions.emplace_back(tree->leaf->getObject(objIdx)->partitionIndex);
+                addAABBTreeFromPartitions(clipMap, partitions, &parentCount, &parentStartIndex, &treeContents);
                 leaf.collAabbCount = static_cast<uint16_t>(parentCount);
                 leaf.firstCollAabbIndex = static_cast<uint16_t>(parentStartIndex);
                 leaf.terrainContents = treeContents;
@@ -514,15 +712,20 @@ namespace BSP
         }
         std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
 
-        for (int partitionIdx = 0; partitionIdx < clipMap->partitionCount; partitionIdx++)
+        for (size_t surfIdx = 0; surfIdx < bsp->colWorld.staticSurfaceCount; surfIdx++) // only add the surfaces the player will collide with
         {
-            vec3_t partitionMins;
-            vec3_t partitionMaxs;
-            CollisionPartition* partition = &clipMap->partitions[partitionIdx];
-            calculatePartitionAABB(clipMap, partition, partitionMins, partitionMaxs);
-            std::shared_ptr<BSPObject> currObject =
-                std::make_shared<BSPObject>(partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, partitionIdx);
-            tree->addObjectToTree(std::move(currObject));
+            ColSurface& colSurface = collisionSurfaceVec.at(surfIdx);
+            for (size_t partitionIdx = 0; partitionIdx < colSurface.partitionCount; partitionIdx++)
+            {
+                vec3_t partitionMins;
+                vec3_t partitionMaxs;
+                size_t clipMapPartitionIdx = colSurface.partitionStartIndex + partitionIdx;
+                CollisionPartition* partition = &clipMap->partitions[clipMapPartitionIdx];
+                calculatePartitionAABB(clipMap, partition, partitionMins, partitionMaxs);
+                std::shared_ptr<BSPObject> currObject = std::make_shared<BSPObject>(
+                    partitionMins.x, partitionMins.y, partitionMins.z, partitionMaxs.x, partitionMaxs.y, partitionMaxs.z, clipMapPartitionIdx);
+                tree->addObjectToTree(std::move(currObject));
+            }
         }
 
         // load planes, nodes, leafs, and AABB trees
@@ -540,15 +743,11 @@ namespace BSP
         clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
         memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
 
-        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
-        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
-        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
-
         // The plane of each node have the same index
         for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
             clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
 
-        con::info("Highest leaf object count: {}", highestLeafObjectCount);
+        con::info("Highest AABB tree partition count: {}", highestPartitionCountForAABB);
 
         return true;
     }
@@ -568,38 +767,36 @@ namespace BSP
         for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
             clipMap->verts[vertIdx] = bsp->colWorld.vertices[vertIdx].pos;
 
-        // The clipmap index buffer has a unique index for each vertex in the world, compared to the gfxworld's
-        //  index buffer having a unique index for each vertex on a surface. This code converts gfxworld indices to clipmap indices.
         std::vector<uint16_t> triIndexVec;
+        std::vector<CollisionPartition> partitionVec;
+        std::vector<uint16_t> uniqueIndicesVec;
         for (BSPSurface& surface : bsp->colWorld.surfaces)
         {
             int indexOfFirstIndex = surface.indexOfFirstIndex;
-            int indexOfFirstVertex = surface.indexOfFirstVertex;
-            for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
-            {
-                int triIndex = bsp->colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
-                triIndexVec.emplace_back(triIndex);
-            }
-        }
-        // the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
-        clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
-        clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
-        memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
-
-        // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
-        std::vector<CollisionPartition> partitionVec;
-        std::vector<uint16_t> uniqueIndicesVec;
-        for (size_t surfIdx = 0; surfIdx < bsp->colWorld.surfaces.size(); surfIdx++)
-        {
-            BSPSurface& surface = bsp->colWorld.surfaces[surfIdx];
-
-            // partitions are made for each triangle, not one for each surface.
-            //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
-            //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
             int indexOfFirstTri = surface.indexOfFirstIndex / 3;
             int indexOfFirstVertex = surface.indexOfFirstVertex;
+
+            ColSurface colSurface;
+            colSurface.materialIndex = surface.materialIndex;
+            colSurface.partitionCount = surface.triCount;
+            colSurface.partitionStartIndex = partitionVec.size();
+            collisionSurfaceVec.emplace_back(colSurface);
+
             for (int triIdx = 0; triIdx < surface.triCount; triIdx++)
             {
+                // The clipmap index buffer has a unique index for each vertex in the world, compared to the gfxworld's
+                //  index buffer having a unique index for each vertex on a surface. This code converts gfxworld indices to clipmap indices.
+                int triIndex0 = bsp->colWorld.indices[indexOfFirstIndex + (triIdx * 3) + 0] + indexOfFirstVertex;
+                int triIndex1 = bsp->colWorld.indices[indexOfFirstIndex + (triIdx * 3) + 1] + indexOfFirstVertex;
+                int triIndex2 = bsp->colWorld.indices[indexOfFirstIndex + (triIdx * 3) + 2] + indexOfFirstVertex;
+                triIndexVec.emplace_back(triIndex0);
+                triIndexVec.emplace_back(triIndex1);
+                triIndexVec.emplace_back(triIndex2);
+
+                // partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
+                // partitions are made for each triangle, not one for each surface.
+                //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
+                //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
                 CollisionPartition partition;
                 partition.triCount = 1;
                 partition.firstTri = indexOfFirstTri + triIdx;
@@ -608,16 +805,20 @@ namespace BSP
                 partition.fuind = static_cast<int>(uniqueIndicesVec.size());
 
                 // All tri indices are unique since there is only one tri per partition
-                uint16_t* tri = clipMap->triIndices[partition.firstTri];
-                uniqueIndicesVec.emplace_back(tri[0]);
-                uniqueIndicesVec.emplace_back(tri[1]);
-                uniqueIndicesVec.emplace_back(tri[2]);
+                int indexOfTriIndex = partition.firstTri * 3;
+                uniqueIndicesVec.emplace_back(triIndex0);
+                uniqueIndicesVec.emplace_back(triIndex1);
+                uniqueIndicesVec.emplace_back(triIndex2);
 
                 partitionVec.emplace_back(partition);
-
-                partitionToMaterialMap.emplace_back(surface.materialIndex);
+                partitionToColSurfaceMap.emplace_back(collisionSurfaceVec.size() - 1); // -1 as the colSurface has already been added
             }
         }
+
+        clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
+        clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
+        memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
+
         clipMap->partitionCount = static_cast<int>(partitionVec.size());
         clipMap->partitions = m_memory.Alloc<CollisionPartition>(clipMap->partitionCount);
         memcpy(clipMap->partitions, partitionVec.data(), sizeof(CollisionPartition) * partitionVec.size());
@@ -627,6 +828,64 @@ namespace BSP
         memcpy(clipMap->info.uinds, uniqueIndicesVec.data(), sizeof(uint16_t) * uniqueIndicesVec.size());
 
         return true;
+
+        //// The clipmap index buffer has a unique index for each vertex in the world, compared to the gfxworld's
+        ////  index buffer having a unique index for each vertex on a surface. This code converts gfxworld indices to clipmap indices.
+        // std::vector<uint16_t> triIndexVec;
+        // for (BSPSurface& surface : bsp->colWorld.surfaces)
+        //{
+        //     int indexOfFirstIndex = surface.indexOfFirstIndex;
+        //     int indexOfFirstVertex = surface.indexOfFirstVertex;
+        //     for (int indexIdx = 0; indexIdx < surface.triCount * 3; indexIdx++)
+        //     {
+        //         int triIndex = bsp->colWorld.indices[indexOfFirstIndex + indexIdx] + indexOfFirstVertex;
+        //         triIndexVec.emplace_back(triIndex);
+        //     }
+        // }
+        //// the reinterpret_cast is used as triIndices is just a pointer to an array of indicies, and static_cast can't safely do the conversion
+        // clipMap->triCount = static_cast<int>(triIndexVec.size() / 3);
+        // clipMap->triIndices = reinterpret_cast<uint16_t(*)[3]>(m_memory.Alloc<uint16_t>(triIndexVec.size()));
+        // memcpy(clipMap->triIndices, &triIndexVec[0], sizeof(uint16_t) * triIndexVec.size());
+        //
+        //// partitions are "containers" for vertices. BSP tree leafs contain a list of these partitions to determine the collision within a leaf.
+        // std::vector<CollisionPartition> partitionVec;
+        // std::vector<uint16_t> uniqueIndicesVec;
+        // for (size_t surfIdx = 0; surfIdx < bsp->colWorld.surfaces.size(); surfIdx++)
+        //{
+        //     BSPSurface& surface = bsp->colWorld.surfaces[surfIdx];
+        //
+        //     // partitions are made for each triangle, not one for each surface.
+        //     //  one for each surface causes physics bugs, as the entire bounding box is considered solid instead of the surface itself (for some reason).
+        //     //  so a partition is made for each triangle which removes the physics bugs but likely makes the game run slower
+        //     int indexOfFirstTri = surface.indexOfFirstIndex / 3;
+        //     int indexOfFirstVertex = surface.indexOfFirstVertex;
+        //     for (int triIdx = 0; triIdx < surface.triCount; triIdx++)
+        //     {
+        //         CollisionPartition partition;
+        //         partition.triCount = 1;
+        //         partition.firstTri = indexOfFirstTri + triIdx;
+        //
+        //         partition.nuinds = 3;
+        //         partition.fuind = static_cast<int>(uniqueIndicesVec.size());
+        //
+        //         // All tri indices are unique since there is only one tri per partition
+        //         uint16_t* tri = clipMap->triIndices[partition.firstTri];
+        //         uniqueIndicesVec.emplace_back(tri[0]);
+        //         uniqueIndicesVec.emplace_back(tri[1]);
+        //         uniqueIndicesVec.emplace_back(tri[2]);
+        //
+        //         partitionVec.emplace_back(partition);
+        //
+        //         partitionToMaterialMap.emplace_back(surface.materialIndex);
+        //     }
+        // }
+        // clipMap->partitionCount = static_cast<int>(partitionVec.size());
+        // clipMap->partitions = m_memory.Alloc<CollisionPartition>(clipMap->partitionCount);
+        // memcpy(clipMap->partitions, partitionVec.data(), sizeof(CollisionPartition) * partitionVec.size());
+        //
+        // clipMap->info.nuinds = static_cast<int>(uniqueIndicesVec.size());
+        // clipMap->info.uinds = m_memory.Alloc<uint16_t>(uniqueIndicesVec.size());
+        // memcpy(clipMap->info.uinds, uniqueIndicesVec.data(), sizeof(uint16_t) * uniqueIndicesVec.size());
 
         /*
         // Proper unique index creation code kept for future use
@@ -758,6 +1017,11 @@ namespace BSP
         int walkableEdgeSize = (3 * clipMap->triCount + 31) / 32 * 4;
         clipMap->triEdgeIsWalkable = m_memory.Alloc<char>(walkableEdgeSize);
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
+
+        // multiple functions add to AABBTreeVec, so it is added to the clipmap last
+        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
+        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
+        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
 
         return clipMap;
     }

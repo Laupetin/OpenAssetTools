@@ -541,11 +541,10 @@ namespace BSP
         }
     }
 
-    void GfxWorldLinker::loadModels(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadModels(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // Models (Submodels in the clipmap code) are used for the world and map ent collision (triggers, bomb zones, etc)
-        // Right now there is only one submodel, the world sub model
-        gfxWorld->modelCount = 1;
+        gfxWorld->modelCount = static_cast<int>(bsp->models.size() + 1);
         gfxWorld->models = m_memory.Alloc<GfxBrushModel>(gfxWorld->modelCount);
 
         // first model is always the world model
@@ -559,23 +558,40 @@ namespace BSP
         gfxWorld->models[0].bounds[1].z = gfxWorld->maxs.z;
         memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
 
-        // Other models aren't implemented yet
-        // Code kept for future use
-        // for (size_t i = 0; i < entityModelList.size(); i++)
-        //{
-        //    auto currEntModel = &gfxWorld->models[i + 1];
-        //    entModelBounds currEntModelBounds = entityModelList[i];
-        //
-        //    currEntModel->startSurfIndex = 0;
-        //    currEntModel->surfaceCount = -1; // -1 when it doesn't use map surfaces
-        //    currEntModel->bounds[0].x = currEntModelBounds.mins.x;
-        //    currEntModel->bounds[0].y = currEntModelBounds.mins.y;
-        //    currEntModel->bounds[0].z = currEntModelBounds.mins.z;
-        //    currEntModel->bounds[1].x = currEntModelBounds.maxs.x;
-        //    currEntModel->bounds[1].y = currEntModelBounds.maxs.y;
-        //    currEntModel->bounds[1].z = currEntModelBounds.maxs.z;
-        //    memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
-        //}
+        for (size_t modelIdx = 0; modelIdx < bsp->models.size(); modelIdx++)
+        {
+            auto currEntModel = &gfxWorld->models[modelIdx + 1];
+            auto& bspMpdel = bsp->models.at(modelIdx);
+
+            if (bspMpdel.isGfxModel)
+            {
+                currEntModel->startSurfIndex = bspMpdel.surfaceIndex;
+                currEntModel->surfaceCount = bspMpdel.surfaceCount;
+                for (size_t surfIdx = 0; surfIdx < bspMpdel.surfaceCount; surfIdx++)
+                {
+                    GfxSurface* surf = &gfxWorld->dpvs.surfaces[bspMpdel.surfaceIndex + surfIdx];
+                    if (surfIdx == 0)
+                    {
+                        currEntModel->bounds[0] = surf->bounds[0];
+                        currEntModel->bounds[1] = surf->bounds[1];
+                    }
+                    else
+                        BSPUtil::updateAABB(surf->bounds[0], surf->bounds[1], currEntModel->bounds[0], currEntModel->bounds[1]);
+                }
+            }
+            else
+            {
+                currEntModel->startSurfIndex = 0;
+                currEntModel->surfaceCount = -1; // -1 when it doesn't use map surfaces
+                currEntModel->bounds[0].x = 0.0f;
+                currEntModel->bounds[0].y = 0.0f;
+                currEntModel->bounds[0].z = 0.0f;
+                currEntModel->bounds[1].x = 0.0f;
+                currEntModel->bounds[1].y = 0.0f;
+                currEntModel->bounds[1].z = 0.0f;
+            }
+            memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
+        }
     }
 
     void GfxWorldLinker::loadSunData(GfxWorld* gfxWorld)
@@ -687,7 +703,8 @@ namespace BSP
 
     void GfxWorldLinker::loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld)
     {
-        std::string skyBoxName = "skybox_" + projInfo->name;
+        // std::string skyBoxName = "skybox_" + projInfo->name;
+        std::string skyBoxName = "skybox_zm_transit";
         gfxWorld->skyBoxModel = m_memory.Dup(skyBoxName.c_str());
 
         if (m_context.LoadDependency<AssetXModel>(skyBoxName) == nullptr)
@@ -806,7 +823,7 @@ namespace BSP
 
         loadGfxLights(bsp, gfxWorld); // requires xmodels and surfaces
 
-        loadModels(gfxWorld);
+        loadModels(bsp, gfxWorld); // requires surfaces
 
         loadSunData(gfxWorld);
 

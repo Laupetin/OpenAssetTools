@@ -2,8 +2,7 @@
 
 #include "../BSPUtil.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <numbers>
 
 namespace BSP
 {
@@ -184,9 +183,9 @@ namespace BSP
                     light->type = GFX_LIGHT_TYPE_OMNI;
                     light->defName = "white_light_cube";
                     light->roundness = 0.0f;
-                    light->cosHalfFovInner = cosf(30.0f * (M_PI / 180.0f));
-                    light->cosHalfFovOuter = cosf(55.0f * (M_PI / 180.0f));
-                    light->cosHalfFovExpanded = cosf(55.0f * (M_PI / 180.0f));
+                    light->cosHalfFovInner = cosf(30.0f * (std::numbers::pi_v<float> / 180.0f));
+                    light->cosHalfFovOuter = cosf(55.0f * (std::numbers::pi_v<float> / 180.0f));
+                    light->cosHalfFovExpanded = cosf(55.0f * (std::numbers::pi_v<float> / 180.0f));
                 }
                 setLightCommonValues(light, bspLight);
             }

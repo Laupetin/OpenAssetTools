@@ -167,17 +167,17 @@ namespace BSP
         float quatZ = quat->v[2];
         float quatW = quat->v[3];
 
-        float xx = (quatX * 2.0) * quatX;
-        float xy = (quatX * 2.0) * quatY;
-        float xz = (quatX * 2.0) * quatZ;
-        float xw = (quatX * 2.0) * quatW;
+        float xx = (quatX * 2.0f) * quatX;
+        float xy = (quatX * 2.0f) * quatY;
+        float xz = (quatX * 2.0f) * quatZ;
+        float xw = (quatX * 2.0f) * quatW;
 
-        float yy = (quatY * 2.0) * quatY;
-        float yz = (quatY * 2.0) * quatZ;
-        float yw = (quatY * 2.0) * quatW;
+        float yy = (quatY * 2.0f) * quatY;
+        float yz = (quatY * 2.0f) * quatZ;
+        float yw = (quatY * 2.0f) * quatW;
 
-        float zz = (quatZ * 2.0) * quatZ;
-        float zw = (quatZ * 2.0) * quatW;
+        float zz = (quatZ * 2.0f) * quatZ;
+        float zw = (quatZ * 2.0f) * quatW;
 
         axis->x = 1.0f - (zz + yy);
         axis->y = zw + xy;

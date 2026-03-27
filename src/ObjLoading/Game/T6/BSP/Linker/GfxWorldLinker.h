@@ -25,7 +25,7 @@ namespace BSP
         void loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld);
         void loadLightGrid(GfxWorld* gfxWorld);
         void loadGfxCells(GfxWorld* gfxWorld);
-        void loadModels(GfxWorld* gfxWorld);
+        void loadModels(BSPData* bsp, GfxWorld* gfxWorld);
         bool loadReflectionProbeData(GfxWorld* gfxWorld);
         bool loadLightmapData(GfxWorld* gfxWorld);
         void loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld);
