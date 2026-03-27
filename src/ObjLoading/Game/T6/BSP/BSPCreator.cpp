@@ -612,26 +612,14 @@ namespace
             assert(node.extras->spawnpoint);
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
-            BSPSpawnPoint spawnPoint;
-
-            if (!node.extras->spawnpoint->compare("attacker"))
-                spawnPoint.type = SPAWNPOINT_TYPE_ATTACKER;
-            else if (!node.extras->spawnpoint->compare("defender"))
-                spawnPoint.type = SPAWNPOINT_TYPE_DEFENDER;
-            else if (!node.extras->spawnpoint->compare("all"))
-                spawnPoint.type = SPAWNPOINT_TYPE_ALL;
-            else
-            {
-                con::warn("Ignoring spawn point with an invalid type (must be attacker, defender or all)");
-                return false;
-            }
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            spawnPoint.origin.x = transformedPosition.x();
-            spawnPoint.origin.y = transformedPosition.y();
-            spawnPoint.origin.z = transformedPosition.z();
-            RhcToLhcCoordinates(spawnPoint.origin.v);
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
 
             // GLTF default direction is +Y up
             Eigen::Vector3f defaultDirection(0.0f, 1.0f, 0.0f);
@@ -639,12 +627,152 @@ namespace
             Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
             Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
             outputDirection.normalize();
-            spawnPoint.forward.x = outputDirection.x();
-            spawnPoint.forward.y = outputDirection.y();
-            spawnPoint.forward.z = outputDirection.z();
-            RhcToLhcCoordinates(spawnPoint.forward.v);
+            vec3_t forward;
+            forward.x = outputDirection.x();
+            forward.y = outputDirection.y();
+            forward.z = outputDirection.z();
+            RhcToLhcCoordinates(forward.v);
 
-            m_bsp->spawnpoints.emplace_back(spawnPoint);
+            if (m_bsp->isZombiesMap)
+            {
+                BSPSpawnPointZM spawnPoint;
+                spawnPoint.origin = origin;
+                spawnPoint.forward = forward;
+                spawnPoint.spawnpointGroupName = *node.extras->spawnpoint;
+                m_bsp->zSpawnPoints.emplace_back(spawnPoint);
+            }
+            else
+            {
+                BSPSpawnPoint spawnPoint;
+                spawnPoint.origin = origin;
+                spawnPoint.forward = forward;
+
+                if (!node.extras->spawnpoint->compare("attacker"))
+                    spawnPoint.type = SPAWNPOINT_TYPE_ATTACKER;
+                else if (!node.extras->spawnpoint->compare("defender"))
+                    spawnPoint.type = SPAWNPOINT_TYPE_DEFENDER;
+                else if (!node.extras->spawnpoint->compare("all"))
+                    spawnPoint.type = SPAWNPOINT_TYPE_ALL;
+                else
+                {
+                    con::warn("Ignoring spawn point with an invalid type (must be attacker, defender or all)");
+                    return false;
+                }
+
+                m_bsp->spawnpoints.emplace_back(spawnPoint);
+            }
+
+            return true;
+        }
+
+        size_t addScriptModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            if (!node.mesh || !jRoot.meshes)
+                throw new GltfLoadException("Script model created with no mesh data");
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+            const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+
+            if (mesh.primitives.size() == 0)
+                throw new GltfLoadException("Script model created with no mesh data");
+
+            BSPModel model;
+            model.isGfxModel = m_is_world_gfx;
+            model.surfaceIndex = m_curr_bsp_world->internal_scriptSurfaces.size();
+            model.surfaceCount = mesh.primitives.size();
+            m_bsp->models.emplace_back(model);
+
+            for (const auto& primitive : mesh.primitives)
+            {
+                if (!primitive.indices)
+                    throw GltfLoadException("Requires primitives indices");
+                if (primitive.mode.value_or(JsonMeshPrimitivesMode::TRIANGLES) != JsonMeshPrimitivesMode::TRIANGLES)
+                    throw GltfLoadException("Only triangles are supported");
+                if (!primitive.attributes.POSITION)
+                    throw GltfLoadException("Requires primitives attribute POSITION");
+                if (!primitive.attributes.NORMAL)
+                    throw GltfLoadException("Requires primitives attribute NORMAL");
+
+                const AccessorsForVertex accessorsForVertex{
+                    .m_position_accessor = *primitive.attributes.POSITION,
+                    .m_normal_accessor = *primitive.attributes.NORMAL,
+                    .m_color_accessor = primitive.attributes.COLOR_0,
+                    .m_uv_accessor = primitive.attributes.TEXCOORD_0,
+                    .m_index_accessor = *primitive.indices,
+                };
+
+                BSPSurface surface;
+                if (primitive.material)
+                    surface.materialIndex = *primitive.material;
+                else
+                    surface.materialIndex = m_emptyMaterialIndex;
+                vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
+                CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
+
+                m_curr_bsp_world->internal_scriptSurfaces.emplace_back(surface);
+            }
+
+            return m_bsp->models.size(); // script model index starts at 1
+        }
+
+        bool addZoneNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->zone);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+
+            BSPZoneZM zone;
+            zone.origin = origin;
+            zone.zoneName = *node.extras->zone;
+            zone.zSpawnerGroupName = node.extras->zspawner_group.value_or("");
+            zone.spawnpointGroupName = node.extras->spawnpoint_group.value_or("");
+            zone.modelIndex = addScriptModel(jRoot, node);
+            m_bsp->zZones.emplace_back(zone);
+
+            return true;
+        }
+
+        bool addZSpawnerNode(const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->zspawner);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+
+            // GLTF default direction is +Y up
+            Eigen::Vector3f defaultDirection(0.0f, 1.0f, 0.0f);
+            Eigen::Affine3f affineTransform(nodeMatrix);
+            Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
+            Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
+            outputDirection.normalize();
+            vec3_t forward;
+            forward.x = outputDirection.x();
+            forward.y = outputDirection.y();
+            forward.z = outputDirection.z();
+            RhcToLhcCoordinates(forward.v);
+
+            BSPZSpawnerZM spawner;
+            spawner.origin = origin;
+            spawner.forward = forward;
+            spawner.zSpawnerGroupName = *node.extras->zspawner;
+            m_bsp->zSpawners.emplace_back(spawner);
 
             return true;
         }
@@ -659,11 +787,20 @@ namespace
                 if (node.extras->xmodel)
                     return addXModelNode(jRoot, node);
 
-                if (m_is_world_gfx && node.extras->spawnpoint)
+                if (!m_is_world_gfx && node.extras->spawnpoint)
                     return addSpawnPointNode(node);
 
-                if (m_is_world_gfx && node.extras->pathnode)
+                if (!m_is_world_gfx && node.extras->pathnode)
                     return addPathNode_Node(node);
+
+                if (!m_is_world_gfx && m_bsp->isZombiesMap)
+                {
+                    if (node.extras->zone)
+                        return addZoneNode(jRoot, node);
+
+                    if (node.extras->zspawner)
+                        return addZSpawnerNode(node);
+                }
             }
 
             if (node.mesh)
@@ -1017,6 +1154,13 @@ namespace
 
                 LoadMaterials(jRoot);
                 TraverseNodes(jRoot); // requires materials and lights
+
+                size_t staticSurfaceCount = m_curr_bsp_world->surfaces.size();
+                for (auto& model : m_bsp->models)
+                    model.surfaceIndex += staticSurfaceCount;
+                m_curr_bsp_world->staticSurfaceCount = staticSurfaceCount;
+                m_curr_bsp_world->surfaces.insert(
+                    m_curr_bsp_world->surfaces.end(), m_curr_bsp_world->internal_scriptSurfaces.begin(), m_curr_bsp_world->internal_scriptSurfaces.end());
             }
             catch (const GltfLoadException& e)
             {

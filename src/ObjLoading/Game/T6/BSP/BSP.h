@@ -69,6 +69,9 @@ namespace BSP
         std::vector<uint16_t> indices;
         std::vector<BSPMaterial> materials;
         std::vector<BSPXModel> xmodels;
+
+        size_t staticSurfaceCount;
+        std::vector<BSPSurface> internal_scriptSurfaces;
     };
 
     enum BSPLightType
@@ -113,6 +116,37 @@ namespace BSP
         vec3_t origin;
     };
 
+    struct BSPZoneZM
+    {
+        vec3_t origin;
+        std::string zoneName;
+        std::string zSpawnerGroupName;
+        std::string spawnpointGroupName;
+        size_t modelIndex;
+    };
+
+    struct BSPSpawnPointZM
+    {
+        std::string spawnpointGroupName;
+        vec3_t origin;
+        vec3_t forward;
+    };
+
+    struct BSPZSpawnerZM
+    {
+        std::string zSpawnerGroupName;
+        vec3_t origin;
+        vec3_t forward;
+    };
+
+    struct BSPModel
+    {
+        bool isGfxModel;
+
+        size_t surfaceIndex;
+        size_t surfaceCount;
+    };
+
     struct BSPData
     {
         std::string name;
@@ -125,6 +159,12 @@ namespace BSP
         std::vector<BSPLight> lights;
         std::vector<BSPSpawnPoint> spawnpoints;
         std::vector<BSPPathNode> pathnodes;
+
+        std::vector<BSPSpawnPointZM> zSpawnPoints;
+        std::vector<BSPZSpawnerZM> zSpawners;
+        std::vector<BSPZoneZM> zZones;
+
+        std::vector<BSPModel> models;
     };
 
     // BSPGameConstants:

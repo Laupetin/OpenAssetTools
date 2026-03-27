@@ -8,6 +8,13 @@
 
 namespace BSP
 {
+    struct ColSurface
+    {
+        size_t materialIndex;
+        size_t partitionCount;
+        size_t partitionStartIndex;
+    };
+
     class ClipMapLinker
     {
     public:
@@ -30,9 +37,13 @@ namespace BSP
         std::vector<cNode_t> nodeVec;
         std::vector<cLeaf_s> leafVec;
         std::vector<CollisionAabbTree> AABBTreeVec;
-        size_t highestLeafObjectCount = 0;
-        std::vector<size_t> partitionToMaterialMap;
-        void addAABBTreeFromLeaf(clipMap_t* clipMap, BSPTree* tree, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents);
+        size_t highestPartitionCountForAABB = 0;
+
+        std::vector<ColSurface> collisionSurfaceVec;
+        std::vector<size_t> partitionToColSurfaceMap;
+
+        void addAABBTreeFromPartitions(
+            clipMap_t* clipMap, std::vector<int>& partitions, size_t* out_parentCount, size_t* out_parentStartIndex, int* out_treeContents);
         int16_t loadBSPNode(clipMap_t* clipMap, BSPTree* tree, bool isRoot);
         bool loadBSPTree(clipMap_t* clipMap, BSPData* bsp);
         bool loadPartitions(clipMap_t* clipMap, BSPData* bsp);
