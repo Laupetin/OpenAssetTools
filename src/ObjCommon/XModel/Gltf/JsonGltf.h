@@ -89,14 +89,23 @@ namespace gltf
     class JsonNodeExtras
     {
     public:
-        std::optional<std::string> xmodel;
-        std::optional<std::string> spawnpoint;
-        std::optional<std::string> pathnode;
+        // global
+        std::optional<std::string> flags;    // value: surface flags
+        std::optional<std::string> pathnode; // value: n/a
 
-        std::optional<std::string> flags;
+        // Multiplayer only
+        std::optional<std::string> xmodel;     // value: xmodel name
+        std::optional<std::string> spawnpoint; // value: (MP)team, (ZM)spawnpoint group name
+
+        // Zombies only
+        std::optional<std::string> zone;             // value: zone name
+        std::optional<std::string> zspawner_group;   // value: zone zspawner group name
+        std::optional<std::string> spawnpoint_group; // value: zone zspawner group name
+
+        std::optional<std::string> zspawner; // value: zspawner group name
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint, flags, pathnode);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint, flags, pathnode, zone, zspawner_group, spawnpoint_group, zspawner);
 
     class JsonNode
     {
