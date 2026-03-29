@@ -1,5 +1,6 @@
 #include "GfxWorldLinker.h"
 
+#include "../BSPCalculation.h"
 #include "../BSPUtil.h"
 #include "Utils/Pack.h"
 
@@ -463,6 +464,12 @@ namespace BSP
         gfxWorld->lightGrid.skyGridVolumes = nullptr;
     }
 
+    struct mnode_t
+    {
+        unsigned __int16 cellIndex;
+        unsigned __int16 rightChildOffset;
+    };
+
     void GfxWorldLinker::loadGfxCells(GfxWorld* gfxWorld)
     {
         // Cells are basically data used to determine what can be seen and what cant be seen
@@ -518,6 +525,7 @@ namespace BSP
         // Nodes mnode_t.cellIndex indexes gfxWorld->cells
         // and (mnode_t.cellIndex - (world->dpvsPlanes.cellCount + 1) indexes world->dpvsPlanes.planes
         // Use only one node as there is no optimisation in custom maps
+
         gfxWorld->nodeCount = 1;
         gfxWorld->dpvsPlanes.nodes = m_memory.Alloc<uint16_t>(gfxWorld->nodeCount);
         gfxWorld->dpvsPlanes.nodes[0] = 1; // nodes reference cells by index + 1
@@ -703,8 +711,7 @@ namespace BSP
 
     void GfxWorldLinker::loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld)
     {
-        // std::string skyBoxName = "skybox_" + projInfo->name;
-        std::string skyBoxName = "skybox_zm_transit";
+        std::string skyBoxName = "skybox_" + projInfo->name;
         gfxWorld->skyBoxModel = m_memory.Dup(skyBoxName.c_str());
 
         if (m_context.LoadDependency<AssetXModel>(skyBoxName) == nullptr)
