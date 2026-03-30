@@ -391,7 +391,7 @@ namespace
                     }
                 }
                 if (!foundMatchingName)
-                    con::warn("invalid surface using material {} flag name: {}", newMaterial.materialName, flag);
+                    con::warn("material {} has invalid flag name: {}", newMaterial.materialName, flag);
             }
             if (!matchedAnyFlag)
                 return originalMaterialIdx;
@@ -909,7 +909,7 @@ namespace
                             }
                         }
                         if (!foundType)
-                            con::warn("invalid material {} type name: {}", material.materialName, *jsMaterial.extras->type);
+                            con::warn("material {} with invalid type name: {}", material.materialName, *jsMaterial.extras->type);
                     }
 
                     m_curr_bsp_world->materials.emplace_back(material);
