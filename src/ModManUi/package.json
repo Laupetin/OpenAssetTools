@@ -42,5 +42,11 @@
     "vite-plugin-vue-devtools": "8.1.1",
     "vitest": "4.1.2",
     "vue-tsc": "3.2.6"
+  },
+  "enginesComment":{
+    "npm": "Required for min-release-age setting"
+  },
+  "engines": {
+    "npm": ">=11.10.0"
   }
 }
