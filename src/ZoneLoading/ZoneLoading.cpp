@@ -11,19 +11,19 @@
 using namespace std::string_literals;
 namespace fs = std::filesystem;
 
-result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const std::string& path,
-                                                                           std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
+std::expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const std::string& path,
+                                                                        std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
 {
     auto zoneName = fs::path(path).filename().replace_extension().string();
     std::ifstream file(path, std::fstream::in | std::fstream::binary);
 
     if (!file.is_open())
-        return result::Unexpected(std::format("Could not open file '{}'.", path));
+        return std::unexpected(std::format("Could not open file '{}'.", path));
 
     ZoneHeader header{};
     file.read(reinterpret_cast<char*>(&header), sizeof(header));
     if (file.gcount() != sizeof(header))
-        return result::Unexpected(std::format("Failed to read zone header from file '{}'.", path));
+        return std::unexpected(std::format("Failed to read zone header from file '{}'.", path));
 
     std::unique_ptr<ZoneLoader> zoneLoader;
     for (auto game = 0u; game < static_cast<unsigned>(GameId::COUNT); game++)
@@ -37,14 +37,14 @@ result::Expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const
     }
 
     if (!zoneLoader)
-        return result::Unexpected(std::format("Could not create factory for zone '{}'.", zoneName));
+        return std::unexpected(std::format("Could not create factory for zone '{}'.", zoneName));
 
     auto loadedZone = zoneLoader->LoadZone(file);
 
     file.close();
 
     if (!loadedZone)
-        return result::Unexpected("Loading zone failed."s);
+        return std::unexpected("Loading zone failed."s);
 
     return std::move(loadedZone);
 }
