@@ -50,11 +50,11 @@ void FastFileContext::Destroy()
     m_loaded_zones.clear();
 }
 
-result::Expected<LoadedZone*, std::string> FastFileContext::LoadFastFile(const std::string& path)
+std::expected<LoadedZone*, std::string> FastFileContext::LoadFastFile(const std::string& path)
 {
     auto zone = ZoneLoading::LoadZone(path, std::make_unique<LoadingEventProgressReporter>(fs::path(path).filename().replace_extension().string()));
     if (!zone)
-        return result::Unexpected(std::move(zone.error()));
+        return std::unexpected(std::move(zone.error()));
 
     auto loadedZone = std::make_unique<LoadedZone>(std::move(*zone), path);
 
@@ -69,7 +69,7 @@ result::Expected<LoadedZone*, std::string> FastFileContext::LoadFastFile(const s
     return result;
 }
 
-result::Expected<NoResult, std::string> FastFileContext::UnloadZone(const std::string& zoneName)
+std::expected<void, std::string> FastFileContext::UnloadZone(const std::string& zoneName)
 {
     {
         std::lock_guard lock(m_zone_lock);
@@ -83,9 +83,9 @@ result::Expected<NoResult, std::string> FastFileContext::UnloadZone(const std::s
         {
             m_loaded_zones.erase(existingZone);
             ui::NotifyZoneUnloaded(zoneName);
-            return NoResult();
+            return {};
         }
     }
 
-    return result::Unexpected(std::format("No zone with name {} loaded", zoneName));
+    return std::unexpected(std::format("No zone with name {} loaded", zoneName));
 }

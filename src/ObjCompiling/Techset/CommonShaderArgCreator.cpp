@@ -72,7 +72,7 @@ namespace
             DetermineSupportedArgumentTypes();
         }
 
-        result::Expected<NoResult, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
+        std::expected<void, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
         {
             m_shader_type = shaderType;
             m_shader_name = name;
@@ -88,23 +88,23 @@ namespace
             }
 
             if (!maybeShader)
-                return result::Unexpected<std::string>("Failed to load shader");
+                return std::unexpected<std::string>("Failed to load shader");
 
             m_bin = *maybeShader;
 
-            return NoResult{};
+            return {};
         }
 
-        result::Expected<NoResult, std::string> LeaveShader() override
+        std::expected<void, std::string> LeaveShader() override
         {
             m_bin = {};
 
             return AutoCreateMissingArgs();
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderConstantArgument(const techset::CommonShaderArgCreatorDestination& destination,
-                                                                             const techset::CommonCodeConstSource codeConstSource,
-                                                                             const unsigned sourceIndex) override
+        std::expected<void, std::string> AcceptShaderConstantArgument(const techset::CommonShaderArgCreatorDestination& destination,
+                                                                      const techset::CommonCodeConstSource codeConstSource,
+                                                                      const unsigned sourceIndex) override
         {
             techset::CommonShaderArgDestination commonDestination{};
             bool isTransposed;
@@ -113,32 +113,32 @@ namespace
             if (!FindDestinationForConstant(commonDestination, isTransposed, rowCount, errorMessage, destination))
             {
                 if (!errorMessage.empty())
-                    return result::Unexpected(std::move(errorMessage));
+                    return std::unexpected(std::move(errorMessage));
 
-                return result::Unexpected(std::format("Could not find constant shader input with name {}", destination.m_argument_name));
+                return std::unexpected(std::format("Could not find constant shader input with name {}", destination.m_argument_name));
             }
 
             return AcceptShaderConstantArgument(commonDestination, isTransposed, rowCount, codeConstSource, sourceIndex);
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderSamplerArgument(const techset::CommonShaderArgCreatorDestination& destination,
-                                                                            const techset::CommonCodeSamplerSource codeSamplerSource) override
+        std::expected<void, std::string> AcceptShaderSamplerArgument(const techset::CommonShaderArgCreatorDestination& destination,
+                                                                     const techset::CommonCodeSamplerSource codeSamplerSource) override
         {
             techset::CommonShaderArgDestination commonDestination{};
             std::string errorMessage;
             if (!FindDestinationForSampler(commonDestination, errorMessage, destination))
             {
                 if (!errorMessage.empty())
-                    return result::Unexpected(std::move(errorMessage));
+                    return std::unexpected(std::move(errorMessage));
 
-                return result::Unexpected(std::format("Could not find sampler shader input with name {}", destination.m_argument_name));
+                return std::unexpected(std::format("Could not find sampler shader input with name {}", destination.m_argument_name));
             }
 
             return AcceptShaderSamplerArgument(commonDestination, codeSamplerSource);
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderLiteralArgument(const techset::CommonShaderArgCreatorDestination& destination,
-                                                                            const std::array<float, 4>& literalValue) override
+        std::expected<void, std::string> AcceptShaderLiteralArgument(const techset::CommonShaderArgCreatorDestination& destination,
+                                                                     const std::array<float, 4>& literalValue) override
         {
             techset::CommonShaderArgDestination commonDestination{};
             bool isTransposed;
@@ -147,9 +147,9 @@ namespace
             if (!FindDestinationForConstant(commonDestination, isTransposed, rowCount, errorMessage, destination))
             {
                 if (!errorMessage.empty())
-                    return result::Unexpected(std::move(errorMessage));
+                    return std::unexpected(std::move(errorMessage));
 
-                return result::Unexpected(std::format("Could not find constant shader input with name {}", destination.m_argument_name));
+                return std::unexpected(std::format("Could not find constant shader input with name {}", destination.m_argument_name));
             }
 
             techset::CommonShaderArgumentType argumentType{
@@ -158,16 +158,17 @@ namespace
             };
 
             if (!IsArgumentTypeSupported(argumentType))
-                return result::Unexpected(std::format("{} constants are unsupported", ShaderTypeName(argumentType.m_shader_type)));
+                return std::unexpected(std::format("{} constants are unsupported", ShaderTypeName(argumentType.m_shader_type)));
 
             techset::CommonShaderArgValue value{.literal_value = literalValue};
 
             m_args.emplace_back(argumentType, commonDestination, value);
-            return NoResult{};
+
+            return {};
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderMaterialArgument(const techset::CommonShaderArgCreatorDestination& destination,
-                                                                             const unsigned nameHash) override
+        std::expected<void, std::string> AcceptShaderMaterialArgument(const techset::CommonShaderArgCreatorDestination& destination,
+                                                                      const unsigned nameHash) override
         {
             techset::CommonShaderArgumentType argumentType{
                 .m_shader_type = m_shader_type,
@@ -181,39 +182,40 @@ namespace
             if (!FindDestinationForConstant(commonDestination, isTransposed, rowCount, errorMessage, destination))
             {
                 if (!errorMessage.empty())
-                    return result::Unexpected(std::move(errorMessage));
+                    return std::unexpected(std::move(errorMessage));
 
                 argumentType.m_value_type = techset::CommonShaderValueType::MATERIAL_SAMPLER;
 
                 if (!FindDestinationForSampler(commonDestination, errorMessage, destination))
                 {
                     if (!errorMessage.empty())
-                        return result::Unexpected(std::move(errorMessage));
+                        return std::unexpected(std::move(errorMessage));
 
-                    return result::Unexpected(std::format("Could not find shader input with name {}", destination.m_argument_name));
+                    return std::unexpected(std::format("Could not find shader input with name {}", destination.m_argument_name));
                 }
             }
 
             if (!IsArgumentTypeSupported(argumentType))
             {
-                return result::Unexpected(
+                return std::unexpected(
                     std::format("{} {} are unsupported", ShaderTypeName(argumentType.m_shader_type), ArgTypeName(argumentType.m_value_type)));
             }
 
             techset::CommonShaderArgValue value{.name_hash = nameHash};
 
             m_args.emplace_back(argumentType, commonDestination, value);
-            return NoResult{};
+
+            return {};
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderMaterialArgument(const techset::CommonShaderArgCreatorDestination& destination,
-                                                                             const std::string& nameValue) override
+        std::expected<void, std::string> AcceptShaderMaterialArgument(const techset::CommonShaderArgCreatorDestination& destination,
+                                                                      const std::string& nameValue) override
         {
             // All game's call R_HashString here which has the same implementation in all games
             return AcceptShaderMaterialArgument(destination, djb2_xor_nocase(nameValue.c_str(), 0));
         }
 
-        result::Expected<NoResult, std::string> FinalizePass(techset::CommonTechnique& technique, techset::CommonPass& pass) override
+        std::expected<void, std::string> FinalizePass(techset::CommonTechnique& technique, techset::CommonPass& pass) override
         {
             std::ranges::sort(m_args,
                               [this](const techset::CommonShaderArg& arg0, const techset::CommonShaderArg& arg1) -> bool
@@ -247,15 +249,15 @@ namespace
             m_args = std::vector<techset::CommonShaderArg>();
             m_sampler_flags = 0;
 
-            return NoResult{};
+            return {};
         }
 
     protected:
-        result::Expected<NoResult, std::string> AcceptShaderConstantArgument(const techset::CommonShaderArgDestination& commonDestination,
-                                                                             const bool isTransposed,
-                                                                             const unsigned rowCount,
-                                                                             const techset::CommonCodeConstSource codeConstSource,
-                                                                             const unsigned sourceIndex)
+        std::expected<void, std::string> AcceptShaderConstantArgument(const techset::CommonShaderArgDestination& commonDestination,
+                                                                      const bool isTransposed,
+                                                                      const unsigned rowCount,
+                                                                      const techset::CommonCodeConstSource codeConstSource,
+                                                                      const unsigned sourceIndex)
         {
             techset::CommonShaderArgumentType argumentType{
                 .m_shader_type = m_shader_type,
@@ -263,11 +265,11 @@ namespace
             };
 
             if (!IsArgumentTypeSupported(argumentType))
-                return result::Unexpected(std::format("{} constants are unsupported", ShaderTypeName(argumentType.m_shader_type)));
+                return std::unexpected(std::format("{} constants are unsupported", ShaderTypeName(argumentType.m_shader_type)));
 
             const auto maybeInfo = m_common_code_source_infos.GetInfoForCodeConstSource(codeConstSource);
             if (!maybeInfo)
-                return result::Unexpected<std::string>("Could not find info for code constant");
+                return std::unexpected<std::string>("Could not find info for code constant");
 
             const auto isMatrix = maybeInfo->transposedMatrix.has_value();
             techset::CommonShaderArgCodeConstValue value{
@@ -279,7 +281,7 @@ namespace
             if (isMatrix)
             {
                 if (sourceIndex >= 4)
-                    return result::Unexpected(std::format("Index for matrix code const is out of bounds: {} (must be < 4)", sourceIndex));
+                    return std::unexpected(std::format("Index for matrix code const is out of bounds: {} (must be < 4)", sourceIndex));
 
                 value.m_index = isTransposed ? *maybeInfo->transposedMatrix : codeConstSource;
                 value.m_first_row = sourceIndex;
@@ -288,7 +290,7 @@ namespace
             {
                 const auto arrayCount = std::max<unsigned>(maybeInfo->arrayCount, 1u);
                 if (sourceIndex >= arrayCount)
-                    return result::Unexpected(std::format("Index for code const is out of bounds: {} (must be < {})", sourceIndex, arrayCount));
+                    return std::unexpected(std::format("Index for code const is out of bounds: {} (must be < {})", sourceIndex, arrayCount));
 
                 value.m_index = codeConstSource + static_cast<techset::CommonCodeConstSource>(sourceIndex);
                 value.m_first_row = 0;
@@ -298,11 +300,11 @@ namespace
             if (maybeInfo->techFlags && (!maybeInfo->techFlagShaderType || *maybeInfo->techFlagShaderType == m_shader_type))
                 m_tech_flags |= *maybeInfo->techFlags;
 
-            return NoResult{};
+            return {};
         }
 
-        result::Expected<NoResult, std::string> AcceptShaderSamplerArgument(const techset::CommonShaderArgDestination& commonDestination,
-                                                                            const techset::CommonCodeSamplerSource codeSamplerSource)
+        std::expected<void, std::string> AcceptShaderSamplerArgument(const techset::CommonShaderArgDestination& commonDestination,
+                                                                     const techset::CommonCodeSamplerSource codeSamplerSource)
         {
             techset::CommonShaderArgumentType argumentType{
                 .m_shader_type = m_shader_type,
@@ -310,11 +312,11 @@ namespace
             };
 
             if (!IsArgumentTypeSupported(argumentType))
-                return result::Unexpected(std::format("{} samplers are unsupported", ShaderTypeName(argumentType.m_shader_type)));
+                return std::unexpected(std::format("{} samplers are unsupported", ShaderTypeName(argumentType.m_shader_type)));
 
             const auto maybeInfo = m_common_code_source_infos.GetInfoForCodeSamplerSource(codeSamplerSource);
             if (!maybeInfo)
-                return result::Unexpected<std::string>("Could not find info for code sampler");
+                return std::unexpected<std::string>("Could not find info for code sampler");
 
             m_args.emplace_back(argumentType, commonDestination, techset::CommonShaderArgValue{.code_sampler_source = codeSamplerSource});
             if (maybeInfo->techFlags)
@@ -322,7 +324,7 @@ namespace
             if (maybeInfo->customSamplerIndex)
                 m_sampler_flags |= (1 << *maybeInfo->customSamplerIndex);
 
-            return NoResult{};
+            return {};
         }
 
         [[nodiscard]] bool IsArgumentTypeSupported(const techset::CommonShaderArgumentType& argumentType) const
@@ -369,7 +371,7 @@ namespace
                                                              std::string& errorMessage,
                                                              const techset::CommonShaderArgCreatorDestination& input) = 0;
 
-        virtual result::Expected<NoResult, std::string> AutoCreateMissingArgs() = 0;
+        virtual std::expected<void, std::string> AutoCreateMissingArgs() = 0;
 
         techset::ITechniqueShaderLoader& m_shader_loader;
         techset::CommonCodeSourceInfos& m_common_code_source_infos;
@@ -392,7 +394,7 @@ namespace
         {
         }
 
-        result::Expected<NoResult, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
+        std::expected<void, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
         {
             auto result = BaseCommonShaderArgCreator::EnterShader(shaderType, name);
             if (!result)
@@ -400,14 +402,14 @@ namespace
 
             m_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(m_bin.m_shader_bin, m_bin.m_shader_bin_size);
             if (!m_shader_info)
-                return result::Unexpected(std::format("Failed to analyse dx9 shader {}", name));
+                return std::unexpected(std::format("Failed to analyse dx9 shader {}", name));
 
             m_arg_added = std::vector(m_shader_info->m_constants.size(), false);
 
-            return NoResult{};
+            return {};
         }
 
-        result::Expected<NoResult, std::string> LeaveShader() override
+        std::expected<void, std::string> LeaveShader() override
         {
             auto result = BaseCommonShaderArgCreator::LeaveShader();
             m_shader_info = nullptr;
@@ -473,7 +475,7 @@ namespace
             return true;
         }
 
-        result::Expected<NoResult, std::string> AutoCreateMissingArgs() override
+        std::expected<void, std::string> AutoCreateMissingArgs() override
         {
             const auto argCount = m_shader_info->m_constants.size();
             for (size_t argIndex = 0; argIndex < argCount; argIndex++)
@@ -499,11 +501,11 @@ namespace
                 }
             }
 
-            return NoResult{};
+            return {};
         }
 
     private:
-        result::Expected<NoResult, std::string> AutoCreateConstantArg(const d3d9::ShaderConstant& shaderArg)
+        std::expected<void, std::string> AutoCreateConstantArg(const d3d9::ShaderConstant& shaderArg)
         {
             if (!IsArgumentTypeSupported(
                     techset::CommonShaderArgumentType{.m_shader_type = m_shader_type, .m_value_type = techset::CommonShaderValueType::CODE_CONST}))
@@ -511,7 +513,7 @@ namespace
                 con::warn("Shader {} uses unsupported argument type \"{} constant\". This may cause unstable behaviour.",
                           m_shader_name,
                           ShaderTypeName(m_shader_type));
-                return NoResult{};
+                return {};
             }
 
             const auto maybeCodeConst = m_common_code_source_infos.GetCodeConstSourceForAccessor(shaderArg.m_name);
@@ -519,24 +521,24 @@ namespace
             {
                 // Some variables are simply not added as args for some reason
                 if (m_common_code_source_infos.IsArgAccessorIgnored(shaderArg.m_name))
-                    return NoResult{};
+                    return {};
 
-                return result::Unexpected(std::format("Missing assignment to shader constant {}", shaderArg.m_name));
+                return std::unexpected(std::format("Missing assignment to shader constant {}", shaderArg.m_name));
             }
 
             const auto constInfo = m_common_code_source_infos.GetInfoForCodeConstSource(*maybeCodeConst);
             if (!constInfo)
-                return result::Unexpected(std::format("Missing info for code const {}", shaderArg.m_name));
+                return std::unexpected(std::format("Missing info for code const {}", shaderArg.m_name));
 
             const auto elementSize = ElementSizeForArg(shaderArg);
             const auto elementCount = utils::Align(shaderArg.m_register_count, elementSize) / elementSize;
             const auto infoArrayCount = std::max<unsigned>(constInfo->arrayCount, 1);
             if (elementCount > infoArrayCount)
             {
-                return result::Unexpected(std::format("Could not auto create argument for constant {} as it has more elements ({}) than the code constant ({})",
-                                                      shaderArg.m_name,
-                                                      elementCount,
-                                                      infoArrayCount));
+                return std::unexpected(std::format("Could not auto create argument for constant {} as it has more elements ({}) than the code constant ({})",
+                                                   shaderArg.m_name,
+                                                   elementCount,
+                                                   infoArrayCount));
             }
 
             techset::CommonShaderArgDestination commonDestination;
@@ -552,7 +554,7 @@ namespace
             if (constInfo->techFlags && (!constInfo->techFlagShaderType || *constInfo->techFlagShaderType == m_shader_type))
                 m_tech_flags |= *constInfo->techFlags;
 
-            return NoResult{};
+            return {};
         }
 
         [[nodiscard]] static unsigned ElementSizeForArg(const d3d9::ShaderConstant& arg)
@@ -567,7 +569,7 @@ namespace
             }
         }
 
-        result::Expected<NoResult, std::string> AutoCreateSamplerArg(const d3d9::ShaderConstant& shaderArg)
+        std::expected<void, std::string> AutoCreateSamplerArg(const d3d9::ShaderConstant& shaderArg)
         {
             if (!IsArgumentTypeSupported(
                     techset::CommonShaderArgumentType{.m_shader_type = m_shader_type, .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER}))
@@ -575,16 +577,16 @@ namespace
                 con::warn("Shader {} uses unsupported argument type \"{} sampler\". This may cause unstable behaviour.",
                           m_shader_name,
                           ShaderTypeName(m_shader_type));
-                return NoResult{};
+                return {};
             }
 
             const auto maybeCodeSampler = m_common_code_source_infos.GetCodeSamplerSourceForAccessor(shaderArg.m_name);
             if (!maybeCodeSampler)
-                return result::Unexpected(std::format("Missing assignment to shader texture {}", shaderArg.m_name));
+                return std::unexpected(std::format("Missing assignment to shader texture {}", shaderArg.m_name));
 
             const auto samplerInfo = m_common_code_source_infos.GetInfoForCodeSamplerSource(*maybeCodeSampler);
             if (!samplerInfo)
-                return result::Unexpected(std::format("Missing info for code sampler {}", shaderArg.m_name));
+                return std::unexpected(std::format("Missing info for code sampler {}", shaderArg.m_name));
 
             techset::CommonShaderArgDestination commonDestination;
             commonDestination.dx9.m_destination_register = shaderArg.m_register_index;
@@ -609,7 +611,7 @@ namespace
         {
         }
 
-        result::Expected<NoResult, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
+        std::expected<void, std::string> EnterShader(const techset::CommonTechniqueShaderType shaderType, const std::string& name) override
         {
             auto result = BaseCommonShaderArgCreator::EnterShader(shaderType, name);
             if (!result)
@@ -617,14 +619,14 @@ namespace
 
             m_shader_info = d3d11::ShaderAnalyser::GetShaderInfo(m_bin.m_shader_bin, m_bin.m_shader_bin_size);
             if (!m_shader_info)
-                return result::Unexpected(std::format("Failed to analyse dx11 shader {}", name));
+                return std::unexpected(std::format("Failed to analyse dx11 shader {}", name));
 
             CountShaderArgs();
 
-            return NoResult{};
+            return {};
         }
 
-        result::Expected<NoResult, std::string> LeaveShader() override
+        std::expected<void, std::string> LeaveShader() override
         {
             auto result = BaseCommonShaderArgCreator::LeaveShader();
             m_shader_info = nullptr;
@@ -777,7 +779,7 @@ namespace
             return true;
         }
 
-        result::Expected<NoResult, std::string> AutoCreateMissingArgs() override
+        std::expected<void, std::string> AutoCreateMissingArgs() override
         {
             size_t usedConstantCount = 0;
             size_t textureCount = 0;
@@ -791,7 +793,7 @@ namespace
                                              return boundResource.m_type == d3d11::BoundResourceType::CBUFFER && boundResource.m_name == buffer.m_name;
                                          });
                 if (bufferBinding == m_shader_info->m_bound_resources.end())
-                    return result::Unexpected(std::format("Failed to find binding for constant buffer {}", buffer.m_name));
+                    return std::unexpected(std::format("Failed to find binding for constant buffer {}", buffer.m_name));
 
                 for (const auto& variable : buffer.m_variables)
                 {
@@ -829,7 +831,7 @@ namespace
                     return std::move(result);
             }
 
-            return NoResult{};
+            return {};
         }
 
     private:
@@ -857,7 +859,7 @@ namespace
             m_texture_arg_added = std::vector(textureCount, false);
         }
 
-        result::Expected<NoResult, std::string> AutoCreateConstantArg(const d3d11::ConstantBufferVariable& variable, const size_t bufferIndex)
+        std::expected<void, std::string> AutoCreateConstantArg(const d3d11::ConstantBufferVariable& variable, const size_t bufferIndex)
         {
             if (!IsArgumentTypeSupported(
                     techset::CommonShaderArgumentType{.m_shader_type = m_shader_type, .m_value_type = techset::CommonShaderValueType::CODE_CONST}))
@@ -865,7 +867,7 @@ namespace
                 con::warn("Shader {} uses unsupported argument type \"{} constant\". This may cause unstable behaviour.",
                           m_shader_name,
                           ShaderTypeName(m_shader_type));
-                return NoResult{};
+                return {};
             }
 
             const auto maybeCodeConst = m_common_code_source_infos.GetCodeConstSourceForAccessor(variable.m_name);
@@ -873,24 +875,24 @@ namespace
             {
                 // Some variables are simply not added as args for some reason
                 if (m_common_code_source_infos.IsArgAccessorIgnored(variable.m_name))
-                    return NoResult{};
+                    return {};
 
-                return result::Unexpected(std::format("Missing assignment to shader constant {}", variable.m_name));
+                return std::unexpected(std::format("Missing assignment to shader constant {}", variable.m_name));
             }
 
             const auto constInfo = m_common_code_source_infos.GetInfoForCodeConstSource(*maybeCodeConst);
             if (!constInfo)
-                return result::Unexpected(std::format("Missing info for code const {}", variable.m_name));
+                return std::unexpected(std::format("Missing info for code const {}", variable.m_name));
 
             const auto variableElementCount = std::max<unsigned>(variable.m_element_count, 1);
             const auto variableElementSize = variable.m_size / variableElementCount;
             const auto infoArrayCount = std::max<unsigned>(constInfo->arrayCount, 1);
             if (variableElementCount > infoArrayCount)
             {
-                return result::Unexpected(std::format("Could not auto create argument for constant {} as it has more elements ({}) than the code constant ({})",
-                                                      variable.m_name,
-                                                      variableElementCount,
-                                                      infoArrayCount));
+                return std::unexpected(std::format("Could not auto create argument for constant {} as it has more elements ({}) than the code constant ({})",
+                                                   variable.m_name,
+                                                   variableElementCount,
+                                                   infoArrayCount));
             }
 
             techset::CommonShaderArgDestination commonDestination;
@@ -908,10 +910,10 @@ namespace
             if (constInfo->techFlags && (!constInfo->techFlagShaderType || *constInfo->techFlagShaderType == m_shader_type))
                 m_tech_flags |= *constInfo->techFlags;
 
-            return NoResult{};
+            return {};
         }
 
-        result::Expected<NoResult, std::string> AutoCreateSamplerArg(const d3d11::BoundResource& textureResource, const unsigned samplerBindPoint)
+        std::expected<void, std::string> AutoCreateSamplerArg(const d3d11::BoundResource& textureResource, const unsigned samplerBindPoint)
         {
             if (!IsArgumentTypeSupported(
                     techset::CommonShaderArgumentType{.m_shader_type = m_shader_type, .m_value_type = techset::CommonShaderValueType::CODE_SAMPLER}))
@@ -919,16 +921,16 @@ namespace
                 con::warn("Shader {} uses unsupported argument type \"{} sampler\". This may cause unstable behaviour.",
                           m_shader_name,
                           ShaderTypeName(m_shader_type));
-                return NoResult{};
+                return {};
             }
 
             const auto maybeCodeSampler = m_common_code_source_infos.GetCodeSamplerSourceForAccessor(textureResource.m_name);
             if (!maybeCodeSampler)
-                return result::Unexpected(std::format("Missing assignment to shader texture {}", textureResource.m_name));
+                return std::unexpected(std::format("Missing assignment to shader texture {}", textureResource.m_name));
 
             const auto samplerInfo = m_common_code_source_infos.GetInfoForCodeSamplerSource(*maybeCodeSampler);
             if (!samplerInfo)
-                return result::Unexpected(std::format("Missing info for code sampler {}", textureResource.m_name));
+                return std::unexpected(std::format("Missing info for code sampler {}", textureResource.m_name));
 
             techset::CommonShaderArgDestination commonDestination;
             commonDestination.dx11.m_location.texture_index = textureResource.m_bind_point;

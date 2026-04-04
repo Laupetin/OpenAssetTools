@@ -50,7 +50,7 @@ namespace
         double m_last_progress;
     };
 
-    result::Expected<NoResult, std::string> UnlinkZoneInDbThread(const std::string& zoneName)
+    std::expected<void, std::string> UnlinkZoneInDbThread(const std::string& zoneName)
     {
         const auto& context = ModManContext::Get().m_fast_file;
         const auto existingZone = std::ranges::find_if(context.m_loaded_zones,
@@ -60,7 +60,7 @@ namespace
                                                        });
 
         if (existingZone == context.m_loaded_zones.end())
-            return result::Unexpected(std::format("No zone with name {} loaded", zoneName));
+            return std::unexpected(std::format("No zone with name {} loaded", zoneName));
 
         const auto& loadedZone = *existingZone->get();
 
@@ -75,7 +75,7 @@ namespace
             *loadedZone.m_zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
         objWriter->DumpZone(dumpingContext);
 
-        return NoResult();
+        return {};
     }
 
     void UnlinkZone(webview::webview& wv, std::string id, std::string zoneName) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety

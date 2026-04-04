@@ -241,7 +241,7 @@ namespace techset
                 }
             }
 
-            result::Expected<NoResult, std::string> shaderCreatorResult(NoResult{});
+            std::expected<void, std::string> shaderCreatorResult;
             if (isSampler)
                 shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderSamplerArgument(destination, samplerSource);
             else
@@ -287,7 +287,7 @@ namespace techset
                                             SequenceResult<SimpleParserValue>& result,
                                             const CommonShaderArgCreatorDestination& destination)
         {
-            result::Expected<NoResult, std::string> shaderCreatorResult(NoResult{});
+            std::expected<void, std::string> shaderCreatorResult;
             if (result.HasNextCapture(CAPTURE_MATERIAL_HASH))
             {
                 shaderCreatorResult = state->m_shader_arg_creator.AcceptShaderMaterialArgument(
@@ -300,7 +300,7 @@ namespace techset
             }
 
             if (!shaderCreatorResult.has_value())
-                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(shaderCreatorResult.error()));
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(shaderCreatorResult).error());
         }
     };
 } // namespace techset
