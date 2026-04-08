@@ -1,13 +1,13 @@
 #include "ObjCompilerIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Techset/PixelShaderCompilerIW4.h"
 #include "Game/IW4/Techset/TechniqueCompilerIW4.h"
 #include "Game/IW4/Techset/TechsetCompilerIW4.h"
 #include "Game/IW4/Techset/VertexDeclCompilerIW4.h"
+#include "Game/IW4/Techset/VertexShaderCompilerIW4.h"
 #include "Image/ImageIwdPostProcessor.h"
 #include "Material/CompilerMaterialIW4.h"
-#include "Techset/PixelShaderCompilerIW4.h"
-#include "Techset/VertexShaderCompilerIW4.h"
 
 #include <memory>
 
