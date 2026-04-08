@@ -30,7 +30,7 @@
 
   vertexShader 3.0 VERTEX_SHADER
   {
-    worldViewProjectionMatrix = constant.transposeWorldViewProjectionMatrix;
+    worldViewProjectionMatrix = constant.worldViewProjectionMatrix;
 #ifdef UV_ANIM
     uvAnimParms = material.uvAnimParms;
 #endif
