@@ -4,6 +4,11 @@
 
 namespace shader
 {
+    std::string GetSourceFileNameForShaderAssetName(const std::string& assetName)
+    {
+        return std::format("shader/{}", assetName);
+    }
+
     std::string GetFileNameForPixelShaderAssetName(const std::string& assetName)
     {
         return std::format("shader_bin/ps_{}.cso", assetName);
