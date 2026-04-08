@@ -122,18 +122,18 @@ namespace shader
 #endif
     }
 
-    result::Expected<std::optional<CompiledShader>, std::string> CompileShader(const std::string& shaderFile,
-                                                                               const std::string& entryPoint,
-                                                                               const std::string& target,
-                                                                               const bool debug,
-                                                                               ISearchPath& searchPath,
-                                                                               MemoryManager& memory)
+    std::expected<std::optional<CompiledShader>, std::string> CompileShader(const std::string& shaderFile,
+                                                                            const std::string& entryPoint,
+                                                                            const std::string& target,
+                                                                            const bool debug,
+                                                                            ISearchPath& searchPath,
+                                                                            MemoryManager& memory)
     {
 #ifdef _WIN32
         if (!initialized)
             InitializeShaderCompilation();
         if (!compilationAvailable)
-            return result::Unexpected<std::string>("Shader compilation unavailable");
+            return std::unexpected("Shader compilation unavailable");
 
         const auto fileName = GetSourceFileNameForShaderAssetName(shaderFile);
         auto file = searchPath.Open(fileName);
@@ -141,7 +141,7 @@ namespace shader
             return std::optional<CompiledShader>(std::nullopt);
 
         if (std::cmp_greater(file.m_length, MAX_SHADER_SIZE))
-            return result::Unexpected(std::format("File too big: {}", file.m_length));
+            return std::unexpected(std::format("File too big: {}", file.m_length));
 
         const auto shaderSize = file.m_length;
         const auto shaderData = std::make_unique<char[]>(static_cast<size_t>(shaderSize));
@@ -185,7 +185,7 @@ namespace shader
             if (shaderBlob)
                 shaderBlob->Release();
 
-            return result::Unexpected(std::move(errorMessage));
+            return std::unexpected(std::move(errorMessage));
         }
 
         const auto shaderBlobSize = static_cast<size_t>(shaderBlob->GetBufferSize());
@@ -199,7 +199,7 @@ namespace shader
             .m_shader_size = shaderBlobSize,
         });
 #else
-        return result::Unexpected<std::string>("Shader compilation unavailable");
+        return std::unexpected("Shader compilation unavailable");
 #endif
     }
 } // namespace shader
