@@ -1,5 +1,5 @@
 // =============================
-// IW4 code constants
+// IW5 code constants
 // =============================
 
 extern float4 lightPosition;
@@ -10,6 +10,11 @@ extern float4 lightSpotFactors;
 extern float4 lightFalloffPlacement;
 extern float4 particleCloudColor;
 extern float4 gameTime;
+extern float4 eyeOffset;
+extern float4 colorSaturationR;
+extern float4 colorSaturationG;
+extern float4 colorSaturationB;
+extern float4 ssaoParms;
 extern float4 pixelCostFracs;
 extern float4 pixelCostDecode;
 extern float4 filterTap[8];
@@ -18,6 +23,7 @@ extern float4 colorMatrixG;
 extern float4 colorMatrixB;
 extern float4 shadowmapPolygonOffset;
 extern float4 renderTargetSize;
+extern float4 renderSourceSize;
 extern float4 dofEquationViewModelAndFarBlur;
 extern float4 dofEquationScene;
 extern float4 dofLerpScale;
@@ -53,6 +59,8 @@ extern float4 fullscreenDistortion;
 extern float4 fadeEffect;
 extern float4 viewportDimensions;
 extern float4 framebufferRead;
+extern float4 thermalColorOffset;
+extern float4 playlistPopulationParams;
 extern float4 baseLightingCoords;
 extern float4 lightprobeAmbient;
 extern float4 nearPlaneOrg;
@@ -141,6 +149,7 @@ extern sampler2D resolvedScene;
 extern sampler2D postEffect0;
 extern sampler2D postEffect1;
 extern sampler2D attenuationSampler;
+extern sampler2D cucolorisSampler;
 extern sampler2D outdoor;
 extern sampler2D floatZSampler;
 extern sampler2D processedFloatZSampler;
@@ -153,4 +162,6 @@ extern sampler2D cinematicCrSampler;
 extern sampler2D cinematicCbSampler;
 extern sampler2D cinematicASampler;
 extern sampler2D reflectionProbeSampler;
-extern sampler2D alternateSceneSampler;
+extern sampler2D pipSceneSampler;
+extern sampler2D colorManipulationSampler;
+extern sampler2D ssaoSampler;
