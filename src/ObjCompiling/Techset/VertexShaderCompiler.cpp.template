@@ -1,4 +1,4 @@
-#options GAME(IW4)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/VertexShaderCompiler" + GAME + ".cpp"
 
@@ -66,7 +66,16 @@ namespace
 
         AssetCreationResult OVERRIDDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
         {
-            auto result = shader::CompileShader(assetName, "VSMain", "vs_3_0", false, m_search_path, m_memory);
+            auto result = shader::CompileShader(assetName,
+                                                "VSMain",
+#ifdef IS_DX9
+                                                "vs_3_0",
+#else
+                                                "vs_4_0",
+#endif
+                                                false,
+                                                m_search_path,
+                                                m_memory);
 
             if (result.has_value())
             {
@@ -76,12 +85,19 @@ namespace
 
                 con::info("Compiled vertex shader \"{}\"", assetName);
 
+#ifdef IS_DX9
                 assert(maybeShader->m_shader_size % sizeof(uint32_t) == 0);
+#endif
 
                 auto* vertexShader = m_memory.Alloc<MaterialVertexShader>();
                 vertexShader->name = m_memory.Dup(assetName.c_str());
-                vertexShader->prog.loadDef.program = static_cast<unsigned int*>(maybeShader->m_shader_bin);
-                vertexShader->prog.loadDef.programSize = static_cast<uint16_t>(maybeShader->m_shader_size / sizeof(uint32_t));
+                vertexShader->prog.loadDef.program = static_cast<decltype(GfxVertexShaderLoadDef::program)>(maybeShader->m_shader_bin);
+#ifdef IS_DX9
+                vertexShader->prog.loadDef.programSize = static_cast<decltype(GfxVertexShaderLoadDef::programSize)>(
+                    maybeShader->m_shader_size / sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>));
+#else
+                vertexShader->prog.loadDef.programSize = static_cast<decltype(GfxVertexShaderLoadDef::programSize)>(maybeShader->m_shader_size);
+#endif
 
                 return AssetCreationResult::Success(context.ADD_ASSET_METHOD(AssetRegistration<ASSET_NAME>(assetName, vertexShader)));
             }
