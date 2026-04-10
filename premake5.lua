@@ -103,7 +103,6 @@ include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
 include "thirdparty/webview.lua"
 include "thirdparty/zlib.lua"
-include "thirdparty/ufbx.lua"
 
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
@@ -118,7 +117,6 @@ group "ThirdParty"
     minizip:project()
     salsa20:project()
     zlib:project()
-    ufbx:project()
     
     if _OPTIONS["modman"] then
         webview:project()
