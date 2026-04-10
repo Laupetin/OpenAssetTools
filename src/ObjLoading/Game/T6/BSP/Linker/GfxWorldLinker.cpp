@@ -110,7 +110,7 @@ namespace BSP
                 gfxSurface->flags |= GFX_SURFACE_IS_SKY;
             if ((bspMaterial.contentFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].contentFlags) != 0)
                 gfxSurface->flags |= GFX_SURFACE_NO_DRAW;
-            if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_CASTSUNSHADOW].surfaceFlags) != 0)
+            if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_ONLYCASTSHADOW].surfaceFlags) != 0)
                 gfxSurface->flags |= GFX_SURFACE_CASTS_SUN_SHADOW;
             if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NOCASTSHADOW].surfaceFlags) == 0)
                 gfxSurface->flags |= GFX_SURFACE_CASTS_SHADOW;
