@@ -53,13 +53,21 @@ namespace BSP
     {
         loadDrawData(bsp, gfxWorld);
 
-        size_t surfaceCount = bsp->gfxWorld.surfaces.size();
-        gfxWorld->surfaceCount = static_cast<int>(surfaceCount);
-        gfxWorld->dpvs.staticSurfaceCount = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.surfaces = m_memory.Alloc<GfxSurface>(surfaceCount);
-        for (size_t surfIdx = 0; surfIdx < surfaceCount; surfIdx++)
+        size_t staticSurfaceCount = bsp->gfxWorld.staticSurfaces.size();
+        size_t scriptSurfaceCount = bsp->gfxWorld.scriptSurfaces.size();
+        size_t totalSurfaceCount = staticSurfaceCount + scriptSurfaceCount;
+
+        // Static surfaces go first in the array then script surfaces after
+        gfxWorld->surfaceCount = static_cast<int>(totalSurfaceCount);
+        gfxWorld->dpvs.staticSurfaceCount = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.surfaces = m_memory.Alloc<GfxSurface>(totalSurfaceCount);
+        for (size_t surfIdx = 0; surfIdx < totalSurfaceCount; surfIdx++)
         {
-            BSPSurface& bspSurface = bsp->gfxWorld.surfaces.at(surfIdx);
+            BSPSurface bspSurface;
+            if (surfIdx < staticSurfaceCount)
+                bspSurface = bsp->gfxWorld.staticSurfaces.at(surfIdx);
+            else
+                bspSurface = bsp->gfxWorld.scriptSurfaces.at(surfIdx - staticSurfaceCount);
             GfxSurface* gfxSurface = &gfxWorld->dpvs.surfaces[surfIdx];
 
             gfxSurface->tris.triCount = bspSurface.triCount;
@@ -124,26 +132,26 @@ namespace BSP
         }
 
         // Some code uses Sorted surfs to index surfaces, so for simplicity keep the indexes sequential and from 0
-        gfxWorld->dpvs.sortedSurfIndex = m_memory.Alloc<uint16_t>(surfaceCount);
-        for (size_t surfIdx = 0; surfIdx < surfaceCount; surfIdx++)
+        gfxWorld->dpvs.sortedSurfIndex = m_memory.Alloc<uint16_t>(staticSurfaceCount);
+        for (size_t surfIdx = 0; surfIdx < staticSurfaceCount; surfIdx++)
             gfxWorld->dpvs.sortedSurfIndex[surfIdx] = static_cast<uint16_t>(surfIdx);
 
         // surface materials are written to by the game
-        gfxWorld->dpvs.surfaceMaterials = m_memory.Alloc<GfxDrawSurf_align4>(surfaceCount);
+        gfxWorld->dpvs.surfaceMaterials = m_memory.Alloc<GfxDrawSurf_align4>(staticSurfaceCount);
 
         // set all surface types to lit opaque
         gfxWorld->dpvs.litSurfsBegin = 0;
-        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(surfaceCount);
-        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(surfaceCount);
+        gfxWorld->dpvs.litSurfsEnd = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsBegin = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.emissiveOpaqueSurfsEnd = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsBegin = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.emissiveTransSurfsEnd = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.litTransSurfsBegin = static_cast<unsigned int>(staticSurfaceCount);
+        gfxWorld->dpvs.litTransSurfsEnd = static_cast<unsigned int>(staticSurfaceCount);
 
         // visdata is written to by the game
         // all visdata is alligned by 128
-        size_t allignedSurfaceCount = BSPUtil::allignBy128(surfaceCount);
+        size_t allignedSurfaceCount = BSPUtil::allignBy128(staticSurfaceCount);
         gfxWorld->dpvs.surfaceVisDataCount = static_cast<unsigned int>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceVisData[0] = m_memory.Alloc<char>(allignedSurfaceCount);
         gfxWorld->dpvs.surfaceVisData[1] = m_memory.Alloc<char>(allignedSurfaceCount);
@@ -507,7 +515,7 @@ namespace BSP
         gfxWorld->cells[0].aabbTree[0].childCount = 0;
         gfxWorld->cells[0].aabbTree[0].childrenOffset = 0;
         gfxWorld->cells[0].aabbTree[0].startSurfIndex = 0;
-        gfxWorld->cells[0].aabbTree[0].surfaceCount = static_cast<uint16_t>(gfxWorld->surfaceCount);
+        gfxWorld->cells[0].aabbTree[0].surfaceCount = static_cast<uint16_t>(gfxWorld->dpvs.staticSurfaceCount);
         gfxWorld->cells[0].aabbTree[0].smodelIndexCount = static_cast<uint16_t>(gfxWorld->dpvs.smodelCount);
         gfxWorld->cells[0].aabbTree[0].smodelIndexes = m_memory.Alloc<unsigned short>(gfxWorld->dpvs.smodelCount);
         for (unsigned short smodelIdx = 0; smodelIdx < gfxWorld->dpvs.smodelCount; smodelIdx++)
@@ -537,15 +545,16 @@ namespace BSP
 
     void GfxWorldLinker::loadWorldBounds(GfxWorld* gfxWorld)
     {
-        gfxWorld->mins.x = gfxWorld->dpvs.surfaces[0].bounds[0].x;
-        gfxWorld->mins.y = gfxWorld->dpvs.surfaces[0].bounds[0].y;
-        gfxWorld->mins.z = gfxWorld->dpvs.surfaces[0].bounds[0].z;
-        gfxWorld->maxs.x = gfxWorld->dpvs.surfaces[0].bounds[1].x;
-        gfxWorld->maxs.y = gfxWorld->dpvs.surfaces[0].bounds[1].y;
-        gfxWorld->maxs.z = gfxWorld->dpvs.surfaces[0].bounds[1].z;
+        gfxWorld->mins = gfxWorld->dpvs.surfaces[0].bounds[0];
+        gfxWorld->maxs = gfxWorld->dpvs.surfaces[0].bounds[1];
         for (int surfIdx = 0; surfIdx < gfxWorld->surfaceCount; surfIdx++)
         {
             BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[surfIdx].bounds[0], gfxWorld->dpvs.surfaces[surfIdx].bounds[1], gfxWorld->mins, gfxWorld->maxs);
+        }
+
+        for (unsigned int smodeldx = 0; smodeldx < gfxWorld->dpvs.smodelCount; smodeldx++)
+        {
+            BSPUtil::updateAABB(gfxWorld->dpvs.smodelInsts[smodeldx].mins, gfxWorld->dpvs.smodelInsts[smodeldx].maxs, gfxWorld->mins, gfxWorld->maxs);
         }
     }
 
@@ -557,27 +566,34 @@ namespace BSP
 
         // first model is always the world model
         gfxWorld->models[0].startSurfIndex = 0;
-        gfxWorld->models[0].surfaceCount = static_cast<unsigned int>(gfxWorld->surfaceCount);
-        gfxWorld->models[0].bounds[0].x = gfxWorld->mins.x;
-        gfxWorld->models[0].bounds[0].y = gfxWorld->mins.y;
-        gfxWorld->models[0].bounds[0].z = gfxWorld->mins.z;
-        gfxWorld->models[0].bounds[1].x = gfxWorld->maxs.x;
-        gfxWorld->models[0].bounds[1].y = gfxWorld->maxs.y;
-        gfxWorld->models[0].bounds[1].z = gfxWorld->maxs.z;
+        gfxWorld->models[0].surfaceCount = static_cast<unsigned int>(gfxWorld->dpvs.staticSurfaceCount);
+        for (unsigned int surfIdx = 0; surfIdx < gfxWorld->dpvs.staticSurfaceCount; surfIdx++)
+        {
+            if (surfIdx == 0)
+            {
+                gfxWorld->models[0].bounds[0] = gfxWorld->dpvs.surfaces[surfIdx].bounds[0];
+                gfxWorld->models[0].bounds[1] = gfxWorld->dpvs.surfaces[surfIdx].bounds[1];
+            }
+            else
+                BSPUtil::updateAABB(gfxWorld->dpvs.surfaces[surfIdx].bounds[0],
+                                    gfxWorld->dpvs.surfaces[surfIdx].bounds[1],
+                                    gfxWorld->models[0].bounds[0],
+                                    gfxWorld->models[0].bounds[1]);
+        }
         memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
 
         for (size_t modelIdx = 0; modelIdx < bsp->models.size(); modelIdx++)
         {
             auto currEntModel = &gfxWorld->models[modelIdx + 1];
-            auto& bspMpdel = bsp->models.at(modelIdx);
+            auto& bspModel = bsp->models.at(modelIdx);
 
-            if (bspMpdel.isGfxModel)
+            if (bspModel.isGfxModel)
             {
-                currEntModel->startSurfIndex = bspMpdel.surfaceIndex;
-                currEntModel->surfaceCount = bspMpdel.surfaceCount;
-                for (size_t surfIdx = 0; surfIdx < bspMpdel.surfaceCount; surfIdx++)
+                currEntModel->startSurfIndex = bsp->gfxWorld.staticSurfaces.size() + bspModel.surfaceIndex;
+                currEntModel->surfaceCount = bspModel.surfaceCount;
+                for (size_t surfIdx = 0; surfIdx < bspModel.surfaceCount; surfIdx++)
                 {
-                    GfxSurface* surf = &gfxWorld->dpvs.surfaces[bspMpdel.surfaceIndex + surfIdx];
+                    GfxSurface* surf = &gfxWorld->dpvs.surfaces[currEntModel->startSurfIndex + surfIdx];
                     if (surfIdx == 0)
                     {
                         currEntModel->bounds[0] = surf->bounds[0];
@@ -817,7 +833,7 @@ namespace BSP
         if (!loadReflectionProbeData(gfxWorld))
             return nullptr;
 
-        // world bounds are based on loaded surface mins/maxs
+        // world bounds are based on loaded surface mins/maxs and xmodels
         loadWorldBounds(gfxWorld);
 
         if (!loadOutdoors(gfxWorld))

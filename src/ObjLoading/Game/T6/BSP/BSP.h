@@ -64,14 +64,14 @@ namespace BSP
 
     struct BSPWorld
     {
-        std::vector<BSPSurface> surfaces;
+
+        std::vector<BSPSurface> staticSurfaces;
+        std::vector<BSPSurface> scriptSurfaces;
+
         std::vector<BSPVertex> vertices;
         std::vector<uint16_t> indices;
         std::vector<BSPMaterial> materials;
         std::vector<BSPXModel> xmodels;
-
-        size_t staticSurfaceCount;
-        std::vector<BSPSurface> internal_scriptSurfaces;
     };
 
     enum BSPLightType

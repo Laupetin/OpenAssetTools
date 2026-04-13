@@ -461,7 +461,7 @@ namespace
                 vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
                 CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
 
-                m_curr_bsp_world->surfaces.emplace_back(surface);
+                m_curr_bsp_world->staticSurfaces.emplace_back(surface);
             }
 
             return true;
@@ -678,7 +678,7 @@ namespace
 
             BSPModel model;
             model.isGfxModel = m_is_world_gfx;
-            model.surfaceIndex = m_curr_bsp_world->internal_scriptSurfaces.size();
+            model.surfaceIndex = m_curr_bsp_world->scriptSurfaces.size();
             model.surfaceCount = mesh.primitives.size();
             m_bsp->models.emplace_back(model);
 
@@ -709,7 +709,7 @@ namespace
                 vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
                 CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
 
-                m_curr_bsp_world->internal_scriptSurfaces.emplace_back(surface);
+                m_curr_bsp_world->scriptSurfaces.emplace_back(surface);
             }
 
             return m_bsp->models.size(); // script model index starts at 1
@@ -1154,13 +1154,6 @@ namespace
 
                 LoadMaterials(jRoot);
                 TraverseNodes(jRoot); // requires materials and lights
-
-                size_t staticSurfaceCount = m_curr_bsp_world->surfaces.size();
-                for (auto& model : m_bsp->models)
-                    model.surfaceIndex += staticSurfaceCount;
-                m_curr_bsp_world->staticSurfaceCount = staticSurfaceCount;
-                m_curr_bsp_world->surfaces.insert(
-                    m_curr_bsp_world->surfaces.end(), m_curr_bsp_world->internal_scriptSurfaces.begin(), m_curr_bsp_world->internal_scriptSurfaces.end());
             }
             catch (const GltfLoadException& e)
             {

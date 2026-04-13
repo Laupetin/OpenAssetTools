@@ -270,7 +270,7 @@ namespace BSP
             std::vector<int> partitionIndexes;
             for (size_t surfIdx = 0; surfIdx < bspMpdel.surfaceCount; surfIdx++)
             {
-                ColSurface& surf = collisionSurfaceVec.at(bspMpdel.surfaceIndex + surfIdx);
+                ColSurface& surf = collisionSurfaceVec.at(bsp->colWorld.staticSurfaces.size() + bspMpdel.surfaceIndex + surfIdx);
                 for (size_t partitionIdx = 0; partitionIdx < surf.partitionCount; partitionIdx++)
                 {
                     size_t clipMapPartitionIndex = surf.partitionStartIndex + partitionIdx;
@@ -712,7 +712,7 @@ namespace BSP
         }
         std::unique_ptr<BSPTree> tree = std::make_unique<BSPTree>(worldMins.x, worldMins.y, worldMins.z, worldMaxs.x, worldMaxs.y, worldMaxs.z, 0);
 
-        for (size_t surfIdx = 0; surfIdx < bsp->colWorld.staticSurfaceCount; surfIdx++) // only add the surfaces the player will collide with
+        for (size_t surfIdx = 0; surfIdx < bsp->colWorld.staticSurfaces.size(); surfIdx++) // only add static surfaces
         {
             ColSurface& colSurface = collisionSurfaceVec.at(surfIdx);
             for (size_t partitionIdx = 0; partitionIdx < colSurface.partitionCount; partitionIdx++)
@@ -768,11 +768,23 @@ namespace BSP
         for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
             clipMap->verts[vertIdx] = bsp->colWorld.vertices[vertIdx].pos;
 
+        size_t staticSurfaceCount = bsp->colWorld.staticSurfaces.size();
+        size_t scriptSurfaceCount = bsp->colWorld.scriptSurfaces.size();
+        size_t totalSurfaceCount = staticSurfaceCount + scriptSurfaceCount;
+
+        // TODO: figure out SV_EntityContact and see how it interacts with partitions
+
         std::vector<uint16_t> triIndexVec;
         std::vector<CollisionPartition> partitionVec;
         std::vector<uint16_t> uniqueIndicesVec;
-        for (BSPSurface& surface : bsp->colWorld.surfaces)
+        for (size_t surfIdx = 0; surfIdx < totalSurfaceCount; surfIdx++)
         {
+            BSPSurface surface;
+            if (surfIdx < staticSurfaceCount)
+                surface = bsp->colWorld.staticSurfaces.at(surfIdx);
+            else
+                surface = bsp->colWorld.scriptSurfaces.at(surfIdx - staticSurfaceCount);
+
             int indexOfFirstIndex = surface.indexOfFirstIndex;
             int indexOfFirstTri = surface.indexOfFirstIndex / 3;
             int indexOfFirstVertex = surface.indexOfFirstVertex;
