@@ -62,9 +62,17 @@ namespace BSP
         bool doesCastShadow;
     };
 
+    struct BSPBoxBrush
+    {
+        vec3_t localMins;
+        vec3_t localMaxs;
+
+        int surfaceFlags;
+        int contentFlags;
+    };
+
     struct BSPWorld
     {
-
         std::vector<BSPSurface> staticSurfaces;
         std::vector<BSPSurface> scriptSurfaces;
 
@@ -72,6 +80,8 @@ namespace BSP
         std::vector<uint16_t> indices;
         std::vector<BSPMaterial> materials;
         std::vector<BSPXModel> xmodels;
+
+        std::vector<BSPBoxBrush> scriptBoxBrushes;
     };
 
     enum BSPLightType
@@ -145,6 +155,9 @@ namespace BSP
 
         size_t surfaceIndex;
         size_t surfaceCount;
+
+        bool hasBrush;
+        size_t brushIndex;
     };
 
     struct BSPData

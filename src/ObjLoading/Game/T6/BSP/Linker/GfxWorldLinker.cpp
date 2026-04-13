@@ -587,7 +587,7 @@ namespace BSP
             auto currEntModel = &gfxWorld->models[modelIdx + 1];
             auto& bspModel = bsp->models.at(modelIdx);
 
-            if (bspModel.isGfxModel)
+            if (bspModel.isGfxModel && bspModel.surfaceCount != 0)
             {
                 currEntModel->startSurfIndex = bsp->gfxWorld.staticSurfaces.size() + bspModel.surfaceIndex;
                 currEntModel->surfaceCount = bspModel.surfaceCount;

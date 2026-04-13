@@ -39,6 +39,9 @@ namespace BSP
         std::vector<CollisionAabbTree> AABBTreeVec;
         size_t highestPartitionCountForAABB = 0;
 
+        std::vector<cLeafBrushNode_s> brushNodeVec;
+        std::vector<cbrush_array_t> brushVec;
+
         std::vector<ColSurface> collisionSurfaceVec;
         std::vector<size_t> partitionToColSurfaceMap;
 
