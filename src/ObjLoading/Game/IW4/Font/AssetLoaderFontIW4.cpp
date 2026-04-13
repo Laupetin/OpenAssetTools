@@ -1,12 +1,12 @@
-#include "AssetLoaderFontW3.h"
-#include "Game/IW3/IW3.h"
+#include "AssetLoaderFontIW4.h"
+#include "Game/IW4/IW4.h"
 #include "Utils/Logging/Log.h"
 
 #include <nlohmann/json.hpp>
 #include <cstring>
 #include <format>
 
-using namespace IW3;
+using namespace IW4;
 
 namespace
 {
@@ -127,7 +127,7 @@ namespace
 
 namespace font
 {
-    std::unique_ptr<AssetCreator<AssetFont>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetFont>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<FontLoader>(memory, searchPath);
     }

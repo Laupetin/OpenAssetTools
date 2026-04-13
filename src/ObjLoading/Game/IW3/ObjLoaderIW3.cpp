@@ -14,7 +14,7 @@
 #include "ObjLoading.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
-#include "Font/AssetLoaderFontW3.h"
+#include "Font/AssetLoaderFontIW3.h"
 
 #include <memory>
 

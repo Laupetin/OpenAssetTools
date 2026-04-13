@@ -23,6 +23,7 @@
 #include "StructuredDataDef/LoaderStructuredDataDefIW4.h"
 #include "Weapon/GdtLoaderWeaponIW4.h"
 #include "Weapon/RawLoaderWeaponIW4.h"
+#include "Font/AssetLoaderFontIW4.h"
 
 #include <memory>
 
@@ -145,7 +146,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         collection.AddAssetCreator(light_def::CreateLoaderIW4(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(menu::CreateMenuListLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW4(memory, searchPath, zone));

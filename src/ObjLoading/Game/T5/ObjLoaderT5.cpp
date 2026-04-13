@@ -14,6 +14,7 @@
 #include "ObjLoading.h"
 #include "RawFile/LoaderRawFileT5.h"
 #include "StringTable/LoaderStringTableT5.h"
+#include "Font/AssetLoaderFontT5.h"
 
 #include <memory>
 
@@ -123,7 +124,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderT5(memory, searchPath, zone));
