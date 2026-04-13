@@ -665,7 +665,94 @@ namespace
             return true;
         }
 
-        size_t addScriptModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        size_t addScriptBrushModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            if (!node.mesh || !jRoot.meshes)
+                throw new GltfLoadException("Script model created with no mesh data");
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+            const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
+
+            if (mesh.primitives.size() == 0)
+                throw new GltfLoadException("Script model created with no mesh data");
+
+            BSPModel model;
+            model.isGfxModel = m_is_world_gfx;
+            model.surfaceIndex = 0;
+            model.surfaceCount = 0;
+            model.hasBrush = true;
+            model.brushIndex = m_curr_bsp_world->scriptBoxBrushes.size();
+            m_bsp->models.emplace_back(model);
+
+            BSPBoxBrush boxBrush;
+            boxBrush.contentFlags = 1;
+            boxBrush.surfaceFlags = 1;
+            vec3_t worldMins;
+            vec3_t worldMaxs;
+            for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
+            {
+                const auto& primitive = mesh.primitives.at(primIdx);
+
+                if (!primitive.attributes.POSITION)
+                    throw GltfLoadException("Requires primitives attribute POSITION");
+
+                // clang-format off
+                const auto* positionAccessor = GetAccessorForIndex(
+                    "POSITION",
+                    primitive.attributes.POSITION,
+                    { JsonAccessorType::VEC3 },
+                    { JsonAccessorComponentType::FLOAT }
+                ).value_or(nullptr);
+                // clang-format on
+                assert(positionAccessor != nullptr);
+
+                if (positionAccessor->GetCount() == 0)
+                    throw GltfLoadException("positionAccessor has count of 0");
+
+                for (size_t vertexIndex = 0u; vertexIndex < positionAccessor->GetCount(); vertexIndex++)
+                {
+                    vec3_t vertex;
+                    if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.v))
+                        assert(false);
+
+                    Eigen::Vector4f position(vertex.x, vertex.y, vertex.z, 1.0f);
+                    Eigen::Vector4f transformedPosition = nodeMatrix * position;
+                    vertex.x = transformedPosition.x();
+                    vertex.y = transformedPosition.y();
+                    vertex.z = transformedPosition.z();
+                    RhcToLhcCoordinates(vertex.v);
+
+                    if (vertexIndex == 0 && primIdx == 0)
+                    {
+                        worldMins = vertex;
+                        worldMaxs = vertex;
+                    }
+                    else
+                        BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
+                }
+            }
+
+            // convert world position to local position
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+            boxBrush.localMins.x = worldMins.x - origin.x;
+            boxBrush.localMins.y = worldMins.y - origin.y;
+            boxBrush.localMins.z = worldMins.z - origin.z;
+            boxBrush.localMaxs.x = worldMaxs.x - origin.x;
+            boxBrush.localMaxs.y = worldMaxs.y - origin.y;
+            boxBrush.localMaxs.z = worldMaxs.z - origin.z;
+
+            m_curr_bsp_world->scriptBoxBrushes.emplace_back(boxBrush);
+
+            return m_bsp->models.size(); // script model index starts at 1
+        }
+
+        size_t addScriptTerrainModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
             if (!node.mesh || !jRoot.meshes)
                 throw new GltfLoadException("Script model created with no mesh data");
@@ -680,6 +767,8 @@ namespace
             model.isGfxModel = m_is_world_gfx;
             model.surfaceIndex = m_curr_bsp_world->scriptSurfaces.size();
             model.surfaceCount = mesh.primitives.size();
+            model.hasBrush = false;
+            model.brushIndex = 0;
             m_bsp->models.emplace_back(model);
 
             for (const auto& primitive : mesh.primitives)
@@ -735,7 +824,7 @@ namespace
             zone.zoneName = *node.extras->zone;
             zone.zSpawnerGroupName = node.extras->zspawner_group.value_or("");
             zone.spawnpointGroupName = node.extras->spawnpoint_group.value_or("");
-            zone.modelIndex = addScriptModel(jRoot, node);
+            zone.modelIndex = addScriptBrushModel(jRoot, node);
             m_bsp->zZones.emplace_back(zone);
 
             return true;

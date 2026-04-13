@@ -243,17 +243,98 @@ namespace BSP
         for (size_t modelIdx = 0; modelIdx < bsp->models.size(); modelIdx++)
         {
             auto clipModel = &clipMap->cmodels[modelIdx + 1];
-            auto& bspMpdel = bsp->models.at(modelIdx);
+            auto& bspModel = bsp->models.at(modelIdx);
 
-            if (bspMpdel.isGfxModel)
+            if (bspModel.isGfxModel)
             {
-                clipModel->mins.x = 0.0f;
-                clipModel->mins.y = 0.0f;
-                clipModel->mins.z = 0.0f;
-                clipModel->maxs.x = 0.0f;
-                clipModel->maxs.y = 0.0f;
-                clipModel->maxs.z = 0.0f;
-                clipModel->radius = 0.0f;
+                memset(clipModel, 0, sizeof(cmodel_t));
+                continue;
+            }
+
+            if (bspModel.surfaceCount != 0)
+            {
+                std::vector<int> partitionIndexes;
+                for (size_t surfIdx = 0; surfIdx < bspModel.surfaceCount; surfIdx++)
+                {
+                    ColSurface& surf = collisionSurfaceVec.at(bsp->colWorld.staticSurfaces.size() + bspModel.surfaceIndex + surfIdx);
+                    for (size_t partitionIdx = 0; partitionIdx < surf.partitionCount; partitionIdx++)
+                    {
+                        size_t clipMapPartitionIndex = surf.partitionStartIndex + partitionIdx;
+                        partitionIndexes.emplace_back(clipMapPartitionIndex);
+                        vec3_t mins;
+                        vec3_t maxs;
+                        calculatePartitionAABB(clipMap, &clipMap->partitions[clipMapPartitionIndex], mins, maxs);
+                        if (surfIdx == 0 && partitionIdx == 0)
+                        {
+                            clipModel->mins = mins;
+                            clipModel->maxs = maxs;
+                        }
+                        else
+                            BSPUtil::updateAABB(mins, maxs, clipModel->mins, clipModel->maxs);
+                    }
+                }
+
+                int terrainContents = 0;
+                size_t firstCollAabbIndex = 0;
+                size_t collAabbCount = 0;
+                addAABBTreeFromPartitions(clipMap, partitionIndexes, &collAabbCount, &firstCollAabbIndex, &terrainContents);
+                clipModel->leaf.terrainContents = terrainContents;
+                clipModel->leaf.firstCollAabbIndex = static_cast<uint16_t>(firstCollAabbIndex);
+                clipModel->leaf.collAabbCount = static_cast<uint16_t>(collAabbCount);
+            }
+            else
+            {
+                clipModel->leaf.terrainContents = 0;
+                clipModel->leaf.firstCollAabbIndex = 0;
+                clipModel->leaf.collAabbCount = 0;
+            }
+
+            if (bspModel.hasBrush)
+            {
+                BSPBoxBrush& bspBrush = bsp->colWorld.scriptBoxBrushes.at(bspModel.brushIndex);
+                clipModel->leaf.mins = bspBrush.localMins;
+                clipModel->leaf.maxs = bspBrush.localMaxs;
+                clipModel->leaf.brushContents = bspBrush.contentFlags;
+                clipModel->leaf.leafBrushNode = static_cast<int>(brushNodeVec.size());
+                assert(clipModel->leaf.leafBrushNode != 0);
+
+                cLeafBrushNode_s brushNode;
+                brushNode.axis = 0;
+                brushNode.contents = bspBrush.contentFlags;
+                brushNode.leafBrushCount = 1;
+                brushNode.data.leaf.brushes = m_memory.Alloc<LeafBrush>(1);
+                brushNode.data.leaf.brushes[0] = static_cast<unsigned short>(brushVec.size());
+                brushNodeVec.emplace_back(brushNode);
+
+                cbrush_array_t brush;
+                memset(&brush, 0, sizeof(cbrush_array_t)); // if not sides or verts are given, the mins/maxs are used instead
+                brush.contents = bspBrush.contentFlags;
+                brush.mins = bspBrush.localMins;
+                brush.maxs = bspBrush.localMaxs;
+                brush.axial_cflags[0][0] = bspBrush.contentFlags;
+                brush.axial_cflags[0][1] = bspBrush.contentFlags;
+                brush.axial_cflags[0][2] = bspBrush.contentFlags;
+                brush.axial_cflags[1][0] = bspBrush.contentFlags;
+                brush.axial_cflags[1][1] = bspBrush.contentFlags;
+                brush.axial_cflags[1][2] = bspBrush.contentFlags;
+                brush.axial_sflags[0][0] = bspBrush.surfaceFlags;
+                brush.axial_sflags[0][1] = bspBrush.surfaceFlags;
+                brush.axial_sflags[0][2] = bspBrush.surfaceFlags;
+                brush.axial_sflags[1][0] = bspBrush.surfaceFlags;
+                brush.axial_sflags[1][1] = bspBrush.surfaceFlags;
+                brush.axial_sflags[1][2] = bspBrush.surfaceFlags;
+                brushVec.emplace_back(brush);
+
+                if (bspModel.surfaceCount != 0)
+                    BSPUtil::updateAABB(bspBrush.localMins, bspBrush.localMaxs, clipModel->mins, clipModel->maxs);
+                else
+                {
+                    clipModel->mins = bspBrush.localMins;
+                    clipModel->maxs = bspBrush.localMaxs;
+                }
+            }
+            else
+            {
                 clipModel->leaf.brushContents = 0;
                 clipModel->leaf.mins.x = 0.0f;
                 clipModel->leaf.mins.y = 0.0f;
@@ -262,50 +343,16 @@ namespace BSP
                 clipModel->leaf.maxs.y = 0.0f;
                 clipModel->leaf.maxs.z = 0.0f;
                 clipModel->leaf.leafBrushNode = 0;
-                clipModel->leaf.cluster = 0;
-                clipModel->info = nullptr;
-                continue;
             }
 
-            std::vector<int> partitionIndexes;
-            for (size_t surfIdx = 0; surfIdx < bspMpdel.surfaceCount; surfIdx++)
+            if (bspModel.surfaceCount == 0 && !bspModel.hasBrush)
             {
-                ColSurface& surf = collisionSurfaceVec.at(bsp->colWorld.staticSurfaces.size() + bspMpdel.surfaceIndex + surfIdx);
-                for (size_t partitionIdx = 0; partitionIdx < surf.partitionCount; partitionIdx++)
-                {
-                    size_t clipMapPartitionIndex = surf.partitionStartIndex + partitionIdx;
-                    partitionIndexes.emplace_back(clipMapPartitionIndex);
-                    vec3_t mins;
-                    vec3_t maxs;
-                    calculatePartitionAABB(clipMap, &clipMap->partitions[clipMapPartitionIndex], mins, maxs);
-                    if (surfIdx == 0 && partitionIdx == 0)
-                    {
-                        clipModel->mins = mins;
-                        clipModel->maxs = maxs;
-                    }
-                    else
-                        BSPUtil::updateAABB(mins, maxs, clipModel->mins, clipModel->maxs);
-                }
+                clipModel->mins = {0.0f, 0.0f, 0.0f};
+                clipModel->maxs = {0.0f, 0.0f, 0.0f};
+                clipModel->radius = 0.0f;
             }
-            clipModel->radius = BSPUtil::distBetweenPoints(clipModel->mins, clipModel->maxs) / 2;
-
-            int terrainContents = 0;
-            size_t firstCollAabbIndex = 0;
-            size_t collAabbCount = 0;
-            addAABBTreeFromPartitions(clipMap, partitionIndexes, &collAabbCount, &firstCollAabbIndex, &terrainContents);
-            clipModel->leaf.terrainContents = terrainContents;
-            clipModel->leaf.firstCollAabbIndex = static_cast<uint16_t>(firstCollAabbIndex);
-            clipModel->leaf.collAabbCount = static_cast<uint16_t>(collAabbCount);
-
-            // no brush
-            clipModel->leaf.brushContents = 0;
-            clipModel->leaf.mins.x = 0.0f;
-            clipModel->leaf.mins.y = 0.0f;
-            clipModel->leaf.mins.z = 0.0f;
-            clipModel->leaf.maxs.x = 0.0f;
-            clipModel->leaf.maxs.y = 0.0f;
-            clipModel->leaf.maxs.z = 0.0f;
-            clipModel->leaf.leafBrushNode = 0;
+            else
+                clipModel->radius = BSPUtil::distBetweenPoints(clipModel->mins, clipModel->maxs) / 2;
             clipModel->leaf.cluster = 0;
             clipModel->info = nullptr;
         }
@@ -607,22 +654,6 @@ namespace BSP
         // load planes, nodes, leafs, and AABB trees
         loadBSPNode(clipMap, tree.get(), true);
 
-        clipMap->info.planeCount = static_cast<int>(planeVec.size());
-        clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
-        memcpy(clipMap->info.planes, planeVec.data(), sizeof(cplane_s) * planeVec.size());
-
-        clipMap->numNodes = static_cast<unsigned int>(nodeVec.size());
-        clipMap->nodes = m_memory.Alloc<cNode_t>(nodeVec.size());
-        memcpy(clipMap->nodes, nodeVec.data(), sizeof(cNode_t) * nodeVec.size());
-
-        clipMap->numLeafs = static_cast<unsigned int>(leafVec.size());
-        clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
-        memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
-
-        // The plane of each node have the same index
-        for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
-            clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
-
         con::info("Highest AABB tree partition count: {}", highestPartitionCountForAABB);
 
         return true;
@@ -724,16 +755,20 @@ namespace BSP
         // No support for brushes, only tris right now
         clipMap->info.numBrushSides = 0;
         clipMap->info.brushsides = nullptr;
-        clipMap->info.leafbrushNodesCount = 0;
-        clipMap->info.leafbrushNodes = nullptr;
         clipMap->info.numLeafBrushes = 0;
         clipMap->info.leafbrushes = nullptr;
         clipMap->info.numBrushVerts = 0;
         clipMap->info.brushVerts = nullptr;
-        clipMap->info.numBrushes = 0;
-        clipMap->info.brushes = nullptr;
         clipMap->info.brushBounds = nullptr;
         clipMap->info.brushContents = nullptr;
+
+        // first brush node is always empty
+        cLeafBrushNode_s tempNode;
+        memset(&tempNode, 0, sizeof(cLeafBrushNode_s));
+        brushNodeVec.emplace_back(tempNode);
+
+        clipMap->info.numBrushes = 0;
+        clipMap->info.brushes = nullptr;
 
         // load verts, tris, uinds and partitions
         if (!loadPartitions(clipMap, bsp))
@@ -741,6 +776,36 @@ namespace BSP
 
         if (!loadBSPTree(clipMap, bsp))
             return false;
+
+        loadSubModelCollision(clipMap, bsp); // requires tri verts
+
+        clipMap->info.planeCount = static_cast<int>(planeVec.size());
+        clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
+        memcpy(clipMap->info.planes, planeVec.data(), sizeof(cplane_s) * planeVec.size());
+
+        clipMap->numNodes = static_cast<unsigned int>(nodeVec.size());
+        clipMap->nodes = m_memory.Alloc<cNode_t>(nodeVec.size());
+        memcpy(clipMap->nodes, nodeVec.data(), sizeof(cNode_t) * nodeVec.size());
+
+        clipMap->numLeafs = static_cast<unsigned int>(leafVec.size());
+        clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
+        memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
+
+        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
+        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
+        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
+
+        clipMap->info.leafbrushNodesCount = static_cast<unsigned int>(brushNodeVec.size());
+        clipMap->info.leafbrushNodes = m_memory.Alloc<cLeafBrushNode_s>(brushNodeVec.size());
+        memcpy(clipMap->info.leafbrushNodes, brushNodeVec.data(), sizeof(cLeafBrushNode_s) * brushNodeVec.size());
+
+        clipMap->info.numBrushes = static_cast<uint16_t>(brushVec.size());
+        clipMap->info.brushes = m_memory.Alloc<cbrush_array_t>(brushVec.size());
+        memcpy(clipMap->info.brushes, brushVec.data(), sizeof(cbrush_array_t) * brushVec.size());
+
+        // The plane of each node have the same index
+        for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
+            clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
 
         return true;
     }
@@ -801,18 +866,11 @@ namespace BSP
         if (!loadWorldCollision(clipMap, bsp)) // requires materials
             return nullptr;
 
-        loadSubModelCollision(clipMap, bsp); // requires tri verts
-
         // set all edges to walkable
         // might do weird stuff on walls, but from testing doesnt seem to do anything
         int walkableEdgeSize = (3 * clipMap->triCount + 31) / 32 * 4;
         clipMap->triEdgeIsWalkable = m_memory.Alloc<char>(walkableEdgeSize);
         memset(clipMap->triEdgeIsWalkable, 1, walkableEdgeSize * sizeof(char));
-
-        // multiple functions add to AABBTreeVec, so it is added to the clipmap last
-        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
-        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
-        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
 
         return clipMap;
     }
