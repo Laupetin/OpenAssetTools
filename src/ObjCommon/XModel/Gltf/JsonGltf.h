@@ -103,9 +103,14 @@ namespace gltf
         std::optional<std::string> spawnpoint_group; // value: zone zspawner group name
 
         std::optional<std::string> zspawner; // value: zspawner group name
+
+        // scripting
+        std::optional<std::string> trigger_use;
+        std::optional<std::string> trigger_multiple;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtras, xmodel, spawnpoint, flags, pathnode, zone, zspawner_group, spawnpoint_group, zspawner);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonNodeExtras, xmodel, spawnpoint, flags, pathnode, zone, zspawner_group, spawnpoint_group, zspawner, trigger_use, trigger_multiple);
 
     class JsonNode
     {

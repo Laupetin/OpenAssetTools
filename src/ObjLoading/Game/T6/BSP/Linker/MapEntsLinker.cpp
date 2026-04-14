@@ -173,6 +173,29 @@ namespace
         }
     }
 
+    void addScriptingToEntString(BSP::BSPData* bsp, std::string& entityString)
+    {
+        for (auto& useTrigger : bsp->useTriggers)
+        {
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"trigger_use\"\n");
+            entityString.append(std::format("\"targetname\" \"{}\"\n", useTrigger.triggerName));
+            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(useTrigger.origin)));
+            entityString.append(std::format("\"model\" \"*{}\"\n", useTrigger.modelIndex));
+            entityString.append("}\n");
+        }
+
+        for (auto& useTrigger : bsp->triggerMultiples)
+        {
+            entityString.append("{\n");
+            entityString.append("\"classname\" \"trigger_multiple\"\n");
+            entityString.append(std::format("\"targetname\" \"{}\"\n", useTrigger.triggerName));
+            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(useTrigger.origin)));
+            entityString.append(std::format("\"model\" \"*{}\"\n", useTrigger.modelIndex));
+            entityString.append("}\n");
+        }
+    }
+
     constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
     "entities": [
         {
@@ -228,6 +251,8 @@ namespace BSP
 
             if (bsp->isZombiesMap)
                 addZombiesEntitiesToEntString(bsp, entityString);
+
+            addScriptingToEntString(bsp, entityString);
 
             MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
             mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
