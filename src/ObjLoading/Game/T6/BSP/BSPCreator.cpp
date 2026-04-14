@@ -866,6 +866,54 @@ namespace
             return true;
         }
 
+        bool addTriggerUseNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->trigger_use);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+
+            BSPTriggerBox trigger;
+            trigger.origin = origin;
+            trigger.triggerName = *node.extras->trigger_use;
+            trigger.modelIndex = addScriptBrushModel(jRoot, node);
+            m_bsp->useTriggers.emplace_back(trigger);
+
+            return true;
+        }
+
+        bool addTriggerMultipleNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        {
+            assert(node.extras);
+            assert(node.extras->trigger_multiple);
+
+            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+
+            Eigen::Vector4f position(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * position;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+
+            BSPTriggerBox trigger;
+            trigger.origin = origin;
+            trigger.triggerName = *node.extras->trigger_multiple;
+            trigger.modelIndex = addScriptBrushModel(jRoot, node);
+            m_bsp->triggerMultiples.emplace_back(trigger);
+
+            return true;
+        }
+
         bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
             if (m_is_world_gfx && node.extensions && node.extensions->KHR_lights_punctual)
@@ -881,6 +929,12 @@ namespace
 
                 if (!m_is_world_gfx && node.extras->pathnode)
                     return addPathNode_Node(node);
+
+                if (!m_is_world_gfx && node.extras->trigger_use)
+                    return addTriggerUseNode(jRoot, node);
+
+                if (!m_is_world_gfx && node.extras->trigger_multiple)
+                    return addTriggerMultipleNode(jRoot, node);
 
                 if (!m_is_world_gfx && m_bsp->isZombiesMap)
                 {

@@ -160,6 +160,13 @@ namespace BSP
         size_t brushIndex;
     };
 
+    struct BSPTriggerBox
+    {
+        vec3_t origin;
+        size_t modelIndex;
+        std::string triggerName;
+    };
+
     struct BSPData
     {
         std::string name;
@@ -176,6 +183,9 @@ namespace BSP
         std::vector<BSPSpawnPointZM> zSpawnPoints;
         std::vector<BSPZSpawnerZM> zSpawners;
         std::vector<BSPZoneZM> zZones;
+
+        std::vector<BSPTriggerBox> useTriggers;
+        std::vector<BSPTriggerBox> triggerMultiples;
 
         std::vector<BSPModel> models;
     };
