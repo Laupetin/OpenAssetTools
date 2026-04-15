@@ -67,22 +67,19 @@ namespace
 
     void addSpawnsToEntString(BSP::BSPData* bsp, std::string& entityString)
     {
-        if (!bsp->isZombiesMap && bsp->spawnpoints.size() == 0)
+        if (bsp->isZombiesMap)
         {
-            con::info("No spawnpoints found, setting all spawns to (0, 0, 0)");
-            BSP::BSPSpawnPoint defaultSpawnPoint;
-            defaultSpawnPoint.origin.x = 0.0f;
-            defaultSpawnPoint.origin.y = 0.0f;
-            defaultSpawnPoint.origin.z = 0.0f;
-            defaultSpawnPoint.forward.x = 1.0f;
-            defaultSpawnPoint.forward.y = 0.0f;
-            defaultSpawnPoint.forward.z = 0.0f;
-            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_DEFENDER;
-            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
-            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ATTACKER;
-            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
-            defaultSpawnPoint.type = BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ALL;
-            bsp->spawnpoints.emplace_back(defaultSpawnPoint);
+            for (auto& spawnPoint : bsp->spawnpoints)
+            {
+                entityString.append("{\n");
+                entityString.append("\"classname\" \"script_struct\"\n");
+                entityString.append(std::format("\"targetname\" \"{}\"\n", spawnPoint.spawnpointGroupName));
+                entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(spawnPoint.origin)));
+                vec3_t angles = BSP::BSPUtil::convertForwardVectorToViewAngles(spawnPoint.forward);
+                entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
+                entityString.append("}\n");
+            }
+            return;
         }
 
         size_t defenderNameCount = std::extent<decltype(DEFENDER_SPAWN_POINT_NAMES)>::value;
@@ -98,9 +95,9 @@ namespace
             std::string anglesStr = std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles));
 
             const std::vector<const char*>* spawnPointList;
-            if (spawnPoint.type == BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_DEFENDER)
+            if (!spawnPoint.spawnpointGroupName.compare("defender"))
                 spawnPointList = &DEFENDER_SPAWN_POINT_NAMES;
-            else if (spawnPoint.type == BSP::BSPSpawnPointType::SPAWNPOINT_TYPE_ATTACKER)
+            else if (!spawnPoint.spawnpointGroupName.compare("attacker"))
                 spawnPointList = &ATTACKER_SPAWN_POINT_NAMES;
             else // SPAWNPOINT_TYPE_ALL
                 spawnPointList = &FFA_SPAWN_POINT_NAMES;
@@ -116,26 +113,15 @@ namespace
         }
     }
 
-    void addPathNodesToEntString(BSP::BSPData* bsp, std::string& entityString)
-    {
-        for (auto& pathnode : bsp->pathnodes)
-        {
-            entityString.append("{\n");
-            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(pathnode.origin)));
-            entityString.append(std::format("\"classname\" \"{}\"\n", "node_pathnode"));
-            entityString.append("}\n");
-        }
-    }
-
     void addZombiesEntitiesToEntString(BSP::BSPData* bsp, std::string& entityString)
     {
-        for (auto& zone : bsp->zZones)
+        for (auto& zone : bsp->zm_zones)
         {
             entityString.append("{\n");
             entityString.append("\"classname\" \"info_volume\"\n");
             entityString.append("\"script_noteworthy\" \"player_volume\"\n");
             entityString.append(std::format("\"targetname\" \"{}\"\n", zone.zoneName));
-            entityString.append(std::format("\"target\" \"{}\"\n", zone.zSpawnerGroupName));
+            entityString.append(std::format("\"target\" \"{}\"\n", zone.spawnerGroupName));
             entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(zone.origin)));
             entityString.append(std::format("\"model\" \"*{}\"\n", zone.modelIndex));
             entityString.append("}\n");
@@ -148,50 +134,37 @@ namespace
             entityString.append("}\n");
         }
 
-        for (auto& zSpawner : bsp->zSpawners)
+        for (auto& zSpawner : bsp->zm_spawners)
         {
             entityString.append("{\n");
             entityString.append("\"classname\" \"script_struct\"\n");
             entityString.append("\"script_noteworthy\" \"riser_location\"\n");
             entityString.append("\"script_string\" \"find_flesh\"\n");
-            entityString.append(std::format("\"targetname\" \"{}\"\n", zSpawner.zSpawnerGroupName));
+            entityString.append(std::format("\"targetname\" \"{}\"\n", zSpawner.spawnerGroupName));
             entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(zSpawner.origin)));
             vec3_t angles = BSP::BSPUtil::convertForwardVectorToViewAngles(zSpawner.forward);
             entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
             entityString.append("}\n");
         }
-
-        for (auto& spawnPoint : bsp->zSpawnPoints)
-        {
-            entityString.append("{\n");
-            entityString.append("\"classname\" \"script_struct\"\n");
-            entityString.append(std::format("\"targetname\" \"{}\"\n", spawnPoint.spawnpointGroupName));
-            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(spawnPoint.origin)));
-            vec3_t angles = BSP::BSPUtil::convertForwardVectorToViewAngles(spawnPoint.forward);
-            entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
-            entityString.append("}\n");
-        }
     }
 
-    void addScriptingToEntString(BSP::BSPData* bsp, std::string& entityString)
+    void addClassEntitiesToEntString(BSP::BSPData* bsp, std::string& entityString)
     {
-        for (auto& useTrigger : bsp->useTriggers)
+        for (auto& entity : bsp->entities)
         {
-            entityString.append("{\n");
-            entityString.append("\"classname\" \"trigger_use\"\n");
-            entityString.append(std::format("\"targetname\" \"{}\"\n", useTrigger.triggerName));
-            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(useTrigger.origin)));
-            entityString.append(std::format("\"model\" \"*{}\"\n", useTrigger.modelIndex));
-            entityString.append("}\n");
-        }
+            vec3_t origin = entity.origin;
+            vec3_t axis[3];
+            BSP::BSPUtil::convertQuaternionToAxis(&entity.rotationQuaternion, axis);
+            vec3_t angles = BSP::BSPUtil::convertAxisToAngles(axis);
 
-        for (auto& useTrigger : bsp->triggerMultiples)
-        {
             entityString.append("{\n");
-            entityString.append("\"classname\" \"trigger_multiple\"\n");
-            entityString.append(std::format("\"targetname\" \"{}\"\n", useTrigger.triggerName));
-            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(useTrigger.origin)));
-            entityString.append(std::format("\"model\" \"*{}\"\n", useTrigger.modelIndex));
+            entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(origin)));
+            entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
+            for (auto& entry : entity.entries)
+                entityString.append(std::format("\"{}\" \"{}\"\n", entry.key, entry.value));
+            if (entity.modelIndex != 0)
+                entityString.append(std::format("\"model\" \"*{}\"\n", entity.modelIndex));
+
             entityString.append("}\n");
         }
     }
@@ -247,12 +220,10 @@ namespace BSP
 
             addSpawnsToEntString(bsp, entityString);
 
-            addPathNodesToEntString(bsp, entityString);
-
             if (bsp->isZombiesMap)
                 addZombiesEntitiesToEntString(bsp, entityString);
 
-            addScriptingToEntString(bsp, entityString);
+            addClassEntitiesToEntString(bsp, entityString);
 
             MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
             mapEnts->name = m_memory.Dup(bsp->bspName.c_str());

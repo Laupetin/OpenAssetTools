@@ -196,6 +196,17 @@ namespace BSP
     {
         vec3_t viewAngles;
 
+        if (forwardVec.x == 0.0f && forwardVec.y == 0.0f)
+        {
+            if (-forwardVec.z < 0.0f)
+                viewAngles.x = 270.0f;
+            else
+                viewAngles.x = 90.0f;
+            viewAngles.y = 0.0f;
+            viewAngles.z = 0.0f;
+            return viewAngles;
+        }
+
         float xAndYDist = sqrtf((forwardVec.x * forwardVec.x) + (forwardVec.y * forwardVec.y));
         float atanXRadians = atan2f(forwardVec.z, xAndYDist);
         float atanXDegrees = atanXRadians * (-180.0f / std::numbers::pi_v<float>);
@@ -212,6 +223,47 @@ namespace BSP
         viewAngles.z = 0.0f;
 
         return viewAngles;
+    }
+
+    float BSPUtil::getPitchFromVector(vec3_t& vector)
+    {
+        if (vector.x == 0.0f && vector.y == 0.0f)
+        {
+            if (-vector.z < 0.0f)
+                return -90.0f;
+            else
+                return 90.0f;
+        }
+
+        float xAndYDist = sqrtf((vector.x * vector.x) + (vector.y * vector.y));
+        float pitchRadians = atan2f(vector.z, xAndYDist);
+        float pitchDegrees = pitchRadians * (-180.0f / std::numbers::pi_v<float>);
+        return pitchDegrees;
+    }
+
+    vec3_t BSPUtil::convertAxisToAngles(vec3_t axis[3])
+    {
+        vec3_t tempAngles = convertForwardVectorToViewAngles(axis[0]);
+        float xRadiansNeg = -tempAngles.x * (std::numbers::pi_v<float> / 180.0f);
+        float yRadiansNeg = -tempAngles.y * (std::numbers::pi_v<float> / 180.0f);
+        float cosX = cos(xRadiansNeg);
+        float sinX = sin(xRadiansNeg);
+        float cosY = cos(yRadiansNeg);
+        float sinY = sin(yRadiansNeg);
+
+        vec3_t tempVec;
+        float tempFloat = (axis[1].x * cosY) - (axis[1].y * sinY);
+        tempVec.x = (axis[1].z * sinX) + (tempFloat * cosX);
+        tempVec.y = (axis[1].x * sinY) + (axis[1].y * cosY);
+        tempVec.z = (axis[1].z * cosX) - (tempFloat * sinX);
+        float pitch = getPitchFromVector(tempVec);
+        if (tempVec.y >= 0.0f)
+            tempAngles.z = -pitch;
+        else if (pitch >= 0.0f)
+            tempAngles.z = pitch - 180.0f;
+        else
+            tempAngles.z = pitch + 180.0f;
+        return tempAngles;
     }
 
     void BSPUtil::matrixTranspose3x3(const vec3_t* in, vec3_t* out)

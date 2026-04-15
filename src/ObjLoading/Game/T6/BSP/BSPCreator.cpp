@@ -443,10 +443,10 @@ namespace
                 if (primitive.material)
                 {
                     size_t originalMaterialIdx = *primitive.material;
-                    if (node.extras && node.extras->flags)
+                    if (node.extras && node.extras->contains("flags"))
                     {
                         bool isNoDrawFlagSet = false;
-                        materialIndex = createMaterialWithFlags(originalMaterialIdx, *node.extras->flags, isNoDrawFlagSet);
+                        materialIndex = createMaterialWithFlags(originalMaterialIdx, node.extras->at("flags"), isNoDrawFlagSet);
                         if (isNoDrawFlagSet && m_is_world_gfx)
                             continue; // noDraw flag doesn't work, so remove the surface from the graphics data instead
                     }
@@ -492,12 +492,12 @@ namespace
                         throw GltfLoadException("Requires primitives attribute POSITION");
 
                     // clang-format off
-                    const auto* positionAccessor = GetAccessorForIndex(
-                        "POSITION",
-                        primitive.attributes.POSITION,
-                        { JsonAccessorType::VEC3 },
-                        { JsonAccessorComponentType::FLOAT }
-                    ).value_or(nullptr);
+                     const auto* positionAccessor = GetAccessorForIndex(
+                         "POSITION",
+                         primitive.attributes.POSITION,
+                         { JsonAccessorType::VEC3 },
+                         { JsonAccessorComponentType::FLOAT }
+                     ).value_or(nullptr);
                     // clang-format on
                     assert(positionAccessor != nullptr);
 
@@ -539,19 +539,17 @@ namespace
         bool addXModelNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
             assert(node.extras);
-            assert(node.extras->xmodel);
+            assert(node.extras->contains("xmodel"));
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             BSPXModel xmodel;
 
-            if (node.extras->xmodel->size() == 0)
-                throw GltfLoadException("Xmodel has no name.");
-            xmodel.name = *node.extras->xmodel;
+            xmodel.name = node.extras->at("xmodel");
 
             xmodel.doesCastShadow = true;
-            if (node.extras->flags)
+            if (node.extras->contains("flags"))
             {
-                std::vector<std::string> flagStrVec = utils::StringSplit(*node.extras->flags, ',');
+                std::vector<std::string> flagStrVec = utils::StringSplit(node.extras->at("flags"), ',');
                 for (std::string& flag : flagStrVec)
                     if (!flag.compare(surfaceTypeToNameMap[SURF_TYPE_NOCASTSHADOW]))
                     {
@@ -573,7 +571,7 @@ namespace
             xmodel.rotationQuaternion.x = rotationQuat.x();
             xmodel.rotationQuaternion.y = rotationQuat.y();
             xmodel.rotationQuaternion.z = rotationQuat.z();
-            xmodel.rotationQuaternion.w = rotationQuat.w(); // Eigen is WXYZ, game is XYZW
+            xmodel.rotationQuaternion.w = rotationQuat.w();
             RhcToLhcQuaternion(xmodel.rotationQuaternion.v);
 
             con::warn("XModels don't support scale currently, keep it at 1 in your editor");
@@ -586,30 +584,10 @@ namespace
             return true;
         }
 
-        bool addPathNode_Node(const gltf::JsonNode& node)
-        {
-            assert(node.extras);
-            assert(node.extras->pathnode);
-
-            BSPPathNode pathnode;
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
-            Eigen::Vector4f position(0, 0, 0, 1.0f);
-            Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            pathnode.origin.x = transformedPosition.x();
-            pathnode.origin.y = transformedPosition.y();
-            pathnode.origin.z = transformedPosition.z();
-            RhcToLhcCoordinates(pathnode.origin.v);
-
-            m_bsp->pathnodes.emplace_back(pathnode);
-
-            return true;
-        }
-
         bool addSpawnPointNode(const gltf::JsonNode& node)
         {
             assert(node.extras);
-            assert(node.extras->spawnpoint);
+            assert(node.extras->contains("spawnpoint"));
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
@@ -633,34 +611,18 @@ namespace
             forward.z = outputDirection.z();
             RhcToLhcCoordinates(forward.v);
 
-            if (m_bsp->isZombiesMap)
+            std::string team = node.extras->at("spawnpoint");
+            if (!m_bsp->isZombiesMap && team.compare("attacker") && team.compare("defender") && team.compare("all"))
             {
-                BSPSpawnPointZM spawnPoint;
-                spawnPoint.origin = origin;
-                spawnPoint.forward = forward;
-                spawnPoint.spawnpointGroupName = *node.extras->spawnpoint;
-                m_bsp->zSpawnPoints.emplace_back(spawnPoint);
+                con::warn("Ignoring spawn point with an invalid type (must be attacker, defender or all)");
+                return false;
             }
-            else
-            {
-                BSPSpawnPoint spawnPoint;
-                spawnPoint.origin = origin;
-                spawnPoint.forward = forward;
 
-                if (!node.extras->spawnpoint->compare("attacker"))
-                    spawnPoint.type = SPAWNPOINT_TYPE_ATTACKER;
-                else if (!node.extras->spawnpoint->compare("defender"))
-                    spawnPoint.type = SPAWNPOINT_TYPE_DEFENDER;
-                else if (!node.extras->spawnpoint->compare("all"))
-                    spawnPoint.type = SPAWNPOINT_TYPE_ALL;
-                else
-                {
-                    con::warn("Ignoring spawn point with an invalid type (must be attacker, defender or all)");
-                    return false;
-                }
-
-                m_bsp->spawnpoints.emplace_back(spawnPoint);
-            }
+            BSPSpawnPoint spawnPoint;
+            spawnPoint.origin = origin;
+            spawnPoint.forward = forward;
+            spawnPoint.spawnpointGroupName = team;
+            m_bsp->spawnpoints.emplace_back(spawnPoint);
 
             return true;
         }
@@ -697,12 +659,12 @@ namespace
                     throw GltfLoadException("Requires primitives attribute POSITION");
 
                 // clang-format off
-                const auto* positionAccessor = GetAccessorForIndex(
-                    "POSITION",
-                    primitive.attributes.POSITION,
-                    { JsonAccessorType::VEC3 },
-                    { JsonAccessorComponentType::FLOAT }
-                ).value_or(nullptr);
+                 const auto* positionAccessor = GetAccessorForIndex(
+                     "POSITION",
+                     primitive.attributes.POSITION,
+                     { JsonAccessorType::VEC3 },
+                     { JsonAccessorComponentType::FLOAT }
+                 ).value_or(nullptr);
                 // clang-format on
                 assert(positionAccessor != nullptr);
 
@@ -807,7 +769,13 @@ namespace
         bool addZoneNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
             assert(node.extras);
-            assert(node.extras->zone);
+            assert(node.extras->contains("zone"));
+
+            if (!node.extras->contains("spawner_group") || !node.extras->contains("spawnpoint_group"))
+            {
+                con::error("ignoring zone: Zone object must have a valid spawner_group and spawnpoint_group property");
+                return false;
+            }
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
@@ -821,11 +789,11 @@ namespace
 
             BSPZoneZM zone;
             zone.origin = origin;
-            zone.zoneName = *node.extras->zone;
-            zone.zSpawnerGroupName = node.extras->zspawner_group.value_or("");
-            zone.spawnpointGroupName = node.extras->spawnpoint_group.value_or("");
+            zone.zoneName = node.extras->at("zone");
+            zone.spawnerGroupName = node.extras->at("spawner_group");
+            zone.spawnpointGroupName = node.extras->at("spawnpoint_group");
             zone.modelIndex = addScriptBrushModel(jRoot, node);
-            m_bsp->zZones.emplace_back(zone);
+            m_bsp->zm_zones.emplace_back(zone);
 
             return true;
         }
@@ -833,7 +801,7 @@ namespace
         bool addZSpawnerNode(const gltf::JsonNode& node)
         {
             assert(node.extras);
-            assert(node.extras->zspawner);
+            assert(node.extras->contains("spawner"));
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
@@ -860,57 +828,55 @@ namespace
             BSPZSpawnerZM spawner;
             spawner.origin = origin;
             spawner.forward = forward;
-            spawner.zSpawnerGroupName = *node.extras->zspawner;
-            m_bsp->zSpawners.emplace_back(spawner);
+            spawner.spawnerGroupName = node.extras->at("spawner");
+            m_bsp->zm_spawners.emplace_back(spawner);
 
             return true;
         }
 
-        bool addTriggerUseNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addClassNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
-            assert(node.extras);
-            assert(node.extras->trigger_use);
+            BSPEntity entity;
+            bool doesClassContainModel = false;
+            for (auto& element : node.extras->items())
+            {
+                std::string key = element.key();
+                if (!key.compare("origin") || !key.compare("angles"))
+                    continue;
+
+                if (!key.compare("model"))
+                    doesClassContainModel = true;
+
+                BSPEntityEntry entry;
+                entry.key = key;
+                entry.value = element.value();
+                entity.entries.emplace_back(entry);
+            }
+
+            if (node.mesh && !doesClassContainModel)
+                entity.modelIndex = addScriptBrushModel(jRoot, node);
+            else
+                entity.modelIndex = 0;
 
             Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            vec3_t origin;
-            origin.x = transformedPosition.x();
-            origin.y = transformedPosition.y();
-            origin.z = transformedPosition.z();
-            RhcToLhcCoordinates(origin.v);
+            entity.origin.x = transformedPosition.x();
+            entity.origin.y = transformedPosition.y();
+            entity.origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(entity.origin.v);
 
-            BSPTriggerBox trigger;
-            trigger.origin = origin;
-            trigger.triggerName = *node.extras->trigger_use;
-            trigger.modelIndex = addScriptBrushModel(jRoot, node);
-            m_bsp->useTriggers.emplace_back(trigger);
+            Eigen::Affine3f affineTransform(nodeMatrix);
+            Eigen::Quaternionf rotationQuat(affineTransform.rotation());
+            rotationQuat.normalize();
+            entity.rotationQuaternion.x = rotationQuat.x();
+            entity.rotationQuaternion.y = rotationQuat.y();
+            entity.rotationQuaternion.z = rotationQuat.z();
+            entity.rotationQuaternion.w = rotationQuat.w();
+            RhcToLhcQuaternion(entity.rotationQuaternion.v);
 
-            return true;
-        }
-
-        bool addTriggerMultipleNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
-        {
-            assert(node.extras);
-            assert(node.extras->trigger_multiple);
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
-
-            Eigen::Vector4f position(0, 0, 0, 1.0f);
-            Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            vec3_t origin;
-            origin.x = transformedPosition.x();
-            origin.y = transformedPosition.y();
-            origin.z = transformedPosition.z();
-            RhcToLhcCoordinates(origin.v);
-
-            BSPTriggerBox trigger;
-            trigger.origin = origin;
-            trigger.triggerName = *node.extras->trigger_multiple;
-            trigger.modelIndex = addScriptBrushModel(jRoot, node);
-            m_bsp->triggerMultiples.emplace_back(trigger);
-
+            m_bsp->entities.emplace_back(entity);
             return true;
         }
 
@@ -921,33 +887,30 @@ namespace
 
             if (node.extras)
             {
-                if (node.extras->xmodel)
+                if (!m_is_world_gfx)
+                {
+                    if (node.extras->contains("classname"))
+                        return addClassNode(jRoot, node);
+
+                    if (node.extras->contains("spawnpoint"))
+                        return addSpawnPointNode(node);
+
+                    if (m_bsp->isZombiesMap)
+                    {
+                        if (node.extras->contains("zone"))
+                            return addZoneNode(jRoot, node);
+
+                        if (node.extras->contains("spawner"))
+                            return addZSpawnerNode(node);
+                    }
+                }
+
+                if (node.extras->contains("xmodel"))
                     return addXModelNode(jRoot, node);
 
-                if (!m_is_world_gfx && node.extras->spawnpoint)
-                    return addSpawnPointNode(node);
-
-                if (!m_is_world_gfx && node.extras->pathnode)
-                    return addPathNode_Node(node);
-
-                if (!m_is_world_gfx && node.extras->trigger_use)
-                    return addTriggerUseNode(jRoot, node);
-
-                if (!m_is_world_gfx && node.extras->trigger_multiple)
-                    return addTriggerMultipleNode(jRoot, node);
-
-                if (!m_is_world_gfx && m_bsp->isZombiesMap)
-                {
-                    if (node.extras->zone)
-                        return addZoneNode(jRoot, node);
-
-                    if (node.extras->zspawner)
-                        return addZSpawnerNode(node);
-                }
+                if (node.mesh)
+                    return addMeshNode(jRoot, node);
             }
-
-            if (node.mesh)
-                return addMeshNode(jRoot, node);
 
             return false;
         }
