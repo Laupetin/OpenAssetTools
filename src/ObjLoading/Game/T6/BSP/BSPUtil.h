@@ -20,6 +20,8 @@ namespace BSP
         static void convertAnglesToAxis(vec3_t* angles, vec3_t axis[3]);
         static void convertQuaternionToAxis(vec4_t* quat, vec3_t axis[3]);
         static vec3_t convertForwardVectorToViewAngles(vec3_t& forwardVec);
+        static float getPitchFromVector(vec3_t& vector);
+        static vec3_t convertAxisToAngles(vec3_t axis[3]);
         static void matrixTranspose3x3(const vec3_t* in, vec3_t* out);
         static vec3_t convertStringToVec3(std::string& str);
         static std::string convertVec3ToString(vec3_t& vec);

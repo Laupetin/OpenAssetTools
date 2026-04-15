@@ -125,7 +125,7 @@ namespace gltf
         std::optional<unsigned> mesh;
 
         std::optional<JsonNodeExtension> extensions;
-        std::optional<JsonNodeExtras> extras;
+        std::optional<nlohmann::json> extras;
     };
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, matrix, children, skin, mesh, extensions, extras);

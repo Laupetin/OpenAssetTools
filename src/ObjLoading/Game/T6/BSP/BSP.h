@@ -107,44 +107,25 @@ namespace BSP
         float outerConeAngle;
     };
 
-    enum BSPSpawnPointType
-    {
-        SPAWNPOINT_TYPE_DEFENDER,
-        SPAWNPOINT_TYPE_ATTACKER,
-        SPAWNPOINT_TYPE_ALL,
-    };
-
     struct BSPSpawnPoint
     {
         vec3_t origin;
         vec3_t forward;
-        BSPSpawnPointType type;
-    };
-
-    struct BSPPathNode
-    {
-        vec3_t origin;
+        std::string spawnpointGroupName;
     };
 
     struct BSPZoneZM
     {
         vec3_t origin;
         std::string zoneName;
-        std::string zSpawnerGroupName;
+        std::string spawnerGroupName;
         std::string spawnpointGroupName;
         size_t modelIndex;
     };
 
-    struct BSPSpawnPointZM
-    {
-        std::string spawnpointGroupName;
-        vec3_t origin;
-        vec3_t forward;
-    };
-
     struct BSPZSpawnerZM
     {
-        std::string zSpawnerGroupName;
+        std::string spawnerGroupName;
         vec3_t origin;
         vec3_t forward;
     };
@@ -160,11 +141,19 @@ namespace BSP
         size_t brushIndex;
     };
 
-    struct BSPTriggerBox
+    struct BSPEntityEntry
+    {
+        std::string key;
+        std::string value;
+    };
+
+    struct BSPEntity
     {
         vec3_t origin;
+        vec4_t rotationQuaternion;
         size_t modelIndex;
-        std::string triggerName;
+
+        std::vector<BSPEntityEntry> entries;
     };
 
     struct BSPData
@@ -178,14 +167,9 @@ namespace BSP
 
         std::vector<BSPLight> lights;
         std::vector<BSPSpawnPoint> spawnpoints;
-        std::vector<BSPPathNode> pathnodes;
-
-        std::vector<BSPSpawnPointZM> zSpawnPoints;
-        std::vector<BSPZSpawnerZM> zSpawners;
-        std::vector<BSPZoneZM> zZones;
-
-        std::vector<BSPTriggerBox> useTriggers;
-        std::vector<BSPTriggerBox> triggerMultiples;
+        std::vector<BSPZoneZM> zm_zones;
+        std::vector<BSPZSpawnerZM> zm_spawners;
+        std::vector<BSPEntity> entities;
 
         std::vector<BSPModel> models;
     };
