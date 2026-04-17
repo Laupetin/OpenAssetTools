@@ -103,6 +103,11 @@ namespace
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
         std::vector<std::unique_ptr<Buffer>> m_buffers;
 
+        std::string getWorldTypeName()
+        {
+            return m_is_world_gfx ? "gfx" : "col";
+        }
+
         std::optional<Accessor*> GetAccessorForIndex(const char* attributeName,
                                                      const std::optional<unsigned> index,
                                                      std::initializer_list<JsonAccessorType> allowedAccessorTypes,
@@ -205,7 +210,11 @@ namespace
             return T.matrix();
         }
 
-        unsigned CreateVertices(const AccessorsForVertex& accessorsForVertex, Eigen::Matrix4f& nodeMatrix, BSPSurface& surface, vec4_t vertexColor)
+        unsigned CreateSurface(const AccessorsForVertex& accessorsForVertex,
+                               Eigen::Matrix4f& nodeMatrix,
+                               size_t materialIndex,
+                               bool convertWorldToLocalPos,
+                               BSPSurface& out_surface)
         {
             // clang-format off
             const auto* positionAccessor = GetAccessorForIndex(
@@ -263,10 +272,20 @@ namespace
             if (faceCount > UINT16_MAX)
                 throw GltfLoadException("Face count exceeded the UINT16_MAX");
 
-            surface.vertexCount = static_cast<uint16_t>(vertexCount);
-            surface.triCount = static_cast<uint16_t>(faceCount);
-            surface.indexOfFirstIndex = static_cast<int>(m_curr_bsp_world->indices.size());
-            surface.indexOfFirstVertex = static_cast<int>(m_curr_bsp_world->vertices.size());
+            out_surface.vertexCount = static_cast<uint16_t>(vertexCount);
+            out_surface.triCount = static_cast<uint16_t>(faceCount);
+            out_surface.indexOfFirstIndex = static_cast<int>(m_curr_bsp_world->indices.size());
+            out_surface.indexOfFirstVertex = static_cast<int>(m_curr_bsp_world->vertices.size());
+            out_surface.materialIndex = materialIndex;
+            vec4_t materialColor = m_curr_bsp_world->materials.at(materialIndex).materialColour;
+
+            Eigen::Vector4f tempPosition(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * tempPosition;
+            vec3_t surfaceOrigin;
+            surfaceOrigin.x = transformedPosition.x();
+            surfaceOrigin.y = transformedPosition.y();
+            surfaceOrigin.z = transformedPosition.z();
+            RhcToLhcCoordinates(surfaceOrigin.v);
 
             for (auto faceIndex = 0u; faceIndex < faceCount; faceIndex++)
             {
@@ -297,10 +316,10 @@ namespace
                     assert(false);
                 }
 
-                vertex.color.x *= vertexColor.x;
-                vertex.color.y *= vertexColor.y;
-                vertex.color.z *= vertexColor.z;
-                vertex.color.w *= vertexColor.w;
+                vertex.color.x *= materialColor.x;
+                vertex.color.y *= materialColor.y;
+                vertex.color.z *= materialColor.z;
+                vertex.color.w *= materialColor.w;
 
                 Eigen::Vector4f position(vertex.pos.x, vertex.pos.y, vertex.pos.z, 1.0f);
                 Eigen::Vector4f transformedPosition = nodeMatrix * position;
@@ -311,22 +330,29 @@ namespace
                 RhcToLhcCoordinates(vertex.pos.v);
                 RhcToLhcCoordinates(vertex.normal.v);
 
+                if (convertWorldToLocalPos)
+                {
+                    vertex.pos.x -= surfaceOrigin.x;
+                    vertex.pos.y -= surfaceOrigin.y;
+                    vertex.pos.z -= surfaceOrigin.z;
+                }
+
                 m_curr_bsp_world->vertices.emplace_back(vertex);
             }
 
             // generate tangent and binormal vectors
             tangent_space::VertexData vertexData{
-                &m_curr_bsp_world->vertices[surface.indexOfFirstVertex].pos,
+                &m_curr_bsp_world->vertices[out_surface.indexOfFirstVertex].pos,
                 sizeof(BSPVertex),
-                &m_curr_bsp_world->vertices[surface.indexOfFirstVertex].normal,
+                &m_curr_bsp_world->vertices[out_surface.indexOfFirstVertex].normal,
                 sizeof(BSPVertex),
-                &m_curr_bsp_world->vertices[surface.indexOfFirstVertex].texCoord,
+                &m_curr_bsp_world->vertices[out_surface.indexOfFirstVertex].texCoord,
                 sizeof(BSPVertex),
-                &m_curr_bsp_world->vertices[surface.indexOfFirstVertex].tangent,
+                &m_curr_bsp_world->vertices[out_surface.indexOfFirstVertex].tangent,
                 sizeof(BSPVertex),
-                &m_curr_bsp_world->vertices[surface.indexOfFirstVertex].binormal,
+                &m_curr_bsp_world->vertices[out_surface.indexOfFirstVertex].binormal,
                 sizeof(BSPVertex),
-                &m_curr_bsp_world->indices[surface.indexOfFirstIndex],
+                &m_curr_bsp_world->indices[out_surface.indexOfFirstIndex],
             };
             tangent_space::CalculateTangentSpace(vertexData, faceCount, vertexCount);
 
@@ -457,10 +483,7 @@ namespace
                     materialIndex = m_emptyMaterialIndex;
 
                 BSPSurface surface;
-                surface.materialIndex = materialIndex;
-                vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
-                CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
-
+                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, false, surface);
                 m_curr_bsp_world->staticSurfaces.emplace_back(surface);
             }
 
@@ -752,14 +775,23 @@ namespace
                     .m_index_accessor = *primitive.indices,
                 };
 
-                BSPSurface surface;
+                size_t materialIndex;
                 if (primitive.material)
-                    surface.materialIndex = *primitive.material;
+                {
+                    size_t originalMaterialIdx = *primitive.material;
+                    if (node.extras && node.extras->contains("flags"))
+                    {
+                        bool isNoDrawFlagSet;
+                        materialIndex = createMaterialWithFlags(originalMaterialIdx, node.extras->at("flags"), isNoDrawFlagSet);
+                    }
+                    else
+                        materialIndex = originalMaterialIdx;
+                }
                 else
-                    surface.materialIndex = m_emptyMaterialIndex;
-                vec4_t vertexColour = m_curr_bsp_world->materials.at(surface.materialIndex).materialColour;
-                CreateVertices(accessorsForVertex, nodeMatrix, surface, vertexColour);
+                    materialIndex = m_emptyMaterialIndex;
 
+                BSPSurface surface;
+                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, true, surface);
                 m_curr_bsp_world->scriptSurfaces.emplace_back(surface);
             }
 
@@ -836,12 +868,15 @@ namespace
 
         bool addClassNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
         {
+            assert(node.extras);
+            assert(node.extras->contains("classname"));
+
             BSPEntity entity;
             bool doesClassContainModel = false;
             for (auto& element : node.extras->items())
             {
                 std::string key = element.key();
-                if (!key.compare("origin") || !key.compare("angles"))
+                if (!key.compare("origin") || !key.compare("angles") || !key.compare("flags"))
                     continue;
 
                 if (!key.compare("model"))
@@ -854,7 +889,12 @@ namespace
             }
 
             if (node.mesh && !doesClassContainModel)
-                entity.modelIndex = addScriptBrushModel(jRoot, node);
+            {
+                if (m_is_world_gfx)
+                    entity.modelIndex = addScriptTerrainModel(jRoot, node);
+                else
+                    entity.modelIndex = addScriptBrushModel(jRoot, node);
+            }
             else
                 entity.modelIndex = 0;
 
@@ -907,10 +947,10 @@ namespace
 
                 if (node.extras->contains("xmodel"))
                     return addXModelNode(jRoot, node);
-
-                if (node.mesh)
-                    return addMeshNode(jRoot, node);
             }
+
+            if (node.mesh)
+                return addMeshNode(jRoot, node);
 
             return false;
         }
@@ -1135,7 +1175,8 @@ namespace
                         con::warn("Parent node has position data that won't be used");
                 }
 
-                addNodeToBSP(jRoot, node);
+                if (!addNodeToBSP(jRoot, node))
+                    con::warn("({}) Ignoring node: {}", getWorldTypeName(), node.name.value_or("unnamed node"));
             }
         }
 
