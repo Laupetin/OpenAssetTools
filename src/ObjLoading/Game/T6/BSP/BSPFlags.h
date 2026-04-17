@@ -241,7 +241,7 @@ namespace BSPFlags
                                                                    "origin",
                                                                    "sky",
                                                                    "nocastshadow",
-                                                                   "onlyCastShadow",
+                                                                   "onlycastshadow",
                                                                    "physicsgeom",
                                                                    "lightportal",
                                                                    "caulk",
