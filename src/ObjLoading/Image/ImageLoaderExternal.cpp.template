@@ -71,7 +71,7 @@ namespace
 
             auto* image = m_memory.Alloc<GfxImage>();
             image->name = m_memory.Dup(assetName.c_str());
-#ifdef FEATURE_t6
+#ifdef FEATURE_T6
             image->hash = Common::R_HashString(image->name, 0);
 #endif
 #ifndef FEATURE_IW5
