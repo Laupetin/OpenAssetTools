@@ -359,13 +359,11 @@ namespace
             return vertexOffset;
         }
 
-        bool addLightNode(const gltf::JsonNode& node)
+        bool addLightNode(const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(m_is_world_gfx);
             assert(node.extensions);
             assert(node.extensions->KHR_lights_punctual);
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             int lightIndex = node.extensions->KHR_lights_punctual->light;
 
@@ -438,12 +436,10 @@ namespace
             return newMaterialIndex;
         }
 
-        bool addMeshNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addMeshNode(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.mesh);
             assert(jRoot.meshes);
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
             for (const auto& primitive : mesh.primitives)
@@ -559,12 +555,11 @@ namespace
             }
         }
 
-        bool addXModelNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addXModelNode(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.extras);
             assert(node.extras->contains("xmodel"));
 
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             BSPXModel xmodel;
 
             xmodel.name = node.extras->at("xmodel");
@@ -607,12 +602,10 @@ namespace
             return true;
         }
 
-        bool addSpawnPointNode(const gltf::JsonNode& node)
+        bool addSpawnPointNode(const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.extras);
             assert(node.extras->contains("spawnpoint"));
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
@@ -650,12 +643,11 @@ namespace
             return true;
         }
 
-        size_t addScriptBrushModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        size_t addScriptBrushModel(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             if (!node.mesh || !jRoot.meshes)
                 throw new GltfLoadException("Script model created with no mesh data");
 
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
 
             if (mesh.primitives.size() == 0)
@@ -737,12 +729,11 @@ namespace
             return m_bsp->models.size(); // script model index starts at 1
         }
 
-        size_t addScriptTerrainModel(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        size_t addScriptTerrainModel(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             if (!node.mesh || !jRoot.meshes)
                 throw new GltfLoadException("Script model created with no mesh data");
 
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
             const auto& mesh = jRoot.meshes.value()[node.mesh.value()];
 
             if (mesh.primitives.size() == 0)
@@ -798,7 +789,7 @@ namespace
             return m_bsp->models.size(); // script model index starts at 1
         }
 
-        bool addZoneNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addZoneNode(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.extras);
             assert(node.extras->contains("zone"));
@@ -808,8 +799,6 @@ namespace
                 con::error("ignoring zone: Zone object must have a valid spawner_group and spawnpoint_group property");
                 return false;
             }
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
@@ -824,18 +813,16 @@ namespace
             zone.zoneName = node.extras->at("zone");
             zone.spawnerGroupName = node.extras->at("spawner_group");
             zone.spawnpointGroupName = node.extras->at("spawnpoint_group");
-            zone.modelIndex = addScriptBrushModel(jRoot, node);
+            zone.modelIndex = addScriptBrushModel(jRoot, node, nodeMatrix);
             m_bsp->zm_zones.emplace_back(zone);
 
             return true;
         }
 
-        bool addZSpawnerNode(const gltf::JsonNode& node)
+        bool addZSpawnerNode(const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.extras);
             assert(node.extras->contains("spawner"));
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
@@ -866,7 +853,7 @@ namespace
             return true;
         }
 
-        bool addClassNode(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addClassNode(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             assert(node.extras);
             assert(node.extras->contains("classname"));
@@ -891,14 +878,12 @@ namespace
             if (node.mesh && !doesClassContainModel)
             {
                 if (m_is_world_gfx)
-                    entity.modelIndex = addScriptTerrainModel(jRoot, node);
+                    entity.modelIndex = addScriptTerrainModel(jRoot, node, nodeMatrix);
                 else
-                    entity.modelIndex = addScriptBrushModel(jRoot, node);
+                    entity.modelIndex = addScriptBrushModel(jRoot, node, nodeMatrix);
             }
             else
                 entity.modelIndex = 0;
-
-            Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
@@ -920,37 +905,37 @@ namespace
             return true;
         }
 
-        bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node)
+        bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             if (m_is_world_gfx && node.extensions && node.extensions->KHR_lights_punctual)
-                return addLightNode(node);
+                return addLightNode(node, nodeMatrix);
 
             if (node.extras)
             {
                 if (!m_is_world_gfx)
                 {
                     if (node.extras->contains("classname"))
-                        return addClassNode(jRoot, node);
+                        return addClassNode(jRoot, node, nodeMatrix);
 
                     if (node.extras->contains("spawnpoint"))
-                        return addSpawnPointNode(node);
+                        return addSpawnPointNode(node, nodeMatrix);
 
                     if (m_bsp->isZombiesMap)
                     {
                         if (node.extras->contains("zone"))
-                            return addZoneNode(jRoot, node);
+                            return addZoneNode(jRoot, node, nodeMatrix);
 
                         if (node.extras->contains("spawner"))
-                            return addZSpawnerNode(node);
+                            return addZSpawnerNode(node, nodeMatrix);
                     }
                 }
 
                 if (node.extras->contains("xmodel"))
-                    return addXModelNode(jRoot, node);
+                    return addXModelNode(jRoot, node, nodeMatrix);
             }
 
             if (node.mesh)
-                return addMeshNode(jRoot, node);
+                return addMeshNode(jRoot, node, nodeMatrix);
 
             return false;
         }
@@ -1155,27 +1140,32 @@ namespace
             if (!jRoot.nodes || jRoot.nodes->empty())
                 return;
 
-            std::deque<unsigned> nodeQueue;
-            const std::vector<unsigned> rootNodes = GetRootNodes(jRoot);
+            struct s_nodes
+            {
+                unsigned int nodeIndex;
+                Eigen::Matrix4f parentNodeMatrix;
+            };
 
-            for (const auto rootNode : rootNodes)
-                nodeQueue.emplace_back(rootNode);
+            std::deque<s_nodes> nodeQueue;
+            for (const auto rootNode : GetRootNodes(jRoot))
+                nodeQueue.emplace_back(s_nodes{rootNode, Eigen::Matrix4f::Identity()});
 
             while (!nodeQueue.empty())
             {
-                const auto& node = jRoot.nodes.value()[nodeQueue.front()];
+                const auto& node = jRoot.nodes.value()[nodeQueue.front().nodeIndex];
+                Eigen::Matrix4f parentNodeMatrix = nodeQueue.front().parentNodeMatrix;
                 nodeQueue.pop_front();
+
+                Eigen::Matrix4f nodeMatrix = createNodeMatrix(node);
+                Eigen::Matrix4f transformedNodeMatrix = parentNodeMatrix * nodeMatrix;
 
                 if (node.children)
                 {
                     for (const auto childIndex : *node.children)
-                        nodeQueue.emplace_back(childIndex);
-
-                    if (node.matrix || node.translation || node.rotation || node.scale)
-                        con::warn("Parent node has position data that won't be used");
+                        nodeQueue.emplace_back(s_nodes{childIndex, transformedNodeMatrix});
                 }
 
-                if (!addNodeToBSP(jRoot, node))
+                if (!addNodeToBSP(jRoot, node, transformedNodeMatrix))
                     con::warn("({}) Ignoring node: {}", getWorldTypeName(), node.name.value_or("unnamed node"));
             }
         }
