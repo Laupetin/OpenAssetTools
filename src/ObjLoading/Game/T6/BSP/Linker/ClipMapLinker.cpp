@@ -291,9 +291,24 @@ namespace BSP
 
             if (bspModel.hasBrush)
             {
+
                 BSPBoxBrush& bspBrush = bsp->colWorld.scriptBoxBrushes.at(bspModel.brushIndex);
-                clipModel->leaf.mins = bspBrush.localMins;
-                clipModel->leaf.maxs = bspBrush.localMaxs;
+                vec3_t mins;
+                vec3_t maxs;
+                for (size_t vertIdx = 0; vertIdx < bspBrush.vertexCount; vertIdx++)
+                {
+                    vec3_t* vertex = &clipMap->info.brushVerts[bspBrush.vertexIndex + vertIdx];
+                    if (vertIdx == 0)
+                    {
+                        mins = *vertex;
+                        maxs = *vertex;
+                    }
+                    else
+                        BSPUtil::updateAABBWithPoint(*vertex, mins, maxs);
+                }
+
+                clipModel->leaf.mins = mins;
+                clipModel->leaf.maxs = maxs;
                 clipModel->leaf.brushContents = bspBrush.contentFlags;
                 clipModel->leaf.leafBrushNode = static_cast<int>(brushNodeVec.size());
                 assert(clipModel->leaf.leafBrushNode != 0);
@@ -308,9 +323,11 @@ namespace BSP
 
                 cbrush_array_t brush;
                 memset(&brush, 0, sizeof(cbrush_array_t)); // if not sides or verts are given, the mins/maxs are used instead
+                brush.numverts = static_cast<unsigned int>(bspBrush.vertexCount);
+                brush.verts = &clipMap->info.brushVerts[bspBrush.vertexIndex];
                 brush.contents = bspBrush.contentFlags;
-                brush.mins = bspBrush.localMins;
-                brush.maxs = bspBrush.localMaxs;
+                brush.mins = mins;
+                brush.maxs = maxs;
                 brush.axial_cflags[0][0] = bspBrush.contentFlags;
                 brush.axial_cflags[0][1] = bspBrush.contentFlags;
                 brush.axial_cflags[0][2] = bspBrush.contentFlags;
@@ -326,11 +343,11 @@ namespace BSP
                 brushVec.emplace_back(brush);
 
                 if (bspModel.surfaceCount != 0)
-                    BSPUtil::updateAABB(bspBrush.localMins, bspBrush.localMaxs, clipModel->mins, clipModel->maxs);
+                    BSPUtil::updateAABB(mins, maxs, clipModel->mins, clipModel->maxs);
                 else
                 {
-                    clipModel->mins = bspBrush.localMins;
-                    clipModel->maxs = bspBrush.localMaxs;
+                    clipModel->mins = mins;
+                    clipModel->maxs = maxs;
                 }
             }
             else
@@ -757,8 +774,6 @@ namespace BSP
         clipMap->info.brushsides = nullptr;
         clipMap->info.numLeafBrushes = 0;
         clipMap->info.leafbrushes = nullptr;
-        clipMap->info.numBrushVerts = 0;
-        clipMap->info.brushVerts = nullptr;
         clipMap->info.brushBounds = nullptr;
         clipMap->info.brushContents = nullptr;
 
@@ -767,8 +782,9 @@ namespace BSP
         memset(&tempNode, 0, sizeof(cLeafBrushNode_s));
         brushNodeVec.emplace_back(tempNode);
 
-        clipMap->info.numBrushes = 0;
-        clipMap->info.brushes = nullptr;
+        clipMap->info.numBrushVerts = static_cast<uint16_t>(bsp->colWorld.boxBrushVerts.size());
+        clipMap->info.brushVerts = m_memory.Alloc<vec3_t>(bsp->colWorld.boxBrushVerts.size());
+        memcpy(clipMap->info.brushVerts, bsp->colWorld.boxBrushVerts.data(), sizeof(vec3_t) * bsp->colWorld.boxBrushVerts.size());
 
         // load verts, tris, uinds and partitions
         if (!loadPartitions(clipMap, bsp))
