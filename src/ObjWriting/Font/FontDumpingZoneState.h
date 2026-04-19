@@ -12,13 +12,12 @@ namespace font
         {
         public:
             std::string m_path;
-            const void* m_alias_menu_list;
 
-            FontDumpingState(std::string path, const void* aliasMenuList);
+            FontDumpingState(std::string path);
         };
 
         std::map<const void*, FontDumpingState> m_font_dumping_state_map;
 
-        void CreateFontDumpingState(const void* menuDef, std::string path, const void* aliasMenuList);
+        void CreateFontDumpingState(const void* menuDef, std::string path);
     };
 } // namespace menu
