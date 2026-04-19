@@ -985,32 +985,16 @@ namespace
                     else
                         throw GltfLoadException("Materials must have a name.");
 
-                    if (jsMaterial.pbrMetallicRoughness)
+                    material.materialType = MATERIAL_TYPE_TEXTURE;
+                    if (jsMaterial.pbrMetallicRoughness && jsMaterial.pbrMetallicRoughness->baseColorFactor)
                     {
-                        if (jsMaterial.pbrMetallicRoughness->baseColorFactor)
-                        {
-                            material.materialColour.x = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[0];
-                            material.materialColour.y = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[1];
-                            material.materialColour.z = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[2];
-                            material.materialColour.w = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[3];
-                        }
-                        else
-                        {
-
-                            material.materialColour.x = 1.0f;
-                            material.materialColour.y = 1.0f;
-                            material.materialColour.z = 1.0f;
-                            material.materialColour.w = 1.0f;
-                        }
-
-                        if (jsMaterial.pbrMetallicRoughness->baseColorTexture)
-                            material.materialType = MATERIAL_TYPE_TEXTURE;
-                        else
-                            material.materialType = MATERIAL_TYPE_COLOUR;
+                        material.materialColour.x = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[0];
+                        material.materialColour.y = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[1];
+                        material.materialColour.z = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[2];
+                        material.materialColour.w = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[3];
                     }
                     else
                     {
-                        material.materialType = MATERIAL_TYPE_COLOUR;
                         material.materialColour.x = 1.0f;
                         material.materialColour.y = 1.0f;
                         material.materialColour.z = 1.0f;
