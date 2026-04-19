@@ -6,6 +6,7 @@
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
+#include "Font/FontDumperIW3.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
@@ -36,7 +37,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<map_ents::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     // REGISTER_DUMPER(AssetDumperGfxLightDef)
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::FontDumperIW3>());
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
