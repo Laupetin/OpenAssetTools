@@ -416,17 +416,18 @@ namespace BSP
 
     void GfxWorldLinker::loadLightGrid(GfxWorld* gfxWorld)
     {
-        // the values in this code were chosen based on what looked correct when reverse engineering.
-
-        // mins and maxs define the range that the lightgrid will work in.
-        // unknown how these values are calculated, but the below values are larger
-        // than official map values
-        gfxWorld->lightGrid.mins[0] = 0;
-        gfxWorld->lightGrid.mins[1] = 0;
-        gfxWorld->lightGrid.mins[2] = 0;
-        gfxWorld->lightGrid.maxs[0] = 200;
-        gfxWorld->lightGrid.maxs[1] = 200;
-        gfxWorld->lightGrid.maxs[2] = 50;
+        // gfxWorld->lightGrid.mins[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[0]) + 0x20000) >> 5);
+        // gfxWorld->lightGrid.mins[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[1]) + 0x20000) >> 5);
+        // gfxWorld->lightGrid.mins[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[2]) + 0x20000) >> 6);
+        // gfxWorld->lightGrid.maxs[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[0]) + 0x20000) >> 5);
+        // gfxWorld->lightGrid.maxs[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[1]) + 0x20000) >> 5);
+        // gfxWorld->lightGrid.maxs[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[2]) + 0x20000) >> 6);
+        gfxWorld->lightGrid.mins[0] = 100;
+        gfxWorld->lightGrid.mins[1] = 100;
+        gfxWorld->lightGrid.mins[2] = 100;
+        gfxWorld->lightGrid.maxs[0] = 65435;
+        gfxWorld->lightGrid.maxs[1] = 65435;
+        gfxWorld->lightGrid.maxs[2] = 65435;
 
         gfxWorld->lightGrid.rowAxis = 0; // default value
         gfxWorld->lightGrid.colAxis = 1; // default value
@@ -446,7 +447,7 @@ namespace BSP
         row->zCount = 0xFF; // 0xFF as this is large enough for all checks done by the game, but small enough not to mess with other checks
         row->firstEntry = 0;
         for (int i = 0; i < 0x10; i++) // set the lookup table to all 0
-            row->lookupTable[i] = 0;
+            row->lookupTable[i] = -1;
         gfxWorld->lightGrid.rawRowData = reinterpret_cast<aligned_byte_pointer*>(row);
 
         // entries are looked up based on the lightgrid sample pos (given ingame) and the lightgrid lookup table
