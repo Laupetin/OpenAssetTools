@@ -1,6 +1,5 @@
 #include "FontWriterIW3.h"
 
-//#include "Game/IW3/FontConstantsIW3.h"
 #include "Font/AbstractFontWriter.h"
 #include "ObjWriting.h"
 
@@ -71,8 +70,6 @@ namespace
                     WriteCString(font.material->info.name);
                 }
             }
-
-            return;
         }
 
     private:
@@ -85,4 +82,4 @@ namespace font
     {
         return std::make_unique<FontWriter>(stream);
     }
-} // namespace menu
+} // namespace font

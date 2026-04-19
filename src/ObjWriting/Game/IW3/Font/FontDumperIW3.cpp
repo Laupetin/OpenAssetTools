@@ -29,14 +29,14 @@ namespace font
         const auto* font = asset.Asset();
         auto* zoneState = context.GetZoneAssetDumperState<FontDumpingZoneState>();
 
-        const auto menuFilePath = GetPathForFont(zoneState, asset);
-        const auto assetFile = context.OpenAssetFile(menuFilePath);
+        const auto fontFilePath = GetPathForFont(zoneState, asset);
+        const auto assetFile = context.OpenAssetFile(fontFilePath);
 
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateFontWriterIW3(*assetFile);
+        auto fontWriter = CreateFontWriterIW3(*assetFile);
 
-        menuWriter->WriteFont(*font);
+        fontWriter->WriteFont(*font);
     }
-} // namespace menu
+} // namespace font

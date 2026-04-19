@@ -20,4 +20,4 @@ namespace font
 
         void CreateFontDumpingState(const void* menuDef, std::string path);
     };
-} // namespace menu
+} // namespace font

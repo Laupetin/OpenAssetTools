@@ -76,4 +76,4 @@ namespace font
     {
         m_stream.write(reinterpret_cast<const char*>(&val), sizeof(val));
     }
-} // namespace menu
+} // namespace font

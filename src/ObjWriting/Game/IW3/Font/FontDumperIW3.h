@@ -10,4 +10,4 @@ namespace font
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetFont::Type>& asset) override;
     };
-} // namespace menu
+} // namespace font
