@@ -1,6 +1,7 @@
 #include "AlgorithmRsa.h"
 
 #include "Internal/CryptoLibrary.h"
+#include "tomcrypt_private.h"
 
 using namespace cryptography;
 
@@ -29,15 +30,21 @@ namespace
             const int padding = GetPaddingMode();
 
             int result;
-            rsa_verify_hash_ex(signature,
-                               static_cast<unsigned long>(signatureSize),
-                               signedData,
-                               static_cast<unsigned long>(signedDataSize),
-                               padding,
-                               hashId,
-                               8,
-                               &result,
-                               &m_key);
+            const ltc_rsa_parameters rsaParams{
+                .saltlen = 8,
+                .hash_idx = hashId,
+                .mgf1_hash_idx = hashId,
+            };
+            ltc_rsa_op_parameters params{
+                .params = rsaParams,
+                .padding = padding,
+                .wprng = -1,
+                .prng = nullptr,
+                .u = {},
+            };
+
+            rsa_verify_hash_v2(
+                signature, static_cast<unsigned long>(signatureSize), signedData, static_cast<unsigned long>(signedDataSize), &params, &result, &m_key);
 
             return result == 1;
         }
