@@ -159,11 +159,13 @@ namespace
 
             entityString.append("{\n");
             entityString.append(std::format("\"origin\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(origin)));
-            entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
+
             for (auto& entry : entity.entries)
                 entityString.append(std::format("\"{}\" \"{}\"\n", entry.key, entry.value));
             if (entity.modelIndex != 0)
                 entityString.append(std::format("\"model\" \"*{}\"\n", entity.modelIndex));
+            else // entities with generated models can't have rotation data
+                entityString.append(std::format("\"angles\" \"{}\"\n", BSP::BSPUtil::convertVec3ToString(angles)));
 
             entityString.append("}\n");
         }
