@@ -270,7 +270,7 @@ namespace
                 throw GltfLoadException("Index count must be dividable by 3 for triangles");
             const auto faceCount = indexCount / 3u;
             if (faceCount > UINT16_MAX)
-                throw GltfLoadException("Face count exceeded the UINT16_MAX");
+                throw GltfLoadException(std::format("Face count ({}) exceeded the UINT16_MAX", faceCount));
 
             out_surface.vertexCount = static_cast<uint16_t>(vertexCount);
             out_surface.triCount = static_cast<uint16_t>(faceCount);
