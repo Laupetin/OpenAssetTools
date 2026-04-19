@@ -64,8 +64,8 @@ namespace BSP
 
     struct BSPBoxBrush
     {
-        vec3_t localMins;
-        vec3_t localMaxs;
+        size_t vertexIndex;
+        size_t vertexCount;
 
         int surfaceFlags;
         int contentFlags;
@@ -82,6 +82,7 @@ namespace BSP
         std::vector<BSPXModel> xmodels;
 
         std::vector<BSPBoxBrush> scriptBoxBrushes;
+        std::vector<vec3_t> boxBrushVerts;
     };
 
     enum BSPLightType

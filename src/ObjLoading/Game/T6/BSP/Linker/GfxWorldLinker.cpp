@@ -606,8 +606,8 @@ namespace BSP
             }
             else
             {
-                currEntModel->startSurfIndex = 0;
-                currEntModel->surfaceCount = -1; // -1 when it doesn't use map surfaces
+                currEntModel->startSurfIndex = -1; // -1 when it doesn't use map surfaces
+                currEntModel->surfaceCount = 0;
                 currEntModel->bounds[0].x = 0.0f;
                 currEntModel->bounds[0].y = 0.0f;
                 currEntModel->bounds[0].z = 0.0f;

@@ -653,6 +653,14 @@ namespace
             if (mesh.primitives.size() == 0)
                 throw new GltfLoadException("Script model created with no mesh data");
 
+            Eigen::Vector4f tempPosition(0, 0, 0, 1.0f);
+            Eigen::Vector4f transformedPosition = nodeMatrix * tempPosition;
+            vec3_t origin;
+            origin.x = transformedPosition.x();
+            origin.y = transformedPosition.y();
+            origin.z = transformedPosition.z();
+            RhcToLhcCoordinates(origin.v);
+
             BSPModel model;
             model.isGfxModel = m_is_world_gfx;
             model.surfaceIndex = 0;
@@ -661,11 +669,16 @@ namespace
             model.brushIndex = m_curr_bsp_world->scriptBoxBrushes.size();
             m_bsp->models.emplace_back(model);
 
+            size_t materialIndex = m_emptyMaterialIndex;
+            if (node.extras && node.extras->contains("flags"))
+            {
+                bool isNoDrawFlagSet;
+                materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"), isNoDrawFlagSet);
+            }
             BSPBoxBrush boxBrush;
-            boxBrush.contentFlags = 1;
-            boxBrush.surfaceFlags = 1;
-            vec3_t worldMins;
-            vec3_t worldMaxs;
+            boxBrush.vertexIndex = m_curr_bsp_world->boxBrushVerts.size();
+            boxBrush.contentFlags = m_curr_bsp_world->materials.at(materialIndex).contentFlags;
+            boxBrush.surfaceFlags = m_curr_bsp_world->materials.at(materialIndex).surfaceFlags;
             for (size_t primIdx = 0; primIdx < mesh.primitives.size(); primIdx++)
             {
                 const auto& primitive = mesh.primitives.at(primIdx);
@@ -699,31 +712,15 @@ namespace
                     vertex.z = transformedPosition.z();
                     RhcToLhcCoordinates(vertex.v);
 
-                    if (vertexIndex == 0 && primIdx == 0)
-                    {
-                        worldMins = vertex;
-                        worldMaxs = vertex;
-                    }
-                    else
-                        BSPUtil::updateAABBWithPoint(vertex, worldMins, worldMaxs);
+                    // brush verts use local position
+                    vertex.x -= origin.x;
+                    vertex.y -= origin.y;
+                    vertex.z -= origin.z;
+
+                    m_curr_bsp_world->boxBrushVerts.emplace_back(vertex);
                 }
             }
-
-            // convert world position to local position
-            Eigen::Vector4f position(0, 0, 0, 1.0f);
-            Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            vec3_t origin;
-            origin.x = transformedPosition.x();
-            origin.y = transformedPosition.y();
-            origin.z = transformedPosition.z();
-            RhcToLhcCoordinates(origin.v);
-            boxBrush.localMins.x = worldMins.x - origin.x;
-            boxBrush.localMins.y = worldMins.y - origin.y;
-            boxBrush.localMins.z = worldMins.z - origin.z;
-            boxBrush.localMaxs.x = worldMaxs.x - origin.x;
-            boxBrush.localMaxs.y = worldMaxs.y - origin.y;
-            boxBrush.localMaxs.z = worldMaxs.z - origin.z;
-
+            boxBrush.vertexCount = m_curr_bsp_world->boxBrushVerts.size() - boxBrush.vertexIndex;
             m_curr_bsp_world->scriptBoxBrushes.emplace_back(boxBrush);
 
             return m_bsp->models.size(); // script model index starts at 1
