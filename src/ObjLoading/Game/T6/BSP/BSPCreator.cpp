@@ -463,20 +463,16 @@ namespace
 
                 size_t materialIndex;
                 if (primitive.material)
-                {
-                    size_t originalMaterialIdx = *primitive.material;
-                    if (node.extras && node.extras->contains("flags"))
-                    {
-                        bool isNoDrawFlagSet = false;
-                        materialIndex = createMaterialWithFlags(originalMaterialIdx, node.extras->at("flags"), isNoDrawFlagSet);
-                        if (isNoDrawFlagSet && m_is_world_gfx)
-                            continue; // noDraw flag doesn't work, so remove the surface from the graphics data instead
-                    }
-                    else
-                        materialIndex = originalMaterialIdx;
-                }
+                    materialIndex = *primitive.material;
                 else
                     materialIndex = m_emptyMaterialIndex;
+                if (node.extras && node.extras->contains("flags"))
+                {
+                    bool isNoDrawFlagSet = false;
+                    materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"), isNoDrawFlagSet);
+                    if (isNoDrawFlagSet && m_is_world_gfx)
+                        continue; // noDraw flag doesn't work, so remove the surface from the graphics data instead
+                }
 
                 BSPSurface surface;
                 CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, false, surface);
@@ -856,24 +852,15 @@ namespace
             assert(node.extras->contains("classname"));
 
             BSPEntity entity;
-            bool doesClassContainModel = false;
-            for (auto& element : node.extras->items())
+            std::string classname = node.extras->at("classname");
+            if (node.mesh && (classname.starts_with("trigger_") || !classname.compare("info_volume") || !classname.compare("script_brushmodel")))
             {
-                std::string key = element.key();
-                if (!key.compare("origin") || !key.compare("angles") || !key.compare("flags"))
-                    continue;
+                if (node.extras->contains("model"))
+                {
+                    con::error("Node {} cannot have a model property when its class is a trigger, info_volume or script_brushmodel");
+                    return false;
+                }
 
-                if (!key.compare("model"))
-                    doesClassContainModel = true;
-
-                BSPEntityEntry entry;
-                entry.key = key;
-                entry.value = element.value();
-                entity.entries.emplace_back(entry);
-            }
-
-            if (node.mesh && !doesClassContainModel)
-            {
                 if (m_is_world_gfx)
                     entity.modelIndex = addScriptTerrainModel(jRoot, node, nodeMatrix);
                 else
@@ -881,6 +868,18 @@ namespace
             }
             else
                 entity.modelIndex = 0;
+
+            for (auto& element : node.extras->items())
+            {
+                std::string key = element.key();
+                if (!key.compare("origin") || !key.compare("angles") || !key.compare("flags"))
+                    continue;
+
+                BSPEntityEntry entry;
+                entry.key = key;
+                entry.value = element.value();
+                entity.entries.emplace_back(entry);
+            }
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
