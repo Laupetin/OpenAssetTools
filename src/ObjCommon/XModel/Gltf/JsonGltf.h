@@ -86,32 +86,6 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNodeExtension, KHR_lights_punctual);
 
-    class JsonNodeExtras
-    {
-    public:
-        // global
-        std::optional<std::string> flags;    // value: surface flags
-        std::optional<std::string> pathnode; // value: n/a
-
-        // Multiplayer only
-        std::optional<std::string> xmodel;     // value: xmodel name
-        std::optional<std::string> spawnpoint; // value: (MP)team, (ZM)spawnpoint group name
-
-        // Zombies only
-        std::optional<std::string> zone;             // value: zone name
-        std::optional<std::string> zspawner_group;   // value: zone zspawner group name
-        std::optional<std::string> spawnpoint_group; // value: zone zspawner group name
-
-        std::optional<std::string> zspawner; // value: zspawner group name
-
-        // scripting
-        std::optional<std::string> trigger_use;
-        std::optional<std::string> trigger_multiple;
-    };
-
-    NLOHMANN_DEFINE_TYPE_EXTENSION(
-        JsonNodeExtras, xmodel, spawnpoint, flags, pathnode, zone, zspawner_group, spawnpoint_group, zspawner, trigger_use, trigger_multiple);
-
     class JsonNode
     {
     public:
