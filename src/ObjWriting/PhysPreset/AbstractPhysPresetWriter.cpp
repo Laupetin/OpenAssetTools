@@ -1,4 +1,4 @@
-#include "AbstractFontWriter.h"
+#include "AbstractPhysPresetWriter.h"
 
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
@@ -7,7 +7,7 @@
 #include <cmath>
 #include <sstream>
 
-namespace font
+namespace physpreset
 {
     AbstractBaseWriter::AbstractBaseWriter(std::ostream& stream)
         : m_stream(stream)

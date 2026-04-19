@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace font
+namespace physpreset
 {
     class IWriter
     {

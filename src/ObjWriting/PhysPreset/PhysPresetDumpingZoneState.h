@@ -3,21 +3,21 @@
 
 #include <map>
 
-namespace font
+namespace physpreset
 {
-    class FontDumpingZoneState final : public IZoneAssetDumperState
+    class PhysPresetDumpingZoneState final : public IZoneAssetDumperState
     {
     public:
-        class FontDumpingState
+        class PhysPresetDumpingState
         {
         public:
             std::string m_path;
 
-            FontDumpingState(std::string path);
+            PhysPresetDumpingState(std::string path);
         };
 
-        std::map<const void*, FontDumpingState> m_font_dumping_state_map;
+        std::map<const void*, PhysPresetDumpingState> m_physpreset_dumping_state_map;
 
-        void CreateFontDumpingState(const void* menuDef, std::string path);
+        void CreatePhysPresetDumpingState(const void* menuDef, std::string path);
     };
 } // namespace menu

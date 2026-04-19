@@ -1,13 +1,13 @@
-#include "FontDumpingZoneState.h"
+#include "PhysPresetDumpingZoneState.h"
 
-using namespace font;
+using namespace physpreset;
 
-FontDumpingZoneState::FontDumpingState::FontDumpingState(std::string path)
+PhysPresetDumpingZoneState::PhysPresetDumpingState::PhysPresetDumpingState(std::string path)
     : m_path(std::move(path))
 {
 }
 
-void FontDumpingZoneState::CreateFontDumpingState(const void* font, std::string path)
+void PhysPresetDumpingZoneState::CreatePhysPresetDumpingState(const void* physPreset, std::string path)
 {
-    m_font_dumping_state_map.emplace(std::make_pair(font, FontDumpingState(std::move(path))));
+    m_physpreset_dumping_state_map.emplace(std::make_pair(physPreset, PhysPresetDumpingState(std::move(path))));
 }

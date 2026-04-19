@@ -1,42 +1,42 @@
-#include "FontDumperIW3.h"
+#include "PhysPresetDumperIW3.h"
 
-#include "FontWriterIW3.h"
+#include "PhysPresetWriterIW3.h"
 #include "ObjWriting.h"
 
 #include <filesystem>
 #include <string>
-#include <Font/FontDumpingZoneState.h>
+#include <PhysPreset/PhysPresetDumpingZoneState.h>
 
 using namespace IW3;
 
 namespace
 {
-    std::string GetPathForFont(font::FontDumpingZoneState* zoneState, const XAssetInfo<Font_s>& asset)
+    std::string GetPathForPhysPreset(physpreset::PhysPresetDumpingZoneState* zoneState, const XAssetInfo<PhysPreset>& asset)
     {
-        const auto menuDumpingState = zoneState->m_font_dumping_state_map.find(asset.Asset());
+        const auto physPresetDumpingState = zoneState->m_physpreset_dumping_state_map.find(asset.Asset());
 
-        if (menuDumpingState == zoneState->m_font_dumping_state_map.end())
-            return "fonts/" + std::string(asset.Asset()->fontName);
+        if (physPresetDumpingState == zoneState->m_physpreset_dumping_state_map.end())
+            return "physic/" + std::string(asset.Asset()->name);
 
-        return menuDumpingState->second.m_path;
+        return physPresetDumpingState->second.m_path;
     }
 } // namespace
 
-namespace font
+namespace physpreset
 {
-    void FontDumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetFont::Type>& asset)
+    void PhysPresetDumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysPreset::Type>& asset)
     {
-        const auto* font = asset.Asset();
-        auto* zoneState = context.GetZoneAssetDumperState<FontDumpingZoneState>();
+        const auto* physPreset = asset.Asset();
+        auto* zoneState = context.GetZoneAssetDumperState<PhysPresetDumpingZoneState>();
 
-        const auto menuFilePath = GetPathForFont(zoneState, asset);
-        const auto assetFile = context.OpenAssetFile(menuFilePath);
+        const auto physPresetPath = GetPathForPhysPreset(zoneState, asset);
+        const auto assetFile = context.OpenAssetFile(physPresetPath);
 
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateFontWriterIW3(*assetFile);
+        auto physPresetWriter = CreatePhysPresetWriterIW3(*assetFile);
 
-        menuWriter->WriteFont(*font);
+        physPresetWriter->WritePhysPreset(*physPreset);
     }
-} // namespace menu
+} // namespace physpreset

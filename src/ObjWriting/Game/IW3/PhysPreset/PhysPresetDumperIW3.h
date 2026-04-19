@@ -3,11 +3,11 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW3/IW3.h"
 
-namespace font
+namespace physpreset
 {
-    class FontDumperIW3 final : public AbstractAssetDumper<IW3::AssetFont>
+    class PhysPresetDumperIW3 final : public AbstractAssetDumper<IW3::AssetPhysPreset>
     {
     protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetFont::Type>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetPhysPreset::Type>& asset) override;
     };
 } // namespace menu
