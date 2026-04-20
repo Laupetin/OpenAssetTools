@@ -98,7 +98,7 @@ namespace
             FillBufferData(gltf, xmodel, bufferData);
             CreateBuffer(gltf, xmodel, bufferData);
 
-            const json jRoot = gltf;
+            const ordered_json jRoot = gltf;
             m_output->EmitJson(jRoot);
 
             if (!bufferData.empty())

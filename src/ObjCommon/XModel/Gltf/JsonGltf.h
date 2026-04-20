@@ -325,21 +325,21 @@ namespace gltf
     class JsonRoot
     {
     public:
-        std::optional<std::vector<JsonAccessor>> accessors;
-        std::optional<std::vector<JsonAnimation>> animations;
         JsonAsset asset;
-        std::optional<std::vector<JsonBuffer>> buffers;
-        std::optional<std::vector<JsonBufferView>> bufferViews;
-        std::optional<std::vector<JsonImage>> images;
-        std::optional<std::vector<JsonMaterial>> materials;
-        std::optional<std::vector<JsonMesh>> meshes;
-        std::optional<std::vector<JsonNode>> nodes;
-        std::optional<std::vector<JsonSkin>> skins;
         std::optional<unsigned> scene;
         std::optional<std::vector<JsonScene>> scenes;
+        std::optional<std::vector<JsonNode>> nodes;
+        std::optional<std::vector<JsonAnimation>> animations;
+        std::optional<std::vector<JsonMaterial>> materials;
+        std::optional<std::vector<JsonMesh>> meshes;
         std::optional<std::vector<JsonTexture>> textures;
+        std::optional<std::vector<JsonImage>> images;
+        std::optional<std::vector<JsonSkin>> skins;
+        std::optional<std::vector<JsonAccessor>> accessors;
+        std::optional<std::vector<JsonBufferView>> bufferViews;
+        std::optional<std::vector<JsonBuffer>> buffers;
     };
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
-        JsonRoot, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, skins, scene, scenes, textures);
+        JsonRoot, asset, scene, scenes, nodes, animations, materials, meshes, textures, images, skins, accessors, bufferViews, buffers);
 } // namespace gltf

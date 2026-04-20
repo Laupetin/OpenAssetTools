@@ -33,7 +33,7 @@ std::optional<std::string> BinOutput::CreateBufferUri(const void* buffer, size_t
     return std::nullopt;
 }
 
-void BinOutput::EmitJson(const nlohmann::json& json) const
+void BinOutput::EmitJson(const nlohmann::ordered_json& json) const
 {
     static constexpr uint32_t ZERO = 0u;
 
