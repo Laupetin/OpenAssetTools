@@ -32,7 +32,7 @@ std::optional<std::string> TextOutput::CreateBufferUri(const void* buffer, const
     return output;
 }
 
-void TextOutput::EmitJson(const nlohmann::json& json) const
+void TextOutput::EmitJson(const nlohmann::ordered_json& json) const
 {
     m_stream << std::setw(4) << json;
 }

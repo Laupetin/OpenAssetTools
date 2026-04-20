@@ -12,7 +12,7 @@ namespace gltf
         explicit BinOutput(std::ostream& stream);
 
         std::optional<std::string> CreateBufferUri(const void* buffer, size_t bufferSize) const override;
-        void EmitJson(const nlohmann::json& json) const override;
+        void EmitJson(const nlohmann::ordered_json& json) const override;
         void EmitBuffer(const void* buffer, size_t bufferSize) const override;
         void Finalize() const override;
 

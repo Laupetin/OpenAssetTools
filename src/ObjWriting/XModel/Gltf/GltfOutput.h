@@ -18,7 +18,7 @@ namespace gltf
 
     public:
         virtual std::optional<std::string> CreateBufferUri(const void* buffer, size_t bufferSize) const = 0;
-        virtual void EmitJson(const nlohmann::json& json) const = 0;
+        virtual void EmitJson(const nlohmann::ordered_json& json) const = 0;
         virtual void EmitBuffer(const void* buffer, size_t bufferSize) const = 0;
         virtual void Finalize() const = 0;
     };
