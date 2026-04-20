@@ -11,14 +11,23 @@ using namespace IW3;
 
 namespace
 {
-    std::string GetPathForWeapon(weapon::WeaponDumpingZoneState* zoneState, const XAssetInfo<Weapon>& asset)
+    std::string GetPathForWeapon(weapon::WeaponDumpingZoneState* zoneState, const XAssetInfo<WeaponDef>& asset)
     {
         const auto weaponDumpingState = zoneState->m_weapon_dumping_state_map.find(asset.Asset());
 
         if (weaponDumpingState == zoneState->m_weapon_dumping_state_map.end())
-            return "weapons/" + std::string(asset.Asset()->name);
+        {
+            if (strstr(asset.Asset()->szClipName, "mp"))
+            {
+                return "weapons/mp/" + std::string(asset.Asset()->szClipName);
+            }
+            else
+            {
+                return "weapons/sp/" + std::string(asset.Asset()->szClipName);
+            }
+        }
 
-        return physPresetDumpingState->second.m_path;
+        return weaponDumpingState->second.m_path;
     }
 } // namespace
 
@@ -35,8 +44,8 @@ namespace weapon
         if (!assetFile)
             return;
 
-        auto weaponWriter = CreateWeaponWriterIW3(*assetFile);
+        auto weaponWriter = CreateWeaponWriterIW3(*assetFile, context);
 
-        weaponWriter->WritePhysPreset(*weapon);
+        weaponWriter->WriteWeapon(*weapon);
     }
 } // namespace physpreset

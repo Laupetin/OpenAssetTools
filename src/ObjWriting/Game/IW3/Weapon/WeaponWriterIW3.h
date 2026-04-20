@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <Dumping/AssetDumpingContext.h>
 
 namespace weapon
 {
@@ -14,5 +15,5 @@ namespace weapon
         virtual void WriteWeapon(const IW3::WeaponDef& physPreset) = 0;
     };
 
-    std::unique_ptr<IWriterIW3> CreateWeaponWriterIW3(std::ostream& stream);
+    std::unique_ptr<IWriterIW3> CreateWeaponWriterIW3(std::ostream& stream, AssetDumpingContext& context);
 } // namespace weapon

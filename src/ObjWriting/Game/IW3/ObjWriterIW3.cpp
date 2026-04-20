@@ -41,7 +41,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
-    RegisterAssetDumper(std::make_unique<weapon::DumperIW3>());
+    RegisterAssetDumper(std::make_unique<weapon::WeaponDumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals)
     // REGISTER_DUMPER(AssetDumperFxEffectDef)
     // REGISTER_DUMPER(AssetDumperFxImpactTable)
