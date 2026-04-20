@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace physpreset
+namespace weapon
 {
     class IWriter
     {
@@ -10,4 +10,4 @@ namespace physpreset
         IWriter() = default;
         virtual ~IWriter() = default;
     };
-} // namespace font
+} // namespace weapon

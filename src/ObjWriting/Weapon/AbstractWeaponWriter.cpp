@@ -6,11 +6,13 @@
 #include <algorithm>
 #include <cmath>
 #include <sstream>
+#include <Dumping/AssetDumpingContext.h>
 
 namespace weapon
 {
-    AbstractBaseWriter::AbstractBaseWriter(std::ostream& stream)
+    AbstractBaseWriter::AbstractBaseWriter(std::ostream& stream, AssetDumpingContext& context)
         : m_stream(stream)
+        , m_context(context)
     {
     }
 

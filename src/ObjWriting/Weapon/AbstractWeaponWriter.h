@@ -6,6 +6,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <Dumping/AssetDumpingContext.h>
 
 namespace weapon
 {
@@ -16,7 +17,7 @@ namespace weapon
     public:
 
     protected:
-        explicit AbstractBaseWriter(std::ostream& stream);
+        explicit AbstractBaseWriter(std::ostream& stream, AssetDumpingContext& context);
 
         void WriteCString(const char* str);
 
@@ -34,5 +35,6 @@ namespace weapon
         void WriteRawI8(uint8_t val);
 
         std::ostream& m_stream;
+        AssetDumpingContext& m_context;
     };
 } // namespace weapon
