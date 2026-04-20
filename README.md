@@ -1,11 +1,9 @@
-![OpenAssetTools Logo](repo/logo_64_64.png) OpenAssetTools
-============
+# ![OpenAssetTools Logo](repo/logo_64_64.png) OpenAssetTools
 
 [![GitHub Release](https://img.shields.io/github/v/release/laupetin/openassettools)](https://github.com/Laupetin/OpenAssetTools/releases/latest)
 [![GitHub commits since latest release](https://img.shields.io/github/commits-since/laupetin/openassettools/latest)](https://github.com/Laupetin/OpenAssetTools/releases/latest)
 [![GitHub branch check runs](https://img.shields.io/github/check-runs/laupetin/openassettools/main)](https://github.com/Laupetin/OpenAssetTools/actions)
 [![GitHub License](https://img.shields.io/github/license/laupetin/openassettools)](https://github.com/Laupetin/OpenAssetTools/blob/main/LICENSE)
-
 
 OpenAssetTools (OAT) is a work in progress project aiming to create a modding tools suite for older Call Of Duty titles.
 It is not a reimplementation of existing modding tools or related to them but aims to be as compatible as possible in terms of formats and add support for previously unsupported titles.
@@ -17,9 +15,9 @@ It currently offers support for the PC versions of:
 - [IW4 (Modern Warfare 2 - 2009)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_2)
 - [IW5 (Modern Warfare 3 - 2011)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_3)
 - [T5 (Black Ops - 2010)](https://en.wikipedia.org/wiki/Call_of_Duty:_Black_Ops)
-- [T6 (Black Ops II - 2012)](https://en.wikipedia.org/wiki/Call_of_Duty:_Black_Ops_II) 
+- [T6 (Black Ops II - 2012)](https://en.wikipedia.org/wiki/Call_of_Duty:_Black_Ops_II)
 
-with very varying progress on the different games. 
+with very varying progress on the different games.
 
 ## Features
 
@@ -36,7 +34,7 @@ It can also load existing zones and reuse their assets from in-memory.
 Only [a subset of asset types](docs/SupportedAssetTypes.md) can be read from disk depending on the game.
 
 Additionally, there are a couple of libraries and tools.
-A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html). 
+A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html).
 
 ## Using the tools
 
@@ -70,17 +68,17 @@ It is hosted on Github Pages and its source can be found in the [OAT Docs Reposi
 For examples of mods that can be built with OAT, you can either look into the [docs folder](docs/example) for some (currently very barebones) examples
 or check out one of the following projects that are using OAT:
 
-* [OpenAssetTools/Examples](https://github.com/OpenAssetTools/Examples)
-* [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
-* [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
-* [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
-* [SadSlothXL/t6-ports](https://github.com/SadSlothXL/t6-ports)
+- [OpenAssetTools/Examples](https://github.com/OpenAssetTools/Examples)
+- [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
+- [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+- [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
+- [SadSlothXL/t6-ports](https://github.com/SadSlothXL/t6-ports)
 
 If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it.
 
 ### Windows
 
-When building on Windows you will need to have Visual Studio 2022 installed.
+When building on Windows you will need to have Visual Studio 2026 installed.
 It is also possible to use other compilers, however, due to the memory layout of structs being important you might
 run into crashes or invalid data so no guarantees can be given.
 
