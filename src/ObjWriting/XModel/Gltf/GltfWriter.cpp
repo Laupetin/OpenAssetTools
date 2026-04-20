@@ -164,10 +164,10 @@ namespace
 
             const auto meshCount = xmodel.m_objects.size();
             for (auto meshIndex = 0u; meshIndex < meshCount; meshIndex++)
-                rootNode.children->push_back(m_first_mesh_node + meshIndex);
+                rootNode.children->emplace_back(m_first_mesh_node + meshIndex);
 
-            if (!xmodel.m_bones.empty())
-                rootNode.children->push_back(m_first_bone_node);
+            for (auto rootBoneIndex = 0u; rootBoneIndex < m_root_bone_count; rootBoneIndex++)
+                rootNode.children->emplace_back(m_first_bone_node + rootBoneIndex);
 
             m_root_node = static_cast<unsigned>(gltf.nodes->size());
             gltf.nodes->emplace_back(std::move(rootNode));
@@ -278,6 +278,7 @@ namespace
 
             const auto boneCount = common.m_bones.size();
             m_first_bone_node = static_cast<unsigned>(gltf.nodes->size());
+            m_root_bone_count = 0;
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
@@ -309,6 +310,11 @@ namespace
                     translation -= parentTranslation;
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
+                }
+                else
+                {
+                    assert(m_root_bone_count == boneIndex);
+                    m_root_bone_count++;
                 }
                 rotation.normalize();
 
@@ -679,6 +685,7 @@ namespace
         unsigned m_first_mesh_node = 0u;
         unsigned m_root_node = 0u;
         unsigned m_first_bone_node = 0u;
+        unsigned m_root_bone_count = 0u;
         unsigned m_position_accessor = 0u;
         unsigned m_normal_accessor = 0u;
         unsigned m_uv_accessor = 0u;
