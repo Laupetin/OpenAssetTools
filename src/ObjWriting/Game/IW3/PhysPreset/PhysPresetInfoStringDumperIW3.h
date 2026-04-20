@@ -3,11 +3,11 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW3/IW3.h"
 
-namespace physpreset
+namespace phys_preset
 {
-    class PhysPresetDumperIW3 final : public AbstractAssetDumper<IW3::AssetPhysPreset>
+    class InfoStringDumperIW3 final : public AbstractAssetDumper<IW3::AssetPhysPreset>
     {
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetPhysPreset::Type>& asset) override;
     };
-} // namespace menu
+} // namespace phys_preset
