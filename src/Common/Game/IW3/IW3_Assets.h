@@ -2880,6 +2880,30 @@ namespace IW3
         snd_alias_list_t* sound;
     };
 
+    enum playerAnimType_t : int
+    {
+        PLAYERANIMTYPE_NONE = 0x0,
+        PLAYERANIMTYPE_OTHER = 0x1,
+        PLAYERANIMTYPE_PISTOL = 0x2,
+        PLAYERANIMTYPE_SMG = 0x3,
+        PLAYERANIMTYPE_AUTORIFLE = 0x4,
+        PLAYERANIMTYPE_MG = 0x5,
+        PLAYERANIMTYPE_SNIPER = 0x6,
+        PLAYERANIMTYPE_ROCKETLAUNCHER = 0x7,
+        PLAYERANIMTYPE_EXPLOSIVE = 0x8,
+        PLAYERANIMTYPE_GRENADE = 0x9,
+        PLAYERANIMTYPE_TURRET = 0xA,
+        PLAYERANIMTYPE_C4 = 0xB,
+        PLAYERANIMTYPE_M203 = 0xC,
+        PLAYERANIMTYPE_HOLD = 0xD,
+        PLAYERANIMTYPE_BRIEFCASE = 0xE,
+        PLAYERANIMTYPE_RIOTSHIELD = 0xF,
+        PLAYERANIMTYPE_LAPTOP = 0x10,
+        PLAYERANIMTYPE_THROWINGKNIFE = 0x11,
+
+        PLAYERANIMTYPE_COUNT,
+    };
+
     struct WeaponDef
     {
         const char* szInternalName;
@@ -2892,7 +2916,7 @@ namespace IW3
         uint16_t hideTags[8];
         uint16_t notetrackSoundMapKeys[16];
         uint16_t notetrackSoundMapValues[16];
-        int playerAnimType;
+        playerAnimType_t playerAnimType;
         weapType_t weapType;
         weapClass_t weapClass;
         PenetrateType penetrateType;
