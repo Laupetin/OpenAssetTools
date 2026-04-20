@@ -12,7 +12,6 @@
 #include <deque>
 #include <exception>
 #include <format>
-#include <iostream>
 #include <limits>
 #include <nlohmann/json.hpp>
 #include <numbers>
@@ -451,7 +450,7 @@ namespace
             return std::nullopt;
         }
 
-        void ApplyNodeMatrixTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
+        void ApplyNodeMatrixTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3]) const
         {
             const auto matrix = Eigen::Matrix4f({
                 {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
@@ -492,7 +491,7 @@ namespace
             scaleRhc[2] = matrix.block<3, 1>(0, 2).norm();
         }
 
-        void ApplyNodeSeparateTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3])
+        void ApplyNodeSeparateTRS(const JsonNode& node, float (&localOffsetRhc)[3], float (&localRotationRhc)[4], float (&scaleRhc)[3]) const
         {
             if (node.translation)
             {
@@ -630,7 +629,7 @@ namespace
             const auto skinBoneOffset = static_cast<unsigned>(common.m_bones.size());
             common.m_bones.resize(skinBoneOffset + skin.joints.size());
 
-            const Eigen::Vector3f defaultTranslation(0.0f, 0.0f, 0.0f);
+            constexpr Eigen::Vector3f defaultTranslation(0.0f, 0.0f, 0.0f);
             const Eigen::Quaternionf defaultRotation(1.0f, 0.0f, 0.0f, 0.0f);
             constexpr float defaultScale[3]{1.0f, 1.0f, 1.0f};
 
