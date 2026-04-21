@@ -37,7 +37,7 @@ namespace
         physPresetInfo->sndAliasPrefix = physPreset->sndAliasPrefix;
         physPresetInfo->mass = physPreset->mass;
 
-        if (std::isinf(physPreset->friction))
+        if (physPreset->friction >= 3.40282e+38)
         {
             physPresetInfo->isFrictionInfinity = 1;
             physPresetInfo->friction = 0;
