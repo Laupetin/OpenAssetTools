@@ -359,32 +359,85 @@ namespace
             return vertexOffset;
         }
 
-        bool addLightNode(const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
+        bool addLightNode(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
-            assert(m_is_world_gfx);
+            if (!m_is_world_gfx || !jRoot.extensions || !jRoot.extensions->KHR_lights_punctual || !jRoot.extensions->KHR_lights_punctual->lights)
+                return false;
             assert(node.extensions);
             assert(node.extensions->KHR_lights_punctual);
 
             int lightIndex = node.extensions->KHR_lights_punctual->light;
+            const JsonPunctualLight& jsLight = jRoot.extensions->KHR_lights_punctual->lights->at(lightIndex);
+            BSPLight light{};
 
-            assert(lightIndex >= 0);
-            if (m_bsp->lights[lightIndex].hasPosBeenSet == true)
-                con::warn("Internal error, multiple nodes reference the same light. Light positions/rotations are likely incorrect.");
+            light.outerConeAngle = std::numbers::pi_v<float> / 4.0f; /// spec of 45 degrees
+            light.innerConeAngle = 0.0f;
+            if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
+            {
+                if (m_bsp->hasSunlightBeenSet)
+                    con::warn("WARNING: multiple sunlight nodes found, only one will be used as the sun.");
+                light.type = LIGHT_TYPE_DIRECTIONAL;
+                m_bsp->hasSunlightBeenSet = true;
+            }
+            else if (jsLight.type == JsonPunctualLightType::POINT)
+            {
+                con::warn("Ignoring point light as BO2 does not support point lights.");
+                return false;
+            }
+            else // JsonPunctualLightType::SPOT
+            {
+                light.type = LIGHT_TYPE_SPOT;
+
+                assert(jsLight.spot);
+                if (jsLight.spot->innerConeAngle)
+                    light.innerConeAngle = *jsLight.spot->innerConeAngle;
+
+                if (jsLight.spot->outerConeAngle)
+                    light.outerConeAngle = *jsLight.spot->outerConeAngle;
+            }
+
+            if (!jsLight.color)
+            {
+                light.colour.x = 1.0f;
+                light.colour.y = 1.0f;
+                light.colour.z = 1.0f;
+            }
+            else
+            {
+                light.colour.x = (*jsLight.color)[0];
+                light.colour.y = (*jsLight.color)[1];
+                light.colour.z = (*jsLight.color)[2];
+            }
+
+            if (!jsLight.intensity)
+                light.intensity = 1000.0f; // adjusted from spec to better match BO2
+            else
+                light.intensity = *jsLight.intensity;
+
+            if (!jsLight.range)
+                light.range = 1000.0f; // adjusted from spec to better match BO2
+            else
+                light.range = *jsLight.range;
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
-            m_bsp->lights[lightIndex].pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
-            RhcToLhcCoordinates(m_bsp->lights[lightIndex].pos.v);
+            light.pos = vec3_t{transformedPosition.x(), transformedPosition.y(), transformedPosition.z()};
+            RhcToLhcCoordinates(light.pos.v);
 
-            // GLTF spec uses +Y up and the default light direction is straight down
-            Eigen::Vector3f defaultDirection(0.0f, -1.0f, 0.0f);
+            Eigen::Vector3f defaultDirection(0.0f, 0.0f, 1.0f); // lights use this value for the forward angle instead in BO2
             Eigen::Affine3f affineTransform(nodeMatrix);
             Eigen::Matrix3f rotationMatrix = affineTransform.rotation();
             Eigen::Vector3f outputDirection = rotationMatrix * defaultDirection;
             outputDirection.normalize();
-            m_bsp->lights[lightIndex].direction = vec3_t{outputDirection.x(), outputDirection.y(), outputDirection.z()};
+            light.direction.x = outputDirection.x();
+            light.direction.y = outputDirection.y();
+            light.direction.z = outputDirection.z();
+            RhcToLhcCoordinates(light.direction.v);
 
-            m_bsp->lights[lightIndex].hasPosBeenSet = true;
+            if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
+                m_bsp->sunlight = light;
+            else
+                m_bsp->lights.emplace_back(light);
 
             return true;
         }
@@ -588,7 +641,6 @@ namespace
             xmodel.rotationQuaternion.w = rotationQuat.w();
             RhcToLhcQuaternion(xmodel.rotationQuaternion.v);
 
-            con::warn("XModels don't support scale currently, keep it at 1 in your editor");
             xmodel.scale = 1.0f;
 
             calculateXmodelBounds(xmodel, node.mesh, nodeMatrix, jRoot);
@@ -904,7 +956,7 @@ namespace
         bool addNodeToBSP(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
             if (m_is_world_gfx && node.extensions && node.extensions->KHR_lights_punctual)
-                return addLightNode(node, nodeMatrix);
+                return addLightNode(jRoot, node, nodeMatrix);
 
             if (node.extras)
             {
@@ -1038,80 +1090,6 @@ namespace
             emptyMaterial.materialColour.z = 1.0f;
             emptyMaterial.materialColour.w = 1.0f;
             m_curr_bsp_world->materials.emplace_back(emptyMaterial);
-        }
-
-        void LoadLights(const JsonRoot& jRoot)
-        {
-            if (!m_is_world_gfx)
-                return;
-            if (!jRoot.extensions)
-                return;
-            if (!jRoot.extensions->KHR_lights_punctual)
-                return;
-            if (!jRoot.extensions->KHR_lights_punctual->lights)
-                return;
-
-            const std::vector<JsonPunctualLight>& jsLightArray = jRoot.extensions->KHR_lights_punctual->lights.value();
-            m_bsp->lights.reserve(jsLightArray.size());
-            for (const JsonPunctualLight& jsLight : jsLightArray)
-            {
-                if (jsLight.type == JsonPunctualLightType::POINT)
-                    con::error("Any point lights will be converted to a spotlight as point lights are unsupported right now.");
-
-                BSPLight light{};
-
-                // position and direction data will be set during node traversal
-                light.hasPosBeenSet = false;
-
-                if (!jsLight.color)
-                {
-                    light.colour.x = 1.0f;
-                    light.colour.y = 1.0f;
-                    light.colour.z = 1.0f;
-                }
-                else
-                {
-                    light.colour.x = (*jsLight.color)[0];
-                    light.colour.y = (*jsLight.color)[1];
-                    light.colour.z = (*jsLight.color)[2];
-                }
-
-                if (!jsLight.intensity)
-                    light.intensity = 100000.0f; // adjusted from spec to better match BO2
-                else
-                    light.intensity = *jsLight.intensity;
-
-                if (!jsLight.range)
-                    light.range = 1000.0f; // adjusted from spec to better match BO2
-                else
-                    light.range = *jsLight.range;
-
-                if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
-                {
-                    light.type = LIGHT_TYPE_DIRECTIONAL;
-                }
-                else if (jsLight.type == JsonPunctualLightType::POINT)
-                {
-                    light.type = LIGHT_TYPE_POINT;
-                }
-                else // JsonPunctualLightType::SPOT
-                {
-                    light.type = LIGHT_TYPE_SPOT;
-
-                    assert(jsLight.spot);
-                    if (!jsLight.spot->innerConeAngle)
-                        light.innerConeAngle = 0.0f;
-                    else
-                        light.innerConeAngle = *jsLight.spot->innerConeAngle;
-
-                    if (!jsLight.spot->outerConeAngle)
-                        light.outerConeAngle = 3.14159265359f / 4.0f; /// spec of 45 degrees
-                    else
-                        light.outerConeAngle = *jsLight.spot->outerConeAngle;
-                }
-
-                m_bsp->lights.emplace_back(light);
-            }
         }
 
         void TraverseNodes(const JsonRoot& jRoot)
@@ -1266,9 +1244,6 @@ namespace
                 CreateBufferViews(jRoot);
                 CreateAccessors(jRoot);
 
-                if (isGfxWorld) // lights aren't needed in collision data
-                    LoadLights(jRoot);
-
                 LoadMaterials(jRoot);
                 TraverseNodes(jRoot); // requires materials and lights
             }
@@ -1330,6 +1305,9 @@ namespace BSP
         bsp->name = mapName;
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
         bsp->isZombiesMap = isZombiesMap;
+        bsp->hasSunlightBeenSet = false;
+
+        con::warn("XModels don't support scale currently, keep it at 1 in your editor");
 
         BSPLoader loader(bsp.get());
         if (isGfxFileGltf)
@@ -1373,6 +1351,19 @@ namespace BSP
                 if (!loader.addGLTFDataToBSP(input, false))
                     return nullptr;
             }
+        }
+
+        if (!bsp->hasSunlightBeenSet)
+        {
+            con::info("Writing default sun values");
+            bsp->sunlight.type = LIGHT_TYPE_DIRECTIONAL;
+            bsp->sunlight.colour = {1.0f, 1.0f, 1.0f};
+            bsp->sunlight.range = 1000.0f;
+            bsp->sunlight.intensity = 1000.0f;
+            bsp->sunlight.pos = {0.0f, 0.0f, 0.0f};
+            bsp->sunlight.direction = {0.0f, -1.0f, 0.0f};
+            bsp->sunlight.innerConeAngle = 0.0f;
+            bsp->sunlight.outerConeAngle = 0.0f;
         }
 
         return bsp;

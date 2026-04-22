@@ -31,7 +31,7 @@ namespace BSP
         void loadSkyBox(BSPData* projInfo, GfxWorld* gfxWorld);
         void loadDynEntData(GfxWorld* gfxWorld);
         bool loadOutdoors(GfxWorld* gfxWorld);
-        void loadSunData(GfxWorld* gfxWorld);
+        void loadSunData(BSPData* projInfo, GfxWorld* gfxWorld);
         void loadWorldBounds(GfxWorld* gfxWorld);
     };
 } // namespace BSP
