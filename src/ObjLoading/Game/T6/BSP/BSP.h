@@ -88,7 +88,6 @@ namespace BSP
     enum BSPLightType
     {
         LIGHT_TYPE_DIRECTIONAL,
-        LIGHT_TYPE_POINT,
         LIGHT_TYPE_SPOT
     };
 
@@ -101,9 +100,8 @@ namespace BSP
 
         vec3_t pos;
         vec3_t direction;
-        bool hasPosBeenSet;
 
-        // angle is in radians. only used on spot/dir lights
+        // angle is in radians. only used on spot lights
         float innerConeAngle;
         float outerConeAngle;
     };
@@ -171,6 +169,9 @@ namespace BSP
         std::vector<BSPZoneZM> zm_zones;
         std::vector<BSPZSpawnerZM> zm_spawners;
         std::vector<BSPEntity> entities;
+
+        bool hasSunlightBeenSet;
+        BSPLight sunlight;
 
         std::vector<BSPModel> models;
     };

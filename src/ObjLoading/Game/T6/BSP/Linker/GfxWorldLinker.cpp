@@ -4,6 +4,23 @@
 #include "../BSPUtil.h"
 #include "Utils/Pack.h"
 
+namespace
+{
+    unsigned int packLmapCoord(float X, float Y)
+    {
+        float XStep = X * 65535.0f;
+        float YStep = Y * 65535.0f;
+
+        unsigned int result = 0;
+        result |= (unsigned int)XStep;
+        result &= 0xFFFF;
+        result |= (unsigned int)YStep << 16;
+        result &= 0xFFFFFFFF;
+
+        return result;
+    }
+} // namespace
+
 namespace BSP
 {
     GfxWorldLinker::GfxWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
@@ -30,9 +47,7 @@ namespace BSP
             gfxVertex->normal.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.normal.v);
             gfxVertex->tangent.packed = pack32::Vec3PackUnitVecThirdBased(bspVertex.tangent.v);
             gfxVertex->binormalSign = bspVertex.binormal.v[0] > 0.0f ? 1.0f : -1.0f;
-
-            // lightmap isn't implemented currently
-            gfxVertex->lmapCoord.packed = 0;
+            gfxVertex->lmapCoord.packed = packLmapCoord(0.0f, 0.0f);
         }
         gfxWorld->draw.vd0.data = reinterpret_cast<char*>(vertexBuffer);
 
@@ -439,14 +454,14 @@ namespace BSP
         gfxWorld->lightGrid.rowDataStart = m_memory.Alloc<uint16_t>(rowDataStartSize);
 
         // Adding 0x0F so the lookup table will be 0x10 bytes in size
-        gfxWorld->lightGrid.rawRowDataSize = static_cast<unsigned int>(sizeof(GfxLightGridRow) + 0x0F);
+        gfxWorld->lightGrid.rawRowDataSize = static_cast<unsigned int>(sizeof(GfxLightGridRow) + 0x1FF);
         GfxLightGridRow* row = static_cast<GfxLightGridRow*>(m_memory.AllocRaw(gfxWorld->lightGrid.rawRowDataSize));
         row->colStart = 0;
-        row->colCount = 0x1000; // 0x1000 as this is large enough for all checks done by the game
+        row->colCount = 0xFFFF;
         row->zStart = 0;
-        row->zCount = 0xFF; // 0xFF as this is large enough for all checks done by the game, but small enough not to mess with other checks
+        row->zCount = 0xFF; // 0xFF as this seems to be the sweet spot of values
         row->firstEntry = 0;
-        for (int i = 0; i < 0x10; i++) // set the lookup table to all 0
+        for (int i = 0; i < 0x200; i++) // set the lookup table to all 0xFF
             row->lookupTable[i] = -1;
         gfxWorld->lightGrid.rawRowData = reinterpret_cast<aligned_byte_pointer*>(row);
 
@@ -464,7 +479,7 @@ namespace BSP
         // colours are looked up with a lightgrid entries colorsIndex
         gfxWorld->lightGrid.colorCount = 0x1000; // 0x1000 as it should be enough to hold every index
         gfxWorld->lightGrid.colors = m_memory.Alloc<GfxCompressedLightGridColors>(gfxWorld->lightGrid.colorCount);
-        memset(gfxWorld->lightGrid.colors, BSPEditableConstants::LIGHTGRID_COLOUR, rowDataStartSize * sizeof(uint16_t));
+        memset(gfxWorld->lightGrid.colors, 32, rowDataStartSize * sizeof(uint16_t));
 
         // we use the colours array instead of coeffs array
         gfxWorld->lightGrid.coeffCount = 0;
@@ -619,33 +634,17 @@ namespace BSP
         }
     }
 
-    void GfxWorldLinker::loadSunData(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadSunData(BSPData* bsp, GfxWorld* gfxWorld)
     {
-        // default values taken from mp_dig
-        gfxWorld->sunParse.fogTransitionTime = 0.001f;
-        gfxWorld->sunParse.name[0] = 0x00;
-
-        gfxWorld->sunParse.initWorldSun->control = 0;
-        gfxWorld->sunParse.initWorldSun->exposure = 2.5f;
-        gfxWorld->sunParse.initWorldSun->angles.x = -29.0f;
-        gfxWorld->sunParse.initWorldSun->angles.y = 254.0f;
-        gfxWorld->sunParse.initWorldSun->angles.z = 0.0f;
-        gfxWorld->sunParse.initWorldSun->sunCd.x = 1.0f;
-        gfxWorld->sunParse.initWorldSun->sunCd.y = 0.89f;
-        gfxWorld->sunParse.initWorldSun->sunCd.z = 0.69f;
-        gfxWorld->sunParse.initWorldSun->sunCd.w = 13.5f;
-        gfxWorld->sunParse.initWorldSun->ambientColor.x = 0.0f;
-        gfxWorld->sunParse.initWorldSun->ambientColor.y = 0.0f;
-        gfxWorld->sunParse.initWorldSun->ambientColor.z = 0.0f;
-        gfxWorld->sunParse.initWorldSun->ambientColor.w = 0.0f;
-        gfxWorld->sunParse.initWorldSun->skyColor.x = 0.0f;
-        gfxWorld->sunParse.initWorldSun->skyColor.y = 0.0f;
-        gfxWorld->sunParse.initWorldSun->skyColor.z = 0.0f;
-        gfxWorld->sunParse.initWorldSun->skyColor.w = 0.0f;
-        gfxWorld->sunParse.initWorldSun->sunCs.x = 0.0f;
-        gfxWorld->sunParse.initWorldSun->sunCs.y = 0.0f;
-        gfxWorld->sunParse.initWorldSun->sunCs.z = 0.0f;
-        gfxWorld->sunParse.initWorldSun->sunCs.w = 0.0f;
+        BSPLight& sunlight = bsp->sunlight;
+        vec3_t viewAngles = BSPUtil::convertForwardVectorToViewAngles(sunlight.direction);
+        gfxWorld->sunParse.initWorldSun->angles.x = viewAngles.x;
+        gfxWorld->sunParse.initWorldSun->angles.y = viewAngles.y;
+        gfxWorld->sunParse.initWorldSun->angles.z = viewAngles.z;
+        gfxWorld->sunParse.initWorldSun->sunCd.x = sunlight.colour.x;
+        gfxWorld->sunParse.initWorldSun->sunCd.y = sunlight.colour.y;
+        gfxWorld->sunParse.initWorldSun->sunCd.z = sunlight.colour.z;
+        gfxWorld->sunParse.initWorldSun->sunCd.w = 1.0f;
 
         gfxWorld->sunParse.initWorldFog->baseDist = 150.0f;
         gfxWorld->sunParse.initWorldFog->baseHeight = -100.0f;
@@ -849,7 +848,7 @@ namespace BSP
 
         loadModels(bsp, gfxWorld); // requires surfaces
 
-        loadSunData(gfxWorld);
+        loadSunData(bsp, gfxWorld);
 
         loadDynEntData(gfxWorld);
 
