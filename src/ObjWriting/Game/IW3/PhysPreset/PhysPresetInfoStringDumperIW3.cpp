@@ -34,8 +34,8 @@ namespace
 
     void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
     {
-        physPresetInfo->sndAliasPrefix = physPreset->sndAliasPrefix;
-        physPresetInfo->mass = physPreset->mass;
+        physPresetInfo->mass = std::clamp(physPreset->mass, 1.0f, 2000.0f);
+        physPresetInfo->bounce = physPreset->bounce;
 
         if (physPreset->friction >= 3.40282e+38)
         {
@@ -48,12 +48,12 @@ namespace
             physPresetInfo->friction = physPreset->friction;
         }
 
-        physPresetInfo->bounce = physPreset->bounce;
         physPresetInfo->bulletForceScale = physPreset->bulletForceScale;
         physPresetInfo->explosiveForceScale = physPreset->explosiveForceScale;
+        physPresetInfo->sndAliasPrefix = physPreset->sndAliasPrefix;
         physPresetInfo->piecesSpreadFraction = physPreset->piecesSpreadFraction;
         physPresetInfo->piecesUpwardVelocity = physPreset->piecesUpwardVelocity;
-        physPresetInfo->tempDefaultToCylinder = physPreset->tempDefaultToCylinder;
+        physPresetInfo->tempDefaultToCylinder = physPreset->tempDefaultToCylinder ? 1 : 0;
     }
 
     InfoString CreateInfoString(const XAssetInfo<PhysPreset>& asset)
