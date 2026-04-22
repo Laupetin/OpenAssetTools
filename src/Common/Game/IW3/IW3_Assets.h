@@ -177,7 +177,6 @@ namespace IW3
         float piecesSpreadFraction;
         float piecesUpwardVelocity;
         int tempDefaultToCylinder;
-        int perSurfaceSndAlias;
     };
 
     union XAnimIndices
