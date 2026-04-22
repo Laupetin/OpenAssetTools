@@ -70,72 +70,45 @@ namespace BSP
             {
                 BSPLight* bspLight = &bsp->lights.at(lightIdx - BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT);
 
-                light->aAbB.x = 0.28173786401748657f;
-                light->aAbB.y = 0.5634757280349731f;
-                light->aAbB.z = 0.5634757280349731f;
-                light->aAbB.w = 0.7071067690849304f;
-
-                light->angle.x = 0.0f;
-                light->angle.y = 0.0f;
-                light->angle.z = -0.5235987901687622f;
-                light->angle.w = 0.0f;
-
-                light->canUseShadowMap = 1;
-
-                light->cookieControl0.x = 0.0f;
-                light->cookieControl0.y = 0.0f;
-                light->cookieControl0.z = 1.0f;
-                light->cookieControl0.w = 1.0f;
-                light->cookieControl1.x = 0.0f;
-                light->cookieControl1.y = 0.0f;
-                light->cookieControl1.z = 0.0f;
-                light->cookieControl1.w = 0.0f;
-                light->cookieControl2.x = 0.0f;
-                light->cookieControl2.y = 0.0f;
-                light->cookieControl2.z = 0.0f;
-                light->cookieControl2.w = 0.0f;
+                light->type = GFX_LIGHT_TYPE_SPOT;
 
                 light->color.x = bspLight->colour.x;
                 light->color.y = bspLight->colour.y;
                 light->color.z = bspLight->colour.z;
-                light->cosHalfFovInner = cosf(bspLight->innerConeAngle);
-                light->cosHalfFovOuter = cosf(bspLight->outerConeAngle);
-                light->cosHalfFovExpanded = cosf(bspLight->outerConeAngle);
-
-                light->cullDist = 1000;
-                light->dAttenuation = 10000.0f;
-                light->defName = "white_light";
-
                 light->diffuseColor.x = bspLight->colour.x;
                 light->diffuseColor.y = bspLight->colour.y;
                 light->diffuseColor.z = bspLight->colour.z;
-                light->diffuseColor.w = 0.0f;
+
+                light->cosHalfFovInner = cosf(bspLight->innerConeAngle);
+                light->cosHalfFovOuter = cosf(bspLight->outerConeAngle);
+                light->cosHalfFovExpanded = cosf(bspLight->outerConeAngle);
 
                 light->dir.x = bspLight->direction.x;
                 light->dir.y = bspLight->direction.y;
                 light->dir.z = bspLight->direction.z;
 
-                light->exponent = 0;
-
                 light->falloff.y = bspLight->range;
-
+                light->radius = bspLight->range;
                 light->mipDistance = bspLight->range;
-
-                light->priority = 0;
 
                 light->origin.x = bspLight->pos.x;
                 light->origin.y = bspLight->pos.y;
                 light->origin.z = bspLight->pos.z;
 
-                light->radius = bspLight->range;
-                light->rotationLimit = 1.0f;
-                light->shadowmapVolume = 0;
-                light->translationLimit = 0.0f;
-                light->useCookie = 0;
+                light->dAttenuation = bspLight->intensity;
 
-                light->roundness = 0.0f;
+                // I think AABB controls the lens shape of the light
+                light->aAbB.x = 0.75f;
+                light->aAbB.y = 1.0f;
+                light->aAbB.z = 0.75f;
+                light->aAbB.w = 1.0f;
 
-                light->type = GFX_LIGHT_TYPE_SPOT;
+                light->cullDist = 10000;
+                light->defName = "white_light";
+                light->rotationLimit = 1.0f;    // 1.0f - doesn't rotate, -1.0f - unclamped rotation
+                light->translationLimit = 0.0f; // 0.0f - doesn't translate, above 0.0f - distance per game update translated
+                light->roundness = 1.0f;        // 0.0f - light is a square. 1.0f - light is a circle
+                light->canUseShadowMap = 1;     // light does not show up with this set to 0
             }
         }
 
