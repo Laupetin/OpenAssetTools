@@ -1038,20 +1038,10 @@ namespace
                         throw GltfLoadException("Materials must have a name.");
 
                     material.materialType = MATERIAL_TYPE_TEXTURE;
-                    if (jsMaterial.pbrMetallicRoughness && jsMaterial.pbrMetallicRoughness->baseColorFactor)
-                    {
-                        material.materialColour.x = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[0];
-                        material.materialColour.y = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[1];
-                        material.materialColour.z = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[2];
-                        material.materialColour.w = (*jsMaterial.pbrMetallicRoughness->baseColorFactor)[3];
-                    }
-                    else
-                    {
-                        material.materialColour.x = 1.0f;
-                        material.materialColour.y = 1.0f;
-                        material.materialColour.z = 1.0f;
-                        material.materialColour.w = 1.0f;
-                    }
+                    material.materialColour.x = 1.0f;
+                    material.materialColour.y = 1.0f;
+                    material.materialColour.z = 1.0f;
+                    material.materialColour.w = 1.0f;
 
                     material.surfaceFlags = 0;
                     material.contentFlags = 1;

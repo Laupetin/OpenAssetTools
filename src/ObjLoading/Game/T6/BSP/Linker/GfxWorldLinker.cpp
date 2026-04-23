@@ -429,7 +429,7 @@ namespace BSP
             gfxWorld->primaryLightEntityShadowVis = nullptr;
     }
 
-    void GfxWorldLinker::loadLightGrid(GfxWorld* gfxWorld)
+    void GfxWorldLinker::loadLightGrid(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // gfxWorld->lightGrid.mins[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[0]) + 0x20000) >> 5);
         // gfxWorld->lightGrid.mins[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[1]) + 0x20000) >> 5);
@@ -453,7 +453,7 @@ namespace BSP
         int rowDataStartSize = gfxWorld->lightGrid.maxs[gfxWorld->lightGrid.rowAxis] - gfxWorld->lightGrid.mins[gfxWorld->lightGrid.rowAxis] + 1;
         gfxWorld->lightGrid.rowDataStart = m_memory.Alloc<uint16_t>(rowDataStartSize);
 
-        // Adding 0x0F so the lookup table will be 0x10 bytes in size
+        // Adding 0x1FF so the lookup table will be 0x200 bytes in size
         gfxWorld->lightGrid.rawRowDataSize = static_cast<unsigned int>(sizeof(GfxLightGridRow) + 0x1FF);
         GfxLightGridRow* row = static_cast<GfxLightGridRow*>(m_memory.AllocRaw(gfxWorld->lightGrid.rawRowDataSize));
         row->colStart = 0;
@@ -476,10 +476,22 @@ namespace BSP
         }
         gfxWorld->lightGrid.entries = entryArray;
 
+        char color = 32;
+        float sunIntensity = bsp->sunlight.intensity;
+        if (sunIntensity < 0.0f || sunIntensity > 20000.0f)
+            con::warn("Sun intensity ({}) needs to be between 0 and 20000", sunIntensity);
+        else
+        {
+            float normalised = sunIntensity / 20000.0f;
+            normalised *= 255.0f;
+            float clean = roundf(normalised);
+            color = static_cast<char>(clean);
+        }
+
         // colours are looked up with a lightgrid entries colorsIndex
         gfxWorld->lightGrid.colorCount = 0x1000; // 0x1000 as it should be enough to hold every index
         gfxWorld->lightGrid.colors = m_memory.Alloc<GfxCompressedLightGridColors>(gfxWorld->lightGrid.colorCount);
-        memset(gfxWorld->lightGrid.colors, 32, rowDataStartSize * sizeof(uint16_t));
+        memset(gfxWorld->lightGrid.colors, color, rowDataStartSize * sizeof(uint16_t));
 
         // we use the colours array instead of coeffs array
         gfxWorld->lightGrid.coeffCount = 0;
@@ -692,7 +704,7 @@ namespace BSP
         gfxWorld->draw.reflectionProbes[0].probeVolumeCount = 0;
         gfxWorld->draw.reflectionProbes[0].probeVolumes = nullptr;
 
-        std::string probeImageName = "reflection_probe0";
+        std::string probeImageName = "$white";
         auto probeImageAsset = m_context.LoadDependency<AssetImage>(probeImageName);
         if (probeImageAsset == nullptr)
         {
@@ -711,7 +723,7 @@ namespace BSP
         gfxWorld->draw.lightmapPrimaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
         gfxWorld->draw.lightmapSecondaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
 
-        std::string secondaryTexture = "lightmap0_secondary";
+        std::string secondaryTexture = ",$white";
         auto secondaryTextureAsset = m_context.LoadDependency<AssetImage>(secondaryTexture);
         if (secondaryTextureAsset == nullptr)
         {
@@ -842,7 +854,7 @@ namespace BSP
         // gfx cells depend on surface/smodel count
         loadGfxCells(gfxWorld);
 
-        loadLightGrid(gfxWorld);
+        loadLightGrid(bsp, gfxWorld);
 
         loadGfxLights(bsp, gfxWorld); // requires xmodels and surfaces
 
