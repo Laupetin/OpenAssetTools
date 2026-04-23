@@ -1,5 +1,4 @@
 #include "PhysPresetInfoStringDumperIW3.h"
-
 #include "Game/IW3/InfoString/InfoStringFromStructConverter.h"
 #include "Game/IW3/ObjConstantsIW3.h"
 #include "Game/IW3/PhysPreset/PhysPresetFields.h"
