@@ -1,5 +1,6 @@
 #include "ObjWriterIW5.h"
 
+#include "PhysPreset/PhysPresetInfoStringDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
@@ -22,7 +23,7 @@ using namespace IW5;
 
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
-    // REGISTER_DUMPER(AssetDumperPhysPreset)
+    RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW5>());
     // REGISTER_DUMPER(AssetDumperPhysCollmap)
     // REGISTER_DUMPER(AssetDumperXAnimParts)
     // REGISTER_DUMPER(AssetDumperXModelSurfs)
