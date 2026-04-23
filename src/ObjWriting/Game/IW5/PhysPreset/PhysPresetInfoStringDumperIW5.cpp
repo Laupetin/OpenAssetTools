@@ -1,5 +1,6 @@
 #include "PhysPresetInfoStringDumperIW5.h"
 
+#include "Game/IW5/InfoString/EnumStrings.h"
 #include "Game/IW5/InfoString/InfoStringFromStructConverter.h"
 #include "Game/IW5/ObjConstantsIW5.h"
 #include "Game/IW5/PhysPreset/PhysPresetFields.h"
@@ -46,7 +47,7 @@ namespace
     {
         physPresetInfo->name = physPreset->name;
         physPresetInfo->type = physPreset->type;
-        physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
+        physPresetInfo->mass = std::clamp(physPreset->mass, 1.0f, 2000.0f);
         physPresetInfo->bounce = physPreset->bounce;
         physPresetInfo->friction = physPreset->friction;
         physPresetInfo->bulletForceScale = physPreset->bulletForceScale;
