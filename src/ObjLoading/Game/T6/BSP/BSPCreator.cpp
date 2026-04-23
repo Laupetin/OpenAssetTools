@@ -444,7 +444,30 @@ namespace
             return true;
         }
 
-        size_t createMaterialWithFlags(size_t originalMaterialIdx, const std::string& flags, bool& isNoDrawFlagSet)
+        bool getSurfaceAndContentFlags(const std::string& flagStr, int& surfaceFlags, int& contentFlags)
+        {
+            bool matchedAnyFlag = false;
+            std::vector<std::string> flagStrVec = utils::StringSplit(flagStr, ',');
+            for (std::string& flag : flagStrVec)
+            {
+                utils::MakeStringLowerCase(flag);
+                utils::StringTrim(flag);
+                for (size_t typeIdx = 0; typeIdx < BSPFlags::SURF_TYPE_COUNT; typeIdx++)
+                {
+                    if (!flag.compare(BSPFlags::surfaceTypeToNameMap[typeIdx]))
+                    {
+                        BSPFlags::s_SurfaceTypeFlags flags = BSPFlags::surfaceTypeToFlagMap[typeIdx];
+                        surfaceFlags |= flags.surfaceFlags;
+                        contentFlags |= flags.contentFlags;
+                        matchedAnyFlag = true;
+                        break;
+                    }
+                }
+            }
+            return matchedAnyFlag;
+        }
+
+        size_t createMaterialWithFlags(size_t originalMaterialIdx, const std::string& flags)
         {
             BSPMaterial newMaterial = m_curr_bsp_world->materials.at(originalMaterialIdx);
 
@@ -480,11 +503,6 @@ namespace
                 newMaterial.contentFlags &= 0xFFFFFFFE;
             else
                 newMaterial.contentFlags |= 1;
-
-            if ((newMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) != 0)
-                isNoDrawFlagSet = true;
-            else
-                isNoDrawFlagSet = false;
 
             size_t newMaterialIndex = m_curr_bsp_world->materials.size();
             m_curr_bsp_world->materials.emplace_back(newMaterial);
@@ -522,12 +540,7 @@ namespace
                 else
                     materialIndex = m_emptyMaterialIndex;
                 if (node.extras && node.extras->contains("flags"))
-                {
-                    bool isNoDrawFlagSet = false;
-                    materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"), isNoDrawFlagSet);
-                    if (isNoDrawFlagSet && m_is_world_gfx)
-                        continue; // noDraw flag doesn't work, so remove the surface from the graphics data instead
-                }
+                    materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"));
 
                 BSPSurface surface;
                 CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, false, surface);
@@ -695,6 +708,8 @@ namespace
 
         size_t addScriptBrushModel(const JsonRoot& jRoot, const gltf::JsonNode& node, Eigen::Matrix4f& nodeMatrix)
         {
+            assert(!m_is_world_gfx);
+
             if (!node.mesh || !jRoot.meshes)
                 throw new GltfLoadException("Script model created with no mesh data");
 
@@ -721,10 +736,7 @@ namespace
 
             size_t materialIndex = m_emptyMaterialIndex;
             if (node.extras && node.extras->contains("flags"))
-            {
-                bool isNoDrawFlagSet;
-                materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"), isNoDrawFlagSet);
-            }
+                materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"));
             BSPBoxBrush boxBrush;
             boxBrush.vertexIndex = m_curr_bsp_world->boxBrushVerts.size();
             boxBrush.contentFlags = m_curr_bsp_world->materials.at(materialIndex).contentFlags;
@@ -818,10 +830,7 @@ namespace
                 {
                     size_t originalMaterialIdx = *primitive.material;
                     if (node.extras && node.extras->contains("flags"))
-                    {
-                        bool isNoDrawFlagSet;
-                        materialIndex = createMaterialWithFlags(originalMaterialIdx, node.extras->at("flags"), isNoDrawFlagSet);
-                    }
+                        materialIndex = createMaterialWithFlags(originalMaterialIdx, node.extras->at("flags"));
                     else
                         materialIndex = originalMaterialIdx;
                 }
@@ -906,32 +915,37 @@ namespace
             assert(node.extras->contains("classname"));
 
             BSPEntity entity;
-            std::string classname = node.extras->at("classname");
-            if (node.mesh && (classname.starts_with("trigger_") || !classname.compare("info_volume") || !classname.compare("script_brushmodel")))
-            {
-                if (node.extras->contains("model"))
-                {
-                    con::error("Node {} cannot have a model property when its class is a trigger, info_volume or script_brushmodel");
-                    return false;
-                }
 
-                if (m_is_world_gfx)
-                    entity.modelIndex = addScriptTerrainModel(jRoot, node, nodeMatrix);
-                else
-                    entity.modelIndex = addScriptBrushModel(jRoot, node, nodeMatrix);
-            }
+            std::string classname = node.extras->at("classname");
+            if (!classname.compare("script_brushmodel_gfx") || !classname.compare("script_brushmodel_tris"))
+                entity.modelIndex = addScriptTerrainModel(jRoot, node, nodeMatrix);
+            else if ((!classname.compare("script_brushmodel_box") || !classname.compare("script_brushmodel"))
+                     || (classname.starts_with("trigger_") || !classname.compare("info_volume")))
+                entity.modelIndex = addScriptBrushModel(jRoot, node, nodeMatrix);
             else
                 entity.modelIndex = 0;
+
+            if (entity.modelIndex != 0 && node.extras->contains("model"))
+            {
+                con::error("Node {} cannot have a model property when its class is a trigger, info_volume, script_brushmodel_gfx, script_brushmodel_tris, "
+                           "script_brushmodel_box or script_brushmodel");
+                return false;
+            }
 
             for (auto& element : node.extras->items())
             {
                 std::string key = element.key();
+                std::string value = element.value();
                 if (!key.compare("origin") || !key.compare("angles") || !key.compare("flags"))
                     continue;
 
+                if (!key.compare("classname")
+                    && (!value.compare("script_brushmodel_gfx") || !value.compare("script_brushmodel_tris") || !value.compare("script_brushmodel_box")))
+                    value = "script_brushmodel";
+
                 BSPEntityEntry entry;
                 entry.key = key;
-                entry.value = element.value();
+                entry.value = value;
                 entity.entries.emplace_back(entry);
             }
 
@@ -976,11 +990,17 @@ namespace
 
             if (node.extras)
             {
+                if (node.extras->contains("classname"))
+                {
+                    std::string classnameVal = node.extras->at("classname");
+
+                    if ((m_is_world_gfx && !classnameVal.compare("script_brushmodel_gfx")) // make sure only GFX loads script_brushmodel_gfx
+                        || (!m_is_world_gfx && classnameVal.compare("script_brushmodel_gfx")))
+                        return addClassNode(jRoot, node, nodeMatrix);
+                }
+
                 if (!m_is_world_gfx)
                 {
-                    if (node.extras->contains("classname"))
-                        return addClassNode(jRoot, node, nodeMatrix);
-
                     if (node.extras->contains("spawnpoint"))
                         return addSpawnPointNode(node, nodeMatrix);
 
@@ -999,7 +1019,16 @@ namespace
             }
 
             if (node.mesh)
-                return addMeshNode(jRoot, node, nodeMatrix);
+            {
+                int surfaceFlags = 0;
+                int contentFlags = 0;
+                if (node.extras && node.extras->contains("flags"))
+                    getSurfaceAndContentFlags(node.extras->at("flags"), surfaceFlags, contentFlags);
+
+                if (!m_is_world_gfx
+                    || ((surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) == 0)) // ignore if gfx mesh has nodraw flag
+                    return addMeshNode(jRoot, node, nodeMatrix);
+            }
 
             return false;
         }
@@ -1060,7 +1089,7 @@ namespace
                     material.materialColour.w = 1.0f;
 
                     material.surfaceFlags = 0;
-                    material.contentFlags = 1;
+                    material.contentFlags = 0;
                     if (jsMaterial.extras && jsMaterial.extras->type)
                     {
                         bool foundType = false;
