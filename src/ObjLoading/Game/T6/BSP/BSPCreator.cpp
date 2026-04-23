@@ -374,10 +374,7 @@ namespace
             light.innerConeAngle = 0.0f;
             if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
             {
-                if (m_bsp->hasSunlightBeenSet)
-                    con::warn("WARNING: multiple sunlight nodes found, only one will be used as the sun.");
                 light.type = LIGHT_TYPE_DIRECTIONAL;
-                m_bsp->hasSunlightBeenSet = true;
             }
             else if (jsLight.type == JsonPunctualLightType::POINT)
             {
@@ -435,7 +432,12 @@ namespace
             RhcToLhcCoordinates(light.direction.v);
 
             if (jsLight.type == JsonPunctualLightType::DIRECTIONAL)
+            {
+                if (m_bsp->hasSunlightBeenSet)
+                    con::warn("WARNING: multiple sunlight nodes found, only one will be used as the sun.");
                 m_bsp->sunlight = light;
+                m_bsp->hasSunlightBeenSet = true;
+            }
             else
                 m_bsp->lights.emplace_back(light);
 
@@ -949,7 +951,21 @@ namespace
             entity.rotationQuaternion.w = rotationQuat.w();
             RhcToLhcQuaternion(entity.rotationQuaternion.v);
 
-            m_bsp->entities.emplace_back(entity);
+            if (!classname.compare("worldspawn"))
+            {
+                if (m_bsp->containsWorldspawn)
+                    con::warn("WARNING: multiple worldspawn classes found, only one will be used.");
+                m_bsp->worldspawn = entity;
+                m_bsp->containsWorldspawn = true;
+            }
+            else if (!classname.compare("mp_global_intermission"))
+            {
+                if (m_bsp->containsIntermssion)
+                    con::warn("WARNING: multiple mp_global_intermission classes found, only one will be used.");
+                m_bsp->containsIntermssion = true;
+            }
+            else
+                m_bsp->entities.emplace_back(entity);
             return true;
         }
 
@@ -1296,6 +1312,8 @@ namespace BSP
         bsp->bspName = "maps/mp/" + mapName + ".d3dbsp";
         bsp->isZombiesMap = isZombiesMap;
         bsp->hasSunlightBeenSet = false;
+        bsp->containsIntermssion = false;
+        bsp->containsWorldspawn = false;
 
         con::warn("XModels don't support scale currently, keep it at 1 in your editor");
 
@@ -1354,6 +1372,17 @@ namespace BSP
             bsp->sunlight.direction = {0.0f, -1.0f, 0.0f};
             bsp->sunlight.innerConeAngle = 0.0f;
             bsp->sunlight.outerConeAngle = 0.0f;
+        }
+
+        if (!bsp->containsIntermssion)
+        {
+            con::error("Map does not contain a mp_global_intermission class");
+            return nullptr;
+        }
+        if (!bsp->containsWorldspawn)
+        {
+            con::error("Map does not contain a worldspawn class");
+            return nullptr;
         }
 
         return bsp;

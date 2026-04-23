@@ -164,14 +164,18 @@ namespace BSP
         BSPWorld gfxWorld;
         BSPWorld colWorld;
 
+        bool hasSunlightBeenSet;
+        BSPLight sunlight;
         std::vector<BSPLight> lights;
+
         std::vector<BSPSpawnPoint> spawnpoints;
         std::vector<BSPZoneZM> zm_zones;
         std::vector<BSPZSpawnerZM> zm_spawners;
-        std::vector<BSPEntity> entities;
 
-        bool hasSunlightBeenSet;
-        BSPLight sunlight;
+        bool containsWorldspawn;
+        bool containsIntermssion;
+        std::vector<BSPEntity> entities;
+        BSPEntity worldspawn;
 
         std::vector<BSPModel> models;
     };
