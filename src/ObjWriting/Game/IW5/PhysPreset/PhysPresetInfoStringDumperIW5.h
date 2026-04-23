@@ -8,7 +8,6 @@ namespace phys_preset
     class InfoStringDumperIW5 final : public AbstractAssetDumper<IW5::AssetPhysPreset>
     {
     protected:
-
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW5::AssetPhysPreset::Type>& asset) override;
     };
 } // namespace phys_preset

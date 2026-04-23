@@ -1,6 +1,5 @@
 #include "ObjWriterIW5.h"
 
-#include "PhysPreset/PhysPresetInfoStringDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
@@ -12,6 +11,7 @@
 #include "Maps/AddonMapEntsDumperIW5.h"
 #include "Menu/MenuDumperIW5.h"
 #include "Menu/MenuListDumperIW5.h"
+#include "PhysPreset/PhysPresetInfoStringDumperIW5.h"
 #include "RawFile/RawFileDumperIW5.h"
 #include "Script/ScriptDumperIW5.h"
 #include "Sound/LoadedSoundDumperIW5.h"
