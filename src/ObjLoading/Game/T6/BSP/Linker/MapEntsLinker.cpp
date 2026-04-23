@@ -7,38 +7,6 @@ using namespace nlohmann;
 
 namespace
 {
-    bool addJSONToEntString(json& entArrayJs, std::string& entityString)
-    {
-        for (size_t entIdx = 0; entIdx < entArrayJs.size(); entIdx++)
-        {
-            auto& entity = entArrayJs[entIdx];
-
-            if (entIdx == 0)
-            {
-                std::string className;
-                entity.at("classname").get_to(className);
-                if (className.compare("worldspawn") != 0)
-                {
-                    con::error("ERROR: first entity in the map entity string must be the worldspawn class!");
-                    return false;
-                }
-            }
-
-            entityString.append("{\n");
-
-            for (auto& element : entity.items())
-            {
-                std::string key = element.key();
-                std::string value = element.value();
-                entityString.append(std::format("\"{}\" \"{}\"\n", key, value));
-            }
-
-            entityString.append("}\n");
-        }
-
-        return true;
-    }
-
     inline const std::vector<const char*> DEFENDER_SPAWN_POINT_NAMES = {"mp_ctf_spawn_allies",
                                                                         "mp_ctf_spawn_allies_start",
                                                                         "mp_sd_spawn_defender",
@@ -170,24 +138,6 @@ namespace
             entityString.append("}\n");
         }
     }
-
-    constexpr const char* DEFAULT_MAP_ENTS_STRING = R"({
-    "entities": [
-        {
-            "classname": "worldspawn"
-        },
-        {
-            "angles": "0 0 0",
-            "classname": "info_player_start",
-            "origin": "0 0 0"
-        },
-        {
-            "angles": "0 0 0",
-            "classname": "mp_global_intermission",
-            "origin": "0 0 0"
-        }
-    ]
-    })";
 } // namespace
 
 namespace BSP
@@ -201,52 +151,35 @@ namespace BSP
 
     MapEnts* MapEntsLinker::linkMapEnts(BSPData* bsp)
     {
-        try
-        {
-            json entJs;
-            std::string entityFileName = "entities.json";
-            std::string entityFilePath = BSPUtil::getFileNameForBSPAsset(entityFileName);
-            const auto entFile = m_search_path.Open(entityFilePath);
-            if (!entFile.IsOpen())
-            {
-                con::warn("Can't find entity file {}, using default entities instead", entityFilePath);
-                entJs = json::parse(DEFAULT_MAP_ENTS_STRING);
-            }
-            else
-            {
-                entJs = json::parse(*entFile.m_stream);
-            }
-            std::string entityString;
-            if (!addJSONToEntString(entJs["entities"], entityString))
-                return nullptr;
+        std::string entityString;
 
-            addSpawnsToEntString(bsp, entityString);
+        // worldspawn must be the first entity
+        entityString.append("{\n");
+        for (auto& entry : bsp->worldspawn.entries)
+            entityString.append(std::format("\"{}\" \"{}\"\n", entry.key, entry.value));
+        entityString.append("}\n");
 
-            if (bsp->isZombiesMap)
-                addZombiesEntitiesToEntString(bsp, entityString);
+        addSpawnsToEntString(bsp, entityString);
 
-            addClassEntitiesToEntString(bsp, entityString);
+        if (bsp->isZombiesMap)
+            addZombiesEntitiesToEntString(bsp, entityString);
 
-            MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
-            mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
+        addClassEntitiesToEntString(bsp, entityString);
 
-            mapEnts->entityString = m_memory.Dup(entityString.c_str());
-            mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character
+        MapEnts* mapEnts = m_memory.Alloc<MapEnts>();
+        mapEnts->name = m_memory.Dup(bsp->bspName.c_str());
 
-            // don't need these, unused by the game
-            mapEnts->trigger.count = 0;
-            mapEnts->trigger.models = nullptr;
-            mapEnts->trigger.hullCount = 0;
-            mapEnts->trigger.hulls = nullptr;
-            mapEnts->trigger.slabCount = 0;
-            mapEnts->trigger.slabs = nullptr;
+        mapEnts->entityString = m_memory.Dup(entityString.c_str());
+        mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character
 
-            return mapEnts;
-        }
-        catch (const json::exception& e)
-        {
-            con::error("JSON error when parsing map ents and spawns: {}", e.what());
-            return nullptr;
-        }
+        // don't need these, unused by the game
+        mapEnts->trigger.count = 0;
+        mapEnts->trigger.models = nullptr;
+        mapEnts->trigger.hullCount = 0;
+        mapEnts->trigger.hulls = nullptr;
+        mapEnts->trigger.slabCount = 0;
+        mapEnts->trigger.slabs = nullptr;
+
+        return mapEnts;
     }
 } // namespace BSP
