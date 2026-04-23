@@ -168,7 +168,7 @@ namespace
         GdtEntry& CreateGdtEntry()
         {
             m_entry = GdtEntry();
-            m_entry.m_gdf_name = ObjConstants::GDF_FILENAME_MATERIAL;
+            m_entry.m_gdf_name = GDF_FILENAME_MATERIAL;
             m_entry.m_name = m_material.info.name;
 
             SetCommonValues();

@@ -31,7 +31,7 @@ namespace
                 return AssetCreationResult::NoAction();
 
             InfoString infoString;
-            if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
+            if (!infoString.FromStream(INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
             {
                 con::error("Could not parse as info string file: \"{}\"", fileName);
                 return AssetCreationResult::Failure();

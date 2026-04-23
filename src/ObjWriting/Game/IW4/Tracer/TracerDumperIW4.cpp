@@ -58,8 +58,8 @@ namespace tracer
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_TRACER);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_TRACER);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_TRACER, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -71,7 +71,7 @@ namespace tracer
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_TRACER);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_TRACER);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }

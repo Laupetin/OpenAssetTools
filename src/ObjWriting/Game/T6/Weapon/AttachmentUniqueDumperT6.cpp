@@ -137,8 +137,8 @@ namespace attachment_unique
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -150,7 +150,7 @@ namespace attachment_unique
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }

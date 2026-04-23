@@ -741,8 +741,8 @@ namespace weapon
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_WEAPON);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_WEAPON);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_WEAPON, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -754,7 +754,7 @@ namespace weapon
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_WEAPON);
             stream.write(stringValue.c_str(), stringValue.size());
         }
 

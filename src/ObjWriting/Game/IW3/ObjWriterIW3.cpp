@@ -6,6 +6,7 @@
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
+#include "PhysPreset/PhysPresetInfoStringDumperIW3.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
@@ -14,7 +15,7 @@ using namespace IW3;
 
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
-    // REGISTER_DUMPER(AssetDumperPhysPreset)
+    RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW3>());
     // REGISTER_DUMPER(AssetDumperXAnimParts)
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW3>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW3>());

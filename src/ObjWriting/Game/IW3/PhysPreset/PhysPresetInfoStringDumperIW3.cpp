@@ -1,16 +1,15 @@
-#include "PhysPresetInfoStringDumperIW4.h"
+#include "PhysPresetInfoStringDumperIW3.h"
 
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/PhysPreset/PhysPresetFields.h"
+#include "Game/IW3/InfoString/InfoStringFromStructConverter.h"
+#include "Game/IW3/ObjConstantsIW3.h"
+#include "Game/IW3/PhysPreset/PhysPresetFields.h"
 #include "PhysPreset/PhysPresetCommon.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cmath>
+#include <limits>
 #include <type_traits>
 
-using namespace IW4;
+using namespace IW3;
 
 namespace
 {
@@ -34,10 +33,10 @@ namespace
 
     void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
     {
-        physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
+        physPresetInfo->mass = physPreset->mass;
         physPresetInfo->bounce = physPreset->bounce;
 
-        if (std::isinf(physPreset->friction))
+        if (physPreset->friction >= std::numeric_limits<float>::max())
         {
             physPresetInfo->isFrictionInfinity = 1;
             physPresetInfo->friction = 0;
@@ -54,7 +53,6 @@ namespace
         physPresetInfo->piecesSpreadFraction = physPreset->piecesSpreadFraction;
         physPresetInfo->piecesUpwardVelocity = physPreset->piecesUpwardVelocity;
         physPresetInfo->tempDefaultToCylinder = physPreset->tempDefaultToCylinder ? 1 : 0;
-        physPresetInfo->perSurfaceSndAlias = physPreset->perSurfaceSndAlias ? 1 : 0;
     }
 
     InfoString CreateInfoString(const XAssetInfo<PhysPreset>& asset)
@@ -80,7 +78,7 @@ namespace
 
 namespace phys_preset
 {
-    void InfoStringDumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysPreset::Type>& asset)
+    void InfoStringDumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetPhysPreset::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

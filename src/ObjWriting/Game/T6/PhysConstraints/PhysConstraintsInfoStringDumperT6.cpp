@@ -67,8 +67,8 @@ namespace phys_constraints
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_PHYS_CONSTRAINTS);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_PHYS_CONSTRAINTS, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -80,7 +80,7 @@ namespace phys_constraints
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_PHYS_CONSTRAINTS);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }

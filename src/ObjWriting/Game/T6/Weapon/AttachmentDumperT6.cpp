@@ -73,8 +73,8 @@ namespace attachment
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_WEAPON_ATTACHMENT);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_WEAPON_ATTACHMENT, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -86,7 +86,7 @@ namespace attachment
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_WEAPON_ATTACHMENT);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }

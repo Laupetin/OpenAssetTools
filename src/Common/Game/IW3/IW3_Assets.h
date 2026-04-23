@@ -165,6 +165,20 @@ namespace IW3
         bool tempDefaultToCylinder;
     };
 
+    struct PhysPresetInfo
+    {
+        float mass;
+        float bounce;
+        float friction;
+        int isFrictionInfinity;
+        float bulletForceScale;
+        float explosiveForceScale;
+        const char* sndAliasPrefix;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        int tempDefaultToCylinder;
+    };
+
     union XAnimIndices
     {
         char* _1;
