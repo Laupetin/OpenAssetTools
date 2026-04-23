@@ -5,9 +5,8 @@
 #include "Game/IW3/PhysPreset/PhysPresetFields.h"
 #include "PhysPreset/PhysPresetCommon.h"
 
-#include <algorithm>
+#include <limits>
 #include <cassert>
-#include <cmath>
 #include <type_traits>
 
 using namespace IW3;
