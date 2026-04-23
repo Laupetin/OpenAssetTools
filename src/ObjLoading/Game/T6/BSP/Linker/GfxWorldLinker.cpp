@@ -19,6 +19,12 @@ namespace
 
         return result;
     }
+
+    constexpr const char* DEFAULT_IMAGE_NAME = ",mc/lambert1";
+    constexpr char EMPTY_LIGHTMAP_INDEX = 0;
+    constexpr char EMPTY_RPROBE_INDEX = 0;
+    constexpr float XMODEL_CULL_DIST = 10000.0f;
+    constexpr char DEFAULT_LIGHTGRID_COLOUR = 32;
 } // namespace
 
 namespace BSP
@@ -99,12 +105,12 @@ namespace BSP
             if (bspMaterial.materialType == MATERIAL_TYPE_TEXTURE)
                 materialName = bspMaterial.materialName;
             else // MATERIAL_TYPE_COLOUR
-                materialName = BSPLinkingConstants::COLOR_ONLY_IMAGE_NAME;
+                materialName = DEFAULT_IMAGE_NAME;
 
             auto surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(materialName);
             if (surfMaterialAsset == nullptr)
             {
-                surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(BSPLinkingConstants::MISSING_IMAGE_NAME);
+                surfMaterialAsset = m_context.LoadDependency<AssetMaterial>(DEFAULT_IMAGE_NAME);
                 assert(surfMaterialAsset != nullptr);
             }
             gfxSurface->material = surfMaterialAsset->Asset();
@@ -138,9 +144,9 @@ namespace BSP
             if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NOCASTSHADOW].surfaceFlags) == 0)
                 gfxSurface->flags |= GFX_SURFACE_CASTS_SHADOW;
 
-            gfxSurface->primaryLightIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHT;
-            gfxSurface->lightmapIndex = BSPEditableConstants::DEFAULT_SURFACE_LIGHTMAP;
-            gfxSurface->reflectionProbeIndex = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
+            gfxSurface->primaryLightIndex = SUN_LIGHT_INDEX;
+            gfxSurface->lightmapIndex = EMPTY_LIGHTMAP_INDEX;
+            gfxSurface->reflectionProbeIndex = EMPTY_RPROBE_INDEX;
 
             // unknown value
             gfxSurface->tris.himipRadiusInvSq = 0.0f;
@@ -210,9 +216,9 @@ namespace BSP
             if (!bspModel.doesCastShadow)
                 currModel->flags |= STATIC_MODEL_FLAG_NO_SHADOW;
 
-            currModel->cullDist = 10000.0f;
-            currModel->primaryLightIndex = 1;
-            currModel->reflectionProbeIndex = 0;
+            currModel->cullDist = XMODEL_CULL_DIST;
+            currModel->primaryLightIndex = SUN_LIGHT_INDEX;
+            currModel->reflectionProbeIndex = EMPTY_LIGHTMAP_INDEX;
             currModel->smid = modelIdx;
 
             // unknown use / unused
@@ -392,8 +398,8 @@ namespace BSP
     void GfxWorldLinker::loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // there must be 2 or more lights, first is the static light and second is the sun light
-        gfxWorld->primaryLightCount = BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT + static_cast<unsigned int>(bsp->lights.size());
-        gfxWorld->sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
+        gfxWorld->primaryLightCount = BSP_DEFAULT_LIGHT_COUNT + static_cast<unsigned int>(bsp->lights.size());
+        gfxWorld->sunPrimaryLightIndex = SUN_LIGHT_INDEX;
 
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
         for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
@@ -446,7 +452,7 @@ namespace BSP
 
         gfxWorld->lightGrid.rowAxis = 0; // default value
         gfxWorld->lightGrid.colAxis = 1; // default value
-        gfxWorld->lightGrid.sunPrimaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
+        gfxWorld->lightGrid.sunPrimaryLightIndex = SUN_LIGHT_INDEX;
         gfxWorld->lightGrid.offset = 0.0f; // default value
 
         // setting all rowDataStart indexes to 0 will always index the first row in rawRowData
@@ -471,12 +477,12 @@ namespace BSP
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
             entryArray[i].colorsIndex = 0; // always index first colour
-            entryArray[i].primaryLightIndex = BSPGameConstants::SUN_LIGHT_INDEX;
+            entryArray[i].primaryLightIndex = SUN_LIGHT_INDEX;
             entryArray[i].visibility = 0;
         }
         gfxWorld->lightGrid.entries = entryArray;
 
-        char color = 32;
+        char color = DEFAULT_LIGHTGRID_COLOUR;
         float sunIntensity = bsp->sunlight.intensity;
         if (sunIntensity < 0.0f || sunIntensity > 20000.0f)
             con::warn("Sun intensity ({}) needs to be between 0 and 20000", sunIntensity);
@@ -534,7 +540,7 @@ namespace BSP
         // there is only 1 reflection probe
         gfxWorld->cells[0].reflectionProbeCount = 1;
         gfxWorld->cells[0].reflectionProbes = m_memory.Alloc<char>(gfxWorld->cells[0].reflectionProbeCount);
-        gfxWorld->cells[0].reflectionProbes[0] = BSPEditableConstants::DEFAULT_SURFACE_REFLECTION_PROBE;
+        gfxWorld->cells[0].reflectionProbes[0] = EMPTY_RPROBE_INDEX;
 
         // AABB trees are used to detect what should be rendered and what shouldn't
         // Just use the first AABB node to hold all models, no optimisation but all models/surfaces wil lbe drawn
