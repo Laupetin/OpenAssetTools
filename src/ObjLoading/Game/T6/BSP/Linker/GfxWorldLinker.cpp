@@ -807,11 +807,11 @@ namespace BSP
         gfxWorld->outdoorLookupMatrix[3].z = zScale;
         gfxWorld->outdoorLookupMatrix[3].w = 1.0f;
 
-        std::string outdoorImageName = std::string("$outdoor");
+        std::string outdoorImageName = std::string("$white");
         auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
         if (outdoorImageAsset == nullptr)
         {
-            con::error("ERROR! unable to find outdoor image $outdoor!");
+            con::error("ERROR! unable to find outdoor image!");
             return false;
         }
         gfxWorld->outdoorImage = outdoorImageAsset->Asset();
