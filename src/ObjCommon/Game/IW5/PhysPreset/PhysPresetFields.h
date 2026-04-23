@@ -25,5 +25,3 @@ namespace IW5
         {"perSurfaceSndAlias",    offsetof(PhysPresetInfo, perSurfaceSndAlias),    CSPFT_QBOOLEAN},
     };
 }
-
-
