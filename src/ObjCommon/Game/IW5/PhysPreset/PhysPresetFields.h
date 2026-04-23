@@ -4,11 +4,6 @@
 
 namespace IW5
 {
-    inline const char* szPhysPresetScalingNames[]{
-        "linear",
-        "quadratic",
-    };
-
     inline cspField_t phys_preset_fields[]{
         {"name",                  offsetof(PhysPresetInfo, name),                  CSPFT_STRING  },
         {"type",                  offsetof(PhysPresetInfo, type),                  CSPFT_INT     },
