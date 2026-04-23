@@ -117,8 +117,8 @@ namespace vehicle
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_VEHICLE);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_VEHICLE);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_VEHICLE, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -130,7 +130,7 @@ namespace vehicle
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_VEHICLE);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_VEHICLE);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }

@@ -25,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto* gdtEntry = m_gdt.GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
+            const auto* gdtEntry = m_gdt.GetGdtEntryByGdfAndName(GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
             if (gdtEntry == nullptr)
                 return AssetCreationResult::NoAction();
 

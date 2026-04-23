@@ -1342,7 +1342,7 @@ namespace
         {
             return AssetCreationResult::NoAction();
             /*
-            const auto* entry = m_gdt.GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_MATERIAL, assetName);
+            const auto* entry = m_gdt.GetGdtEntryByGdfAndName(GDF_FILENAME_MATERIAL, assetName);
             if (!entry)
                 return AssetCreationResult::NoAction();
 

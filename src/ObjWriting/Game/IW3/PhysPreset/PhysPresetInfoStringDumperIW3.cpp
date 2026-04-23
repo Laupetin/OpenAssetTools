@@ -84,8 +84,8 @@ namespace phys_preset
         if (context.m_gdt)
         {
             const auto infoString = CreateInfoString(asset);
-            GdtEntry gdtEntry(asset.m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
-            infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_PHYS_PRESET);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
         }
         else
@@ -97,7 +97,7 @@ namespace phys_preset
 
             auto& stream = *assetFile;
             const auto infoString = CreateInfoString(asset);
-            const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_PHYS_PRESET);
             stream.write(stringValue.c_str(), stringValue.size());
         }
     }
