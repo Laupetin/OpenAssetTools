@@ -4,6 +4,12 @@
 
 #include <numbers>
 
+namespace
+{
+    constexpr const char* DEFAULT_LIGHTDEF_NAME = "white_light";
+    constexpr short LIGHT_CULLDIST = 10000;
+} // namespace
+
 namespace BSP
 {
     ComWorldLinker::ComWorldLinker(MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
@@ -16,10 +22,10 @@ namespace BSP
     bool ComWorldLinker::createLightDefs()
     {
         T6::GfxLightDef* lightDef2d = m_memory.Alloc<T6::GfxLightDef>();
-        lightDef2d->name = m_memory.Dup("white_light");
+        lightDef2d->name = m_memory.Dup(DEFAULT_LIGHTDEF_NAME);
         lightDef2d->lmapLookupStart = 0;            // always 0
         lightDef2d->attenuation.samplerState = 115; // always 115
-        auto image2dAsset = m_context.LoadDependency<T6::AssetImage>("whitesquare");
+        auto image2dAsset = m_context.LoadDependency<T6::AssetImage>(",$white");
         if (image2dAsset == nullptr)
             return false;
         lightDef2d->attenuation.image = image2dAsset->Asset();
@@ -36,7 +42,7 @@ namespace BSP
         comWorld->isInUse = 1;
 
         // first two lights are the empty light and the sun light.
-        size_t totalLightCount = bsp->lights.size() + BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT;
+        size_t totalLightCount = bsp->lights.size() + BSP_DEFAULT_LIGHT_COUNT;
         comWorld->primaryLightCount = static_cast<unsigned int>(totalLightCount);
         comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(totalLightCount);
 
@@ -49,9 +55,9 @@ namespace BSP
         for (size_t lightIdx = 0; lightIdx < totalLightCount; lightIdx++)
         {
             ComPrimaryLight* light = &comWorld->primaryLights[lightIdx];
-            if (lightIdx == BSPGameConstants::EMPTY_LIGHT_INDEX)
+            if (lightIdx == EMPTY_LIGHT_INDEX)
                 continue; // first (empty) light has no data
-            else if (lightIdx == BSPGameConstants::SUN_LIGHT_INDEX)
+            else if (lightIdx == SUN_LIGHT_INDEX)
             {
                 BSPLight* bspLight = &bsp->sunlight;
 
@@ -68,7 +74,7 @@ namespace BSP
             }
             else
             {
-                BSPLight* bspLight = &bsp->lights.at(lightIdx - BSPGameConstants::BSP_DEFAULT_LIGHT_COUNT);
+                BSPLight* bspLight = &bsp->lights.at(lightIdx - BSP_DEFAULT_LIGHT_COUNT);
 
                 light->type = GFX_LIGHT_TYPE_SPOT;
 
@@ -103,8 +109,8 @@ namespace BSP
                 light->aAbB.z = 0.75f;
                 light->aAbB.w = 1.0f;
 
-                light->cullDist = 10000;
-                light->defName = "white_light";
+                light->cullDist = LIGHT_CULLDIST;
+                light->defName = DEFAULT_LIGHTDEF_NAME;
                 light->rotationLimit = 1.0f;    // 1.0f - doesn't rotate, -1.0f - unclamped rotation
                 light->translationLimit = 0.0f; // 0.0f - doesn't translate, above 0.0f - distance per game update translated
                 light->roundness = 1.0f;        // 0.0f - light is a square. 1.0f - light is a circle
