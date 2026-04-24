@@ -54,7 +54,7 @@ jobs:
           enable_x86: ${{ case(matrix.build_arch == 'x86', 'true', 'false') }}
 
       - name: Install node
-        uses: actions/setup-node@v6.3.0
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: 24
 
@@ -105,7 +105,7 @@ jobs:
     runs-on: windows-2025-vs2026
     steps:
       - name: Install node
-        uses: actions/setup-node@v6.3.0
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: 24
 
