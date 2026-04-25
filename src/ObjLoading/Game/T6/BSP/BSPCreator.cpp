@@ -917,18 +917,16 @@ namespace
             BSPEntity entity;
 
             std::string classname = node.extras->at("classname");
-            if (!classname.compare("script_brushmodel_gfx") || !classname.compare("script_brushmodel_tris"))
+            if (!classname.compare("script_brushmodel_gfx"))
                 entity.modelIndex = addScriptTerrainModel(jRoot, node, nodeMatrix);
-            else if ((!classname.compare("script_brushmodel_box") || !classname.compare("script_brushmodel"))
-                     || (classname.starts_with("trigger_") || !classname.compare("info_volume")))
+            else if (!classname.compare("script_brushmodel") || (classname.starts_with("trigger_") || !classname.compare("info_volume")))
                 entity.modelIndex = addScriptBrushModel(jRoot, node, nodeMatrix);
             else
                 entity.modelIndex = 0;
 
             if (entity.modelIndex != 0 && node.extras->contains("model"))
             {
-                con::error("Node {} cannot have a model property when its class is a trigger, info_volume, script_brushmodel_gfx, script_brushmodel_tris, "
-                           "script_brushmodel_box or script_brushmodel");
+                con::error("Node {} cannot have a model property when its class is a trigger, info_volume, script_brushmodel_gfx or script_brushmodel");
                 return false;
             }
 
@@ -939,8 +937,7 @@ namespace
                 if (!key.compare("origin") || !key.compare("angles") || !key.compare("flags"))
                     continue;
 
-                if (!key.compare("classname")
-                    && (!value.compare("script_brushmodel_gfx") || !value.compare("script_brushmodel_tris") || !value.compare("script_brushmodel_box")))
+                if (!key.compare("classname") && !value.compare("script_brushmodel_gfx"))
                     value = "script_brushmodel";
 
                 BSPEntityEntry entry;
