@@ -17,6 +17,7 @@
 #include "StringTable/StringTableDumperIW5.h"
 #include "Weapon/AttachmentJsonDumperIW5.h"
 #include "Weapon/WeaponDumperIW5.h"
+#include "Font/FontFileDumperIW5.h"
 
 using namespace IW5;
 
@@ -50,7 +51,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     // REGISTER_DUMPER(AssetDumperGfxLightDef)
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::DumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuDumperIW5>());
     RegisterAssetDumper(std::make_unique<localize::DumperIW5>());

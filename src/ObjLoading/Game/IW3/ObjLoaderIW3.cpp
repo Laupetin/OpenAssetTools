@@ -14,6 +14,7 @@
 #include "ObjLoading.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
+#include "Font/AssetLoaderFontIW3.h"
 
 #include <memory>
 
@@ -110,7 +111,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW3(memory, searchPath, zone));
