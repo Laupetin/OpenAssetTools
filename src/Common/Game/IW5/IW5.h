@@ -197,6 +197,13 @@ namespace IW5
         WAFT_NUM_FIELD_TYPES,
     };
 
+    enum physPresetFieldType_t
+    {
+        PPFT_SCALING = WAFT_NUM_FIELD_TYPES,
+
+        PPFT_NUM_FIELD_TYPES,
+    };
+
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysCollMap = Asset<ASSET_TYPE_PHYSCOLLMAP, PhysCollmap>;
     using AssetXAnim = Asset<ASSET_TYPE_XANIMPARTS, XAnimParts>;
