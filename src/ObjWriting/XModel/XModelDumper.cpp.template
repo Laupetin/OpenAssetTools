@@ -198,7 +198,15 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
+#ifdef FEATURE_IW3
+            // IW3 has some models that are missing 1 (a single) tri in its first lod.
+            // It is not contained in any vert list or blend
+            // I think this is a bug (?), so omit anyway.
+            // The "one tri missing" is not supported by the exporter anyway.
+            if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.vertCount != surface.vertCount)
+#else
             if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.triCount != surface.triCount || vertList.vertCount != surface.vertCount)
+#endif
                 return false;
         }
 
