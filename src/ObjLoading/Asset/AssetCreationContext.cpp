@@ -12,9 +12,9 @@ namespace
         assert(assetInfo.m_zone != nullptr);
 
         if (assetInfo.m_zone == &targetZone)
-            return "project source";
+            return "(src: disk)";
 
-        return std::format(R"(loaded zone "{}")", assetInfo.m_zone->m_name);
+        return std::format("(src: {})", assetInfo.m_zone->m_name);
     }
 } // namespace
 
@@ -166,7 +166,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         if (!result.HasFailed())
         {
             auto* assetInfo = result.GetAssetInfo();
-            con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
+            con::info(R"(Loaded {} "{}" {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
             return assetInfo;
         }
 
@@ -222,7 +222,7 @@ IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(c
     if (result.HasTakenAction() && !result.HasFailed())
     {
         auto* assetInfo = result.GetAssetInfo();
-        con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
+        con::info(R"(Loaded {} "{}" {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
     }
     else if (!result.HasTakenAction() && !result.HasFailed())
     {
@@ -265,7 +265,7 @@ XAssetInfoGeneric* AssetCreationContext::ForceLoadDependencyGeneric(const asset_
         if (!result.HasFailed())
         {
             auto* assetInfo = result.GetAssetInfo();
-            con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
+            con::info(R"(Loaded {} "{}" {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
             return assetInfo;
         }
 
