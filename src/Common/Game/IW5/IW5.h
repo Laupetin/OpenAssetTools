@@ -199,7 +199,7 @@ namespace IW5
 
     enum physPresetFieldType_t
     {
-        PPFT_SCALING = WAFT_NUM_FIELD_TYPES,
+        PPFT_SCALING = CSPFT_NUM_BASE_FIELD_TYPES,
 
         PPFT_NUM_FIELD_TYPES,
     };
