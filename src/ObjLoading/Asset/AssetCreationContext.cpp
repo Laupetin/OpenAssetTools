@@ -5,6 +5,19 @@
 #include <cassert>
 #include <format>
 
+namespace
+{
+    std::string GetAssetSourceDescription(const Zone& targetZone, const XAssetInfoGeneric& assetInfo)
+    {
+        assert(assetInfo.m_zone != nullptr);
+
+        if (assetInfo.m_zone == &targetZone)
+            return "project source";
+
+        return std::format(R"(loaded zone "{}")", assetInfo.m_zone->m_name);
+    }
+} // namespace
+
 IgnoredAssetLookup::IgnoredAssetLookup() = default;
 
 IgnoredAssetLookup::IgnoredAssetLookup(const AssetList& assetList)
@@ -152,8 +165,9 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
     {
         if (!result.HasFailed())
         {
-            con::info(R"(Loaded {} "{}")", assetTypeName, assetName);
-            return result.GetAssetInfo();
+            auto* assetInfo = result.GetAssetInfo();
+            con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
+            return assetInfo;
         }
 
         con::error(R"(Could not load asset "{}" of type "{}")", assetName, assetTypeName);
@@ -207,7 +221,8 @@ IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(c
     const auto result = m_creators->CreateAsset(assetType, assetName, *this);
     if (result.HasTakenAction() && !result.HasFailed())
     {
-        con::info(R"(Loaded {} "{}")", assetTypeName, assetName);
+        auto* assetInfo = result.GetAssetInfo();
+        con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
     }
     else if (!result.HasTakenAction() && !result.HasFailed())
     {
@@ -249,8 +264,9 @@ XAssetInfoGeneric* AssetCreationContext::ForceLoadDependencyGeneric(const asset_
     {
         if (!result.HasFailed())
         {
-            con::info(R"(Loaded {} "{}")", assetTypeName, assetName);
-            return result.GetAssetInfo();
+            auto* assetInfo = result.GetAssetInfo();
+            con::info(R"(Loaded {} "{}" from {})", assetTypeName, assetName, GetAssetSourceDescription(m_zone, *assetInfo));
+            return assetInfo;
         }
 
         con::error(R"(Could not load asset "{}" of type "{}")", assetName, assetTypeName);
