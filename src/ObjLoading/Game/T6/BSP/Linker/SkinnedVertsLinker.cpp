@@ -11,10 +11,11 @@ namespace BSP
 
     SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(BSPData* bsp)
     {
-        // Pretty sure maxSkinnedVerts relates to the max amount of xmodel skinned verts a map will have
+        // maxSkinnedVerts defines how many model verts can be drawn at once
+        // Low values cause models not to be drawn, so double origin's maxSkinnedVerts is used as a safe bet
         SkinnedVertsDef* skinnedVerts = m_memory.Alloc<SkinnedVertsDef>();
         skinnedVerts->name = m_memory.Dup("skinnedverts");
-        skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(bsp->gfxWorld.xmodels.size() * 1000);
+        skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(300000);
 
         return skinnedVerts;
     }
