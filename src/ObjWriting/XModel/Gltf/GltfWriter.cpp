@@ -23,6 +23,7 @@ namespace
     {
         float coordinates[3];
         float normal[3];
+        float color[4];
         float uv[2];
     };
 
@@ -190,6 +191,7 @@ namespace
 
                 primitives.attributes.POSITION = m_position_accessor;
                 primitives.attributes.NORMAL = m_normal_accessor;
+                primitives.attributes.COLOR_0 = m_color_accessor;
                 primitives.attributes.TEXCOORD_0 = m_uv_accessor;
 
                 if (hasBoneWeightData)
@@ -455,6 +457,15 @@ namespace
             m_normal_accessor = static_cast<unsigned>(gltf.accessors->size());
             gltf.accessors->emplace_back(normalAccessor);
 
+            JsonAccessor colorAccessor;
+            colorAccessor.bufferView = m_vertex_buffer_view;
+            colorAccessor.byteOffset = static_cast<unsigned>(offsetof(GltfVertex, color));
+            colorAccessor.componentType = JsonAccessorComponentType::FLOAT;
+            colorAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
+            colorAccessor.type = JsonAccessorType::VEC4;
+            m_color_accessor = static_cast<unsigned>(gltf.accessors->size());
+            gltf.accessors->emplace_back(colorAccessor);
+
             JsonAccessor uvAccessor;
             uvAccessor.bufferView = m_vertex_buffer_view;
             uvAccessor.byteOffset = static_cast<unsigned>(offsetof(GltfVertex, uv));
@@ -544,6 +555,11 @@ namespace
                 vertex->normal[1] = commonVertex.normal[1];
                 vertex->normal[2] = commonVertex.normal[2];
                 LhcToRhcCoordinates(vertex->normal);
+
+                vertex->color[0] = commonVertex.color[0];
+                vertex->color[1] = commonVertex.color[1];
+                vertex->color[2] = commonVertex.color[2];
+                vertex->color[3] = commonVertex.color[3];
 
                 vertex->uv[0] = commonVertex.uv[0];
                 vertex->uv[1] = commonVertex.uv[1];
@@ -681,6 +697,7 @@ namespace
         unsigned m_first_bone_node = 0u;
         unsigned m_position_accessor = 0u;
         unsigned m_normal_accessor = 0u;
+        unsigned m_color_accessor = 0u;
         unsigned m_uv_accessor = 0u;
         unsigned m_joints_accessor = 0u;
         unsigned m_weights_accessor = 0u;
