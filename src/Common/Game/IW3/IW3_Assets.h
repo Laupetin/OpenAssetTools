@@ -2879,6 +2879,7 @@ namespace IW3
         HITLOC_L_LEG_LWR = 0xF,
         HITLOC_R_FOOT = 0x10,
         HITLOC_L_FOOT = 0x11,
+        HITLOC_GUN = 0x12,
 
         HITLOC_COUNT,
     };

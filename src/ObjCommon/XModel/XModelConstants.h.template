@@ -17,7 +17,7 @@
 #endif
 
 // This file was templated.
-// See JsonXModel.h.template.
+// See XModelConstants.h.template.
 // Do not modify, changes will be lost.
 #pragma once
 
@@ -48,11 +48,9 @@ namespace GAME
         "left_leg_lower",
         "right_foot",
         "left_foot",
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5) || defined(FEATURE_T6)
         "gun",
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T6)
         "shield",
-#endif
 #endif
     };
     static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
