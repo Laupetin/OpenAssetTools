@@ -1009,7 +1009,7 @@ namespace
 
             xmodel.numsurfs = static_cast<decltype(XModel::numsurfs)>(m_surfaces.size());
 
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
 #endif
