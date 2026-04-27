@@ -198,7 +198,11 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
+#ifdef FEATURE_IW3
+            if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.vertCount != surface.vertCount)
+#else
             if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.triCount != surface.triCount || vertList.vertCount != surface.vertCount)
+#endif
                 return false;
         }
 
