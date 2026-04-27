@@ -710,7 +710,7 @@ namespace BSP
         gfxWorld->draw.reflectionProbes[0].probeVolumeCount = 0;
         gfxWorld->draw.reflectionProbes[0].probeVolumes = nullptr;
 
-        std::string probeImageName = "$white";
+        std::string probeImageName = ",$black";
         auto probeImageAsset = m_context.LoadDependency<AssetImage>(probeImageName);
         if (probeImageAsset == nullptr)
         {
@@ -729,7 +729,7 @@ namespace BSP
         gfxWorld->draw.lightmapPrimaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
         gfxWorld->draw.lightmapSecondaryTextures = m_memory.Alloc<GfxTexture>(gfxWorld->draw.lightmapCount);
 
-        std::string secondaryTexture = ",$white";
+        std::string secondaryTexture = ",$gray"; //  gray makes shadows a nice looking shade of black
         auto secondaryTextureAsset = m_context.LoadDependency<AssetImage>(secondaryTexture);
         if (secondaryTextureAsset == nullptr)
         {
@@ -813,7 +813,7 @@ namespace BSP
         gfxWorld->outdoorLookupMatrix[3].z = zScale;
         gfxWorld->outdoorLookupMatrix[3].w = 1.0f;
 
-        std::string outdoorImageName = std::string("$white");
+        std::string outdoorImageName = std::string(",$black");
         auto outdoorImageAsset = m_context.LoadDependency<AssetImage>(outdoorImageName);
         if (outdoorImageAsset == nullptr)
         {
