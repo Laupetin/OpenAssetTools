@@ -45,9 +45,7 @@ namespace
 
     void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
     {
-        physPresetInfo->name = physPreset->name;
-        physPresetInfo->type = physPreset->type;
-        physPresetInfo->mass = std::clamp(physPreset->mass, 1.0f, 2000.0f);
+        physPresetInfo->mass = physPreset->mass, 1.0f, 2000.0f;
         physPresetInfo->bounce = physPreset->bounce;
         physPresetInfo->friction = physPreset->friction;
         physPresetInfo->bulletForceScale = physPreset->bulletForceScale;
@@ -59,24 +57,8 @@ namespace
         physPresetInfo->maxMomentum = physPreset->maxMomentum;
         physPresetInfo->minPitch = physPreset->minPitch;
         physPresetInfo->maxPitch = physPreset->maxPitch;
-        if (physPreset->volumeType == PHYSPRESET_SCALING_LINEAR || physPreset->volumeType == PHYSPRESET_SCALING_QUADRATIC)
-        {
-            physPresetInfo->volumeType = physPreset->volumeType;
-        }
-        else
-        {
-            // If type is invalid, assume linear
-            physPresetInfo->volumeType = PHYSPRESET_SCALING_LINEAR;
-        }
-        if (physPreset->pitchType == PHYSPRESET_SCALING_LINEAR || physPreset->pitchType == PHYSPRESET_SCALING_QUADRATIC)
-        {
-            physPresetInfo->pitchType = physPreset->pitchType;
-        }
-        else
-        {
-            // If type is invalid, assume linear
-            physPresetInfo->pitchType = PHYSPRESET_SCALING_LINEAR;
-        }
+        physPresetInfo->volumeType = physPreset->volumeType;
+        physPresetInfo->pitchType = physPreset->pitchType;
         physPresetInfo->tempDefaultToCylinder = physPreset->tempDefaultToCylinder ? 1 : 0;
         physPresetInfo->perSurfaceSndAlias = physPreset->perSurfaceSndAlias ? 1 : 0;
     }

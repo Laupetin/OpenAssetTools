@@ -203,8 +203,6 @@ namespace IW5
 
     struct PhysPresetInfo
     {
-        const char* name;
-        int type;
         float mass;
         float bounce;
         float friction;
