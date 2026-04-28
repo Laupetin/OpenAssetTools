@@ -5,8 +5,6 @@
 namespace IW5
 {
     inline cspField_t phys_preset_fields[]{
-        {"name",                  offsetof(PhysPresetInfo, name),                  CSPFT_STRING  },
-        {"type",                  offsetof(PhysPresetInfo, type),                  CSPFT_INT     },
         {"mass",                  offsetof(PhysPresetInfo, mass),                  CSPFT_FLOAT   },
         {"bounce",                offsetof(PhysPresetInfo, bounce),                CSPFT_FLOAT   },
         {"friction",              offsetof(PhysPresetInfo, friction),              CSPFT_FLOAT   },
