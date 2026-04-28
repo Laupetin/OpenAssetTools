@@ -11,7 +11,7 @@ The following section specify which assets are supported to be dumped to disk (u
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 | -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
-| PhysPreset           | ✅              | ❌              |                                                                              |
+| PhysPreset           | ✅              | ✅              |                                                                              |
 | XAnimParts           | ❌              | ❌              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
