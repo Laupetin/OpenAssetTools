@@ -45,7 +45,7 @@ namespace
 
     void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
     {
-        physPresetInfo->mass = physPreset->mass, 1.0f, 2000.0f;
+        physPresetInfo->mass = physPreset->mass;
         physPresetInfo->bounce = physPreset->bounce;
         physPresetInfo->friction = physPreset->friction;
         physPresetInfo->bulletForceScale = physPreset->bulletForceScale;
