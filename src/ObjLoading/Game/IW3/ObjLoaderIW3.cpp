@@ -12,6 +12,8 @@
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
+#include "PhysPreset/GdtLoaderPhysPresetIW3.h"
+#include "PhysPreset/RawLoaderPhysPresetIW3.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
 
@@ -93,7 +95,8 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
+        collection.AddAssetCreator(phys_preset::CreateRawLoaderIW3(memory, searchPath, zone));
+        collection.AddAssetCreator(phys_preset::CreateGdtLoaderIW3(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         collection.AddAssetCreator(xmodel::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW3(memory, searchPath));
