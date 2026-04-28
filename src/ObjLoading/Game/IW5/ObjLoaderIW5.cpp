@@ -14,6 +14,8 @@
 #include "Material/LoaderMaterialIW5.h"
 #include "Menu/LoaderMenuListIW5.h"
 #include "ObjLoading.h"
+#include "PhysPreset/GdtLoaderPhysPresetIW5.h"
+#include "PhysPreset/RawLoaderPhysPresetIW5.h"
 #include "RawFile/LoaderRawFileIW5.h"
 #include "Script/LoaderScriptFileIW5.h"
 #include "StringTable/LoaderStringTableIW5.h"
@@ -125,7 +127,8 @@ namespace
     {
         auto& memory = zone.Memory();
 
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
+        collection.AddAssetCreator(phys_preset::CreateRawLoaderIW5(memory, searchPath, zone));
+        collection.AddAssetCreator(phys_preset::CreateGdtLoaderIW5(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysCollMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
