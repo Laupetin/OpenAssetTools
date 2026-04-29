@@ -214,6 +214,7 @@ namespace
                                Eigen::Matrix4f& nodeMatrix,
                                size_t materialIndex,
                                bool convertWorldToLocalPos,
+                               const gltf::JsonNode& node,
                                BSPSurface& out_surface)
         {
             // clang-format off
@@ -270,7 +271,7 @@ namespace
                 throw GltfLoadException("Index count must be dividable by 3 for triangles");
             const auto faceCount = indexCount / 3u;
             if (faceCount > UINT16_MAX)
-                throw GltfLoadException(std::format("Face count ({}) exceeded the UINT16_MAX", faceCount));
+                throw GltfLoadException(std::format("Face count ({}) on node {} exceeded the UINT16_MAX", faceCount, node.name.value_or("unnamed node")));
 
             out_surface.vertexCount = static_cast<uint16_t>(vertexCount);
             out_surface.triCount = static_cast<uint16_t>(faceCount);
@@ -543,7 +544,7 @@ namespace
                     materialIndex = createMaterialWithFlags(materialIndex, node.extras->at("flags"));
 
                 BSPSurface surface;
-                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, false, surface);
+                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, false, node, surface);
                 m_curr_bsp_world->staticSurfaces.emplace_back(surface);
             }
 
@@ -838,7 +839,7 @@ namespace
                     materialIndex = m_emptyMaterialIndex;
 
                 BSPSurface surface;
-                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, true, surface);
+                CreateSurface(accessorsForVertex, nodeMatrix, materialIndex, true, node, surface);
                 m_curr_bsp_world->scriptSurfaces.emplace_back(surface);
             }
 
@@ -991,9 +992,11 @@ namespace
                 {
                     std::string classnameVal = node.extras->at("classname");
 
-                    if ((m_is_world_gfx && !classnameVal.compare("script_brushmodel_gfx")) // make sure only GFX loads script_brushmodel_gfx
-                        || (!m_is_world_gfx && classnameVal.compare("script_brushmodel_gfx")))
-                        return addClassNode(jRoot, node, nodeMatrix);
+                    if ((!m_is_world_gfx && !classnameVal.compare("script_brushmodel_gfx"))   // skip GFX brush in collision
+                        || (m_is_world_gfx && classnameVal.compare("script_brushmodel_gfx"))) // include GFX brush in graphics
+                        return false;
+
+                    return addClassNode(jRoot, node, nodeMatrix);
                 }
 
                 if (!m_is_world_gfx)
@@ -1022,8 +1025,8 @@ namespace
                 if (node.extras && node.extras->contains("flags"))
                     getSurfaceAndContentFlags(node.extras->at("flags"), surfaceFlags, contentFlags);
 
-                if (!m_is_world_gfx
-                    || ((surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) == 0)) // ignore if gfx mesh has nodraw flag
+                bool isNoDraw = (surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) != 0;
+                if (!m_is_world_gfx || (m_is_world_gfx && !isNoDraw)) // nodraw flag doesn't set faces to invisible, so remove it from the draw data
                     return addMeshNode(jRoot, node, nodeMatrix);
             }
 
@@ -1086,7 +1089,7 @@ namespace
                     material.materialColour.w = 1.0f;
 
                     material.surfaceFlags = 0;
-                    material.contentFlags = 0;
+                    material.contentFlags = 1; // all materials start out as solid
                     if (jsMaterial.extras && jsMaterial.extras->type)
                     {
                         bool foundType = false;
