@@ -126,7 +126,7 @@ The following section specify which assets are supported to be dumped to disk (u
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 | -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
-| PhysPreset           | ❌              | ❌              |                                                                              |
+| PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ❌              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
 | XAnimParts           | ❌              | ❌              |                                                                              |
