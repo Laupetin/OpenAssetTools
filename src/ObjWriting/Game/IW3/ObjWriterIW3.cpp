@@ -3,6 +3,7 @@
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
+#include "Sound/SndAliasDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
@@ -27,7 +28,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 #endif
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
-    // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
+    RegisterAssetDumper(std::make_unique<snd_alias_list::SndAliasListDumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndCurve)
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW3>());
     // REGISTER_DUMPER(AssetDumperClipMap)
