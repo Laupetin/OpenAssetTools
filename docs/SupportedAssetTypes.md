@@ -18,7 +18,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MaterialTechniqueSet | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ❌              | ❌              |                                                                              |
-| SndCurve             | ❌              | ❌              |                                                                              |
+| SndCurve             | ✅              | ✅              |                                                                              |
 | LoadedSound          | ✅              | ❌              |                                                                              |
 | clipMap_t            | ❌              | ❌              |                                                                              |
 | ComWorld             | ❌              | ❌              |                                                                              |
