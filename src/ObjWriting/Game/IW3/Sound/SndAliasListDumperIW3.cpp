@@ -89,7 +89,7 @@ namespace
             break;
         }
 
-        // TODO; Verify this 
+        // TODO; Verify this
         int type = (subAsset->flags >> 6) & 3;
         stream << ',';
         switch (type)
@@ -201,7 +201,7 @@ namespace
         }
     }
 
-    void DumpSndAliasList(const snd_alias_list_t* asset, std::ostream& stream) 
+    void DumpSndAliasList(const snd_alias_list_t* asset, std::ostream& stream)
     {
         const CsvWriter writer(stream);
 
@@ -264,4 +264,4 @@ namespace snd_alias_list
 
         DumpSndAliasList(soundAliasList, stream);
     }
-} // namespace sound
+} // namespace snd_alias_list

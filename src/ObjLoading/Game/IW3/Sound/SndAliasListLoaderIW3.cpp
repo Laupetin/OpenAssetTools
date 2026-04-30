@@ -11,7 +11,7 @@ using namespace IW3;
 
 namespace
 {
-    class SndAliasListLoader: public AssetCreator<AssetSound>
+    class SndAliasListLoader : public AssetCreator<AssetSound>
     {
     public:
         SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)

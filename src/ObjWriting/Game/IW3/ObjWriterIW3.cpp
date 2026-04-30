@@ -3,13 +3,13 @@
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
-#include "Sound/SndAliasListDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW3.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
+#include "Sound/SndAliasListDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
 
 using namespace IW3;

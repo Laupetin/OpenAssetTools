@@ -24,8 +24,7 @@ void CsvWriter::WriteRow(const std::vector<std::string>& values) const
     m_stream << "\n";
 }
 
-template<typename T>
-void CsvWriter::WriteNumericRow(const std::vector<T>& values) const
+template<typename T> void CsvWriter::WriteNumericRow(const std::vector<T>& values) const
 {
     for (size_t i = 0; i < values.size(); ++i)
     {
