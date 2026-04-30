@@ -29,38 +29,7 @@ namespace IW3
     };
 
     static const char* snd_alias_channel_names[] = {
-        "physics", 
-        "auto",   
-        "auto2",   
-        "autodog",  
-        "bulletimpact", 
-        "bulletwhizby", 
-        "element",  
-        "auto2d",       
-        "vehicle",  
-        "vehiclelimited", 
-        "menu",
-        "body",    
-        "body2d", 
-        "reload",  
-        "reload2d", 
-        "item",         
-        "effects1",     
-        "effects2", 
-        "weapon",       
-        "weapon2d", 
-        "nonshock",       
-        "voice",
-        "local",   
-        "local2", 
-        "ambient", 
-        "hurt",     
-        "player1",      
-        "player2",      
-        "music",    
-        "musicnopause", 
-        "mission",  
-        "announcer",      
-        "shellshock"
-    };
-}
+        "physics", "auto",   "auto2",   "autodog",  "bulletimpact", "bulletwhizby", "element",  "auto2d",       "vehicle",  "vehiclelimited", "menu",
+        "body",    "body2d", "reload",  "reload2d", "item",         "effects1",     "effects2", "weapon",       "weapon2d", "nonshock",       "voice",
+        "local",   "local2", "ambient", "hurt",     "player1",      "player2",      "music",    "musicnopause", "mission",  "announcer",      "shellshock"};
+} // namespace IW3

@@ -3,8 +3,8 @@
 #include "Sound/CsvWriter.h"
 #include "Utils/Logging/Log.h"
 
-#include <format>
 #include <Game/IW3/Sound/SndAliasListFields.h>
+#include <format>
 
 using namespace IW3;
 
@@ -44,17 +44,17 @@ namespace
 
         stream << ',';
         // TODO: Try to finish heuristic
-        //if (strstr(dir, "footsteps/"))
+        // if (strstr(dir, "footsteps/"))
         //{
         //    stream << "footstep";
 
         //    // TODO: Expand heuristic to check platform for mp.
-        //    // 
+        //    //
         //    // If channel is body & platform is !all_mp, set to 'footstep'
         //    // If channel is body & platform is none or all_mp, set to 'mpfootstep'
-        //    // If channel is body2d, set to 'footstepplr' 
+        //    // If channel is body2d, set to 'footstepplr'
         //}
-        //else if (strstr(dir, "battlechatter/"))
+        // else if (strstr(dir, "battlechatter/"))
         //{
         //    if (strstr(dir, "/ab/") || strstr(dir, "/ru/"))
         //    {
@@ -65,7 +65,7 @@ namespace
         //        stream << "chatteral";
         //    }
         //}
-        //else if (strstr(dir, "explosions/"))
+        // else if (strstr(dir, "explosions/"))
         //{
         //    stream << "explosion";
         //}
