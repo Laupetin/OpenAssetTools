@@ -26,7 +26,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | GameWorldMp          | ❌              | ❌              |                                                                              |
 | MapEnts              | ✅              | ❌              |                                                                              |
 | GfxWorld             | ❌              | ❌              |                                                                              |
-| GfxLightDef          | ❌              | ❌              |                                                                              |
+| GfxLightDef          | ✅              | ✅              |                                                                              |
 | Font_s               | ❌              | ❌              |                                                                              |
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
