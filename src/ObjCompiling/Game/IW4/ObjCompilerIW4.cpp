@@ -1,9 +1,11 @@
 #include "ObjCompilerIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Techset/PixelShaderCompilerIW4.h"
 #include "Game/IW4/Techset/TechniqueCompilerIW4.h"
 #include "Game/IW4/Techset/TechsetCompilerIW4.h"
 #include "Game/IW4/Techset/VertexDeclCompilerIW4.h"
+#include "Game/IW4/Techset/VertexShaderCompilerIW4.h"
 #include "Image/ImageIwdPostProcessor.h"
 #include "Material/CompilerMaterialIW4.h"
 
@@ -21,6 +23,8 @@ namespace
         collection.AddAssetCreator(material::CreateCompilerIW4(memory, searchPath, gdt));
 #endif
         collection.AddAssetCreator(techset::CreateVertexDeclCompilerIW4(memory));
+        collection.AddAssetCreator(techset::CreateVertexShaderCompilerIW4(memory, searchPath));
+        collection.AddAssetCreator(techset::CreatePixelShaderCompilerIW4(memory, searchPath));
         collection.AddAssetCreator(techset::CreateTechsetCompilerIW4(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW4(memory, zone, searchPath));
