@@ -272,6 +272,8 @@ namespace
             const auto faceCount = indexCount / 3u;
             if (faceCount > UINT16_MAX)
                 throw GltfLoadException(std::format("Face count ({}) on node {} exceeded the UINT16_MAX", faceCount, node.name.value_or("unnamed node")));
+            if (vertexCount > UINT16_MAX)
+                throw GltfLoadException(std::format("Vertex count ({}) on node {} exceeded the UINT16_MAX", vertexCount, node.name.value_or("unnamed node")));
 
             out_surface.vertexCount = static_cast<uint16_t>(vertexCount);
             out_surface.triCount = static_cast<uint16_t>(faceCount);
@@ -1013,17 +1015,17 @@ namespace
                     return addXModelNode(jRoot, node, nodeMatrix);
 
                 if (hasSpawnpoint)
-                        return addSpawnPointNode(node, nodeMatrix);
+                    return addSpawnPointNode(node, nodeMatrix);
 
-                    if (m_bsp->isZombiesMap)
-                    {
+                if (m_bsp->isZombiesMap)
+                {
                     if (hasZone)
-                            return addZoneNode(jRoot, node, nodeMatrix);
+                        return addZoneNode(jRoot, node, nodeMatrix);
 
                     if (hasSpawner)
-                            return addZSpawnerNode(node, nodeMatrix);
-                    }
+                        return addZSpawnerNode(node, nodeMatrix);
                 }
+            }
 
             if (node.mesh)
             {
@@ -1036,7 +1038,7 @@ namespace
                 if (m_is_world_gfx && isNoDraw)
                     return true;
 
-                    return addMeshNode(jRoot, node, nodeMatrix);
+                return addMeshNode(jRoot, node, nodeMatrix);
             }
 
             return false;
@@ -1354,6 +1356,7 @@ namespace BSP
         bsp->containsWorldspawn = false;
 
         con::warn("XModels don't support scale currently, keep it at 1 in your editor");
+        con::warn("All brushmodels, zones, triggers, and info_volumes must be an axis aligned box with 6 sides to work correctly.");
 
         BSPLoader loader(bsp.get());
         if (isGfxFileGltf)
@@ -1411,7 +1414,6 @@ namespace BSP
             bsp->sunlight.innerConeAngle = 0.0f;
             bsp->sunlight.outerConeAngle = 0.0f;
         }
-
         if (!bsp->containsIntermssion)
         {
             con::error("Map does not contain a mp_global_intermission class");
@@ -1420,6 +1422,23 @@ namespace BSP
         if (!bsp->containsWorldspawn)
         {
             con::error("Map does not contain a worldspawn class");
+            return nullptr;
+        }
+        if (bsp->spawnpoints.size() == 0)
+        {
+            con::error("Map must have spawn points!");
+            return nullptr;
+        }
+        if (bsp->gfxWorld.staticSurfaces.size() + bsp->gfxWorld.scriptSurfaces.size() == 0 || bsp->gfxWorld.vertices.size() == 0
+            || bsp->gfxWorld.indices.size() == 0)
+        {
+            con::error("GFX world has no surfaces, indicies or vertices!");
+            return nullptr;
+        }
+        if (bsp->colWorld.staticSurfaces.size() + bsp->colWorld.scriptSurfaces.size() == 0 || bsp->colWorld.vertices.size() == 0
+            || bsp->colWorld.indices.size() == 0)
+        {
+            con::error("Collision world has no surfaces, indicies or vertices!");
             return nullptr;
         }
 

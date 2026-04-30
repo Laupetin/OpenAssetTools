@@ -30,7 +30,7 @@ namespace BSP
         void loadVisibility(clipMap_t* clipMap);
         void loadDynEnts(clipMap_t* clipMap);
         void loadRopesAndConstraints(clipMap_t* clipMap);
-        void loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp);
+        bool loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp);
         bool loadXModelCollision(clipMap_t* clipMap, BSPData* bsp);
 
         std::vector<cplane_s> planeVec;

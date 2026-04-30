@@ -2,9 +2,6 @@
 
 #include "../BSPUtil.h"
 
-#include <nlohmann/json.hpp>
-using namespace nlohmann;
-
 namespace
 {
     inline const std::vector<const char*> DEFENDER_SPAWN_POINT_NAMES = {"mp_ctf_spawn_allies",
@@ -171,14 +168,6 @@ namespace BSP
 
         mapEnts->entityString = m_memory.Dup(entityString.c_str());
         mapEnts->numEntityChars = static_cast<int>(entityString.length() + 1); // numEntityChars includes the null character
-
-        // don't need these, unused by the game
-        mapEnts->trigger.count = 0;
-        mapEnts->trigger.models = nullptr;
-        mapEnts->trigger.hullCount = 0;
-        mapEnts->trigger.hulls = nullptr;
-        mapEnts->trigger.slabCount = 0;
-        mapEnts->trigger.slabs = nullptr;
 
         return mapEnts;
     }

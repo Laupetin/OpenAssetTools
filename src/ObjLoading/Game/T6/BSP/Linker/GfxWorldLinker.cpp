@@ -21,8 +21,9 @@ namespace
     }
 
     constexpr const char* DEFAULT_IMAGE_NAME = ",mc/lambert1";
-    constexpr char EMPTY_LIGHTMAP_INDEX = 0;
-    constexpr char EMPTY_RPROBE_INDEX = 0;
+    constexpr char DEFAULT_PRIMARYLIGHT_INDEX = 1; // max 254
+    constexpr char DEFAULT_LIGHTMAP_INDEX = 0;     // max 30
+    constexpr char DEFAULT_RPROBE_INDEX = 0;       // max 254
     constexpr float XMODEL_CULL_DIST = 10000.0f;
     constexpr char DEFAULT_LIGHTGRID_COLOUR = 32;
 } // namespace
@@ -65,7 +66,7 @@ namespace BSP
         size_t indexCount = bsp->gfxWorld.indices.size();
         assert(indexCount % 3 == 0);
         gfxWorld->draw.indexCount = static_cast<int>(indexCount);
-        gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount);
+        gfxWorld->draw.indices = m_memory.Alloc<uint16_t>(indexCount); // overflow checked in bspcreator
         static_assert(sizeof(bsp->gfxWorld.indices.data()[0]) == sizeof(uint16_t));
         memcpy(gfxWorld->draw.indices, bsp->gfxWorld.indices.data(), sizeof(uint16_t) * indexCount);
     }
@@ -77,6 +78,12 @@ namespace BSP
         size_t staticSurfaceCount = bsp->gfxWorld.staticSurfaces.size();
         size_t scriptSurfaceCount = bsp->gfxWorld.scriptSurfaces.size();
         size_t totalSurfaceCount = staticSurfaceCount + scriptSurfaceCount;
+
+        if (staticSurfaceCount > 0xffff)
+        {
+            con::error("There are more than 65535 Static surfaces. count: {}", staticSurfaceCount);
+            return false;
+        }
 
         // Static surfaces go first in the array then script surfaces after
         gfxWorld->surfaceCount = static_cast<int>(totalSurfaceCount);
@@ -91,9 +98,9 @@ namespace BSP
                 bspSurface = bsp->gfxWorld.scriptSurfaces.at(surfIdx - staticSurfaceCount);
             GfxSurface* gfxSurface = &gfxWorld->dpvs.surfaces[surfIdx];
 
-            gfxSurface->tris.triCount = bspSurface.triCount;
+            gfxSurface->tris.triCount = bspSurface.triCount; // overflow checked in bspcreator
             gfxSurface->tris.baseIndex = bspSurface.indexOfFirstIndex;
-            gfxSurface->tris.vertexCount = bspSurface.vertexCount;
+            gfxSurface->tris.vertexCount = bspSurface.vertexCount; // overflow checked in bspcreator
             gfxSurface->tris.firstVertex = bspSurface.indexOfFirstVertex;
 
             gfxSurface->tris.vertexDataOffset0 = bspSurface.indexOfFirstVertex * sizeof(GfxPackedWorldVertex);
@@ -116,23 +123,15 @@ namespace BSP
             gfxSurface->material = surfMaterialAsset->Asset();
 
             GfxPackedWorldVertex* firstVert = reinterpret_cast<GfxPackedWorldVertex*>(&gfxWorld->draw.vd0.data[gfxSurface->tris.vertexDataOffset0]);
-            gfxSurface->bounds[0].x = firstVert[0].xyz.x;
-            gfxSurface->bounds[0].y = firstVert[0].xyz.y;
-            gfxSurface->bounds[0].z = firstVert[0].xyz.z;
-            gfxSurface->bounds[1].x = firstVert[0].xyz.x;
-            gfxSurface->bounds[1].y = firstVert[0].xyz.y;
-            gfxSurface->bounds[1].z = firstVert[0].xyz.z;
+            gfxSurface->bounds[0] = firstVert[0].xyz;
+            gfxSurface->bounds[1] = firstVert[0].xyz;
             for (size_t indexIdx = 0; indexIdx < static_cast<size_t>(gfxSurface->tris.triCount * 3); indexIdx++)
             {
                 uint16_t vertIndex = gfxWorld->draw.indices[gfxSurface->tris.baseIndex + indexIdx];
                 BSPUtil::updateAABBWithPoint(firstVert[vertIndex].xyz, gfxSurface->bounds[0], gfxSurface->bounds[1]);
             }
-            gfxSurface->tris.mins.x = gfxSurface->bounds[0].x;
-            gfxSurface->tris.mins.y = gfxSurface->bounds[0].y;
-            gfxSurface->tris.mins.z = gfxSurface->bounds[0].z;
-            gfxSurface->tris.maxs.x = gfxSurface->bounds[1].x;
-            gfxSurface->tris.maxs.y = gfxSurface->bounds[1].y;
-            gfxSurface->tris.maxs.z = gfxSurface->bounds[1].z;
+            gfxSurface->tris.mins = gfxSurface->bounds[0];
+            gfxSurface->tris.maxs = gfxSurface->bounds[1];
 
             gfxSurface->flags = 0;
             if ((bspMaterial.contentFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_SKY].contentFlags) != 0)
@@ -144,12 +143,9 @@ namespace BSP
             if ((bspMaterial.surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NOCASTSHADOW].surfaceFlags) == 0)
                 gfxSurface->flags |= GFX_SURFACE_CASTS_SHADOW;
 
-            gfxSurface->primaryLightIndex = SUN_LIGHT_INDEX;
-            gfxSurface->lightmapIndex = EMPTY_LIGHTMAP_INDEX;
-            gfxSurface->reflectionProbeIndex = EMPTY_RPROBE_INDEX;
-
-            // unknown value
-            gfxSurface->tris.himipRadiusInvSq = 0.0f;
+            gfxSurface->primaryLightIndex = DEFAULT_PRIMARYLIGHT_INDEX;
+            gfxSurface->lightmapIndex = DEFAULT_LIGHTMAP_INDEX;
+            gfxSurface->reflectionProbeIndex = DEFAULT_RPROBE_INDEX;
         }
 
         // Some code uses Sorted surfs to index surfaces, so for simplicity keep the indexes sequential and from 0
@@ -191,6 +187,29 @@ namespace BSP
         gfxWorld->dpvs.smodelInsts = m_memory.Alloc<GfxStaticModelInst>(modelCount);
         gfxWorld->dpvs.smodelDrawInsts = m_memory.Alloc<GfxStaticModelDrawInst>(modelCount);
 
+        if (modelCount == 0)
+            return true;
+        if (modelCount > 0xFFFF)
+        {
+            con::error("GFXWorld exceeded the maximum number of static xmodels (65535 max, map count: {})", modelCount);
+            return false;
+        }
+
+        char color = DEFAULT_LIGHTGRID_COLOUR;
+        float sunIntensity = bsp->sunlight.intensity;
+        if (sunIntensity < 0.0f || sunIntensity > 20000.0f)
+        {
+            con::error("Sun intensity ({}) needs to be between 0 and 20000", sunIntensity);
+            return false;
+        }
+        else
+        {
+            float normalised = sunIntensity / 20000.0f;
+            normalised *= 255.0f;
+            float clean = roundf(normalised);
+            color = static_cast<char>(clean);
+        }
+
         for (size_t modelIdx = 0; modelIdx < modelCount; modelIdx++)
         {
             auto currModel = &gfxWorld->dpvs.smodelDrawInsts[modelIdx];
@@ -206,9 +225,7 @@ namespace BSP
             else
                 currModel->model = (XModel*)xModelAsset->Asset();
 
-            currModel->placement.origin.x = bspModel.origin.x;
-            currModel->placement.origin.y = bspModel.origin.y;
-            currModel->placement.origin.z = bspModel.origin.z;
+            currModel->placement.origin = bspModel.origin;
             BSPUtil::convertQuaternionToAxis(&bspModel.rotationQuaternion, currModel->placement.axis);
             currModel->placement.scale = bspModel.scale;
 
@@ -217,16 +234,11 @@ namespace BSP
                 currModel->flags |= STATIC_MODEL_FLAG_NO_SHADOW;
 
             currModel->cullDist = XMODEL_CULL_DIST;
-            currModel->primaryLightIndex = SUN_LIGHT_INDEX;
-            currModel->reflectionProbeIndex = EMPTY_LIGHTMAP_INDEX;
+            currModel->primaryLightIndex = DEFAULT_PRIMARYLIGHT_INDEX;
+            currModel->reflectionProbeIndex = DEFAULT_RPROBE_INDEX;
             currModel->smid = modelIdx;
 
-            // unknown use / unused
-            memset(&currModel->lightingSH, 0, sizeof(GfxLightingSHQuantized));
-            currModel->invScaleSq = 0.0f;
-            currModel->lightingHandle = 0; // overwritten to by the game
-            currModel->colorsIndex = 0;
-            currModel->visibility = 0;
+            currModelInst->lightingOrigin = bspModel.origin;
 
             if (!xModelAsset->IsReference())
             {
@@ -249,8 +261,7 @@ namespace BSP
 
                     currModel->lmapVertexInfo[lodIdx].numLmapVertexColors = vertCount;
                     currModel->lmapVertexInfo[lodIdx].lmapVertexColors = m_memory.Alloc<unsigned int>(vertCount);
-                    // a value of 1 makes shadowed surfaces slightly easier to see
-                    memset(currModel->lmapVertexInfo[lodIdx].lmapVertexColors, 1, sizeof(unsigned int) * vertCount);
+                    memset(currModel->lmapVertexInfo[lodIdx].lmapVertexColors, color, sizeof(unsigned int) * vertCount);
                 }
             }
             else
@@ -270,20 +281,7 @@ namespace BSP
                     currModelInst->maxs.y = bspModel.origin.y + 1.0f;
                     currModelInst->maxs.z = bspModel.origin.z + 1.0f;
                 }
-
-                // setting these to nullptr makes any static/baked lighting go black when not rendered by real-time lighting or in a shadow
-                currModel->lmapVertexInfo[0].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[0].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[1].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[1].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[2].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[2].lmapVertexColors = nullptr;
-                currModel->lmapVertexInfo[3].numLmapVertexColors = 0;
-                currModel->lmapVertexInfo[3].lmapVertexColors = nullptr;
             }
-            currModelInst->lightingOrigin.x = 0.0f;
-            currModelInst->lightingOrigin.y = 0.0f;
-            currModelInst->lightingOrigin.z = 0.0f;
         }
 
         // visdata is written to by the game
@@ -299,8 +297,6 @@ namespace BSP
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[i].flags & STATIC_MODEL_FLAG_NO_SHADOW) == 0)
                 gfxWorld->dpvs.smodelCastsShadow[i] = 1;
-            else
-                gfxWorld->dpvs.smodelCastsShadow[i] = 0;
         }
 
         return true;
@@ -395,11 +391,17 @@ namespace BSP
         gfxWorld->sunLight = m_memory.Alloc<GfxLight>();
     }
 
-    void GfxWorldLinker::loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadGfxLights(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // there must be 2 or more lights, first is the static light and second is the sun light
         gfxWorld->primaryLightCount = BSP_DEFAULT_LIGHT_COUNT + static_cast<unsigned int>(bsp->lights.size());
         gfxWorld->sunPrimaryLightIndex = SUN_LIGHT_INDEX;
+
+        if (gfxWorld->primaryLightCount > 254)
+        {
+            con::error("Exceeded 254 lights in BSP, count: {}", gfxWorld->primaryLightCount);
+            return false;
+        }
 
         gfxWorld->shadowGeom = m_memory.Alloc<GfxShadowGeometry>(gfxWorld->primaryLightCount);
         for (unsigned int lightIdx = 0; lightIdx < gfxWorld->primaryLightCount; lightIdx++)
@@ -416,7 +418,7 @@ namespace BSP
         {
             if ((gfxWorld->dpvs.smodelDrawInsts[modelIdx].flags & STATIC_MODEL_FLAG_NO_SHADOW) != 0)
                 continue;
-            char lightIndex = gfxWorld->dpvs.smodelDrawInsts[modelIdx].primaryLightIndex;
+            unsigned char lightIndex = gfxWorld->dpvs.smodelDrawInsts[modelIdx].primaryLightIndex;
             gfxWorld->shadowGeom[lightIndex].smodelIndex[gfxWorld->shadowGeom[lightIndex].smodelCount] = modelIdx;
             gfxWorld->shadowGeom[lightIndex].smodelCount++;
         }
@@ -433,22 +435,41 @@ namespace BSP
             gfxWorld->primaryLightEntityShadowVis = m_memory.Alloc<unsigned int>(lightEntShadowVisSize);
         else
             gfxWorld->primaryLightEntityShadowVis = nullptr;
+
+        return true;
     }
 
-    void GfxWorldLinker::loadLightGrid(BSPData* bsp, GfxWorld* gfxWorld)
+    bool GfxWorldLinker::loadLightGrid(BSPData* bsp, GfxWorld* gfxWorld)
     {
-        // gfxWorld->lightGrid.mins[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[0]) + 0x20000) >> 5);
-        // gfxWorld->lightGrid.mins[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[1]) + 0x20000) >> 5);
-        // gfxWorld->lightGrid.mins[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.mins[2]) + 0x20000) >> 6);
-        // gfxWorld->lightGrid.maxs[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[0]) + 0x20000) >> 5);
-        // gfxWorld->lightGrid.maxs[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[1]) + 0x20000) >> 5);
-        // gfxWorld->lightGrid.maxs[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->lightGrid.maxs[2]) + 0x20000) >> 6);
-        gfxWorld->lightGrid.mins[0] = 100;
-        gfxWorld->lightGrid.mins[1] = 100;
-        gfxWorld->lightGrid.mins[2] = 100;
-        gfxWorld->lightGrid.maxs[0] = 65435;
-        gfxWorld->lightGrid.maxs[1] = 65435;
-        gfxWorld->lightGrid.maxs[2] = 65435;
+        // world to lightgrid coords conversion:
+        // l_x = (w_x + 131072.0f) / 32.0f;
+        // l_y = (w_y + 131072.0f) / 32.0f;
+        // l_z = (w_z + 131072.0f) / 64.0f;
+        //
+        // lightgrid to world coords conversion:
+        // w_x = (double)l_x * 32.0f - 131072.0f;
+        // w_y = (double)l_y * 32.0f - 131072.0f;
+        // w_z = (double)l_z * 64.0f - 131072.0f;
+        //
+        // Lightrid coords are bounded by the uint16 limits:
+        // w_minX = -131072, w_maxX = 1966048
+        // w_minY = -131072, w_maxY = 1966048
+        // w_minZ = -131072, w_maxZ = 4063168
+
+        if (gfxWorld->mins.x < -131072.0f || gfxWorld->mins.y < -131072.0f || gfxWorld->mins.z < -131072.0f || gfxWorld->maxs.x > 1966048.0f
+            || gfxWorld->maxs.y > 1966048.0f || gfxWorld->maxs.z > 4063168.0f)
+        {
+            con::error("Lightrid mins/maxs exceeded");
+            return false;
+        }
+
+        // integer-only method used by the game
+        gfxWorld->lightGrid.mins[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->mins.x) + 0x20000) >> 5);
+        gfxWorld->lightGrid.mins[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->mins.y) + 0x20000) >> 5);
+        gfxWorld->lightGrid.mins[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->mins.z) + 0x20000) >> 6);
+        gfxWorld->lightGrid.maxs[0] = static_cast<uint16_t>((static_cast<int>(gfxWorld->maxs.x) + 0x20000) >> 5);
+        gfxWorld->lightGrid.maxs[1] = static_cast<uint16_t>((static_cast<int>(gfxWorld->maxs.y) + 0x20000) >> 5);
+        gfxWorld->lightGrid.maxs[2] = static_cast<uint16_t>((static_cast<int>(gfxWorld->maxs.z) + 0x20000) >> 6);
 
         gfxWorld->lightGrid.rowAxis = 0; // default value
         gfxWorld->lightGrid.colAxis = 1; // default value
@@ -467,8 +488,8 @@ namespace BSP
         row->zStart = 0;
         row->zCount = 0xFF; // 0xFF as this seems to be the sweet spot of values
         row->firstEntry = 0;
-        for (int i = 0; i < 0x200; i++) // set the lookup table to all 0xFF
-            row->lookupTable[i] = -1;
+        for (int i = 0; i < 0x200; i++)
+            row->lookupTable[i] = -1; // values in the lookup table are subtracted from the sample pos until it reaches 0, so use 0xFF
         gfxWorld->lightGrid.rawRowData = reinterpret_cast<aligned_byte_pointer*>(row);
 
         // entries are looked up based on the lightgrid sample pos (given ingame) and the lightgrid lookup table
@@ -477,7 +498,7 @@ namespace BSP
         for (unsigned int i = 0; i < gfxWorld->lightGrid.entryCount; i++)
         {
             entryArray[i].colorsIndex = 0; // always index first colour
-            entryArray[i].primaryLightIndex = SUN_LIGHT_INDEX;
+            entryArray[i].primaryLightIndex = DEFAULT_PRIMARYLIGHT_INDEX;
             entryArray[i].visibility = 0;
         }
         gfxWorld->lightGrid.entries = entryArray;
@@ -485,7 +506,10 @@ namespace BSP
         char color = DEFAULT_LIGHTGRID_COLOUR;
         float sunIntensity = bsp->sunlight.intensity;
         if (sunIntensity < 0.0f || sunIntensity > 20000.0f)
-            con::warn("Sun intensity ({}) needs to be between 0 and 20000", sunIntensity);
+        {
+            con::error("Sun intensity ({}) needs to be between 0 and 20000", sunIntensity);
+            return false;
+        }
         else
         {
             float normalised = sunIntensity / 20000.0f;
@@ -504,6 +528,8 @@ namespace BSP
         gfxWorld->lightGrid.coeffs = nullptr;
         gfxWorld->lightGrid.skyGridVolumeCount = 0;
         gfxWorld->lightGrid.skyGridVolumes = nullptr;
+
+        return true;
     }
 
     struct mnode_t
@@ -530,17 +556,13 @@ namespace BSP
         gfxWorld->cells = m_memory.Alloc<GfxCell>(cellCount);
         gfxWorld->cells[0].portalCount = 0;
         gfxWorld->cells[0].portals = nullptr;
-        gfxWorld->cells[0].mins.x = gfxWorld->mins.x;
-        gfxWorld->cells[0].mins.y = gfxWorld->mins.y;
-        gfxWorld->cells[0].mins.z = gfxWorld->mins.z;
-        gfxWorld->cells[0].maxs.x = gfxWorld->maxs.x;
-        gfxWorld->cells[0].maxs.y = gfxWorld->maxs.y;
-        gfxWorld->cells[0].maxs.z = gfxWorld->maxs.z;
+        gfxWorld->cells[0].mins = gfxWorld->mins;
+        gfxWorld->cells[0].maxs = gfxWorld->maxs;
 
         // there is only 1 reflection probe
         gfxWorld->cells[0].reflectionProbeCount = 1;
         gfxWorld->cells[0].reflectionProbes = m_memory.Alloc<char>(gfxWorld->cells[0].reflectionProbeCount);
-        gfxWorld->cells[0].reflectionProbes[0] = EMPTY_RPROBE_INDEX;
+        gfxWorld->cells[0].reflectionProbes[0] = DEFAULT_RPROBE_INDEX;
 
         // AABB trees are used to detect what should be rendered and what shouldn't
         // Just use the first AABB node to hold all models, no optimisation but all models/surfaces wil lbe drawn
@@ -556,12 +578,8 @@ namespace BSP
         {
             gfxWorld->cells[0].aabbTree[0].smodelIndexes[smodelIdx] = smodelIdx;
         }
-        gfxWorld->cells[0].aabbTree[0].mins.x = gfxWorld->mins.x;
-        gfxWorld->cells[0].aabbTree[0].mins.y = gfxWorld->mins.y;
-        gfxWorld->cells[0].aabbTree[0].mins.z = gfxWorld->mins.z;
-        gfxWorld->cells[0].aabbTree[0].maxs.x = gfxWorld->maxs.x;
-        gfxWorld->cells[0].aabbTree[0].maxs.y = gfxWorld->maxs.y;
-        gfxWorld->cells[0].aabbTree[0].maxs.z = gfxWorld->maxs.z;
+        gfxWorld->cells[0].aabbTree[0].mins = gfxWorld->mins;
+        gfxWorld->cells[0].aabbTree[0].maxs = gfxWorld->maxs;
 
         // nodes have the struct mnode_t, and there must be at least 1 node (similar to BSP nodes)
         // Nodes mnode_t.cellIndex indexes gfxWorld->cells
@@ -595,6 +613,7 @@ namespace BSP
     void GfxWorldLinker::loadModels(BSPData* bsp, GfxWorld* gfxWorld)
     {
         // Models (Submodels in the clipmap code) are used for the world and map ent collision (triggers, bomb zones, etc)
+        // bounds are checked in clipmap linker
         gfxWorld->modelCount = static_cast<int>(bsp->models.size() + 1);
         gfxWorld->models = m_memory.Alloc<GfxBrushModel>(gfxWorld->modelCount);
 
@@ -613,6 +632,11 @@ namespace BSP
                                     gfxWorld->dpvs.surfaces[surfIdx].bounds[1],
                                     gfxWorld->models[0].bounds[0],
                                     gfxWorld->models[0].bounds[1]);
+        }
+        if (gfxWorld->dpvs.staticSurfaceCount == 0)
+        {
+            gfxWorld->models[0].bounds[0] = {};
+            gfxWorld->models[0].bounds[1] = {};
         }
         memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
 
@@ -641,12 +665,8 @@ namespace BSP
             {
                 currEntModel->startSurfIndex = -1; // -1 when it doesn't use map surfaces
                 currEntModel->surfaceCount = 0;
-                currEntModel->bounds[0].x = 0.0f;
-                currEntModel->bounds[0].y = 0.0f;
-                currEntModel->bounds[0].z = 0.0f;
-                currEntModel->bounds[1].x = 0.0f;
-                currEntModel->bounds[1].y = 0.0f;
-                currEntModel->bounds[1].z = 0.0f;
+                currEntModel->bounds[0] = {};
+                currEntModel->bounds[1] = {};
             }
             memset(&gfxWorld->models[0].writable, 0, sizeof(GfxBrushModelWritable));
         }
@@ -656,14 +676,13 @@ namespace BSP
     {
         BSPLight& sunlight = bsp->sunlight;
         vec3_t viewAngles = BSPUtil::convertForwardVectorToViewAngles(sunlight.direction);
-        gfxWorld->sunParse.initWorldSun->angles.x = viewAngles.x;
-        gfxWorld->sunParse.initWorldSun->angles.y = viewAngles.y;
-        gfxWorld->sunParse.initWorldSun->angles.z = viewAngles.z;
+        gfxWorld->sunParse.initWorldSun->angles = viewAngles;
         gfxWorld->sunParse.initWorldSun->sunCd.x = sunlight.colour.x;
         gfxWorld->sunParse.initWorldSun->sunCd.y = sunlight.colour.y;
         gfxWorld->sunParse.initWorldSun->sunCd.z = sunlight.colour.z;
         gfxWorld->sunParse.initWorldSun->sunCd.w = 1.0f;
 
+        // fog is not implemented yet, values taken from mp_dig
         gfxWorld->sunParse.initWorldFog->baseDist = 150.0f;
         gfxWorld->sunParse.initWorldFog->baseHeight = -100.0f;
         gfxWorld->sunParse.initWorldFog->fogColor.x = 2.35f;
@@ -690,22 +709,11 @@ namespace BSP
 
         // default values taken from mp_dig
         gfxWorld->draw.reflectionProbes = m_memory.Alloc<GfxReflectionProbe>(gfxWorld->draw.reflectionProbeCount);
-        gfxWorld->draw.reflectionProbes[0].mipLodBias = -8.0;
-        gfxWorld->draw.reflectionProbes[0].origin.x = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].origin.y = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].origin.z = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V0.x = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V0.y = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V0.z = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V0.w = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V1.x = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V1.y = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V1.z = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V1.w = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V2.x = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V2.y = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V2.z = 0.0f;
-        gfxWorld->draw.reflectionProbes[0].lightingSH.V2.w = 0.0f;
+        gfxWorld->draw.reflectionProbes[0].mipLodBias = -8.0; // always -8.0f
+        gfxWorld->draw.reflectionProbes[0].origin = {};
+        gfxWorld->draw.reflectionProbes[0].lightingSH.V0 = {};
+        gfxWorld->draw.reflectionProbes[0].lightingSH.V1 = {};
+        gfxWorld->draw.reflectionProbes[0].lightingSH.V2 = {};
 
         gfxWorld->draw.reflectionProbes[0].probeVolumeCount = 0;
         gfxWorld->draw.reflectionProbes[0].probeVolumes = nullptr;
@@ -753,7 +761,7 @@ namespace BSP
             con::warn("WARN: Unable to load the skybox xmodel {}!", skyBoxName);
         }
 
-        // default skybox values from mp_dig
+        // always 0 and 1
         gfxWorld->skyDynIntensity.angle0 = 0.0f;
         gfxWorld->skyDynIntensity.angle1 = 0.0f;
         gfxWorld->skyDynIntensity.factor0 = 1.0f;
@@ -831,9 +839,9 @@ namespace BSP
         gfxWorld->baseName = m_memory.Dup(bsp->name.c_str());
         gfxWorld->name = m_memory.Dup(bsp->bspName.c_str());
 
-        // Default values taken from official maps
-        gfxWorld->lightingFlags = 0;
-        gfxWorld->lightingQuality = 4096;
+        // Default values taken from origins
+        gfxWorld->lightingFlags = 4;
+        gfxWorld->lightingQuality = 10000;
 
         cleanGfxWorld(gfxWorld);
 
@@ -854,21 +862,22 @@ namespace BSP
         // world bounds are based on loaded surface mins/maxs and xmodels
         loadWorldBounds(gfxWorld);
 
-        if (!loadOutdoors(gfxWorld))
+        if (!loadOutdoors(gfxWorld)) // requires world mins/maxs
             return nullptr;
 
         // gfx cells depend on surface/smodel count
         loadGfxCells(gfxWorld);
 
-        loadLightGrid(bsp, gfxWorld);
+        loadLightGrid(bsp, gfxWorld); // requires world mins/maxs
 
-        loadGfxLights(bsp, gfxWorld); // requires xmodels and surfaces
+        if (!loadGfxLights(bsp, gfxWorld)) // requires xmodels and surfaces
+            return nullptr;
 
         loadModels(bsp, gfxWorld); // requires surfaces
 
         loadSunData(bsp, gfxWorld);
 
-        loadDynEntData(gfxWorld);
+        loadDynEntData(gfxWorld); // requires cells and lights
 
         return gfxWorld;
     }
