@@ -2,6 +2,9 @@
 
 #include "Game/IW3/IW3.h"
 
+#include <map>
+#include <utility>
+
 namespace IW3
 {
     inline cspField_t snd_alias_fields[]{
@@ -23,5 +26,41 @@ namespace IW3
         {"envelopMin",         offsetof(snd_alias_t_info, envelopMin),         CSPFT_FLOAT },
         {"envelopMax",         offsetof(snd_alias_t_info, envelopMax),         CSPFT_FLOAT },
         {"envelopPercentage",  offsetof(snd_alias_t_info, envelopPercentage),  CSPFT_FLOAT },
+    };
+
+    static const char* snd_alias_channel_names[] = {
+        "physics", 
+        "auto",   
+        "auto2",   
+        "autodog",  
+        "bulletimpact", 
+        "bulletwhizby", 
+        "element",  
+        "auto2d",       
+        "vehicle",  
+        "vehiclelimited", 
+        "menu",
+        "body",    
+        "body2d", 
+        "reload",  
+        "reload2d", 
+        "item",         
+        "effects1",     
+        "effects2", 
+        "weapon",       
+        "weapon2d", 
+        "nonshock",       
+        "voice",
+        "local",   
+        "local2", 
+        "ambient", 
+        "hurt",     
+        "player1",      
+        "player2",      
+        "music",    
+        "musicnopause", 
+        "mission",  
+        "announcer",      
+        "shellshock"
     };
 }

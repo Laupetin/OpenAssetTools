@@ -4,6 +4,7 @@
 #include "Utils/Logging/Log.h"
 
 #include <format>
+#include <Game/IW3/Sound/SndAliasListFields.h>
 
 using namespace IW3;
 
@@ -26,10 +27,13 @@ namespace
             stream << sequence;
         }
 
+        const char* dir = "";
+
         stream << ',';
         if (subAsset->soundFile && (subAsset->soundFile->type == SAT_STREAMED) && subAsset->soundFile->u.streamSnd.dir && subAsset->soundFile->u.streamSnd.name)
         {
-            stream << subAsset->soundFile->u.streamSnd.dir << '/' << subAsset->soundFile->u.streamSnd.name;
+            dir = subAsset->soundFile->u.streamSnd.dir;
+            stream << dir << '/' << subAsset->soundFile->u.streamSnd.name;
         }
         else if (subAsset->soundFile && (subAsset->soundFile->type == SAT_LOADED) && subAsset->soundFile->u.loadSnd && subAsset->soundFile->u.loadSnd->name)
         {
@@ -38,8 +42,67 @@ namespace
 
         stream << ',' << subAsset->volMin << ',' << subAsset->volMax;
 
-        // TODO: See if we can deduce volMod
-        stream << ','; // << subAsset->volMod
+        stream << ',';
+        // TODO: Try to finish heuristic
+        //if (strstr(dir, "footsteps/"))
+        //{
+        //    stream << "footstep";
+
+        //    // TODO: Expand heuristic to check platform for mp.
+        //    // 
+        //    // If channel is body & platform is !all_mp, set to 'footstep'
+        //    // If channel is body & platform is none or all_mp, set to 'mpfootstep'
+        //    // If channel is body2d, set to 'footstepplr' 
+        //}
+        //else if (strstr(dir, "battlechatter/"))
+        //{
+        //    if (strstr(dir, "/ab/") || strstr(dir, "/ru/"))
+        //    {
+        //        stream << "chatterax";
+        //    }
+        //    else if (strstr(dir, "/uk/") || strstr(dir, "/us/"))
+        //    {
+        //        stream << "chatteral";
+        //    }
+        //}
+        //else if (strstr(dir, "explosions/"))
+        //{
+        //    stream << "explosion";
+        //}
+
+        //
+        //"ac130",
+        //"airlift",
+        //"aftermath",
+        //"ambience",
+        //"bodyfall",
+        //"",
+        //"",
+        //"element",
+        //"emitter",
+        //"",
+        //"foley",
+        //"",
+        //"",
+        //"gear",
+        //"impact",
+        //"impactmp",
+        //"interface",
+        //"mpfoley",
+        //"",
+        //"mpgear",
+        //"music",
+        //"physics",
+        //"quiet",
+        //"reactional",
+        //"reactionax",
+        //"vehicle",
+        //"voiceover",
+        //"whizby",
+        //"wpnai",
+        //"wpnplyr",
+        //"na",
+        //"max",
 
         stream << ',';
         if (subAsset->pitchMin != 1.0f)
@@ -55,38 +118,15 @@ namespace
 
         stream << ',' << subAsset->distMin << ',' << subAsset->distMax;
 
-        // TODO: Figure out if this is actually the channel or something different
         int channelIndex = (subAsset->flags >> 8) & 0x3F;
         stream << ',';
-        switch (channelIndex)
+        if (channelIndex < std::size(snd_alias_channel_names))
         {
-        case 0:
-            stream << "menu";
-            break;
-        case 1:
-            stream << "weapon";
-            break;
-        case 2:
-            stream << "voice";
-            break;
-        case 3:
-            stream << "item";
-            break;
-        case 4:
-            stream << "body";
-            break;
-        case 5:
-            stream << "local";
-            break;
-        case 6:
-            stream << "music";
-            break;
-        case 7:
-            stream << "announcer";
-            break;
-        default:
+            stream << snd_alias_channel_names[channelIndex];
+        }
+        else
+        {
             stream << "auto";
-            break;
         }
 
         // TODO; Verify this
@@ -95,7 +135,7 @@ namespace
         switch (type)
         {
         case 1:
-            stream << "loaded";
+            // 'loaded' type is default, don't write
             break;
         case 2:
         case 3:
@@ -135,6 +175,7 @@ namespace
         // TODO: See if we can deduce loadspec
         stream << ','; // << subAsset->loadSpec
 
+        stream << ',';
         if (subAsset->subtitle)
         {
             stream << subAsset->subtitle;
@@ -143,11 +184,13 @@ namespace
         // TODO: See if we can deduce compression
         stream << ','; // << subAsset->compression
 
+        stream << ',';
         if (subAsset->secondaryAliasName)
         {
             stream << subAsset->secondaryAliasName;
         }
 
+        stream << ',';
         if (subAsset->volumeFalloffCurve && subAsset->volumeFalloffCurve->filename)
         {
             stream << subAsset->volumeFalloffCurve->filename;
@@ -159,6 +202,7 @@ namespace
             stream << subAsset->startDelay;
         }
 
+        stream << ',';
         if (subAsset->speakerMap && subAsset->speakerMap->name)
         {
             stream << subAsset->speakerMap->name;
