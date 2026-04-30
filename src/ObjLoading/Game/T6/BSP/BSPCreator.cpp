@@ -626,7 +626,6 @@ namespace
             assert(node.extras->contains("xmodel"));
 
             BSPXModel xmodel;
-
             xmodel.name = node.extras->at("xmodel");
 
             int surfaceFlags = 0;
@@ -990,35 +989,41 @@ namespace
 
             if (node.extras)
             {
-                if (node.extras->contains("classname"))
+                bool hasSpawnpoint = node.extras->contains("spawnpoint");
+                bool hasZone = node.extras->contains("zone");
+                bool hasSpawner = node.extras->contains("spawner");
+                bool hasXmodel = node.extras->contains("xmodel");
+                bool hasClassname = node.extras->contains("classname");
+
+                if (m_is_world_gfx && (hasSpawnpoint || hasZone || hasSpawner))
+                    return true;
+
+                if (hasClassname)
                 {
                     std::string classnameVal = node.extras->at("classname");
-
-                    if ((!m_is_world_gfx && !classnameVal.compare("script_brushmodel_gfx"))   // skip GFX brush in collision
-                        || (m_is_world_gfx && classnameVal.compare("script_brushmodel_gfx"))) // include GFX brush in graphics
-                        return false;
+                    if (m_is_world_gfx && classnameVal.compare("script_brushmodel_gfx"))
+                        return true; // skip any gfx node with classname not script_brushmodel_gfx
+                    if (!m_is_world_gfx && !classnameVal.compare("script_brushmodel_gfx"))
+                        return true; // skip any col node with classname script_brushmodel_gfx
 
                     return addClassNode(jRoot, node, nodeMatrix);
                 }
 
-                if (!m_is_world_gfx)
-                {
-                    if (node.extras->contains("spawnpoint"))
+                if (hasXmodel)
+                    return addXModelNode(jRoot, node, nodeMatrix);
+
+                if (hasSpawnpoint)
                         return addSpawnPointNode(node, nodeMatrix);
 
                     if (m_bsp->isZombiesMap)
                     {
-                        if (node.extras->contains("zone"))
+                    if (hasZone)
                             return addZoneNode(jRoot, node, nodeMatrix);
 
-                        if (node.extras->contains("spawner"))
+                    if (hasSpawner)
                             return addZSpawnerNode(node, nodeMatrix);
                     }
                 }
-
-                if (node.extras->contains("xmodel"))
-                    return addXModelNode(jRoot, node, nodeMatrix);
-            }
 
             if (node.mesh)
             {
@@ -1028,7 +1033,9 @@ namespace
                     getSurfaceAndContentFlags(node.extras->at("flags"), surfaceFlags, contentFlags);
 
                 bool isNoDraw = (surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) != 0;
-                if (!m_is_world_gfx || (m_is_world_gfx && !isNoDraw)) // nodraw flag doesn't set faces to invisible, so remove it from the draw data
+                if (m_is_world_gfx && isNoDraw)
+                    return true;
+
                     return addMeshNode(jRoot, node, nodeMatrix);
             }
 
