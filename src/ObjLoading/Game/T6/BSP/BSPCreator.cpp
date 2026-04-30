@@ -629,17 +629,19 @@ namespace
 
             xmodel.name = node.extras->at("xmodel");
 
-            xmodel.doesCastShadow = true;
-            if (node.extras->contains("flags"))
-            {
-                std::vector<std::string> flagStrVec = utils::StringSplit(node.extras->at("flags"), ',');
-                for (std::string& flag : flagStrVec)
-                    if (!flag.compare(surfaceTypeToNameMap[SURF_TYPE_NOCASTSHADOW]))
-                    {
-                        xmodel.doesCastShadow = false;
-                        break;
-                    }
-            }
+            int surfaceFlags = 0;
+            int contentFlags = 0;
+            if (node.extras && node.extras->contains("flags"))
+                getSurfaceAndContentFlags(node.extras->at("flags"), surfaceFlags, contentFlags);
+
+            bool isNoDraw = (surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NODRAW].surfaceFlags) != 0;
+            bool isNoCastShadow = (surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NOCASTSHADOW].surfaceFlags) != 0;
+            bool isNonSolid = (surfaceFlags & BSPFlags::surfaceTypeToFlagMap[BSPFlags::SURF_TYPE_NONSOLID].surfaceFlags) != 0;
+            if (m_is_world_gfx && isNoDraw)
+                return true;
+            if (!m_is_world_gfx && isNonSolid)
+                return true;
+            xmodel.doesCastShadow = !isNoCastShadow;
 
             Eigen::Vector4f position(0, 0, 0, 1.0f);
             Eigen::Vector4f transformedPosition = nodeMatrix * position;
