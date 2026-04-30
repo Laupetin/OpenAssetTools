@@ -40,7 +40,7 @@ bool CrossPlatformStructurePostProcessor::PostProcess(IDataRepository* repositor
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    if (repository->GetArchitecture() == OWN_ARCHITECTURE)
+    if (repository->GetWordSize() == OWN_WORD_SIZE)
     {
         for (const auto& info : allInfos)
             info->m_has_matching_cross_platform_structure = true;

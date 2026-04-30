@@ -24,8 +24,8 @@ public:
 
     [[nodiscard]] const std::string& GetGameName() const override;
     void SetGame(std::string gameName) override;
-    [[nodiscard]] Architecture GetArchitecture() const override;
-    void SetArchitecture(Architecture architecture) override;
+    [[nodiscard]] WordSize GetWordSize() const override;
+    void SetWordSize(WordSize wordSize) override;
 
     [[nodiscard]] const std::vector<EnumDefinition*>& GetAllEnums() const override;
     [[nodiscard]] const std::vector<StructDefinition*>& GetAllStructs() const override;
@@ -54,5 +54,5 @@ private:
     std::unordered_map<const DefinitionWithMembers*, StructureInformation*> m_structure_information_by_definition;
     std::unordered_map<const DataDefinition*, TypeInformation*> m_type_information_by_definition;
     std::string m_game_name;
-    Architecture m_architecture;
+    WordSize m_word_size;
 };
