@@ -12,10 +12,10 @@ namespace BSP
     SkinnedVertsDef* SkinnedVertsLinker::linkSkinnedVerts(BSPData* bsp)
     {
         // maxSkinnedVerts defines how many model verts can be drawn at once
-        // Low values cause models not to be drawn, so double origin's maxSkinnedVerts is used as a safe bet
+        // Low values cause models not to be drawn, so double origin's maxSkinnedVerts (163840) is used as a safe bet
         SkinnedVertsDef* skinnedVerts = m_memory.Alloc<SkinnedVertsDef>();
         skinnedVerts->name = m_memory.Dup("skinnedverts");
-        skinnedVerts->maxSkinnedVerts = static_cast<unsigned int>(300000);
+        skinnedVerts->maxSkinnedVerts = 300000;
 
         return skinnedVerts;
     }

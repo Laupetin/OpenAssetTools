@@ -26,18 +26,23 @@ namespace BSP
     bool BSPLinker::addDefaultRequiredAssets(BSPData* bsp)
     {
         if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp->name + ".gsc") == nullptr)
-            return false;
-        if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp->name + "_amb.gsc") == nullptr)
-            return false;
-        if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp->name + "_fx.gsc") == nullptr)
-            return false;
+        {
+            con::error("maps/mp/" + bsp->name + ".gsc not found, make sure GSC file is in another fastfile.");
+        }
+        else
+        {
+            if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp->name + "_amb.gsc") == nullptr)
+                return false;
+            if (m_context.LoadDependency<AssetScript>("maps/mp/" + bsp->name + "_fx.gsc") == nullptr)
+                return false;
 
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + ".csc") == nullptr)
-            return false;
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + "_amb.csc") == nullptr)
-            return false;
-        if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + "_fx.csc") == nullptr)
-            return false;
+            if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + ".csc") == nullptr)
+                return false;
+            if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + "_amb.csc") == nullptr)
+                return false;
+            if (m_context.LoadDependency<AssetScript>("clientscripts/mp/" + bsp->name + "_fx.csc") == nullptr)
+                return false;
+        }
 
         addEmptyFootstepTableAsset("default_1st_person");
         addEmptyFootstepTableAsset("default_3rd_person");
@@ -91,12 +96,12 @@ namespace BSP
             return false;
         m_context.AddAsset<AssetSkinnedVerts>(skinnedVerts->name, skinnedVerts);
 
-        GfxWorld* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp); // requires mapents asset
+        GfxWorld* gfxWorld = gfxWorldLinker.linkGfxWorld(bsp);
         if (gfxWorld == nullptr)
             return false;
         m_context.AddAsset<AssetGfxWorld>(gfxWorld->name, gfxWorld);
 
-        clipMap_t* clipMap = clipMapLinker.linkClipMap(bsp); // requires gfxworld and mapents asset
+        clipMap_t* clipMap = clipMapLinker.linkClipMap(bsp); // requires mapents asset
         if (clipMap == nullptr)
             return false;
         m_context.AddAsset<AssetClipMap>(clipMap->name, clipMap);

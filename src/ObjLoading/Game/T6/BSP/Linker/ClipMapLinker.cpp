@@ -134,11 +134,19 @@ namespace BSP
     bool ClipMapLinker::loadXModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // it seems like for players to be able to collide with xmodels, it requires xmodel->collmaps to be valid.
-        // A lot of XModels don't implement collmaps (OAT also doesn't generate these collmaps), and
+        // A lot of XModels don't implement collmaps (OAT also doesn't generate these collmaps atm), and
         //  even official maps instead use terrain or brushes to cover where the collision should be.
 
         clipMap->numStaticModels = bsp->colWorld.xmodels.size();
         clipMap->staticModelList = m_memory.Alloc<cStaticModel_s>(clipMap->numStaticModels);
+
+        if (clipMap->numStaticModels == 0)
+            return true;
+        if (clipMap->numStaticModels > 0xFFFF)
+        {
+            con::error("COLWorld exceeded the maximum number of static xmodels (65535 max, map count: {})", clipMap->numStaticModels);
+            return false;
+        }
 
         for (unsigned int i = 0; i < clipMap->numStaticModels; i++)
         {
@@ -386,12 +394,8 @@ namespace BSP
 
             // no brushes used so data is set to 0
             leaf.brushContents = 0;
-            leaf.mins.x = 0.0f;
-            leaf.mins.y = 0.0f;
-            leaf.mins.z = 0.0f;
-            leaf.maxs.x = 0.0f;
-            leaf.maxs.y = 0.0f;
-            leaf.maxs.z = 0.0f;
+            leaf.mins = {};
+            leaf.maxs = {};
             leaf.leafBrushNode = 0;
 
             if (tree->leaf->getObjectCount() > 0)
@@ -527,8 +531,6 @@ namespace BSP
         size_t scriptSurfaceCount = bsp->colWorld.scriptSurfaces.size();
         size_t totalSurfaceCount = staticSurfaceCount + scriptSurfaceCount;
 
-        // TODO: figure out SV_EntityContact and see how it interacts with partitions
-
         std::vector<uint16_t> triIndexVec;
         std::vector<CollisionPartition> partitionVec;
         std::vector<uint16_t> uniqueIndicesVec;
@@ -598,71 +600,17 @@ namespace BSP
         return true;
     }
 
-    bool ClipMapLinker::loadWorldCollision(clipMap_t* clipMap, BSPData* bsp)
-    {
-        // No support for brushes, only tris right now
-        clipMap->info.numBrushSides = 0;
-        clipMap->info.brushsides = nullptr;
-        clipMap->info.numLeafBrushes = 0;
-        clipMap->info.leafbrushes = nullptr;
-        clipMap->info.brushBounds = nullptr;
-        clipMap->info.brushContents = nullptr;
-
-        // first brush node is always empty
-        cLeafBrushNode_s tempNode;
-        memset(&tempNode, 0, sizeof(cLeafBrushNode_s));
-        brushNodeVec.emplace_back(tempNode);
-
-        clipMap->info.numBrushVerts = static_cast<uint16_t>(bsp->colWorld.boxBrushVerts.size());
-        clipMap->info.brushVerts = m_memory.Alloc<vec3_t>(bsp->colWorld.boxBrushVerts.size());
-        memcpy(clipMap->info.brushVerts, bsp->colWorld.boxBrushVerts.data(), sizeof(vec3_t) * bsp->colWorld.boxBrushVerts.size());
-
-        // load verts, tris, uinds and partitions
-        if (!loadPartitions(clipMap, bsp))
-            return false;
-
-        if (!loadBSPTree(clipMap, bsp))
-            return false;
-
-        loadSubModelCollision(clipMap, bsp); // requires tri verts
-
-        clipMap->info.planeCount = static_cast<int>(planeVec.size());
-        clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
-        memcpy(clipMap->info.planes, planeVec.data(), sizeof(cplane_s) * planeVec.size());
-
-        clipMap->numNodes = static_cast<unsigned int>(nodeVec.size());
-        clipMap->nodes = m_memory.Alloc<cNode_t>(nodeVec.size());
-        memcpy(clipMap->nodes, nodeVec.data(), sizeof(cNode_t) * nodeVec.size());
-
-        clipMap->numLeafs = static_cast<unsigned int>(leafVec.size());
-        clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
-        memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
-
-        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
-        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
-        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
-
-        clipMap->info.leafbrushNodesCount = static_cast<unsigned int>(brushNodeVec.size());
-        clipMap->info.leafbrushNodes = m_memory.Alloc<cLeafBrushNode_s>(brushNodeVec.size());
-        memcpy(clipMap->info.leafbrushNodes, brushNodeVec.data(), sizeof(cLeafBrushNode_s) * brushNodeVec.size());
-
-        clipMap->info.numBrushes = static_cast<uint16_t>(brushVec.size());
-        clipMap->info.brushes = m_memory.Alloc<cbrush_array_t>(brushVec.size());
-        memcpy(clipMap->info.brushes, brushVec.data(), sizeof(cbrush_array_t) * brushVec.size());
-
-        // The plane of each node have the same index
-        for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
-            clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
-
-        return true;
-    }
-
-    void ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
+    bool ClipMapLinker::loadSubModelCollision(clipMap_t* clipMap, BSPData* bsp)
     {
         // Submodels are used for the world and map ent collision (triggers, bomb zones, etc)
         clipMap->numSubModels = static_cast<unsigned int>(bsp->models.size() + 1);
         clipMap->cmodels = m_memory.Alloc<cmodel_t>(clipMap->numSubModels);
 
+        if (clipMap->numSubModels > 0x3FFF)
+        {
+            con::error("ERROR: There are more than 0x3FFF entity brushmodels.");
+            return false;
+        }
         // first model is always the world model
         for (unsigned int vertIdx = 0; vertIdx < clipMap->vertCount; vertIdx++)
         {
@@ -742,10 +690,9 @@ namespace BSP
 
             if (bspModel.hasBrush)
             {
-
                 BSPBoxBrush& bspBrush = bsp->colWorld.scriptBoxBrushes.at(bspModel.brushIndex);
-                vec3_t mins;
-                vec3_t maxs;
+                vec3_t mins = {};
+                vec3_t maxs = {};
                 for (size_t vertIdx = 0; vertIdx < bspBrush.vertexCount; vertIdx++)
                 {
                     vec3_t* vertex = &clipMap->info.brushVerts[bspBrush.vertexIndex + vertIdx];
@@ -824,6 +771,89 @@ namespace BSP
             clipModel->leaf.cluster = 0;
             clipModel->info = nullptr;
         }
+
+        return true;
+    }
+
+    bool ClipMapLinker::loadWorldCollision(clipMap_t* clipMap, BSPData* bsp)
+    {
+        // unused brush data
+        clipMap->info.numBrushSides = 0;
+        clipMap->info.brushsides = nullptr;
+        clipMap->info.numLeafBrushes = 0;
+        clipMap->info.leafbrushes = nullptr;
+        clipMap->info.brushBounds = nullptr;
+        clipMap->info.brushContents = nullptr;
+
+        // first brush node is always empty
+        cLeafBrushNode_s tempNode;
+        memset(&tempNode, 0, sizeof(cLeafBrushNode_s));
+        brushNodeVec.emplace_back(tempNode);
+
+        clipMap->info.numBrushVerts = static_cast<uint16_t>(bsp->colWorld.boxBrushVerts.size());
+        clipMap->info.brushVerts = m_memory.Alloc<vec3_t>(bsp->colWorld.boxBrushVerts.size());
+        memcpy(clipMap->info.brushVerts, bsp->colWorld.boxBrushVerts.data(), sizeof(vec3_t) * bsp->colWorld.boxBrushVerts.size());
+
+        // load verts, tris, uinds and partitions
+        if (!loadPartitions(clipMap, bsp))
+            return false;
+
+        if (!loadBSPTree(clipMap, bsp))
+            return false;
+
+        if (!loadSubModelCollision(clipMap, bsp)) // requires tri verts
+            return false;
+
+        if (nodeVec.size() > 0xFFFF)
+        {
+            con::error("exceeded 0xFFFF nodes in clipmap");
+            return false;
+        }
+        if (leafVec.size() > 0xFFFF)
+        {
+            con::error("exceeded 0xFFFF leafs in clipmap");
+            return false;
+        }
+        if (AABBTreeVec.size() > 0xFFFF)
+        {
+            con::error("exceeded 0xFFFF AABBTrees in clipmap");
+            return false;
+        }
+        if (brushVec.size() > 0xFFFF)
+        {
+            con::error("exceeded 0xFFFF brushes in clipmap");
+            return false;
+        }
+
+        clipMap->info.planeCount = static_cast<int>(planeVec.size());
+        clipMap->info.planes = m_memory.Alloc<cplane_s>(planeVec.size());
+        memcpy(clipMap->info.planes, planeVec.data(), sizeof(cplane_s) * planeVec.size());
+
+        clipMap->numNodes = static_cast<unsigned int>(nodeVec.size());
+        clipMap->nodes = m_memory.Alloc<cNode_t>(nodeVec.size());
+        memcpy(clipMap->nodes, nodeVec.data(), sizeof(cNode_t) * nodeVec.size());
+
+        clipMap->numLeafs = static_cast<unsigned int>(leafVec.size());
+        clipMap->leafs = m_memory.Alloc<cLeaf_s>(leafVec.size());
+        memcpy(clipMap->leafs, leafVec.data(), sizeof(cLeaf_s) * leafVec.size());
+
+        clipMap->aabbTreeCount = static_cast<unsigned int>(AABBTreeVec.size());
+        clipMap->aabbTrees = m_memory.Alloc<CollisionAabbTree>(AABBTreeVec.size());
+        memcpy(clipMap->aabbTrees, AABBTreeVec.data(), sizeof(CollisionAabbTree) * AABBTreeVec.size());
+
+        clipMap->info.leafbrushNodesCount = static_cast<unsigned int>(brushNodeVec.size());
+        clipMap->info.leafbrushNodes = m_memory.Alloc<cLeafBrushNode_s>(brushNodeVec.size());
+        memcpy(clipMap->info.leafbrushNodes, brushNodeVec.data(), sizeof(cLeafBrushNode_s) * brushNodeVec.size());
+
+        clipMap->info.numBrushes = static_cast<uint16_t>(brushVec.size());
+        clipMap->info.brushes = m_memory.Alloc<cbrush_array_t>(brushVec.size());
+        memcpy(clipMap->info.brushes, brushVec.data(), sizeof(cbrush_array_t) * brushVec.size());
+
+        // The plane of each node have the same index
+        for (size_t nodeIdx = 0; nodeIdx < nodeVec.size(); nodeIdx++)
+            clipMap->nodes[nodeIdx].plane = &clipMap->info.planes[nodeIdx];
+
+        return true;
     }
 
     bool ClipMapLinker::loadMaterials(clipMap_t* clipMap, BSPData* bsp)

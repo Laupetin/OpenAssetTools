@@ -1,7 +1,5 @@
 #include "ComWorldLinker.h"
 
-#include "../BSPUtil.h"
-
 #include <numbers>
 
 namespace
@@ -36,7 +34,6 @@ namespace BSP
 
     ComWorld* ComWorldLinker::linkComWorld(BSPData* bsp)
     {
-        // all lights that aren't the sunlight or default light need their own GfxLightDef asset
         ComWorld* comWorld = m_memory.Alloc<ComWorld>();
         comWorld->name = m_memory.Dup(bsp->bspName.c_str());
         comWorld->isInUse = 1;
@@ -110,11 +107,11 @@ namespace BSP
                 light->aAbB.w = 1.0f;
 
                 light->cullDist = LIGHT_CULLDIST;
-                light->defName = DEFAULT_LIGHTDEF_NAME;
-                light->rotationLimit = 1.0f;    // 1.0f - doesn't rotate, -1.0f - unclamped rotation
-                light->translationLimit = 0.0f; // 0.0f - doesn't translate, above 0.0f - distance per game update translated
-                light->roundness = 1.0f;        // 0.0f - light is a square. 1.0f - light is a circle
-                light->canUseShadowMap = 1;     // light does not show up with this set to 0
+                light->defName = DEFAULT_LIGHTDEF_NAME; // all lights that aren't the sunlight or default light need their own GfxLightDef asset
+                light->rotationLimit = 1.0f;            // 1.0f - doesn't rotate, -1.0f - unclamped rotation
+                light->translationLimit = 0.0f;         // 0.0f - doesn't translate, above 0.0f - distance per game update translated
+                light->roundness = 1.0f;                // 0.0f - light is a square. 1.0f - light is a circle
+                light->canUseShadowMap = 1;             // light does not show up with this set to 0
             }
         }
 
