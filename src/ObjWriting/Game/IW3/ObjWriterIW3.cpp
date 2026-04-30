@@ -4,6 +4,7 @@
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
+#include "LightDef/LightDefDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW3.h"
@@ -36,7 +37,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperGameWorldMp)
     RegisterAssetDumper(std::make_unique<map_ents::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperGfxWorld)
-    // REGISTER_DUMPER(AssetDumperGfxLightDef)
+    RegisterAssetDumper(std::make_unique<light_def::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperFont_s)
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)

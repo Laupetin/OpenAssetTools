@@ -9,6 +9,7 @@
 #include "Game/IW3/Techset/PixelShaderLoaderIW3.h"
 #include "Game/IW3/Techset/VertexShaderLoaderIW3.h"
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
+#include "LightDef/LightDefLoaderIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
@@ -109,7 +110,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
+        collection.AddAssetCreator(light_def::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
