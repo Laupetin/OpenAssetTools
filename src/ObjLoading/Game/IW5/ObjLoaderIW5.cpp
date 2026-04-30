@@ -10,6 +10,7 @@
 #include "Game/IW5/Techset/VertexShaderLoaderIW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"
 #include "Leaderboard/LoaderLeaderboardIW5.h"
+#include "LightDef/LightDefLoaderIW5.h"
 #include "Localize/LoaderLocalizeIW5.h"
 #include "Material/LoaderMaterialIW5.h"
 #include "Menu/LoaderMenuListIW5.h"
@@ -147,7 +148,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
+        collection.AddAssetCreator(light_def::CreateLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         collection.AddAssetCreator(menu::CreateMenuListLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
