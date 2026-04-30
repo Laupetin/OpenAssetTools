@@ -8,6 +8,7 @@
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "Localize/LocalizeDumperT6.h"
 #include "Maps/MapEntsDumperT6.h"
+#include "LightDef/LightDefDumperT6.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT6.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT6.h"
 #include "Qdb/QdbDumperT6.h"
@@ -51,7 +52,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperGameWorldMp, m_game_world_mp)
     RegisterAssetDumper(std::make_unique<map_ents::DumperT6>());
     // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
-    // REGISTER_DUMPER(AssetDumperGfxLightDef, m_gfx_light_def)
+    RegisterAssetDumper(std::make_unique<light_def::DumperT6>());
     // REGISTER_DUMPER(AssetDumperFont, m_font)
     RegisterAssetDumper(font_icon::CreateDumperT6());
     // REGISTER_DUMPER(AssetDumperMenuList, m_menu_list)

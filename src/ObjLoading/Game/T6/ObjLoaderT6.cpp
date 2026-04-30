@@ -30,6 +30,7 @@
 #include "Script/LoaderScriptT6.h"
 #include "Slug/LoaderSlugT6.h"
 #include "Sound/LoaderSoundBankT6.h"
+#include "LightDef/LightDefLoaderT6.h"
 #include "StringTable/LoaderStringTableT6.h"
 #include "Tracer/GdtLoaderTracerT6.h"
 #include "Tracer/RawLoaderTracerT6.h"
@@ -399,7 +400,7 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
+            collection.AddAssetCreator(light_def::CreateLoaderT6(memory, searchPath, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
             collection.AddAssetCreator(font_icon::CreateCsvLoaderT6(memory, searchPath));
             collection.AddAssetCreator(font_icon::CreateJsonLoaderT6(memory, searchPath));
