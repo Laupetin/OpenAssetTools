@@ -93,7 +93,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MaterialTechniqueSet      | ❌              | ❌              |                                                                                                               |
 | GfxImage                  | ✅              | ✅              | A few special image encodings are not yet supported.                                                          |
 | snd_alias_list_t          | ❌              | ❌              |                                                                                                               |
-| SndCurve                  | ❌              | ❌              |                                                                                                               |
+| SndCurve                  | ✅              | ✅              |                                                                                                               |
 | LoadedSound               | ✅              | ❌              |                                                                                                               |
 | clipMap_t                 | ❌              | ❌              |                                                                                                               |
 | ComWorld                  | ❌              | ❌              |                                                                                                               |
