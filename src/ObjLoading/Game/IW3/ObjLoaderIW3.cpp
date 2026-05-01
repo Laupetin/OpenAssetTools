@@ -6,6 +6,7 @@
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/Image/ImageLoaderEmbeddedIW3.h"
 #include "Game/IW3/Image/ImageLoaderExternalIW3.h"
+#include "Game/IW3/Sound/SndAliasListLoaderIW3.h"
 #include "Game/IW3/Techset/PixelShaderLoaderIW3.h"
 #include "Game/IW3/Techset/VertexShaderLoaderIW3.h"
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
@@ -100,7 +101,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW3(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW3(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
+        collection.AddAssetCreator(snd_alias_list::CreateLoaderIW3(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
