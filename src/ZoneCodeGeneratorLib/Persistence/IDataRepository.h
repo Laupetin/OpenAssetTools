@@ -4,7 +4,7 @@
 #include "Domain/Definition/StructDefinition.h"
 #include "Domain/Definition/TypedefDefinition.h"
 #include "Domain/Definition/UnionDefinition.h"
-#include "Domain/Environment/Architecture.h"
+#include "Domain/Environment/WordSize.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "Domain/Information/StructureInformation.h"
 
@@ -30,8 +30,8 @@ public:
 
     [[nodiscard]] virtual const std::string& GetGameName() const = 0;
     virtual void SetGame(std::string gameName) = 0;
-    [[nodiscard]] virtual Architecture GetArchitecture() const = 0;
-    virtual void SetArchitecture(Architecture architecture) = 0;
+    [[nodiscard]] virtual WordSize GetWordSize() const = 0;
+    virtual void SetWordSize(WordSize wordSize) = 0;
 
     [[nodiscard]] virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
     [[nodiscard]] virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;

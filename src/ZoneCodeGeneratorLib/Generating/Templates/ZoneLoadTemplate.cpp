@@ -83,7 +83,7 @@ namespace
             m_intendation++;
 
             // Method Declarations
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 for (const auto* type : m_env.m_used_types)
                 {
@@ -190,7 +190,7 @@ namespace
             LINE("")
             PrintMainLoadMethod();
 
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 for (const auto* type : m_env.m_used_types)
                 {
@@ -899,7 +899,7 @@ namespace
             {
                 LINEF("*{0} = m_stream.{1}<{2}>({3});",
                       MakeTypePtrVarName(def),
-                      m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
+                      m_env.m_word_size_mismatch ? "AllocOutOfBlock" : "Alloc",
                       def->GetFullName(),
                       def->GetAlignment())
             }
@@ -976,7 +976,7 @@ namespace
 
             LINE("if (atStreamStart)")
 
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 LINE("{")
                 m_intendation++;
@@ -1210,7 +1210,7 @@ namespace
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
 
-                if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
+                if (computations.IsAfterPartialLoad() && !m_env.m_word_size_mismatch)
                 {
                     LINEF("LoadArray_{0}(true, {1});", MakeSafeTypeName(member->m_member->m_type_declaration->m_type), arraySizeStr)
                 }
@@ -1231,7 +1231,7 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
+            else if (computations.IsAfterPartialLoad() && !m_env.m_word_size_mismatch)
             {
                 LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
@@ -1248,12 +1248,12 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("LoadArray_{0}({1}, {2});",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      m_env.m_architecture_mismatch ? "false" : "true",
+                      m_env.m_word_size_mismatch ? "false" : "true",
                       MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
             }
             else if (info->m_has_matching_cross_platform_structure)
             {
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                 {
                     LINE("if (atStreamStart)")
                     m_intendation++;
@@ -1265,7 +1265,7 @@ namespace
                       MakeMemberAccess(info, member, modifier),
                       MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                 {
                     m_intendation--;
                 }
@@ -1279,7 +1279,7 @@ namespace
             {
                 LINEF("{0} = &{1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
 
-                if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
+                if (computations.IsAfterPartialLoad() && !m_env.m_word_size_mismatch)
                 {
                     LINEF("Load_{0}(true);", MakeSafeTypeName(member->m_member->m_type_declaration->m_type))
                 }
@@ -1300,7 +1300,7 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
+            else if (computations.IsAfterPartialLoad() && !m_env.m_word_size_mismatch)
             {
                 LINEF("m_stream.Load<{0}{1}>(&{2});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
@@ -1421,7 +1421,7 @@ namespace
 
         [[nodiscard]] bool ShouldAllocOutOfBlock(const MemberInformation& member, const MemberLoadType loadType) const
         {
-            return m_env.m_architecture_mismatch
+            return m_env.m_word_size_mismatch
                    && ((member.m_type && !member.m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
         }
 
@@ -1505,7 +1505,7 @@ namespace
             {
                 LINE("")
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINE("uintptr_t toInsertLookupEntry = 0;")
                 else
                     LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
@@ -1513,7 +1513,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
                 else
                     LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
@@ -1530,7 +1530,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINEF(
                         "m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, {0}->{1});", MakeTypeVarName(info->m_definition), member->m_member->m_name)
                 else
@@ -1909,7 +1909,7 @@ namespace
                 }
                 m_intendation--;
             }
-            else if (!m_env.m_architecture_mismatch)
+            else if (!m_env.m_word_size_mismatch)
             {
                 LINE("assert(atStreamStart);")
             }
@@ -1950,7 +1950,7 @@ namespace
             LINEF("assert({0} != nullptr);", MakeTypePtrVarName(info->m_definition))
             LINE("")
 
-            if (!m_env.m_architecture_mismatch)
+            if (!m_env.m_word_size_mismatch)
             {
                 LINE("if (atStreamStart)")
                 m_intendation++;
@@ -1987,7 +1987,7 @@ namespace
 
             LINEF("*{0} = m_stream.{1}<{2}>({3});",
                   MakeTypePtrVarName(info->m_definition),
-                  m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
+                  m_env.m_word_size_mismatch ? "AllocOutOfBlock" : "Alloc",
                   info->m_definition->GetFullName(),
                   info->m_definition->GetAlignment())
 
@@ -1995,7 +1995,7 @@ namespace
             {
                 LINE("")
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINE("uintptr_t toInsertLookupEntry = 0;")
                 else
                     LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
@@ -2003,7 +2003,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
                 else
                     LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
@@ -2050,7 +2050,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_architecture_mismatch)
+                if (m_env.m_word_size_mismatch)
                     LINEF("m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, *{0});", MakeTypePtrVarName(info->m_definition))
                 else
                     LINEF("*toInsert = *{0};", MakeTypePtrVarName(info->m_definition))

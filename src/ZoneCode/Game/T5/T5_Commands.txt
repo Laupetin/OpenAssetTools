@@ -1,6 +1,6 @@
 // Game: Black Ops (T5)
 game T5;
-architecture x86;
+wordsize 32;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

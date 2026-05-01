@@ -13,7 +13,7 @@ public:
     [[nodiscard]] const IDataRepository* GetRepository() const;
 
     void AddBlock(std::unique_ptr<FastFileBlock> block) const;
-    void SetArchitecture(Architecture architecture) const;
+    void SetWordSize(WordSize wordSize) const;
     void SetGame(std::string gameName) const;
 
     [[nodiscard]] StructureInformation* GetInUse() const;

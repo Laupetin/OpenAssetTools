@@ -79,7 +79,7 @@ namespace
             m_intendation++;
 
             // Method Declarations
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 for (const auto* type : m_env.m_used_types)
                 {
@@ -178,7 +178,7 @@ namespace
             LINE("")
             PrintMainWriteMethod();
 
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 for (const auto* type : m_env.m_used_types)
                 {
@@ -335,7 +335,7 @@ namespace
             MakeTypeWrittenVarNameInternal(info->m_definition, str);
             str << ".AtOffset(";
 
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
             {
                 str << OffsetForMemberModifier(*member, modifier, 0);
             }
@@ -837,7 +837,7 @@ namespace
 
         std::string MakeReusableInnerOffset(const DataDefinition* dataDefinition, const Variable* member) const
         {
-            if (m_env.m_architecture_mismatch)
+            if (m_env.m_word_size_mismatch)
                 return std::to_string(member->m_offset);
 
             return std::format("offsetof({0}, {1})", dataDefinition->GetFullName(), member->m_name);
