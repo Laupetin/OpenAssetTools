@@ -265,7 +265,7 @@ namespace gltf
         std::optional<unsigned> WEIGHTS_0;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMeshPrimitivesAttributes, POSITION, NORMAL, TEXCOORD_0, JOINTS_0, WEIGHTS_0);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMeshPrimitivesAttributes, POSITION, NORMAL, COLOR_0, TEXCOORD_0, JOINTS_0, WEIGHTS_0);
 
     class JsonMeshPrimitives
     {
