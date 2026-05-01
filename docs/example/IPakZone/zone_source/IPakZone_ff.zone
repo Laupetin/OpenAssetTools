@@ -4,8 +4,5 @@
 // Overwrite the name of the fastfile to be "IPakZone"
 >name,IPakZone
 
-// Set type to fastfile
->type,fastfile
-
 // Add custom assets
 image,sample_image
