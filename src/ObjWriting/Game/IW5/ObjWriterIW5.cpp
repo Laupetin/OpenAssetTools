@@ -6,6 +6,7 @@
 #include "Game/IW5/Techset/VertexShaderDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Image/ImageDumperIW5.h"
+#include "Sound/SndCurveDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"
 #include "Maps/AddonMapEntsDumperIW5.h"
@@ -40,7 +41,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW5>());
     // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
-    // REGISTER_DUMPER(AssetDumperSndCurve)
+    RegisterAssetDumper(std::make_unique<sound_curve::DumperIW5>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW5>());
     // REGISTER_DUMPER(AssetDumperclipMap_t)
     // REGISTER_DUMPER(AssetDumperComWorld)

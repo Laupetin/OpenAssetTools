@@ -6,6 +6,7 @@
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Image/ImageLoaderEmbeddedIW5.h"
 #include "Game/IW5/Image/ImageLoaderExternalIW5.h"
+#include "Sound/LoaderSoundCurveIW5.h"
 #include "Game/IW5/Techset/PixelShaderLoaderIW5.h"
 #include "Game/IW5/Techset/VertexShaderLoaderIW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"
@@ -140,7 +141,7 @@ namespace
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW5(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
+        collection.AddAssetCreator(sound_curve::CreateLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
