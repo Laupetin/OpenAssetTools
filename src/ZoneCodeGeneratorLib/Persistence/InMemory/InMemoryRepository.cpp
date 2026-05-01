@@ -1,7 +1,7 @@
 #include "InMemoryRepository.h"
 
 InMemoryRepository::InMemoryRepository()
-    : m_architecture(Architecture::UNKNOWN)
+    : m_word_size(WordSize::UNKNOWN)
 {
 }
 
@@ -83,14 +83,14 @@ void InMemoryRepository::SetGame(std::string gameName)
     m_game_name = std::move(gameName);
 }
 
-Architecture InMemoryRepository::GetArchitecture() const
+WordSize InMemoryRepository::GetWordSize() const
 {
-    return m_architecture;
+    return m_word_size;
 }
 
-void InMemoryRepository::SetArchitecture(const Architecture architecture)
+void InMemoryRepository::SetWordSize(const WordSize wordSize)
 {
-    m_architecture = architecture;
+    m_word_size = wordSize;
 }
 
 const std::vector<EnumDefinition*>& InMemoryRepository::GetAllEnums() const

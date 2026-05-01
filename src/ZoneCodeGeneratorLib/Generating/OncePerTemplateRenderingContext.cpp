@@ -5,10 +5,10 @@
 #include <algorithm>
 
 OncePerTemplateRenderingContext::OncePerTemplateRenderingContext(std::string game,
-                                                                 const Architecture gameArchitecture,
+                                                                 const WordSize gameWordSize,
                                                                  std::vector<const FastFileBlock*> fastFileBlocks,
                                                                  std::vector<StructureInformation*> assets)
-    : BaseRenderingContext(std::move(game), gameArchitecture, std::move(fastFileBlocks)),
+    : BaseRenderingContext(std::move(game), gameWordSize, std::move(fastFileBlocks)),
       m_assets(std::move(assets))
 {
     for (const auto* block : m_blocks)
@@ -35,5 +35,5 @@ std::unique_ptr<OncePerTemplateRenderingContext> OncePerTemplateRenderingContext
     }
 
     return std::make_unique<OncePerTemplateRenderingContext>(
-        OncePerTemplateRenderingContext(repository->GetGameName(), repository->GetArchitecture(), repository->GetAllFastFileBlocks(), assetInformation));
+        OncePerTemplateRenderingContext(repository->GetGameName(), repository->GetWordSize(), repository->GetAllFastFileBlocks(), assetInformation));
 }
