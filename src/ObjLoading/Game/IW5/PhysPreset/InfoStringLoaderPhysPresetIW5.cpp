@@ -2,6 +2,7 @@
 
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/InfoString/InfoStringToStructConverter.h"
+#include "Game/IW5/InfoString/EnumStrings.h"
 #include "Game/IW5/PhysPreset/PhysPresetFields.h"
 #include "Utils/Logging/Log.h"
 
@@ -31,8 +32,15 @@ namespace
     protected:
         bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
         {
-            assert(false);
-            return false;
+            switch (static_cast<PhysPresetScaling>(field.iFieldType))
+            {
+            case PPFT_SCALING:
+                return ConvertEnumInt(field.szName, value, field.iOffset, szPhysPresetScalingNames, std::extent_v<decltype(szPhysPresetScalingNames)>);
+
+            default:
+                assert(false);
+                return false;
+            }
         }
     };
 
