@@ -1,8 +1,8 @@
 #include "InfoStringLoaderPhysPresetIW5.h"
 
 #include "Game/IW5/IW5.h"
-#include "Game/IW5/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW5/InfoString/EnumStrings.h"
+#include "Game/IW5/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW5/PhysPreset/PhysPresetFields.h"
 #include "Utils/Logging/Log.h"
 
