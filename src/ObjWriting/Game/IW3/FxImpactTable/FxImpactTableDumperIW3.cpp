@@ -12,7 +12,7 @@ namespace
 {
     void DumpFxImpactEntry(const FxImpactEntry* subAsset, std::ostream& stream, const char* impactTypeName)
     {
-        for (int i = 0; i < FX_IMPACT_ENTRY_NONFLESH_COUNT; i++)
+        for (int i = 0; i < std::extent_v<decltype(fx_nonflesh_surface_type_names)>; i++)
         {
             const FxEffectDef* nonFleshDef = subAsset->nonflesh[i];
             stream << impactTypeName << ",";
@@ -24,7 +24,7 @@ namespace
             stream << "\r\n";
         }
 
-        for (int i = 0; i < FX_IMPACT_ENTRY_FLESH_COUNT; i++)
+        for (int i = 0; i < std::extent_v<decltype(fx_flesh_surface_type_names)>; i++)
         {
             const FxEffectDef* fleshDef = subAsset->flesh[i];
             stream << impactTypeName << ",";
@@ -41,7 +41,7 @@ namespace
     {
         const CsvWriter writer(stream);
 
-        for (int i = 0; i < FX_IMPACT_TABLE_ENTRY_COUNT; i++)
+        for (int i = 0; i < std::extent_v<decltype(fx_impact_type_names)>; i++)
         {
             const FxImpactEntry* tableEntry = (asset->table + i);
             if (tableEntry)

@@ -7,10 +7,6 @@
 
 namespace IW3
 {
-    static constexpr auto FX_IMPACT_TABLE_ENTRY_COUNT = 12;
-    static constexpr auto FX_IMPACT_ENTRY_NONFLESH_COUNT = 29;
-    static constexpr auto FX_IMPACT_ENTRY_FLESH_COUNT = 4;
-
     static const char* fx_impact_type_names[] = {"bullet_small_normal",
                                                  "bullet_small_exit",
                                                  "bullet_large_normal",
