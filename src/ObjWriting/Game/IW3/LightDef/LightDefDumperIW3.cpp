@@ -12,7 +12,9 @@ namespace light_def
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
 
         if (!assetFile || lightDef->attenuation.image == nullptr || lightDef->attenuation.image->name == nullptr)
+        {
             return;
+        }
 
         auto& stream = *assetFile;
 
@@ -20,6 +22,6 @@ namespace light_def
         if (imageName[0] == ',')
             imageName = &imageName[1];
 
-        stream << lightDef->attenuation.samplerState << imageName << static_cast<char>(lightDef->lmapLookupStart);
+        stream << lightDef->attenuation.samplerState << imageName;
     }
 } // namespace light_def
