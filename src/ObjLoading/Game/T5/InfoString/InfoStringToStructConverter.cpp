@@ -8,22 +8,6 @@
 
 using namespace T5;
 
-namespace
-{
-    bool GetHashValue(const std::string& value, unsigned& hash)
-    {
-        if (!value.empty() && value[0] == '@')
-        {
-            char* endPtr;
-            hash = strtoul(&value[1], &endPtr, 16);
-            return endPtr == &value[value.size()];
-        }
-
-        hash = Common::Com_HashString(value.c_str());
-        return true;
-    }
-} // namespace
-
 InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString,
                                                          void* structure,
                                                          ZoneScriptStrings& zoneScriptStrings,
