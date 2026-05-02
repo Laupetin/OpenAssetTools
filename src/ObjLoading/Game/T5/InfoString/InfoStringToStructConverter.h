@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Game/IW3/IW3.h"
+#include "Game/T5/T5.h"
 #include "InfoString/InfoStringToStructConverterBase.h"
 
-namespace IW3
+namespace T5
 {
     class InfoStringToStructConverter : public InfoStringToStructConverterBase
     {
@@ -25,4 +25,4 @@ namespace IW3
         const cspField_t* m_fields;
         size_t m_field_count;
     };
-} // namespace IW3
+} // namespace T5

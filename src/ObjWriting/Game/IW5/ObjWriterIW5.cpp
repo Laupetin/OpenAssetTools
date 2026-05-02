@@ -11,6 +11,7 @@
 #include "Maps/AddonMapEntsDumperIW5.h"
 #include "Menu/MenuDumperIW5.h"
 #include "Menu/MenuListDumperIW5.h"
+#include "PhysPreset/PhysPresetInfoStringDumperIW5.h"
 #include "RawFile/RawFileDumperIW5.h"
 #include "Script/ScriptDumperIW5.h"
 #include "Sound/LoadedSoundDumperIW5.h"
@@ -22,7 +23,7 @@ using namespace IW5;
 
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
-    // REGISTER_DUMPER(AssetDumperPhysPreset)
+    RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW5>());
     // REGISTER_DUMPER(AssetDumperPhysCollmap)
     // REGISTER_DUMPER(AssetDumperXAnimParts)
     // REGISTER_DUMPER(AssetDumperXModelSurfs)

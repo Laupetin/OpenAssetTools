@@ -1,12 +1,12 @@
 #include "InfoStringToStructConverter.h"
 
+#include "Game/T5/CommonT5.h"
 #include "Utils/Logging/Log.h"
 
 #include <cassert>
-#include <format>
 #include <iostream>
 
-using namespace IW3;
+using namespace T5;
 
 InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString,
                                                          void* structure,
@@ -40,6 +40,9 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
     case CSPFT_INT:
         return ConvertInt(value, field.iOffset);
+
+    case CSPFT_BOOL:
+        return ConvertBool(value, field.iOffset);
 
     case CSPFT_QBOOLEAN:
         return ConvertQBoolean(value, field.iOffset);
@@ -95,6 +98,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     }
 
     case CSPFT_MATERIAL:
+    case CSPFT_MATERIAL_STREAM:
     {
         if (value.empty())
         {
@@ -116,22 +120,30 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         return true;
     }
 
-    case CSPFT_SOUND:
+    case CSPFT_PHYS_PRESET:
     {
         if (value.empty())
         {
-            reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = nullptr;
+            *reinterpret_cast<PhysPreset**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* name = m_memory.Alloc<snd_alias_list_name>();
-        name->soundName = m_memory.Dup(value.c_str());
+        auto* physPreset = m_context.LoadDependency<AssetPhysPreset>(value);
 
-        reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;
+        if (physPreset == nullptr)
+        {
+            con::error("Failed to load physpreset asset \"{}\"", value);
+            return false;
+        }
 
-        m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(value));
+        m_registration.AddDependency(physPreset);
+        *reinterpret_cast<PhysPreset**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = physPreset->Asset();
+
         return true;
     }
+
+    case CSPFT_SCRIPT_STRING:
+        return ConvertScriptString(value, field.iOffset);
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:
