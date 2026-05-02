@@ -9,6 +9,7 @@
 #include "PhysPreset/PhysPresetInfoStringDumperIW3.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
+#include "Sound/SndCurveDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
 
 using namespace IW3;
@@ -28,7 +29,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
     // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
-    // REGISTER_DUMPER(AssetDumperSndCurve)
+    RegisterAssetDumper(std::make_unique<sound_curve::DumperIW3>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW3>());
     // REGISTER_DUMPER(AssetDumperClipMap)
     // REGISTER_DUMPER(AssetDumperComWorld)

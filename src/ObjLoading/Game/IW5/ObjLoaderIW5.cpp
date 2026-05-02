@@ -18,6 +18,7 @@
 #include "PhysPreset/RawLoaderPhysPresetIW5.h"
 #include "RawFile/LoaderRawFileIW5.h"
 #include "Script/LoaderScriptFileIW5.h"
+#include "Sound/LoaderSoundCurveIW5.h"
 #include "StringTable/LoaderStringTableIW5.h"
 #include "Weapon/GdtLoaderWeaponIW5.h"
 #include "Weapon/LoaderAttachmentIW5.h"
@@ -140,7 +141,7 @@ namespace
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW5(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
+        collection.AddAssetCreator(sound_curve::CreateLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
