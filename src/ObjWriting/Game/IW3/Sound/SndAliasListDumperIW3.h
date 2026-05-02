@@ -3,11 +3,14 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW3/IW3.h"
 
-namespace snd_alias_list
+namespace sound_alias_list
 {
-    class SndAliasListDumperIW3 final : public AbstractAssetDumper<IW3::AssetSound>
+    class DumperIW3 final : public AbstractAssetDumper<IW3::AssetSound>
     {
+    public:
+        void Dump(AssetDumpingContext& context) override;
+
     protected:
         void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetSound::Type>& asset) override;
     };
-} // namespace snd_alias_list
+} // namespace sound_alias_list
