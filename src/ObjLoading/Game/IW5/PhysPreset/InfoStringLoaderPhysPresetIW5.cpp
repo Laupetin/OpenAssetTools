@@ -32,7 +32,7 @@ namespace
     protected:
         bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
         {
-            switch (static_cast<PhysPresetScaling>(field.iFieldType))
+            switch (static_cast<physPresetFieldType_t>(field.iFieldType))
             {
             case PPFT_SCALING:
                 return ConvertEnumInt(field.szName, value, field.iOffset, szPhysPresetScalingNames, std::extent_v<decltype(szPhysPresetScalingNames)>);
