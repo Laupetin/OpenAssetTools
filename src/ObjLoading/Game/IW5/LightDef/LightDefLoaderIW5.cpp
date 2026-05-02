@@ -6,14 +6,13 @@
 
 #include <cstring>
 #include <format>
+#include <sstream>
 #include <iostream>
 
 using namespace IW5;
 
 namespace
 {
-    constexpr auto MAX_IMAGE_NAME_SIZE = 0x800;
-
     class LoaderLightDef final : public AssetCreator<AssetLightDef>
     {
     public:
