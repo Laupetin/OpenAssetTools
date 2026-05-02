@@ -2,6 +2,7 @@
 
 #include "Game/IW3/IW3.h"
 #include "LightDef/LightDefCommon.h"
+#include "Game/IW3/LightDef/LightDefAssetCreationStateIW3.h"
 #include "Utils/Logging/Log.h"
 
 #include <cstring>
@@ -36,6 +37,8 @@ namespace
 
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
+
+            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
 
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
