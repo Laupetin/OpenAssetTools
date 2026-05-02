@@ -9,6 +9,7 @@
 #include "Game/T5/Techset/PixelShaderLoaderT5.h"
 #include "Game/T5/Techset/VertexShaderLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
+#include "LightDef/LightDefLoaderT5.h"
 #include "Localize/LoaderLocalizeT5.h"
 #include "Material/LoaderMaterialT5.h"
 #include "ObjLoading.h"
@@ -125,7 +126,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
+        collection.AddAssetCreator(light_def::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
