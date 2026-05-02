@@ -37,16 +37,8 @@ namespace
             int8_t attenuationSamplerState;
             file.m_stream->read(reinterpret_cast<char*>(&attenuationSamplerState), sizeof(int8_t));
 
-            std::string attenuationName = "";
-            unsigned char letter;
-            file.m_stream->read(reinterpret_cast<char*>(&letter), sizeof(int8_t));
-            while (letter != '\0')
-            {
-                attenuationName += letter;
-
-                file.m_stream->read(reinterpret_cast<char*>(&letter), sizeof(int8_t));
-            }
-
+            std::string attenuationName;
+            std::getline(*file.m_stream, attenuationName, '\0');
             auto* attenuationImageDependency = context.LoadDependency<AssetImage>(attenuationName);
             if (!attenuationImageDependency)
             {
@@ -58,22 +50,17 @@ namespace
             int8_t cucolorisSamplerState;
             file.m_stream->read(reinterpret_cast<char*>(&cucolorisSamplerState), sizeof(int8_t));
 
-            std::string cucolorisName = "";
-            file.m_stream->read(reinterpret_cast<char*>(&letter), sizeof(int8_t));
-            while (letter != '\0')
-            {
-                cucolorisName += letter;
-
-                file.m_stream->read(reinterpret_cast<char*>(&cucolorisName), sizeof(int8_t));
-            }
-
+            std::string cucolorisName;
+            std::getline(*file.m_stream, cucolorisName, '\0');
             auto* cucolorisImageDependency = context.LoadDependency<AssetImage>(cucolorisName);
             if (!cucolorisImageDependency)
             {
-                con::error("Could not load GfxLightDef \"{}\" due to missing cucoloris image \"{}\"", assetName, cucolorisName);
-                return AssetCreationResult::Failure();
+                con::warn("Could not load GfxLightDef \"{}\" due to missing cucoloris image \"{}\"", assetName, cucolorisName);
             }
-            registration.AddDependency(cucolorisImageDependency);
+            else
+            {
+                registration.AddDependency(cucolorisImageDependency);
+            }
 
             int8_t lmapLookupStart;
             file.m_stream->read(reinterpret_cast<char*>(&lmapLookupStart), sizeof(int8_t));
