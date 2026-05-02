@@ -1,11 +1,13 @@
 #pragma once
 
 #include "GameLanguage.h"
+#include "IAsset.h"
 #include "Zone/ZoneTypes.h"
 
 #include <cstdint>
 #include <optional>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 enum class GameId : std::uint8_t
@@ -68,9 +70,42 @@ public:
 
     [[nodiscard]] virtual asset_type_t GetAssetTypeCount() const = 0;
     [[nodiscard]] virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
+    [[nodiscard]] virtual std::optional<asset_type_t> FindAssetTypeByName(const std::string& potentialAssetTypeName) const = 0;
 
     [[nodiscard]] virtual asset_type_t GetSubAssetTypeCount() const = 0;
     [[nodiscard]] virtual std::optional<const char*> GetSubAssetTypeName(asset_type_t subAssetType) const = 0;
 
     static IGame* GetGameById(GameId gameId);
+};
+
+class AbstractGame : public IGame
+{
+public:
+    AbstractGame(const char* const* assetTypeNames, asset_type_t assetTypeCount, const char* const* subAssetTypeNames, asset_type_t subAssetTypeCount);
+
+    [[nodiscard]] const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const override;
+
+    [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
+    [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
+    [[nodiscard]] std::optional<asset_type_t> FindAssetTypeByName(const std::string& potentialAssetTypeName) const override;
+
+    [[nodiscard]] asset_type_t GetSubAssetTypeCount() const override;
+    [[nodiscard]] std::optional<const char*> GetSubAssetTypeName(asset_type_t subAssetType) const override;
+
+protected:
+    template<AssetDefinition Asset_t> void AddAssetTypeNameAlias(const std::string& assetTypeName)
+    {
+        AddAssetTypeNameAlias(Asset_t::EnumEntry, assetTypeName);
+    }
+
+private:
+    void AddAssetTypeNameAlias(asset_type_t assetType, const std::string& assetTypeName);
+
+    const char* const* m_asset_type_names;
+    asset_type_t m_asset_type_count;
+
+    const char* const* m_sub_asset_type_names;
+    asset_type_t m_sub_asset_type_count;
+
+    std::unordered_map<std::string, asset_type_t> m_asset_type_name_lookup;
 };

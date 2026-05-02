@@ -9,7 +9,6 @@
 #include "UnlinkerArgs.h"
 #include "UnlinkerPaths.h"
 #include "Utils/Logging/Log.h"
-#include "Zone/AssetNameResolver.h"
 #include "Zone/Definition/ZoneDefWriter.h"
 #include "ZoneLoading.h"
 
@@ -105,11 +104,10 @@ namespace
             ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector(assetTypeCount, initialValue);
 
             std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
-            const AssetNameResolver assetNameResolver(gameId);
             auto anySpecifiedValueInvalid = false;
             for (const auto& specifiedValue : m_args.m_specified_asset_types)
             {
-                const auto maybeAssetType = assetNameResolver.GetAssetTypeByName(specifiedValue);
+                const auto maybeAssetType = game->FindAssetTypeByName(specifiedValue);
                 if (!maybeAssetType)
                 {
                     con::error("Unknown asset type \"{}\"", specifiedValue);

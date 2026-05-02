@@ -3,7 +3,6 @@
 #include "Csv/CsvStream.h"
 #include "Game/IGame.h"
 #include "Utils/Logging/Log.h"
-#include "Zone/AssetNameResolver.h"
 
 #include <format>
 
@@ -12,9 +11,9 @@ namespace
     class AssetListInputStream
     {
     public:
-        AssetListInputStream(std::istream& stream, const GameId game)
+        AssetListInputStream(std::istream& stream, const GameId gameId)
             : m_stream(stream),
-              m_asset_name_resolver(game)
+              m_game(*IGame::GetGameById(gameId))
         {
         }
 
@@ -33,7 +32,7 @@ namespace
                     continue;
 
                 const auto& typeName = row[0];
-                const auto maybeType = m_asset_name_resolver.GetAssetTypeByName(typeName);
+                const auto maybeType = m_game.FindAssetTypeByName(typeName);
                 if (!maybeType)
                 {
                     con::error("Unknown asset type name \"{}\"", typeName);
@@ -60,7 +59,7 @@ namespace
 
     private:
         CsvInputStream m_stream;
-        AssetNameResolver m_asset_name_resolver;
+        IGame& m_game;
     };
 } // namespace
 

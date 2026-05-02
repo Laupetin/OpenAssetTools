@@ -2,7 +2,6 @@
 
 #include "Parsing/IParserLineStream.h"
 #include "SearchPath/ISearchPath.h"
-#include "Zone/AssetNameResolver.h"
 #include "Zone/Definition/ZoneDefinition.h"
 
 #include <memory>
@@ -15,7 +14,7 @@ class ZoneDefinitionParserState
 public:
     ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream);
 
-    void SetGame(GameId game);
+    void SetGame(GameId gameId);
 
     void StartIPak(std::string ipakName);
     void StartIwd(std::string iwdName);
@@ -26,7 +25,7 @@ public:
     IParserLineStream& m_underlying_stream;
     std::unordered_set<std::string> m_inclusions;
 
-    AssetNameResolver m_asset_name_resolver;
+    std::optional<IGame*> m_game;
 
     std::optional<ZoneDefinitionObjContainer> m_current_ipak;
     std::optional<ZoneDefinitionObjContainer> m_current_iwd;
