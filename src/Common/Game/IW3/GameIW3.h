@@ -4,17 +4,13 @@
 
 namespace IW3
 {
-    class Game final : public IGame
+    class Game final : public AbstractGame
     {
     public:
+        Game();
+
         [[nodiscard]] GameId GetId() const override;
         [[nodiscard]] const std::string& GetFullName() const override;
         [[nodiscard]] const std::string& GetShortName() const override;
-        [[nodiscard]] const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const override;
-
-        [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
-        [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
-        [[nodiscard]] asset_type_t GetSubAssetTypeCount() const override;
-        [[nodiscard]] std::optional<const char*> GetSubAssetTypeName(asset_type_t subAssetType) const override;
     };
 } // namespace IW3
