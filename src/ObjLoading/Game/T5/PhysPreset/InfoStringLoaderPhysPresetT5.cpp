@@ -51,7 +51,6 @@ namespace
 
         physPreset.bulletForceScale = physPresetInfo.bulletForceScale;
         physPreset.explosiveForceScale = physPresetInfo.explosiveForceScale;
-        physPreset.sndAliasPrefix = physPresetInfo.sndAliasPrefix;
         physPreset.piecesSpreadFraction = physPresetInfo.piecesSpreadFraction;
         physPreset.piecesUpwardVelocity = physPresetInfo.piecesUpwardVelocity;
         physPreset.canFloat = physPresetInfo.canFloat;

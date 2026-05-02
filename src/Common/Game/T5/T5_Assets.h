@@ -185,7 +185,6 @@ namespace T5
         int isFrictionInfinity;
         float bulletForceScale;
         float explosiveForceScale;
-        const char* sndAliasPrefix;
         float piecesSpreadFraction;
         float piecesUpwardVelocity;
         int canFloat;
