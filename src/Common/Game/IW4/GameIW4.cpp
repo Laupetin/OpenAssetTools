@@ -29,6 +29,13 @@ namespace
 
 namespace IW4
 {
+    Game::Game()
+        : AbstractGame(ASSET_TYPE_NAMES, std::extent_v<decltype(ASSET_TYPE_NAMES)>, SUB_ASSET_TYPE_NAMES, std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
+    {
+        AddAssetTypeNameAlias<AssetTechniqueSet>("techset");
+        AddAssetTypeNameAlias<AssetLightDef>("gfxlightdef");
+    }
+
     GameId Game::GetId() const
     {
         return GameId::IW4;
@@ -44,37 +51,5 @@ namespace IW4
     {
         static std::string shortName = "IW4";
         return shortName;
-    }
-
-    const std::vector<GameLanguagePrefix>& Game::GetLanguagePrefixes() const
-    {
-        static std::vector<GameLanguagePrefix> prefixes;
-        return prefixes;
-    }
-
-    asset_type_t Game::GetAssetTypeCount() const
-    {
-        return ASSET_TYPE_COUNT;
-    }
-
-    std::optional<const char*> Game::GetAssetTypeName(const asset_type_t assetType) const
-    {
-        if (assetType < std::extent_v<decltype(ASSET_TYPE_NAMES)>)
-            return ASSET_TYPE_NAMES[assetType];
-
-        return std::nullopt;
-    }
-
-    asset_type_t Game::GetSubAssetTypeCount() const
-    {
-        return SUB_ASSET_TYPE_COUNT;
-    }
-
-    std::optional<const char*> Game::GetSubAssetTypeName(const asset_type_t subAssetType) const
-    {
-        if (subAssetType < std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
-            return SUB_ASSET_TYPE_NAMES[subAssetType];
-
-        return std::nullopt;
     }
 } // namespace IW4
