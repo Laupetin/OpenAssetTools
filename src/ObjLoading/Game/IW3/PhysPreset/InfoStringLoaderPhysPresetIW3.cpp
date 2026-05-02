@@ -41,11 +41,11 @@ namespace
 
     void CopyFromPhysPresetInfo(const PhysPresetInfo& physPresetInfo, PhysPreset& physPreset)
     {
-        physPreset.mass = std::clamp(physPresetInfo.mass, 1.0f, 2000.0f) * 0.001f;
+        physPreset.mass = physPresetInfo.mass;
         physPreset.bounce = physPresetInfo.bounce;
 
         if (physPresetInfo.isFrictionInfinity != 0)
-            physPreset.friction = std::numeric_limits<float>::infinity();
+            physPreset.friction = std::numeric_limits<float>::max();
         else
             physPreset.friction = physPresetInfo.friction;
 
