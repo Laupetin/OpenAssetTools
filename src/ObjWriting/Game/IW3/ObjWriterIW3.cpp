@@ -11,6 +11,7 @@
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "Sound/SndCurveDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
+#include "Font/FontFileDumperIW3.h"
 
 using namespace IW3;
 
@@ -38,7 +39,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<map_ents::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     // REGISTER_DUMPER(AssetDumperGfxLightDef)
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
