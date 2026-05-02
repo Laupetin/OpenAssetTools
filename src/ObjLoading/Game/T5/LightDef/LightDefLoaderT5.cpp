@@ -57,7 +57,7 @@ namespace
 
             lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = imageDependency->Asset();
-            lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
+            lightDef->lmapLookupStart = 0;
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
