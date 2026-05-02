@@ -27,7 +27,7 @@ namespace
         "gameworldmp",
         "mapents",
         "gfxworld",
-        "gfxlightdef",
+        "lightdef",
         "uimap",
         "font",
         "fonticon",
