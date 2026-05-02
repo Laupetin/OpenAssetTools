@@ -12,7 +12,7 @@ namespace T5
         {"explosiveForceScale",  offsetof(PhysPresetInfo, explosiveForceScale),  CSPFT_FLOAT   },
         {"piecesSpreadFraction", offsetof(PhysPresetInfo, piecesSpreadFraction), CSPFT_FLOAT   },
         {"piecesUpwardVelocity", offsetof(PhysPresetInfo, piecesUpwardVelocity), CSPFT_FLOAT   },
-        {"canFloat",             offsetof(PhysPresetInfo, canFloat),             CSPFT_INT     },
+        {"canFloat",             offsetof(PhysPresetInfo, canFloat),             CSPFT_QBOOLEAN},
         {"gravityScale",         offsetof(PhysPresetInfo, gravityScale),         CSPFT_FLOAT   },
         {"massOffsetX",          offsetof(PhysPresetInfo, centerOfMassOffset.x), CSPFT_FLOAT   },
         {"massOffsetY",          offsetof(PhysPresetInfo, centerOfMassOffset.y), CSPFT_FLOAT   },
