@@ -1,7 +1,6 @@
-#include "LightDefLoaderIW4.h"
+#include "LightDefLoaderT6.h"
 
-#include "Game/IW4/IW4.h"
-#include "Game/IW4/LightDef/LightDefAssetCreationStateIW4.h"
+#include "Game/T6/T6.h"
 #include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -9,7 +8,7 @@
 #include <format>
 #include <iostream>
 
-using namespace IW4;
+using namespace T6;
 
 namespace
 {
@@ -38,8 +37,6 @@ namespace
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
 
-            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
-
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
             std::string imageName(static_cast<size_t>(imageNameSize), '\0');
@@ -60,7 +57,7 @@ namespace
 
             lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = imageDependency->Asset();
-            lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
+            lightDef->lmapLookupStart = 0;
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
@@ -73,7 +70,7 @@ namespace
 
 namespace light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderLightDef>(memory, searchPath);
     }
