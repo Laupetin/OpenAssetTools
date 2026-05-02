@@ -46,6 +46,12 @@ namespace
         physPreset.sndAliasPrefix = physPresetInfo.sndAliasPrefix;
         physPreset.piecesSpreadFraction = physPresetInfo.piecesSpreadFraction;
         physPreset.piecesUpwardVelocity = physPresetInfo.piecesUpwardVelocity;
+        physPreset.minMomentum = physPresetInfo.minMomentum;
+        physPreset.maxMomentum = physPresetInfo.maxMomentum;
+        physPreset.minPitch = physPresetInfo.minPitch;
+        physPreset.maxPitch = physPresetInfo.maxPitch;
+        physPreset.volumeType = physPresetInfo.volumeType;
+        physPreset.pitchType = physPresetInfo.pitchType;
         physPreset.tempDefaultToCylinder = physPresetInfo.tempDefaultToCylinder != 0;
         physPreset.perSurfaceSndAlias = physPresetInfo.perSurfaceSndAlias != 0;
     }
