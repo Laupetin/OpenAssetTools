@@ -10,13 +10,14 @@
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
+#include "XAnim/XAnimDumperIW3.h"
 
 using namespace IW3;
 
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW3>());
-    // REGISTER_DUMPER(AssetDumperXAnimParts)
+    RegisterAssetDumper(std::make_unique<xanim::DumperIW3>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW3>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW3>());
     RegisterAssetDumper(std::make_unique<techset::DumperIW3>(
