@@ -1,6 +1,7 @@
 #include "InfoStringLoaderPhysPresetT5.h"
 
 #include "Game/T5/InfoString/InfoStringToStructConverter.h"
+#include "Game/T5/ObjConstantsT5.h"
 #include "Game/T5/PhysPreset/PhysPresetFields.h"
 #include "Game/T5/T5.h"
 #include "Utils/Logging/Log.h"
@@ -45,7 +46,7 @@ namespace
         physPreset.bounce = physPresetInfo.bounce;
 
         if (physPresetInfo.isFrictionInfinity != 0)
-            physPreset.friction = std::numeric_limits<float>::infinity();
+            physPreset.friction = MAX_FRICTION;
         else
             physPreset.friction = physPresetInfo.friction;
 
