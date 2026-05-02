@@ -1,6 +1,7 @@
 #include "LightDefLoaderIW5.h"
 
 #include "Game/IW5/IW5.h"
+#include "Game/IW5/LightDef/LightDefAssetCreationStateIW5.h"
 #include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -31,6 +32,8 @@ namespace
 
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
+
+            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
 
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
