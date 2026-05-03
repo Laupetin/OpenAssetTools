@@ -694,202 +694,178 @@ namespace
             }
         }
     }
-
-    class JsonDumper
+    
+    const char* GetExtensionForModelByConfig()
     {
-    public:
-        explicit JsonDumper(std::ostream& stream)
-            : m_stream(stream)
+        switch (ObjWriting::Configuration.ModelOutputFormat)
         {
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
+            return ".xmodel_export";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
+            return ".xmodel_bin";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
+            return ".obj";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
+            return ".gltf";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
+            return ".glb";
+        default:
+            assert(false);
+            return "";
         }
-
-        void Dump(AssetDumpingContext& context, const XModel& model) const
-        {
-            JsonXModel jsonXModel;
-            CreateJsonXModel(context, jsonXModel, model);
-            nlohmann::json jRoot = jsonXModel;
-
-            jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
-            jRoot["_type"] = "xmodel";
-            jRoot["_version"] = 2;
-            jRoot["_game"] = GAME_LOWER;
-
-            m_stream << std::setw(4) << jRoot << "\n";
-        }
-
-    private:
-        static const char* AssetName(const char* input)
-        {
-            if (input && input[0] == ',')
-                return &input[1];
-
-            return input;
-        }
-
-        static const char* GetExtensionForModelByConfig()
-        {
-            switch (ObjWriting::Configuration.ModelOutputFormat)
-            {
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
-                return ".xmodel_export";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
-                return ".xmodel_bin";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
-                return ".obj";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
-                return ".gltf";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
-                return ".glb";
-            default:
-                assert(false);
-                return "";
-            }
-        }
-
-        static bool IsAnimated(const XModel& model)
-        {
+    }
+    
+    bool IsAnimated(const XModel& model)
+    {
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-            for (auto i = 0u; i < model.numLods; i++)
-            {
-                const auto& lod = model.lodInfo[i];
-                if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
-                    continue;
+        for (auto i = 0u; i < model.numLods; i++)
+        {
+            const auto& lod = model.lodInfo[i];
+            if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
+                continue;
 
-                for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
-                {
-                    const auto& surf = model.lodInfo[i].modelSurfs->surfs[j];
-                    if (surf.vertInfo.vertsBlend)
-                        return true;
-                }
-            }
-#else
-            for (auto i = 0u; i < model.numsurfs; i++)
+            for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
             {
-                const auto& surf = model.surfs[i];
+                const auto& surf = model.lodInfo[i].modelSurfs->surfs[j];
                 if (surf.vertInfo.vertsBlend)
                     return true;
             }
-#endif
-
-            return false;
         }
-
-        static bool HasNulledTrans(const XModel& model)
-        {
-            if (model.trans == nullptr)
-                return true;
-
-            const auto transCount = (model.numBones - model.numRootBones) * 3u;
-            for (auto i = 0u; i < transCount; i++)
-            {
-                if (model.trans[i] != 0)
-                    return false;
-            }
-
-            return true;
-        }
-
-        static bool HasNonNullBoneInfoTrans(const XModel& model)
-        {
-            if (model.boneInfo == nullptr)
-                return false;
-
-            for (auto i = 0u; i < model.numBones; i++)
-            {
-                const auto& boneInfo = model.boneInfo[i];
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-                if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
-                    return true;
 #else
-                if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
-                    return true;
+        for (auto i = 0u; i < model.numsurfs; i++)
+        {
+            const auto& surf = model.surfs[i];
+            if (surf.vertInfo.vertsBlend)
+                return true;
+        }
 #endif
-            }
 
+        return false;
+    }
+    
+    bool HasNulledTrans(const XModel& model)
+    {
+        if (model.trans == nullptr)
+            return true;
+
+        const auto transCount = (model.numBones - model.numRootBones) * 3u;
+        for (auto i = 0u; i < transCount; i++)
+        {
+            if (model.trans[i] != 0)
+                return false;
+        }
+
+        return true;
+    }
+    
+    bool HasNonNullBoneInfoTrans(const XModel& model)
+    {
+        if (model.boneInfo == nullptr)
             return false;
-        }
 
-        static JsonXModelType GetType(const XModel& model)
+        for (auto i = 0u; i < model.numBones; i++)
         {
-            if (!IsAnimated(model))
-                return JsonXModelType::RIGID;
-
-            if (HasNulledTrans(model) && HasNonNullBoneInfoTrans(model))
-                return JsonXModelType::VIEWHANDS;
-
-            return JsonXModelType::ANIMATED;
+            const auto& boneInfo = model.boneInfo[i];
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
+                return true;
+#else
+            if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
+                return true;
+#endif
         }
+
+        return false;
+    }
+    
+    JsonXModelType GetType(const XModel& model)
+    {
+        if (!IsAnimated(model))
+            return JsonXModelType::RIGID;
+
+        if (HasNulledTrans(model) && HasNonNullBoneInfoTrans(model))
+            return JsonXModelType::VIEWHANDS;
+
+        return JsonXModelType::ANIMATED;
+    }
+    
+    void SetJsonRootBoneName(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+    {
+        assert(model.boneNames);
+        assert(model.boneNames[0] < context.m_zone.m_script_strings.Count());
+        assert(model.numRootBones <= 1);
         
-        static void SetJsonRootBoneName(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+        if (!model.boneNames || model.boneNames[0] >= context.m_zone.m_script_strings.Count() || model.numRootBones == 0)
+            return;
+        
+        jXModel.rootBoneName = context.m_zone.m_script_strings[model.boneNames[0]];
+    }
+    
+    void CreateJsonXModel(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+    {
+        if (model.collLod >= 0)
+            jXModel.collLod = model.collLod;
+
+        jXModel.type = GetType(model);
+        
+        if (CanOmitDefaultArmature() && HasDefaultArmatureForAllLods(model))
         {
-            assert(model.boneNames);
-            assert(model.boneNames[0] < context.m_zone.m_script_strings.Count());
-            assert(model.numRootBones <= 1);
-            
-            if (!model.boneNames || model.boneNames[0] >= context.m_zone.m_script_strings.Count() || model.numRootBones == 0)
-                return;
-            
-            jXModel.rootBoneName = context.m_zone.m_script_strings[model.boneNames[0]];
+            // If we are going to omit the armature, we need to make sure we remember the root bone name.
+            // It does not follow a specific pattern, may not be identical to the xmodel name and
+            // may be required for attaching the xmodel.
+            SetJsonRootBoneName(context, jXModel, model);
         }
 
-        static void CreateJsonXModel(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+        for (auto lodNumber = 0u; lodNumber < model.numLods; lodNumber++)
         {
-            if (model.collLod >= 0)
-                jXModel.collLod = model.collLod;
+            JsonXModelLod lod;
+            lod.file = std::format("model_export/{}_lod{}{}", model.name, lodNumber, GetExtensionForModelByConfig());
+            lod.distance = model.lodInfo[lodNumber].dist;
 
-            jXModel.type = GetType(model);
-            
-            if (CanOmitDefaultArmature() && HasDefaultArmatureForAllLods(model))
-            {
-                // If we are going to omit the armature, we need to make sure we remember the root bone name.
-                // It does not follow a specific pattern, may not be identical to the xmodel name and
-                // may be required for attaching the xmodel.
-                SetJsonRootBoneName(context, jXModel, model);
-            }
+            jXModel.lods.emplace_back(std::move(lod));
+        }
 
-            for (auto lodNumber = 0u; lodNumber < model.numLods; lodNumber++)
-            {
-                JsonXModelLod lod;
-                lod.file = std::format("model_export/{}_lod{}{}", model.name, lodNumber, GetExtensionForModelByConfig());
-                lod.distance = model.lodInfo[lodNumber].dist;
-
-                jXModel.lods.emplace_back(std::move(lod));
-            }
-
-            if (model.physPreset && model.physPreset->name)
-                jXModel.physPreset = AssetName(model.physPreset->name);
+        if (model.physPreset && model.physPreset->name)
+            jXModel.physPreset = AssetName(model.physPreset->name);
 
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-            if (model.physCollmap && model.physCollmap->name)
-                jXModel.physCollmap = AssetName(model.physCollmap->name);
+        if (model.physCollmap && model.physCollmap->name)
+            jXModel.physCollmap = AssetName(model.physCollmap->name);
 #endif
 
 #if defined(FEATURE_T5) || defined(FEATURE_T6)
-            if (model.physConstraints && model.physConstraints->name)
-                jXModel.physConstraints = AssetName(model.physConstraints->name);
+        if (model.physConstraints && model.physConstraints->name)
+            jXModel.physConstraints = AssetName(model.physConstraints->name);
 #endif
 
-            jXModel.flags = model.flags;
+        jXModel.flags = model.flags;
 
 #ifdef FEATURE_T6
-            jXModel.lightingOriginOffset.x = model.lightingOriginOffset.x;
-            jXModel.lightingOriginOffset.y = model.lightingOriginOffset.y;
-            jXModel.lightingOriginOffset.z = model.lightingOriginOffset.z;
-            jXModel.lightingOriginRange = model.lightingOriginRange;
+        jXModel.lightingOriginOffset.x = model.lightingOriginOffset.x;
+        jXModel.lightingOriginOffset.y = model.lightingOriginOffset.y;
+        jXModel.lightingOriginOffset.z = model.lightingOriginOffset.z;
+        jXModel.lightingOriginRange = model.lightingOriginRange;
 #endif
-        }
-
-        std::ostream& m_stream;
-    };
+    }
 
     void DumpXModelJson(AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
         const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset.m_name));
         if (!assetFile)
             return;
+            
+        const auto& model = *asset.Asset();
 
-        const JsonDumper dumper(*assetFile);
-        dumper.Dump(context, *asset.Asset());
+        JsonXModel jsonXModel;
+        CreateJsonXModel(context, jsonXModel, model);
+        nlohmann::json jRoot = jsonXModel;
+
+        jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
+        jRoot["_type"] = "xmodel";
+        jRoot["_version"] = 2;
+        jRoot["_game"] = GAME_LOWER;
+
+        *assetFile << std::setw(4) << jRoot << "\n";
     }
 } // namespace
 
