@@ -797,8 +797,11 @@ namespace
         
         if (!model.boneNames || model.boneNames[0] >= context.m_zone.m_script_strings.Count() || model.numRootBones == 0)
             return;
+            
+        const auto& rootBoneName = context.m_zone.m_script_strings[model.boneNames[0]];
         
-        jXModel.rootBoneName = context.m_zone.m_script_strings[model.boneNames[0]];
+        if (rootBoneName != xmodel::DEFAULT_XMODEL_ROOT_BONE_NAME)
+            jXModel.rootBoneName = rootBoneName;
     }
     
     void CreateJsonXModel(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)

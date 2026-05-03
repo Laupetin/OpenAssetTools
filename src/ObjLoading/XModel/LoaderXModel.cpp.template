@@ -163,7 +163,7 @@ namespace
             assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
 
             XModelBone rootBone{
-                .name = jXModel.rootBoneName.value_or("root"),
+                .name = jXModel.rootBoneName.value_or(xmodel::DEFAULT_XMODEL_ROOT_BONE_NAME),
                 .parentIndex = std::nullopt,
                 .scale = {1.0f, 1.0f, 1.0f},
                 .globalOffset = {0.0f, 0.0f, 0.0f},

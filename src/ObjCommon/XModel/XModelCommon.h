@@ -132,5 +132,7 @@ typedef DistinctMapper<VertexMergerPos> VertexMerger;
 
 namespace xmodel
 {
+    constexpr auto DEFAULT_XMODEL_ROOT_BONE_NAME = "";
+
     std::string GetJsonFileNameForAssetName(const std::string& assetName);
-}
+} // namespace xmodel
