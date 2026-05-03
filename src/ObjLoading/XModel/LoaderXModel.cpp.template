@@ -156,14 +156,14 @@ namespace
             return nullptr;
         }
 
-        static void AutoGenerateArmature(XModelCommon& common)
+        static void AutoGenerateArmature(XModelCommon& common, const JsonXModel& jXModel)
         {
             assert(common.m_bones.empty());
             assert(common.m_bone_weight_data.weights.empty());
             assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
 
             XModelBone rootBone{
-                .name = "root",
+                .name = jXModel.rootBoneName.value_or("root"),
                 .parentIndex = std::nullopt,
                 .scale = {1.0f, 1.0f, 1.0f},
                 .globalOffset = {0.0f, 0.0f, 0.0f},
@@ -171,7 +171,7 @@ namespace
                 .globalRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
                 .localRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
             };
-            common.m_bones.emplace_back(rootBone);
+            common.m_bones.emplace_back(std::move(rootBone));
             
             XModelBoneWeight rootWeight{.boneIndex = 0, .weight = 1.0f};
             common.m_bone_weight_data.weights.emplace_back(rootWeight);
@@ -814,7 +814,7 @@ namespace
             }
 
             if (common->m_bones.empty())
-                AutoGenerateArmature(*common);
+                AutoGenerateArmature(*common, jXModel);
 
             if (lodNumber == 0u)
             {
