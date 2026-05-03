@@ -34,7 +34,7 @@ namespace
 
     void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
     {
-        physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
+        physPresetInfo->mass = physPreset->mass;
         physPresetInfo->bounce = physPreset->bounce;
 
         if (std::isinf(physPreset->friction))
