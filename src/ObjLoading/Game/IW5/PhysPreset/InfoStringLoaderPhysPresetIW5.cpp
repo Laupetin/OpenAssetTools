@@ -48,7 +48,12 @@ namespace
     {
         physPreset.mass = physPresetInfo.mass;
         physPreset.bounce = physPresetInfo.bounce;
-        physPreset.friction = physPresetInfo.friction;
+
+        if (physPresetInfo.isFrictionInfinity != 0)
+            physPreset.friction = std::numeric_limits<float>::max();
+        else
+            physPreset.friction = physPresetInfo.friction;
+
         physPreset.bulletForceScale = physPresetInfo.bulletForceScale;
         physPreset.explosiveForceScale = physPresetInfo.explosiveForceScale;
         physPreset.sndAliasPrefix = physPresetInfo.sndAliasPrefix;
