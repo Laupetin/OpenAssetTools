@@ -206,6 +206,7 @@ namespace IW5
         float mass;
         float bounce;
         float friction;
+        int isFrictionInfinity;
         float bulletForceScale;
         float explosiveForceScale;
         const char* sndAliasPrefix;
