@@ -45,7 +45,7 @@ namespace
         physPreset.bounce = physPresetInfo.bounce;
 
         if (physPresetInfo.isFrictionInfinity != 0)
-            physPreset.friction = std::numeric_limits<float>::infinity();
+            physPreset.friction = std::numeric_limits<float>::max();
         else
             physPreset.friction = physPresetInfo.friction;
 

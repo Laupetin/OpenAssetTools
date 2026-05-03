@@ -37,7 +37,7 @@ namespace
         physPresetInfo->mass = physPreset->mass;
         physPresetInfo->bounce = physPreset->bounce;
 
-        if (std::isinf(physPreset->friction))
+        if (physPreset->friction >= std::numeric_limits<float>::max())
         {
             physPresetInfo->isFrictionInfinity = 1;
             physPresetInfo->friction = 0;
