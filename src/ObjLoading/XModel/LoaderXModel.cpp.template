@@ -323,8 +323,12 @@ namespace
             {
                 xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
 
-                // For some reason Treyarch games allocate for a vec4 here. it is treated as a vec3 though?
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+                // For some reason some games allocate for a vec4 here. it is treated as a vec3 though?
                 xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
+#else
+                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 3u);
+#endif
                 xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
             }
             else
@@ -373,7 +377,11 @@ namespace
             // Viewhands seem to have nulled trans for some reason?
             if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
             {
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
                 memset(xmodel.trans, 0, sizeof(float) * 4 * (xmodel.numBones - xmodel.numRootBones));
+#else
+                memset(xmodel.trans, 0, sizeof(float) * 3 * (xmodel.numBones - xmodel.numRootBones));
+#endif
             }
 
             return true;
