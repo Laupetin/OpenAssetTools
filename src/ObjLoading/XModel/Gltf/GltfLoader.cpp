@@ -15,6 +15,7 @@
 #include <limits>
 #include <nlohmann/json.hpp>
 #include <numbers>
+#include <numeric>
 #include <string>
 
 using namespace gltf;
@@ -315,7 +316,7 @@ namespace
                     || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !uvAccessor->GetFloatVec2(vertexIndex, vertex.uv)
                     || !jointsAccessor->GetUnsignedVec4(vertexIndex, joints) || !weightsAccessor->GetFloatVec4(vertexIndex, weights))
                 {
-                    return false;
+                    throw GltfLoadException("Failed to load vertex data from accessors");
                 }
 
                 RhcToLhcCoordinates(vertex.coordinates);
@@ -329,7 +330,16 @@ namespace
                     if (std::abs(weights[i]) < std::numeric_limits<float>::epsilon())
                         continue;
 
-                    common.m_bone_weight_data.weights.emplace_back(joints[i], weights[i]);
+                    assert(joints[i] < m_gltf_to_common_joint_index_lookup.size());
+                    if (joints[i] >= m_gltf_to_common_joint_index_lookup.size())
+                    {
+                        throw GltfLoadException(std::format(
+                            "Vertex weight referenced joint {} (there are only {} joints in skin)", joints[i], m_gltf_to_common_joint_index_lookup.size()));
+                    }
+
+                    const auto xmodelBoneIndex = m_gltf_to_common_joint_index_lookup[joints[i]];
+
+                    common.m_bone_weight_data.weights.emplace_back(xmodelBoneIndex, weights[i]);
                     vertexWeights.weightCount++;
                 }
 
@@ -616,6 +626,54 @@ namespace
             return true;
         }
 
+        void ReorderBonesForXModels(XModelCommon& common)
+        {
+            const auto boneCount = common.m_bones.size();
+            m_gltf_to_common_joint_index_lookup.resize(boneCount);
+            auto reorderedBoneIndex = 0u;
+
+            std::deque<unsigned> parentIndicesToTraverse;
+            for (auto boneIndex = 0u; boneIndex < boneCount; ++boneIndex)
+            {
+                const auto& bone = common.m_bones[boneIndex];
+                if (!bone.parentIndex.has_value())
+                {
+                    parentIndicesToTraverse.emplace_back(boneIndex);
+                    m_gltf_to_common_joint_index_lookup[boneIndex] = reorderedBoneIndex++;
+                }
+            }
+
+            while (!parentIndicesToTraverse.empty())
+            {
+                const auto parentIndex = parentIndicesToTraverse.front();
+                parentIndicesToTraverse.pop_front();
+
+                for (auto boneIndex = 0u; boneIndex < boneCount; ++boneIndex)
+                {
+                    const auto& bone = common.m_bones[boneIndex];
+                    if (bone.parentIndex.has_value() && *bone.parentIndex == parentIndex)
+                    {
+                        parentIndicesToTraverse.emplace_back(boneIndex);
+                        m_gltf_to_common_joint_index_lookup[boneIndex] = reorderedBoneIndex++;
+                    }
+                }
+            }
+
+            assert(reorderedBoneIndex == boneCount);
+
+            std::vector<XModelBone> reorderedBones(boneCount);
+            for (size_t boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+            {
+                auto& reorderedBone = reorderedBones[m_gltf_to_common_joint_index_lookup[boneIndex]];
+                reorderedBone = std::move(common.m_bones[boneIndex]);
+
+                if (reorderedBone.parentIndex.has_value())
+                    reorderedBone.parentIndex = m_gltf_to_common_joint_index_lookup[*reorderedBone.parentIndex];
+            }
+
+            common.m_bones = std::move(reorderedBones);
+        }
+
         bool ConvertSkin(const JsonRoot& jRoot, const JsonSkin& skin, XModelCommon& common)
         {
             if (skin.joints.empty())
@@ -627,8 +685,9 @@ namespace
             if (rootNodes.empty())
                 rootNodes.emplace_back(skin.joints[0]);
 
-            const auto skinBoneOffset = static_cast<unsigned>(common.m_bones.size());
-            common.m_bones.resize(skinBoneOffset + skin.joints.size());
+            // Only one skin per GLTF allowed, more would require more complex mapping and reordering
+            assert(common.m_bones.empty());
+            common.m_bones.resize(skin.joints.size());
 
             constexpr Eigen::Vector3f defaultTranslation(0.0f, 0.0f, 0.0f);
             const Eigen::Quaternionf defaultRotation(1.0f, 0.0f, 0.0f, 0.0f);
@@ -636,13 +695,12 @@ namespace
 
             for (const auto rootNode : rootNodes)
             {
-                if (!ConvertJoint(jRoot, skin, common, skinBoneOffset, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale))
+                if (!ConvertJoint(jRoot, skin, common, 0, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale))
                     return false;
             }
 
+            ReorderBonesForXModels(common);
             common.CalculateBoneLocalsFromGlobals();
-
-            // TODO: Reorder bones if necessary and prepare lookup
 
             return true;
         }
@@ -838,7 +896,15 @@ namespace
         std::vector<std::unique_ptr<BufferView>> m_buffer_views;
         std::vector<std::unique_ptr<Buffer>> m_buffers;
 
+        // Old gltf support for OAT used bad formulas to calculate right-handed coordinate system rotations
+        // To make the fixed code be backwards compatible, old behaviour can be restored with this setting.
         bool m_bad_rotation_formulas;
+
+        // We may need to reorder bones to account for the constraints of xmodels:
+        // Root bones have the lowest indices and the index of the parent of each bone must be lower than its own.
+        // The index in this vector is the joint index of the gltf.
+        // The value is the index in the common xmodel.
+        std::vector<unsigned> m_gltf_to_common_joint_index_lookup;
     };
 } // namespace
 
