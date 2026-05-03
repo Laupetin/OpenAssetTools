@@ -161,28 +161,28 @@ namespace
         return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
-    bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
+    bool GetSurfaces(const XModel& model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-        if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
+        if (!model.lodInfo[lod].modelSurfs || !model.lodInfo[lod].modelSurfs->surfs)
             return false;
 
-        surfs = model->lodInfo[lod].modelSurfs->surfs;
-        surfCount = model->lodInfo[lod].modelSurfs->numsurfs;
+        surfs = model.lodInfo[lod].modelSurfs->surfs;
+        surfCount = model.lodInfo[lod].modelSurfs->numsurfs;
 #else
-        if (!model->surfs)
+        if (!model.surfs)
             return false;
 
-        surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        surfCount = model->lodInfo[lod].numsurfs;
+        surfs = &model.surfs[model.lodInfo[lod].surfIndex];
+        surfCount = model.lodInfo[lod].numsurfs;
 #endif
 
         return true;
     }
 
-    bool HasDefaultArmatureForLod(const XModel* model, const unsigned lod)
+    bool HasDefaultArmatureForLod(const XModel& model, const unsigned lod)
     {
-        if (model->numRootBones != 1 || model->numBones != 1)
+        if (model.numRootBones != 1 || model.numBones != 1)
             return false;
 
         XSurface* surfs;
@@ -213,9 +213,9 @@ namespace
         return true;
     }
     
-    bool HasDefaultArmatureForAllLods(const XModel* model)
+    bool HasDefaultArmatureForAllLods(const XModel& model)
     {
-        for (auto lod = 0u; lod < model->numLods; lod++)
+        for (auto lod = 0u; lod < model.numLods; lod++)
         {
             if (!HasDefaultArmatureForLod(model, lod))
                 return false;
@@ -348,7 +348,7 @@ namespace
     {
         XSurface* surfs;
         unsigned surfCount;
-        if (!GetSurfaces(model, lod, surfs, surfCount))
+        if (!GetSurfaces(*model, lod, surfs, surfCount))
             return;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -376,7 +376,7 @@ namespace
     {
         XSurface* surfs;
         unsigned surfCount;
-        if (!GetSurfaces(model, lod, surfs, surfCount))
+        if (!GetSurfaces(*model, lod, surfs, surfCount))
             return;
 
         auto totalWeightCount = 0u;
@@ -410,7 +410,7 @@ namespace
     {
         XSurface* surfs;
         unsigned surfCount;
-        if (!GetSurfaces(model, lod, surfs, surfCount))
+        if (!GetSurfaces(*model, lod, surfs, surfCount))
             return;
 
         auto& weightCollection = out.m_bone_weight_data;
@@ -529,7 +529,7 @@ namespace
     {
         XSurface* surfs;
         unsigned surfCount;
-        if (!GetSurfaces(model, lod, surfs, surfCount))
+        if (!GetSurfaces(*model, lod, surfs, surfCount))
             return;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -570,7 +570,7 @@ namespace
         
         // Keep armature handling consistent across all LODs so dumped GLTF/GLB round-trips
         // preserve the same bone layout when re-imported.
-        if (!CanOmitDefaultArmature() || !HasDefaultArmatureForAllLods(model))
+        if (!CanOmitDefaultArmature() || !HasDefaultArmatureForAllLods(*model))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
@@ -698,15 +698,15 @@ namespace
     class JsonDumper
     {
     public:
-        JsonDumper(AssetDumpingContext& context, std::ostream& stream)
+        explicit JsonDumper(std::ostream& stream)
             : m_stream(stream)
         {
         }
 
-        void Dump(const XModel* xmodel) const
+        void Dump(AssetDumpingContext& context, const XModel* xmodel) const
         {
             JsonXModel jsonXModel;
-            CreateJsonXModel(jsonXModel, *xmodel);
+            CreateJsonXModel(context, jsonXModel, *xmodel);
             nlohmann::json jRoot = jsonXModel;
 
             jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
@@ -819,13 +819,33 @@ namespace
 
             return JsonXModelType::ANIMATED;
         }
+        
+        static void SetJsonRootBoneName(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& xmodel)
+        {
+            assert(xmodel.boneNames);
+            assert(xmodel.boneNames[0] < context.m_zone.m_script_strings.Count());
+            assert(xmodel.numRootBones <= 1);
+            
+            if (!xmodel.boneNames || xmodel.boneNames[0] >= context.m_zone.m_script_strings.Count() || xmodel.numRootBones == 0)
+                return;
+            
+            jXModel.rootBoneName = context.m_zone.m_script_strings[xmodel.boneNames[0]];
+        }
 
-        static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
+        static void CreateJsonXModel(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& xmodel)
         {
             if (xmodel.collLod >= 0)
                 jXModel.collLod = xmodel.collLod;
 
             jXModel.type = GetType(xmodel);
+            
+            if (CanOmitDefaultArmature() && HasDefaultArmatureForAllLods(xmodel))
+            {
+                // If we are going to omit the armature, we need to make sure we remember the root bone name.
+                // It does not follow a specific pattern, may not be identical to the xmodel name and
+                // may be required for attaching the xmodel.
+                SetJsonRootBoneName(context, jXModel, xmodel);
+            }
 
             for (auto lodNumber = 0u; lodNumber < xmodel.numLods; lodNumber++)
             {
@@ -868,8 +888,8 @@ namespace
         if (!assetFile)
             return;
 
-        const JsonDumper dumper(context, *assetFile);
-        dumper.Dump(asset.Asset());
+        const JsonDumper dumper(*assetFile);
+        dumper.Dump(context, asset.Asset());
     }
 } // namespace
 
