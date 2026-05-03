@@ -180,7 +180,7 @@ namespace
         return true;
     }
 
-    bool HasDefaultArmature(const XModel* model, const unsigned lod)
+    bool HasDefaultArmatureForLod(const XModel* model, const unsigned lod)
     {
         if (model->numRootBones != 1 || model->numBones != 1)
             return false;
@@ -210,6 +210,17 @@ namespace
                 return false;
         }
 
+        return true;
+    }
+    
+    bool HasDefaultArmatureForAllLods(const XModel* model)
+    {
+        for (auto lod = 0u; lod < model->numLods; lod++)
+        {
+            if (!HasDefaultArmatureForLod(model, lod))
+                return false;
+        }
+        
         return true;
     }
 
@@ -557,7 +568,9 @@ namespace
         AddXModelVertices(out, model, lod);
         AddXModelFaces(out, model, lod);
         
-        if (!CanOmitDefaultArmature() || !HasDefaultArmature(model, lod))
+        // Keep armature handling consistent across all LODs so dumped GLTF/GLB round-trips
+        // preserve the same bone layout when re-imported.
+        if (!CanOmitDefaultArmature() || !HasDefaultArmatureForAllLods(model))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
