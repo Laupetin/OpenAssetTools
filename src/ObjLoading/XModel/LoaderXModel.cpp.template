@@ -183,6 +183,21 @@ namespace
             }
         }
 
+        static void CheckSpecifiedRootBoneName(XModelCommon& common, const JsonXModel& jXModel)
+        {
+            assert(!common.m_bones.empty());
+            
+            if (!jXModel.rootBoneName)
+                return;
+            
+            if (*jXModel.rootBoneName != common.m_bones[0].name)
+            {
+                con::warn(
+                    "Root bone name of model json {} does not match the model's root bone name. The name from the xmodel json is ignored and can be removed!",
+                    common.m_name);
+            }
+        }
+
         static void ApplyBasePose(DObjAnimMat& baseMat, const XModelBone& bone)
         {
             baseMat.trans.x = bone.globalOffset[0];
@@ -815,6 +830,8 @@ namespace
 
             if (common->m_bones.empty())
                 AutoGenerateArmature(*common, jXModel);
+            else
+                CheckSpecifiedRootBoneName(*common, jXModel);
 
             if (lodNumber == 0u)
             {
