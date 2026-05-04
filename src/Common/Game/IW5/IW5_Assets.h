@@ -516,6 +516,11 @@ namespace IW5
 
     typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
+    enum XSurfaceFlag
+    {
+        XSURFACE_FLAG_DEFORMED = 0x40
+    };
+
     struct XSurface
     {
         unsigned char tileMode;

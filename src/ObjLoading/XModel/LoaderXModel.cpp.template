@@ -752,9 +752,14 @@ namespace
 
             // Since bone weights are sorted by weight count, the last must have the highest weight count
             const auto maxWeightCount = common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
-            const auto modelIsRigid = maxWeightCount <= 1;
+            const auto surfaceIsRigid = maxWeightCount <= 1;
 
-            if (modelIsRigid)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+            surface.deformed = !surfaceIsRigid;
+#else
+            surface.flags |= XSURFACE_FLAG_DEFORMED;
+#endif
+            if (surfaceIsRigid)
             {
                 constexpr auto maxVerticesForRigid = static_cast<size_t>(std::numeric_limits<decltype(XSurface::vertCount)>::max());
                 if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVerticesForRigid)
@@ -790,7 +795,7 @@ namespace
 
             if (!common.m_bone_weight_data.weights.empty())
             {
-                if (modelIsRigid)
+                if (surfaceIsRigid)
                 {
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 }
