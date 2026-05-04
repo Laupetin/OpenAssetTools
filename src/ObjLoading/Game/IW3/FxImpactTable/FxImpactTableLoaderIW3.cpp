@@ -4,10 +4,10 @@
 #include "Game/IW3/IW3.h"
 #include "Utils/Logging/Log.h"
 
-#include <format>
-#include <iostream>
 #include <Csv/CsvStream.h>
 #include <Game/IW3/FxImpactTable/FxImpactTableFields.h>
+#include <format>
+#include <iostream>
 
 using namespace IW3;
 
@@ -32,8 +32,7 @@ namespace
                 return AssetCreationResult::NoAction();
 
             size_t entryCount = std::extent_v<decltype(fx_impact_type_names)>
-                                * (std::extent_v<decltype(fx_nonflesh_surface_type_names)> 
-                                    + std::extent_v<decltype(fx_flesh_surface_type_names)>);
+                                * (std::extent_v<decltype(fx_nonflesh_surface_type_names)> + std::extent_v<decltype(fx_flesh_surface_type_names)>);
 
             auto* fxImpactTable = m_memory.Alloc<FxImpactTable>();
             fxImpactTable->name = m_memory.Dup(assetName.c_str());

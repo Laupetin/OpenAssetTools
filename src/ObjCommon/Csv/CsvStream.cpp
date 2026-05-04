@@ -2,9 +2,9 @@
 
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <sstream>
-#include <algorithm>
 
 constexpr char CSV_SEPARATOR = ',';
 
