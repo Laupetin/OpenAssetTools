@@ -530,7 +530,7 @@ namespace IW3
         int16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
-        char flags;
+        unsigned char flags;
         bool bad;
         PhysPreset* physPreset;
         PhysGeomList* physGeoms;

@@ -12,10 +12,10 @@ ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISe
     m_definition->m_name = std::move(targetName);
 }
 
-void ZoneDefinitionParserState::SetGame(const GameId game)
+void ZoneDefinitionParserState::SetGame(const GameId gameId)
 {
-    m_definition->m_game = game;
-    m_asset_name_resolver = AssetNameResolver(game);
+    m_definition->m_game = gameId;
+    m_game = IGame::GetGameById(gameId);
 }
 
 namespace
