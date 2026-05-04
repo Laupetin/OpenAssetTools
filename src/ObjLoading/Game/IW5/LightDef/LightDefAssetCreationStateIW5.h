@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Asset/IZoneAssetCreationState.h"
 #include "Asset/AssetCreationContext.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "Game/IW5/IW5.h"
 
 namespace IW5
@@ -18,4 +18,4 @@ namespace IW5
     private:
         int m_lmap_pixels_used_for_falloff;
     };
-} // namespace light_def
+} // namespace IW5

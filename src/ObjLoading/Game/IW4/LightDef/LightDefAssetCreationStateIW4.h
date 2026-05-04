@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Asset/IZoneAssetCreationState.h"
 #include "Asset/AssetCreationContext.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "Game/IW4/IW4.h"
 
 namespace IW4
@@ -18,4 +18,4 @@ namespace IW4
     private:
         int m_lmap_pixels_used_for_falloff;
     };
-} // namespace
+} // namespace IW4

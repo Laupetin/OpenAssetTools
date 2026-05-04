@@ -1,8 +1,8 @@
 #include "LightDefLoaderIW3.h"
 
 #include "Game/IW3/IW3.h"
-#include "LightDef/LightDefCommon.h"
 #include "Game/IW3/LightDef/LightDefAssetCreationStateIW3.h"
+#include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
 
 #include <cstring>
