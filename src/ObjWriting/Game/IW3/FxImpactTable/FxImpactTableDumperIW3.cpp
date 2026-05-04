@@ -19,7 +19,14 @@ namespace
             stream << fx_nonflesh_surface_type_names[i] << ",";
             if (nonFleshDef && nonFleshDef->name)
             {
-                stream << nonFleshDef->name;
+                if (nonFleshDef->name[0] == ',')
+                {
+                    stream << nonFleshDef->name + 1;
+                }
+                else
+                {
+                    stream << nonFleshDef->name;
+                }
             }
             stream << "\r\n";
         }
@@ -31,7 +38,14 @@ namespace
             stream << fx_flesh_surface_type_names[i] << ",";
             if (fleshDef && fleshDef->name)
             {
-                stream << fleshDef->name;
+                if (fleshDef->name[0] == ',')
+                {
+                    stream << fleshDef->name + 1;
+                }
+                else
+                {
+                    stream << fleshDef->name;
+                }
             }
             stream << "\r\n";
         }
@@ -59,15 +73,7 @@ namespace fx_impact_table
     void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<FxImpactTable>& asset)
     {
         const auto* fxImpactTable = asset.Asset();
-        std::unique_ptr<std::ostream> assetFile;
-        if (asset.m_name == "")
-        {
-            assetFile = context.OpenAssetFile(std::format("fx/iw_impacts.csv"));
-        }
-        else
-        {
-            assetFile = context.OpenAssetFile(std::format("fx/{}", asset.m_name + ".csv"));
-        }
+        std::unique_ptr<std::ostream> assetFile = context.OpenAssetFile(std::format("fx/{}", context.m_zone.m_name + ".csv"));
 
         if (!assetFile)
             return;
