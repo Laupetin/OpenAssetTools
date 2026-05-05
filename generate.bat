@@ -50,6 +50,14 @@ cd %~dp0
 
 :start
 
+IF NOT EXIST ".git" (
+    git rev-parse --is-inside-work-tree >NUL 2>&1
+    IF ERRORLEVEL 1 (
+        echo You must clone the repository using 'git clone'. Please read README.md.
+        exit 1
+    )
+)
+
 IF "%PREMAKE_NO_GLOBAL%" EQU "" (
     where /Q "premake5.exe"
     IF NOT ERRORLEVEL 1 (
