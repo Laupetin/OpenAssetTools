@@ -62,9 +62,13 @@ namespace
                 {
                     fxImpactTable->table->nonflesh[currentRowIndex - 1]->name = currentRow[2].c_str();
                 }
-                else
+                else if (currentRowIndex - 1 < std::extent_v<decltype(fx_flesh_surface_type_names)> + std::extent_v<decltype(fx_nonflesh_surface_type_names)>)
                 {
                     fxImpactTable->table->flesh[currentRowIndex - 1]->name = currentRow[2].c_str();
+                }
+                else
+                {
+                    con::warn("Found extra entry #{} in FxImpactTable!", currentRowIndex);
                 }
             }
 
