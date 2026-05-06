@@ -14,6 +14,11 @@ using namespace IW3;
 namespace
 {
     constexpr unsigned COL_COUNT_MIN = 3;
+    constexpr unsigned NON_FLESH_COUNT = std::extent_v<decltype(fx_nonflesh_surface_type_names)>;
+    constexpr unsigned FLESH_COUNT = std::extent_v<decltype(fx_flesh_surface_type_names)>;
+    constexpr unsigned SURFACE_COUNT = NON_FLESH_COUNT + FLESH_COUNT;
+    constexpr unsigned IMPACT_COUNT = std::extent_v<decltype(fx_impact_type_names)>;
+    constexpr unsigned ENTRY_COUNT = IMPACT_COUNT * (NON_FLESH_COUNT + FLESH_COUNT);
 
     class FxImpactTableLoader : public AssetCreator<AssetImpactFx>
     {
@@ -31,19 +36,27 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            size_t entryCount = std::extent_v<decltype(fx_impact_type_names)>
-                                * (std::extent_v<decltype(fx_nonflesh_surface_type_names)> + std::extent_v<decltype(fx_flesh_surface_type_names)>);
-
             auto* fxImpactTable = m_memory.Alloc<FxImpactTable>();
             fxImpactTable->name = m_memory.Dup(assetName.c_str());
-            fxImpactTable->table = m_memory.Alloc<FxImpactEntry>(entryCount);
+            fxImpactTable->table = m_memory.Alloc<FxImpactEntry>(IMPACT_COUNT);
             AssetRegistration<AssetImpactFx> registration(assetName, fxImpactTable);
+
+            for (size_t i = 0; i < IMPACT_COUNT; ++i)
+            {
+                auto& entry = fxImpactTable->table[i];
+
+                for (auto& ptr : entry.nonflesh)
+                    ptr = nullptr;
+
+                for (auto& ptr : entry.flesh)
+                    ptr = nullptr;
+            }
 
             const CsvInputStream csv(*file.m_stream);
             std::vector<std::string> currentRow;
-            std::vector<FxImpactEntry> entries;
-            auto currentRowIndex = 0u;
 
+            auto currentRowIndex = 0u;
+            auto dataRowIndex = 0u;
             while (csv.NextRow(currentRow))
             {
                 currentRowIndex++;
@@ -58,17 +71,38 @@ namespace
                     return AssetCreationResult::Failure();
                 }
 
-                if (currentRowIndex - 1 < std::extent_v<decltype(fx_nonflesh_surface_type_names)>)
+                const std::string& name = currentRow[2];
+                if (name.empty())
                 {
-                    fxImpactTable->table->nonflesh[currentRowIndex - 1]->name = currentRow[2].c_str();
+                    continue;
                 }
-                else if (currentRowIndex - 1 < std::extent_v<decltype(fx_flesh_surface_type_names)> + std::extent_v<decltype(fx_nonflesh_surface_type_names)>)
+
+                const size_t rowIndex = dataRowIndex++;
+                if (rowIndex >= ENTRY_COUNT)
                 {
-                    fxImpactTable->table->flesh[currentRowIndex - 1]->name = currentRow[2].c_str();
+                    con::warn("Found extra entry #{} in FxImpactTable!", currentRowIndex);
+                    continue;
+                }
+
+                const size_t impactIndex = rowIndex / SURFACE_COUNT;
+                const size_t surfaceIndex = rowIndex % SURFACE_COUNT;
+                auto& entry = fxImpactTable->table[impactIndex];
+
+                auto makeFx = [&]() -> FxEffectDef*
+                {
+                    if (name.empty())
+                        return nullptr;
+
+                    return context.ForceLoadDependency<AssetFx>(name)->Asset();
+                };
+
+                if (surfaceIndex < NON_FLESH_COUNT)
+                {
+                    entry.nonflesh[surfaceIndex] = makeFx();
                 }
                 else
                 {
-                    con::warn("Found extra entry #{} in FxImpactTable!", currentRowIndex);
+                    entry.flesh[surfaceIndex - NON_FLESH_COUNT] = makeFx();
                 }
             }
 
