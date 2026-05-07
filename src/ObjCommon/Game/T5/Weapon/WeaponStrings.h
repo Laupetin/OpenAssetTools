@@ -212,4 +212,4 @@ namespace T5
         "fmj",    "gl",   "grip",     "holo",      "ir",        "is",        "longbreath", "mk",        "mms",      "rangefinder",
         "reflex", "rf",   "sf",       "silencer",  "stackfire", "stalker",   "steadyaim",  "swayreduc", "tacknife", "vzoom",
     };
-} // namespace T6
+} // namespace T5

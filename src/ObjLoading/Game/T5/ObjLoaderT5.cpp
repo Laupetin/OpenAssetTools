@@ -10,14 +10,14 @@
 #include "Game/T5/Techset/VertexShaderLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "Localize/LoaderLocalizeT5.h"
-#include "Weapon/WeaponGdtLoaderT5.h"
-#include "Weapon/WeaponRawLoaderT5.h"
 #include "Material/LoaderMaterialT5.h"
 #include "ObjLoading.h"
 #include "PhysPreset/GdtLoaderPhysPresetT5.h"
 #include "PhysPreset/RawLoaderPhysPresetT5.h"
 #include "RawFile/LoaderRawFileT5.h"
 #include "StringTable/LoaderStringTableT5.h"
+#include "Weapon/WeaponGdtLoaderT5.h"
+#include "Weapon/WeaponRawLoaderT5.h"
 
 #include <memory>
 

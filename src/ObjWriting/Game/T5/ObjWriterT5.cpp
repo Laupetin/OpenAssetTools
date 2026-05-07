@@ -5,10 +5,10 @@
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "Image/ImageDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
-#include "Weapon/WeaponDumperT5.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
+#include "Weapon/WeaponDumperT5.h"
 
 using namespace T5;
 
