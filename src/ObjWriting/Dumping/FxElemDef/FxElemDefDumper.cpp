@@ -132,7 +132,7 @@ void FxElemDefDumper::WriteFloatArray(const std::string& key, const float* float
 
     Indent();
     m_stream << key;
-    for (int i = 0; i < floatCount; i++)
+    for (unsigned int i = 0; i < floatCount; i++)
     {
         m_stream << " " << *(floatArray + i);
     }
