@@ -22,7 +22,7 @@ namespace
     }
 
     void DumpFxElemDef(
-        const FxElemDef* subAsset, const FxEffectDef& fxEffectDef, FxElemDefDumper& fxElemDefDumper, unsigned int defIndex, unsigned int elemDefCountLooping)
+        const FxElemDef* subAsset, const FxEffectDef& fxEffectDef, FxElemDefDumper& fxElemDefDumper, unsigned int defIndex)
     {
         fxElemDefDumper.BeginElement();
 
@@ -224,14 +224,14 @@ namespace fx_effect_def
         fxElemDefDumper.Init();
 
         size_t defCount = fxEffectDef->elemDefCountEmission + fxEffectDef->elemDefCountLooping + fxEffectDef->elemDefCountOneShot;
-        for (int i = 0; i < defCount; i++)
+        for (unsigned int i = 0; i < defCount; i++)
         {
             auto* elemDef = &fxEffectDef->elemDefs[i];
             if (!elemDef)
             {
                 continue;
             }
-            DumpFxElemDef(elemDef, *fxEffectDef, fxElemDefDumper, i, fxEffectDef->elemDefCountLooping);
+            DumpFxElemDef(elemDef, *fxEffectDef, fxElemDefDumper, i);
         }
     }
 } // namespace fx_effect_def
