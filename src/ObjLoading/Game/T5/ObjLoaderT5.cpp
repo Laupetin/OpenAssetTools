@@ -10,6 +10,8 @@
 #include "Game/T5/Techset/VertexShaderLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "Localize/LoaderLocalizeT5.h"
+#include "Weapon/WeaponGdtLoaderT5.h"
+#include "Weapon/WeaponRawLoaderT5.h"
 #include "Material/LoaderMaterialT5.h"
 #include "ObjLoading.h"
 #include "PhysPreset/GdtLoaderPhysPresetT5.h"
@@ -130,7 +132,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderT5(memory, searchPath, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
+        collection.AddAssetCreator(weapon::CreateRawLoaderT5(memory, searchPath, zone));
+        collection.AddAssetCreator(weapon::CreateGdtLoaderT5(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
