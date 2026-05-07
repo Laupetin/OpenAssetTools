@@ -21,8 +21,7 @@ namespace
         return rad / (float)M_PI * 180.0f;
     }
 
-    void DumpFxElemDef(
-        const FxElemDef* subAsset, const FxEffectDef& fxEffectDef, FxElemDefDumper& fxElemDefDumper, unsigned int defIndex)
+    void DumpFxElemDef(const FxElemDef* subAsset, const FxEffectDef& fxEffectDef, FxElemDefDumper& fxElemDefDumper, unsigned int defIndex)
     {
         fxElemDefDumper.BeginElement();
 
