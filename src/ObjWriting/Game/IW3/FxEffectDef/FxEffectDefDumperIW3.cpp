@@ -7,6 +7,11 @@
 #include <filesystem>
 #include <string>
 
+#define _USE_MATH_DEFINES
+
+#include <math.h>
+#include <Game/IW3/Fx/FxElemDefConstantsIW3.h>
+
 using namespace IW3;
 
 namespace

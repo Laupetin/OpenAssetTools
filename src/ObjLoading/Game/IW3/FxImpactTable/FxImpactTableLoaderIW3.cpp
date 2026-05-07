@@ -5,7 +5,7 @@
 #include "Utils/Logging/Log.h"
 
 #include <Csv/CsvStream.h>
-#include <Game/IW3/FxImpactTable/FxImpactTableFields.h>
+#include <Game/IW3/Fx/FxImpactTableConstantsIW3.h>
 #include <format>
 #include <iostream>
 
