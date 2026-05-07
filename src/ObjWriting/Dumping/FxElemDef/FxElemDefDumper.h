@@ -2,8 +2,8 @@
 
 #include "Dumping/AbstractTextDumper.h"
 
-#include <ostream>
 #include <array>
+#include <ostream>
 
 namespace fx_elem_def
 {
@@ -133,7 +133,7 @@ namespace fx_elem_def
 
     union FxEffectDefRef
     {
-        //FxEffectDef* handle;
+        // FxEffectDef* handle;
         const char* name;
     };
 
@@ -157,16 +157,16 @@ namespace fx_elem_def
 
     union FxElemVisuals
     {
-        //const void* anonymous;
-        //Material* material;
-        //XModel* model;
+        // const void* anonymous;
+        // Material* material;
+        // XModel* model;
         FxEffectDefRef effectDef;
         const char* soundName;
     };
 
     struct FxElemMarkVisuals
     {
-        //Material* materials[2];
+        // Material* materials[2];
     };
 
     union FxElemDefVisuals
@@ -211,7 +211,7 @@ namespace fx_elem_def
         {
         }
     };
-}; // fx_elem_def
+}; // namespace fx_elem_def
 
 class FxElemDefDumper : AbstractTextDumper
 {
@@ -231,7 +231,6 @@ public:
     void BeginEnum(const std::string& key);
     void EndEnum();
     void WriteEnumEntry(const std::string& entry) const;
-
 
     void WriteKeyValue(const std::string& key, const std::string& value) const;
     void WriteFloatArray(const std::string& key, const float* floatArray, unsigned int floatCount) const;
@@ -253,7 +252,7 @@ private:
     {
         bool m_in_element : 1;
         bool m_in_visuals : 1;
-        bool m_in_enum: 1;
+        bool m_in_enum : 1;
     } m_flags;
 
     unsigned int m_element_index;

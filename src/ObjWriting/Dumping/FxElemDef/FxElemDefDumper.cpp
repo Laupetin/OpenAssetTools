@@ -6,9 +6,9 @@
 using namespace fx_elem_def;
 
 FxElemDefDumper::FxElemDefDumper(std::ostream& stream)
-    : AbstractTextDumper(stream)
-    , m_flags{}
-    , m_element_index(0u)
+    : AbstractTextDumper(stream),
+      m_flags{},
+      m_element_index(0u)
 {
     UseTabForIndent(true);
 }

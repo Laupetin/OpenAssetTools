@@ -1,31 +1,28 @@
 #include "FxEffectDefDumperIW3.h"
 
-#include "ObjWriting.h"
-#include "FxEffectDef/FxEffectDefCommon.h"
 #include "Dumping/FxElemDef/FxElemDefDumper.h"
+#include "FxEffectDef/FxEffectDefCommon.h"
+#include "ObjWriting.h"
 
 #include <filesystem>
 #include <string>
 
 #define _USE_MATH_DEFINES
 
-#include <math.h>
 #include <Game/IW3/Fx/FxElemDefConstantsIW3.h>
+#include <math.h>
 
 using namespace IW3;
 
 namespace
 {
-    float Rad2Deg(float rad) 
+    float Rad2Deg(float rad)
     {
         return rad / (float)M_PI * 180.0f;
     }
 
-    void DumpFxElemDef(const FxElemDef* subAsset,
-                       const FxEffectDef& fxEffectDef, 
-                       FxElemDefDumper& fxElemDefDumper,
-                       unsigned int defIndex,
-                       unsigned int elemDefCountLooping)
+    void DumpFxElemDef(
+        const FxElemDef* subAsset, const FxEffectDef& fxEffectDef, FxElemDefDumper& fxElemDefDumper, unsigned int defIndex, unsigned int elemDefCountLooping)
     {
         fxElemDefDumper.BeginElement();
 
@@ -67,11 +64,9 @@ namespace
 
         fxElemDefDumper.WriteFloat("spawnFrustumCullRadius", subAsset->spawnFrustumCullRadius);
 
-        
         if (defIndex < (unsigned int)fxEffectDef.elemDefCountLooping)
         {
-            fxElemDefDumper.WriteFxSpawnDef(
-                fx_elem_def::FxSpawnDef(subAsset->spawn.looping.count, subAsset->spawn.looping.intervalMsec));
+            fxElemDefDumper.WriteFxSpawnDef(fx_elem_def::FxSpawnDef(subAsset->spawn.looping.count, subAsset->spawn.looping.intervalMsec));
         }
         else
         {
@@ -96,8 +91,8 @@ namespace
                                           fx_elem_def::FxFloatRange(subAsset->angularVelocity[0].base, subAsset->angularVelocity[0].amplitude));
         fxElemDefDumper.WriteFxFloatRange("angleVelYaw", fx_elem_def::FxFloatRange(subAsset->angularVelocity[1].base, subAsset->angularVelocity[1].amplitude));
         fxElemDefDumper.WriteFxFloatRange("angleVelRoll", fx_elem_def::FxFloatRange(subAsset->angularVelocity[2].base, subAsset->angularVelocity[2].amplitude));
-        fxElemDefDumper.WriteFxFloatRange(
-            "initialRot", fx_elem_def::FxFloatRange(Rad2Deg(subAsset->initialRotation.base), Rad2Deg(subAsset->initialRotation.amplitude)));
+        fxElemDefDumper.WriteFxFloatRange("initialRot",
+                                          fx_elem_def::FxFloatRange(Rad2Deg(subAsset->initialRotation.base), Rad2Deg(subAsset->initialRotation.amplitude)));
         fxElemDefDumper.WriteFxFloatRange("gravity", fx_elem_def::FxFloatRange(subAsset->gravity.base, subAsset->gravity.amplitude));
         fxElemDefDumper.WriteFxFloatRange("elasticity", fx_elem_def::FxFloatRange(subAsset->reflectionFactor.base, subAsset->reflectionFactor.amplitude));
 
@@ -133,7 +128,7 @@ namespace
         fxElemDefDumper.WriteInt("atlasColIndexBits", 0);
         fxElemDefDumper.WriteInt("atlasRowIndexBits", 0);
         fxElemDefDumper.WriteInt("atlasEntryCount", 0);
-        
+
         fxElemDefDumper.WriteFloat("lightingFrac", static_cast<unsigned char>(subAsset->lightingFrac) / 255.0f, 2);
         fxElemDefDumper.WriteFloatArray("collOffset", subAsset->collMins, 3);
         fxElemDefDumper.WriteKeyValue("collRadius", "");

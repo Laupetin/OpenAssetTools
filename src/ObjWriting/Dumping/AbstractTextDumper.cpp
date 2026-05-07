@@ -9,7 +9,7 @@ AbstractTextDumper::AbstractTextDumper(std::ostream& stream)
 {
 }
 
-void AbstractTextDumper::UseTabForIndent(bool tab_indent) 
+void AbstractTextDumper::UseTabForIndent(bool tab_indent)
 {
     m_tab_indent = tab_indent;
 }

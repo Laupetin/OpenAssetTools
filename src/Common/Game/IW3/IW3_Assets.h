@@ -3410,17 +3410,17 @@ namespace IW3
 
     struct FxElemDefFlagsBits
     {
-        unsigned int unknown1           : 1;
-        unsigned int spawnRelative      : 1;
-        unsigned int spawnFrustumCull   : 1;
-        unsigned int unknown2           : 4;
-        unsigned int spawnOffsetNone    : 2;
-        unsigned int unknown3           : 16;
-        unsigned int runRelToEffect     : 1;
-        unsigned int runRelToSpawn      : 1;
-        unsigned int unknown4           : 1;
-        unsigned int nonUniformScale    : 1;
-        unsigned int unknown5           : 3;
+        unsigned int unknown1 : 1;
+        unsigned int spawnRelative : 1;
+        unsigned int spawnFrustumCull : 1;
+        unsigned int unknown2 : 4;
+        unsigned int spawnOffsetNone : 2;
+        unsigned int unknown3 : 16;
+        unsigned int runRelToEffect : 1;
+        unsigned int runRelToSpawn : 1;
+        unsigned int unknown4 : 1;
+        unsigned int nonUniformScale : 1;
+        unsigned int unknown5 : 3;
     };
 
     union FxElemDefFlags
@@ -3431,9 +3431,9 @@ namespace IW3
 
     struct FxElemDefAtlasBehaviorBits
     {
-        unsigned int startRandom    : 1;
-        unsigned int startIndexed   : 1;
-        unsigned int playOverLife   : 1;
+        unsigned int startRandom : 1;
+        unsigned int startIndexed : 1;
+        unsigned int playOverLife : 1;
         unsigned int loopOnlyNTimes : 1;
     }; // startFixed if zero
 
@@ -3442,7 +3442,7 @@ namespace IW3
         int rawBehavior;
         FxElemDefAtlasBehaviorBits bitBehavior;
     };
-    
+
     struct FxElemDef
     {
         int flags;
