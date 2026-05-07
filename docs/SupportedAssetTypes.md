@@ -180,7 +180,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
 | LocalizeEntry        | ✅              | ✅              |                                                                              |
-| WeaponVariantDef     | ❌              | ❌              |                                                                              |
+| WeaponVariantDef     | ✅              | ✅              |                                                                              |
 | SndDriverGlobals     | ❌              | ❌              |                                                                              |
 | FxEffectDef          | ❌              | ❌              |                                                                              |
 | FxImpactTable        | ❌              | ❌              |                                                                              |
