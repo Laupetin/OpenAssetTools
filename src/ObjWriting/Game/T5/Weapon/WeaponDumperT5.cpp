@@ -7,8 +7,6 @@
 #include "InfoString/InfoString.h"
 #include "Weapon/AccuracyGraphWriter.h"
 #include "Weapon/WeaponCommon.h"
-#include "Game/T5/Weapon/WeaponFields.h"
-#include "Game/T5/Weapon/WeaponStrings.h"
 
 #include <cassert>
 #include <cstring>
