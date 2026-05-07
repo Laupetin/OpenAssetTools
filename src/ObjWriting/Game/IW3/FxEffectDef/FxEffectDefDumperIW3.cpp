@@ -16,6 +16,11 @@ using namespace IW3;
 
 namespace
 {
+    float Rad2Deg(float rad) 
+    {
+        return rad / (float)M_PI * 180.0f;
+    }
+
     void DumpFxElemDef(const FxElemDef* subAsset,
                        const FxEffectDef& fxEffectDef, 
                        FxElemDefDumper& fxElemDefDumper,
@@ -25,15 +30,54 @@ namespace
         fxElemDefDumper.BeginElement();
 
         fxElemDefDumper.WriteKeyValue("name", std::format("{}", defIndex));
-        fxElemDefDumper.WriteKeyValue("editorFlags", "");
-        fxElemDefDumper.WriteKeyValue("flags", "");
+
+        fxElemDefDumper.BeginEnum("flags");
+
+        FxElemDefFlags flags;
+        flags.rawFlags = subAsset->flags;
+        if (flags.bitFlags.spawnRelative)
+        {
+            fxElemDefDumper.WriteEnumEntry("spawnRelative");
+        }
+        if (flags.bitFlags.spawnFrustumCull)
+        {
+            fxElemDefDumper.WriteEnumEntry("spawnFrustumCull");
+        }
+        if (flags.bitFlags.spawnOffsetNone)
+        {
+            fxElemDefDumper.WriteEnumEntry("spawnOffsetNone");
+        }
+        if (flags.bitFlags.runRelToEffect)
+        {
+            fxElemDefDumper.WriteEnumEntry("runRelToEffect");
+        }
+        if (flags.bitFlags.runRelToSpawn)
+        {
+            fxElemDefDumper.WriteEnumEntry("runRelToSpawn");
+        }
+        if (flags.bitFlags.nonUniformScale)
+        {
+            fxElemDefDumper.WriteEnumEntry("nonUniformScale");
+        }
+        fxElemDefDumper.EndEnum();
 
         fxElemDefDumper.WriteFxFloatRange("spawnRange", fx_elem_def::FxFloatRange(subAsset->spawnRange.base, subAsset->spawnRange.amplitude));
         fxElemDefDumper.WriteFxFloatRange("fadeInRange", fx_elem_def::FxFloatRange(subAsset->fadeInRange.base, subAsset->fadeInRange.amplitude));
         fxElemDefDumper.WriteFxFloatRange("fadeOutRange", fx_elem_def::FxFloatRange(subAsset->fadeOutRange.base, subAsset->fadeOutRange.amplitude));
 
         fxElemDefDumper.WriteFloat("spawnFrustumCullRadius", subAsset->spawnFrustumCullRadius);
-        fxElemDefDumper.WriteFxSpawnDef(subAsset->spawn, defIndex, fxEffectDef.elemDefCountLooping);
+
+        
+        if (defIndex < (unsigned int)fxEffectDef.elemDefCountLooping)
+        {
+            fxElemDefDumper.WriteFxSpawnDef(
+                fx_elem_def::FxSpawnDef(subAsset->spawn.looping.count, subAsset->spawn.looping.intervalMsec));
+        }
+        else
+        {
+            fxElemDefDumper.WriteFxSpawnDef(fx_elem_def::FxSpawnDef(subAsset->spawn.oneShot.count.base, subAsset->spawn.oneShot.count.amplitude));
+        }
+
         fxElemDefDumper.WriteFxIntRange("spawnDelayMsec", fx_elem_def::FxIntRange(subAsset->spawnDelayMsec.base, subAsset->spawnDelayMsec.amplitude));
         fxElemDefDumper.WriteFxIntRange("lifeSpanMsec", fx_elem_def::FxIntRange(subAsset->lifeSpanMsec.base, subAsset->lifeSpanMsec.amplitude));
 
@@ -52,21 +96,46 @@ namespace
                                           fx_elem_def::FxFloatRange(subAsset->angularVelocity[0].base, subAsset->angularVelocity[0].amplitude));
         fxElemDefDumper.WriteFxFloatRange("angleVelYaw", fx_elem_def::FxFloatRange(subAsset->angularVelocity[1].base, subAsset->angularVelocity[1].amplitude));
         fxElemDefDumper.WriteFxFloatRange("angleVelRoll", fx_elem_def::FxFloatRange(subAsset->angularVelocity[2].base, subAsset->angularVelocity[2].amplitude));
-        fxElemDefDumper.WriteFxFloatRange("initialRot", fx_elem_def::FxFloatRange(subAsset->initialRotation.base, subAsset->initialRotation.amplitude));
+        fxElemDefDumper.WriteFxFloatRange(
+            "initialRot", fx_elem_def::FxFloatRange(Rad2Deg(subAsset->initialRotation.base), Rad2Deg(subAsset->initialRotation.amplitude)));
         fxElemDefDumper.WriteFxFloatRange("gravity", fx_elem_def::FxFloatRange(subAsset->gravity.base, subAsset->gravity.amplitude));
-        fxElemDefDumper.WriteKeyValue("elasticity", "");
+        fxElemDefDumper.WriteFxFloatRange("elasticity", fx_elem_def::FxFloatRange(subAsset->reflectionFactor.base, subAsset->reflectionFactor.amplitude));
 
-        fxElemDefDumper.WriteKeyValue("atlasBehavior", "startIndexed playOverLife loopOnlyNTimes");
+        fxElemDefDumper.BeginEnum("atlasBehavior");
+
+        FxElemDefAtlasBehavior atlasBehavior;
+        atlasBehavior.rawBehavior = subAsset->atlas.behavior;
+        if (subAsset->atlas.behavior == 0)
+        {
+            fxElemDefDumper.WriteEnumEntry("startFixed");
+        }
+        if (atlasBehavior.bitBehavior.startRandom)
+        {
+            fxElemDefDumper.WriteEnumEntry("startRandom");
+        }
+        if (atlasBehavior.bitBehavior.startIndexed)
+        {
+            fxElemDefDumper.WriteEnumEntry("startIndexed");
+        }
+        if (atlasBehavior.bitBehavior.playOverLife)
+        {
+            fxElemDefDumper.WriteEnumEntry("playOverLife");
+        }
+        if (atlasBehavior.bitBehavior.loopOnlyNTimes)
+        {
+            fxElemDefDumper.WriteEnumEntry("loopOnlyNTimes");
+        }
+        fxElemDefDumper.EndEnum();
+
         fxElemDefDumper.WriteInt("atlasIndex", subAsset->atlas.index);
         fxElemDefDumper.WriteInt("atlasFps", subAsset->atlas.fps);
-        fxElemDefDumper.WriteInt("atlasLoopCount", subAsset->atlas.loopCount);
-        fxElemDefDumper.WriteInt("atlasColIndexBits", subAsset->atlas.colIndexBits);
-        fxElemDefDumper.WriteInt("atlasRowIndexBits", subAsset->atlas.rowIndexBits);
-        fxElemDefDumper.WriteInt("atlasEntryCount", subAsset->atlas.entryCount);
-
+        fxElemDefDumper.WriteInt("atlasLoopCount", 0);
+        fxElemDefDumper.WriteInt("atlasColIndexBits", 0);
+        fxElemDefDumper.WriteInt("atlasRowIndexBits", 0);
+        fxElemDefDumper.WriteInt("atlasEntryCount", 0);
         
-        fxElemDefDumper.WriteInt("lightingFrac", subAsset->lightingFrac);
-        fxElemDefDumper.WriteKeyValue("collOffset", "");
+        fxElemDefDumper.WriteFloat("lightingFrac", static_cast<unsigned char>(subAsset->lightingFrac) / 255.0f, 2);
+        fxElemDefDumper.WriteFloatArray("collOffset", subAsset->collMins, 3);
         fxElemDefDumper.WriteKeyValue("collRadius", "");
 
         std::string impactName = "";
@@ -98,6 +167,47 @@ namespace
         fxElemDefDumper.WriteInt("trailSplitDist", splitDist);
         fxElemDefDumper.WriteInt("trailScrollTime", scrollTimeMsec);
         fxElemDefDumper.WriteInt("trailRepeatDist", repeatDist);
+
+        fxElemDefDumper.BeginVisuals(fx_elem_type_names[subAsset->elemType]);
+
+        if (subAsset->elemType == FX_ELEM_TYPE_DECAL)
+        {
+            // Load FxElemMarkVisualsArray
+        }
+        else if (subAsset->visualCount < 1u)
+        {
+            // Load FxElemVisualsArray
+        }
+        else if (subAsset->elemType == FX_ELEM_TYPE_MODEL)
+        {
+            // Load xmodel
+        }
+        else if (subAsset->elemType == FX_ELEM_TYPE_SOUND)
+        {
+            // Load sound name
+        }
+        else if (subAsset->elemType == FX_ELEM_TYPE_RUNNER)
+        {
+            // Load FxEffectDef + name?
+        }
+        else if (subAsset->elemType != FX_ELEM_TYPE_OMNI_LIGHT && subAsset->elemType != FX_ELEM_TYPE_SPOT_LIGHT)
+        {
+            // Load material
+            auto* material = subAsset->visuals.instance.material;
+            if (material && material->info.name)
+            {
+                if (material->info.name[0] == ',')
+                {
+                    fxElemDefDumper.WriteVisualEntry(material->info.name + 1);
+                }
+                else
+                {
+                    fxElemDefDumper.WriteVisualEntry(material->info.name);
+                }
+            }
+        }
+
+        fxElemDefDumper.EndVisuals();
 
         fxElemDefDumper.EndElement();
     }
