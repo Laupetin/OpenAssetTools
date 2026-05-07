@@ -161,28 +161,28 @@ namespace
         return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
-    bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
+    bool GetSurfaces(const XModel& model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-        if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
+        if (!model.lodInfo[lod].modelSurfs || !model.lodInfo[lod].modelSurfs->surfs)
             return false;
 
-        surfs = model->lodInfo[lod].modelSurfs->surfs;
-        surfCount = model->lodInfo[lod].modelSurfs->numsurfs;
+        surfs = model.lodInfo[lod].modelSurfs->surfs;
+        surfCount = model.lodInfo[lod].modelSurfs->numsurfs;
 #else
-        if (!model->surfs)
+        if (!model.surfs)
             return false;
 
-        surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        surfCount = model->lodInfo[lod].numsurfs;
+        surfs = &model.surfs[model.lodInfo[lod].surfIndex];
+        surfCount = model.lodInfo[lod].numsurfs;
 #endif
 
         return true;
     }
 
-    bool HasDefaultArmature(const XModel* model, const unsigned lod)
+    bool HasDefaultArmatureForLod(const XModel& model, const unsigned lod)
     {
-        if (model->numRootBones != 1 || model->numBones != 1)
+        if (model.numRootBones != 1 || model.numBones != 1)
             return false;
 
         XSurface* surfs;
@@ -198,10 +198,29 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
+#ifdef FEATURE_IW3
+            // IW3 has some models that are missing 1 (a single) tri in its first lod.
+            // It is not contained in any vert list or blend
+            // I think this is a bug (?), so omit anyway.
+            // The "one tri missing" is not supported by the exporter anyway.
+            if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.vertCount != surface.vertCount)
+#else
             if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.triCount != surface.triCount || vertList.vertCount != surface.vertCount)
+#endif
                 return false;
         }
 
+        return true;
+    }
+    
+    bool HasDefaultArmatureForAllLods(const XModel& model)
+    {
+        for (auto lod = 0u; lod < model.numLods; lod++)
+        {
+            if (!HasDefaultArmatureForLod(model, lod))
+                return false;
+        }
+        
         return true;
     }
 
@@ -217,18 +236,18 @@ namespace
         }
     }
 
-    void AddXModelBones(XModelCommon& out, const AssetDumpingContext& context, const XModel* model)
+    void AddXModelBones(XModelCommon& out, const AssetDumpingContext& context, const XModel& model)
     {
-        for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
+        for (auto boneNum = 0u; boneNum < model.numBones; boneNum++)
         {
             XModelBone bone;
-            if (model->boneNames[boneNum] < context.m_zone.m_script_strings.Count())
-                bone.name = context.m_zone.m_script_strings[model->boneNames[boneNum]];
+            if (model.boneNames[boneNum] < context.m_zone.m_script_strings.Count())
+                bone.name = context.m_zone.m_script_strings[model.boneNames[boneNum]];
             else
                 bone.name = "INVALID_BONE_NAME";
 
-            if (boneNum >= model->numRootBones)
-                bone.parentIndex = static_cast<int>(boneNum - static_cast<unsigned int>(model->parentList[boneNum - model->numRootBones]));
+            if (boneNum >= model.numRootBones)
+                bone.parentIndex = static_cast<int>(boneNum - static_cast<unsigned int>(model.parentList[boneNum - model.numRootBones]));
             else
                 bone.parentIndex = std::nullopt;
 
@@ -236,7 +255,7 @@ namespace
             bone.scale[1] = 1.0f;
             bone.scale[2] = 1.0f;
 
-            const auto& baseMat = model->baseMat[boneNum];
+            const auto& baseMat = model.baseMat[boneNum];
             bone.globalOffset[0] = baseMat.trans.x;
             bone.globalOffset[1] = baseMat.trans.y;
             bone.globalOffset[2] = baseMat.trans.z;
@@ -247,7 +266,7 @@ namespace
                 .w = baseMat.quat.w,
             };
 
-            if (boneNum < model->numRootBones)
+            if (boneNum < model.numRootBones)
             {
                 bone.localOffset[0] = 0;
                 bone.localOffset[1] = 0;
@@ -256,12 +275,12 @@ namespace
             }
             else
             {
-                const auto* trans = &model->trans[(boneNum - model->numRootBones) * 3];
+                const auto* trans = &model.trans[(boneNum - model.numRootBones) * 3];
                 bone.localOffset[0] = trans[0];
                 bone.localOffset[1] = trans[1];
                 bone.localOffset[2] = trans[2];
 
-                const auto& quat = model->quats[boneNum - model->numRootBones];
+                const auto& quat = model.quats[boneNum - model.numRootBones];
                 bone.localRotation = {
                     .x = QuatInt16::ToFloat(quat.v[0]),
                     .y = QuatInt16::ToFloat(quat.v[1]),
@@ -282,11 +301,11 @@ namespace
         return input;
     }
 
-    void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel* model)
+    void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel& model)
     {
-        for (auto surfaceMaterialNum = 0u; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
+        for (auto surfaceMaterialNum = 0u; surfaceMaterialNum < model.numsurfs; surfaceMaterialNum++)
         {
-            Material* material = model->materialHandles[surfaceMaterialNum];
+            Material* material = model.materialHandles[surfaceMaterialNum];
             if (materialMapper.Add(material))
             {
                 XModelMaterial xMaterial;
@@ -310,10 +329,10 @@ namespace
         }
     }
 
-    void AddXModelObjects(XModelCommon& out, const XModel* model, const unsigned lod, const DistinctMapper<Material*>& materialMapper)
+    void AddXModelObjects(XModelCommon& out, const XModel& model, const unsigned lod, const DistinctMapper<Material*>& materialMapper)
     {
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-        const auto baseSurfaceIndex = model->lodInfo[lod].surfIndex;
+        const auto surfCount = model.lodInfo[lod].numsurfs;
+        const auto baseSurfaceIndex = model.lodInfo[lod].surfIndex;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
@@ -325,7 +344,7 @@ namespace
         }
     }
 
-    void AddXModelVertices(XModelCommon& out, const XModel* model, const unsigned lod)
+    void AddXModelVertices(XModelCommon& out, const XModel& model, const unsigned lod)
     {
         XSurface* surfs;
         unsigned surfCount;
@@ -353,7 +372,7 @@ namespace
         }
     }
 
-    void AllocateXModelBoneWeights(const XModel* model, const unsigned lod, XModelVertexBoneWeightCollection& weightCollection)
+    void AllocateXModelBoneWeights(const XModel& model, const unsigned lod, XModelVertexBoneWeightCollection& weightCollection)
     {
         XSurface* surfs;
         unsigned surfCount;
@@ -387,7 +406,7 @@ namespace
         return static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
     }
 
-    void AddXModelVertexBoneWeights(XModelCommon& out, const XModel* model, const unsigned lod)
+    void AddXModelVertexBoneWeights(XModelCommon& out, const XModel& model, const unsigned lod)
     {
         XSurface* surfs;
         unsigned surfCount;
@@ -506,7 +525,7 @@ namespace
         }
     }
 
-    void AddXModelFaces(XModelCommon& out, const XModel* model, const unsigned lod)
+    void AddXModelFaces(XModelCommon& out, const XModel& model, const unsigned lod)
     {
         XSurface* surfs;
         unsigned surfCount;
@@ -538,18 +557,20 @@ namespace
                && ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
     }
 
-    void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
+    void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel& model)
     {
-        DistinctMapper<Material*> materialMapper(model->numsurfs);
+        DistinctMapper<Material*> materialMapper(model.numsurfs);
         AllocateXModelBoneWeights(model, lod, out.m_bone_weight_data);
 
-        out.m_name = std::format("{}_lod{}", model->name, lod);
+        out.m_name = std::format("{}_lod{}", model.name, lod);
         AddXModelMaterials(out, materialMapper, model);
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
         AddXModelFaces(out, model, lod);
         
-        if (!CanOmitDefaultArmature() || !HasDefaultArmature(model, lod))
+        // Keep armature handling consistent across all LODs so dumped GLTF/GLB round-trips
+        // preserve the same bone layout when re-imported.
+        if (!CanOmitDefaultArmature() || !HasDefaultArmatureForAllLods(model))
         {
             AddXModelBones(out, context, model);
             AddXModelVertexBoneWeights(out, model, lod);
@@ -562,39 +583,39 @@ namespace
 
     void DumpObjMtl(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
-        const auto* model = asset.Asset();
-        const auto mtlFile = context.OpenAssetFile(std::format("model_export/{}.mtl", model->name));
+        const auto& model = *asset.Asset();
+        const auto mtlFile = context.OpenAssetFile(std::format("model_export/{}.mtl", model.name));
 
         if (!mtlFile)
             return;
 
         const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
         const auto writer = obj::CreateMtlWriter(*mtlFile, game->GetShortName(), context.m_zone.m_name);
-        DistinctMapper<Material*> materialMapper(model->numsurfs);
+        DistinctMapper<Material*> materialMapper(model.numsurfs);
 
         writer->Write(common);
     }
 
     void DumpObjLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".obj"));
+        const auto& model = *asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model.name, lod, ".obj"));
 
         if (!assetFile)
             return;
 
         const auto* game = IGame::GetGameById(context.m_zone.m_game_id);
         const auto writer =
-            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), game->GetShortName(), context.m_zone.m_name);
-        DistinctMapper<Material*> materialMapper(model->numsurfs);
+            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model.name), game->GetShortName(), context.m_zone.m_name);
+        DistinctMapper<Material*> materialMapper(model.numsurfs);
 
         writer->Write(common);
     }
 
     void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_export"));
+        const auto model = *asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model.name, lod, ".xmodel_export"));
 
         if (!assetFile)
             return;
@@ -606,8 +627,8 @@ namespace
 
     void DumpXModelBinLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod)
     {
-        const auto* model = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_bin"));
+        const auto& model = *asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model.name, lod, ".xmodel_bin"));
 
         if (!assetFile)
             return;
@@ -621,8 +642,8 @@ namespace
     void DumpGltfLod(
         const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>& asset, const unsigned lod, const std::string& extension)
     {
-        const auto* model = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, extension));
+        const auto& model = *asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model.name, lod, extension));
 
         if (!assetFile)
             return;
@@ -636,12 +657,12 @@ namespace
 
     void DumpXModelSurfs(const AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
-        const auto* model = asset.Asset();
+        const auto& model = *asset.Asset();
 
-        for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
+        for (auto currentLod = 0u; currentLod < model.numLods; currentLod++)
         {
             XModelCommon common;
-            PopulateXModelWriter(common, context, currentLod, asset.Asset());
+            PopulateXModelWriter(common, context, currentLod, model);
 
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
@@ -673,182 +694,181 @@ namespace
             }
         }
     }
-
-    class JsonDumper
+    
+    const char* GetExtensionForModelByConfig()
     {
-    public:
-        JsonDumper(AssetDumpingContext& context, std::ostream& stream)
-            : m_stream(stream)
+        switch (ObjWriting::Configuration.ModelOutputFormat)
         {
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
+            return ".xmodel_export";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
+            return ".xmodel_bin";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
+            return ".obj";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
+            return ".gltf";
+        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
+            return ".glb";
+        default:
+            assert(false);
+            return "";
         }
-
-        void Dump(const XModel* xmodel) const
-        {
-            JsonXModel jsonXModel;
-            CreateJsonXModel(jsonXModel, *xmodel);
-            nlohmann::json jRoot = jsonXModel;
-
-            jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
-            jRoot["_type"] = "xmodel";
-            jRoot["_version"] = 2;
-            jRoot["_game"] = GAME_LOWER;
-
-            m_stream << std::setw(4) << jRoot << "\n";
-        }
-
-    private:
-        static const char* AssetName(const char* input)
-        {
-            if (input && input[0] == ',')
-                return &input[1];
-
-            return input;
-        }
-
-        static const char* GetExtensionForModelByConfig()
-        {
-            switch (ObjWriting::Configuration.ModelOutputFormat)
-            {
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
-                return ".xmodel_export";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
-                return ".xmodel_bin";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
-                return ".obj";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
-                return ".gltf";
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
-                return ".glb";
-            default:
-                assert(false);
-                return "";
-            }
-        }
-
-        static bool IsAnimated(const XModel& xmodel)
-        {
+    }
+    
+    bool IsAnimated(const XModel& model)
+    {
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-            for (auto i = 0u; i < xmodel.numLods; i++)
-            {
-                const auto& lod = xmodel.lodInfo[i];
-                if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
-                    continue;
+        for (auto i = 0u; i < model.numLods; i++)
+        {
+            const auto& lod = model.lodInfo[i];
+            if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
+                continue;
 
-                for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
-                {
-                    const auto& surf = xmodel.lodInfo[i].modelSurfs->surfs[j];
-                    if (surf.vertInfo.vertsBlend)
-                        return true;
-                }
-            }
-#else
-            for (auto i = 0u; i < xmodel.numsurfs; i++)
+            for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
             {
-                const auto& surf = xmodel.surfs[i];
+                const auto& surf = model.lodInfo[i].modelSurfs->surfs[j];
                 if (surf.vertInfo.vertsBlend)
                     return true;
             }
-#endif
-
-            return false;
         }
-
-        static bool HasNulledTrans(const XModel& xmodel)
-        {
-            if (xmodel.trans == nullptr)
-                return true;
-
-            const auto transCount = (xmodel.numBones - xmodel.numRootBones) * 3u;
-            for (auto i = 0u; i < transCount; i++)
-            {
-                if (xmodel.trans[i] != 0)
-                    return false;
-            }
-
-            return true;
-        }
-
-        static bool HasNonNullBoneInfoTrans(const XModel& xmodel)
-        {
-            if (xmodel.boneInfo == nullptr)
-                return false;
-
-            for (auto i = 0u; i < xmodel.numBones; i++)
-            {
-                const auto& boneInfo = xmodel.boneInfo[i];
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-                if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
-                    return true;
 #else
-                if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
-                    return true;
+        for (auto i = 0u; i < model.numsurfs; i++)
+        {
+            const auto& surf = model.surfs[i];
+            if (surf.vertInfo.vertsBlend)
+                return true;
+        }
 #endif
-            }
 
+        return false;
+    }
+    
+    bool HasNulledTrans(const XModel& model)
+    {
+        if (model.trans == nullptr)
+            return true;
+
+        const auto transCount = (model.numBones - model.numRootBones) * 3u;
+        for (auto i = 0u; i < transCount; i++)
+        {
+            if (model.trans[i] != 0)
+                return false;
+        }
+
+        return true;
+    }
+    
+    bool HasNonNullBoneInfoTrans(const XModel& model)
+    {
+        if (model.boneInfo == nullptr)
             return false;
+
+        for (auto i = 0u; i < model.numBones; i++)
+        {
+            const auto& boneInfo = model.boneInfo[i];
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
+                return true;
+#else
+            if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
+                return true;
+#endif
         }
 
-        static JsonXModelType GetType(const XModel& xmodel)
+        return false;
+    }
+    
+    JsonXModelType GetType(const XModel& model)
+    {
+        if (!IsAnimated(model))
+            return JsonXModelType::RIGID;
+
+        if (HasNulledTrans(model) && HasNonNullBoneInfoTrans(model))
+            return JsonXModelType::VIEWHANDS;
+
+        return JsonXModelType::ANIMATED;
+    }
+    
+    void SetJsonRootBoneName(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+    {
+        assert(model.boneNames);
+        assert(model.boneNames[0] < context.m_zone.m_script_strings.Count());
+        assert(model.numRootBones <= 1);
+        
+        if (!model.boneNames || model.boneNames[0] >= context.m_zone.m_script_strings.Count() || model.numRootBones == 0)
+            return;
+            
+        const auto& rootBoneName = context.m_zone.m_script_strings[model.boneNames[0]];
+        
+        if (rootBoneName != xmodel::DEFAULT_XMODEL_ROOT_BONE_NAME)
+            jXModel.rootBoneName = rootBoneName;
+    }
+    
+    void CreateJsonXModel(AssetDumpingContext& context, JsonXModel& jXModel, const XModel& model)
+    {
+        if (model.collLod >= 0)
+            jXModel.collLod = model.collLod;
+
+        jXModel.type = GetType(model);
+        
+        if (CanOmitDefaultArmature() && HasDefaultArmatureForAllLods(model))
         {
-            if (!IsAnimated(xmodel))
-                return JsonXModelType::RIGID;
-
-            if (HasNulledTrans(xmodel) && HasNonNullBoneInfoTrans(xmodel))
-                return JsonXModelType::VIEWHANDS;
-
-            return JsonXModelType::ANIMATED;
+            // If we are going to omit the armature, we need to make sure we remember the root bone name.
+            // It does not follow a specific pattern, may not be identical to the xmodel name and
+            // may be required for attaching the xmodel.
+            SetJsonRootBoneName(context, jXModel, model);
         }
 
-        static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
+        for (auto lodNumber = 0u; lodNumber < model.numLods; lodNumber++)
         {
-            if (xmodel.collLod >= 0)
-                jXModel.collLod = xmodel.collLod;
+            JsonXModelLod lod;
+            lod.file = std::format("model_export/{}_lod{}{}", model.name, lodNumber, GetExtensionForModelByConfig());
+            lod.distance = model.lodInfo[lodNumber].dist;
 
-            jXModel.type = GetType(xmodel);
+            jXModel.lods.emplace_back(std::move(lod));
+        }
 
-            for (auto lodNumber = 0u; lodNumber < xmodel.numLods; lodNumber++)
-            {
-                JsonXModelLod lod;
-                lod.file = std::format("model_export/{}_lod{}{}", xmodel.name, lodNumber, GetExtensionForModelByConfig());
-                lod.distance = xmodel.lodInfo[lodNumber].dist;
-
-                jXModel.lods.emplace_back(std::move(lod));
-            }
-
-            if (xmodel.physPreset && xmodel.physPreset->name)
-                jXModel.physPreset = AssetName(xmodel.physPreset->name);
+        if (model.physPreset && model.physPreset->name)
+            jXModel.physPreset = AssetName(model.physPreset->name);
 
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-            if (xmodel.physCollmap && xmodel.physCollmap->name)
-                jXModel.physCollmap = AssetName(xmodel.physCollmap->name);
+        if (model.physCollmap && model.physCollmap->name)
+            jXModel.physCollmap = AssetName(model.physCollmap->name);
 #endif
 
 #if defined(FEATURE_T5) || defined(FEATURE_T6)
-            if (xmodel.physConstraints && xmodel.physConstraints->name)
-                jXModel.physConstraints = AssetName(xmodel.physConstraints->name);
+        if (model.physConstraints && model.physConstraints->name)
+            jXModel.physConstraints = AssetName(model.physConstraints->name);
 #endif
 
-            jXModel.flags = xmodel.flags;
+        jXModel.flags = model.flags;
 
 #ifdef FEATURE_T6
-            jXModel.lightingOriginOffset.x = xmodel.lightingOriginOffset.x;
-            jXModel.lightingOriginOffset.y = xmodel.lightingOriginOffset.y;
-            jXModel.lightingOriginOffset.z = xmodel.lightingOriginOffset.z;
-            jXModel.lightingOriginRange = xmodel.lightingOriginRange;
+        jXModel.lightingOriginOffset.x = model.lightingOriginOffset.x;
+        jXModel.lightingOriginOffset.y = model.lightingOriginOffset.y;
+        jXModel.lightingOriginOffset.z = model.lightingOriginOffset.z;
+        jXModel.lightingOriginRange = model.lightingOriginRange;
 #endif
-        }
-
-        std::ostream& m_stream;
-    };
+    }
 
     void DumpXModelJson(AssetDumpingContext& context, const XAssetInfo<XModel>& asset)
     {
         const auto assetFile = context.OpenAssetFile(xmodel::GetJsonFileNameForAssetName(asset.m_name));
         if (!assetFile)
             return;
+            
+        const auto& model = *asset.Asset();
 
-        const JsonDumper dumper(context, *assetFile);
-        dumper.Dump(asset.Asset());
+        JsonXModel jsonXModel;
+        CreateJsonXModel(context, jsonXModel, model);
+        nlohmann::json jRoot = jsonXModel;
+
+        jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
+        jRoot["_type"] = "xmodel";
+        jRoot["_version"] = 2;
+        jRoot["_game"] = GAME_LOWER;
+
+        *assetFile << std::setw(4) << jRoot << "\n";
     }
 } // namespace
 

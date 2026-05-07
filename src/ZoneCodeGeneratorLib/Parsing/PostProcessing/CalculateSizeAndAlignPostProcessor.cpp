@@ -27,7 +27,7 @@ namespace
 
         if (hasPointerModifier)
         {
-            declaration->m_alignment = GetPointerSizeForArchitecture(repository->GetArchitecture());
+            declaration->m_alignment = GetPointerSizeForWordSize(repository->GetWordSize());
         }
         else
         {
@@ -92,7 +92,7 @@ namespace
                 switch (declarationModifier->GetType())
                 {
                 case DeclarationModifierType::POINTER:
-                    currentSize = GetPointerSizeForArchitecture(repository->GetArchitecture());
+                    currentSize = GetPointerSizeForWordSize(repository->GetWordSize());
                     break;
 
                 case DeclarationModifierType::ARRAY:
@@ -256,9 +256,9 @@ namespace
 
 bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository)
 {
-    if (repository->GetArchitecture() == Architecture::UNKNOWN)
+    if (repository->GetWordSize() == WordSize::UNKNOWN)
     {
-        con::error("You must set an architecture!");
+        con::error("You must set a word size!");
         return false;
     }
 

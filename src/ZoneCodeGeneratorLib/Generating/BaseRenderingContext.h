@@ -9,7 +9,7 @@ class BaseRenderingContext
 {
 public:
     std::string m_game;
-    bool m_architecture_mismatch;
+    bool m_word_size_mismatch;
     unsigned m_pointer_size;
     std::vector<const FastFileBlock*> m_blocks;
 
@@ -17,5 +17,5 @@ public:
     const FastFileBlock* m_default_temp_block;
 
 protected:
-    BaseRenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
+    BaseRenderingContext(std::string game, WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks);
 };

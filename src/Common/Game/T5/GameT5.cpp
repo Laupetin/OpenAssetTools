@@ -11,7 +11,7 @@ namespace
     constexpr const char* ASSET_TYPE_NAMES[]{
         "xmodelpieces", "physpreset",    "physconstraints", "destructibledef", "xanim",          "xmodel",        "material",
         "techniqueset", "image",         "soundbank",       "soundpatch",      "clipmap_unused", "clipmap",       "comworld",
-        "gameworldsp",  "gameworldmp",   "mapents",         "gfxworld",        "gfxlightdef",    "uimap",         "font",
+        "gameworldsp",  "gameworldmp",   "mapents",         "gfxworld",        "lightdef",       "uimap",         "font",
         "menulist",     "menu",          "localize",        "weapon",          "weapondef",      "weaponvariant", "snddriverglobals",
         "fx",           "fximpacttable", "aitype",          "mptype",          "mpbody",         "mphead",        "character",
         "xmodelalias",  "rawfile",       "stringtable",     "packindex",       "xglobals",       "ddl",           "glasses",
@@ -30,6 +30,13 @@ namespace
 
 namespace T5
 {
+    Game::Game()
+        : AbstractGame(ASSET_TYPE_NAMES, std::extent_v<decltype(ASSET_TYPE_NAMES)>, SUB_ASSET_TYPE_NAMES, std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
+    {
+        AddAssetTypeNameAlias<AssetTechniqueSet>("techset");
+        AddAssetTypeNameAlias<AssetLightDef>("gfxlightdef");
+    }
+
     GameId Game::GetId() const
     {
         return GameId::T5;
@@ -66,31 +73,5 @@ namespace T5
         };
 
         return prefixes;
-    }
-
-    asset_type_t Game::GetAssetTypeCount() const
-    {
-        return ASSET_TYPE_COUNT;
-    }
-
-    std::optional<const char*> Game::GetAssetTypeName(const asset_type_t assetType) const
-    {
-        if (assetType < std::extent_v<decltype(ASSET_TYPE_NAMES)>)
-            return ASSET_TYPE_NAMES[assetType];
-
-        return std::nullopt;
-    }
-
-    asset_type_t Game::GetSubAssetTypeCount() const
-    {
-        return SUB_ASSET_TYPE_COUNT;
-    }
-
-    std::optional<const char*> Game::GetSubAssetTypeName(const asset_type_t subAssetType) const
-    {
-        if (subAssetType < std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
-            return SUB_ASSET_TYPE_NAMES[subAssetType];
-
-        return std::nullopt;
     }
 } // namespace T5

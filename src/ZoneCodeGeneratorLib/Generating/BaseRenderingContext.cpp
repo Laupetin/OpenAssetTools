@@ -1,9 +1,9 @@
 #include "BaseRenderingContext.h"
 
-BaseRenderingContext::BaseRenderingContext(std::string game, const Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks)
+BaseRenderingContext::BaseRenderingContext(std::string game, const WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks)
     : m_game(std::move(game)),
-      m_architecture_mismatch(gameArchitecture != OWN_ARCHITECTURE),
-      m_pointer_size(GetPointerSizeForArchitecture(gameArchitecture)),
+      m_word_size_mismatch(gameWordSize != OWN_WORD_SIZE),
+      m_pointer_size(GetPointerSizeForWordSize(gameWordSize)),
       m_blocks(std::move(fastFileBlocks)),
       m_default_normal_block(nullptr),
       m_default_temp_block(nullptr)

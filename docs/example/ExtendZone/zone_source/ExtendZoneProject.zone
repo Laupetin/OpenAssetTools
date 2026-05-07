@@ -4,9 +4,6 @@
 // Overwrite the name of the zone to be "ui"
 >name,ui
 
-// Set type to fastfile
->type,fastfile
-
 // Add custom assets
 material,,clanlvl_box
 material,,xp

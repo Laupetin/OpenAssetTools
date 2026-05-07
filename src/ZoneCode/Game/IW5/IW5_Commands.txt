@@ -1,6 +1,6 @@
 // Game: Modern Warfare 3 (IW5)
 game IW5;
-architecture x86;
+wordsize 32;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

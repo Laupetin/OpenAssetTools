@@ -38,7 +38,7 @@ public:
     bool m_has_actions;
 
 private:
-    OncePerAssetRenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
+    OncePerAssetRenderingContext(std::string game, WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);

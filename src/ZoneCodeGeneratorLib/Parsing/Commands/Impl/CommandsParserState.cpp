@@ -74,9 +74,9 @@ void CommandsParserState::AddBlock(std::unique_ptr<FastFileBlock> block) const
     m_repository->Add(std::move(block));
 }
 
-void CommandsParserState::SetArchitecture(const Architecture architecture) const
+void CommandsParserState::SetWordSize(const WordSize wordSize) const
 {
-    m_repository->SetArchitecture(architecture);
+    m_repository->SetWordSize(wordSize);
 }
 
 void CommandsParserState::SetGame(std::string gameName) const

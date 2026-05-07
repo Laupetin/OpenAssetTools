@@ -156,14 +156,14 @@ namespace
             return nullptr;
         }
 
-        static void AutoGenerateArmature(XModelCommon& common)
+        static void AutoGenerateArmature(XModelCommon& common, const JsonXModel& jXModel)
         {
             assert(common.m_bones.empty());
             assert(common.m_bone_weight_data.weights.empty());
             assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
 
             XModelBone rootBone{
-                .name = "root",
+                .name = jXModel.rootBoneName.value_or(xmodel::DEFAULT_XMODEL_ROOT_BONE_NAME),
                 .parentIndex = std::nullopt,
                 .scale = {1.0f, 1.0f, 1.0f},
                 .globalOffset = {0.0f, 0.0f, 0.0f},
@@ -171,7 +171,7 @@ namespace
                 .globalRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
                 .localRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
             };
-            common.m_bones.emplace_back(rootBone);
+            common.m_bones.emplace_back(std::move(rootBone));
             
             XModelBoneWeight rootWeight{.boneIndex = 0, .weight = 1.0f};
             common.m_bone_weight_data.weights.emplace_back(rootWeight);
@@ -180,6 +180,21 @@ namespace
             {
                 vertexBoneWeights.weightOffset = 0u;
                 vertexBoneWeights.weightCount = 1u;
+            }
+        }
+
+        static void CheckSpecifiedRootBoneName(XModelCommon& common, const JsonXModel& jXModel)
+        {
+            assert(!common.m_bones.empty());
+            
+            if (!jXModel.rootBoneName)
+                return;
+            
+            if (*jXModel.rootBoneName != common.m_bones[0].name)
+            {
+                con::warn(
+                    "Root bone name of model json {} does not match the model's root bone name. The name from the xmodel json is ignored and can be removed!",
+                    common.m_name);
             }
         }
 
@@ -308,8 +323,12 @@ namespace
             {
                 xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
 
-                // For some reason Treyarch games allocate for a vec4 here. it is treated as a vec3 though?
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+                // For some reason some games allocate for a vec4 here. it is treated as a vec3 though?
                 xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
+#else
+                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 3u);
+#endif
                 xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
             }
             else
@@ -358,7 +377,11 @@ namespace
             // Viewhands seem to have nulled trans for some reason?
             if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
             {
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
                 memset(xmodel.trans, 0, sizeof(float) * 4 * (xmodel.numBones - xmodel.numRootBones));
+#else
+                memset(xmodel.trans, 0, sizeof(float) * 3 * (xmodel.numBones - xmodel.numRootBones));
+#endif
             }
 
             return true;
@@ -814,7 +837,9 @@ namespace
             }
 
             if (common->m_bones.empty())
-                AutoGenerateArmature(*common);
+                AutoGenerateArmature(*common, jXModel);
+            else
+                CheckSpecifiedRootBoneName(*common, jXModel);
 
             if (lodNumber == 0u)
             {
