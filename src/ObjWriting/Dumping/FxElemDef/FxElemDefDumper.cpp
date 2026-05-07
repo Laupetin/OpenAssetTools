@@ -10,6 +10,7 @@ FxElemDefDumper::FxElemDefDumper(std::ostream& stream)
     , m_flags{}
     , m_element_index(0u)
 {
+    UseTabForIndent(true);
 }
 
 void FxElemDefDumper::Init() const
