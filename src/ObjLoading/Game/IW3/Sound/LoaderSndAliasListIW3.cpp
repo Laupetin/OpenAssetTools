@@ -13,8 +13,6 @@ using namespace IW3;
 
 namespace
 {
-    constexpr unsigned CHANNEL_MASK = 0x1Fu;
-    constexpr unsigned CHANNEL_SHIFT = 8u;
     constexpr unsigned COL_COUNT_MIN = 29;
 
     std::pair<std::string, std::string> SplitPathParts(const std::string& path)
