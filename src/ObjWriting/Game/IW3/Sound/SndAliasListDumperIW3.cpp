@@ -3,8 +3,6 @@
 #include "Csv/CsvStream.h"
 #include "Game/IW3/CommonIW3.h"
 #include "Game/IW3/GameIW3.h"
-#include "Game/IW3/SoundConstantsIW3.h"
-#include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
 #include "Zone/ZoneRegistry.h"
@@ -17,6 +15,8 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
+#include <Game/IW3/Sound/SndAliasListFields.h>
+#include <bitset>
 
 using namespace IW3;
 namespace fs = std::filesystem;
@@ -26,6 +26,7 @@ namespace
     const std::string ALIAS_HEADERS[]{
         "name",
         "sequence",
+        "probability",
         "file",
         "vol_min",
         "vol_max",
@@ -53,26 +54,6 @@ namespace
         "envelop_min",
         "envelop_max",
         "envelop percentage"
-    };
-
-    const std::string REVERB_HEADERS[]{
-        "name",
-        "smoothing",
-        "earlyTime",
-        "lateTime",
-        "earlyGain",
-        "lateGain",
-        "returnGain",
-        "earlyLpf",
-        "lateLpf",
-        "inputLpf",
-        "dampLpf",
-        "wallReflect",
-        "dryGain",
-        "earlySize",
-        "lateSize",
-        "diffusion",
-        "returnHighpass",
     };
 
     const std::string PREFIXES_TO_DROP[]{
@@ -151,76 +132,7 @@ namespace
         "tueyeckert",
     };
 
-    std::unordered_map<unsigned int, std::string> CreateSoundHashMap(const char* const* values, const unsigned valueCount)
-    {
-        std::unordered_map<unsigned int, std::string> result;
-        for (auto i = 0u; i < valueCount; i++)
-            result.emplace(Common::SND_HashName(values[i]), values[i]);
-        return result;
-    }
-
-    const auto CURVES_MAP = CreateSoundHashMap(SOUND_CURVES, std::extent_v<decltype(SOUND_CURVES)>);
-    const auto CONTEXT_TYPES_MAP = CreateSoundHashMap(KNOWN_CONTEXT_TYPES, std::extent_v<decltype(KNOWN_CONTEXT_TYPES)>);
-    const auto CONTEXT_VALUES_MAP = CreateSoundHashMap(KNOWN_CONTEXT_VALUES, std::extent_v<decltype(KNOWN_CONTEXT_VALUES)>);
-    const auto FUTZ_IDS_MAP = CreateSoundHashMap(KNOWN_FUTZ_IDS, std::extent_v<decltype(KNOWN_FUTZ_IDS)>);
-
     constexpr auto FORMATTING_RETRIES = 5;
-
-    class LoadedSoundBankHashes : public IZoneAssetDumperState
-    {
-    public:
-        void Initialize()
-        {
-            for (const auto& zone : ZoneRegistry::GetRegistryForGame(GameId::T6)->Zones())
-            {
-                auto sndBankPool = zone->m_pools.PoolAssets<AssetSoundBank>();
-                for (auto* entry : sndBankPool)
-                {
-                    const auto& sndBank = *entry->Asset();
-
-                    m_alias_names.reserve(m_alias_names.size() + sndBank.aliasCount);
-                    for (auto aliasIndex = 0u; aliasIndex < sndBank.aliasCount; aliasIndex++)
-                    {
-                        const auto& alias = sndBank.alias[aliasIndex];
-                        m_alias_names.emplace(alias.id, alias.name);
-                    }
-
-                    m_duck_names.reserve(m_duck_names.size() + sndBank.duckCount);
-                    for (auto duckIndex = 0u; duckIndex < sndBank.duckCount; duckIndex++)
-                    {
-                        const auto& duck = sndBank.ducks[duckIndex];
-                        m_duck_names.emplace(duck.id, duck.name);
-                    }
-                }
-            }
-        }
-
-        [[nodiscard]] std::optional<const char*> GetAliasName(const unsigned hash) const
-        {
-            if (hash == 0)
-                return "";
-
-            const auto knownAliasHash = m_alias_names.find(hash);
-            if (knownAliasHash != m_alias_names.end())
-                return knownAliasHash->second;
-            return std::nullopt;
-        }
-
-        [[nodiscard]] std::optional<const char*> GetDuckName(const unsigned hash) const
-        {
-            if (hash == 0)
-                return "";
-
-            const auto knownDuckHash = m_duck_names.find(hash);
-            if (knownDuckHash != m_duck_names.end())
-                return knownDuckHash->second;
-            return std::nullopt;
-        }
-
-    private:
-        std::unordered_map<unsigned, const char*> m_alias_names;
-        std::unordered_map<unsigned, const char*> m_duck_names;
-    };
 
     [[nodiscard]] std::string GetAssetFilename(const AssetDumpingContext& context, std::string outputFileName, const std::string& extension)
     {
@@ -272,32 +184,6 @@ namespace
         stream.NextRow();
     }
 
-    void WriteReverbFileHeader(CsvOutputStream& stream)
-    {
-        for (const auto& headerField : REVERB_HEADERS)
-        {
-            stream.WriteColumn(headerField);
-        }
-
-        stream.NextRow();
-    }
-
-    const char* ExtensionForSndFormat(const snd_asset_format format)
-    {
-        switch (format)
-        {
-        case SND_ASSET_FORMAT_PCMS16:
-            return ".wav";
-
-        case SND_ASSET_FORMAT_FLAC:
-            return ".flac";
-
-        default:
-            assert(false);
-            return "";
-        }
-    }
-
     void WriteColumnString(CsvOutputStream& stream, const std::string& stringValue)
     {
         stream.WriteColumn(stringValue);
@@ -308,9 +194,16 @@ namespace
         stream.WriteColumn(stringValue ? std::string(stringValue) : std::string());
     }
 
-    template<typename T> void WriteColumnIntegral(CsvOutputStream& stream, const T value)
+    template<typename T> void WriteColumnIntegral(CsvOutputStream& stream, const T value, const T defaultVal = T())
     {
-        stream.WriteColumn(std::format("{}", value));
+        if (value == defaultVal)
+        {
+            stream.WriteColumn("");
+        }
+        else
+        {
+            stream.WriteColumn(std::format("{}", value));
+        }
     }
 
     void WriteColumnEnumWithSize(CsvOutputStream& stream, const unsigned value, const char* const* enumValues, const size_t enumValueCount)
@@ -351,23 +244,31 @@ namespace
         WriteColumnEnumFlagsWithSize(stream, value, enumValues, Size);
     }
 
-    void WriteColumnVolumeLinear(CsvOutputStream& stream, const uint16_t value)
+    void WriteColumnVolumeLinear(CsvOutputStream& stream, float value)
     {
-        const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
-        const auto dbSpl = std::clamp(Common::LinearToDbspl(linear), 0.0f, 100.0f);
+        stream.WriteColumn(std::format("{:.2f}", value));
+    }
 
-        std::string dbSplFormat;
-        for (auto i = 0; i < FORMATTING_RETRIES; i++)
+    void WriteColumnBinary(CsvOutputStream& stream, int value)
+    {
+        stream.WriteColumn(std::bitset<32>(static_cast<int>(value)).to_string());
+    }
+
+    void WriteColumnFloat(CsvOutputStream& stream, const float& value, const float& defaultVal = -1.0f, int precision = 2)
+    {
+        int intVal = static_cast<int>(value);
+        if (value == defaultVal)
         {
-            dbSplFormat = std::format("{:.{}f}", dbSpl, i);
-            const auto dbSplRound = std::stof(dbSplFormat);
-            const auto dbSplRoundToValue = static_cast<uint16_t>(Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
-
-            if (dbSplRoundToValue == value)
-                break;
+            stream.WriteColumn("");
         }
-
-        stream.WriteColumn(dbSplFormat);
+        else if (value == intVal)
+        {
+            stream.WriteColumn(std::format("{}", intVal));
+        }
+        else
+        {
+            stream.WriteColumn(std::format("{:.{}f}", value, precision));
+        }
     }
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
@@ -406,16 +307,43 @@ namespace
 
         stream.WriteColumn(normValueFormat);
     }
-    void WriteAliasToFile(CsvOutputStream& stream, const snd_alias_t& alias)
+
+    void WriteChannelEnum(CsvOutputStream& stream, int channel)
+    {
+        assert(channel < std::extent_v<decltype(snd_alias_channel_names)>);
+
+        stream.WriteColumn(snd_alias_channel_names[channel]);
+    }
+
+    const char* FromReferencedString(const char* refString) 
+    {
+        if (refString[0] == ',')
+        {
+            return (refString + 1);
+        }
+        return refString;
+    }
+
+    void WriteAliasToFile(CsvOutputStream& stream, const snd_alias_t& alias, int sequence = 0)
     {
         // name
         WriteColumnString(stream, alias.aliasName);
 
         // sequence
-        WriteColumnIntegral(stream, alias.sequence);
+        WriteColumnIntegral(stream, (alias.sequence ? alias.sequence : sequence), 0);
 
         // file
-        WriteColumnString(stream, std::format("{}/{}", alias.soundFile->u.streamSnd.dir, alias.soundFile->u.streamSnd.name));
+        if (alias.soundFile)
+        {
+            if (alias.soundFile->type == SAT_STREAMED && alias.soundFile->u.streamSnd.dir && alias.soundFile->u.streamSnd.name)
+            {
+                WriteColumnString(stream, std::format("{}/{}", alias.soundFile->u.streamSnd.dir, alias.soundFile->u.streamSnd.name));
+            }
+            else if (alias.soundFile->type == SAT_LOADED && alias.soundFile->u.loadSnd->name)
+            {
+                WriteColumnString(stream, FromReferencedString(alias.soundFile->u.loadSnd->name));
+            }
+        }
 
         // vol_min
         WriteColumnVolumeLinear(stream, alias.volMin);
@@ -425,63 +353,182 @@ namespace
 
         // vol_mod
         // match a string in the volumemodgroups.def file
-        
+        WriteColumnString(stream, "max");
+
         // pitch_min
-        WriteColumnPitchHertz(stream, alias.pitchMin);
+        WriteColumnFloat(stream, alias.pitchMin, 0.0f);
 
         // pitch_max
-        WriteColumnPitchHertz(stream, alias.pitchMax);
+        WriteColumnFloat(stream, alias.pitchMax, 0.0f);
 
         // dist_min
-        WriteColumnIntegral(stream, alias.distMin);
+        WriteColumnFloat(stream, alias.distMin, 0.0f);
 
         // dist_max
-        WriteColumnIntegral(stream, alias.distMax);
+        WriteColumnFloat(stream, alias.distMax, 0.0f);
 
         // channel
         // auto, menu, weapon, voice, item, body, local, music, announcer
-        
+        WriteChannelEnum(stream, (alias.flags >> 8) & 0x1F);
+
         // type
         // primed, streamed, loaded
-       
+        if (alias.soundFile)
+        {
+            if (alias.soundFile->type == SAT_STREAMED)
+            {
+                WriteColumnString(stream, "streamed");
+            }
+            else
+            {
+                WriteColumnString(stream, "");
+            }
+        }
+
         // probability
-        WriteColumnIntegral(stream, alias.probability);
+        WriteColumnFloat(stream, alias.probability, 1.0f);
 
         // loop
+        if (alias.flags & 0x1)
+        {
+            WriteColumnString(stream, "looping");
+        }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
+        
         // masterslave
+        WriteColumnFloat(stream, alias.slavePercentage, 1.0f);
+        
         // loadspec
+        WriteColumnString(stream, "");
+
         // subtitle
         WriteColumnString(stream, alias.subtitle);
 
         // compression
+        WriteColumnString(stream, "");
+        
         // secondaryaliasname
-        WriteColumnString(stream, alias.secondaryAliasName);
+        if (alias.secondaryAliasName)
+        {
+            WriteColumnString(stream, alias.secondaryAliasName);
+        }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
 
         // volumefalloffcurve
-        WriteColumnString(stream, alias.volumeFalloffCurve->filename);
+        if (alias.volumeFalloffCurve && alias.volumeFalloffCurve->filename)
+        {
+            WriteColumnString(stream, alias.volumeFalloffCurve->filename);
+        }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
 
         // startdelay
         WriteColumnIntegral(stream, alias.startDelay);
 
         // speakermap
-        WriteColumnString(stream, alias.speakerMap->name);
+        if (alias.speakerMap && alias.speakerMap->name)
+        {
+            WriteColumnString(stream, alias.speakerMap->name);
+        }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
 
         // reverb
+        WriteColumnString(stream, "");
+        
         // lfe percentage
-        WriteColumnIntegral(stream, alias.lfePercentage);
+        WriteColumnFloat(stream, alias.lfePercentage, 0);
 
-        // center percentage
-        WriteColumnIntegral(stream, alias.centerPercentage);
+        // center percentage,
+        WriteColumnFloat(stream, alias.centerPercentage, 0);
 
         // platform
+        
         // envelop_min
-        WriteColumnIntegral(stream, alias.envelopMin);
+        WriteColumnFloat(stream, alias.envelopMin, 0);
 
         // envelop_max
-        WriteColumnIntegral(stream, alias.envelopMax);
+        WriteColumnFloat(stream, alias.envelopMax, 0);
 
         // envelop percentage
-        WriteColumnIntegral(stream, alias.envelopPercentage);
+        WriteColumnFloat(stream, alias.envelopPercentage, 0);
+    }
+
+    const char* SourceName(int numLevels, int levelIndex) 
+    {
+        if (numLevels == 1)
+            return "MONOSOURCE";
+        return (levelIndex == 0) ? "LEFTSOURCE" : "RIGHTSOURCE";
+    }
+
+    void DumpSpeakerMap(const AssetDumpingContext& context, const SpeakerMap* speakerMap)
+    {
+        if (!speakerMap || !speakerMap->name || speakerMap->name[0] == '\0')
+            return;
+
+        const auto outFile = OpenAssetOutputFile(context, std::format("soundaliases/{}", speakerMap->name), ".spkrmap");
+        if (!outFile)
+        {
+            con::error("Failed to open soundspeaker map output file: \"{}\"", speakerMap->name);
+            return;
+        }
+        std::ostream& stream(*outFile);
+        stream << "SPKRMAP\r\n";
+
+        for (int j = 0; j < std::extent_v<std::remove_reference_t<decltype(speakerMap->channelMaps[0])>>; ++j)
+        {
+            for (int i = 0; i < std::extent_v<decltype(speakerMap->channelMaps)>; ++i)
+            {
+                stream << "\r\n\r\n";
+
+                auto& channelMap = speakerMap->channelMaps[i][j];
+                for (int k = 0; k < std::min(channelMap.speakerCount, (int)std::extent_v<decltype(channelMap.speakers)>); ++k)
+                {
+                    auto& speakers = channelMap.speakers[k];
+                    for (int l = 0; l < speakers.numLevels; ++l)
+                    {
+                        stream << SourceName(speakers.numLevels, l) << "\t\t" << speaker_map_names[speakers.speaker] << '\t' << std::fixed
+                               << std::setprecision(4) << speakers.levels[l] << "\r\n";
+                    }
+                }
+            }
+        }
+    }
+
+    void DumpSoundFilePcm(const AssetDumpingContext& context,
+                          const char* assetFileName,
+                          const MssSound& soundFile)
+    {
+        const char* cleanedAssetFileName = assetFileName;
+        if (assetFileName[0] == ',')
+        {
+            cleanedAssetFileName = (assetFileName + 1);
+        }
+
+        const auto outFile = OpenAssetOutputFile(context, std::format("sound/{}", cleanedAssetFileName), "");
+        if (!outFile)
+        {
+            con::error("Failed to open sound output file: \"{}\"", cleanedAssetFileName);
+            return;
+        }
+
+        const WavWriter writer(*outFile);
+
+        AILSOUNDINFO info = soundFile.info;
+        const WavMetaData metaData{info.channels, info.rate, info.bits};
+
+        writer.WritePcmHeader(metaData, info.data_len);
+        outFile->write(soundFile.data, info.data_len);
     }
 
     void DumpAliases(const AssetDumpingContext& context, const snd_alias_list_t& sndAliasList)
@@ -500,38 +547,30 @@ namespace
         {
             const auto& alias = sndAliasList.head[i];
 
-            WriteAliasToFile(csvStream, alias);
+            if (sndAliasList.count == 1)
+            {
+                WriteAliasToFile(csvStream, alias);
+            }
+            else
+            {
+                WriteAliasToFile(csvStream, alias, i + 1);
+            }
+
             csvStream.NextRow();
 
             DumpSpeakerMap(context, alias.speakerMap);
-        }
-    }
 
-    void DumpSpeakerMap(const AssetDumpingContext& context, const SpeakerMap* speakerMap)
-    {
-        if (!speakerMap)
-            return;
-
-        const auto outFile = OpenAssetOutputFile(context, std::format("soundaliases/{}", speakerMap->name), ".spkrmap");
-        if (!outFile)
-        {
-            con::error("Failed to open soundspeaker map output file: \"{}\"", speakerMap->name);
-            return;
-        }
-        std::ostream& stream(*outFile);
-        stream << "SPKRMAP\r\n\r\n\r\n";
-
-        for (int i = 0; i < std::extent_v<decltype(speakerMap->channelMaps)>; i++)
-        {
-            for (int j = 0; j < std::extent_v<decltype(speakerMap->channelMaps[i])>; j++)
+            if (alias.soundFile->type == SAT_LOADED)
             {
-                MSSChannelMap channelMap = speakerMap->channelMaps[i][j];
-                for (int k = 0; k < std::min(channelMap.speakerCount, (int)std::extent_v<decltype(channelMap.speakers)>); k++)
+                auto loadSnd = alias.soundFile->u.loadSnd;
+                if (loadSnd && loadSnd->name)
                 {
-                    MSSSpeakerLevels speakers = channelMap.speakers[k];
-                    stream << speakers.numLevels << '\t' << speakers.levels[0] << '\t' << speakers.levels[1] << '\t' << speakers.speaker << '\n';
+                    DumpSoundFilePcm(context, loadSnd->name, loadSnd->sound);
                 }
-                stream << '\n';
+            }
+            else if (alias.soundFile->type != SAT_STREAMED)
+            {
+                con::warn("Unhandled sound type: {}", alias.soundFile->type);
             }
         }
     }
