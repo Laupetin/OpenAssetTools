@@ -28,7 +28,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 #endif
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
-    RegisterAssetDumper(std::make_unique<snd_alias_list::SndAliasListDumperIW3>());
+    RegisterAssetDumper(std::make_unique<sound_alias_list::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndCurve)
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW3>());
     // REGISTER_DUMPER(AssetDumperClipMap)
