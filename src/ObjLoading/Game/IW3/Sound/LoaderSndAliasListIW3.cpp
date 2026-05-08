@@ -1,4 +1,4 @@
-#include "SndAliasListLoaderIW3.h"
+#include "LoaderSndAliasListIW3.h"
 
 #include "Game/IW3/IW3.h"
 #include "Sound/SndAliasListCommon.h"
