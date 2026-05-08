@@ -6,16 +6,20 @@
 
 #include <format>
 #include <iostream>
+#include <Csv/CsvStream.h>
 
 using namespace IW3;
 
 namespace
 {
+    constexpr unsigned COL_COUNT_MIN = 29;
+
     class SndAliasListLoader : public AssetCreator<AssetSound>
     {
     public:
         SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-            : m_search_path(searchPath)
+            : m_memory(memory)
+            , m_search_path(searchPath)
         {
         }
 
