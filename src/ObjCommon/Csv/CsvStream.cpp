@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <sstream>
+#include <algorithm>
 
 constexpr char CSV_SEPARATOR = ',';
 
@@ -158,6 +159,31 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
 
     return !isEof;
 }
+
+void CsvInputStream::PreprocessRow(std::vector<std::string>& row)
+{
+    for (auto& cell : row)
+    {
+        for (const auto c : cell)
+        {
+            if (isspace(c))
+                continue;
+            if (c == '#')
+                cell = "";
+            break;
+        }
+    }
+}
+
+bool CsvInputStream::RowIsEmpty(const std::vector<std::string>& row)
+{
+    return std::ranges::all_of(row,
+                               [](const std::string& cell)
+                               {
+                                   return cell.empty();
+                               });
+}
+
 
 CsvOutputStream::CsvOutputStream(std::ostream& stream)
     : m_stream(stream),

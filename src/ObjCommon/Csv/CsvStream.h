@@ -28,6 +28,9 @@ public:
     bool NextRow(std::vector<std::string>& out) const;
     bool NextRow(std::vector<const char*>& out, MemoryManager& memory) const;
 
+    static void PreprocessRow(std::vector<std::string>& row);
+    static bool RowIsEmpty(const std::vector<std::string>& row);
+
 private:
     bool EmitNextRow(const std::function<void(std::string)>& cb) const;
 
