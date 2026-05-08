@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Dumping/AbstractAssetDumper.h"
+#include "Asset/IAssetCreator.h"
 #include "Game/IW3/IW3.h"
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
 
-namespace sound
+namespace loaded_sound
 {
-    class LoadedSoundDumperIW3 final : public AbstractAssetDumper<IW3::AssetLoadedSound>
-    {
-    protected:
-        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::AssetLoadedSound::Type>& asset) override;
-    };
-} // namespace sound
+    std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace loaded_sound

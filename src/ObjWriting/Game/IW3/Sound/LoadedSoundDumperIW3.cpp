@@ -1,48 +1,95 @@
 #include "LoadedSoundDumperIW3.h"
 
 #include "Sound/WavTypes.h"
-#include "Sound/WavWriter.h"
+#include "Sound/WavReader.h"
 #include "Utils/Logging/Log.h"
 
 #include <format>
+#include <Sound/LoadedSoundCommon.h>
 
 using namespace IW3;
 
 namespace
 {
-    void DumpWavPcm(const LoadedSound* asset, std::ostream& stream)
+    class SndAliasListLoader : public AssetCreator<AssetSound>
     {
-        const WavWriter writer(stream);
+    public:
+        SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
 
-        const WavMetaData metaData{.channelCount = static_cast<unsigned>(asset->sound.info.channels),
-                                   .samplesPerSec = static_cast<unsigned>(asset->sound.info.rate),
-                                   .bitsPerSample = static_cast<unsigned>(asset->sound.info.bits)};
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = loaded_sound::GetFileNameForAssetName(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
 
-        writer.WritePcmHeader(metaData, asset->sound.info.data_len);
-        writer.WritePcmData(asset->sound.data, asset->sound.info.data_len);
-    }
+            auto* loadedSound = m_memory.Alloc<LoadedSound>();
+            loadedSound->name = m_memory.Dup(assetName.c_str());
+
+            AssetRegistration<AssetLoadedSound> registration(assetName, loadedSound);
+
+            MssSound& mss = loadedSound->sound;
+            WavReader reader(*file.m_stream);
+            WavMetaData meta;
+            size_t dataLen = 0;
+            if (!reader.ReadPcmHeader(meta, dataLen))
+            {
+                con::error("Invalid or unsupported WAV file!");
+                return AssetCreationResult::NoAction();
+            }
+
+            std::vector<uint8_t> pcm(dataLen);
+            if (!reader.ReadPcmData(pcm.data(), dataLen))
+            {
+                con::error("Failed to read PCM data!");
+                return AssetCreationResult::NoAction();
+            }
+
+            char* buf = nullptr;
+            if (dataLen > 0)
+            {
+                buf = static_cast<char*>(std::malloc(dataLen));
+                if (!buf)
+                {
+                    con::error("Out of memory allocating PCM buffer");
+                    return AssetCreationResult::NoAction();
+                }
+                std::memcpy(buf, pcm.data(), dataLen);
+            }
+
+            mss.data = buf;
+            mss.info.format = (int)WavFormat::PCM;
+            mss.info.data_ptr = static_cast<const void*>(mss.data);
+            mss.info.data_len = static_cast<unsigned int>(dataLen);
+            mss.info.rate = static_cast<unsigned int>(meta.samplesPerSec);
+            mss.info.bits = static_cast<int>(meta.bitsPerSample);
+            mss.info.channels = static_cast<int>(meta.channelCount);
+
+            // compute block size and samples
+            const unsigned int bytesPerSample = (mss.info.bits / 8u);
+            const unsigned int blockSize = (mss.info.channels > 0 && bytesPerSample > 0) ? (static_cast<unsigned int>(mss.info.channels) * bytesPerSample) : 0u;
+            mss.info.block_size = blockSize;
+            mss.info.samples = (blockSize > 0) ? (mss.info.data_len / blockSize) : 0u;
+            mss.info.initial_ptr = mss.info.data_ptr;
+
+            return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
 } // namespace
 
-namespace sound
+namespace loaded_sound
 {
-    void LoadedSoundDumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LoadedSound>& asset)
+    std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
-        const auto* loadedSound = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset.m_name));
-
-        if (!assetFile)
-            return;
-
-        auto& stream = *assetFile;
-        switch (static_cast<WavFormat>(loadedSound->sound.info.format))
-        {
-        case WavFormat::PCM:
-            DumpWavPcm(loadedSound, stream);
-            break;
-
-        default:
-            con::error("Unknown format {} for loaded sound: {}", loadedSound->sound.info.format, loadedSound->name);
-            break;
-        }
+        return std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>>();
     }
-} // namespace sound
+};
+    
