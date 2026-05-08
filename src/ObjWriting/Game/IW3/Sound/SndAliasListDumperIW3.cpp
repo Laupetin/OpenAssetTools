@@ -347,30 +347,35 @@ namespace
         WriteColumnFloat(stream, alias.distMax, 500000.0f);
 
         // channel
-        // auto, menu, weapon, voice, item, body, local, music, announcer
-        WriteChannelEnum(stream, (alias.flags >> 8) & 0x1F);
+        WriteChannelEnum(stream, (alias.flags >> 8) & 0x3F);
 
         // type
-        // primed, streamed, loaded
-        if (alias.soundFile)
+        if ((alias.flags & 0x40) && (alias.flags & 0x80))
         {
-            if (alias.soundFile->type == SAT_STREAMED)
-            {
-                WriteColumnString(stream, "streamed");
-            }
-            else
-            {
-                WriteColumnString(stream, "");
-            }
+            // Not sure if both flags set means primed
+            WriteColumnString(stream, "primed");
+        }
+        else if (alias.flags & 0x80 && !(alias.flags & 0x40))
+        {
+            WriteColumnString(stream, "streamed");
         }
 
         // probability
         WriteColumnFloat(stream, alias.probability, 1.0f);
 
+        auto bits = std::bitset<32>(static_cast<int>(alias.flags)).to_string();
+
         // loop
         if (alias.flags & 0x1)
         {
-            WriteColumnString(stream, "looping");
+            if (alias.flags & 0x20)
+            {
+                WriteColumnString(stream, "rlooping");
+            }
+            else
+            {
+                WriteColumnString(stream, "looping");
+            }
         }
         else
         {
@@ -378,13 +383,27 @@ namespace
         }
 
         // masterslave
-        WriteColumnFloat(stream, alias.slavePercentage, 1.0f);
+        if (alias.flags & 0x2)
+        {
+            WriteColumnString(stream, "master");
+        }
+        else
+        {
+            WriteColumnFloat(stream, alias.slavePercentage, 1.0f);
+        }
 
         // loadspec
         WriteColumnString(stream, "");
 
         // subtitle
-        WriteColumnString(stream, alias.subtitle);
+        if (alias.subtitle)
+        {
+            WriteColumnString(stream, alias.subtitle);
+        }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
 
         // compression
         WriteColumnString(stream, "");
@@ -423,7 +442,20 @@ namespace
         }
 
         // reverb
-        WriteColumnString(stream, "");
+        std::string reverbString = "";
+        if (alias.flags & 0x10)
+        {
+            reverbString += "nowetlevel";
+            if (alias.flags & 0x8)
+            {
+                reverbString += " ";
+            }
+        }
+        if (alias.flags & 0x8)
+        {
+            reverbString += "fulldrylevel";
+        }
+        WriteColumnString(stream, reverbString);
 
         // lfe percentage
         WriteColumnFloat(stream, alias.lfePercentage, 0);
