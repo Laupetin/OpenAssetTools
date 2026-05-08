@@ -25,7 +25,6 @@ namespace
 {
     const std::string ALIAS_HEADERS[]{"name",
                                       "sequence",
-                                      "probability",
                                       "file",
                                       "vol_min",
                                       "vol_max",
@@ -52,7 +51,8 @@ namespace
                                       "platform",
                                       "envelop_min",
                                       "envelop_max",
-                                      "envelop percentage"};
+                                      "envelop percentage",
+                                      "conversion"};
 
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
@@ -265,29 +265,9 @@ namespace
         }
         else
         {
-            stream.WriteColumn(std::format("{:.{}f}", value, precision));
+            stream.WriteColumn(std::format("{:.{}g}", value, precision));
         }
     }
-
-    void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
-    {
-        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
-        const auto cents = std::clamp(Common::HertzToCents(hertz), -2400.0f, 1200.0f);
-
-        std::string centsFormat;
-        for (auto i = 0; i < FORMATTING_RETRIES; i++)
-        {
-            centsFormat = std::format("{:.{}f}", cents, i);
-            const auto centsRound = std::stof(centsFormat);
-            const auto centsRoundToValue = static_cast<uint16_t>(Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
-
-            if (centsRoundToValue == value)
-                break;
-        }
-
-        stream.WriteColumn(centsFormat);
-    }
-
     void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
     {
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
@@ -354,16 +334,16 @@ namespace
         WriteColumnString(stream, "max");
 
         // pitch_min
-        WriteColumnFloat(stream, alias.pitchMin, 0.0f);
+        WriteColumnFloat(stream, alias.pitchMin, 1.0f);
 
         // pitch_max
-        WriteColumnFloat(stream, alias.pitchMax, 0.0f);
+        WriteColumnFloat(stream, alias.pitchMax, 1.0f);
 
         // dist_min
-        WriteColumnFloat(stream, alias.distMin, 0.0f);
+        WriteColumnFloat(stream, alias.distMin, 120.0f);
 
         // dist_max
-        WriteColumnFloat(stream, alias.distMax, 0.0f);
+        WriteColumnFloat(stream, alias.distMax, 500000.0f);
 
         // channel
         // auto, menu, weapon, voice, item, body, local, music, announcer
@@ -460,6 +440,9 @@ namespace
 
         // envelop percentage
         WriteColumnFloat(stream, alias.envelopPercentage, 0);
+
+        // conversion
+        WriteColumnString(stream, "");
     }
 
     const char* SourceName(int numLevels, int levelIndex)
