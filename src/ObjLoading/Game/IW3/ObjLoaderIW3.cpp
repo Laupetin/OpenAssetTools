@@ -17,6 +17,7 @@
 #include "PhysPreset/RawLoaderPhysPresetIW3.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
+#include "Sound/LoaderLoadedSoundIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
 
 #include <memory>
@@ -107,7 +108,7 @@ namespace
         collection.AddAssetCreator(image::CreateLoaderExternalIW3(memory, searchPath));
         collection.AddAssetCreator(snd_alias_list::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
+        collection.AddAssetCreator(loaded_sound::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldSp>(memory));
