@@ -28,6 +28,9 @@ namespace IW3
         {"envelopPercentage",  offsetof(snd_alias_t_info, envelopPercentage),  CSPFT_FLOAT },
     };
 
+    static const char* speaker_map_names[] = {
+        "LEFTSPEAKER\t\t\t", "RIGHTSPEAKER\t\t", "CENTERSPEAKER\t\t", "LFESPEAKER\t\t\t", "LEFTSURROUNDSPEAKER\t", "RIGHTSURROUNDSPEAKER\t"};
+
     static const char* snd_alias_channel_names[] = {
         "physics", "auto",   "auto2",   "autodog",  "bulletimpact", "bulletwhizby", "element",  "auto2d",       "vehicle",  "vehiclelimited", "menu",
         "body",    "body2d", "reload",  "reload2d", "item",         "effects1",     "effects2", "weapon",       "weapon2d", "nonshock",       "voice",
