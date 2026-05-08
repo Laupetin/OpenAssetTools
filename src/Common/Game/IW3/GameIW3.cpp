@@ -9,7 +9,7 @@ using namespace IW3;
 namespace
 {
     constexpr const char* ASSET_TYPE_NAMES[]{
-        "xmodelpieces",   "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loadedsound",
+        "xmodelpieces",   "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loaded_sound",
         "clipmap_unused", "clipmap",    "comworld",    "gameworldsp", "gameworldmp",      "mapents",      "gfxworld", "lightdef", "uimap",      "font",
         "menulist",       "menu",       "localize",    "weapon",      "snddriverglobals", "fx",           "impactfx", "aitype",   "mptype",     "character",
         "xmodelalias",    "rawfile",    "stringtable",
