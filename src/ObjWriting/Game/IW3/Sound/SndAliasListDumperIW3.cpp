@@ -7,7 +7,9 @@
 #include "Utils/Logging/Log.h"
 #include "Zone/ZoneRegistry.h"
 
+#include <Game/IW3/Sound/SndAliasListFields.h>
 #include <algorithm>
+#include <bitset>
 #include <cmath>
 #include <filesystem>
 #include <format>
@@ -15,46 +17,42 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
-#include <Game/IW3/Sound/SndAliasListFields.h>
-#include <bitset>
 
 using namespace IW3;
 namespace fs = std::filesystem;
 
 namespace
 {
-    const std::string ALIAS_HEADERS[]{
-        "name",
-        "sequence",
-        "probability",
-        "file",
-        "vol_min",
-        "vol_max",
-        "vol_mod",
-        "pitch_min",
-        "pitch_max",
-        "dist_min",
-        "dist_max",
-        "channel",
-        "type",
-        "probability",
-        "loop",
-        "masterslave",
-        "loadspec",
-        "subtitle",
-        "compression",
-        "secondaryaliasname",
-        "volumefalloffcurve",
-        "startdelay",
-        "speakermap",
-        "reverb",
-        "lfe percentage",
-        "center percentage",
-        "platform",
-        "envelop_min",
-        "envelop_max",
-        "envelop percentage"
-    };
+    const std::string ALIAS_HEADERS[]{"name",
+                                      "sequence",
+                                      "probability",
+                                      "file",
+                                      "vol_min",
+                                      "vol_max",
+                                      "vol_mod",
+                                      "pitch_min",
+                                      "pitch_max",
+                                      "dist_min",
+                                      "dist_max",
+                                      "channel",
+                                      "type",
+                                      "probability",
+                                      "loop",
+                                      "masterslave",
+                                      "loadspec",
+                                      "subtitle",
+                                      "compression",
+                                      "secondaryaliasname",
+                                      "volumefalloffcurve",
+                                      "startdelay",
+                                      "speakermap",
+                                      "reverb",
+                                      "lfe percentage",
+                                      "center percentage",
+                                      "platform",
+                                      "envelop_min",
+                                      "envelop_max",
+                                      "envelop percentage"};
 
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
@@ -315,7 +313,7 @@ namespace
         stream.WriteColumn(snd_alias_channel_names[channel]);
     }
 
-    const char* FromReferencedString(const char* refString) 
+    const char* FromReferencedString(const char* refString)
     {
         if (refString[0] == ',')
         {
@@ -397,10 +395,10 @@ namespace
         {
             WriteColumnString(stream, "");
         }
-        
+
         // masterslave
         WriteColumnFloat(stream, alias.slavePercentage, 1.0f);
-        
+
         // loadspec
         WriteColumnString(stream, "");
 
@@ -409,7 +407,7 @@ namespace
 
         // compression
         WriteColumnString(stream, "");
-        
+
         // secondaryaliasname
         if (alias.secondaryAliasName)
         {
@@ -445,7 +443,7 @@ namespace
 
         // reverb
         WriteColumnString(stream, "");
-        
+
         // lfe percentage
         WriteColumnFloat(stream, alias.lfePercentage, 0);
 
@@ -453,7 +451,7 @@ namespace
         WriteColumnFloat(stream, alias.centerPercentage, 0);
 
         // platform
-        
+
         // envelop_min
         WriteColumnFloat(stream, alias.envelopMin, 0);
 
@@ -464,7 +462,7 @@ namespace
         WriteColumnFloat(stream, alias.envelopPercentage, 0);
     }
 
-    const char* SourceName(int numLevels, int levelIndex) 
+    const char* SourceName(int numLevels, int levelIndex)
     {
         if (numLevels == 1)
             return "MONOSOURCE";
@@ -505,9 +503,7 @@ namespace
         }
     }
 
-    void DumpSoundFilePcm(const AssetDumpingContext& context,
-                          const char* assetFileName,
-                          const MssSound& soundFile)
+    void DumpSoundFilePcm(const AssetDumpingContext& context, const char* assetFileName, const MssSound& soundFile)
     {
         const char* cleanedAssetFileName = assetFileName;
         if (assetFileName[0] == ',')

@@ -2,9 +2,9 @@
 
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <sstream>
-#include <algorithm>
 
 constexpr char CSV_SEPARATOR = ',';
 
@@ -183,7 +183,6 @@ bool CsvInputStream::RowIsEmpty(const std::vector<std::string>& row)
                                    return cell.empty();
                                });
 }
-
 
 CsvOutputStream::CsvOutputStream(std::ostream& stream)
     : m_stream(stream),

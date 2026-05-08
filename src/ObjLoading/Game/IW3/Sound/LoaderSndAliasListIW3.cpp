@@ -4,9 +4,9 @@
 #include "Sound/SndAliasListCommon.h"
 #include "Utils/Logging/Log.h"
 
+#include <Csv/CsvStream.h>
 #include <format>
 #include <iostream>
-#include <Csv/CsvStream.h>
 
 using namespace IW3;
 
@@ -18,8 +18,8 @@ namespace
     {
     public:
         SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-            : m_memory(memory)
-            , m_search_path(searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
         {
         }
 
@@ -75,23 +75,10 @@ namespace
                     alias.sequence = sequence;
                 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-                //auto makeFx = [&]() -> FxEffectDef*
+                // auto makeFx = [&]() -> FxEffectDef*
                 //{
-                //    if (name.empty())
-                //        return nullptr;
+                //     if (name.empty())
+                //         return nullptr;
 
                 //    return context.ForceLoadDependency<AssetFx>(name)->Asset();
                 //};
