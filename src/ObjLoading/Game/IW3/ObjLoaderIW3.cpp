@@ -105,13 +105,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW3(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW3(memory, searchPath));
-<<<<<<< snd_alias_list_t
         collection.AddAssetCreator(snd_alias_list::CreateLoaderIW3(memory, searchPath, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
-        == == == =
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
-            collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
->>>>>>> main
+        collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
