@@ -5,9 +5,9 @@
 #include "Utils/Logging/Log.h"
 
 #include <Csv/CsvStream.h>
+#include <Game/IW3/Sound/SndAliasListFields.h>
 #include <format>
 #include <iostream>
-#include <Game/IW3/Sound/SndAliasListFields.h>
 
 using namespace IW3;
 
@@ -64,8 +64,7 @@ namespace
     {
         channelIndex &= 0x1Fu;
 
-        rawFlags = (rawFlags & ~(0x1Fu << 8u)) 
-            | ((static_cast<int>(channelIndex) & 0x1Fu) << 8u);
+        rawFlags = (rawFlags & ~(0x1Fu << 8u)) | ((static_cast<int>(channelIndex) & 0x1Fu) << 8u);
     }
 
     void SetLooping(int& rawFlags, bool looping)
@@ -216,11 +215,11 @@ namespace
                 if (!currentRow[9].empty())
                 {
                     alias.subtitle = m_memory.Dup(currentRow[9].c_str());
-                    //alias.distMax = std::stof(currentRow[9]);
+                    // alias.distMax = std::stof(currentRow[9]);
                 }
                 else
                 {
-                    //alias.distMax = 500000;
+                    // alias.distMax = 500000;
                 }
 
                 std::string channelName = currentRow[10];
@@ -252,11 +251,11 @@ namespace
 
                 if (!currentRow[12].empty())
                 {
-                    //alias.probability = std::stof(currentRow[12]);
+                    // alias.probability = std::stof(currentRow[12]);
                 }
                 else
                 {
-                    //alias.probability = 1.0f;
+                    // alias.probability = 1.0f;
                 }
 
                 if (!currentRow[13].empty())
@@ -276,11 +275,11 @@ namespace
 
                 if (!currentRow[14].empty())
                 {
-                    //alias.slavePercentage = std::stof(currentRow[14].c_str());
+                    // alias.slavePercentage = std::stof(currentRow[14].c_str());
                 }
                 else
                 {
-                    //alias.slavePercentage = 1.0f;
+                    // alias.slavePercentage = 1.0f;
                 }
 
                 if (!currentRow[17].empty() && currentRow[17] != "0")

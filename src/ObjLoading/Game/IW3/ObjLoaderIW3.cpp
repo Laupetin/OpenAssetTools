@@ -108,9 +108,9 @@ namespace
 <<<<<<< snd_alias_list_t
         collection.AddAssetCreator(snd_alias_list::CreateLoaderIW3(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
-=======
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
-        collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
+        == == == =
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
+            collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
 >>>>>>> main
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));

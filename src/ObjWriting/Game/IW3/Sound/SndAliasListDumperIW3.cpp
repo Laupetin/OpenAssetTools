@@ -268,6 +268,7 @@ namespace
             stream.WriteColumn(std::format("{:.{}g}", value, precision));
         }
     }
+
     void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
     {
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
