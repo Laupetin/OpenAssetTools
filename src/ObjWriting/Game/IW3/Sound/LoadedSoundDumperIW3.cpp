@@ -1,4 +1,5 @@
 #include "LoadedSoundDumperIW3.h"
+
 #include "Sound/WavTypes.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
@@ -44,4 +45,4 @@ namespace loaded_sound
             break;
         }
     }
-} // namespace sound
+} // namespace loaded_sound

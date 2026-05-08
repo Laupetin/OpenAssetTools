@@ -1,4 +1,5 @@
 #include "WavReader.h"
+
 #include <Utils/Logging/Log.h>
 
 WavReader::WavReader(std::istream& stream)
@@ -14,10 +15,8 @@ bool WavReader::ReadExact(std::istream& s, void* buf, std::streamsize n)
 
 uint32_t WavReader::MakeId(const char id[4])
 {
-    return static_cast<uint32_t>(static_cast<unsigned char>(id[0])) 
-        | (static_cast<uint32_t>(static_cast<unsigned char>(id[1])) << 8)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(id[2])) << 16) 
-        | (static_cast<uint32_t>(static_cast<unsigned char>(id[3])) << 24);
+    return static_cast<uint32_t>(static_cast<unsigned char>(id[0])) | (static_cast<uint32_t>(static_cast<unsigned char>(id[1])) << 8)
+           | (static_cast<uint32_t>(static_cast<unsigned char>(id[2])) << 16) | (static_cast<uint32_t>(static_cast<unsigned char>(id[3])) << 24);
 }
 
 bool WavReader::ReadPcmHeader(WavMetaData& metaData, size_t& dataLen) const

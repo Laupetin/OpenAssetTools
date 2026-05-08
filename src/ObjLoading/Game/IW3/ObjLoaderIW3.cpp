@@ -16,8 +16,8 @@
 #include "PhysPreset/GdtLoaderPhysPresetIW3.h"
 #include "PhysPreset/RawLoaderPhysPresetIW3.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
-#include "Sound/LoaderSoundCurveIW3.h"
 #include "Sound/LoaderLoadedSoundIW3.h"
+#include "Sound/LoaderSoundCurveIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
 
 #include <memory>

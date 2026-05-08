@@ -1,11 +1,11 @@
 #include "LoaderLoadedSoundIW3.h"
 
-#include "Sound/WavTypes.h"
 #include "Sound/WavReader.h"
+#include "Sound/WavTypes.h"
 #include "Utils/Logging/Log.h"
 
-#include <format>
 #include <Sound/LoadedSoundCommon.h>
+#include <format>
 
 using namespace IW3;
 
@@ -91,5 +91,4 @@ namespace loaded_sound
     {
         return std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>>();
     }
-};
-    
+}; // namespace loaded_sound

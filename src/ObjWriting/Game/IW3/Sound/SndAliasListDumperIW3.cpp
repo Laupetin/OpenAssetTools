@@ -6,11 +6,11 @@
 
 #include <Game/IW3/Sound/SndAliasListFields.h>
 #include <algorithm>
+#include <cassert>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <sstream>
-#include <cassert>
 
 using namespace IW3;
 namespace fs = std::filesystem;
