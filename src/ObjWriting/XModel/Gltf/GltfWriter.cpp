@@ -26,6 +26,11 @@ namespace
         float uv[2];
     };
 
+    struct GltfVertexColorData
+    {
+        float color[4];
+    };
+
     void LhcToRhcCoordinates(float (&coords)[3])
     {
         const float two[3]{coords[0], coords[1], coords[2]};
@@ -70,6 +75,22 @@ namespace
         matrix = result;
     }
 
+    [[nodiscard]] bool HasNonDefaultColorData(const XModelCommon& xmodel)
+    {
+        for (const auto& vertex : xmodel.m_vertices)
+        {
+            if (std::abs(vertex.color[0] - 1.0f) >= std::numeric_limits<float>::epsilon()
+                || std::abs(vertex.color[1] - 1.0f) >= std::numeric_limits<float>::epsilon()
+                || std::abs(vertex.color[2] - 1.0f) >= std::numeric_limits<float>::epsilon()
+                || std::abs(vertex.color[3] - 1.0f) >= std::numeric_limits<float>::epsilon())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     class GltfWriterImpl final : public gltf::Writer
     {
     public:
@@ -85,17 +106,19 @@ namespace
             JsonRoot gltf;
             std::vector<uint8_t> bufferData;
 
+            const auto hasNonDefaultColorData = HasNonDefaultColorData(xmodel);
+
             CreateJsonAsset(gltf.asset);
             CreateSkeletonNodes(gltf, xmodel);
             CreateMeshNodes(gltf, xmodel);
             CreateRootNode(gltf, xmodel);
             CreateMaterials(gltf, xmodel);
-            CreateBufferViews(gltf, xmodel);
-            CreateAccessors(gltf, xmodel);
+            CreateBufferViews(gltf, xmodel, hasNonDefaultColorData);
+            CreateAccessors(gltf, xmodel, hasNonDefaultColorData);
             CreateSkin(gltf, xmodel);
-            CreateMeshes(gltf, xmodel);
+            CreateMeshes(gltf, xmodel, hasNonDefaultColorData);
             CreateScene(gltf, xmodel);
-            FillBufferData(gltf, xmodel, bufferData);
+            FillBufferData(gltf, xmodel, bufferData, hasNonDefaultColorData);
             CreateBuffer(gltf, xmodel, bufferData);
 
             const ordered_json jRoot = gltf;
@@ -164,16 +187,16 @@ namespace
 
             const auto meshCount = xmodel.m_objects.size();
             for (auto meshIndex = 0u; meshIndex < meshCount; meshIndex++)
-                rootNode.children->push_back(m_first_mesh_node + meshIndex);
+                rootNode.children->emplace_back(m_first_mesh_node + meshIndex);
 
-            if (!xmodel.m_bones.empty())
-                rootNode.children->push_back(m_first_bone_node);
+            for (auto rootBoneIndex = 0u; rootBoneIndex < m_root_bone_count; rootBoneIndex++)
+                rootNode.children->emplace_back(m_first_bone_node + rootBoneIndex);
 
             m_root_node = static_cast<unsigned>(gltf.nodes->size());
             gltf.nodes->emplace_back(std::move(rootNode));
         }
 
-        void CreateMeshes(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateMeshes(JsonRoot& gltf, const XModelCommon& xmodel, const bool hasNonDefaultColorData)
         {
             if (!gltf.meshes.has_value())
                 gltf.meshes.emplace();
@@ -190,6 +213,8 @@ namespace
 
                 primitives.attributes.POSITION = m_position_accessor;
                 primitives.attributes.NORMAL = m_normal_accessor;
+                if (hasNonDefaultColorData)
+                    primitives.attributes.COLOR_0 = m_color_accessor;
                 primitives.attributes.TEXCOORD_0 = m_uv_accessor;
 
                 if (hasBoneWeightData)
@@ -278,6 +303,7 @@ namespace
 
             const auto boneCount = common.m_bones.size();
             m_first_bone_node = static_cast<unsigned>(gltf.nodes->size());
+            m_root_bone_count = 0;
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
@@ -309,6 +335,11 @@ namespace
                     translation -= parentTranslation;
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
+                }
+                else
+                {
+                    assert(m_root_bone_count == boneIndex);
+                    m_root_bone_count++;
                 }
                 rotation.normalize();
 
@@ -368,7 +399,7 @@ namespace
             gltf.scene = 0u;
         }
 
-        void CreateBufferViews(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateBufferViews(JsonRoot& gltf, const XModelCommon& xmodel, const bool hasNonDefaultColorData)
         {
             if (!gltf.bufferViews.has_value())
                 gltf.bufferViews.emplace();
@@ -385,6 +416,19 @@ namespace
 
             m_vertex_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
             gltf.bufferViews->emplace_back(vertexBufferView);
+
+            if (hasNonDefaultColorData)
+            {
+                JsonBufferView colorBufferView;
+                colorBufferView.buffer = 0u;
+                colorBufferView.byteOffset = bufferOffset;
+                colorBufferView.byteLength = static_cast<unsigned>(sizeof(GltfVertexColorData) * xmodel.m_vertices.size());
+                colorBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
+                bufferOffset += colorBufferView.byteLength;
+
+                m_color_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
+                gltf.bufferViews->emplace_back(colorBufferView);
+            }
 
             if (!xmodel.m_bone_weight_data.weights.empty())
             {
@@ -432,7 +476,7 @@ namespace
             }
         }
 
-        void CreateAccessors(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateAccessors(JsonRoot& gltf, const XModelCommon& xmodel, const bool hasNonDefaultColorData)
         {
             if (!gltf.accessors.has_value())
                 gltf.accessors.emplace();
@@ -454,6 +498,17 @@ namespace
             normalAccessor.type = JsonAccessorType::VEC3;
             m_normal_accessor = static_cast<unsigned>(gltf.accessors->size());
             gltf.accessors->emplace_back(normalAccessor);
+
+            if (hasNonDefaultColorData)
+            {
+                JsonAccessor colorAccessor;
+                colorAccessor.bufferView = m_color_buffer_view;
+                colorAccessor.componentType = JsonAccessorComponentType::FLOAT;
+                colorAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
+                colorAccessor.type = JsonAccessorType::VEC4;
+                m_color_accessor = static_cast<unsigned>(gltf.accessors->size());
+                gltf.accessors->emplace_back(colorAccessor);
+            }
 
             JsonAccessor uvAccessor;
             uvAccessor.bufferView = m_vertex_buffer_view;
@@ -506,9 +561,9 @@ namespace
             }
         }
 
-        void FillBufferData(JsonRoot& gltf, const XModelCommon& xmodel, std::vector<uint8_t>& bufferData) const
+        void FillBufferData(JsonRoot& gltf, const XModelCommon& xmodel, std::vector<uint8_t>& bufferData, const bool hasNonDefaultColorData) const
         {
-            const auto expectedBufferSize = GetExpectedBufferSize(xmodel);
+            const auto expectedBufferSize = GetExpectedBufferSize(xmodel, hasNonDefaultColorData);
             bufferData.resize(expectedBufferSize);
 
             auto currentBufferOffset = 0uz;
@@ -555,6 +610,20 @@ namespace
             {
                 gltf.accessors.value()[m_position_accessor].min = std::vector({minPosition[0], minPosition[1], minPosition[2]});
                 gltf.accessors.value()[m_position_accessor].max = std::vector({maxPosition[0], maxPosition[1], maxPosition[2]});
+            }
+
+            if (hasNonDefaultColorData)
+            {
+                for (const auto& commonVertex : xmodel.m_vertices)
+                {
+                    auto* colorData = reinterpret_cast<GltfVertexColorData*>(&bufferData[currentBufferOffset]);
+                    colorData->color[0] = commonVertex.color[0];
+                    colorData->color[1] = commonVertex.color[1];
+                    colorData->color[2] = commonVertex.color[2];
+                    colorData->color[3] = commonVertex.color[3];
+
+                    currentBufferOffset += sizeof(GltfVertexColorData);
+                }
             }
 
             if (!xmodel.m_bone_weight_data.weights.empty())
@@ -639,11 +708,14 @@ namespace
             assert(expectedBufferSize == currentBufferOffset);
         }
 
-        static size_t GetExpectedBufferSize(const XModelCommon& xmodel)
+        static size_t GetExpectedBufferSize(const XModelCommon& xmodel, const bool hasNonDefaultColorData)
         {
             auto result = 0uz;
 
             result += xmodel.m_vertices.size() * sizeof(GltfVertex);
+
+            if (hasNonDefaultColorData)
+                result += xmodel.m_vertices.size() * sizeof(GltfVertexColorData);
 
             if (!xmodel.m_bone_weight_data.weights.empty())
             {
@@ -679,13 +751,16 @@ namespace
         unsigned m_first_mesh_node = 0u;
         unsigned m_root_node = 0u;
         unsigned m_first_bone_node = 0u;
+        unsigned m_root_bone_count = 0u;
         unsigned m_position_accessor = 0u;
         unsigned m_normal_accessor = 0u;
+        unsigned m_color_accessor = 0u;
         unsigned m_uv_accessor = 0u;
         unsigned m_joints_accessor = 0u;
         unsigned m_weights_accessor = 0u;
         unsigned m_inverse_bind_matrices_accessor = 0u;
         unsigned m_vertex_buffer_view = 0u;
+        unsigned m_color_buffer_view = 0u;
         unsigned m_joints_buffer_view = 0u;
         unsigned m_weights_buffer_view = 0u;
         unsigned m_inverse_bind_matrices_buffer_view = 0u;

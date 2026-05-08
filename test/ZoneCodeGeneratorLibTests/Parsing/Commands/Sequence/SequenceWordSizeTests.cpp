@@ -1,11 +1,11 @@
-#include "Parsing/Commands/Sequence/SequenceArchitecture.h"
+#include "Parsing/Commands/Sequence/SequenceWordSize.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-namespace test::parsing::commands::sequence::sequence_architecture
+namespace test::parsing::commands::sequence::sequence_word_size
 {
     class CommandsSequenceTestsHelper
     {
@@ -31,18 +31,18 @@ namespace test::parsing::commands::sequence::sequence_architecture
         bool PerformTest()
         {
             REQUIRE(m_lexer);
-            const auto sequence = std::make_unique<SequenceArchitecture>();
+            const auto sequence = std::make_unique<SequenceWordSize>();
             return sequence->MatchSequence(m_lexer.get(), m_state.get(), m_consumed_token_count);
         }
     };
 
-    TEST_CASE("SequenceArchitecture: Ensure can set x86", "[parsing][sequence]")
+    TEST_CASE("SequenceWordSize: Ensure can set 32-bit", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
         helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x86")),
+            CommandsParserValue::Identifier(pos, new std::string("wordsize")),
+            CommandsParserValue::Integer(pos, 32),
             CommandsParserValue::Character(pos, ';'),
             CommandsParserValue::EndOfFile(pos),
         });
@@ -51,16 +51,16 @@ namespace test::parsing::commands::sequence::sequence_architecture
 
         REQUIRE(result);
         REQUIRE(helper.m_consumed_token_count == 3);
-        REQUIRE(helper.m_repository->GetArchitecture() == Architecture::X86);
+        REQUIRE(helper.m_repository->GetWordSize() == WordSize::BITS_32);
     }
 
-    TEST_CASE("SequenceArchitecture: Ensure can set x64", "[parsing][sequence]")
+    TEST_CASE("SequenceWordSize: Ensure can set 64-bit", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
         helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x86")),
+            CommandsParserValue::Identifier(pos, new std::string("wordsize")),
+            CommandsParserValue::Integer(pos, 64),
             CommandsParserValue::Character(pos, ';'),
             CommandsParserValue::EndOfFile(pos),
         });
@@ -69,21 +69,21 @@ namespace test::parsing::commands::sequence::sequence_architecture
 
         REQUIRE(result);
         REQUIRE(helper.m_consumed_token_count == 3);
-        REQUIRE(helper.m_repository->GetArchitecture() == Architecture::X86);
+        REQUIRE(helper.m_repository->GetWordSize() == WordSize::BITS_64);
     }
 
-    TEST_CASE("SequenceArchitecture: Ensure cannot match unknown value", "[parsing][sequence]")
+    TEST_CASE("SequenceWordSize: Ensure cannot match unknown value", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
         helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x1337")),
+            CommandsParserValue::Identifier(pos, new std::string("wordsize")),
+            CommandsParserValue::Integer(pos, 1337),
             CommandsParserValue::Character(pos, ';'),
             CommandsParserValue::EndOfFile(pos),
         });
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
-        REQUIRE(helper.m_repository->GetArchitecture() == Architecture::UNKNOWN);
+        REQUIRE(helper.m_repository->GetWordSize() == WordSize::UNKNOWN);
     }
-} // namespace test::parsing::commands::sequence::sequence_architecture
+} // namespace test::parsing::commands::sequence::sequence_word_size

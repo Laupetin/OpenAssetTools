@@ -10,6 +10,7 @@
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "Sound/SndAliasListDumperIW3.h"
+#include "Sound/SndCurveDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
 
 using namespace IW3;
@@ -29,7 +30,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
     RegisterAssetDumper(std::make_unique<sound_alias_list::DumperIW3>());
-    // REGISTER_DUMPER(AssetDumperSndCurve)
+    RegisterAssetDumper(std::make_unique<sound_curve::DumperIW3>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW3>());
     // REGISTER_DUMPER(AssetDumperClipMap)
     // REGISTER_DUMPER(AssetDumperComWorld)

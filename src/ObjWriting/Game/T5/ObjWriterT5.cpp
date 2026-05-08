@@ -5,6 +5,7 @@
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "Image/ImageDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
+#include "PhysPreset/PhysPresetInfoStringDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
 
@@ -12,7 +13,7 @@ using namespace T5;
 
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
-    // REGISTER_DUMPER(AssetDumperPhysPreset, m_phys_preset)
+    RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperT5>());
     // REGISTER_DUMPER(AssetDumperPhysConstraints, m_phys_constraints)
     // REGISTER_DUMPER(AssetDumperDestructibleDef, m_destructible_def)
     // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)

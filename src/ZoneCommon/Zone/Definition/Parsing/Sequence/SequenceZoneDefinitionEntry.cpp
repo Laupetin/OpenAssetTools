@@ -23,7 +23,12 @@ void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinitionParserState* state,
 {
     const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
 
-    const auto maybeAssetType = state->m_asset_name_resolver.GetAssetTypeByName(typeNameToken.FieldValue());
+    const auto maybeAssetType = state->m_game.and_then(
+        [&typeNameToken](const IGame* game)
+        {
+            return game->FindAssetTypeByName(typeNameToken.FieldValue());
+        });
+
     if (!maybeAssetType)
         throw ParsingException(typeNameToken.GetPos(), "Unknown asset type");
 

@@ -11,14 +11,14 @@ The following section specify which assets are supported to be dumped to disk (u
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 | -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
-| PhysPreset           | ❌              | ❌              |                                                                              |
+| PhysPreset           | ✅              | ✅              |                                                                              |
 | XAnimParts           | ❌              | ❌              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
 | MaterialTechniqueSet | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ❌              | ❌              |                                                                              |
-| SndCurve             | ❌              | ❌              |                                                                              |
+| SndCurve             | ✅              | ✅              |                                                                              |
 | LoadedSound          | ✅              | ❌              |                                                                              |
 | clipMap_t            | ❌              | ❌              |                                                                              |
 | ComWorld             | ❌              | ❌              |                                                                              |
@@ -81,7 +81,7 @@ The following section specify which assets are supported to be dumped to disk (u
 
 | Asset Type                | Dumping Support | Loading Support | Notes                                                                                                         |
 | ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
-| PhysPreset                | ❌              | ❌              |                                                                                                               |
+| PhysPreset                | ✅              | ✅              |                                                                                                               |
 | PhysCollmap               | ❌              | ❌              |                                                                                                               |
 | XAnimParts                | ❌              | ❌              |                                                                                                               |
 | XModelSurfs               | ❌              | ❌              |                                                                                                               |
@@ -93,7 +93,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MaterialTechniqueSet      | ❌              | ❌              |                                                                                                               |
 | GfxImage                  | ✅              | ✅              | A few special image encodings are not yet supported.                                                          |
 | snd_alias_list_t          | ❌              | ❌              |                                                                                                               |
-| SndCurve                  | ❌              | ❌              |                                                                                                               |
+| SndCurve                  | ✅              | ✅              |                                                                                                               |
 | LoadedSound               | ✅              | ❌              |                                                                                                               |
 | clipMap_t                 | ❌              | ❌              |                                                                                                               |
 | ComWorld                  | ❌              | ❌              |                                                                                                               |
@@ -126,7 +126,7 @@ The following section specify which assets are supported to be dumped to disk (u
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 | -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
-| PhysPreset           | ❌              | ❌              |                                                                              |
+| PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ❌              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
 | XAnimParts           | ❌              | ❌              |                                                                              |
