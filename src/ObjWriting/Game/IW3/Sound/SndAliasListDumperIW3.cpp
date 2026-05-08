@@ -1,22 +1,16 @@
 #include "SndAliasListDumperIW3.h"
 
 #include "Csv/CsvStream.h"
-#include "Game/IW3/CommonIW3.h"
-#include "Game/IW3/GameIW3.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
-#include "Zone/ZoneRegistry.h"
 
 #include <Game/IW3/Sound/SndAliasListFields.h>
 #include <algorithm>
-#include <bitset>
-#include <cmath>
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <nlohmann/json.hpp>
 #include <sstream>
-#include <unordered_set>
+#include <cassert>
 
 using namespace IW3;
 namespace fs = std::filesystem;
@@ -58,79 +52,6 @@ namespace
         "raw/",
         "devraw/",
     };
-
-    constexpr unsigned FRAME_RATE_FOR_INDEX[]{
-        8000,
-        12000,
-        16000,
-        24000,
-        32000,
-        44100,
-        48000,
-        96000,
-        192000,
-    };
-
-    constexpr const char* KNOWN_CONTEXT_TYPES[]{
-        "",
-        "plr_stance",
-        "grass",
-        "f35",
-        "ringoff_plr",
-        "mature",
-    };
-
-    constexpr const char* KNOWN_CONTEXT_VALUES[]{
-        "",
-        "stand",
-        "crouch",
-        "prone",
-        "no_grass",
-        "in_grass",
-        "interior",
-        "exterior",
-        "outdoor",
-        "indoor",
-        "safe",
-        "explicit",
-    };
-
-    constexpr const char* KNOWN_FUTZ_IDS[]{
-        "",
-        "bfutz",
-        "default",
-        "defaultbkp",
-        "dlc_res_1",
-        "dlc_res_2",
-        "dlc_res_3",
-        "dlc_res_4",
-        "dlc_res_5",
-        "dlc_res_6",
-        "dlc_res_7",
-        "dlc_res_8",
-        "good_1",
-        "jet_wing_helmet",
-        "jet_wing_helmet_flying",
-        "mpl_agr_pov",
-        "mpl_chopper_pov",
-        "mpl_quad_pov",
-        "mpl_reaper_pov",
-        "no_gfutz",
-        "spl_asd_pov",
-        "spl_bigdog_pov",
-        "spl_heli_future",
-        "spl_quad_pov",
-        "spl_spiderbot_pov",
-        "spl_spymic",
-        "spl_tow_missile",
-        "spl_turret",
-        "spl_war_command",
-        "test_1",
-        "test_2",
-        "tueyeckert",
-    };
-
-    constexpr auto FORMATTING_RETRIES = 5;
 
     [[nodiscard]] std::string GetAssetFilename(const AssetDumpingContext& context, std::string outputFileName, const std::string& extension)
     {
@@ -247,11 +168,6 @@ namespace
         stream.WriteColumn(std::format("{:.2f}", value));
     }
 
-    void WriteColumnBinary(CsvOutputStream& stream, int value)
-    {
-        stream.WriteColumn(std::bitset<32>(static_cast<int>(value)).to_string());
-    }
-
     void WriteColumnFloat(CsvOutputStream& stream, const float& value, const float& defaultVal = -1.0f, int precision = 2)
     {
         int intVal = static_cast<int>(value);
@@ -267,24 +183,6 @@ namespace
         {
             stream.WriteColumn(std::format("{:.{}g}", value, precision));
         }
-    }
-
-    void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
-    {
-        const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
-
-        std::string normValueFormat;
-        for (auto i = 0; i < FORMATTING_RETRIES; i++)
-        {
-            normValueFormat = std::format("{:.{}f}", normValue, i);
-            const auto normValueRound = std::stof(normValueFormat);
-            const auto normValueRoundToValue = static_cast<uint8_t>(normValueRound * static_cast<float>(std::numeric_limits<uint8_t>::max()));
-
-            if (normValueRoundToValue == value)
-                break;
-        }
-
-        stream.WriteColumn(normValueFormat);
     }
 
     void WriteChannelEnum(CsvOutputStream& stream, int channel)
@@ -362,8 +260,6 @@ namespace
 
         // probability
         WriteColumnFloat(stream, alias.probability, 1.0f);
-
-        auto bits = std::bitset<32>(static_cast<int>(alias.flags)).to_string();
 
         // loop
         if (alias.flags & 0x1)
