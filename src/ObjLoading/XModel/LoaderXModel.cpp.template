@@ -9,12 +9,16 @@
 
 #if GAME == "IW3"
 #define FEATURE_IW3
+#define EVEN_TRI_COUNT
 #elif GAME == "IW4"
 #define FEATURE_IW4
+#define EVEN_TRI_COUNT
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define EVEN_TRI_COUNT
 #elif GAME == "T5"
 #define FEATURE_T5
+#define EVEN_TRI_COUNT
 #elif GAME == "T6"
 #define FEATURE_T6
 #endif
@@ -26,6 +30,7 @@
 #include JSON_HEADER
 
 #include "Asset/AssetRegistration.h"
+#include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/QuatInt16.h"
 #include "Utils/StringUtils.h"
@@ -723,7 +728,14 @@ namespace
             }
 
             surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
+            
+#ifdef EVEN_TRI_COUNT
+            // Some games round up to an even tri count 
+            const auto allocatedTriCount = utils::Align<unsigned>(surface.triCount, 2);
+            surface.triIndices = m_memory.Alloc<XSurfaceTri>(allocatedTriCount);
+#else
             surface.triIndices = m_memory.Alloc<XSurfaceTri>(surface.triCount);
+#endif
 
             xmodelToCommonVertexIndexLookup.reserve(static_cast<size_t>(surface.triCount) * std::extent_v<decltype(XModelFace::vertexIndex)>);
             for (auto faceIndex = 0u; faceIndex < surface.triCount; faceIndex++)
@@ -752,9 +764,14 @@ namespace
 
             // Since bone weights are sorted by weight count, the last must have the highest weight count
             const auto maxWeightCount = common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
-            const auto modelIsRigid = maxWeightCount <= 1;
+            const auto surfaceIsRigid = maxWeightCount <= 1;
 
-            if (modelIsRigid)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+            surface.deformed = !surfaceIsRigid;
+#else
+            surface.flags |= XSURFACE_FLAG_DEFORMED;
+#endif
+            if (surfaceIsRigid)
             {
                 constexpr auto maxVerticesForRigid = static_cast<size_t>(std::numeric_limits<decltype(XSurface::vertCount)>::max());
                 if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVerticesForRigid)
@@ -790,7 +807,7 @@ namespace
 
             if (!common.m_bone_weight_data.weights.empty())
             {
-                if (modelIsRigid)
+                if (surfaceIsRigid)
                 {
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 }
@@ -808,6 +825,18 @@ namespace
                     return false;
                 }
             }
+            
+#ifdef EVEN_TRI_COUNT
+            // The game makes sure to allows have an even triCount
+            // If the triCount is uneven, an additional tri is added that uses the last vertex three times
+            if (allocatedTriCount > surface.triCount)
+            {
+                assert(allocatedTriCount == surface.triCount + 1);
+                surface.triIndices[allocatedTriCount - 1].i[0] = surface.triIndices[surface.triCount - 1].i[2];
+                surface.triIndices[allocatedTriCount - 1].i[1] = surface.triIndices[surface.triCount - 1].i[2];
+                surface.triIndices[allocatedTriCount - 1].i[2] = surface.triIndices[surface.triCount - 1].i[2];
+            }
+#endif
 
             return true;
         }

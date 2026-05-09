@@ -423,6 +423,12 @@ namespace
 
             if (surface.vertList)
             {
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+                assert(!surface.deformed);
+#else
+                assert((surface.flags & XSURFACE_FLAG_DEFORMED) == 0);
+#endif
+                
                 for (auto vertListIndex = 0u; vertListIndex < surface.vertListCount; vertListIndex++)
                 {
                     const auto& vertList = surface.vertList[vertListIndex];
@@ -442,6 +448,12 @@ namespace
             auto vertsBlendOffset = 0u;
             if (surface.vertInfo.vertsBlend)
             {
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+                assert(surface.deformed);
+#else
+                assert((surface.flags & XSURFACE_FLAG_DEFORMED) > 0);
+#endif
+                
                 // 1 bone weight
                 for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[0]; vertIndex++)
                 {
