@@ -4,6 +4,11 @@
 
 using namespace IW3;
 
+namespace
+{
+    constexpr auto MAX_LMAP_USAGE = 512;
+};
+
 LightDefAssetCreationState::LightDefAssetCreationState()
     : m_lmap_pixels_used_for_falloff(0)
 {
