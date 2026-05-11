@@ -55,7 +55,7 @@ namespace
             return true;
         }
 
-        [[nodiscard]] std::unique_ptr<iobjstream> GetEntryStream(const Hash nameHash, const Hash dataHash) const override
+        [[nodiscard]] std::unique_ptr<iobjstream> GetEntryStream(const IPakHash nameHash, const IPakHash dataHash) const override
         {
             const IPakIndexEntryKey wantedKey{
                 {.dataHash = dataHash, .nameHash = nameHash}
@@ -75,6 +75,11 @@ namespace
             }
 
             return nullptr;
+        }
+
+        [[nodiscard]] const std::vector<IPakIndexEntry>& GetIndexEntries() const override
+        {
+            return m_index_entries;
         }
 
         std::string GetName() override
@@ -203,12 +208,12 @@ std::unique_ptr<IIPak> IIPak::Create(std::string path, std::unique_ptr<std::istr
     return std::make_unique<IPak>(std::move(path), std::move(stream));
 }
 
-IIPak::Hash IIPak::HashString(const std::string& str)
+IPakHash IIPak::HashString(const std::string& str)
 {
     return R_HashString(str.c_str(), 0);
 }
 
-IIPak::Hash IIPak::HashData(const void* data, const size_t dataSize)
+IPakHash IIPak::HashData(const void* data, const size_t dataSize)
 {
     return crc32(0, static_cast<const Bytef*>(data), static_cast<unsigned>(dataSize));
 }
