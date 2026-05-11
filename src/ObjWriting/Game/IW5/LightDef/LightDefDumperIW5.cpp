@@ -12,7 +12,6 @@ namespace light_def
     {
         const auto* lightDef = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
-        auto& stream = *assetFile;
         if (!assetFile)
         {
             con::error("Could not open GfxLightDef file for dumping!");
@@ -24,6 +23,8 @@ namespace light_def
             con::error("GfxLightDef attenuation data was invalid!");
             return;
         }
+
+        auto& stream = *assetFile;
 
         const auto* attenuationImageName = lightDef->attenuation.image->name;
         if (attenuationImageName && attenuationImageName[0] == ',')
