@@ -2,14 +2,17 @@
 
 #include "IPakStreamManager.h"
 #include "ObjContainer/IPak/IPakTypes.h"
+#include "Utils/Endianness.h"
 #include "Utils/ObjStream.h"
 
+#include <concepts>
 #include <istream>
 
 class IPakEntryReadStream final : public objbuf
 {
 public:
-    IPakEntryReadStream(std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
+    IPakEntryReadStream(
+        std::istream& stream, bool isLittleEndian, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
     ~IPakEntryReadStream() override;
 
     [[nodiscard]] bool is_open() const override;
@@ -32,6 +35,14 @@ private:
     template<typename T> static T AlignBackwards(const T num, const T alignTo)
     {
         return num / alignTo * alignTo;
+    }
+
+    template<std::integral T> void SwapBytesIfNecessary(T& value)
+    {
+        if (m_little_endian)
+            value = endianness::FromLittleEndian(value);
+        else
+            value = endianness::FromBigEndian(value);
     }
 
     /**
@@ -89,6 +100,8 @@ private:
     static constexpr size_t IPAK_DECOMPRESS_BUFFER_SIZE = 0x8000;
 
     uint8_t* m_chunk_buffer;
+
+    bool m_little_endian;
 
     std::istream& m_stream;
     IPakStreamManagerActions* m_stream_manager_actions;

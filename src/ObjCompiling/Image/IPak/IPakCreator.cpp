@@ -100,7 +100,7 @@ namespace
         {
             GoTo(0);
 
-            const IPakHeader header{.magic = ipak_consts::IPAK_MAGIC,
+            const IPakHeader header{.magic = ipak_consts::IPAK_MAGIC_LITTLE_ENDIAN,
                                     .version = ipak_consts::IPAK_VERSION,
                                     .size = static_cast<uint32_t>(m_total_size),
                                     .sectionCount = SECTION_COUNT};

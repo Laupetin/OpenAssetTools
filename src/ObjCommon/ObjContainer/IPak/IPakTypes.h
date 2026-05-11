@@ -6,7 +6,8 @@
 
 namespace ipak_consts
 {
-    static constexpr uint32_t IPAK_MAGIC = utils::MakeMagic32('K', 'A', 'P', 'I');
+    static constexpr uint32_t IPAK_MAGIC_LITTLE_ENDIAN = utils::MakeMagic32('K', 'A', 'P', 'I');
+    static constexpr uint32_t IPAK_MAGIC_BIG_ENDIAN = utils::MakeMagic32('I', 'P', 'A', 'K');
     static constexpr uint32_t IPAK_VERSION = 0x50000;
 
     static constexpr uint32_t IPAK_INDEX_SECTION = 1;
@@ -60,10 +61,15 @@ struct IPakIndexEntry
     uint32_t size;
 };
 
-struct IPakDataBlockCountAndOffset
+union IPakDataBlockCountAndOffset
 {
-    uint32_t offset : 24;
-    uint32_t count : 8;
+    struct
+    {
+        uint32_t offset : 24;
+        uint32_t count : 8;
+    };
+
+    uint32_t raw;
 };
 
 static_assert(sizeof(IPakDataBlockCountAndOffset) == 4);

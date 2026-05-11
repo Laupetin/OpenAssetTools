@@ -11,9 +11,14 @@
 
 using namespace ipak_consts;
 
-IPakEntryReadStream::IPakEntryReadStream(
-    std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
+IPakEntryReadStream::IPakEntryReadStream(std::istream& stream,
+                                         const bool isLittleEndian,
+                                         IPakStreamManagerActions* streamManagerActions,
+                                         uint8_t* chunkBuffer,
+                                         const int64_t startOffset,
+                                         const size_t entrySize)
     : m_chunk_buffer(chunkBuffer),
+      m_little_endian(isLittleEndian),
       m_stream(stream),
       m_stream_manager_actions(streamManagerActions),
       m_file_offset(0),
@@ -198,6 +203,13 @@ bool IPakEntryReadStream::NextBlock()
         return false;
 
     m_current_block = reinterpret_cast<IPakDataBlockHeader*>(&m_chunk_buffer[blockOffsetInChunk]);
+    SwapBytesIfNecessary(m_current_block->countAndOffset.raw);
+    for (auto& command : m_current_block->commands)
+    {
+        auto size = command.size;
+        SwapBytesIfNecessary(size);
+        command.size = size;
+    }
 
     if (!ValidateBlockHeader(m_current_block))
         return false;
@@ -230,6 +242,11 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
             m_current_command_length = outputSize;
             m_current_command_offset = 0;
             m_file_head += static_cast<int64_t>(outputSize);
+        }
+        else if (compressed == 2)
+        {
+            // This seems to use XMemDecompress
+            assert(false);
         }
         else
         {
