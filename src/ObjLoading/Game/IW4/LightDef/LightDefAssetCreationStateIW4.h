@@ -6,8 +6,6 @@
 
 namespace IW4
 {
-    constexpr auto MAX_LMAP_USAGE = 512;
-
     class LightDefAssetCreationState : public IZoneAssetCreationState
     {
     public:

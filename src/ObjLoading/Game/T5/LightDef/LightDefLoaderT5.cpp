@@ -12,8 +12,6 @@ using namespace T5;
 
 namespace
 {
-    constexpr auto MAX_IMAGE_NAME_SIZE = 0x800;
-
     class LoaderLightDef final : public AssetCreator<AssetLightDef>
     {
     public:
@@ -30,22 +28,16 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            const auto imageNameSize = file.m_length - sizeof(char) - sizeof(char);
-            if (imageNameSize < 0 || imageNameSize > MAX_IMAGE_NAME_SIZE)
-                return AssetCreationResult::Failure();
-
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
 
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
-            std::string imageName(static_cast<size_t>(imageNameSize), '\0');
-
+            std::string attenuationName;
             int8_t samplerState;
             int8_t lmapLookupStart;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
-            file.m_stream->read(&imageName[0], static_cast<size_t>(imageNameSize));
-            file.m_stream->read(reinterpret_cast<char*>(&lmapLookupStart), sizeof(int8_t));
+            std::getline(*file.m_stream, attenuationName, '\0');
 
             auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
             if (!imageDependency)
