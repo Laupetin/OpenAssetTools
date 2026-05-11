@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstring>
 #include <minilzo.h>
+#include <utility>
 
 using namespace ipak_consts;
 
@@ -134,7 +135,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
     }
 
     // We expect the current file to be continued where we left off
-    if (static_cast<int64_t>(blockHeader->countAndOffset.offset) != m_file_head)
+    if (std::cmp_not_equal(blockHeader->countAndOffset.offset, m_file_head))
     {
         // A matching offset is only relevant if a command contains data
         for (unsigned currentCommand = 0; currentCommand < blockHeader->countAndOffset.count; currentCommand++)
@@ -191,8 +192,7 @@ bool IPakEntryReadStream::NextBlock()
 
     auto estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
 
-    if (estimatedChunksToRead > IPAK_CHUNK_COUNT_PER_READ)
-        estimatedChunksToRead = IPAK_CHUNK_COUNT_PER_READ;
+    estimatedChunksToRead = std::min(estimatedChunksToRead, IPAK_CHUNK_COUNT_PER_READ);
 
     if (!SetChunkBufferWindow(chunkStartPos, estimatedChunksToRead))
         return false;
@@ -324,7 +324,7 @@ std::streambuf::int_type IPakEntryReadStream::uflow()
     return EOF;
 }
 
-std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize count)
+std::streamsize IPakEntryReadStream::xsgetn(char* ptr, std::streamsize count)
 {
     auto* destBuffer = reinterpret_cast<uint8_t*>(ptr);
     std::streamsize countRead = 0;
