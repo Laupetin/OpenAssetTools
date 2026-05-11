@@ -10,9 +10,17 @@ namespace light_def
     {
         const auto* lightDef = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
-
-        if (!assetFile || lightDef->attenuation.image == nullptr || lightDef->attenuation.image->name == nullptr)
+        if (!assetFile)
+        {
+            con::error("Could not open GfxLightDef file for dumping!");
             return;
+        }
+
+        if (lightDef->attenuation.image == nullptr || lightDef->attenuation.image->name == nullptr)
+        {
+            con::error("GfxLightDef attenuation data was invalid!");
+            return;
+        }
 
         auto& stream = *assetFile;
 
@@ -20,6 +28,6 @@ namespace light_def
         if (imageName[0] == ',')
             imageName = &imageName[1];
 
-        stream << lightDef->attenuation.samplerState << imageName << static_cast<char>(lightDef->lmapLookupStart);
+        stream << lightDef->attenuation.samplerState << imageName << '\0';
     }
 } // namespace light_def

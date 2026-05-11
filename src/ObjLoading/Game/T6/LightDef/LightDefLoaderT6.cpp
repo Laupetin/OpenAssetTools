@@ -35,20 +35,19 @@ namespace
 
             std::string attenuationName;
             int8_t samplerState;
-            int8_t lmapLookupStart;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
             std::getline(*file.m_stream, attenuationName, '\0');
 
-            auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
-            if (!imageDependency)
+            auto* attenuationImageDependency = context.LoadDependency<AssetImage>(attenuationName);
+            if (!attenuationImageDependency)
             {
-                con::error("Could not load GfxLightDef \"{}\" due to missing image \"{}\"", assetName, imageName);
+                con::error("Could not load GfxLightDef \"{}\" due to missing attenuation image \"{}\"", assetName, attenuationName);
                 return AssetCreationResult::Failure();
             }
-            registration.AddDependency(imageDependency);
+            registration.AddDependency(attenuationImageDependency);
 
             lightDef->attenuation.samplerState = samplerState;
-            lightDef->attenuation.image = imageDependency->Asset();
+            lightDef->attenuation.image = attenuationImageDependency->Asset();
             lightDef->lmapLookupStart = 0;
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));

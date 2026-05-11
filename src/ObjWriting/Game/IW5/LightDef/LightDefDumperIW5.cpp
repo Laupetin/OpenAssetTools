@@ -13,20 +13,30 @@ namespace light_def
         const auto* lightDef = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
         auto& stream = *assetFile;
+        if (!assetFile)
+        {
+            con::error("Could not open GfxLightDef file for dumping!");
+            return;
+        }
 
-        assert(lightDef->attenuation.image != nullptr);
+        if (lightDef->attenuation.image == nullptr || lightDef->attenuation.image->name == nullptr)
+        {
+            con::error("GfxLightDef attenuation data was invalid!");
+            return;
+        }
+
         const auto* attenuationImageName = lightDef->attenuation.image->name;
         if (attenuationImageName && attenuationImageName[0] == ',')
             attenuationImageName = &attenuationImageName[1];
 
         const auto* cucolorisImageName = "";
-        if (lightDef->cucoloris.image)
+        if (lightDef->cucoloris.image && lightDef->cucoloris.image->name)
         {
             cucolorisImageName = lightDef->cucoloris.image->name;
             if (cucolorisImageName && cucolorisImageName[0] == ',')
                 cucolorisImageName = &cucolorisImageName[1];
         }
 
-        stream << lightDef->attenuation.samplerState << attenuationImageName << '\0' << lightDef->cucoloris.samplerState << cucolorisImageName;
+        stream << lightDef->attenuation.samplerState << attenuationImageName << '\0' << lightDef->cucoloris.samplerState << cucolorisImageName << '\0';
     }
 } // namespace light_def

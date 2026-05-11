@@ -33,8 +33,6 @@ namespace
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
 
-            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
-
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
             int8_t attenuationSamplerState;
@@ -55,24 +53,22 @@ namespace
 
             std::string cucolorisName;
             std::getline(*file.m_stream, cucolorisName, '\0');
-            auto* cucolorisImageDependency = context.LoadDependency<AssetImage>(cucolorisName);
-            if (!cucolorisImageDependency)
+            if (!cucolorisName.empty())
             {
-                con::warn("Could not load GfxLightDef \"{}\" due to missing cucoloris image \"{}\"", assetName, cucolorisName);
-            }
-            else
-            {
+                auto* cucolorisImageDependency = context.LoadDependency<AssetImage>(cucolorisName);
+                if (!cucolorisImageDependency)
+                {
+                    con::warn("Could not load GfxLightDef \"{}\" due to missing cucoloris image \"{}\"", assetName, cucolorisName);
+                    return AssetCreationResult::Failure();
+                }
                 registration.AddDependency(cucolorisImageDependency);
+                lightDef->cucoloris.image = cucolorisImageDependency->Asset();
             }
-
-            int8_t lmapLookupStart;
-            file.m_stream->read(reinterpret_cast<char*>(&lmapLookupStart), sizeof(int8_t));
-
             lightDef->attenuation.samplerState = attenuationSamplerState;
             lightDef->attenuation.image = attenuationImageDependency->Asset();
             lightDef->cucoloris.samplerState = cucolorisSamplerState;
-            lightDef->cucoloris.image = cucolorisImageDependency->Asset();
-            lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
+
+            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }

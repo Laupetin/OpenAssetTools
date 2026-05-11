@@ -32,13 +32,10 @@ namespace
             auto* lightDef = m_memory.Alloc<GfxLightDef>();
             lightDef->name = m_memory.Dup(assetName.c_str());
 
-            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
-
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
             std::string imageName;
             int8_t samplerState;
-            int8_t lmapLookupStart;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
             std::getline(*file.m_stream, imageName, '\0');
 
@@ -52,7 +49,8 @@ namespace
 
             lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = imageDependency->Asset();
-            lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
+
+            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
