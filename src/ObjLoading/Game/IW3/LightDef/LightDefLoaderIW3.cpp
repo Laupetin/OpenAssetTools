@@ -48,7 +48,6 @@ namespace
             int8_t lmapLookupStart;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
             file.m_stream->read(&imageName[0], static_cast<size_t>(imageNameSize));
-            file.m_stream->read(reinterpret_cast<char*>(&lmapLookupStart), sizeof(int8_t));
 
             auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
             if (!imageDependency)
@@ -60,7 +59,6 @@ namespace
 
             lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = imageDependency->Asset();
-            lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
