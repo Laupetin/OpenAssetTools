@@ -182,10 +182,10 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(const IPakDataBl
 
 bool IPakEntryReadStream::NextBlock()
 {
+    m_pos = AlignForward<int64_t>(m_pos, sizeof(IPakDataBlockHeader));
+
     if (m_pos >= m_end_pos)
         return false;
-
-    m_pos = AlignForward<int64_t>(m_pos, sizeof(IPakDataBlockHeader));
 
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
