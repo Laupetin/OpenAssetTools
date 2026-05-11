@@ -33,7 +33,7 @@ namespace
             lightDef->name = m_memory.Dup(assetName.c_str());
 
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
-            
+
             std::string imageName;
             int8_t samplerState;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
