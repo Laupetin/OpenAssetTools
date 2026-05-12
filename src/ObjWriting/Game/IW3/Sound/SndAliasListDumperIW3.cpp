@@ -2,9 +2,9 @@
 
 #include "Csv/CsvStream.h"
 #include "Sound/WavWriter.h"
+#include "Game/IW3/Sound/SndAliasListConstantsIW3.h"
 #include "Utils/Logging/Log.h"
 
-#include <Game/IW3/Sound/SndAliasListFields.h>
 #include <algorithm>
 #include <cassert>
 #include <filesystem>
@@ -17,36 +17,6 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    const std::string ALIAS_HEADERS[]{"name",
-                                      "sequence",
-                                      "file",
-                                      "vol_min",
-                                      "vol_max",
-                                      "vol_mod",
-                                      "pitch_min",
-                                      "pitch_max",
-                                      "dist_min",
-                                      "dist_max",
-                                      "channel",
-                                      "type",
-                                      "probability",
-                                      "loop",
-                                      "masterslave",
-                                      "loadspec",
-                                      "subtitle",
-                                      "compression",
-                                      "secondaryaliasname",
-                                      "volumefalloffcurve",
-                                      "startdelay",
-                                      "speakermap",
-                                      "reverb",
-                                      "lfe percentage",
-                                      "center percentage",
-                                      "platform",
-                                      "envelop_min",
-                                      "envelop_max",
-                                      "envelop percentage",
-                                      "conversion"};
 
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
@@ -95,7 +65,7 @@ namespace
 
     void WriteAliasFileHeader(CsvOutputStream& stream)
     {
-        for (const auto& headerField : ALIAS_HEADERS)
+        for (const auto& headerField : sound_alias_headers)
         {
             stream.WriteColumn(headerField);
         }
@@ -168,21 +138,23 @@ namespace
         stream.WriteColumn(std::format("{:.2f}", value));
     }
 
-    void WriteColumnFloat(CsvOutputStream& stream, const float& value, const float& defaultVal = -1.0f, int precision = 2)
+    void WriteColumnFloat(CsvOutputStream& stream, float value, float defaultVal = -1.0f, int precision = 2)
     {
-        int intVal = static_cast<int>(value);
         if (value == defaultVal)
         {
             stream.WriteColumn("");
+            return;
         }
-        else if (value == intVal)
+
+        std::string s = std::format("{:.{}f}", value, precision);
+        s.erase(s.find_last_not_of('0') + 1);
+
+        if (!s.empty() && s.back() == '.')
         {
-            stream.WriteColumn(std::format("{}", intVal));
+            s.pop_back();
         }
-        else
-        {
-            stream.WriteColumn(std::format("{:.{}g}", value, precision));
-        }
+
+        stream.WriteColumn(s);
     }
 
     void WriteChannelEnum(CsvOutputStream& stream, int channel)
@@ -257,6 +229,10 @@ namespace
         {
             WriteColumnString(stream, "streamed");
         }
+        else
+        {
+            WriteColumnString(stream, "");
+        }
 
         // probability
         WriteColumnFloat(stream, alias.probability, 1.0f);
@@ -294,7 +270,10 @@ namespace
         // subtitle
         if (alias.subtitle)
         {
-            WriteColumnString(stream, alias.subtitle);
+            std::string subtitle = "";
+            std::istringstream subtitleStream(alias.subtitle);
+            getline(subtitleStream, subtitle, ',');
+            WriteColumnString(stream, subtitle);
         }
         else
         {
@@ -317,7 +296,7 @@ namespace
         // volumefalloffcurve
         if (alias.volumeFalloffCurve && alias.volumeFalloffCurve->filename)
         {
-            WriteColumnString(stream, alias.volumeFalloffCurve->filename);
+            WriteColumnString(stream, FromReferencedString(alias.volumeFalloffCurve->filename));
         }
         else
         {
@@ -360,6 +339,7 @@ namespace
         WriteColumnFloat(stream, alias.centerPercentage, 0);
 
         // platform
+        WriteColumnString(stream, "");
 
         // envelop_min
         WriteColumnFloat(stream, alias.envelopMin, 0);
@@ -379,6 +359,23 @@ namespace
         if (numLevels == 1)
             return "MONOSOURCE";
         return (levelIndex == 0) ? "LEFTSOURCE" : "RIGHTSOURCE";
+    }
+
+    std::string IndentedSpeakerName(const std::string &speakerName) 
+    {
+        if (speakerName.size() <= 11)
+        {
+            return speakerName + "\t\t\t";
+        }
+        else if (speakerName.size() <= 13)
+        {
+            return speakerName + "\t\t";
+        }
+        else if (speakerName.size() <= 20)
+        {
+            return speakerName + "\t";
+        }
+        return speakerName;
     }
 
     void DumpSpeakerMap(const AssetDumpingContext& context, const SpeakerMap* speakerMap)
@@ -407,36 +404,12 @@ namespace
                     auto& speakers = channelMap.speakers[k];
                     for (int l = 0; l < speakers.numLevels; ++l)
                     {
-                        stream << SourceName(speakers.numLevels, l) << "\t\t" << speaker_map_names[speakers.speaker] << '\t' << std::fixed
+                        stream << SourceName(speakers.numLevels, l) << "\t\t" << IndentedSpeakerName(speaker_map_names[speakers.speaker]) << '\t' << std::fixed
                                << std::setprecision(4) << speakers.levels[l] << "\r\n";
                     }
                 }
             }
         }
-    }
-
-    void DumpSoundFilePcm(const AssetDumpingContext& context, const char* assetFileName, const MssSound& soundFile)
-    {
-        const char* cleanedAssetFileName = assetFileName;
-        if (assetFileName[0] == ',')
-        {
-            cleanedAssetFileName = (assetFileName + 1);
-        }
-
-        const auto outFile = OpenAssetOutputFile(context, std::format("sound/{}", cleanedAssetFileName), "");
-        if (!outFile)
-        {
-            con::error("Failed to open sound output file: \"{}\"", cleanedAssetFileName);
-            return;
-        }
-
-        const WavWriter writer(*outFile);
-
-        AILSOUNDINFO info = soundFile.info;
-        const WavMetaData metaData{info.channels, info.rate, info.bits};
-
-        writer.WritePcmHeader(metaData, info.data_len);
-        outFile->write(soundFile.data, info.data_len);
     }
 
     void DumpAliases(const AssetDumpingContext& context, const snd_alias_list_t& sndAliasList)
@@ -467,19 +440,6 @@ namespace
             csvStream.NextRow();
 
             DumpSpeakerMap(context, alias.speakerMap);
-
-            if (alias.soundFile->type == SAT_LOADED)
-            {
-                auto loadSnd = alias.soundFile->u.loadSnd;
-                if (loadSnd && loadSnd->name)
-                {
-                    DumpSoundFilePcm(context, loadSnd->name, loadSnd->sound);
-                }
-            }
-            else if (alias.soundFile->type != SAT_STREAMED)
-            {
-                con::warn("Unhandled sound type: {}", alias.soundFile->type);
-            }
         }
     }
 } // namespace
