@@ -5,6 +5,40 @@
 
 namespace IW3
 {
+    enum SndAliasColumn
+    {
+        COL_NAME,
+        COL_SEQUENCE,
+        COL_FILE,
+        COL_VOL_MIN,
+        COL_VOL_MAX,
+        COL_VOL_MOD,
+        COL_PITCH_MIN,
+        COL_PITCH_MAX,
+        COL_DIST_MIN,
+        COL_DIST_MAX,
+        COL_CHANNEL,
+        COL_TYPE,
+        COL_PROBABILITY,
+        COL_LOOP,
+        COL_MASTER_SLAVE,
+        COL_LOADSPEC,
+        COL_SUBTITLE,
+        COL_COMPRESSION,
+        COL_SECONDARY,
+        COL_FALLOFF,
+        COL_START_DELAY,
+        COL_SPEAKERMAP,
+        COL_REVERB,
+        COL_LFE,
+        COL_CENTER,
+        COL_PLATFORM,
+        COL_ENV_MIN,
+        COL_ENV_MAX,
+        COL_ENV_PERCENT,
+        COL_CONVERSION
+    };
+
     static const char* sound_alias_headers[] = {
         "name", "sequence", "file", "vol_min", "vol_max", "vol_mod",
         "pitch_min", "pitch_max", "dist_min", "dist_max", "channel",
