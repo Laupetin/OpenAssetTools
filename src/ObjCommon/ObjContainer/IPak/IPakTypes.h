@@ -74,10 +74,15 @@ union IPakDataBlockCountAndOffset
 
 static_assert(sizeof(IPakDataBlockCountAndOffset) == 4);
 
-struct IPakDataBlockCommand
+union IPakDataBlockCommand
 {
-    uint32_t size : 24;
-    uint32_t compressed : 8;
+    struct
+    {
+        uint32_t size : 24;
+        uint32_t compressed : 8;
+    };
+
+    uint32_t raw;
 };
 
 static_assert(sizeof(IPakDataBlockCommand) == 4);

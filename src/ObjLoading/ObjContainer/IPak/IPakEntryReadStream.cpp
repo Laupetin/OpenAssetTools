@@ -206,8 +206,12 @@ bool IPakEntryReadStream::NextBlock()
     SwapBytesIfNecessary(m_current_block->countAndOffset.raw);
     for (auto& command : m_current_block->commands)
     {
+        if (!m_little_endian)
+            command.raw &= 0xFFFFFFDF; // ? idk, the game seems to do this? halp
+
+        SwapBytesIfNecessary(command.raw);
+
         auto size = command.size;
-        SwapBytesIfNecessary(size);
         command.size = size;
     }
 
@@ -245,8 +249,20 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
         }
         else if (compressed == 2)
         {
-            // This seems to use XMemDecompress
-            assert(false);
+            m_xmemdecompress_context.Reset();
+            const auto maybeDecompressSize = m_xmemdecompress_context.Process(
+                &m_chunk_buffer[m_pos - m_buffer_start_pos], static_cast<int>(commandSize), m_decompress_buffer, sizeof(m_decompress_buffer));
+
+            if (!maybeDecompressSize.has_value())
+            {
+                con::error("Decompressing block with XMemDecompress failed!");
+                return false;
+            }
+
+            m_current_command_buffer = m_decompress_buffer;
+            m_current_command_length = *maybeDecompressSize;
+            m_current_command_offset = 0;
+            m_file_head += static_cast<int64_t>(*maybeDecompressSize);
         }
         else
         {

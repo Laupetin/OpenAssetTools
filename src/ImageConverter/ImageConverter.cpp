@@ -200,7 +200,7 @@ namespace
 
             for (const auto& indexEntry : ipak->GetIndexEntries())
             {
-                const auto fileName = std::format("{:6x}_{:6x}.iwi", indexEntry.key.dataHash, indexEntry.key.nameHash);
+                const auto fileName = std::format("{:0>6x}_{:0>6x}.iwi", indexEntry.key.dataHash, indexEntry.key.nameHash);
                 std::ofstream outFile(outDir / fileName, std::ios::out | std::ios::binary);
                 if (!outFile.is_open())
                 {
@@ -216,18 +216,20 @@ namespace
                 }
 
                 char buffer[0x2000];
-                entryStream->read(buffer, 0x2000);
+                entryStream->read(buffer, sizeof(buffer));
                 auto readCount = entryStream->gcount();
                 while (readCount > 0)
                 {
                     outFile.write(buffer, readCount);
 
-                    entryStream->read(buffer, 0x2000);
+                    entryStream->read(buffer, sizeof(buffer));
                     readCount = entryStream->gcount();
                 }
 
                 entryStream->close();
                 outFile.close();
+
+                con::info("Dumped {}", fileName);
             }
 
             return true;

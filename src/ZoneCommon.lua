@@ -6,6 +6,7 @@ function ZoneCommon:include(includes)
 			path.join(ProjectFolder(), "ZoneCommon")
 		}
 		Utils:include(includes)
+		XMemCompress:include(includes)
 		Common:include(includes)
 		ObjCommon:include(includes)
 		Parser:include(includes)
@@ -22,7 +23,7 @@ function ZoneCommon:link(links)
 	links:linkto(ObjCommon)
 	links:linkto(Parser)
 	links:linkto(Utils)
-	links:linkto(lzx)
+	links:linkto(XMemCompress)
 	ZoneCode:use()
 end
 
@@ -58,7 +59,6 @@ function ZoneCommon:project()
 		}
 		
         self:include(includes)
-		lzx:include(includes)
 		ZoneCode:include(includes)
 
 		ZoneCode:use()

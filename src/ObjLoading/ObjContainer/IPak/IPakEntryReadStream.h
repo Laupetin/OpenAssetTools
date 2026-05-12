@@ -4,6 +4,7 @@
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/Endianness.h"
 #include "Utils/ObjStream.h"
+#include "XMemDecompress.h"
 
 #include <concepts>
 #include <istream>
@@ -102,6 +103,7 @@ private:
     uint8_t* m_chunk_buffer;
 
     bool m_little_endian;
+    XMemDecompressContext m_xmemdecompress_context;
 
     std::istream& m_stream;
     IPakStreamManagerActions* m_stream_manager_actions;
