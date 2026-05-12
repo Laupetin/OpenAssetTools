@@ -1571,32 +1571,6 @@ namespace IW3
         SpeakerMap* speakerMap;
     };
 
-    struct snd_alias_t_info
-    {
-        const char* aliasName;
-        const char* subtitle;
-        const char* secondaryAliasName;
-        const char* chainAliasName;
-        int sequence;
-        float volMin;
-        float volMax;
-        float pitchMin;
-        float pitchMax;
-        float distMin;
-        float distMax;
-        int flags;
-        float slavePercentage;
-        float probability;
-        float lfePercentage;
-        float centerPercentage;
-        int startDelay;
-        SndCurve* volumeFalloffCurve;
-        float envelopMin;
-        float envelopMax;
-        float envelopPercentage;
-        SpeakerMap* speakerMap;
-    };
-
     struct snd_alias_list_t
     {
         const char* aliasName;
