@@ -1,9 +1,9 @@
 #include "SndAliasListDumperIW5.h"
 
 #include "Csv/CsvStream.h"
+#include "Game/IW5/Sound/SndAliasListConstantsIW5.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
-#include "Game/IW5/Sound/SndAliasListConstantsIW5.h"
 
 #include <algorithm>
 #include <cassert>
@@ -189,9 +189,9 @@ namespace
 
     void WriteChannelEnum(CsvOutputStream& stream, int channel)
     {
-        //assert(channel < std::extent_v<decltype(snd_alias_channel_names)>);
+        // assert(channel < std::extent_v<decltype(snd_alias_channel_names)>);
 
-        //stream.WriteColumn(snd_alias_channel_names[channel]);
+        // stream.WriteColumn(snd_alias_channel_names[channel]);
         stream.WriteColumn(std::format("{}", channel));
     }
 

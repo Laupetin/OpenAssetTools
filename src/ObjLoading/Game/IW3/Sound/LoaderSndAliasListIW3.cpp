@@ -6,9 +6,9 @@
 
 #include <Csv/CsvStream.h>
 #include <Game/IW3/Sound/SndAliasListConstantsIW3.h>
+#include <filesystem>
 #include <format>
 #include <iostream>
-#include <filesystem>
 #include <map>
 #include <set>
 
@@ -456,11 +456,7 @@ namespace
 
                 // Populate preliminary sound file fields
                 std::string soundFileName = currentRow[COL_FILE];
-                PopulateSoundFile(
-                    currentRow[COL_TYPE], 
-                    soundFileName,
-                    aliasList->head[dataRowIndex].flags, 
-                    *aliasList->head[dataRowIndex].soundFile);
+                PopulateSoundFile(currentRow[COL_TYPE], soundFileName, aliasList->head[dataRowIndex].flags, *aliasList->head[dataRowIndex].soundFile);
 
                 // Load sound file contents based on type
                 if (!soundFileName.empty())

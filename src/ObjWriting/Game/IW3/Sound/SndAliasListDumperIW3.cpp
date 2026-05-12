@@ -1,8 +1,8 @@
 #include "SndAliasListDumperIW3.h"
 
 #include "Csv/CsvStream.h"
-#include "Sound/WavWriter.h"
 #include "Game/IW3/Sound/SndAliasListConstantsIW3.h"
+#include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
@@ -361,7 +361,7 @@ namespace
         return (levelIndex == 0) ? "LEFTSOURCE" : "RIGHTSOURCE";
     }
 
-    std::string IndentedSpeakerName(const std::string &speakerName) 
+    std::string IndentedSpeakerName(const std::string& speakerName)
     {
         if (speakerName.size() <= 11)
         {

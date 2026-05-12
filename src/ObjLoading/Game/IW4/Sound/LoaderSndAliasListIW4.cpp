@@ -1,10 +1,10 @@
 #include "LoaderSndAliasListIW4.h"
 
+#include "Csv/CsvStream.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Sound/SndAliasListConstantsIW4.h"
 #include "Sound/SndAliasListCommon.h"
 #include "Utils/Logging/Log.h"
-#include "Csv/CsvStream.h"
-#include "Game/IW4/Sound/SndAliasListConstantsIW4.h"
 
 #include <format>
 #include <iostream>
@@ -292,7 +292,7 @@ namespace
                 }
 
                 // Skip loadspec / index 16
-                
+
                 // subtitle
                 if (!currentRow[17].empty() && currentRow[17] != "0")
                 {

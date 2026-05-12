@@ -39,16 +39,38 @@ namespace IW3
         COL_CONVERSION
     };
 
-    static const char* sound_alias_headers[] = {
-        "name", "sequence", "file", "vol_min", "vol_max", "vol_mod",
-        "pitch_min", "pitch_max", "dist_min", "dist_max", "channel",
-        "type", "probability", "loop", "masterslave", "loadspec",
-        "subtitle", "compression", "secondaryaliasname", "volumefalloffcurve",
-        "startdelay", "speakermap", "reverb", "lfe percentage", "center percentage",
-        "platform", "envelop_min", "envelop_max", "envelop percentage", "conversion"};
+    static const char* sound_alias_headers[] = {"name",
+                                                "sequence",
+                                                "file",
+                                                "vol_min",
+                                                "vol_max",
+                                                "vol_mod",
+                                                "pitch_min",
+                                                "pitch_max",
+                                                "dist_min",
+                                                "dist_max",
+                                                "channel",
+                                                "type",
+                                                "probability",
+                                                "loop",
+                                                "masterslave",
+                                                "loadspec",
+                                                "subtitle",
+                                                "compression",
+                                                "secondaryaliasname",
+                                                "volumefalloffcurve",
+                                                "startdelay",
+                                                "speakermap",
+                                                "reverb",
+                                                "lfe percentage",
+                                                "center percentage",
+                                                "platform",
+                                                "envelop_min",
+                                                "envelop_max",
+                                                "envelop percentage",
+                                                "conversion"};
 
-    static const char* speaker_map_names[] = {
-        "LEFTSPEAKER", "RIGHTSPEAKER", "CENTERSPEAKER", "LFESPEAKER", "LEFTSURROUNDSPEAKER", "RIGHTSURROUNDSPEAKER"};
+    static const char* speaker_map_names[] = {"LEFTSPEAKER", "RIGHTSPEAKER", "CENTERSPEAKER", "LFESPEAKER", "LEFTSURROUNDSPEAKER", "RIGHTSURROUNDSPEAKER"};
 
     static const char* snd_alias_channel_names[] = {
         "physics", "auto",   "auto2",   "autodog",  "bulletimpact", "bulletwhizby", "element",  "auto2d",       "vehicle",  "vehiclelimited", "menu",

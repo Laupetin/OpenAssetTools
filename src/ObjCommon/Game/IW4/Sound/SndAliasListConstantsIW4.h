@@ -21,4 +21,4 @@ namespace IW4
          {"reactionax", 0.9455f},  {"vehicle", 0.7440f}, {"voiceover", 1.0000f}, {"whizby", 0.7938f},    {"wpnai", 0.7047f},     {"wpnplyr", 0.7695f},
          {"na", 0.8100f},          {"max", 1.0000f}}
     };
-} // namespace IW3
+} // namespace IW4

@@ -1,9 +1,9 @@
 #include "SndAliasListDumperIW4.h"
 
 #include "Csv/CsvStream.h"
+#include "Game/IW4/Sound/SndAliasListConstantsIW4.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
-#include "Game/IW4/Sound/SndAliasListConstantsIW4.h"
 
 #include <algorithm>
 #include <cassert>
@@ -190,9 +190,9 @@ namespace
     void WriteChannelEnum(CsvOutputStream& stream, int channel)
     {
         // TODO: Re-map channel names for IW4
-        //assert(channel < std::extent_v<decltype(snd_alias_channel_names)>);
+        // assert(channel < std::extent_v<decltype(snd_alias_channel_names)>);
 
-        //stream.WriteColumn(snd_alias_channel_names[channel]);
+        // stream.WriteColumn(snd_alias_channel_names[channel]);
         stream.WriteColumn(std::format("{}", channel));
     }
 
