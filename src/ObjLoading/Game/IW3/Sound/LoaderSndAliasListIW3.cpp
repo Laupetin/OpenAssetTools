@@ -46,7 +46,9 @@ namespace
     {
         auto it = volume_mod_groups_table.find(name);
         if (it == volume_mod_groups_table.end())
+        {
             return 1.0f;
+        }
         return it->second;
     }
 
