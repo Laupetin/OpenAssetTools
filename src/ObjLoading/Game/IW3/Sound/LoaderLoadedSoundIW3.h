@@ -9,5 +9,5 @@
 
 namespace loaded_sound
 {
-    std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+    std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath);
 } // namespace loaded_sound

@@ -11,10 +11,10 @@ using namespace IW3;
 
 namespace
 {
-    class SndAliasListLoader : public AssetCreator<AssetSound>
+    class LoadedSoundLoader final : public AssetCreator<AssetLoadedSound>
     {
     public:
-        SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        LoadedSoundLoader(MemoryManager& memory, ISearchPath& searchPath)
             : m_memory(memory),
               m_search_path(searchPath)
         {
@@ -87,8 +87,8 @@ namespace
 
 namespace loaded_sound
 {
-    std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetLoadedSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
     {
-        return std::unique_ptr<AssetCreator<IW3::AssetLoadedSound>>();
+        return std::make_unique<LoadedSoundLoader>(memory, searchPath);
     }
 }; // namespace loaded_sound
