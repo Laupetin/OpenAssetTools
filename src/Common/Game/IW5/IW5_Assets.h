@@ -1633,6 +1633,38 @@ namespace IW5
         SpeakerMap* speakerMap;
     };
 
+    struct snd_alias_info_t
+    {
+        const char* aliasName;
+        const char* subtitle;
+        const char* secondaryAliasName;
+        const char* chainAliasName;
+        const char* mixerGroup;
+        SoundFile* soundFile;
+        int sequence;
+        float volMin;
+        float volMax;
+        int volModIndex;
+        float pitchMin;
+        float pitchMax;
+        float distMin;
+        float distMax;
+        float velocityMin;
+        int flags;
+        unsigned char masterPriority;
+        float masterPercentage;
+        float slavePercentage;
+        float probability;
+        float lfePercentage;
+        float centerPercentage;
+        int startDelay;
+        SndCurve* volumeFalloffCurve;
+        float envelopMin;
+        float envelopMax;
+        float envelopPercentage;
+        SpeakerMap* speakerMap;
+    };
+
     struct snd_alias_list_t
     {
         const char* aliasName;
