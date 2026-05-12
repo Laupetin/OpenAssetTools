@@ -9,6 +9,7 @@
 #include <format>
 #include <iostream>
 
+using namespace snd_alias_list;
 using namespace IW4;
 
 namespace
@@ -84,7 +85,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = snd_alias::GetFileNameForAssetName(assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();

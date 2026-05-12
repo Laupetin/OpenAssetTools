@@ -424,7 +424,7 @@ namespace
         CsvOutputStream csvStream(*outFile);
         WriteAliasFileHeader(csvStream);
 
-        for (auto i = 0u; i < sndAliasList.count; i++)
+        for (int i = 0; i < sndAliasList.count; i++)
         {
             const auto& alias = sndAliasList.head[i];
 
