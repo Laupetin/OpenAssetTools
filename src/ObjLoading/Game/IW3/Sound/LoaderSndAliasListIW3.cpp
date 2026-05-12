@@ -19,11 +19,6 @@ namespace
 {
     constexpr unsigned COL_COUNT_MIN = 29;
 
-    const std::string PREFIXES_TO_DROP[]{
-        "raw/",
-        "devraw/",
-    };
-
     std::pair<std::string, std::string> SplitPathParts(const std::string& path)
     {
         if (path.empty())
