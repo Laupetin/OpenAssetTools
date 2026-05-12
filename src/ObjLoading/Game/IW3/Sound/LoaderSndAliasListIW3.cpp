@@ -4,7 +4,6 @@
 #include "Sound/SndAliasListCommon.h"
 #include "Utils/Logging/Log.h"
 
-#include <Csv/CsvStream.h>
 #include <Game/IW3/Sound/SndAliasListConstantsIW3.h>
 #include <filesystem>
 #include <format>
@@ -13,134 +12,33 @@
 #include <set>
 
 using namespace IW3;
+using namespace snd_alias_list;
+
 namespace fs = std::filesystem;
 
 namespace
 {
     constexpr unsigned COL_COUNT_MIN = 29;
 
-    std::pair<std::string, std::string> SplitPathParts(const std::string& path)
+    void SetChannelFlag(int& flags, std::string channelName)
     {
-        if (path.empty())
+        if (!channelName.empty())
         {
-            return {"", ""};
-        }
-
-        const char* p = std::strrchr(path.c_str(), '/');
-        if (!p)
-        {
-            return {"", path};
-        }
-
-        std::string dir(path.data(), p - path.c_str());
-        std::string file(p + 1);
-        return {dir, file};
-    }
-
-    float GetVolumeMod(std::string_view name)
-    {
-        auto it = volume_mod_groups_table.find(name);
-        if (it == volume_mod_groups_table.end())
-        {
-            return 1.0f;
-        }
-        return it->second;
-    }
-
-    int FindChannelIndex(const char* name)
-    {
-        if (!name)
-        {
-            return -1;
-        }
-
-        for (std::size_t i = 0; i < std::extent_v<decltype(snd_alias_channel_names)>; ++i)
-        {
-            if (!std::strcmp(snd_alias_channel_names[i], name))
+            int channelIndex = FindChannelIndex(channelName.c_str(), snd_alias_channel_names, std::extent_v<decltype(snd_alias_channel_names)>);
+            if (channelIndex == -1)
             {
-                return static_cast<int>(i);
+                con::warn(std::format("Found invalid channel '{}', defaulting to 'auto'", channelName));
+                SetChannelIndex(flags, 0);
             }
-        }
-        return -1;
-    }
-
-    void SetFlag(int& flags, int bit, bool enabled)
-    {
-        if (enabled)
-        {
-            flags |= bit;
+            else
+            {
+                SetChannelIndex(flags, channelIndex);
+            }
         }
         else
         {
-            flags &= ~bit;
+            SetChannelIndex(flags, 0);
         }
-    }
-
-    void SetReverbFlag(int& flags, const std::string& reverbString)
-    {
-        SetFlag(flags, 0x10, false);
-        SetFlag(flags, 0x8, false);
-        if (!reverbString.empty())
-        {
-            if (reverbString.contains("nowetlevel"))
-            {
-                SetFlag(flags, 0x10, true);
-            }
-            if (reverbString.contains("fulldrylevel"))
-            {
-                SetFlag(flags, 0x8, true);
-            }
-        }
-    }
-
-    void SetChannelIndex(int& rawFlags, unsigned channelIndex)
-    {
-        channelIndex &= 0x3F;
-
-        rawFlags = (rawFlags & ~(0x3F << 8)) | ((static_cast<int>(channelIndex) & 0x3F) << 8);
-    }
-
-    size_t CountAliases(std::istream& in)
-    {
-        std::istream::pos_type pos = in.tellg();
-        size_t count = 0;
-        const CsvInputStream csv(in);
-        std::vector<std::string> currentRow;
-
-        // Skip header
-        csv.NextRow(currentRow);
-
-        while (csv.NextRow(currentRow))
-        {
-            CsvInputStream::PreprocessRow(currentRow);
-
-            if (CsvInputStream::RowIsEmpty(currentRow))
-                continue;
-
-            if (currentRow.size() < COL_COUNT_MIN)
-                continue;
-
-            count++;
-        }
-
-        in.clear();
-        in.seekg(pos);
-
-        return count;
-    }
-
-    std::vector<std::string> SplitWhitespace(const std::string& row)
-    {
-        std::istringstream iss(row);
-        std::vector<std::string> out;
-        std::string token;
-
-        while (iss >> token)
-        {
-            out.push_back(token);
-        }
-
-        return out;
     }
 
     int GetSpeakerNameIndex(std::string speakerName)
@@ -269,24 +167,6 @@ namespace
         }
     }
 
-    float ReadColumnFloat(std::string cell, float defaultVal = -1.0f)
-    {
-        if (!cell.empty())
-        {
-            return std::stof(cell);
-        }
-        return defaultVal;
-    }
-
-    int ReadColumnInt(std::string cell, int defaultVal = -1)
-    {
-        if (!cell.empty())
-        {
-            return std::stoi(cell);
-        }
-        return defaultVal;
-    }
-
     char* ReadColumnString(std::string cell, MemoryManager& memory)
     {
         if (!cell.empty())
@@ -324,62 +204,6 @@ namespace
         }
     }
 
-    void SetChannelFlag(int& flags, std::string channelName)
-    {
-        if (!channelName.empty())
-        {
-            int channelIndex = FindChannelIndex(channelName.c_str());
-            if (channelIndex == -1)
-            {
-                con::warn(std::format("Found invalid channel '{}', defaulting to 'auto'", channelName));
-                SetChannelIndex(flags, 0);
-            }
-            else
-            {
-                SetChannelIndex(flags, channelIndex);
-            }
-        }
-        else
-        {
-            SetChannelIndex(flags, 0);
-        }
-    }
-
-    void SetLoopFlag(int& flags, std::string loopStr)
-    {
-        SetFlag(flags, 0x1, false);
-        SetFlag(flags, 0x20, false);
-        if (!loopStr.empty())
-        {
-            SetFlag(flags, 0x1, true);
-            if (loopStr == "rlooping")
-            {
-                SetFlag(flags, 0x20, true);
-            }
-        }
-    }
-
-    float ReadColumnMasterAndSet(int& flags, std::string masterStr)
-    {
-        SetFlag(flags, 0x2, false);
-        if (!masterStr.empty())
-        {
-            if (masterStr == "master")
-            {
-                SetFlag(flags, 0x2, true);
-                return 0.0f;
-            }
-            else
-            {
-                return ReadColumnFloat(masterStr, 0.0f);
-            }
-        }
-        else
-        {
-            return 1.0f;
-        }
-    }
-
     class SndAliasListLoader : public AssetCreator<AssetSound>
     {
     public:
@@ -391,12 +215,12 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = snd_alias::GetFileNameForAssetName(assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            size_t entryCount = CountAliases(*file.m_stream);
+            size_t entryCount = CountAliases(*file.m_stream, COL_COUNT_MIN);
             auto* aliasList = m_memory.Alloc<snd_alias_list_t>();
             aliasList->aliasName = m_memory.Dup(assetName.c_str());
             aliasList->count = entryCount;
@@ -428,9 +252,9 @@ namespace
 
                 // Grab volMod to calcualte volMin and volMax
                 float volMod = 1.0f;
-                if (!currentRow[5].empty())
+                if (!currentRow[COL_VOL_MOD].empty())
                 {
-                    volMod = GetVolumeMod(currentRow[5]);
+                    volMod = GetVolumeMod(currentRow[COL_VOL_MOD], volume_mod_groups_table);
                 }
 
                 // Read static fields
@@ -491,15 +315,15 @@ namespace
                 }
 
                 // Allocate and read speaker map from disk
-                if (!currentRow[21].empty())
+                if (!currentRow[COL_SPEAKERMAP].empty())
                 {
-                    const auto speakerMapFileName = snd_alias::GetFileNameForSpeakerMapName(currentRow[21]);
+                    const auto speakerMapFileName = GetFileNameForSpeakerMapName(currentRow[COL_SPEAKERMAP]);
                     const auto speakerMapFile = m_search_path.Open(speakerMapFileName);
                     if (!speakerMapFile.IsOpen())
                         return AssetCreationResult::NoAction();
 
                     aliasList->head[dataRowIndex].speakerMap = m_memory.Alloc<SpeakerMap>();
-                    aliasList->head[dataRowIndex].speakerMap->name = ReadColumnString(currentRow[21], m_memory);
+                    aliasList->head[dataRowIndex].speakerMap->name = ReadColumnString(currentRow[COL_SPEAKERMAP], m_memory);
 
                     ReadSpeakerMap(*speakerMapFile.m_stream, *aliasList->head[dataRowIndex].speakerMap);
                 }
