@@ -31,10 +31,11 @@ public:
     static void PreprocessRow(std::vector<std::string>& row);
     static bool RowIsEmpty(const std::vector<std::string>& row);
 
+protected:
+    std::istream& m_stream;
+
 private:
     bool EmitNextRow(const std::function<void(std::string)>& cb) const;
-
-    std::istream& m_stream;
 };
 
 class CsvOutputStream
@@ -45,8 +46,10 @@ public:
     void WriteColumn(const std::string& value);
     void NextRow();
 
-private:
+protected:
     std::ostream& m_stream;
+
+private:
     unsigned m_column_count;
     unsigned m_current_column;
     bool m_first_row;
