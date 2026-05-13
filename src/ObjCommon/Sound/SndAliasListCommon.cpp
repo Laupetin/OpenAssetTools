@@ -1,128 +1,76 @@
 #include "SndAliasListCommon.h"
 
+#include "Utils/Logging/Log.h"
+
 #include <format>
+#include <string>
+#include <iostream>
+#include <filesystem>
+#include <algorithm>
+#include <cassert>
+#include <fstream>
+#include <sstream>
 
 namespace snd_alias_list
 {
+    const std::string PREFIXES_TO_DROP[]{
+        "raw/",
+        "devraw/",
+    };
+
     std::string GetFileNameForAssetName(const std::string& assetName)
     {
         return std::format("soundaliases/{}.csv", assetName);
     }
 
-    std::string GetFileNameForSpeakerMapName(const std::string& assetName)
+    std::string GetAssetFilename(const std::string& basePath, const std::string& outputFileName, const std::string& extension)
     {
-        return std::format("soundaliases/{}.spkrmap", assetName);
-    }
+        fs::path assetPath(basePath);
 
-    void SetFlag(int& flags, int bit, bool enabled)
-    {
-        if (enabled)
+        std::string tempName = outputFileName;
+        std::ranges::replace(tempName, '\\', '/');
+        for (const auto& droppedPrefix : PREFIXES_TO_DROP)
         {
-            flags |= bit;
-        }
-        else
-        {
-            flags &= ~bit;
-        }
-    }
-
-    void SetReverbFlag(int& flags, const std::string& reverbString)
-    {
-        SetFlag(flags, 0x10, false);
-        SetFlag(flags, 0x8, false);
-        if (!reverbString.empty())
-        {
-            if (reverbString.contains("nowetlevel"))
+            if (tempName.rfind(droppedPrefix, 0) != std::string::npos)
             {
-                SetFlag(flags, 0x10, true);
-            }
-            if (reverbString.contains("fulldrylevel"))
-            {
-                SetFlag(flags, 0x8, true);
+                tempName.erase(0, droppedPrefix.size());
+                break;
             }
         }
+
+        assetPath.append(tempName);
+        if (!extension.empty())
+            assetPath.concat(extension);
+
+        return assetPath.string();
     }
 
-    void SetChannelIndex(int& rawFlags, unsigned channelIndex)
+    std::unique_ptr<std::ostream> OpenAssetOutputFile(const std::string& basePath, const std::string& outputFileName, const std::string& extension)
     {
-        channelIndex &= 0x3F;
+        fs::path assetPath(GetAssetFilename(basePath, outputFileName, extension));
 
-        rawFlags = (rawFlags & ~(0x3F << 8)) | ((static_cast<int>(channelIndex) & 0x3F) << 8);
-    }
+        auto assetDir(assetPath);
+        assetDir.remove_filename();
 
-    size_t CountAliases(std::istream& in, unsigned minColCount)
-    {
-        std::istream::pos_type pos = in.tellg();
-        size_t count = 0;
-        const CsvInputStream csv(in);
-        std::vector<std::string> currentRow;
+        create_directories(assetDir);
 
-        // Skip header
-        csv.NextRow(currentRow);
+        auto outputStream = std::make_unique<std::ofstream>(assetPath, std::ios_base::out | std::ios_base::binary);
 
-        while (csv.NextRow(currentRow))
+        if (outputStream->is_open())
         {
-            CsvInputStream::PreprocessRow(currentRow);
-
-            if (CsvInputStream::RowIsEmpty(currentRow))
-                continue;
-
-            if (currentRow.size() < minColCount)
-                continue;
-
-            count++;
+            return std::move(outputStream);
         }
 
-        in.clear();
-        in.seekg(pos);
-
-        return count;
+        return nullptr;
     }
 
-    std::vector<std::string> SplitWhitespace(const std::string& row)
+    const char* FromReferencedString(const char* refString)
     {
-        std::istringstream iss(row);
-        std::vector<std::string> out;
-        std::string token;
-
-        while (iss >> token)
+        if (refString[0] == ',')
         {
-            out.push_back(token);
+            return (refString + 1);
         }
-
-        return out;
-    }
-
-    float ReadColumnFloat(std::string cell, float defaultVal)
-    {
-        if (!cell.empty())
-        {
-            return std::stof(cell);
-        }
-        return defaultVal;
-    }
-
-    int ReadColumnInt(std::string cell, int defaultVal)
-    {
-        if (!cell.empty())
-        {
-            return std::stoi(cell);
-        }
-        return defaultVal;
-    }
-
-    void SetLoopFlag(int& flags, std::string loopStr)
-    {
-        SetFlag(flags, 0x1, false);
-        SetFlag(flags, 0x20, false);
-        if (!loopStr.empty())
-        {
-            SetFlag(flags, 0x1, true);
-            if (loopStr == "rlooping")
-            {
-                SetFlag(flags, 0x20, true);
-            }
-        }
+        return refString;
     }
 
     std::pair<std::string, std::string> SplitPathParts(const std::string& path)
@@ -143,51 +91,4 @@ namespace snd_alias_list
         return {dir, file};
     }
 
-    int FindChannelIndex(const char* name, const char** channelNames, size_t channelCount)
-    {
-        if (!name)
-        {
-            return -1;
-        }
-
-        for (std::size_t i = 0; i < channelCount; ++i)
-        {
-            if (!std::strcmp(channelNames[i], name))
-            {
-                return static_cast<int>(i);
-            }
-        }
-        return -1;
-    }
-
-    float GetVolumeMod(std::string_view name, const std::unordered_map<std::string_view, float>& volModMap)
-    {
-        auto it = volModMap.find(name);
-        if (it == volModMap.end())
-        {
-            return 1.0f;
-        }
-        return it->second;
-    }
-
-    float ReadColumnMasterAndSet(int& flags, std::string masterStr)
-    {
-        SetFlag(flags, 0x2, false);
-        if (!masterStr.empty())
-        {
-            if (masterStr == "master")
-            {
-                SetFlag(flags, 0x2, true);
-                return 0.0f;
-            }
-            else
-            {
-                return ReadColumnFloat(masterStr, 0.0f);
-            }
-        }
-        else
-        {
-            return 1.0f;
-        }
-    }
 } // namespace snd_alias_list
