@@ -1,83 +1,167 @@
-#include "LoaderSndAliasListIW5.h"
-
 #include "Game/IW5/IW5.h"
+#include "Game/IW5/Sound/SndAliasListConstantsIW5.h"
+#include "LoaderSndAliasListIW5.h"
 #include "Sound/SndAliasListCommon.h"
+#include "Sound/SpeakerMapCommon.h"
+#include "Sound/SndAliasListLoader.h"
 #include "Utils/Logging/Log.h"
 
-#include <Csv/CsvStream.h>
-#include <Game/IW5/Sound/SndAliasListConstantsIW5.h>
 #include <format>
-#include <iostream>
+#include <map>
 
-using namespace snd_alias_list;
 using namespace IW5;
+using namespace snd_alias_list;
+using namespace speaker_map;
 
 namespace
 {
     constexpr unsigned COL_COUNT_MIN = 29;
 
-    std::pair<std::string, std::string> SplitPathParts(const std::string& path)
+    int GetSourceNameIndex(std::string sourceName)
     {
-        if (path.empty())
+        if (sourceName == "MONOSOURCE")
         {
-            return {"", ""};
+            return 0;
         }
-
-        const char* p = std::strrchr(path.c_str(), '/');
-        if (!p)
+        else if (sourceName == "LEFTSOURCE")
         {
-            return {"", path};
+            return 1;
         }
-
-        std::string dir(path.data(), p - path.c_str());
-        std::string file(p + 1);
-        return {dir, file};
-    }
-
-    float GetVolumeMod(std::string_view name)
-    {
-        auto it = volume_mod_groups_table.find(name);
-        if (it == volume_mod_groups_table.end())
-            return 1.0f;
-        return it->second;
-    }
-
-    int FindChannelIndex(const char* name)
-    {
-        if (name)
+        else if (sourceName == "RIGHTSOURCE")
         {
-            return -1;
-        }
-
-        for (std::size_t i = 0; i < std::extent_v<decltype(snd_alias_channel_names)>; ++i)
-        {
-            if (!std::strcmp(snd_alias_channel_names[i], name))
-            {
-                return static_cast<int>(i);
-            }
+            return 2;
         }
         return -1;
     }
 
-    void SetChannelIndex(int& rawFlags, unsigned channelIndex)
+    struct TempSpeaker
     {
-        channelIndex &= 0x1Fu;
+        int speaker = 0;
+        std::vector<float> levels;
+    };
 
-        rawFlags = (rawFlags & ~(0x1Fu << 8u)) | ((static_cast<int>(channelIndex) & 0x1Fu) << 8u);
-    }
-
-    void SetLooping(int& rawFlags, bool looping)
+    struct TempChannelMap
     {
-        if (looping)
+        std::map<int, TempSpeaker> speakers;
+    };
+
+    void FinalizeChannelMap(const TempChannelMap& temp, MSSChannelMap& out)
+    {
+        out.speakerCount = (int)temp.speakers.size();
+
+        int i = 0;
+
+        for (const auto& [speakerIndex, tempSpeaker] : temp.speakers)
         {
-            rawFlags &= 0x1;
+            MSSSpeakerLevels& dst = out.speakers[i];
+
+            dst.speaker = speakerIndex;
+            dst.numLevels = (int)tempSpeaker.levels.size();
+
+            for (int j = 0; j < dst.numLevels && j < 2; j++)
+            {
+                dst.levels[j] = tempSpeaker.levels[j];
+            }
+
+            i++;
         }
     }
 
-    class SndAliasListLoader : public AssetCreator<AssetSound>
+    void ReadSpeakerMap(std::istream& in, SpeakerMap& out)
+    {
+        std::string line;
+
+        // Skip header
+        std::getline(in, line);
+
+        std::vector<TempChannelMap> tempMaps;
+
+        TempChannelMap current;
+
+        while (std::getline(in, line))
+        {
+            // Blank line = next channel map
+            if (line.find_first_not_of(" \t\r\n") == std::string::npos)
+            {
+                if (!current.speakers.empty())
+                {
+                    tempMaps.push_back(current);
+                    current = TempChannelMap();
+                }
+
+                continue;
+            }
+
+            auto tokens = SplitWhitespace(line);
+
+            if (tokens.size() != 3)
+                continue;
+
+            int sourceIndex = GetSourceNameIndex(tokens[0]);
+            int speakerIndex = GetSpeakerNameIndex(tokens[1], speaker_map_names, std::extent_v<decltype(speaker_map_names)>);
+            float level = std::stof(tokens[2]);
+
+            if (speakerIndex < 0)
+                continue;
+
+            auto& speaker = current.speakers[speakerIndex];
+
+            speaker.speaker = speakerIndex;
+            speaker.levels.push_back(level);
+        }
+
+        // Final map
+        if (!current.speakers.empty())
+        {
+            tempMaps.push_back(current);
+        }
+
+        // Copy into final structure
+        int mapIndex = 0;
+
+        for (const auto& temp : tempMaps)
+        {
+            int x = mapIndex % 2;
+            int y = mapIndex / 2;
+
+            FinalizeChannelMap(temp, out.channelMaps[x][y]);
+
+            mapIndex++;
+        }
+    }
+
+    void PopulateSoundFile(const SndAliasListLoader& loader, std::string type, std::string soundName, int& flags, SoundFile& soundFile)
+    {
+        loader.SetFlag(flags, 0x40, false);
+        loader.SetFlag(flags, 0x80, false);
+        if (!type.empty())
+        {
+            if (type == "streamed")
+            {
+                loader.SetFlag(flags, 0x80, true);
+                soundFile.type = SAT_STREAMED;
+            }
+            else if (type == "primed")
+            {
+                loader.SetFlag(flags, 0x40, true);
+                loader.SetFlag(flags, 0x80, true);
+            }
+            else
+            {
+                soundFile.type = SAT_UNKNOWN;
+            }
+        }
+        else
+        {
+            loader.SetFlag(flags, 0x40, true);
+            soundFile.type = SAT_LOADED;
+        }
+    }
+
+    class SndAliasListLoaderIW5 : public AssetCreator<AssetSound>
     {
     public:
-        SndAliasListLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        SndAliasListLoaderIW5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
             : m_memory(memory),
               m_search_path(searchPath)
         {
@@ -90,23 +174,23 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
+            SndAliasListLoader loader(*file.m_stream);
+            int entryCount = loader.CountAliases(COL_COUNT_MIN);
             auto* aliasList = m_memory.Alloc<snd_alias_list_t>();
             aliasList->aliasName = m_memory.Dup(assetName.c_str());
+            aliasList->count = entryCount;
+            aliasList->head = m_memory.Alloc<snd_alias_t>(entryCount);
             AssetRegistration<AssetSound> registration(assetName, aliasList);
 
-            const CsvInputStream csv(*file.m_stream);
             std::vector<std::string> currentRow;
-            std::vector<snd_alias_t> aliases;
 
             // Skip header
-            csv.NextRow(currentRow);
+            loader.NextRow(currentRow);
 
             auto currentRowIndex = 0u;
             auto dataRowIndex = 0u;
-            while (csv.NextRow(currentRow))
+            while (loader.NextRow(currentRow))
             {
-                snd_alias_t alias;
-
                 currentRowIndex++;
                 CsvInputStream::PreprocessRow(currentRow);
 
@@ -119,235 +203,96 @@ namespace
                     return AssetCreationResult::Failure();
                 }
 
-                if (!currentRow[0].empty())
+                // Grab volMod to calcualte volMin and volMax
+                float volMod = 1.0f;
+                if (!currentRow[COL_VOL_MOD_INDEX].empty())
                 {
-                    alias.aliasName = currentRow[0].c_str();
+                    // volMod = GetVolumeMod(std::format("{}", currentRow[COL_VOL_MOD_INDEX]), volume_mod_groups_table);
                 }
 
-                if (!currentRow[1].empty())
-                {
-                    alias.sequence = std::stoi(currentRow[1]);
-                }
-                else
-                {
-                    alias.sequence = 0;
-                }
+                // Read static fields
+                aliasList->head[dataRowIndex].aliasName = loader.ReadColumnString(currentRow[COL_NAME], m_memory);
+                aliasList->head[dataRowIndex].sequence = loader.ReadColumnInt(currentRow[COL_SEQUENCE], 0);
+                aliasList->head[dataRowIndex].soundFile = m_memory.Alloc<SoundFile>();
+                aliasList->head[dataRowIndex].volMin = loader.ReadColumnFloat(currentRow[COL_VOL_MIN], 1) * volMod;
+                aliasList->head[dataRowIndex].volMax = loader.ReadColumnFloat(currentRow[COL_VOL_MAX], 1) * volMod;
+                aliasList->head[dataRowIndex].volModIndex = loader.ReadColumnInt(currentRow[COL_VOL_MOD_INDEX], 0);
+                aliasList->head[dataRowIndex].pitchMin = loader.ReadColumnFloat(currentRow[COL_PITCH_MIN], 1);
+                aliasList->head[dataRowIndex].pitchMax = loader.ReadColumnFloat(currentRow[COL_PITCH_MAX], 1);
+                aliasList->head[dataRowIndex].distMin = loader.ReadColumnFloat(currentRow[COL_DIST_MIN], 120);
+                aliasList->head[dataRowIndex].distMax = loader.ReadColumnFloat(currentRow[COL_DIST_MAX], 500000);
+                aliasList->head[dataRowIndex].velocityMin = loader.ReadColumnFloat(currentRow[COL_VELOCITY_MIN], 1);
+                aliasList->head[dataRowIndex].probability = loader.ReadColumnFloat(currentRow[COL_PROBABILITY], 1.0f);
+                aliasList->head[dataRowIndex].masterPriority = loader.ReadColumnInt(currentRow[COL_MASTER_PRIORITY], 0);
+                aliasList->head[dataRowIndex].slavePercentage =
+                    loader.ReadColumnMasterAndSet(aliasList->head[dataRowIndex].flags, currentRow[COL_MASTER_SLAVE]);
+                aliasList->head[dataRowIndex].subtitle = loader.ReadColumnString(currentRow[COL_SUBTITLE], m_memory);
+                aliasList->head[dataRowIndex].secondaryAliasName = loader.ReadColumnString(currentRow[COL_SECONDARY], m_memory);
+                aliasList->head[dataRowIndex].mixerGroup = loader.ReadColumnString(currentRow[COL_MIXER_GROUP], m_memory);
+                aliasList->head[dataRowIndex].startDelay = loader.ReadColumnInt(currentRow[COL_START_DELAY], 0);
+                aliasList->head[dataRowIndex].lfePercentage = loader.ReadColumnFloat(currentRow[COL_LFE], 0.0f);
+                aliasList->head[dataRowIndex].centerPercentage = loader.ReadColumnFloat(currentRow[COL_CENTER], 0.0f);
+                aliasList->head[dataRowIndex].envelopMin = loader.ReadColumnFloat(currentRow[COL_ENV_MIN], 0.0f);
+                aliasList->head[dataRowIndex].envelopMax = loader.ReadColumnFloat(currentRow[COL_ENV_MAX], 0.0f);
+                aliasList->head[dataRowIndex].envelopPercentage = loader.ReadColumnFloat(currentRow[COL_ENV_PERCENT], 0.0f);
 
-                alias.soundFile = m_memory.Alloc<SoundFile>();
-                if (!currentRow[11].empty())
-                {
-                    alias.soundFile->type = SAT_STREAMED;
-                }
-                else
-                {
-                    alias.soundFile->type = SAT_LOADED;
-                }
+                // Populate preliminary sound file fields
+                std::string soundFileName = currentRow[COL_FILE];
+                PopulateSoundFile(loader, currentRow[COL_TYPE], soundFileName, aliasList->head[dataRowIndex].flags, *aliasList->head[dataRowIndex].soundFile);
 
-                const std::string soundFileName = currentRow[2];
+                // Load sound file contents based on type
                 if (!soundFileName.empty())
                 {
-                    if (alias.soundFile->type == SAT_LOADED)
+                    if (aliasList->head[dataRowIndex].soundFile->type == SAT_LOADED)
                     {
-                        alias.soundFile->u.loadSnd = m_memory.Alloc<LoadedSound>();
-                        alias.soundFile->u.loadSnd->name = m_memory.Dup(soundFileName.c_str());
-                        AssetRegistration<AssetLoadedSound> registration(soundFileName, alias.soundFile->u.loadSnd);
-                        context.AddAsset(std::move(registration));
+                        auto* loadedSoundDependency = context.LoadDependency<AssetLoadedSound>(soundFileName);
+                        if (!loadedSoundDependency)
+                        {
+                            con::error("Could not load Sound \"{}\" due to missing Loaded Sound \"{}\"", assetName, soundFileName);
+                            return AssetCreationResult::Failure();
+                        }
+                        registration.AddDependency(loadedSoundDependency);
+                        aliasList->head[dataRowIndex].soundFile->u.loadSnd = loadedSoundDependency->Asset();
+                        aliasList->head[dataRowIndex].soundFile->u.loadSnd->name = loader.ReadColumnString(soundFileName, m_memory);
                     }
-                    else if (alias.soundFile->type == SAT_STREAMED)
+                    else if (aliasList->head[dataRowIndex].soundFile->type == SAT_STREAMED)
                     {
-                        alias.soundFile->u.streamSnd.dir = m_memory.Dup(SplitPathParts(soundFileName).first.c_str());
-                        alias.soundFile->u.streamSnd.name = m_memory.Dup(SplitPathParts(soundFileName).second.c_str());
+                        aliasList->head[dataRowIndex].soundFile->u.streamSnd.dir = loader.ReadColumnString(SplitPathParts(soundFileName).first, m_memory);
+                        aliasList->head[dataRowIndex].soundFile->u.streamSnd.name = loader.ReadColumnString(SplitPathParts(soundFileName).second, m_memory);
                     }
                 }
 
-                float volMod = 1.0f;
-                if (!currentRow[5].empty())
+                // Allocate sound curve and make dependency
+                if (!currentRow[COL_FALLOFF].empty())
                 {
-                    volMod = GetVolumeMod(currentRow[5]);
-                }
-
-                if (!currentRow[3].empty())
-                {
-                    alias.volMin = std::stof(currentRow[3]) * volMod;
-                }
-                else
-                {
-                    alias.volMin = 1;
-                }
-
-                if (!currentRow[4].empty())
-                {
-                    alias.volMax = std::stof(currentRow[4]) * volMod;
-                }
-                else
-                {
-                    alias.volMax = 1;
-                }
-
-                if (!currentRow[6].empty())
-                {
-                    alias.pitchMin = std::stof(currentRow[6]);
-                }
-                else
-                {
-                    alias.pitchMin = 1;
-                }
-
-                if (!currentRow[7].empty())
-                {
-                    alias.pitchMax = std::stof(currentRow[7]);
-                }
-                else
-                {
-                    alias.pitchMax = 1;
-                }
-
-                if (!currentRow[8].empty())
-                {
-                    alias.distMin = std::stof(currentRow[8]);
-                }
-                else
-                {
-                    alias.distMin = 120;
-                }
-
-                if (!currentRow[9].empty())
-                {
-                    alias.subtitle = m_memory.Dup(currentRow[9].c_str());
-                    // alias.distMax = std::stof(currentRow[9]);
-                }
-                else
-                {
-                    // alias.distMax = 500000;
-                }
-
-                std::string channelName = currentRow[10];
-                if (!channelName.empty())
-                {
-                    int channelIndex = FindChannelIndex(channelName.c_str());
-                    if (channelIndex == -1)
-                    {
-                        con::warn(std::format("Found invalid channel '{}', defaulting to 'auto'", channelName));
-                        SetChannelIndex(alias.flags, 0);
-                        continue;
-                    }
-
-                    SetChannelIndex(alias.flags, channelIndex);
-                }
-                else
-                {
-                    SetChannelIndex(alias.flags, 0);
-                }
-
-                if (!currentRow[12].empty())
-                {
-                    alias.volumeFalloffCurve = m_memory.Alloc<SndCurve>();
-                    AssetRegistration<AssetSoundCurve> registration(currentRow[12], alias.volumeFalloffCurve);
+                    aliasList->head[dataRowIndex].volumeFalloffCurve = m_memory.Alloc<SndCurve>();
+                    AssetRegistration<AssetSoundCurve> registration(currentRow[COL_FALLOFF], aliasList->head[dataRowIndex].volumeFalloffCurve);
                     context.AddAsset(std::move(registration));
 
-                    alias.volumeFalloffCurve->filename = m_memory.Dup(currentRow[12].c_str());
+                    aliasList->head[dataRowIndex].volumeFalloffCurve->filename = loader.ReadColumnString(currentRow[19], m_memory);
                 }
 
-                if (!currentRow[12].empty())
+                // Allocate and read speaker map from disk
+                if (!currentRow[COL_SPEAKERMAP].empty())
                 {
-                    // alias.probability = std::stof(currentRow[12]);
-                }
-                else
-                {
-                    // alias.probability = 1.0f;
+                    const auto speakerMapFileName = GetFileNameForSpeakerMapName(currentRow[COL_SPEAKERMAP]);
+                    const auto speakerMapFile = m_search_path.Open(speakerMapFileName);
+                    if (!speakerMapFile.IsOpen())
+                        return AssetCreationResult::NoAction();
+
+                    aliasList->head[dataRowIndex].speakerMap = m_memory.Alloc<SpeakerMap>();
+                    aliasList->head[dataRowIndex].speakerMap->name = loader.ReadColumnString(currentRow[COL_SPEAKERMAP], m_memory);
+
+                    ReadSpeakerMap(*speakerMapFile.m_stream, *aliasList->head[dataRowIndex].speakerMap);
                 }
 
-                if (!currentRow[13].empty())
-                {
-                    SetLooping(alias.flags, true);
-                }
-                else
-                {
-                    SetLooping(alias.flags, false);
-                }
+                // Populate more flags
+                loader.SetChannelFlag(
+                    aliasList->head[dataRowIndex].flags, currentRow[COL_CHANNEL], snd_alias_channel_names, std::extent_v<decltype(snd_alias_channel_names)>);
+                loader.SetLoopFlag(aliasList->head[dataRowIndex].flags, currentRow[COL_LOOP]);
+                loader.SetReverbFlag(aliasList->head[dataRowIndex].flags, currentRow[COL_REVERB]);
 
-                if (!currentRow[14].empty())
-                {
-                    alias.speakerMap = m_memory.Alloc<SpeakerMap>();
-                    alias.speakerMap->name = m_memory.Dup(currentRow[14].c_str());
-                }
-
-                if (!currentRow[14].empty())
-                {
-                    // alias.slavePercentage = std::stof(currentRow[14].c_str());
-                }
-                else
-                {
-                    // alias.slavePercentage = 1.0f;
-                }
-
-                if (!currentRow[17].empty() && currentRow[17] != "0")
-                {
-                    alias.secondaryAliasName = m_memory.Dup(currentRow[17].c_str());
-                }
-
-                if (!currentRow[19].empty())
-                {
-                    alias.startDelay = std::stoi(currentRow[19].c_str());
-                }
-                else
-                {
-                    alias.startDelay = 0;
-                }
-
-                if (!currentRow[22].empty())
-                {
-                    alias.lfePercentage = std::stof(currentRow[22].c_str());
-                }
-                else
-                {
-                    alias.lfePercentage = 0.0f;
-                }
-
-                if (!currentRow[23].empty())
-                {
-                    alias.centerPercentage = std::stof(currentRow[23].c_str());
-                }
-                else
-                {
-                    alias.centerPercentage = 0.0f;
-                }
-
-                if (!currentRow[25].empty())
-                {
-                    alias.envelopMin = std::stof(currentRow[25].c_str());
-                }
-                else
-                {
-                    alias.envelopMin = 0.0f;
-                }
-
-                if (!currentRow[26].empty())
-                {
-                    alias.envelopMax = std::stof(currentRow[26].c_str());
-                }
-                else
-                {
-                    alias.envelopMax = 0.0f;
-                }
-
-                if (!currentRow[27].empty())
-                {
-                    alias.envelopPercentage = std::stof(currentRow[27].c_str());
-                }
-                else
-                {
-                    alias.envelopPercentage = 0.0f;
-                }
-
-                aliases.push_back(alias);
-            }
-
-            aliasList->head = m_memory.Alloc<snd_alias_t>(aliases.size());
-            for (unsigned int i = 0; i < aliases.size(); i++)
-            {
-                snd_alias_t alias = aliases[i];
-                *(aliasList->head + i) = alias;
+                dataRowIndex++;
             }
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
@@ -366,8 +311,8 @@ namespace
 
 namespace snd_alias_list
 {
-    std::unique_ptr<AssetCreator<AssetSound>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetSound>> CreateLoaderIW5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
-        return std::make_unique<SndAliasListLoader>(memory, searchPath, zone);
+        return std::make_unique<SndAliasListLoaderIW5>(memory, searchPath, zone);
     }
 } // namespace snd_alias_list
