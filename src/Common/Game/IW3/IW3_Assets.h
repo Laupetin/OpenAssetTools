@@ -1578,13 +1578,6 @@ namespace IW3
         int count;
     };
 
-    struct snd_alias_list_t_info
-    {
-        const char* aliasName;
-        snd_alias_t* head;
-        int count;
-    };
-
     struct AILSOUNDINFO
     {
         int format;
