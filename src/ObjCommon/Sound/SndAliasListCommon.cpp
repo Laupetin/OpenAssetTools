@@ -2,14 +2,14 @@
 
 #include "Utils/Logging/Log.h"
 
-#include <format>
-#include <string>
-#include <iostream>
-#include <filesystem>
 #include <algorithm>
 #include <cassert>
+#include <filesystem>
+#include <format>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 namespace snd_alias_list
 {

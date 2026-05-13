@@ -2,18 +2,17 @@
 
 #include "Sound/SndAliasListCommon.h"
 
-#include <format>
-#include <string>
-#include <iostream>
 #include <cassert>
+#include <format>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace snd_alias_list;
 
-SndAliasListDumper::SndAliasListDumper(std::ostream& stream) 
+SndAliasListDumper::SndAliasListDumper(std::ostream& stream)
     : CsvOutputStream(stream)
 {
-    
 }
 
 void SndAliasListDumper::WriteAliasFileHeader(const char* aliasHeaders[], size_t headerCount)
@@ -114,14 +113,12 @@ void SndAliasListDumper::WriteChannelEnum(int channel, const char* channelNames[
     WriteColumn(channelNames[channel]);
 }
 
-template<size_t Size> 
-void SndAliasListDumper::WriteColumnEnum(const unsigned value, const char* const (&enumValues)[Size])
+template<size_t Size> void SndAliasListDumper::WriteColumnEnum(const unsigned value, const char* const (&enumValues)[Size])
 {
     WriteColumnEnumWithSize(value, enumValues, Size);
 }
 
-template<size_t Size> 
-void SndAliasListDumper::WriteColumnEnumFlags(const unsigned value, const char* const (&enumValues)[Size])
+template<size_t Size> void SndAliasListDumper::WriteColumnEnumFlags(const unsigned value, const char* const (&enumValues)[Size])
 {
     WriteColumnEnumFlagsWithSize(value, enumValues, Size);
 }

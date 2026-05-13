@@ -18,10 +18,8 @@ namespace snd_alias_list
         void WriteColumnVolumeLinear(float value);
         void WriteColumnFloat(float value, float defaultVal = -1.0f, int precision = 2);
         void WriteChannelEnum(int channel, const char* channelNames[], size_t channelCount);
-        
-        template<size_t Size> 
-        void WriteColumnEnum(const unsigned value, const char* const (&enumValues)[Size]);
-        template<size_t Size> 
-        void WriteColumnEnumFlags(const unsigned value, const char* const (&enumValues)[Size]);
+
+        template<size_t Size> void WriteColumnEnum(const unsigned value, const char* const (&enumValues)[Size]);
+        template<size_t Size> void WriteColumnEnumFlags(const unsigned value, const char* const (&enumValues)[Size]);
     };
 } // namespace snd_alias_list

@@ -3,8 +3,8 @@
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/Sound/SndAliasListConstantsIW3.h"
 #include "Sound/SndAliasListCommon.h"
-#include "Sound/SpeakerMapCommon.h"
 #include "Sound/SndAliasListLoader.h"
+#include "Sound/SpeakerMapCommon.h"
 #include "Utils/Logging/Log.h"
 
 #include <format>
@@ -285,10 +285,7 @@ namespace
 
                 // Populate more flags
                 loader.SetChannelFlag(
-                    aliasList->head[dataRowIndex].flags, 
-                    currentRow[COL_CHANNEL], 
-                    snd_alias_channel_names, 
-                    std::extent_v<decltype(snd_alias_channel_names)>);
+                    aliasList->head[dataRowIndex].flags, currentRow[COL_CHANNEL], snd_alias_channel_names, std::extent_v<decltype(snd_alias_channel_names)>);
                 loader.SetLoopFlag(aliasList->head[dataRowIndex].flags, currentRow[COL_LOOP]);
                 loader.SetReverbFlag(aliasList->head[dataRowIndex].flags, currentRow[COL_REVERB]);
 

@@ -1,11 +1,12 @@
+#include "SndAliasListDumperIW5.h"
+
 #include "Csv/CsvStream.h"
 #include "Game/IW5/Sound/SndAliasListConstantsIW5.h"
-#include "SndAliasListDumperIW5.h"
 #include "Sound/SndAliasListCommon.h"
 #include "Sound/WavWriter.h"
 #include "Utils/Logging/Log.h"
-#include <Sound/SndAliasListDumper.h>
 
+#include <Sound/SndAliasListDumper.h>
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -41,10 +42,7 @@ namespace
         dumper.WriteColumnFloat(alias.distMin, 120.0f);
         dumper.WriteColumnFloat(alias.distMax, 500000.0f);
         dumper.WriteColumnFloat(alias.velocityMin, 1.0f);
-        dumper.WriteChannelEnum(
-            (alias.flags >> 8) & 0x3F, 
-            snd_alias_channel_names, 
-            std::extent_v<decltype(snd_alias_channel_names)>);
+        dumper.WriteChannelEnum((alias.flags >> 8) & 0x3F, snd_alias_channel_names, std::extent_v<decltype(snd_alias_channel_names)>);
 
         if ((alias.flags & 0x40) && (alias.flags & 0x80))
         {

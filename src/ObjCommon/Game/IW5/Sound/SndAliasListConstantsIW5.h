@@ -79,12 +79,13 @@ namespace IW5
         "LEFTSPEAKER\t\t\t", "RIGHTSPEAKER\t\t", "CENTERSPEAKER\t\t", "LFESPEAKER\t\t\t", "LEFTSURROUNDSPEAKER\t", "RIGHTSURROUNDSPEAKER\t"};
 
     static const char* snd_alias_channel_names[] = {
-        "physics", "ambdist1", "ambdist2", "alarm", "auto2", "auto2d", "autodog", "explosiondist1", "explosiondist2", "explosiveimpact", "element", "element_int",
-        "element_ext", "bulletimpact", "bulletflesh1", "bulletflesh2", "bulletwhizby", "vehicle", "vehiclelimited", "menu", "body", "body2d", "reload",
-        "reload2d", "item", "explosion1", "explosion2", "explosion3", "explosion4", "explosion5", "effects1", "effects2", "effects3", "effects2d1",
-        "effects2d2", "norestrict", "norestrict2d", "aircraft", "vehicle2d", "weapon_dist", "weapon_mid", "weapon", "weapon2d", "nonshock", "nonshock2",
-        "grondo3d", "grondo2d", "voice", "local", "local2", "local3", "ambient", "hurt", "player1", "player2", "music", "musicnopause", "mission", "critical",
-        "announcer", "shellshock"};
+        "physics",         "ambdist1",   "ambdist2",     "alarm",       "auto2",        "auto2d",       "autodog",      "explosiondist1", "explosiondist2",
+        "explosiveimpact", "element",    "element_int",  "element_ext", "bulletimpact", "bulletflesh1", "bulletflesh2", "bulletwhizby",   "vehicle",
+        "vehiclelimited",  "menu",       "body",         "body2d",      "reload",       "reload2d",     "item",         "explosion1",     "explosion2",
+        "explosion3",      "explosion4", "explosion5",   "effects1",    "effects2",     "effects3",     "effects2d1",   "effects2d2",     "norestrict",
+        "norestrict2d",    "aircraft",   "vehicle2d",    "weapon_dist", "weapon_mid",   "weapon",       "weapon2d",     "nonshock",       "nonshock2",
+        "grondo3d",        "grondo2d",   "voice",        "local",       "local2",       "local3",       "ambient",      "hurt",           "player1",
+        "player2",         "music",      "musicnopause", "mission",     "critical",     "announcer",    "shellshock"};
 
     static const std::unordered_map<std::string_view, float> volume_mod_groups_table = {
         // OLD / LEGACY

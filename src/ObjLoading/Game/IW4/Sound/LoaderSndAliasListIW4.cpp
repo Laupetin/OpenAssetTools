@@ -1,13 +1,14 @@
+#include "LoaderSndAliasListIW4.h"
+
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/Sound/SndAliasListConstantsIW4.h"
-#include "LoaderSndAliasListIW4.h"
 #include "Sound/SndAliasListCommon.h"
 #include "Sound/SpeakerMapCommon.h"
 #include "Utils/Logging/Log.h"
 
+#include <Sound/SndAliasListLoader.h>
 #include <format>
 #include <map>
-#include <Sound/SndAliasListLoader.h>
 
 using namespace IW4;
 using namespace snd_alias_list;
@@ -130,7 +131,7 @@ namespace
         }
     }
 
-    void PopulateSoundFile(const SndAliasListLoader &loader, std::string type, std::string soundName, int& flags, SoundFile& soundFile)
+    void PopulateSoundFile(const SndAliasListLoader& loader, std::string type, std::string soundName, int& flags, SoundFile& soundFile)
     {
         loader.SetFlag(flags, 0x40, false);
         loader.SetFlag(flags, 0x80, false);

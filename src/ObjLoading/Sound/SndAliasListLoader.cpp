@@ -1,17 +1,18 @@
 #include "SndAliasListLoader.h"
 
-#include "Utils/Logging/Log.h"
 #include "Csv/CsvStream.h"
+#include "Utils/Logging/Log.h"
 
 #include <format>
-#include <string>
 #include <sstream>
+#include <string>
 
 using namespace snd_alias_list;
 
 SndAliasListLoader::SndAliasListLoader(std::istream& stream)
     : CsvInputStream(stream)
-{}
+{
+}
 
 void SndAliasListLoader::SetFlag(int& flags, int bit, bool enabled) const
 {
@@ -77,7 +78,6 @@ int SndAliasListLoader::CountAliases(unsigned minColCount) const
 
     return count;
 }
-
 
 float SndAliasListLoader::ReadColumnFloat(std::string cell, float defaultVal)
 {
