@@ -41,7 +41,7 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        weapon::InfoStringLoaderT6 m_info_string_loader;
+        weapon::InfoStringLoaderT5 m_info_string_loader;
     };
 } // namespace
 

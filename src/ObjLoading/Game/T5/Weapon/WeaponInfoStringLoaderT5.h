@@ -6,10 +6,10 @@
 
 namespace weapon
 {
-    class InfoStringLoaderT6
+    class InfoStringLoaderT5
     {
     public:
-        InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+        InfoStringLoaderT5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
