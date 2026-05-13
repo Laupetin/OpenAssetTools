@@ -22,7 +22,7 @@ namespace
         "image",
         "sound",
         "soundcurve",
-        "loadedsound",
+        "loaded_sound",
         "clipmap",
         "comworld",
         "glassworld",

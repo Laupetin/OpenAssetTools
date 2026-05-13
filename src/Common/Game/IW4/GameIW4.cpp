@@ -11,7 +11,7 @@ namespace
     constexpr const char* ASSET_TYPE_NAMES[]{
         "physpreset",  "physcollmap", "xanim",        "xmodelsurfs", "xmodel",
         "material",    "pixelshader", "vertexshader", "vertexdecl",  "techniqueset",
-        "image",       "sound",       "soundcurve",   "loadedsound", "clipmap_unused",
+        "image",       "sound",       "soundcurve",   "loaded_sound", "clipmap_unused",
         "clipmap",     "comworld",    "gameworldsp",  "gameworldmp", "mapents",
         "fxworld",     "gfxworld",    "lightdef",     "uimap",       "font",
         "menulist",    "menu",        "localize",     "weapon",      "snddriverglobals",
