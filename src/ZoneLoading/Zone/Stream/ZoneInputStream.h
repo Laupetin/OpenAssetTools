@@ -68,7 +68,7 @@ public:
     }
 
     MaybePointerFromLookup(void* ptr, const block_t block, const size_t offset)
-        : m_valid(false),
+        : m_valid(true),
           m_ptr(ptr),
           m_block(block),
           m_offset(offset)
