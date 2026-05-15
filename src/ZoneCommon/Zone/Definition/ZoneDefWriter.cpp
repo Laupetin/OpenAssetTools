@@ -9,6 +9,38 @@
 
 #include <cassert>
 
+namespace
+{
+    constexpr auto META_DATA_KEY_GAME = "game";
+    constexpr auto META_DATA_KEY_GDT = "gdt";
+} // namespace
+
+ZoneDefFilter ZoneDefFilter::AllEntries()
+{
+    return ZoneDefFilter();
+}
+
+ZoneDefFilter ZoneDefFilter::WithOnlyRootAssets(const Zone& zone)
+{
+    ZoneDefFilter result;
+
+    for (const auto& asset : zone.m_pools)
+    {
+        for (const auto* dependency : asset->m_dependencies)
+        {
+            if (dependency != nullptr && dependency->m_zone == &zone)
+                result.m_non_root_asset_lookup.emplace(dependency);
+        }
+    }
+
+    return std::move(result);
+}
+
+bool ZoneDefFilter::ShouldWriteAsset(const XAssetInfoGeneric& asset) const
+{
+    return m_non_root_asset_lookup.empty() || !m_non_root_asset_lookup.contains(&asset);
+}
+
 const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
 {
     static const IZoneDefWriter* zoneDefWriters[static_cast<unsigned>(GameId::COUNT)]{
@@ -24,30 +56,6 @@ const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
     assert(result);
 
     return result;
-}
-
-AbstractZoneDefWriter::DependencyAssetLookup AbstractZoneDefWriter::CreateDependencyAssetLookup(const Zone& zone, const bool minimalZone)
-{
-    DependencyAssetLookup dependencyAssets;
-
-    if (!minimalZone)
-        return dependencyAssets;
-
-    for (const auto& asset : zone.m_pools)
-    {
-        for (const auto* dependency : asset->m_dependencies)
-        {
-            if (dependency != nullptr && dependency->m_zone == &zone)
-                dependencyAssets.emplace(dependency);
-        }
-    }
-
-    return dependencyAssets;
-}
-
-bool AbstractZoneDefWriter::ShouldWriteAsset(const XAssetInfoGeneric& asset, const DependencyAssetLookup& dependencyAssets)
-{
-    return dependencyAssets.empty() || !dependencyAssets.contains(&asset);
 }
 
 void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone, const bool useGdt, const bool minimalZone) const
@@ -68,6 +76,6 @@ void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone,
 
     WriteMetaData(out, zone);
 
-    const auto dependencyAssets = CreateDependencyAssetLookup(zone, minimalZone);
-    WriteContent(out, zone, dependencyAssets);
+    const auto filter = minimalZone ? ZoneDefFilter::WithOnlyRootAssets(zone) : ZoneDefFilter::AllEntries();
+    WriteContent(out, zone, filter);
 }

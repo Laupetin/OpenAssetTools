@@ -1,11 +1,24 @@
 #pragma once
 
+#include "Pool/XAssetInfo.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
 #include "Zone/Zone.h"
 
 #include <unordered_set>
 
-class XAssetInfoGeneric;
+class ZoneDefFilter
+{
+public:
+    static ZoneDefFilter AllEntries();
+    static ZoneDefFilter WithOnlyRootAssets(const Zone& zone);
+
+    [[nodiscard]] bool ShouldWriteAsset(const XAssetInfoGeneric& asset) const;
+
+private:
+    ZoneDefFilter() = default;
+
+    std::unordered_set<const XAssetInfoGeneric*> m_non_root_asset_lookup;
+};
 
 class IZoneDefWriter
 {
@@ -24,18 +37,10 @@ public:
 
 class AbstractZoneDefWriter : public IZoneDefWriter
 {
-protected:
-    static constexpr auto META_DATA_KEY_GAME = "game";
-    static constexpr auto META_DATA_KEY_GDT = "gdt";
-
-    using DependencyAssetLookup = std::unordered_set<const XAssetInfoGeneric*>;
-
-    static DependencyAssetLookup CreateDependencyAssetLookup(const Zone& zone, bool minimalZone);
-    static bool ShouldWriteAsset(const XAssetInfoGeneric& asset, const DependencyAssetLookup& dependencyAssets);
-
-    virtual void WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const = 0;
-    virtual void WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone, const DependencyAssetLookup& dependencyAssets) const = 0;
-
 public:
     void WriteZoneDef(std::ostream& stream, const Zone& zone, bool useGdt, bool minimalZone) const override;
+
+protected:
+    virtual void WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const = 0;
+    virtual void WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone, const ZoneDefFilter& filter) const = 0;
 };
