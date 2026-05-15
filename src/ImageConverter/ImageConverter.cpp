@@ -14,6 +14,7 @@
 #include "Utils/StringUtils.h"
 
 #include <assert.h>
+#include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -28,6 +29,15 @@ namespace
     constexpr auto EXTENSION_IWI = ".iwi";
     constexpr auto EXTENSION_DDS = ".dds";
     constexpr auto EXTENSION_IPAK = ".ipak";
+    constexpr char IWI_MAGIC[3]{'I', 'W', 'i'};
+
+    const char* DetermineExtensionForBytes(const void* bytes, const size_t byteCount)
+    {
+        if (byteCount >= sizeof(IWI_MAGIC) && !memcmp(bytes, IWI_MAGIC, sizeof(IWI_MAGIC)))
+            return ".iwi";
+
+        return "";
+    }
 
     class ImageConverter
     {
@@ -200,24 +210,28 @@ namespace
 
             for (const auto& indexEntry : ipak->GetIndexEntries())
             {
-                const auto fileName = std::format("{:0>6x}_{:0>6x}.iwi", indexEntry.key.dataHash, indexEntry.key.nameHash);
-                std::ofstream outFile(outDir / fileName, std::ios::out | std::ios::binary);
-                if (!outFile.is_open())
-                {
-                    con::error("Failed to open ipak file {}", fileName);
-                    return false;
-                }
+                const auto baseFileName = std::format("{:0>6x}_{:0>6x}", indexEntry.key.dataHash, indexEntry.key.nameHash);
 
                 auto entryStream = ipak->GetEntryStream(indexEntry.key.nameHash, indexEntry.key.dataHash);
                 if (!entryStream)
                 {
-                    con::error("Failed to open entry stream for {}", fileName);
+                    con::error("Failed to open entry stream for {}", baseFileName);
                     return false;
                 }
 
                 char buffer[0x2000];
                 entryStream->read(buffer, sizeof(buffer));
                 auto readCount = entryStream->gcount();
+
+                const auto extension = DetermineExtensionForBytes(buffer, static_cast<size_t>(readCount));
+                const auto fileNameWithExtension = std::format("{}{}", baseFileName, extension);
+                std::ofstream outFile(outDir / fileNameWithExtension, std::ios::out | std::ios::binary);
+                if (!outFile.is_open())
+                {
+                    con::error("Failed to open ipak file {}", fileNameWithExtension);
+                    return false;
+                }
+
                 while (readCount > 0)
                 {
                     outFile.write(buffer, readCount);
@@ -229,7 +243,7 @@ namespace
                 entryStream->close();
                 outFile.close();
 
-                con::info("Dumped {}", fileName);
+                con::info("Dumped {}", fileNameWithExtension);
             }
 
             return true;
