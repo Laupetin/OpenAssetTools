@@ -23,6 +23,7 @@
 #include "Weapon/GdtLoaderWeaponIW5.h"
 #include "Weapon/LoaderAttachmentIW5.h"
 #include "Weapon/RawLoaderWeaponIW5.h"
+#include "Font/AssetLoaderFontIW5.h"
 
 #include <memory>
 
@@ -152,7 +153,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderIW5(memory, searchPath));
         collection.AddAssetCreator(menu::CreateMenuListLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW5(memory, searchPath, zone));

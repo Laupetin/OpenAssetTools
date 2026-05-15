@@ -8,6 +8,7 @@
 #include "PhysPreset/PhysPresetInfoStringDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
+#include "Font/FontFileDumperT5.h"
 
 using namespace T5;
 
@@ -36,7 +37,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMapEnts, m_map_ents)
     // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
     // REGISTER_DUMPER(AssetDumperGfxLightDef, m_gfx_light_def)
-    // REGISTER_DUMPER(AssetDumperFont, m_font)
+    RegisterAssetDumper(std::make_unique<font::DumperT5>());
     // REGISTER_DUMPER(AssetDumperMenuList, m_menu_list)
     // REGISTER_DUMPER(AssetDumperMenuDef, m_menu_def)
     RegisterAssetDumper(std::make_unique<localize::DumperT5>());

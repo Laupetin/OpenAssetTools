@@ -27,7 +27,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MapEnts              | ✅              | ❌              |                                                                              |
 | GfxWorld             | ❌              | ❌              |                                                                              |
 | GfxLightDef          | ❌              | ❌              |                                                                              |
-| Font_s               | ❌              | ❌              |                                                                              |
+| Font_s               | ✅              | ✅              |                                                                              |
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
 | LocalizeEntry        | ✅              | ✅              |                                                                              |
@@ -62,7 +62,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | FxWorld                   | ❌              | ❌              |                                                                              |
 | GfxWorld                  | ❌              | ❌              |                                                                              |
 | GfxLightDef               | ✅              | ✅              |                                                                              |
-| Font_s                    | ❌              | ❌              |                                                                              |
+| Font_s                    | ✅              | ✅              |                                                                              |
 | MenuList                  | ✅              | ✅              | The output is decompiled. The result will not be the same as the input.      |
 | menuDef_t                 | ✅              | ✅              | See menulist.                                                                |
 | LocalizeEntry             | ✅              | ✅              |                                                                              |
@@ -104,7 +104,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | FxWorld                   | ❌              | ❌              |                                                                                                               |
 | GfxWorld                  | ❌              | ❌              |                                                                                                               |
 | GfxLightDef               | ❌              | ❌              |                                                                                                               |
-| Font_s                    | ❌              | ❌              |                                                                                                               |
+| Font_s                    | ✅              | ✅              |                                                                                                               |
 | MenuList                  | ✅              | ✅              | The output is decompiled. The result will not be the same as the input.                                       |
 | menuDef_t                 | ✅              | ✅              | See menulist.                                                                                                 |
 | LocalizeEntry             | ✅              | ✅              |                                                                                                               |
@@ -143,7 +143,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MapEnts              | ❌              | ❌              |                                                                              |
 | GfxWorld             | ❌              | ❌              |                                                                              |
 | GfxLightDef          | ❌              | ❌              |                                                                              |
-| Font_s               | ❌              | ❌              |                                                                              |
+| Font_s               | ✅              | ✅              |                                                                              |
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
 | LocalizeEntry        | ✅              | ✅              |                                                                              |

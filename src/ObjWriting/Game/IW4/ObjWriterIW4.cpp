@@ -23,6 +23,7 @@
 #include "Tracer/TracerDumperIW4.h"
 #include "Vehicle/VehicleDumperIW4.h"
 #include "Weapon/WeaponDumperIW4.h"
+#include "Font/FontFileDumperIW4.h"
 
 using namespace IW4;
 
@@ -57,7 +58,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW4>());
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::DumperIW4>());
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW4>());
     RegisterAssetDumper(std::make_unique<menu::MenuDumperIW4>());
     RegisterAssetDumper(std::make_unique<localize::DumperIW4>());
