@@ -8,12 +8,13 @@
 #include "Image/IwiWriter27.h"
 #include "Image/IwiWriter6.h"
 #include "Image/IwiWriter8.h"
-#include "Image/Texture.h"
 #include "ImageConverterArgs.h"
+#include "ObjContainer/IPak/IPak.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <assert.h>
+#include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -27,36 +28,26 @@ namespace
 {
     constexpr auto EXTENSION_IWI = ".iwi";
     constexpr auto EXTENSION_DDS = ".dds";
+    constexpr auto EXTENSION_IPAK = ".ipak";
+    constexpr char IWI_MAGIC[3]{'I', 'W', 'i'};
 
-    class ImageConverterImpl final : public ImageConverter
+    const char* DetermineExtensionForBytes(const void* bytes, const size_t byteCount)
+    {
+        if (byteCount >= sizeof(IWI_MAGIC) && !memcmp(bytes, IWI_MAGIC, sizeof(IWI_MAGIC)))
+            return ".iwi";
+
+        return "";
+    }
+
+    class ImageConverter
     {
     public:
-        ImageConverterImpl()
-            : m_game_to_convert_to(std::nullopt)
+        explicit ImageConverter(const ImageConverterArgs& args)
+            : m_game_to_convert_to(args.m_game_to_convert_to)
         {
         }
 
-        bool Start(const int argc, const char** argv) override
-        {
-            con::init();
-
-            auto shouldContinue = true;
-            if (!m_args.ParseArgs(argc, argv, shouldContinue))
-                return false;
-
-            if (!shouldContinue)
-                return true;
-
-            m_game_to_convert_to = m_args.m_game_to_convert_to;
-
-            for (const auto& file : m_args.m_files_to_convert)
-                Convert(file);
-
-            return true;
-        }
-
-    private:
-        void Convert(const std::string& file)
+        void HandleFile(const std::string& file)
         {
             const fs::path filePath(file);
             auto extension = filePath.extension().string();
@@ -66,10 +57,13 @@ namespace
                 ConvertIwi(filePath);
             else if (extension == EXTENSION_DDS)
                 ConvertDds(filePath);
+            else if (extension == EXTENSION_IPAK)
+                ExtractIpak(filePath);
             else
                 con::error("Unsupported extension {}", extension);
         }
 
+    private:
         bool ConvertIwi(const fs::path& iwiPath)
         {
             std::ifstream file(iwiPath, std::ios::in | std::ios::binary);
@@ -195,6 +189,66 @@ namespace
             return true;
         }
 
+        bool ExtractIpak(const fs::path& ipakPath)
+        {
+            auto file = std::make_unique<std::ifstream>(ipakPath, std::ios::in | std::ios::binary);
+            if (!file->is_open())
+            {
+                con::error("Failed to open ipak {}", ipakPath.string());
+                return false;
+            }
+
+            auto ipak = IIPak::Create(ipakPath.string(), std::move(file));
+            if (!ipak->Initialize())
+            {
+                con::error("Failed to read ipak {}", ipakPath.string());
+                return false;
+            }
+
+            const auto outDir = fs::absolute(ipakPath).parent_path() / ipakPath.filename().replace_extension();
+            fs::create_directories(outDir);
+
+            for (const auto& indexEntry : ipak->GetIndexEntries())
+            {
+                const auto baseFileName = std::format("{:0>6x}_{:0>6x}", indexEntry.key.dataHash, indexEntry.key.nameHash);
+
+                auto entryStream = ipak->GetEntryStream(indexEntry.key.nameHash, indexEntry.key.dataHash);
+                if (!entryStream)
+                {
+                    con::error("Failed to open entry stream for {}", baseFileName);
+                    return false;
+                }
+
+                char buffer[0x2000];
+                entryStream->read(buffer, sizeof(buffer));
+                auto readCount = entryStream->gcount();
+
+                const auto extension = DetermineExtensionForBytes(buffer, static_cast<size_t>(readCount));
+                const auto fileNameWithExtension = std::format("{}{}", baseFileName, extension);
+                std::ofstream outFile(outDir / fileNameWithExtension, std::ios::out | std::ios::binary);
+                if (!outFile.is_open())
+                {
+                    con::error("Failed to open ipak file {}", fileNameWithExtension);
+                    return false;
+                }
+
+                while (readCount > 0)
+                {
+                    outFile.write(buffer, readCount);
+
+                    entryStream->read(buffer, sizeof(buffer));
+                    readCount = entryStream->gcount();
+                }
+
+                entryStream->close();
+                outFile.close();
+
+                con::info("Dumped {}", fileNameWithExtension);
+            }
+
+            return true;
+        }
+
         ImageConverterArgs m_args;
         std::optional<GameId> m_game_to_convert_to;
         DdsWriter m_dds_writer;
@@ -202,7 +256,21 @@ namespace
     };
 } // namespace
 
-std::unique_ptr<ImageConverter> ImageConverter::Create()
+bool RunImageConverter(const int argc, const char** argv)
 {
-    return std::make_unique<ImageConverterImpl>();
+    con::init();
+
+    auto shouldContinue = true;
+    ImageConverterArgs args;
+    if (!args.ParseArgs(argc, argv, shouldContinue))
+        return false;
+
+    if (!shouldContinue)
+        return true;
+
+    ImageConverter imageConverter(args);
+    for (const auto& file : args.m_files_to_convert)
+        imageConverter.HandleFile(file);
+
+    return true;
 }

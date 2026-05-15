@@ -136,6 +136,7 @@ include "src/RawTemplater.lua"
 include "src/UnlinkerCli.lua"
 include "src/Unlinking.lua"
 include "src/Utils.lua"
+include "src/XMemCompress.lua"
 include "src/ZoneCode.lua"
 include "src/ZoneCodeGeneratorLib.lua"
 include "src/ZoneCodeGenerator.lua"
@@ -156,6 +157,7 @@ group "Components"
     Cryptography:project()
     Parser:project()
     Utils:project()
+    XMemCompress:project()
     ZoneCode:project()
     ZoneCodeGeneratorLib:project()
     ZoneCommon:project()

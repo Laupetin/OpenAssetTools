@@ -7,12 +7,18 @@
 #include <cassert>
 #include <cstring>
 #include <minilzo.h>
+#include <utility>
 
 using namespace ipak_consts;
 
-IPakEntryReadStream::IPakEntryReadStream(
-    std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
+IPakEntryReadStream::IPakEntryReadStream(std::istream& stream,
+                                         const bool isLittleEndian,
+                                         IPakStreamManagerActions* streamManagerActions,
+                                         uint8_t* chunkBuffer,
+                                         const int64_t startOffset,
+                                         const size_t entrySize)
     : m_chunk_buffer(chunkBuffer),
+      m_little_endian(isLittleEndian),
       m_stream(stream),
       m_stream_manager_actions(streamManagerActions),
       m_file_offset(0),
@@ -134,7 +140,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
     }
 
     // We expect the current file to be continued where we left off
-    if (static_cast<int64_t>(blockHeader->countAndOffset.offset) != m_file_head)
+    if (std::cmp_not_equal(blockHeader->countAndOffset.offset, m_file_head))
     {
         // A matching offset is only relevant if a command contains data
         for (unsigned currentCommand = 0; currentCommand < blockHeader->countAndOffset.count; currentCommand++)
@@ -181,23 +187,33 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(const IPakDataBl
 
 bool IPakEntryReadStream::NextBlock()
 {
+    m_pos = AlignForward<int64_t>(m_pos, sizeof(IPakDataBlockHeader));
+
     if (m_pos >= m_end_pos)
         return false;
-
-    m_pos = AlignForward<int64_t>(m_pos, sizeof(IPakDataBlockHeader));
 
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
 
     auto estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
 
-    if (estimatedChunksToRead > IPAK_CHUNK_COUNT_PER_READ)
-        estimatedChunksToRead = IPAK_CHUNK_COUNT_PER_READ;
+    estimatedChunksToRead = std::min(estimatedChunksToRead, IPAK_CHUNK_COUNT_PER_READ);
 
     if (!SetChunkBufferWindow(chunkStartPos, estimatedChunksToRead))
         return false;
 
     m_current_block = reinterpret_cast<IPakDataBlockHeader*>(&m_chunk_buffer[blockOffsetInChunk]);
+    SwapBytesIfNecessary(m_current_block->countAndOffset.raw);
+    for (auto& command : m_current_block->commands)
+    {
+        if (!m_little_endian)
+            command.raw &= 0xFFFFFFDF; // ? idk, the game seems to do this? halp
+
+        SwapBytesIfNecessary(command.raw);
+
+        auto size = command.size;
+        command.size = size;
+    }
 
     if (!ValidateBlockHeader(m_current_block))
         return false;
@@ -230,6 +246,23 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
             m_current_command_length = outputSize;
             m_current_command_offset = 0;
             m_file_head += static_cast<int64_t>(outputSize);
+        }
+        else if (compressed == 2)
+        {
+            m_xmemdecompress_context.Reset();
+            const auto maybeDecompressSize = m_xmemdecompress_context.Process(
+                &m_chunk_buffer[m_pos - m_buffer_start_pos], static_cast<int>(commandSize), m_decompress_buffer, sizeof(m_decompress_buffer));
+
+            if (!maybeDecompressSize.has_value())
+            {
+                con::error("Decompressing block with XMemDecompress failed!");
+                return false;
+            }
+
+            m_current_command_buffer = m_decompress_buffer;
+            m_current_command_length = *maybeDecompressSize;
+            m_current_command_offset = 0;
+            m_file_head += static_cast<int64_t>(*maybeDecompressSize);
         }
         else
         {
@@ -324,7 +357,7 @@ std::streambuf::int_type IPakEntryReadStream::uflow()
     return EOF;
 }
 
-std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize count)
+std::streamsize IPakEntryReadStream::xsgetn(char* ptr, std::streamsize count)
 {
     auto* destBuffer = reinterpret_cast<uint8_t*>(ptr);
     std::streamsize countRead = 0;
