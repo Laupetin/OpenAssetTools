@@ -8,6 +8,6 @@ namespace IW5
     {
     protected:
         void WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const override;
-        void WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const override;
+        void WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone, const ZoneDefFilter& filter) const override;
     };
 } // namespace IW5

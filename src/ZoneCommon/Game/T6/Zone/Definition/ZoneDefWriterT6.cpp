@@ -62,7 +62,7 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone
     }
 }
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone, const ZoneDefFilter& filter) const
 {
     const auto* game = IGame::GetGameById(zone.m_game_id);
 
@@ -73,6 +73,9 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone&
 
     for (const auto& asset : zone.m_pools)
     {
+        if (!filter.ShouldWriteAsset(*asset))
+            continue;
+
         switch (asset->m_type)
         {
         case ASSET_TYPE_LOCALIZE_ENTRY:
