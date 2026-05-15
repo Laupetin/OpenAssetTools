@@ -5,6 +5,7 @@
 #include "Game/IW5/Zone/Definition/ZoneDefWriterIW5.h"
 #include "Game/T5/Zone/Definition/ZoneDefWriterT5.h"
 #include "Game/T6/Zone/Definition/ZoneDefWriterT6.h"
+#include "Pool/XAssetInfo.h"
 
 #include <cassert>
 
@@ -25,7 +26,31 @@ const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
     return result;
 }
 
-void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone, const bool useGdt) const
+AbstractZoneDefWriter::DependencyAssetLookup AbstractZoneDefWriter::CreateDependencyAssetLookup(const Zone& zone, const bool minimalZone)
+{
+    DependencyAssetLookup dependencyAssets;
+
+    if (!minimalZone)
+        return dependencyAssets;
+
+    for (const auto& asset : zone.m_pools)
+    {
+        for (const auto* dependency : asset->m_dependencies)
+        {
+            if (dependency != nullptr && dependency->m_zone == &zone)
+                dependencyAssets.emplace(dependency);
+        }
+    }
+
+    return dependencyAssets;
+}
+
+bool AbstractZoneDefWriter::ShouldWriteAsset(const XAssetInfoGeneric& asset, const DependencyAssetLookup& dependencyAssets)
+{
+    return dependencyAssets.empty() || !dependencyAssets.contains(&asset);
+}
+
+void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone, const bool useGdt, const bool minimalZone) const
 {
     ZoneDefinitionOutputStream out(stream);
     const auto* game = IGame::GetGameById(zone.m_game_id);
@@ -42,5 +67,7 @@ void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone,
     }
 
     WriteMetaData(out, zone);
-    WriteContent(out, zone);
+
+    const auto dependencyAssets = CreateDependencyAssetLookup(zone, minimalZone);
+    WriteContent(out, zone, dependencyAssets);
 }

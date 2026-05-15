@@ -67,7 +67,7 @@ namespace
             }
 
             const auto* zoneDefWriter = IZoneDefWriter::GetZoneDefWriterForGame(zone.m_game_id);
-            zoneDefWriter->WriteZoneDef(zoneDefinitionFile, zone, m_args.m_use_gdt);
+            zoneDefWriter->WriteZoneDef(zoneDefinitionFile, zone, m_args.m_use_gdt, m_args.m_minimal_zone_def);
 
             zoneDefinitionFile.close();
 
