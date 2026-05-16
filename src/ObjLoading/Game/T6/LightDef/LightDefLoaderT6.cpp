@@ -36,6 +36,8 @@ namespace
             std::string attenuationName;
             int8_t samplerState;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
+            lightDef->attenuation.samplerState = samplerState;
+
             std::getline(*file.m_stream, attenuationName, '\0');
 
             auto* attenuationImageDependency = context.LoadDependency<AssetImage>(attenuationName);
@@ -46,7 +48,6 @@ namespace
             }
             registration.AddDependency(attenuationImageDependency);
 
-            lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = attenuationImageDependency->Asset();
             lightDef->lmapLookupStart = 0;
 

@@ -37,6 +37,7 @@ namespace
 
             int8_t attenuationSamplerState;
             file.m_stream->read(reinterpret_cast<char*>(&attenuationSamplerState), sizeof(int8_t));
+            lightDef->attenuation.samplerState = attenuationSamplerState;
 
             std::string attenuationName;
             std::getline(*file.m_stream, attenuationName, '\0');
@@ -47,9 +48,11 @@ namespace
                 return AssetCreationResult::Failure();
             }
             registration.AddDependency(attenuationImageDependency);
+            lightDef->attenuation.image = attenuationImageDependency->Asset();
 
             int8_t cucolorisSamplerState;
             file.m_stream->read(reinterpret_cast<char*>(&cucolorisSamplerState), sizeof(int8_t));
+            lightDef->cucoloris.samplerState = cucolorisSamplerState;
 
             std::string cucolorisName;
             std::getline(*file.m_stream, cucolorisName, '\0');
@@ -64,9 +67,6 @@ namespace
                 registration.AddDependency(cucolorisImageDependency);
                 lightDef->cucoloris.image = cucolorisImageDependency->Asset();
             }
-            lightDef->attenuation.samplerState = attenuationSamplerState;
-            lightDef->attenuation.image = attenuationImageDependency->Asset();
-            lightDef->cucoloris.samplerState = cucolorisSamplerState;
 
             context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
 

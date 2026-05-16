@@ -37,6 +37,8 @@ namespace
             std::string imageName;
             int8_t samplerState;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
+            lightDef->attenuation.samplerState = samplerState;
+
             std::getline(*file.m_stream, imageName, '\0');
 
             auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
@@ -47,7 +49,6 @@ namespace
             }
             registration.AddDependency(imageDependency);
 
-            lightDef->attenuation.samplerState = samplerState;
             lightDef->attenuation.image = imageDependency->Asset();
 
             context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
