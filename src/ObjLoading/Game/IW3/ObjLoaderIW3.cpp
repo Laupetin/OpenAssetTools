@@ -1,6 +1,7 @@
 #include "ObjLoaderIW3.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
+#include "FxImpactTable/FxImpactTableLoaderIW3.h"
 #include "Game/IW3/AssetMarkerIW3.h"
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
@@ -121,7 +122,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
+        collection.AddAssetCreator(fx_impact_table::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(raw_file::CreateLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(string_table::CreateLoaderIW3(memory, searchPath));
 

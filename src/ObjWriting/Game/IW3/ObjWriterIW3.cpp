@@ -1,5 +1,7 @@
 #include "ObjWriterIW3.h"
 
+#include "FxEffectDef/FxEffectDefDumperIW3.h"
+#include "FxImpactTable/FxImpactTableDumperIW3.h"
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
@@ -44,8 +46,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperWeapon)
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals)
-    // REGISTER_DUMPER(AssetDumperFxEffectDef)
-    // REGISTER_DUMPER(AssetDumperFxImpactTable)
+    RegisterAssetDumper(std::make_unique<fx_effect_def::DumperIW3>());
+    RegisterAssetDumper(std::make_unique<fx_impact_table::DumperIW3>());
     RegisterAssetDumper(std::make_unique<raw_file::DumperIW3>());
     RegisterAssetDumper(std::make_unique<string_table::DumperIW3>());
 }

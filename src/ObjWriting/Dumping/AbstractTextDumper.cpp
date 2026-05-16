@@ -4,14 +4,29 @@
 
 AbstractTextDumper::AbstractTextDumper(std::ostream& stream)
     : m_stream(stream),
-      m_indent(0u)
+      m_indent(0u),
+      m_tab_indent(false)
 {
+}
+
+void AbstractTextDumper::UseTabForIndent(bool tab_indent)
+{
+    m_tab_indent = tab_indent;
 }
 
 void AbstractTextDumper::Indent() const
 {
     for (auto i = 0u; i < m_indent; i++)
-        m_stream << "  ";
+    {
+        if (m_tab_indent)
+        {
+            m_stream << "\t";
+        }
+        else
+        {
+            m_stream << "  ";
+        }
+    }
 }
 
 void AbstractTextDumper::IncIndent()

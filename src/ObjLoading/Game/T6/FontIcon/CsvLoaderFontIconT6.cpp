@@ -59,9 +59,9 @@ namespace
             while (csv.NextRow(currentRow))
             {
                 currentRowIndex++;
-                PreprocessRow(currentRow);
+                CsvInputStream::PreprocessRow(currentRow);
 
-                if (RowIsEmpty(currentRow))
+                if (CsvInputStream::RowIsEmpty(currentRow))
                     continue;
 
                 if (currentRow.size() < COL_COUNT_MIN)
@@ -152,30 +152,6 @@ namespace
         static std::string ErrorPrefix(const std::string& assetName, const unsigned rowIndex)
         {
             return std::format("FontIcon \"{}\" Row {}:", assetName, rowIndex);
-        }
-
-        static void PreprocessRow(std::vector<std::string>& row)
-        {
-            for (auto& cell : row)
-            {
-                for (const auto c : cell)
-                {
-                    if (isspace(c))
-                        continue;
-                    if (c == '#')
-                        cell = "";
-                    break;
-                }
-            }
-        }
-
-        static bool RowIsEmpty(const std::vector<std::string>& row)
-        {
-            return std::ranges::all_of(row,
-                                       [](const std::string& cell)
-                                       {
-                                           return cell.empty();
-                                       });
         }
 
         static bool ParseInt(int& value, const std::string& str)
