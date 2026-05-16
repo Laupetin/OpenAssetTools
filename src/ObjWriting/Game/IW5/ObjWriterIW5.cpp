@@ -7,6 +7,7 @@
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Image/ImageDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
+#include "LightDef/LightDefDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"
 #include "Maps/AddonMapEntsDumperIW5.h"
 #include "Menu/MenuDumperIW5.h"
@@ -51,7 +52,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMapEnts)
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
-    // REGISTER_DUMPER(AssetDumperGfxLightDef)
+    RegisterAssetDumper(std::make_unique<light_def::DumperIW5>());
     // REGISTER_DUMPER(AssetDumperFont_s)
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuDumperIW5>());

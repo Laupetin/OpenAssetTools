@@ -1,7 +1,6 @@
-#include "LightDefLoaderIW4.h"
+#include "LightDefLoaderT6.h"
 
-#include "Game/IW4/IW4.h"
-#include "Game/IW4/LightDef/LightDefAssetCreationStateIW4.h"
+#include "Game/T6/T6.h"
 #include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -9,7 +8,7 @@
 #include <format>
 #include <iostream>
 
-using namespace IW4;
+using namespace T6;
 
 namespace
 {
@@ -34,24 +33,23 @@ namespace
 
             AssetRegistration<AssetLightDef> registration(assetName, lightDef);
 
-            std::string imageName;
+            std::string attenuationName;
             int8_t samplerState;
             file.m_stream->read(reinterpret_cast<char*>(&samplerState), sizeof(int8_t));
             lightDef->attenuation.samplerState = samplerState;
 
-            std::getline(*file.m_stream, imageName, '\0');
+            std::getline(*file.m_stream, attenuationName, '\0');
 
-            auto* imageDependency = context.LoadDependency<AssetImage>(imageName);
-            if (!imageDependency)
+            auto* attenuationImageDependency = context.LoadDependency<AssetImage>(attenuationName);
+            if (!attenuationImageDependency)
             {
-                con::error("Could not load GfxLightDef \"{}\" due to missing image \"{}\"", assetName, imageName);
+                con::error("Could not load GfxLightDef \"{}\" due to missing attenuation image \"{}\"", assetName, attenuationName);
                 return AssetCreationResult::Failure();
             }
-            registration.AddDependency(imageDependency);
+            registration.AddDependency(attenuationImageDependency);
 
-            lightDef->attenuation.image = imageDependency->Asset();
-
-            context.GetZoneAssetCreationState<LightDefAssetCreationState>().SetLightDefLookupStart(lightDef, context);
+            lightDef->attenuation.image = attenuationImageDependency->Asset();
+            lightDef->lmapLookupStart = 0;
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
@@ -64,7 +62,7 @@ namespace
 
 namespace light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderT6(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderLightDef>(memory, searchPath);
     }

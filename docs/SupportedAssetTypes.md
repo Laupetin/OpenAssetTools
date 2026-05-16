@@ -26,7 +26,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | GameWorldMp          | ❌              | ❌              |                                                                              |
 | MapEnts              | ✅              | ❌              |                                                                              |
 | GfxWorld             | ❌              | ❌              |                                                                              |
-| GfxLightDef          | ❌              | ❌              |                                                                              |
+| GfxLightDef          | ✅              | ✅              |                                                                              |
 | Font_s               | ❌              | ❌              |                                                                              |
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
@@ -103,7 +103,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | MapEnts                   | ❌              | ❌              |                                                                                                               |
 | FxWorld                   | ❌              | ❌              |                                                                                                               |
 | GfxWorld                  | ❌              | ❌              |                                                                                                               |
-| GfxLightDef               | ❌              | ❌              |                                                                                                               |
+| GfxLightDef               | ✅              | ✅              |                                                                                                               |
 | Font_s                    | ❌              | ❌              |                                                                                                               |
 | MenuList                  | ✅              | ✅              | The output is decompiled. The result will not be the same as the input.                                       |
 | menuDef_t                 | ✅              | ✅              | See menulist.                                                                                                 |
@@ -142,7 +142,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | GameWorldMp          | ❌              | ❌              |                                                                              |
 | MapEnts              | ❌              | ❌              |                                                                              |
 | GfxWorld             | ❌              | ❌              |                                                                              |
-| GfxLightDef          | ❌              | ❌              |                                                                              |
+| GfxLightDef          | ✅              | ✅              |                                                                              |
 | Font_s               | ❌              | ❌              |                                                                              |
 | MenuList             | ❌              | ❌              |                                                                              |
 | menuDef_t            | ❌              | ❌              |                                                                              |
@@ -179,7 +179,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | GameWorldMp            | ❌              | ❌              |                                                                                                                                                                |
 | MapEnts                | ✅              | ❌              |                                                                                                                                                                |
 | GfxWorld               | ❌              | ❌              |                                                                                                                                                                |
-| GfxLightDef            | ❌              | ❌              |                                                                                                                                                                |
+| GfxLightDef            | ✅              | ✅              |                                                                                                                                                                |
 | Font_s                 | ❌              | ❌              |                                                                                                                                                                |
 | FontIcon               | ✅              | ✅              |                                                                                                                                                                |
 | MenuList               | ❌              | ❌              |                                                                                                                                                                |

@@ -1,7 +1,7 @@
-#include "LightDefLoaderIW4.h"
+#include "LightDefLoaderIW3.h"
 
-#include "Game/IW4/IW4.h"
-#include "Game/IW4/LightDef/LightDefAssetCreationStateIW4.h"
+#include "Game/IW3/IW3.h"
+#include "Game/IW3/LightDef/LightDefAssetCreationStateIW3.h"
 #include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -9,7 +9,7 @@
 #include <format>
 #include <iostream>
 
-using namespace IW4;
+using namespace IW3;
 
 namespace
 {
@@ -64,7 +64,7 @@ namespace
 
 namespace light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderIW4(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderLightDef>(memory, searchPath);
     }

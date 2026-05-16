@@ -1,12 +1,12 @@
-#include "LightDefDumperIW4.h"
+#include "LightDefDumperT6.h"
 
 #include "LightDef/LightDefCommon.h"
 
-using namespace IW4;
+using namespace T6;
 
 namespace light_def
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLightDef::Type>& asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLightDef::Type>& asset)
     {
         const auto* lightDef = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name));
