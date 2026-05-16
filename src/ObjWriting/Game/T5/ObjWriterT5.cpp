@@ -8,6 +8,7 @@
 #include "PhysPreset/PhysPresetInfoStringDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
+#include "Weapon/WeaponDumperT5.h"
 
 using namespace T5;
 
@@ -40,7 +41,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMenuList, m_menu_list)
     // REGISTER_DUMPER(AssetDumperMenuDef, m_menu_def)
     RegisterAssetDumper(std::make_unique<localize::DumperT5>());
-    // REGISTER_DUMPER(AssetDumperWeapon, m_weapon)
+    RegisterAssetDumper(std::make_unique<weapon::DumperT5>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals, m_snd_driver_globals)
     // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
     // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
