@@ -23,9 +23,9 @@ namespace
     }
 } // namespace
 
-namespace sound
+namespace loaded_sound
 {
-    void LoadedSoundDumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LoadedSound>& asset)
+    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<LoadedSound>& asset)
     {
         const auto* loadedSound = asset.Asset();
         const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset.m_name));
@@ -45,4 +45,4 @@ namespace sound
             break;
         }
     }
-} // namespace sound
+} // namespace loaded_sound

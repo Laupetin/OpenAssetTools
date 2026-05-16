@@ -17,6 +17,7 @@
 #include "PhysPreset/PhysPresetInfoStringDumperIW4.h"
 #include "RawFile/RawFileDumperIW4.h"
 #include "Sound/LoadedSoundDumperIW4.h"
+#include "Sound/SndAliasListDumperIW4.h"
 #include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
 #include "StructuredDataDef/StructuredDataDefDumperIW4.h"
@@ -46,7 +47,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 #endif
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW4>());
-    // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
+    RegisterAssetDumper(std::make_unique<sound_alias_list::DumperIW4>());
     RegisterAssetDumper(std::make_unique<sound_curve::DumperIW4>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW4>());
     // REGISTER_DUMPER(AssetDumperClipMap)

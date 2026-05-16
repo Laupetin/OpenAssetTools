@@ -19,7 +19,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ❌              | ❌              |                                                                              |
 | SndCurve             | ✅              | ✅              |                                                                              |
-| LoadedSound          | ✅              | ❌              |                                                                              |
+| LoadedSound          | ✅              | ✅              |                                                                              |
 | clipMap_t            | ❌              | ❌              |                                                                              |
 | ComWorld             | ❌              | ❌              |                                                                              |
 | GameWorldSp          | ❌              | ❌              |                                                                              |
@@ -51,9 +51,9 @@ The following section specify which assets are supported to be dumped to disk (u
 | MaterialVertexDeclaration | ✅              | ✅              |                                                                              |
 | MaterialTechniqueSet      | ✅              | ✅              |                                                                              |
 | GfxImage                  | ✅              | ❌              | A few special image encodings are not yet supported.                         |
-| snd_alias_list_t          | ❌              | ❌              |                                                                              |
+| snd_alias_list_t          | ✅              | ✅              |                                                                              |
 | SndCurve                  | ✅              | ✅              |                                                                              |
-| LoadedSound               | ✅              | ❌              |                                                                              |
+| LoadedSound               | ✅              | ✅              |                                                                              |
 | clipMap_t                 | ❌              | ❌              |                                                                              |
 | ComWorld                  | ❌              | ❌              |                                                                              |
 | GameWorldSp               | ❌              | ❌              |                                                                              |
@@ -92,9 +92,9 @@ The following section specify which assets are supported to be dumped to disk (u
 | MaterialVertexDeclaration | ❌              | ❌              |                                                                                                               |
 | MaterialTechniqueSet      | ❌              | ❌              |                                                                                                               |
 | GfxImage                  | ✅              | ✅              | A few special image encodings are not yet supported.                                                          |
-| snd_alias_list_t          | ❌              | ❌              |                                                                                                               |
+| snd_alias_list_t          | ✅              | ✅              |                                                                                                               |
 | SndCurve                  | ✅              | ✅              |                                                                                                               |
-| LoadedSound               | ✅              | ❌              |                                                                                                               |
+| LoadedSound               | ✅              | ✅              |                                                                                                               |
 | clipMap_t                 | ❌              | ❌              |                                                                                                               |
 | ComWorld                  | ❌              | ❌              |                                                                                                               |
 | GlassWorld                | ❌              | ❌              |                                                                                                               |
