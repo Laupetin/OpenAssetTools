@@ -329,7 +329,7 @@ namespace
     [[nodiscard]] std::vector<BoneTrack> ReconstructBoneTracks(const XAssetInfo<XAnimParts>& asset)
     {
         const auto& parts = *asset.Asset();
-        const auto nameCount = static_cast<size_t>(parts.boneCount[9]);
+        const auto nameCount = static_cast<size_t>(parts.boneCount[PART_TYPE_ALL]);
         const auto useByteIndices = UseByteIndices(parts);
 
         std::vector<BoneTrack> bones(nameCount);
@@ -351,10 +351,10 @@ namespace
 
         size_t boneIndex = 0;
 
-        for (auto i = 0u; i < parts.boneCount[0]; i++, boneIndex++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_NO_QUAT]; i++, boneIndex++)
             bones[boneIndex].quat.type = QuatType::IDENTITY;
 
-        for (auto i = 0u; i < parts.boneCount[1]; i++, boneIndex++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_HALF_QUAT]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
             quat.type = QuatType::SIMPLE_KEYFRAMED;
@@ -365,7 +365,7 @@ namespace
             cursor.randomDataShort += frameCount * 2uz;
         }
 
-        for (auto i = 0u; i < parts.boneCount[2]; i++, boneIndex++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_FULL_QUAT]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
             quat.type = QuatType::FULL_KEYFRAMED;
@@ -376,7 +376,7 @@ namespace
             cursor.randomDataShort += frameCount * 4uz;
         }
 
-        for (auto i = 0u; i < parts.boneCount[3]; i++, boneIndex++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_HALF_QUAT_NO_SIZE]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
             quat.type = QuatType::SIMPLE_CONSTANT;
@@ -384,7 +384,7 @@ namespace
             cursor.dataShort += 2;
         }
 
-        for (auto i = 0u; i < parts.boneCount[4]; i++, boneIndex++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_FULL_QUAT_NO_SIZE]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
             quat.type = QuatType::FULL_CONSTANT;
@@ -394,7 +394,7 @@ namespace
 
         std::vector<bool> transAssigned(nameCount, false);
 
-        for (auto i = 0u; i < parts.boneCount[5]; i++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_SMALL_TRANS]; i++)
         {
             const auto bone = static_cast<size_t>(*cursor.dataByte++);
             assert(bone < nameCount && !transAssigned[bone]);
@@ -412,7 +412,7 @@ namespace
             cursor.randomDataByte += frameCount * 3uz;
         }
 
-        for (auto i = 0u; i < parts.boneCount[6]; i++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_TRANS]; i++)
         {
             const auto bone = static_cast<size_t>(*cursor.dataByte++);
             assert(bone < nameCount && !transAssigned[bone]);
@@ -431,7 +431,7 @@ namespace
                 trans.shortFrames.push_back(static_cast<uint16_t>(*cursor.randomDataShort++));
         }
 
-        for (auto i = 0u; i < parts.boneCount[7]; i++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_TRANS_NO_SIZE]; i++)
         {
             const auto bone = static_cast<size_t>(*cursor.dataByte++);
             assert(bone < nameCount && !transAssigned[bone]);
@@ -442,7 +442,7 @@ namespace
             trans.constant = ReadFloat3(cursor.dataInt);
         }
 
-        for (auto i = 0u; i < parts.boneCount[8]; i++)
+        for (auto i = 0u; i < parts.boneCount[PART_TYPE_NO_TRANS]; i++)
         {
             const auto bone = static_cast<size_t>(*cursor.dataByte++);
             assert(bone < nameCount && !transAssigned[bone]);
@@ -861,7 +861,7 @@ namespace xanim
         auto& stream = *assetFile;
 
         const auto flags = static_cast<uint8_t>((parts->bLoop ? 1u : 0u) | (parts->bDelta ? 2u : 0u));
-        const auto boneCount = static_cast<uint16_t>(parts->boneCount[9]);
+        const auto boneCount = static_cast<uint16_t>(parts->boneCount[PART_TYPE_ALL]);
         const auto assetType = static_cast<uint8_t>(static_cast<unsigned char>(parts->assetType));
         const auto framerate = static_cast<uint16_t>(std::lround(parts->framerate));
 
