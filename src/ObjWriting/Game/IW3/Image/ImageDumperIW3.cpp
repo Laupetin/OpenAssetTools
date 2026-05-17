@@ -69,10 +69,10 @@ namespace image
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
-        case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
+        case ImageOutputFormat_e::DDS:
             m_writer = std::make_unique<DdsWriter>();
             break;
-        case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
+        case ImageOutputFormat_e::IWI:
             m_writer = std::make_unique<iwi6::IwiWriter>();
             break;
         default:
@@ -88,6 +88,15 @@ namespace image
         const auto texture = LoadImageData(context.m_obj_search_path, *image);
         if (!texture)
             return;
+
+        if (!m_writer->SupportsImageFormat(texture->GetFormat()))
+        {
+            con::warn("Not dumping image {} as {} does not support the image format {}",
+                      image->name,
+                      GetImageOutputFormatName(ObjWriting::Configuration.ImageOutputFormat),
+                      GetImageFormatName(texture->GetFormat()->GetId()));
+            return;
+        }
 
         const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name, m_writer->GetFileExtension()));
 

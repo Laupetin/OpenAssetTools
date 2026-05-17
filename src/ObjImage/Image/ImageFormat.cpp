@@ -1,7 +1,37 @@
 #include "ImageFormat.h"
 
+#include <type_traits>
+
+namespace
+{
+    const char* IMAGE_FORMAT_NAMES[]{
+        "R8_G8_B8",
+        "B8_G8_R8_X8",
+        "R8_G8_B8_A8",
+        "B8_G8_R8_A8",
+        "A8",
+        "R16_G16_B16_A16_FLOAT",
+        "R8",
+        "R8_A8",
+        "BC1",
+        "BC2",
+        "BC3",
+        "BC4",
+        "BC5",
+    };
+    static_assert(std::extent_v<decltype(IMAGE_FORMAT_NAMES)> == static_cast<unsigned>(image::ImageFormatId::MAX));
+} // namespace
+
 namespace image
 {
+    const char* GetImageFormatName(ImageFormatId id)
+    {
+        if (id < ImageFormatId::MAX)
+            return IMAGE_FORMAT_NAMES[static_cast<unsigned>(id)];
+
+        return "unknown";
+    }
+
     ImageFormat::ImageFormat(const ImageFormatId id, const oat::D3DFORMAT d3dFormat, const oat::DXGI_FORMAT dxgiFormat)
         : m_id(id),
           m_d3d_format(d3dFormat),

@@ -553,8 +553,8 @@ namespace
 
     bool CanOmitDefaultArmature()
     {
-        return ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT
-               && ObjWriting::Configuration.ModelOutputFormat != ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
+        return ObjWriting::Configuration.ModelOutputFormat != ModelOutputFormat_e::XMODEL_EXPORT
+               && ObjWriting::Configuration.ModelOutputFormat != ModelOutputFormat_e::XMODEL_BIN;
     }
 
     void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel& model)
@@ -666,25 +666,25 @@ namespace
 
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
+            case ModelOutputFormat_e::OBJ:
                 DumpObjLod(common, context, asset, currentLod);
                 if (currentLod == 0u)
                     DumpObjMtl(common, context, asset);
                 break;
 
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
+            case ModelOutputFormat_e::XMODEL_EXPORT:
                 DumpXModelExportLod(common, context, asset, currentLod);
                 break;
 
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
+            case ModelOutputFormat_e::XMODEL_BIN:
                 DumpXModelBinLod(common, context, asset, currentLod);
                 break;
 
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
+            case ModelOutputFormat_e::GLTF:
                 DumpGltfLod<gltf::TextOutput>(common, context, asset, currentLod, ".gltf");
                 break;
 
-            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
+            case ModelOutputFormat_e::GLB:
                 DumpGltfLod<gltf::BinOutput>(common, context, asset, currentLod, ".glb");
                 break;
 
@@ -699,15 +699,15 @@ namespace
     {
         switch (ObjWriting::Configuration.ModelOutputFormat)
         {
-        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
+        case ModelOutputFormat_e::XMODEL_EXPORT:
             return ".xmodel_export";
-        case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
+        case ModelOutputFormat_e::XMODEL_BIN:
             return ".xmodel_bin";
-        case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
+        case ModelOutputFormat_e::OBJ:
             return ".obj";
-        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
+        case ModelOutputFormat_e::GLTF:
             return ".gltf";
-        case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
+        case ModelOutputFormat_e::GLB:
             return ".glb";
         default:
             assert(false);

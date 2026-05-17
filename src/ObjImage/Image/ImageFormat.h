@@ -8,9 +8,8 @@
 
 namespace image
 {
-    enum class ImageFormatId
+    enum class ImageFormatId : std::uint8_t
     {
-        UNKNOWN = -1,
         R8_G8_B8,
         B8_G8_R8_X8,
         R8_G8_B8_A8,
@@ -25,10 +24,13 @@ namespace image
         BC4,
         BC5,
 
-        MAX
+        MAX,
+        UNKNOWN
     };
 
-    enum class ImageFormatType
+    const char* GetImageFormatName(ImageFormatId id);
+
+    enum class ImageFormatType : std::uint8_t
     {
         UNKNOWN,
         UNSIGNED,
