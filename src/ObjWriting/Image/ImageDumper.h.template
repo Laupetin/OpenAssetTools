@@ -1,0 +1,34 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See ImageDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+#include "Image/ImageWriter.h"
+
+#include <memory>
+
+#set CLASS_NAME "Dumper" + GAME
+
+namespace image
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetImage>
+    {
+    public:
+        CLASS_NAME();
+
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetImage::Type>& asset) override;
+
+    private:
+        std::unique_ptr<ImageWriter> m_writer;
+    };
+} // namespace image

@@ -1,46 +1,138 @@
-#include "ImageDumperIW3.h"
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"ImageDumper" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define DX9
+#define IWI6
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define DX9
+#define IWI8
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define DX9
+#define IWI8
+#elif GAME == "T5"
+#define FEATURE_T5
+#define DX9
+#define IWI13
+#elif GAME == "T6"
+#define FEATURE_T6
+#define DX11
+#define IWI27
+#endif
+
+// This file was templated.
+// See ImageDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
+
+#ifdef DX9
+#include "Image/Dx9TextureLoader.h"
+#else
+#include "Image/Dx12TextureLoader.h"
+#endif
+
+#ifdef FEATURE_T6
+#include "ObjContainer/IPak/IPak.h"
+#endif
+
+#if defined(IWI6)
+#include "Image/IwiWriter6.h"
+#define IWI_NS iwi6
+#elif defined(IWI8)
+#include "Image/IwiWriter8.h"
+#define IWI_NS iwi8
+#elif defined(IWI13)
+#include "Image/IwiWriter13.h"
+#define IWI_NS iwi13
+#elif defined(IWI27)
+#include "Image/IwiWriter27.h"
+#define IWI_NS iwi27
+#endif
 
 #include "Image/DdsWriter.h"
-#include "Image/Dx9TextureLoader.h"
 #include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
-#include "Image/IwiTypes.h"
-#include "Image/IwiWriter6.h"
-#include "Image/Texture.h"
 #include "ObjWriting.h"
-#include "SearchPath/ISearchPath.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
 #include <format>
 
-using namespace IW3;
+using namespace GAME;
 using namespace image;
 
 namespace
 {
     std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage& image)
     {
+#ifdef DX9
         Dx9TextureLoader textureLoader;
+#else
+        Dx12TextureLoader textureLoader;
+#endif
 
         const auto& loadDef = *image.texture.loadDef;
+#ifdef FEATURE_IW3
         textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
+#else
+        textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
+#endif
 
-        if (loadDef.flags & image::iwi6::IMG_FLAG_VOLMAP)
+#if defined(IWI8)
+        if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_3D)
             textureLoader.Type(TextureType::T_3D);
-        else if (loadDef.flags & image::iwi6::IMG_FLAG_CUBEMAP)
+        else if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_CUBE)
             textureLoader.Type(TextureType::T_CUBE);
         else
             textureLoader.Type(TextureType::T_2D);
+#else
+        if (loadDef.flags & image::IWI_NS::IMG_FLAG_VOLMAP)
+            textureLoader.Type(TextureType::T_3D);
+        else if (loadDef.flags & image::IWI_NS::IMG_FLAG_CUBEMAP)
+            textureLoader.Type(TextureType::T_CUBE);
+        else
+            textureLoader.Type(TextureType::T_2D);
+#endif
 
+#ifdef DX9
         textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
-        textureLoader.HasMipMaps(!(loadDef.flags & image::iwi6::IMG_FLAG_NOMIPMAPS));
+#else
+        textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef.format));
+#endif
+        textureLoader.HasMipMaps(!(loadDef.flags & image::IWI_NS::IMG_FLAG_NOMIPMAPS));
+
         return textureLoader.LoadTexture(loadDef.data);
     }
 
     std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)
     {
+#ifdef FEATURE_T6
+        if (image.streamedPartCount > 0)
+        {
+            for (auto* ipak : IIPak::Repository)
+            {
+                auto ipakStream = ipak->GetEntryStream(image.hash, image.streamedParts[0].hash);
+
+                if (ipakStream)
+                {
+                    auto loadResult = image::LoadIwi(*ipakStream);
+                    ipakStream->close();
+
+                    if (loadResult)
+                        return std::move(loadResult->m_texture);
+                }
+            }
+        }
+#endif
+
         const auto imageFileName = image::GetFileNameForAsset(image.name, ".iwi");
         const auto filePathImage = searchPath.Open(imageFileName);
         if (!filePathImage.IsOpen())
@@ -62,10 +154,11 @@ namespace
     }
 } // namespace
 
+#set CLASS_NAME "Dumper" + GAME
+
 namespace image
 {
-    DumperIW3::DumperIW3()
-        : AbstractAssetDumper()
+    CLASS_NAME::CLASS_NAME()
     {
         switch (ObjWriting::Configuration.ImageOutputFormat)
         {
@@ -73,7 +166,7 @@ namespace image
             m_writer = std::make_unique<DdsWriter>();
             break;
         case ImageOutputFormat_e::IWI:
-            m_writer = std::make_unique<iwi6::IwiWriter>();
+            m_writer = std::make_unique<IWI_NS::IwiWriter>();
             break;
         default:
             assert(false);
@@ -82,7 +175,7 @@ namespace image
         }
     }
 
-    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<GfxImage>& asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
         const auto* image = asset.Asset();
         const auto texture = LoadImageData(context.m_obj_search_path, *image);

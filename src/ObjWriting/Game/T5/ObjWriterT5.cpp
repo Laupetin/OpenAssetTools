@@ -1,9 +1,9 @@
 #include "ObjWriterT5.h"
 
+#include "Game/T5/Image/ImageDumperT5.h"
 #include "Game/T5/Material/MaterialJsonDumperT5.h"
 #include "Game/T5/Techset/TechsetDumperT5.h"
 #include "Game/T5/XModel/XModelDumperT5.h"
-#include "Image/ImageDumperT5.h"
 #include "LightDef/LightDefDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT5.h"

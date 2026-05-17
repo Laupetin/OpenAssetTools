@@ -1,11 +1,11 @@
 #include "ObjWriterIW5.h"
 
+#include "Game/IW5/Image/ImageDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
 #include "Game/IW5/Techset/VertexShaderDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
-#include "Image/ImageDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "LightDef/LightDefDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"

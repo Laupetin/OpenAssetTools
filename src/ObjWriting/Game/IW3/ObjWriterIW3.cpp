@@ -1,9 +1,9 @@
 #include "ObjWriterIW3.h"
 
+#include "Game/IW3/Image/ImageDumperIW3.h"
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
-#include "Image/ImageDumperIW3.h"
 #include "LightDef/LightDefDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"

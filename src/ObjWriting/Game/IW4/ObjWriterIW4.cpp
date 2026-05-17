@@ -1,11 +1,11 @@
 #include "ObjWriterIW4.h"
 
+#include "Game/IW4/Image/ImageDumperIW4.h"
 #include "Game/IW4/Material/MaterialJsonDumperIW4.h"
 #include "Game/IW4/Techset/PixelShaderDumperIW4.h"
 #include "Game/IW4/Techset/TechsetDumperIW4.h"
 #include "Game/IW4/Techset/VertexShaderDumperIW4.h"
 #include "Game/IW4/XModel/XModelDumperIW4.h"
-#include "Image/ImageDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
 #include "LightDef/LightDefDumperIW4.h"
 #include "Localize/LocalizeDumperIW4.h"
