@@ -1,0 +1,18 @@
+// =========================================
+// WeaponAttachment
+// =========================================
+use WeaponAttachment;
+set block XFILE_BLOCK_TEMP;
+set string szInternalName;
+set string szDisplayName;
+set reusable worldModels;
+set count worldModels 16;
+set reusable viewModels;
+set count viewModels 16;
+set reusable reticleViewModels;
+set count reticleViewModels 8;
+
+// AttRumbles
+use AttRumbles;
+set string fireRumble;
+set string meleeImpactRumble;

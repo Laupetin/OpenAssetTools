@@ -1,0 +1,30 @@
+// =========================================
+// XModel
+// =========================================
+use XModel;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set scriptstring boneNames;
+set reusable boneNames;
+set count boneNames numBones;
+set reusable parentList;
+set count parentList numBones - numRootBones;
+set reusable quats;
+set count quats numBones - numRootBones;
+set reusable trans;
+set count trans (numBones - numRootBones) * 3;
+set reusable partClassification;
+set count partClassification numBones;
+set reusable baseMat;
+set count baseMat numBones;
+set count materialHandles numsurfs;
+set count collSurfs numCollSurfs;
+set count boneInfo numBones;
+set condition invHighMipRadius never;
+
+// XModelLodInfo
+use XModelLodInfo;
+set condition surfs never;
+
+// XModelCollSurf_s
+set count XModelCollSurf_s::collTris numCollTris;

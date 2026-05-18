@@ -200,6 +200,7 @@ GameGlobalAssetPools* GameGlobalAssetPools::GetGlobalPoolsForGame(GameId gameId)
         new GameGlobalAssetPools(GameId::IW3),
         new GameGlobalAssetPools(GameId::IW4),
         new GameGlobalAssetPools(GameId::IW5),
+        new GameGlobalAssetPools(GameId::IW6),
         new GameGlobalAssetPools(GameId::T5),
         new GameGlobalAssetPools(GameId::T6),
     };

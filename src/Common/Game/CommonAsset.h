@@ -110,6 +110,21 @@ enum class CommonAssetType : std::uint8_t
     // IW5, T6
     SCRIPT,
 
+    // IW6
+    ANIMCLASS,
+    // IW6
+    NET_CONST_STRINGS,
+    // IW6
+    REVERB_PRESET,
+    // IW6
+    LUA_FILE,
+    // IW6
+    SCRIPTABLE,
+    // IW6
+    EQUIPMENT_SND_TABLE,
+    // IW6
+    DOPPLER_PRESET,
+
     // T5, T6
     PHYS_CONSTRAINTS,
     // T5, T6

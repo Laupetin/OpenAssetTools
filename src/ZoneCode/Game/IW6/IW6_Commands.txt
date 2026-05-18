@@ -1,0 +1,101 @@
+// Game: Ghosts (IW6)
+game IW6;
+wordsize 32;
+
+// Game Assets
+asset PhysPreset AssetPhysPreset;
+asset PhysCollmap AssetPhysCollMap;
+asset XAnimParts AssetXAnim;
+asset XModelSurfs AssetXModelSurfs;
+asset XModel AssetXModel;
+asset Material AssetMaterial;
+asset MaterialVertexShader AssetVertexShader;
+asset MaterialPixelShader AssetPixelShader;
+asset MaterialVertexDeclaration AssetVertexDecl;
+asset MaterialTechniqueSet AssetTechniqueSet;
+asset GfxImage AssetImage;
+asset snd_alias_list_t AssetSound;
+asset SndCurve AssetSoundCurve;
+asset SndCurve AssetLpfCurve;
+asset SndCurve AssetReverbCurve;
+asset LoadedSound AssetLoadedSound;
+asset clipMap_t AssetClipMap;
+asset ComWorld AssetComWorld;
+asset GlassWorld AssetGlassWorld;
+asset PathData AssetPathData;
+asset VehicleTrack AssetVehicleTrack;
+asset MapEnts AssetMapEnts;
+asset FxWorld AssetFxWorld;
+asset GfxWorld AssetGfxWorld;
+asset GfxLightDef AssetLightDef;
+asset Font_s AssetFont;
+asset MenuList AssetMenuList;
+asset menuDef_t AssetMenu;
+asset AnimationClass AssetAnimClass;
+asset LocalizeEntry AssetLocalize;
+asset WeaponAttachment AssetAttachment;
+asset WeaponCompleteDef AssetWeapon;
+asset FxEffectDef AssetFx;
+asset FxImpactTable AssetImpactFx;
+asset SurfaceFxTable AssetSurfaceFx;
+asset RawFile AssetRawFile;
+asset ScriptFile AssetScript;
+asset StringTable AssetStringTable;
+asset LeaderboardDef AssetLeaderboard;
+asset StructuredDataDefSet AssetStructuredDataDef;
+asset TracerDef AssetTracer;
+asset VehicleDef AssetVehicle;
+asset AddonMapEnts AssetAddonMapEnts;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block normal  XFILE_BLOCK_PHYSICAL;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_CALLBACK;
+block normal  XFILE_BLOCK_VERTEX;
+block normal  XFILE_BLOCK_INDEX;
+block normal  XFILE_BLOCK_SCRIPT;
+
+#include "XAssets/PhysPreset.txt"
+#include "XAssets/PhysCollmap.txt"
+#include "XAssets/XAnimParts.txt"
+#include "XAssets/XModelSurfs.txt"
+#include "XAssets/XModel.txt"
+#include "XAssets/Material.txt"
+#include "XAssets/MaterialPixelShader.txt"
+#include "XAssets/MaterialVertexShader.txt"
+#include "XAssets/MaterialVertexDeclaration.txt"
+#include "XAssets/MaterialTechniqueSet.txt"
+#include "XAssets/GfxImage.txt"
+#include "XAssets/snd_alias_list_t.txt"
+#include "XAssets/SndCurve.txt"
+#include "XAssets/LoadedSound.txt"
+#include "XAssets/clipMap_t.txt"
+#include "XAssets/ComWorld.txt"
+#include "XAssets/GlassWorld.txt"
+#include "XAssets/PathData.txt"
+#include "XAssets/VehicleTrack.txt"
+#include "XAssets/MapEnts.txt"
+#include "XAssets/FxWorld.txt"
+#include "XAssets/GfxWorld.txt"
+#include "XAssets/GfxLightDef.txt"
+#include "XAssets/Font_s.txt"
+#include "XAssets/MenuList.txt"
+#include "XAssets/menuDef_t.txt"
+#include "XAssets/LocalizeEntry.txt"
+#include "XAssets/WeaponAttachment.txt"
+#include "XAssets/WeaponCompleteDef.txt"
+#include "XAssets/FxEffectDef.txt"
+#include "XAssets/FxImpactTable.txt"
+#include "XAssets/SurfaceFxTable.txt"
+#include "XAssets/RawFile.txt"
+#include "XAssets/ScriptFile.txt"
+#include "XAssets/StringTable.txt"
+#include "XAssets/LeaderboardDef.txt"
+#include "XAssets/StructuredDataDefSet.txt"
+#include "XAssets/TracerDef.txt"
+#include "XAssets/VehicleDef.txt"
+#include "XAssets/AddonMapEnts.txt"
+
