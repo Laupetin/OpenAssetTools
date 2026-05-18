@@ -265,7 +265,7 @@ namespace
             {
                 const auto value = static_cast<int>(frame[componentIndex]) * sign;
                 assert(value >= std::numeric_limits<int16_t>::min() && value <= std::numeric_limits<int16_t>::max());
-                result.storedValues.push_back(static_cast<int16_t>(value));
+                result.storedValues.emplace_back(static_cast<int16_t>(value));
             }
         }
 
@@ -425,7 +425,7 @@ namespace
             trans.indices = ReadPackedIndices(cursor, storedSize, useByteIndices);
             trans.shortFrames.reserve(frameCount * 3uz);
             for (auto frame = 0uz; frame < frameCount * 3uz; frame++)
-                trans.shortFrames.push_back(static_cast<uint16_t>(*cursor.randomDataShort++));
+                trans.shortFrames.emplace_back(static_cast<uint16_t>(*cursor.randomDataShort++));
         }
 
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_TRANS_NO_SIZE]; i++)
@@ -504,27 +504,27 @@ namespace
 
                 for (auto i = 0uz; i < frameCount; i++)
                 {
-                    result.quat.values.push_back(quat->u.frames.frames[i].value[0]);
-                    result.quat.values.push_back(quat->u.frames.frames[i].value[1]);
+                    result.quat.values.emplace_back(quat->u.frames.frames[i].value[0]);
+                    result.quat.values.emplace_back(quat->u.frames.frames[i].value[1]);
                 }
 
                 if (useByteIndices)
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.quat.indices.push_back(static_cast<uint8_t>(quat->u.frames.indices._1[i]));
+                        result.quat.indices.emplace_back(static_cast<uint8_t>(quat->u.frames.indices._1[i]));
                 }
                 else
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.quat.indices.push_back(quat->u.frames.indices._2[i]);
+                        result.quat.indices.emplace_back(quat->u.frames.indices._2[i]);
                 }
 
                 assert(result.quat.indices.size() <= numLoopFrames);
             }
             else
             {
-                result.quat.values.push_back(quat->u.frame0.value[0]);
-                result.quat.values.push_back(quat->u.frame0.value[1]);
+                result.quat.values.emplace_back(quat->u.frame0.value[0]);
+                result.quat.values.emplace_back(quat->u.frame0.value[1]);
             }
         }
 
@@ -544,12 +544,12 @@ namespace
                 if (useByteIndices)
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.trans.indices.push_back(static_cast<uint8_t>(trans->u.frames.indices._1[i]));
+                        result.trans.indices.emplace_back(static_cast<uint8_t>(trans->u.frames.indices._1[i]));
                 }
                 else
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.trans.indices.push_back(trans->u.frames.indices._2[i]);
+                        result.trans.indices.emplace_back(trans->u.frames.indices._2[i]);
                 }
 
                 if (trans->smallTrans)
@@ -557,9 +557,9 @@ namespace
                     result.trans.byteFrames.reserve(frameCount * 3uz);
                     for (auto i = 0uz; i < frameCount; i++)
                     {
-                        result.trans.byteFrames.push_back(trans->u.frames.frames._1[i][0]);
-                        result.trans.byteFrames.push_back(trans->u.frames.frames._1[i][1]);
-                        result.trans.byteFrames.push_back(trans->u.frames.frames._1[i][2]);
+                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][0]);
+                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][1]);
+                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][2]);
                     }
                 }
                 else
@@ -567,9 +567,9 @@ namespace
                     result.trans.shortFrames.reserve(frameCount * 3uz);
                     for (auto i = 0uz; i < frameCount; i++)
                     {
-                        result.trans.shortFrames.push_back(trans->u.frames.frames._2[i][0]);
-                        result.trans.shortFrames.push_back(trans->u.frames.frames._2[i][1]);
-                        result.trans.shortFrames.push_back(trans->u.frames.frames._2[i][2]);
+                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][0]);
+                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][1]);
+                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][2]);
                     }
                 }
             }
@@ -853,7 +853,7 @@ namespace xanim
         std::vector<EncodedQuatTrack> encodedBoneQuats;
         encodedBoneQuats.reserve(boneTracks.size());
         for (const auto& bone : boneTracks)
-            encodedBoneQuats.push_back(EncodeQuatTrack(bone.quat));
+            encodedBoneQuats.emplace_back(EncodeQuatTrack(bone.quat));
 
         auto& stream = *assetFile;
 
