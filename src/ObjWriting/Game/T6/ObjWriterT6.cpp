@@ -1,10 +1,10 @@
 #include "ObjWriterT6.h"
 
 #include "FontIcon/FontIconDumperT6.h"
+#include "Game/T6/Image/ImageDumperT6.h"
 #include "Game/T6/Material/MaterialJsonDumperT6.h"
 #include "Game/T6/Techset/TechsetDumperT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
-#include "Image/ImageDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "LightDef/LightDefDumperT6.h"
 #include "Localize/LocalizeDumperT6.h"

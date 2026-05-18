@@ -37,6 +37,12 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
     case ImageFormatId::BC5:
         return IwiFormat::IMG_FORMAT_DXN;
 
+    case ImageFormatId::R8_A8:
+        return IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA;
+
+    case ImageFormatId::R8:
+        return IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE;
+
     default:
         return IwiFormat::IMG_FORMAT_INVALID;
     }

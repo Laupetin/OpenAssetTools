@@ -184,13 +184,13 @@ bool UnlinkerArgs::SetImageDumpingMode() const
 
     if (specifiedValue == "dds")
     {
-        ObjWriting::Configuration.ImageOutputFormat = ObjWriting::Configuration_t::ImageOutputFormat_e::DDS;
+        ObjWriting::Configuration.ImageOutputFormat = ImageOutputFormat_e::DDS;
         return true;
     }
 
     if (specifiedValue == "iwi")
     {
-        ObjWriting::Configuration.ImageOutputFormat = ObjWriting::Configuration_t::ImageOutputFormat_e::IWI;
+        ObjWriting::Configuration.ImageOutputFormat = ImageOutputFormat_e::IWI;
         return true;
     }
 
@@ -206,31 +206,31 @@ bool UnlinkerArgs::SetModelDumpingMode() const
 
     if (specifiedValue == "xmodel_export")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT;
+        ObjWriting::Configuration.ModelOutputFormat = ModelOutputFormat_e::XMODEL_EXPORT;
         return true;
     }
 
     if (specifiedValue == "xmodel_bin")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
+        ObjWriting::Configuration.ModelOutputFormat = ModelOutputFormat_e::XMODEL_BIN;
         return true;
     }
 
     if (specifiedValue == "obj")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ;
+        ObjWriting::Configuration.ModelOutputFormat = ModelOutputFormat_e::OBJ;
         return true;
     }
 
     if (specifiedValue == "gltf")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF;
+        ObjWriting::Configuration.ModelOutputFormat = ModelOutputFormat_e::GLTF;
         return true;
     }
 
     if (specifiedValue == "glb")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::GLB;
+        ObjWriting::Configuration.ModelOutputFormat = ModelOutputFormat_e::GLB;
         return true;
     }
 
