@@ -1,5 +1,7 @@
 #include "XAnimDumperIW3.h"
 
+#include "XAnim/XAnimCommon.h"
+
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -106,11 +108,6 @@ namespace
         bool flipQuat = false;
         std::vector<int16_t> storedValues;
     };
-
-    [[nodiscard]] std::string GetFileNameForAssetName(const std::string& assetName)
-    {
-        return "xanim/" + assetName;
-    }
 
     [[nodiscard]] const std::string& ResolveScriptString(const XAssetInfo<XAnimParts>& asset, const ScriptString value)
     {
@@ -845,7 +842,7 @@ namespace xanim
     void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXAnim::Type>& asset)
     {
         const auto* parts = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
+        const auto assetFile = context.OpenAssetFile(GetCompiledFileNameForAssetName(asset.m_name));
         if (!assetFile)
             return;
 
