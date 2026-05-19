@@ -1,10 +1,10 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, T4, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageDumper" + GAME + ".cpp"
 
 #set DUMPER_HEADER "\"ImageDumper" + GAME + ".h\""
 
-#if GAME == "IW3"
+#if GAME == "IW3" || GAME == "T4"
 #define FEATURE_IW3
 #define DX9
 #define IWI6

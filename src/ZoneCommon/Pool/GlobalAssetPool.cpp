@@ -198,6 +198,7 @@ GameGlobalAssetPools* GameGlobalAssetPools::GetGlobalPoolsForGame(GameId gameId)
 {
     static GameGlobalAssetPools* globalAssetPools[static_cast<unsigned>(GameId::COUNT)]{
         new GameGlobalAssetPools(GameId::IW3),
+        new GameGlobalAssetPools(GameId::T4),
         new GameGlobalAssetPools(GameId::IW4),
         new GameGlobalAssetPools(GameId::IW5),
         new GameGlobalAssetPools(GameId::T5),

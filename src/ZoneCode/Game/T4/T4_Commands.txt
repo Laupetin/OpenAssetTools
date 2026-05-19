@@ -1,0 +1,69 @@
+// Game: World at War (T4)
+game T4;
+wordsize 32;
+
+// Game Assets
+asset PhysPreset AssetPhysPreset;
+asset PhysConstraints AssetPhysConstraints;
+asset DestructibleDef AssetDestructibleDef;
+asset XAnimParts AssetXAnim;
+asset XModel AssetXModel;
+asset Material AssetMaterial;
+asset MaterialTechniqueSet AssetTechniqueSet;
+asset GfxImage AssetImage;
+asset snd_alias_list_t AssetSound;
+asset SndDriverGlobals AssetSoundDriverGlobals;
+asset LoadedSound AssetLoadedSound;
+asset clipMap_t AssetClipMapPvs;
+asset ComWorld AssetComWorld;
+asset GameWorldSp AssetGameWorldSp;
+asset GameWorldMp AssetGameWorldMp;
+asset MapEnts AssetMapEnts;
+asset GfxWorld AssetGfxWorld;
+asset GfxLightDef AssetLightDef;
+asset Font_s AssetFont;
+asset MenuList AssetMenuList;
+asset menuDef_t AssetMenu;
+asset LocalizeEntry AssetLocalize;
+asset WeaponDef AssetWeapon;
+asset FxEffectDef AssetFx;
+asset FxImpactTable AssetImpactFx;
+asset RawFile AssetRawFile;
+asset StringTable AssetStringTable;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block runtime XFILE_BLOCK_LARGE_RUNTIME;
+block runtime XFILE_BLOCK_PHYSICAL_RUNTIME;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_PHYSICAL;
+
+#include "XAssets/PhysPreset.txt"
+#include "XAssets/PhysConstraints.txt"
+#include "XAssets/DestructibleDef.txt"
+#include "XAssets/XAnimParts.txt"
+#include "XAssets/XModel.txt"
+#include "XAssets/Material.txt"
+#include "XAssets/MaterialTechniqueSet.txt"
+#include "XAssets/GfxImage.txt"
+#include "XAssets/snd_alias_list_t.txt"
+#include "XAssets/SndDriverGlobals.txt"
+#include "XAssets/LoadedSound.txt"
+#include "XAssets/clipMap_t.txt"
+#include "XAssets/ComWorld.txt"
+#include "XAssets/GameWorldSp.txt"
+#include "XAssets/GameWorldMp.txt"
+#include "XAssets/MapEnts.txt"
+#include "XAssets/GfxWorld.txt"
+#include "XAssets/FxEffectDef.txt"
+#include "XAssets/LocalizeEntry.txt"
+#include "XAssets/WeaponDef.txt"
+#include "XAssets/MenuList.txt"
+#include "XAssets/menuDef_t.txt"
+#include "XAssets/FxImpactTable.txt"
+#include "XAssets/GfxLightDef.txt"
+#include "XAssets/Font_s.txt"
+#include "XAssets/RawFile.txt"
+#include "XAssets/StringTable.txt"

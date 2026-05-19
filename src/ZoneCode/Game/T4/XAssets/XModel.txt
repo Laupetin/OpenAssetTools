@@ -1,0 +1,90 @@
+// =========================================
+// XModel
+// =========================================
+use XModel;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set scriptstring boneNames;
+set reusable boneNames;
+set count boneNames numBones;
+set reusable parentList;
+set count parentList numBones - numRootBones;
+set reusable quats;
+set count quats numBones - numRootBones;
+set reusable trans;
+// This is actually the count but it looks like a bug? It is used like a vec3, but it takes as much memory as vec4
+set count trans (numBones - numRootBones) * 4;
+set reusable partClassification;
+set count partClassification numBones;
+set reusable baseMat;
+set count baseMat numBones;
+set count surfs numsurfs;
+set count materialHandles numsurfs;
+set count collSurfs numCollSurfs;
+set count boneInfo numBones;
+// The DB loader does not follow XModelStreamInfo::highMipBounds here.
+set condition streamInfo::highMipBounds never;
+set reusable physGeoms;
+set count physGeoms 1;
+set reusable collmap;
+set count collmap 1;
+
+// PhysGeomList
+use PhysGeomList;
+set reusable geoms;
+set count geoms count;
+
+// PhysGeomInfo
+set reusable PhysGeomInfo::brush;
+set allocalign PhysGeomInfo::brush 4;
+
+// BrushWrapper
+use BrushWrapper;
+set count sides numsides;
+set count baseAdjacentSide totalEdgeCount;
+set reusable verts;
+set count verts numverts;
+set reusable planes;
+set count planes numsides;
+
+// cbrushside_t
+set reusable cbrushside_t::plane;
+
+// XSurface
+use XSurface;
+set reusable verts0;
+set block verts0 XFILE_BLOCK_VIRTUAL;
+set count verts0 vertCount;
+set condition vb0 never;
+set reusable vertList;
+set count vertList vertListCount;
+set reusable triIndices;
+set block triIndices XFILE_BLOCK_VIRTUAL;
+set allocalign triIndices 16;
+set count triIndices triCount;
+set condition indexBuffer never;
+reorder:
+    zoneHandle
+    vertInfo
+    verts0
+    vertList
+    triIndices;
+
+// XSurfaceVertexInfo
+use XSurfaceVertexInfo;
+set reusable vertsBlend;
+set count vertsBlend vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+
+// XRigidVertList
+set reusable XRigidVertList::collisionTree;
+
+// XSurfaceCollisionTree
+use XSurfaceCollisionTree;
+set count nodes nodeCount;
+set count leafs leafCount;
+
+// XModelCollSurf_s
+set count XModelCollSurf_s::collTris numCollTris;

@@ -12,6 +12,7 @@ const IObjCompiler* IObjCompiler::GetObjCompilerForGame(GameId game)
 {
     static const IObjCompiler* objCompilers[static_cast<unsigned>(GameId::COUNT)]{
         new IW3::ObjCompiler(),
+        nullptr,
         new IW4::ObjCompiler(),
         new IW5::ObjCompiler(),
         new T5::ObjCompiler(),

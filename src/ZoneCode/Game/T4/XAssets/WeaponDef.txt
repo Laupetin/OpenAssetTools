@@ -1,0 +1,64 @@
+// =========================================
+// WeaponDef
+// =========================================
+use WeaponDef;
+set block XFILE_BLOCK_TEMP;
+set string szInternalName;
+set string szDisplayName;
+set string szOverlayName;
+set string szXAnims;
+set assetref szXAnims AssetXAnim;
+set string szModeName;
+set scriptstring hideTags;
+set scriptstring notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapValues;
+set reusable bounceSound;
+set count bounceSound 31;
+set string standMountedWeapdef;
+set string crouchMountedWeapdef;
+set string proneMountedWeapdef;
+set string szAmmoName;
+set string szClipName;
+set string szSharedAmmoCapName;
+set string szAltWeaponName;
+set string aiVsAiAccuracyGraphName;
+set string aiVsPlayerAccuracyGraphName;
+set reusable aiVsAiAccuracyGraphKnots;
+set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
+set reusable aiVsPlayerAccuracyGraphKnots;
+set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set reusable originalAiVsAiAccuracyGraphKnots;
+set count originalAiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount; // yeah it does not use original count
+set reusable originalAiVsPlayerAccuracyGraphKnots;
+set count originalAiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount; // yeah it does not use original count
+set string szUseHintString;
+set string dropHintString;
+set string szScript;
+set string fireRumble;
+set string meleeImpactRumble;
+set string flameTableFirstPerson;
+set string flameTableThirdPerson;
+set reusable flameTableFirstPersonPtr;
+set reusable flameTableThirdPersonPtr;
+
+reorder:
+...
+aiVsAiAccuracyGraphName
+aiVsAiAccuracyGraphKnots
+originalAiVsAiAccuracyGraphKnots
+aiVsPlayerAccuracyGraphName
+aiVsPlayerAccuracyGraphKnots
+originalAiVsPlayerAccuracyGraphKnots;
+
+// SndAliasCustom
+use SndAliasCustom;
+set count name 1;
+set reusable name;
+set condition sound never;
+
+// snd_alias_list_name
+set string snd_alias_list_name::soundName;
+
+// flameTable
+use flameTable;
+set string name;
