@@ -136,6 +136,7 @@ namespace
                 break;
             case GameId::IW4:
             case GameId::IW5:
+            case GameId::IW6:
                 m_iwi_writer = std::make_unique<image::iwi8::IwiWriter>();
                 break;
             case GameId::T5:

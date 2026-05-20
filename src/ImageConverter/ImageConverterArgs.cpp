@@ -58,6 +58,13 @@ const CommandLineOption* const OPTION_GAME_IW5 =
     .WithDescription("Converts images for IW5.")
     .Build();
 
+const CommandLineOption* const OPTION_GAME_IW6 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("iw6")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for IW6.")
+    .Build();
+
 const CommandLineOption* const OPTION_GAME_T5 =
     CommandLineOption::Builder::Create()
     .WithLongName("t5")
@@ -81,6 +88,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_GAME_IW3,
     OPTION_GAME_IW4,
     OPTION_GAME_IW5,
+    OPTION_GAME_IW6,
     OPTION_GAME_T5,
     OPTION_GAME_T6,
 };
@@ -159,6 +167,8 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
         m_game_to_convert_to = GameId::IW4;
     else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_IW5))
         m_game_to_convert_to = GameId::IW5;
+    else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_IW6))
+        m_game_to_convert_to = GameId::IW6;
     else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_T5))
         m_game_to_convert_to = GameId::T5;
     else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_T6))
