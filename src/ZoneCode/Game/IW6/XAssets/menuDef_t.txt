@@ -74,8 +74,8 @@ set condition internals::function dataType == VAL_FUNCTION;
 // ExpressionString
 set string ExpressionString::string;
 
-// itemDef_s
-use itemDef_s;
+// itemDef_t
+use itemDef_t;
 set string text;
 set condition parent never;
 set string dvar;
@@ -93,22 +93,22 @@ set reusable textAlignYExp;
 use itemDefData_t;
 set string enumDvarName;
 set condition data never;
-set condition listBox itemDef_s::type == ITEM_TYPE_LISTBOX;
-set condition editField itemDef_s::type == ITEM_TYPE_TEXT
-    || itemDef_s::type == ITEM_TYPE_EDITFIELD
-    || itemDef_s::type == ITEM_TYPE_NUMERICFIELD
-    || itemDef_s::type == ITEM_TYPE_SLIDER
-    || itemDef_s::type == ITEM_TYPE_YESNO
-    || itemDef_s::type == ITEM_TYPE_BIND
-    || itemDef_s::type == ITEM_TYPE_VALIDFILEFIELD
-    || itemDef_s::type == ITEM_TYPE_DECIMALFIELD
-    || itemDef_s::type == ITEM_TYPE_UPREDITFIELD
-    || itemDef_s::type == ITEM_TYPE_EMAILFIELD
-    || itemDef_s::type == ITEM_TYPE_PASSWORDFIELD;
-set condition multi itemDef_s::type == ITEM_TYPE_MULTI;
-set condition enumDvarName itemDef_s::type == ITEM_TYPE_DVARENUM;
-set condition ticker itemDef_s::type == ITEM_TYPE_NEWS_TICKER;
-set condition scroll itemDef_s::type == ITEM_TYPE_TEXT_SCROLL;
+set condition listBox itemDef_t::type == ITEM_TYPE_LISTBOX;
+set condition editField itemDef_t::type == ITEM_TYPE_TEXT
+    || itemDef_t::type == ITEM_TYPE_EDITFIELD
+    || itemDef_t::type == ITEM_TYPE_NUMERICFIELD
+    || itemDef_t::type == ITEM_TYPE_SLIDER
+    || itemDef_t::type == ITEM_TYPE_YESNO
+    || itemDef_t::type == ITEM_TYPE_BIND
+    || itemDef_t::type == ITEM_TYPE_VALIDFILEFIELD
+    || itemDef_t::type == ITEM_TYPE_DECIMALFIELD
+    || itemDef_t::type == ITEM_TYPE_UPREDITFIELD
+    || itemDef_t::type == ITEM_TYPE_EMAILFIELD
+    || itemDef_t::type == ITEM_TYPE_PASSWORDFIELD;
+set condition multi itemDef_t::type == ITEM_TYPE_MULTI;
+set condition enumDvarName itemDef_t::type == ITEM_TYPE_DVARENUM;
+set condition ticker itemDef_t::type == ITEM_TYPE_NEWS_TICKER;
+set condition scroll itemDef_t::type == ITEM_TYPE_TEXT_SCROLL;
 
 // listBoxDef_s
 set reusable listBoxDef_s::elementHeightExp;

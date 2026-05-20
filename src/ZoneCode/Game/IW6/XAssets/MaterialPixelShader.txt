@@ -6,7 +6,8 @@ set block XFILE_BLOCK_TEMP;
 set string name;
 
 // GfxPixelShaderLoadDef
-set count GfxPixelShaderLoadDef::program programSize;
+set count GfxPixelShaderLoadDef::cachedPart cachedPartSize;
+set count GfxPixelShaderLoadDef::physicalPart physicalPartSize;
 
 // MaterialPixelShaderProgram
 set condition MaterialPixelShaderProgram::ps never;

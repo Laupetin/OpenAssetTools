@@ -5,11 +5,11 @@ use LoadedSound;
 set block XFILE_BLOCK_TEMP;
 set string name;
 
-// MssSound
-use MssSound;
+// XA2Sound
+use XA2Sound;
 set block data XFILE_BLOCK_TEMP;
 set reusable data;
-set count data info::data_len;
-set condition info::data_ptr never;
-set condition info::initial_ptr never;
-set action SetSoundData(MssSound);
+set reusable seekTable;
+set count data loadedSize;
+set count seekTable seekTableSize;
+set action SetSoundData(XA2Sound);

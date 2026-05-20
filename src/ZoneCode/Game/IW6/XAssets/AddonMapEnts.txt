@@ -6,14 +6,40 @@ set block XFILE_BLOCK_TEMP;
 set string name;
 set count entityString numEntityChars;
 set reusable info;
+set reusable cmodels;
 set count cmodels numSubModels;
+set reusable models;
 set count models numSubModels;
 
 // MapTriggers
-// see MapEnts
+use MapTriggers;
+set reusable models;
+set count models count;
+set reusable hulls;
+set count hulls hullCount;
+set reusable slabs;
+set count slabs slabCount;
+
 
 // ClipInfo
-// see clipMap_t
+use ClipInfo;
+set reusable planes;
+set count planes planeCount;
+set reusable materials;
+set count materials numMaterials;
+set reusable brushsides;
+set count brushsides numBrushSides;
+set reusable brushEdges;
+set count brushEdges numBrushEdges;
+set reusable leafbrushNodes;
+set count leafbrushNodes leafbrushNodesCount;
+set reusable leafbrushes;
+set count leafbrushes numLeafBrushes;
+set reusable brushes;
+set count brushes numBrushes;
 
-// cmodel2_t
-set reusable cmodel2_t::info;
+// ClipMaterial
+set string ClipMaterial::name;
+
+// cmodel_t
+set reusable cmodel_t::info;

@@ -25,6 +25,3 @@ set condition invHighMipRadius never;
 // XModelLodInfo
 use XModelLodInfo;
 set condition surfs never;
-
-// XModelCollSurf_s
-set count XModelCollSurf_s::collTris numCollTris;

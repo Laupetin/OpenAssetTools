@@ -1,0 +1,26 @@
+// =========================================
+// EquipmentSoundTable
+// =========================================
+use EquipmentSoundTable;
+set block XFILE_BLOCK_TEMP;
+set string szName;
+set reusable clothTypes;
+set count clothTypes numClothTypes;
+set reusable weaponRattleTypes;
+set count weaponRattleTypes numWeaponRattleTypes;
+set reusable chancesPLR;
+set count chancesPLR numClothTypes;
+set reusable chancesNPC;
+set count chancesNPC numClothTypes;
+set reusable mvmtClothSoundSets;
+set count mvmtClothSoundSets numClothTypes;
+set reusable mvmtRattleSoundSets;
+set count mvmtRattleSoundSets numWeaponRattleTypes;
+
+// EquipmentClothData
+use EquipmentClothData;
+set string szName;
+
+// EquipmentWeaponRattleData
+use EquipmentWeaponRattleData;
+set string szName;

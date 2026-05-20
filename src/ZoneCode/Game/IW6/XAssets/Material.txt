@@ -19,5 +19,6 @@ set reusable u::water;
 
 // water_t
 use water_t;
-set count H0 N * M;
+set count H0X M;
+set count H0Y N;
 set count wTerm N * M;

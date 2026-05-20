@@ -1,0 +1,8 @@
+// =========================================
+// LuaFile
+// =========================================
+use LuaFile;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set reusable buffer;
+set count buffer len;

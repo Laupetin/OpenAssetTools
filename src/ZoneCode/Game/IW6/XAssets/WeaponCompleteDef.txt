@@ -24,7 +24,7 @@ set count animOverrides numAnimOverrides;
 set reusable soundOverrides;
 set count soundOverrides numSoundOverrides;
 set reusable fxOverrides;
-set count fxOverrides numFxOverrides;
+set count fxOverrides numFXOverrides;
 set reusable reloadOverrides;
 set count reloadOverrides numReloadStateTimerOverrides;
 set reusable notetrackOverrides;
@@ -34,6 +34,7 @@ set reusable aiVsAiAccuracyGraphKnots;
 set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
 set reusable aiVsPlayerAccuracyGraphKnots;
 set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set string szAdsrBaseSetting;
 
 // AnimOverrideEntry
 use AnimOverrideEntry;
@@ -50,6 +51,7 @@ set count notetrackSoundMapKeys 24;
 set reusable notetrackSoundMapValues;
 set scriptstring notetrackSoundMapValues;
 set count notetrackSoundMapValues 24;
+
 
 // WeaponDef
 use WeaponDef;
@@ -77,6 +79,14 @@ set count notetrackRumbleMapKeys 16;
 set reusable notetrackRumbleMapValues;
 set scriptstring notetrackRumbleMapValues;
 set count notetrackRumbleMapValues 16;
+set reusable notetrackFXMapKeys;
+set scriptstring notetrackFXMapKeys;
+set count notetrackFXMapKeys 16;
+set reusable notetrackFXMapValues;
+set count notetrackFXMapValues 16;
+set reusable notetrackFXMapTagValues;
+set scriptstring notetrackFXMapTagValues;
+set count notetrackFXMapTagValues 16;
 set reusable bounceSound;
 set count bounceSound SURF_TYPE_COUNT;
 set reusable rollingSound;
@@ -104,6 +114,7 @@ set count locationDamageMultipliers HITLOC_COUNT;
 set string fireRumble;
 set string meleeImpactRumble;
 set string turretBarrelSpinRumble;
+set scriptstring knifeAttachTagOverride;
 set scriptstring stowTag;
 reorder:
     ...
@@ -111,14 +122,3 @@ reorder:
     originalAiVsAiAccuracyGraphKnots
     aiVsPlayerAccuracyGraphName
     originalAiVsPlayerAccuracyGraphKnots;
-
-// SndAliasCustom
-use SndAliasCustom;
-set count name 1;
-set reusable name;
-set condition sound never;
-
-// snd_alias_list_name
-use snd_alias_list_name;
-set string soundName;
-set assetref soundName AssetSound;

@@ -81,8 +81,8 @@ use cmodel_t;
 set block info XFILE_BLOCK_TEMP;
 set reusable info;
 
-// cbrush_t
-use cbrush_t;
+// cbrushWrapper_t
+use cbrushWrapper_t;
 set reusable sides;
 set reusable baseAdjacentSide;
 
@@ -91,3 +91,18 @@ set string Stage::name;
 
 // DynEntityDef
 set reusable DynEntityDef::hinge;
+
+// ScriptableMapEnts
+set reusable ScriptableMapEnts::instances;
+set count ScriptableMapEnts::instances ScriptableMapEnts::instanceCount;
+set reusable ScriptableMapEnts::animEntries;
+set count ScriptableMapEnts::animEntries ScriptableMapEnts::animEntryCount;
+
+// ScriptableInstance
+set reusable ScriptableInstance::def;
+set scriptstring ScriptableInstance::targetname;
+set reusable ScriptableInstance::currentModel;
+set reusable ScriptableInstance::partStates;
+set count ScriptableInstance::partStates def::partCount;
+set string ScriptableInstance::eventStreamBuf;
+set string ScriptableInstance::eventConstantsBuf;

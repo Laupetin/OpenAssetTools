@@ -106,7 +106,7 @@ set block smodelVisData XFILE_BLOCK_RUNTIME;
 set count smodelVisData smodelCount;
 set block surfaceVisData XFILE_BLOCK_RUNTIME;
 set count surfaceVisData staticSurfaceCount;
-set count sortedSurfIndex staticSurfaceCount + staticSurfaceCountNoDecal;
+set count sortedSurfIndex staticSurfaceCount;
 set count smodelInsts smodelCount;
 set count surfaces GfxWorld::surfaceCount;
 set count surfacesBounds GfxWorld::surfaceCount;

@@ -1,0 +1,56 @@
+// =========================================
+// ScriptableDef
+// =========================================
+use ScriptableDef;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set reusable baseModel;
+set string baseCollisionBrush;
+set string destroyedCollisionBrush;
+set reusable parts;
+set count parts partCount;
+
+// ScriptablePartDef
+use ScriptablePartDef;
+set reusable states;
+set count states stateCount;
+set scriptstring name;
+
+// ScriptableStateDef
+use ScriptableStateDef;
+set scriptstring name;
+set scriptstring tagName;
+set reusable onEnterEvents;
+set count onEnterEvents onEnterEventCount;
+
+// ScriptableEventDef
+use ScriptableEventDef;
+set condition data::setModel type == SCRIPTABLE_EVENT_MODEL;
+set condition data::playFx type == SCRIPTABLE_EVENT_FX;
+set condition data::playSound type == SCRIPTABLE_EVENT_SOUND;
+set condition data::playAnim type == SCRIPTABLE_EVENT_ANIMATION;
+set condition data::doExplosion type == SCRIPTABLE_EVENT_EXPLODE;
+set condition data::healthDrain type == SCRIPTABLE_EVENT_HEALTHDRAIN;
+set condition data::physicsLaunch type == SCRIPTABLE_EVENT_PHYSICSLAUNCH;
+set condition data::lightSettings type == SCRIPTABLE_EVENT_LIGHTSETTINGS;
+set condition data::stateChange type == SCRIPTABLE_EVENT_STATECHANGE;
+
+// ScriptableEventAnimationDef
+use ScriptableEventAnimationDef;
+set string animName;
+
+// ScriptableEventLightSettingsDef
+use ScriptableEventLightSettingsDef;
+set string noteworthy;
+
+// ScriptableEventPhysicsDef
+use ScriptableEventPhysicsDef;
+set reusable model;
+
+// ScriptableEventModelDef
+use ScriptableEventModelDef;
+set reusable model;
+
+// XModel
+use XModel;
+set assetref name AssetXModel;

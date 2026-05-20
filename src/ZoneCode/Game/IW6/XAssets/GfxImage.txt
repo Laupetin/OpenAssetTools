@@ -11,10 +11,8 @@ reorder:
 
 // GfxTexture
 use GfxTexture;
-set reusable loadDef;
-set block loadDef XFILE_BLOCK_TEMP;
-
-// GfxImageLoadDef
-use GfxImageLoadDef;
-set action LoadImageData(GfxImageLoadDef, GfxImage);
-set arraysize data resourceSize;
+set condition basemap GfxImage::mapType == MAPTYPE_2D;
+set condition linemap GfxImage::mapType == MAPTYPE_1D;
+set condition map GfxImage::mapType == MAPTYPE_NONE;
+set condition volmap GfxImage::mapType == MAPTYPE_3D;
+set condition cubemap GfxImage::mapType == MAPTYPE_CUBE;

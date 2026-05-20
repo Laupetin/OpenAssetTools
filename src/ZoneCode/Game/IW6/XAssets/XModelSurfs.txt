@@ -8,8 +8,8 @@ set count surfs numsurfs;
 
 // XSurface
 use XSurface;
-set reusable vertList;
-set count vertList vertListCount;
+set reusable rigidVertLists;
+set count rigidVertLists rigidVertListCount;
 set reusable triIndices;
 set block triIndices XFILE_BLOCK_INDEX;
 set count triIndices triCount;
@@ -17,19 +17,9 @@ set reusable verts0;
 set block verts0 XFILE_BLOCK_VERTEX;
 set count verts0 XSurface::vertCount;
 reorder:
-    zoneHandle
-    vertInfo
     verts0
-    vertList
+    rigidVertLists
     triIndices;
-
-// XSurfaceVertexInfo
-use XSurfaceVertexInfo;
-set reusable vertsBlend;
-set count vertsBlend vertCount[0] 
-						+ 3 * vertCount[1] 
-						+ 5 * vertCount[2]
-						+ 7 * vertCount[3];
 
 // XRigidVertList
 set reusable XRigidVertList::collisionTree;

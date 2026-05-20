@@ -15,15 +15,31 @@ set string secondaryAliasName;
 set string chainAliasName;
 set string mixerGroup;
 set reusable soundFile;
-set reusable speakerMap;
 
 // SoundFile
 set condition SoundFile::u::loadSnd type == SAT_LOADED;
+set condition SoundFile::u::streamSnd type == SAT_STREAMED;
+set condition SoundFile::u::primedSnd type == SAT_PRIMED;
+set reusable SoundFile::u::loadSnd;
+set reusable SoundFile::u::streamSnd;
+set reusable SoundFile::u::primedSnd;
 
-// SpeakerMap
-set string SpeakerMap::name;
+// LoadedSound
+set string SoundFile::u::loadSnd::name;
+
+// XA2Sound
+use XA2Sound;
+set count seekTable seekTableSize;
+set count data loadedSize;
+set block data XFILE_BLOCK_PHYSICAL;
 
 // StreamedSound
 use StreamedSound;
-set string dir;
-set string name;
+set string filename::info::raw::dir;
+set string filename::info::raw::name;
+
+// PrimedSound
+use PrimedSound;
+set string filename::info::raw::dir;
+set string filename::info::raw::name;
+set reusable loadedPart;

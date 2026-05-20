@@ -1,0 +1,55 @@
+// =========================================
+// AnimationClass
+// =========================================
+use AnimationClass;
+set block XFILE_BLOCK_TEMP;
+set string className;
+set reusable stateMachine;
+set scriptstring animTree;
+set reusable soundNotes;
+set count soundNotes soundCount;
+set scriptstring soundNotes;
+set reusable soundNames;
+set count soundNames soundCount;
+set scriptstring soundNames;
+set reusable effectNotes;
+set count effectNotes effectCount;
+set scriptstring effectNotes;
+set reusable effectDefs;
+set count effectDefs effectCount;
+set reusable effectTags;
+set count effectTags effectCount;
+set scriptstring effectTags;
+
+// FxEffectDef
+// use FxEffectDef;
+// set assetref name AssetFx;
+
+// AnimationStateMachine
+use AnimationStateMachine;
+set scriptstring name;
+set reusable states;
+set count states stateCount;
+set reusable aimSets;
+set count aimSets aimSetCount;
+
+// AnimationState
+use AnimationState;
+set scriptstring name;
+set scriptstring notify;
+set reusable aimSet;
+set reusable animEntries;
+set count animEntries entryCount;
+set count animIndices entryCount;
+
+// AnimationEntry
+use AnimationEntry;
+set scriptstring alias;
+set scriptstring animName;
+
+// AnimationAimSet
+use AnimationAimSet;
+set scriptstring name;
+set scriptstring rootName;
+set scriptstring animName;
+

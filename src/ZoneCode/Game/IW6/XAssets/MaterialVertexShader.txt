@@ -6,7 +6,8 @@ set block XFILE_BLOCK_TEMP;
 set string name;
 
 // GfxVertexShaderLoadDef
-set count GfxVertexShaderLoadDef::program programSize;
+set count GfxVertexShaderLoadDef::cachedPart cachedPartSize;
+set count GfxVertexShaderLoadDef::physicalPart physicalPartSize;
 
 // MaterialVertexShaderProgram
 set condition MaterialVertexShaderProgram::vs never;
