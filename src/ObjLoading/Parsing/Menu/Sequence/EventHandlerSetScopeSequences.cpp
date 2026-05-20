@@ -1359,7 +1359,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             }));
         }
 
-        if (featureLevel == FeatureLevel::IW5)
+        if (featureLevel == FeatureLevel::IW5 || featureLevel == FeatureLevel::IW6)
         {
             AddSequence(SequenceGenericScriptStatement::Create({
                 create.ScriptKeyword("forceClose"),

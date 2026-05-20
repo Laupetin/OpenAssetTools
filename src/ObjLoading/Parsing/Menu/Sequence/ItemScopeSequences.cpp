@@ -73,6 +73,33 @@ class ItemScopeOperations
         CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
     };
 
+    inline static const CommonItemFeatureType IW6_FEATURE_TYPE_BY_TYPE[0x18]{
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_CHECKBOX
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EDITFIELD
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_COMBO
+        CommonItemFeatureType::LISTBOX,     // ITEM_TYPE_LISTBOX
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_MODEL
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_OWNERDRAW
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_NUMERICFIELD
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_SLIDER
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_YESNO
+        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
+        CommonItemFeatureType::ENUM_DVAR,   // ITEM_TYPE_DVARENUM
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_BIND
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_MENUMODEL
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_VALIDFILEFIELD
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_DECIMALFIELD
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_UPREDITFIELD
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_GAME_MESSAGE_WINDOW
+        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
+        CommonItemFeatureType::NONE,        // ITEM_TYPE_TEXT_SCROLL
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EMAILFIELD
+        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
+    };
+
 public:
     static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
     {
@@ -93,6 +120,7 @@ public:
             break;
 
         case FeatureLevel::IW5:
+        case FeatureLevel::IW6:
         default:
             if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW5_FEATURE_TYPE_BY_TYPE)>)
                 throw ParsingException(pos, "Invalid item type");
@@ -497,7 +525,7 @@ namespace menu::item_scope_sequences
 
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
 
-            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5 || state->m_feature_level == FeatureLevel::IW6);
 
             const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
             while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
@@ -516,7 +544,7 @@ namespace menu::item_scope_sequences
                     maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
                     alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
                 }
-                else if (state->m_feature_level == FeatureLevel::IW5)
+                else if (state->m_feature_level == FeatureLevel::IW5 || state->m_feature_level == FeatureLevel::IW6)
                 {
                     xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
                     yPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);

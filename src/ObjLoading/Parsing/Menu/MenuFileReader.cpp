@@ -45,6 +45,9 @@ void MenuFileReader::SetupDefinesProxy()
     case FeatureLevel::IW5:
         defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW5", "1"));
         break;
+    case FeatureLevel::IW6:
+        defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW6", "1"));
+        break;
     default:
         assert(false);
         break;

@@ -4,6 +4,8 @@
 #include "Game/IW4/MenuConstantsIW4.h"
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/MenuConstantsIW5.h"
+#include "Game/IW6/IW6.h"
+#include "Game/IW6/MenuConstantsIW6.h"
 #include "MenuMatcherFactory.h"
 #include "Parsing/Menu/Domain/Expression/CommonExpressionBaseFunctionCall.h"
 #include "Parsing/Menu/Domain/Expression/CommonExpressionCustomFunctionCall.h"
@@ -67,7 +69,7 @@ const std::map<std::string, size_t>& MenuExpressionMatchers::GetBaseFunctionMapF
 
         return iw4FunctionMap;
     }
-    if (featureLevel == FeatureLevel::IW5)
+    if (featureLevel == FeatureLevel::IW5 || featureLevel == FeatureLevel::IW6)
     {
         static std::map<std::string, size_t> iw5FunctionMap;
         static bool iw5FunctionMapInitialized = false;
