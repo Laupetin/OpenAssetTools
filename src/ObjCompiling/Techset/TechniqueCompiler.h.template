@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".h"
 
@@ -8,6 +8,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"

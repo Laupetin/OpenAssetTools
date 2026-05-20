@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
 
@@ -14,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "IW6"
+#define FEATURE_IW6
+#define HAS_WATER
+#define GAME_LOWER "iw6"
 #elif GAME == "T5"
 #define FEATURE_T5
 #define HAS_WATER
@@ -104,14 +108,16 @@ namespace
             con::error("Cannot load material \"{}\": {}", material.info.name, message);
         }
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
 #elif defined(FEATURE_T5) || defined(FEATURE_T6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
 #endif
         {
+#ifndef FEATURE_IW6
             for (const auto gameFlag : jMaterial.gameFlags)
                 gameFlags |= gameFlag;
+#endif
 
             return true;
         }
@@ -119,7 +125,9 @@ namespace
         static void CreateSamplerStateFromJson(const JsonSamplerState& jSamplerState, MaterialTextureDefSamplerState& samplerState)
         {
             samplerState.filter = jSamplerState.filter;
+#ifndef FEATURE_IW6
             samplerState.mipMap = jSamplerState.mipMap;
+#endif
             samplerState.clampU = jSamplerState.clampU;
             samplerState.clampV = jSamplerState.clampV;
             samplerState.clampW = jSamplerState.clampW;
@@ -138,6 +146,7 @@ namespace
             water.winddir[0] = jWater.winddir[0];
             water.winddir[1] = jWater.winddir[1];
             water.amplitude = jWater.amplitude;
+#ifndef FEATURE_IW6
             water.codeConstant[0] = jWater.codeConstant[0];
             water.codeConstant[1] = jWater.codeConstant[1];
             water.codeConstant[2] = jWater.codeConstant[2];
@@ -154,6 +163,7 @@ namespace
                     return false;
                 }
             }
+#endif
 
             const auto expectedWTermSize = water.M * water.N * sizeof(float);
             if (expectedWTermSize > 0)
@@ -286,11 +296,13 @@ namespace
                 PrintError(material, "constantDef literal must be array of size 4");
                 return false;
             }
-
+            
+#ifndef FEATURE_IW6
             constantDef.literal.x = jConstant.literal[0];
             constantDef.literal.y = jConstant.literal[1];
             constantDef.literal.z = jConstant.literal[2];
             constantDef.literal.w = jConstant.literal[3];
+#endif
 
             return true;
         }
@@ -298,6 +310,7 @@ namespace
         static bool
             CreateStateBitsTableEntryFromJson(const JsonStateBitsTableEntry& jStateBitsTableEntry, GfxStateBits& stateBitsTableEntry, const Material& material)
         {
+#ifndef FEATURE_IW6
             auto& structured = stateBitsTableEntry.loadBits.structured;
 
             structured.srcBlendRgb = jStateBitsTableEntry.srcBlendRgb;
@@ -314,7 +327,7 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_GT_0;
             }
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::LT128)
             {
                 structured.alphaTestDisabled = 0;
@@ -355,7 +368,7 @@ namespace
             structured.blendOpAlpha = jStateBitsTableEntry.blendOpAlpha;
             structured.colorWriteRgb = jStateBitsTableEntry.colorWriteRgb;
             structured.colorWriteAlpha = jStateBitsTableEntry.colorWriteAlpha;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             structured.gammaWrite = jStateBitsTableEntry.gammaWrite;
 #endif
             structured.polymodeLine = jStateBitsTableEntry.polymodeLine;
@@ -396,6 +409,7 @@ namespace
                 structured.stencilBackZFail = jStateBitsTableEntry.stencilBack->zfail;
                 structured.stencilBackFunc = jStateBitsTableEntry.stencilBack->func;
             }
+#endif
 
             return true;
         }

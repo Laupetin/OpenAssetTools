@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/VertexShaderLoader" + GAME + ".cpp"
 
@@ -14,6 +14,9 @@
 #define IS_DX9
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #define IS_DX9
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -80,6 +83,7 @@ namespace
 
             auto* vertexShader = m_memory.Alloc<MaterialVertexShader>();
             vertexShader->name = m_memory.Dup(assetName.c_str());
+#ifndef FEATURE_IW6
             vertexShader->prog.loadDef.programSize = static_cast<decltype(GfxVertexShaderLoadDef::programSize)>(
 #if defined(IS_DX9)
                 file.m_length / sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>)
@@ -87,17 +91,19 @@ namespace
                 file.m_length
 #endif
             );
+#endif
             vertexShader->prog.vs = nullptr;
 
             auto* fileBuffer = m_memory.Alloc<char>(static_cast<size_t>(file.m_length));
             file.m_stream->read(fileBuffer, file.m_length);
             if (file.m_stream->gcount() != file.m_length)
                 return AssetCreationResult::Failure();
-
+#ifndef FEATURE_IW6
 #if defined(IS_DX9)
             vertexShader->prog.loadDef.program = reinterpret_cast<decltype(GfxVertexShaderLoadDef::program)>(fileBuffer);
 #else
             vertexShader->prog.loadDef.program = fileBuffer;
+#endif
 #endif
 
             return AssetCreationResult::Success(context.ADD_ASSET_METHOD<ASSET_NAME>(assetName, vertexShader));

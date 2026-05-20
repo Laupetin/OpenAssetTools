@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".cpp"
 
@@ -15,6 +15,9 @@
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #define GAME_LOWER "iw5"
+#elif GAME == "IW6"
+#define FEATURE_IW6
+#define GAME_LOWER "iw6"
 #elif GAME == "T5"
 #define FEATURE_T5
 #define GAME_LOWER "t5"
@@ -74,7 +77,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -163,7 +166,7 @@ namespace
 
     bool GetSurfaces(const XModel& model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         if (!model.lodInfo[lod].modelSurfs || !model.lodInfo[lod].modelSurfs->surfs)
             return false;
 
@@ -189,11 +192,11 @@ namespace
         unsigned surfCount;
         if (!GetSurfaces(model, lod, surfs, surfCount))
             return true;
-
+            
+#ifndef FEATURE_IW6
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
             const auto& surface = surfs[surfIndex];
-
             if (surface.vertListCount != 1 || surface.vertInfo.vertsBlend)
                 return false;
 
@@ -209,6 +212,7 @@ namespace
 #endif
                 return false;
         }
+#endif
 
         return true;
     }
@@ -254,7 +258,8 @@ namespace
             bone.scale[0] = 1.0f;
             bone.scale[1] = 1.0f;
             bone.scale[2] = 1.0f;
-
+            
+#ifndef FEATURE_IW6
             const auto& baseMat = model.baseMat[boneNum];
             bone.globalOffset[0] = baseMat.trans.x;
             bone.globalOffset[1] = baseMat.trans.y;
@@ -265,6 +270,7 @@ namespace
                 .z = baseMat.quat.z,
                 .w = baseMat.quat.w,
             };
+#endif
 
             if (boneNum < model.numRootBones)
             {
@@ -279,7 +285,8 @@ namespace
                 bone.localOffset[0] = trans[0];
                 bone.localOffset[1] = trans[1];
                 bone.localOffset[2] = trans[2];
-
+                
+#ifndef FEATURE_IW6
                 const auto& quat = model.quats[boneNum - model.numRootBones];
                 bone.localRotation = {
                     .x = QuatInt16::ToFloat(quat.v[0]),
@@ -287,6 +294,7 @@ namespace
                     .z = QuatInt16::ToFloat(quat.v[2]),
                     .w = QuatInt16::ToFloat(quat.v[3]),
                 };
+#endif
             }
 
             out.m_bones.emplace_back(std::move(bone));
@@ -354,7 +362,8 @@ namespace
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
             const auto& surface = surfs[surfIndex];
-
+            
+#ifndef FEATURE_IW6
             for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
             {
                 const auto& v = surface.verts0[vertexIndex];
@@ -369,6 +378,7 @@ namespace
 
                 out.m_vertices.emplace_back(vertex);
             }
+#endif
         }
     }
 
@@ -380,6 +390,7 @@ namespace
             return;
 
         auto totalWeightCount = 0u;
+#ifndef FEATURE_IW6
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
             const auto& surface = surfs[surfIndex];
@@ -397,6 +408,7 @@ namespace
                 totalWeightCount += surface.vertInfo.vertCount[3] * 4;
             }
         }
+#endif
 
         weightCollection.weights.resize(totalWeightCount);
     }
@@ -415,7 +427,8 @@ namespace
 
         auto& weightCollection = out.m_bone_weight_data;
         auto weightOffset = 0u;
-
+        
+#ifndef FEATURE_IW6
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
             const auto& surface = surfs[surfIndex];
@@ -523,6 +536,7 @@ namespace
                 out.m_vertex_bone_weights.emplace_back(0, 0);
             }
         }
+#endif
     }
 
     void AddXModelFaces(XModelCommon& out, const XModel& model, const unsigned lod)
@@ -537,7 +551,8 @@ namespace
             const auto& surface = surfs[surfIndex];
             auto& object = out.m_objects[surfIndex];
             object.m_faces.reserve(surface.triCount);
-
+            
+#ifndef FEATURE_IW6
             for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
             {
                 const auto& tri = surface.triIndices[triIndex];
@@ -548,6 +563,7 @@ namespace
                 face.vertexIndex[2] = tri.i[2] + surface.baseVertIndex;
                 object.m_faces.emplace_back(face);
             }
+#endif
         }
     }
 
@@ -717,19 +733,21 @@ namespace
     
     bool IsAnimated(const XModel& model)
     {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         for (auto i = 0u; i < model.numLods; i++)
         {
             const auto& lod = model.lodInfo[i];
             if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
                 continue;
-
+                
+#ifndef FEATURE_IW6
             for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
             {
                 const auto& surf = model.lodInfo[i].modelSurfs->surfs[j];
                 if (surf.vertInfo.vertsBlend)
                     return true;
             }
+#endif
         }
 #else
         for (auto i = 0u; i < model.numsurfs; i++)
@@ -762,7 +780,8 @@ namespace
     {
         if (model.boneInfo == nullptr)
             return false;
-
+            
+#ifndef FEATURE_IW6
         for (auto i = 0u; i < model.numBones; i++)
         {
             const auto& boneInfo = model.boneInfo[i];
@@ -774,6 +793,7 @@ namespace
                 return true;
 #endif
         }
+#endif
 
         return false;
     }
@@ -831,7 +851,7 @@ namespace
         if (model.physPreset && model.physPreset->name)
             jXModel.physPreset = AssetName(model.physPreset->name);
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         if (model.physCollmap && model.physCollmap->name)
             jXModel.physCollmap = AssetName(model.physCollmap->name);
 #endif

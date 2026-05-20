@@ -73,7 +73,7 @@ namespace
             }
 
             auto* vertexDecl = m_memory.Alloc<MaterialVertexDeclaration>();
-
+            
 #ifndef IS_SUB_ASSET
             vertexDecl->name = m_memory.Dup(assetName.c_str());
 #endif

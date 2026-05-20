@@ -1,4 +1,4 @@
-#options GAME(IW4, IW5)
+#options GAME(IW4, IW5, IW6)
 
 #filename "Game/" + GAME + "/Techset/PixelShaderDumper" + GAME + ".cpp"
 
@@ -9,6 +9,9 @@
 #define IS_DX9
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #define IS_DX9
 #endif
 
@@ -36,8 +39,10 @@ namespace techset
         if (!shaderFile)
             return;
 
+#ifndef FEATURE_IW6
         shaderFile->write(reinterpret_cast<const char*>(shader.prog.loadDef.program),
                           static_cast<std::streamsize>(shader.prog.loadDef.programSize)
                               * sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>));
+#endif
     }
 } // namespace techset

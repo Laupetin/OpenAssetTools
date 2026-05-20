@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h"
 
@@ -10,6 +10,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -59,7 +61,7 @@ namespace GAME
         std::optional<std::string> rootBoneName;
         std::optional<int> collLod;
         std::optional<std::string> physPreset;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         std::optional<std::string> physCollmap;
 #elif defined(FEATURE_T5) || defined(FEATURE_T6)
         std::optional<std::string> physConstraints;
@@ -78,7 +80,7 @@ namespace GAME
         rootBoneName,
         collLod,
         physPreset,
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         physCollmap,
 #elif defined(FEATURE_T5) || defined(FEATURE_T6)
         physConstraints,

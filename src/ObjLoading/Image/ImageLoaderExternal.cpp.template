@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageLoaderExternal" + GAME + ".cpp"
 
@@ -8,6 +8,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -16,7 +18,7 @@
 
 #if defined(FEATURE_IW3)
 #define IWI_VERSION IWI_6
-#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
 #define IWI_VERSION IWI_8
 #elif defined(FEATURE_T5)
 #define IWI_VERSION IWI_13
@@ -75,10 +77,14 @@ namespace
             image->hash = Common::R_HashString(image->name, 0);
 #endif
 #ifndef FEATURE_IW5
+#ifndef FEATURE_IW6
             image->delayLoadPixels = true;
 #endif
+#endif
 
+#ifndef FEATURE_IW6
             image->noPicmip = loadingResult.m_meta.m_no_picmip;
+#endif
             image->width = static_cast<uint16_t>(texture->GetWidth());
             image->height = static_cast<uint16_t>(texture->GetHeight());
             image->depth = static_cast<uint16_t>(texture->GetDepth());
@@ -91,9 +97,13 @@ namespace
             image->streamedPartCount = 1;
 #endif
 
+#ifndef FEATURE_IW6
             image->texture.loadDef = m_memory.Alloc<GfxImageLoadDef>();
 
             return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
+#else
+			return AssetCreationResult::NoAction();
+#endif
         }
 
         MemoryManager& m_memory;

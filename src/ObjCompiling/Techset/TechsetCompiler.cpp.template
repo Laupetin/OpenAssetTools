@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetCompiler" + GAME + ".cpp"
 
@@ -12,6 +12,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -46,6 +48,26 @@ namespace
             texCount = std::max(texCount, 1uz);
             normalCount = std::max(normalCount, 1uz);
 
+            #ifdef FEATURE_IW6
+            if (texCount == 1 && normalCount == 1)
+                return MTL_WORLDVERT_T1;
+            if (texCount == 2 && normalCount == 1)
+                return MTL_WORLDVERT_T2N1;
+            if (texCount == 2 && normalCount == 2)
+                return MTL_WORLDVERT_T2N2;
+            if (texCount == 3 && normalCount == 1)
+                return MTL_WORLDVERT_T3N1;
+            if (texCount == 3 && normalCount == 2)
+                return MTL_WORLDVERT_T3N2;
+            if (texCount == 3 && normalCount == 3)
+                return MTL_WORLDVERT_T3N3;
+            if (texCount == 4 && normalCount == 1)
+                return MTL_WORLDVERT_T4N1;
+            if (texCount == 4 && normalCount == 2)
+                return MTL_WORLDVERT_T4N2;
+            if (texCount == 4 && normalCount == 3)
+                return MTL_WORLDVERT_T4N3;
+            #else
             if (texCount == 1 && normalCount == 1)
                 return MTL_WORLDVERT_TEX_1_NRM_1;
             if (texCount == 2 && normalCount == 1)
@@ -64,6 +86,7 @@ namespace
                 return MTL_WORLDVERT_TEX_4_NRM_2;
             if (texCount == 4 && normalCount == 3)
                 return MTL_WORLDVERT_TEX_4_NRM_3;
+            #endif
         }
 
         return static_cast<MaterialWorldVertexFormat>(0);

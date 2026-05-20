@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Material/MaterialJsonDumper" + GAME + ".cpp"
 
@@ -14,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "IW6"
+#define FEATURE_IW6
+#define HAS_WATER
+#define GAME_LOWER "iw6"
 #elif GAME == "T5"
 #define FEATURE_T5
 #define HAS_WATER
@@ -87,6 +91,7 @@ namespace
 
         static void CreateJsonGameFlags(JsonMaterial& jMaterial, const unsigned gameFlags)
         {
+#ifndef FEATURE_IW6
             jMaterial.gameFlags.clear();
             for (auto i = 0u; i < sizeof(gameFlags) * 8u; i++)
             {
@@ -95,12 +100,15 @@ namespace
                 if (gameFlags & flag)
                     jMaterial.gameFlags.emplace_back(flag);
             }
+#endif
         }
 
         static void CreateJsonSamplerState(JsonSamplerState& jSamplerState, const MaterialTextureDefSamplerState& samplerState)
         {
             jSamplerState.filter = static_cast<TextureFilter>(samplerState.filter);
+#ifndef FEATURE_IW6
             jSamplerState.mipMap = static_cast<SamplerStateBitsMipMap_e>(samplerState.mipMap);
+#endif
             jSamplerState.clampU = samplerState.clampU;
             jSamplerState.clampV = samplerState.clampV;
             jSamplerState.clampW = samplerState.clampW;
@@ -119,6 +127,7 @@ namespace
             jWater.winddir[0] = water.winddir[0];
             jWater.winddir[1] = water.winddir[1];
             jWater.amplitude = water.amplitude;
+#ifndef FEATURE_IW6
             jWater.codeConstant[0] = water.codeConstant[0];
             jWater.codeConstant[1] = water.codeConstant[1];
             jWater.codeConstant[2] = water.codeConstant[2];
@@ -129,6 +138,7 @@ namespace
                 const auto count = water.M * water.N;
                 jWater.h0 = base64::EncodeBase64(water.H0, sizeof(complex_s) * count);
             }
+#endif
 
             if (water.wTerm)
             {
@@ -204,13 +214,15 @@ namespace
                 jConstantDef.nameHash = constantDef.nameHash;
                 jConstantDef.nameFragment = nameFragment;
             }
-
+            
+#ifndef FEATURE_IW6
             jConstantDef.literal = {
                 constantDef.literal.x,
                 constantDef.literal.y,
                 constantDef.literal.z,
                 constantDef.literal.w,
             };
+#endif
         }
 
         static void CreateJsonStencil(JsonStencil& jStencil, const unsigned pass, const unsigned fail, const unsigned zFail, const unsigned func)
@@ -223,6 +235,7 @@ namespace
 
         static void CreateJsonStateBitsTableEntry(JsonStateBitsTableEntry& jStateBitsTableEntry, const GfxStateBits& stateBitsTableEntry)
         {
+#ifndef FEATURE_IW6
             const auto& structured = stateBitsTableEntry.loadBits.structured;
 
             jStateBitsTableEntry.srcBlendRgb = static_cast<GfxBlend>(structured.srcBlendRgb);
@@ -231,7 +244,7 @@ namespace
 
             assert(structured.alphaTestDisabled
                     || structured.alphaTest == GFXS_ALPHA_TEST_GT_0
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
                     || structured.alphaTest == GFXS_ALPHA_TEST_LT_128
 #elif defined(FEATURE_T5)
                     || structured.alphaTest == GFXS_ALPHA_TEST_GE_255
@@ -268,7 +281,7 @@ namespace
             jStateBitsTableEntry.blendOpAlpha = static_cast<GfxBlendOp>(structured.blendOpAlpha);
             jStateBitsTableEntry.colorWriteRgb = structured.colorWriteRgb;
             jStateBitsTableEntry.colorWriteAlpha = structured.colorWriteAlpha;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             jStateBitsTableEntry.gammaWrite = structured.gammaWrite;
 #endif
             jStateBitsTableEntry.polymodeLine = structured.polymodeLine;
@@ -306,6 +319,7 @@ namespace
                     jStencilBack, structured.stencilBackPass, structured.stencilBackFail, structured.stencilBackZFail, structured.stencilBackFunc);
                 jStateBitsTableEntry.stencilBack = jStencilBack;
             }
+#endif
         }
 
         void CreateJsonMaterial(JsonMaterial& jMaterial, const Material& material) const

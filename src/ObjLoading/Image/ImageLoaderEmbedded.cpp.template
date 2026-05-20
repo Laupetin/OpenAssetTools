@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageLoaderEmbedded" + GAME + ".cpp"
 
@@ -8,6 +8,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -18,7 +20,7 @@
 #define IWI_NS iwi6
 #define FLAG_CUBE IMG_FLAG_CUBEMAP
 #define FLAG_3D IMG_FLAG_VOLMAP
-#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
 #define IWI_NS iwi8
 #define FLAG_CUBE IMG_FLAG_MAPTYPE_CUBE
 #define FLAG_3D IMG_FLAG_MAPTYPE_3D
@@ -84,19 +86,26 @@ namespace
 
             auto* image = m_memory.Alloc<GfxImage>();
             image->name = m_memory.Dup(assetName.c_str());
+#ifndef FEATURE_IW6
             image->picmip.platform[0] = 0;
             image->picmip.platform[1] = 0;
             image->noPicmip = !texture->HasMipMaps();
+#endif
             image->semantic = TS_FUNCTION;
+#ifndef FEATURE_IW6
             image->track = 0;
+#endif
             image->cardMemory.platform[0] = 0;
             image->cardMemory.platform[1] = 0;
             image->width = static_cast<uint16_t>(texture->GetWidth());
             image->height = static_cast<uint16_t>(texture->GetHeight());
             image->depth = static_cast<uint16_t>(texture->GetDepth());
             image->category = IMG_CATEGORY_AUTO_GENERATED;
+
 #ifndef FEATURE_IW5
-            image->delayLoadPixels = false;
+#ifndef FEATURE_IW6
+			image->delayLoadPixels = false;
+#endif
 #endif
 
             switch (texture->GetTextureType())
@@ -124,7 +133,8 @@ namespace
             auto dataSize = 0uz;
             for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 dataSize += texture->GetSizeOfMipLevel(mipLevel) * faceCount;
-
+                
+#ifndef FEATURE_IW6
             auto* loadDef = static_cast<GfxImageLoadDef*>(m_memory.AllocRaw(offsetof(GfxImageLoadDef, data) + dataSize));
             image->texture.loadDef = loadDef;
             loadDef->levelCount = static_cast<char>(mipCount);
@@ -160,6 +170,7 @@ namespace
                     currentDataBuffer += mipSize;
                 }
             }
+#endif
 
             return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
         }

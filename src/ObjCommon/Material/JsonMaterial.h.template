@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h"
 
@@ -10,6 +10,9 @@
 #define HAS_WATER
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define HAS_WATER
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #define HAS_WATER
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -157,13 +160,14 @@ namespace GAME
         {GFXS_BLENDOP_MIN,         "min"        },
         {GFXS_BLENDOP_MAX,         "max"        },
     });
-
+    #ifndef FEATURE_IW6
     NLOHMANN_JSON_SERIALIZE_ENUM(GfxPolygonOffset_e, {
         {GFXS_POLYGON_OFFSET_0,         "offset0"        },
         {GFXS_POLYGON_OFFSET_1,         "offset1"        },
         {GFXS_POLYGON_OFFSET_2,         "offset2"        },
         {GFXS_POLYGON_OFFSET_SHADOWMAP, "offsetShadowmap"},
     });
+    #endif
 
     class JsonStateBitsTableEntry
     {
@@ -178,13 +182,15 @@ namespace GAME
         GfxBlendOp blendOpAlpha;
         bool colorWriteRgb;
         bool colorWriteAlpha;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         bool gammaWrite;
 #endif
         bool polymodeLine;
         bool depthWrite;
         JsonDepthTest depthTest;
+    #ifndef FEATURE_IW6
         GfxPolygonOffset_e polygonOffset;
+    #endif
         std::optional<JsonStencil> stencilFront;
         std::optional<JsonStencil> stencilBack;
     };
@@ -200,14 +206,16 @@ namespace GAME
         blendOpAlpha,
         colorWriteRgb,
         colorWriteAlpha,
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         gammaWrite,
 #endif
         polymodeLine,
         depthWrite,
         depthWrite,
         depthTest,
+#ifndef FEATURE_IW6
         polygonOffset,
+#endif
         stencilFront,
         stencilBack
     );
@@ -254,18 +262,22 @@ namespace GAME
         {TEXTURE_FILTER_COMPARE,  "compare" },
 #endif
     });
-
+    
+#ifndef FEATURE_IW6
     NLOHMANN_JSON_SERIALIZE_ENUM(SamplerStateBitsMipMap_e, {
         {SAMPLER_MIPMAP_ENUM_DISABLED, "disabled"},
         {SAMPLER_MIPMAP_ENUM_NEAREST,  "nearest" },
         {SAMPLER_MIPMAP_ENUM_LINEAR,   "linear"  },
     });
+#endif
 
     class JsonSamplerState
     {
     public:
         TextureFilter filter;
+#ifndef FEATURE_IW6
         SamplerStateBitsMipMap_e mipMap;
+#endif
         bool clampU;
         bool clampV;
         bool clampW;
@@ -274,7 +286,9 @@ namespace GAME
     NLOHMANN_DEFINE_TYPE_EXTENSION(
         JsonSamplerState,
         filter,
+#ifndef FEATURE_IW6
         mipMap,
+#endif
         clampU,
         clampV,
         clampW
@@ -338,12 +352,16 @@ namespace GAME
         {TS_UNUSED_3,         "unused3"        },
         {TS_UNUSED_4,         "unused4"        },
         {TS_SPECULAR_MAP,     "specularMap"    },
+#ifdef FEATURE_IW6
         {TS_UNUSED_5,         "unused5"        },
+#endif
 #ifdef FEATURE_T6
         {TS_OCCLUSION_MAP,    "occlusionMap"   },
 #endif
+#ifndef FEATURE_IW6
         {TS_UNUSED_6,         "unused6"        },
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5)
+#endif
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6) || defined(FEATURE_T5)
         {TS_WATER_MAP,        "waterMap"       },
 #endif
 #ifdef FEATURE_IW5
@@ -441,7 +459,8 @@ namespace GAME
         rows,
         columns
     );
-
+    
+#ifndef FEATURE_IW6
     NLOHMANN_JSON_SERIALIZE_ENUM(MaterialGameFlags, {
         {MTL_GAMEFLAG_1,            "1"           },
         {MTL_GAMEFLAG_2,            "2"           },
@@ -473,13 +492,14 @@ namespace GAME
 #endif
 #endif
     });
+#endif
 
     NLOHMANN_JSON_SERIALIZE_ENUM(GfxCameraRegionType, {
 #if defined(FEATURE_IW3) || defined(FEATURE_T5)
         {CAMERA_REGION_LIT,              "lit"           },
         {CAMERA_REGION_DECAL,            "decal"         },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
-#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
@@ -513,7 +533,9 @@ namespace GAME
         std::optional<std::string> thermalMaterial;
 #endif
 #endif
+#ifndef FEATURE_IW6
         std::vector<MaterialGameFlags> gameFlags;
+#endif
         unsigned sortKey;
         std::optional<JsonTextureAtlas> textureAtlas;
         unsigned surfaceTypeBits;
@@ -536,7 +558,9 @@ namespace GAME
         thermalMaterial,
 #endif
 #endif
+#ifndef FEATURE_IW6
         gameFlags,
+#endif
         sortKey,
         textureAtlas,
         surfaceTypeBits,

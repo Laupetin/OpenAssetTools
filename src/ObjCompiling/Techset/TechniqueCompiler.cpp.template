@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
 
@@ -15,6 +15,9 @@
 #define IS_DX9
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #define IS_DX9
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -70,7 +73,7 @@ namespace
             case techset::CommonShaderValueType::CODE_CONST:
                 return MTL_ARG_CODE_VERTEX_CONST;
             case techset::CommonShaderValueType::MATERIAL_SAMPLER:
-#if defined(FEATURE_IW5)
+#if defined(FEATURE_IW5) || defined(FEATURE_IW6)
                 return MTL_ARG_MATERIAL_VERTEX_SAMPLER;
 #endif
             case techset::CommonShaderValueType::CODE_SAMPLER:
@@ -106,8 +109,10 @@ namespace
         {
         case techset::CommonShaderValueType::LITERAL_CONST:
         {
+            #ifndef FEATURE_IW6
             const techset::LiteralConst literal(commonArg.m_value.literal_value);
             argValue.literalConst = context.GetZoneAssetCreationState<techset::LiteralConstsZoneState<float>>().GetAllocatedLiteral(literal)->GamePtr();
+            #endif
             break;
         }
         case techset::CommonShaderValueType::CODE_CONST:
@@ -170,6 +175,7 @@ namespace
         }
     }
 
+#ifndef FEATURE_IW6
     void ConvertVertexDecl(MaterialPass& pass, const techset::CommonVertexDeclaration& commonDecl, AssetCreationContext& context)
     {
         std::ostringstream nameStream;
@@ -188,10 +194,13 @@ namespace
         assert(vertexDeclAsset);
         pass.vertexDecl = vertexDeclAsset ? vertexDeclAsset->Asset() : nullptr;
     }
+#endif
 
     void ConvertMaterialPass(MaterialPass& pass, const techset::CommonPass& commonPass, AssetCreationContext& context, MemoryManager& memory)
     {
+#ifndef FEATURE_IW6
         ConvertVertexDecl(pass, commonPass.m_vertex_declaration, context);
+#endif
 
         if (!commonPass.m_vertex_shader.m_name.empty())
         {
@@ -219,7 +228,7 @@ namespace
         pass.customSamplerFlags = static_cast<decltype(MaterialPass::customSamplerFlags)>(commonPass.m_sampler_flags);
     }
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
     // Not sure if this is actually how this is calculated.
     // It produces identical results at least though.
     constexpr MaterialConstantSource ALLOWED_PIXEL_CONSTANTS_FOR_FLAG_200[]{
@@ -267,6 +276,7 @@ namespace
             if (pass.vertexDecl->hasOptionalSource)
                 return true;
 #else
+    #ifndef FEATURE_IW6
             if (pass.vertexDecl->name && pass.vertexDecl->name[0] == ',')
             {
                 if (techset::HasOptionalSourceByName(&pass.vertexDecl->name[1], commonRoutingInfos).value_or(false))
@@ -274,6 +284,7 @@ namespace
             }
             else if (pass.vertexDecl->hasOptionalSource)
                 return true;
+    #endif
 #endif
         }
 
@@ -288,7 +299,7 @@ namespace
 #if defined(FEATURE_IW3)
         if (lowerTechniqueName == "zprepass")
             technique.flags |= MTL_TECHFLAG_ZPREPASS;
-#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass")
@@ -384,11 +395,12 @@ namespace
 
         std::optional<techset::CommonTechniqueShaderBin> LoadVertexShader(const std::string& name) override
         {
-#if defined(SHADERS_ARE_SUBASSETS)
+#ifndef FEATURE_IW6
+    #if defined(SHADERS_ARE_SUBASSETS)
             auto* shaderAsset = m_context.LoadSubAsset<SubAssetVertexShader>(name);
-#else
+    #else
             auto* shaderAsset = m_context.ForceLoadDependency<AssetVertexShader>(name);
-#endif
+    #endif
             if (!shaderAsset)
                 return std::nullopt;
 
@@ -399,22 +411,27 @@ namespace
 
             return techset::CommonTechniqueShaderBin{
                 .m_shader_bin = shader->prog.loadDef.program,
-#if defined(IS_DX9)
+    #if defined(IS_DX9)
                 .m_shader_bin_size =
                     static_cast<size_t>(shader->prog.loadDef.programSize) * sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>),
-#else
+    #else
                 .m_shader_bin_size = shader->prog.loadDef.programSize,
-#endif
+    #endif
             };
+#endif
+#ifdef FEATURE_IW6
+            return std::nullopt;
+#endif
         }
 
         std::optional<techset::CommonTechniqueShaderBin> LoadPixelShader(const std::string& name) override
         {
-#if defined(SHADERS_ARE_SUBASSETS)
+#ifndef FEATURE_IW6
+    #if defined(SHADERS_ARE_SUBASSETS)
             auto* shaderAsset = m_context.LoadSubAsset<SubAssetPixelShader>(name);
-#else
+    #else
             auto* shaderAsset = m_context.ForceLoadDependency<AssetPixelShader>(name);
-#endif
+    #endif
             if (!shaderAsset)
                 return std::nullopt;
 
@@ -425,13 +442,17 @@ namespace
 
             return techset::CommonTechniqueShaderBin{
                 .m_shader_bin = shader->prog.loadDef.program,
-#if defined(IS_DX9)
+    #if defined(IS_DX9)
                 .m_shader_bin_size =
                     static_cast<size_t>(shader->prog.loadDef.programSize) * sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>),
-#else
+    #else
                 .m_shader_bin_size = shader->prog.loadDef.programSize,
-#endif
+    #endif
             };
+#endif
+#ifdef FEATURE_IW6
+            return std::nullopt;
+#endif
         }
 
     private:

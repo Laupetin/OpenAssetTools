@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h"
 
@@ -10,6 +10,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -49,7 +51,7 @@ namespace GAME
         "right_foot",
         "left_foot",
         "gun",
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6) || defined(FEATURE_T6)
         "shield",
 #endif
     };

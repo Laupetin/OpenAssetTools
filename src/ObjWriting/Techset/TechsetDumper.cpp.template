@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
 
@@ -15,6 +15,9 @@
 #define IS_DX9
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #define IS_DX9
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -110,7 +113,7 @@ namespace
     {
         std::vector<techset::CommonStreamRouting> commonRouting;
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) 
         if (vertexDecl && vertexDecl->name && vertexDecl->name[0] != ',')
 #else
         if (vertexDecl)
@@ -213,7 +216,7 @@ namespace
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
 
-#if defined(FEATURE_IW5)
+#if defined(FEATURE_IW5) || defined(FEATURE_IW6)
         case MTL_ARG_MATERIAL_VERTEX_SAMPLER:
 #endif
         case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
@@ -237,7 +240,8 @@ namespace
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
-
+        
+#ifndef FEATURE_IW6
         case MTL_ARG_LITERAL_VERTEX_CONST:
         case MTL_ARG_LITERAL_PIXEL_CONST:
         {
@@ -267,6 +271,7 @@ namespace
 
             return techset::CommonShaderArg(commonArgumentTypes[arg.type], destination, value);
         }
+#endif
 
         default:
             assert(false);
@@ -276,7 +281,7 @@ namespace
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialVertexShader* vertexShader)
     {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         if (vertexShader && vertexShader->name && vertexShader->name[0] == ',')
         {
             auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::GAME)->GetAsset<AssetVertexShader>(&vertexShader->name[1]);
@@ -291,7 +296,8 @@ namespace
 
         if (vertexShader->name)
             result.m_name = vertexShader->name;
-
+            
+#ifndef FEATURE_IW6
         if (vertexShader->prog.loadDef.program)
         {
             result.m_bin = techset::CommonTechniqueShaderBin{
@@ -303,13 +309,14 @@ namespace
 #endif
             };
         }
+#endif
 
         return result;
     }
 
     techset::CommonTechniqueShader ConvertToCommonShader(const MaterialPixelShader* pixelShader)
     {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
         if (pixelShader && pixelShader->name && pixelShader->name[0] == ',')
         {
             auto* globalAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(GameId::GAME)->GetAsset<AssetPixelShader>(&pixelShader->name[1]);
@@ -324,7 +331,8 @@ namespace
 
         if (pixelShader->name)
             result.m_name = pixelShader->name;
-
+            
+#ifndef FEATURE_IW6
         if (pixelShader->prog.loadDef.program)
         {
             result.m_bin = techset::CommonTechniqueShaderBin{
@@ -336,6 +344,7 @@ namespace
 #endif
             };
         }
+#endif
 
         return result;
     }

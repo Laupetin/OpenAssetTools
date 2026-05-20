@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, IW6, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".cpp"
 
@@ -13,6 +13,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "IW6"
+#define FEATURE_IW6
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -200,6 +202,7 @@ namespace
 
         static void ApplyBasePose(DObjAnimMat& baseMat, const XModelBone& bone)
         {
+#ifndef FEATURE_IW6
             baseMat.trans.x = bone.globalOffset[0];
             baseMat.trans.y = bone.globalOffset[1];
             baseMat.trans.z = bone.globalOffset[2];
@@ -218,6 +221,7 @@ namespace
             {
                 baseMat.transWeight = 2.0f / quatNormSquared;
             }
+#endif
         }
 
         static void CalculateBoneBounds(XBoneInfo& info, const unsigned boneIndex, const XModelCommon& common)
@@ -225,7 +229,7 @@ namespace
             if (common.m_bone_weight_data.weights.empty())
                 return;
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             vec3_t minCoordinate, maxCoordinate;
             auto& offset = info.bounds.midPoint;
 #else
@@ -240,10 +244,12 @@ namespace
             maxCoordinate.x = 0.0f;
             maxCoordinate.y = 0.0f;
             maxCoordinate.z = 0.0f;
+#ifndef FEATURE_IW6
             offset.x = 0.0f;
             offset.y = 0.0f;
             offset.z = 0.0f;
             info.radiusSquared = 0.0f;
+#endif
 
             const auto vertexCount = common.m_vertex_bone_weights.size();
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
@@ -277,11 +283,13 @@ namespace
             info.bounds.halfSize.z = halfSizeEigen.z();
 #endif
 
+#ifndef FEATURE_IW6
             offset.x = boundsCenter.x();
             offset.y = boundsCenter.y();
             offset.z = boundsCenter.z();
 
             info.radiusSquared = halfSizeEigen.squaredNorm();
+#endif
         }
         
         bool ApplyCommonBonesToXModel(
@@ -329,7 +337,9 @@ namespace
 #else
                 xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 3u);
 #endif
+#ifndef FEATURE_IW6
                 xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
+#endif
             }
             else
             {
@@ -365,12 +375,14 @@ namespace
                     trans[0] = bone.localOffset[0];
                     trans[1] = bone.localOffset[1];
                     trans[2] = bone.localOffset[2];
-
+                    
+#ifndef FEATURE_IW6
                     auto& quats = xmodel.quats[nonRootIndex];
                     quats.v[0] = QuatInt16::ToInt16(bone.localRotation.x);
                     quats.v[1] = QuatInt16::ToInt16(bone.localRotation.y);
                     quats.v[2] = QuatInt16::ToInt16(bone.localRotation.z);
                     quats.v[3] = QuatInt16::ToInt16(bone.localRotation.w);
+#endif
                 }
             }
 
@@ -430,10 +442,12 @@ namespace
             CreateVertex(GfxPackedVertex& vertex, const XModelVertex& commonVertex, const std::array<float, 3>& tangent, const std::array<float, 3>& binormal)
         {
             const float tangentPlainArray[]{tangent[0], tangent[1], tangent[2]};
-
+            
+#ifndef FEATURE_IW6
             vertex.xyz.x = commonVertex.coordinates[0];
             vertex.xyz.y = commonVertex.coordinates[1];
             vertex.xyz.z = commonVertex.coordinates[2];
+#endif
             vertex.binormalSign = binormal[0] > 0.0f ? 1.0f : -1.0f;
             vertex.color = Common::Vec4PackGfxColor(commonVertex.color);
             vertex.texCoord = Common::Vec2PackTexCoords(commonVertex.uv);
@@ -451,6 +465,7 @@ namespace
         {
             std::vector<std::optional<size_t>> rigidBoneIndexForTri;
             rigidBoneIndexForTri.reserve(surface.triCount);
+#ifndef FEATURE_IW6
             for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
             {
                 const auto& tri = surface.triIndices[triIndex];
@@ -464,6 +479,7 @@ namespace
                 else
                     rigidBoneIndexForTri.emplace_back(std::nullopt);
             }
+#endif
 
             return rigidBoneIndexForTri;
         }
@@ -517,7 +533,9 @@ namespace
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 XRigidVertList boneVertList{};
+#ifndef FEATURE_IW6
                 boneVertList.boneOffset = static_cast<uint16_t>(boneIndex * sizeof(DObjSkelMat));
+#endif
 
                 auto currentVertexHead = currentVertexTail;
                 while (currentVertexHead < vertexCount && GetRigidBoneForVertex(xmodelToCommonVertexIndexLookup[currentVertexHead], common) == boneIndex)
@@ -542,7 +560,8 @@ namespace
                     AddBoneToXSurfacePartBits(surface, boneIndex);
                 }
             }
-
+            
+#ifndef FEATURE_IW6
             if (!vertLists.empty())
             {
                 surface.vertListCount = static_cast<unsigned char>(vertLists.size());
@@ -550,6 +569,7 @@ namespace
 
                 memcpy(surface.vertList, vertLists.data(), sizeof(XRigidVertList) * surface.vertListCount);
             }
+#endif
         }
 
         static uint16_t BoneWeight16(const float value)
@@ -564,6 +584,7 @@ namespace
             auto vertexIndex = 0uz;
 
             // Reserve the minimum amount of data we know will follow
+#ifndef FEATURE_IW6
             vertsBlendData.reserve(vertexCount);
             while (vertexIndex < vertexCount)
             {
@@ -656,6 +677,7 @@ namespace
 
             surface.vertInfo.vertsBlend = m_memory.Alloc<uint16_t>(vertsBlendData.size());
             std::memcpy(surface.vertInfo.vertsBlend, vertsBlendData.data(), sizeof(uint16_t) * vertsBlendData.size());
+#endif
         }
 
         static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
@@ -685,7 +707,8 @@ namespace
 
                                   return false;
                               });
-
+                              
+#ifndef FEATURE_IW6
             std::vector<XSurfaceTri> preSortTris(surface.triCount);
             std::memcpy(preSortTris.data(), surface.triIndices, sizeof(XSurfaceTri) * surface.triCount);
 
@@ -707,11 +730,13 @@ namespace
                 entry = vertexIndices[entry];
 
             vertexIndices = std::move(reorderLookup);
+#endif
         }
 
         bool CreateXSurface(
             XSurface& surface, const XModelObject& commonObject, const XModelCommon& common, const TangentData& tangentData, unsigned& vertexOffset)
-        {
+        {         
+#ifndef FEATURE_IW6
             std::vector<size_t> xmodelToCommonVertexIndexLookup;
             std::unordered_map<size_t, size_t> usedVertices;
 
@@ -808,7 +833,8 @@ namespace
                     return false;
                 }
             }
-
+            
+#endif
             return true;
         }
 
@@ -930,7 +956,7 @@ namespace
 
         static void CalculateModelBounds(XModel& xmodel)
         {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             if (!xmodel.lodInfo[0].modelSurfs || !xmodel.lodInfo[0].modelSurfs->surfs)
                 return;
 
@@ -946,7 +972,7 @@ namespace
 
             for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
             {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
                 const auto& surface = surfs[surfaceIndex];
 #else
                 const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
@@ -954,7 +980,8 @@ namespace
 
                 if (!surface.verts0)
                     continue;
-
+                    
+#ifndef FEATURE_IW6
                 for (auto vertIndex = 0u; vertIndex < surface.vertCount; vertIndex++)
                 {
                     const auto& vertex = surface.verts0[vertIndex];
@@ -966,6 +993,7 @@ namespace
                     maxCoordinate.y = std::max(maxCoordinate.y, vertex.xyz.v[1]);
                     maxCoordinate.z = std::max(maxCoordinate.z, vertex.xyz.v[2]);
                 }
+#endif
             }
 
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
@@ -1076,7 +1104,7 @@ namespace
                 xmodel.physPreset = nullptr;
             }
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
             if (jXModel.physCollmap)
             {
                 auto* physCollmap = context.LoadDependency<AssetPhysCollMap>(jXModel.physCollmap.value());
