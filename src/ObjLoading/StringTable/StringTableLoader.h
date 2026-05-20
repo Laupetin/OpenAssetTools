@@ -87,7 +87,7 @@ namespace string_table
     };
 
     // =================================
-    // V2: IW4, IW5
+    // V2: IW4, IW5, IW6
     // - Cells are a struct and have a hash
     // =================================
     template<typename StringTableType, int (*HashFunc)(const char*)>
