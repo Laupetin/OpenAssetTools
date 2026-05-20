@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-using namespace IW5;
+using namespace IW6;
 
 Actions_XModel::Actions_XModel(Zone& zone)
     : AssetLoadingActions(zone)

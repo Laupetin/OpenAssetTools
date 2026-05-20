@@ -11,7 +11,7 @@ asset XModel AssetXModel;
 asset Material AssetMaterial;
 asset MaterialVertexShader AssetVertexShader;
 asset MaterialPixelShader AssetPixelShader;
-asset MaterialVertexDeclaration AssetVertexDecl;
+//asset MaterialVertexDeclaration AssetVertexDecl;
 asset MaterialTechniqueSet AssetTechniqueSet;
 asset GfxImage AssetImage;
 asset snd_alias_list_t AssetSound;
@@ -31,7 +31,7 @@ asset GfxLightDef AssetLightDef;
 asset Font_s AssetFont;
 asset MenuList AssetMenuList;
 asset menuDef_t AssetMenu;
-asset AnimationClass AssetAnimClass;
+asset AnimationClass AssetAnimationClass;
 asset LocalizeEntry AssetLocalize;
 asset WeaponAttachment AssetAttachment;
 asset WeaponCompleteDef AssetWeapon;
@@ -46,6 +46,12 @@ asset StructuredDataDefSet AssetStructuredDataDef;
 asset TracerDef AssetTracer;
 asset VehicleDef AssetVehicle;
 asset AddonMapEnts AssetAddonMapEnts;
+asset NetConstStrings AssetNetConstStrings;
+asset ReverbPreset AssetReverbPreset;
+asset LuaFile AssetLuaFile;
+asset ScriptableDef AssetScriptable;
+asset EquipmentSoundTable AssetEquipmentSoundTable;
+asset DopplerPreset AssetDopplerPreset;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -66,7 +72,7 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/Material.txt"
 #include "XAssets/MaterialPixelShader.txt"
 #include "XAssets/MaterialVertexShader.txt"
-#include "XAssets/MaterialVertexDeclaration.txt"
+//#include "XAssets/MaterialVertexDeclaration.txt"
 #include "XAssets/MaterialTechniqueSet.txt"
 #include "XAssets/GfxImage.txt"
 #include "XAssets/snd_alias_list_t.txt"
@@ -84,6 +90,7 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/Font_s.txt"
 #include "XAssets/MenuList.txt"
 #include "XAssets/menuDef_t.txt"
+#include "XAssets/AnimationClass.txt"
 #include "XAssets/LocalizeEntry.txt"
 #include "XAssets/WeaponAttachment.txt"
 #include "XAssets/WeaponCompleteDef.txt"
@@ -98,4 +105,10 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/TracerDef.txt"
 #include "XAssets/VehicleDef.txt"
 #include "XAssets/AddonMapEnts.txt"
+#include "XAssets/NetConstStrings.txt"
+#include "XAssets/ReverbPreset.txt"
+#include "XAssets/LuaFile.txt"
+#include "XAssets/ScriptableDef.txt"
+#include "XAssets/EquipmentSoundTable.txt"
+#include "XAssets/DopplerPreset.txt"
 

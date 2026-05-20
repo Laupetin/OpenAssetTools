@@ -22,3 +22,4 @@ use water_t;
 set count H0X M;
 set count H0Y N;
 set count wTerm N * M;
+set reusable image;

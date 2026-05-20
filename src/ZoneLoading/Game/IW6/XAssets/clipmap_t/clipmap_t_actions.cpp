@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstring>
 
-using namespace IW5;
+using namespace IW6;
 
 Actions_clipMap_t::Actions_clipMap_t(Zone& zone)
     : AssetLoadingActions(zone)

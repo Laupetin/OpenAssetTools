@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Game/IW5/IW5.h"
+#include "Game/IW6/IW6.h"
 #include "Loading/AssetLoadingActions.h"
 
-namespace IW5
+namespace IW6
 {
     class Actions_XModel final : public AssetLoadingActions
     {
@@ -12,4 +12,4 @@ namespace IW5
 
         void SetModelSurfs(XModelLodInfo* lodInfo, XModelSurfs* modelSurfs) const;
     };
-} // namespace IW5
+} // namespace IW6

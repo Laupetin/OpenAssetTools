@@ -2,20 +2,21 @@
 
 #include <cstring>
 
-using namespace IW5;
+using namespace IW6;
 
 Actions_LoadedSound::Actions_LoadedSound(Zone& zone)
     : AssetLoadingActions(zone)
 {
 }
 
-void Actions_LoadedSound::SetSoundData(MssSound* sound) const
+void Actions_LoadedSound::SetSoundData(XA2Sound* sound) const
 {
-    if (sound->info.data_len > 0)
+    
+    if (sound->format.dataByteCount > 0)
     {
-        char* tempData = sound->data;
-        sound->data = m_zone.Memory().Alloc<char>(sound->info.data_len);
-        memcpy(sound->data, tempData, sound->info.data_len);
+        unsigned char* tempData = sound->data;
+        sound->data = m_zone.Memory().Alloc<unsigned char>(sound->loadedSize);
+        memcpy(sound->data, tempData, sound->loadedSize);
     }
     else
     {

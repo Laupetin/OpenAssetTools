@@ -1,0 +1,76 @@
+#include "MenuDumperIW6.h"
+
+#include "MenuWriterIW6.h"
+#include "ObjWriting.h"
+
+#include <filesystem>
+#include <format>
+#include <string>
+
+namespace fs = std::filesystem;
+
+using namespace IW6;
+
+namespace
+{
+    const MenuList* GetParentMenuList(const XAssetInfo<menuDef_t>& asset)
+    {
+        const auto* menu = asset.Asset();
+        auto zoneMenuListPool = asset.m_zone->m_pools.PoolAssets<AssetMenuList>();
+        for (const auto* menuList : zoneMenuListPool)
+        {
+            const auto* menuListAsset = menuList->Asset();
+
+            for (auto menuIndex = 0; menuIndex < menuListAsset->menuCount; menuIndex++)
+            {
+                if (menuListAsset->menus[menuIndex] == menu)
+                    return menuListAsset;
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::string GetPathForMenu(const XAssetInfo<menuDef_t>& asset)
+    {
+        const auto* list = GetParentMenuList(asset);
+
+        if (!list)
+            return std::format("ui_mp/{}.menu", asset.Asset()->window.name);
+
+        const fs::path p(list->name);
+        std::string parentPath;
+        if (p.has_parent_path())
+            parentPath = p.parent_path().string() + "/";
+
+        return std::format("{}{}.menu", parentPath, asset.Asset()->window.name);
+    }
+} // namespace
+
+namespace menu
+{
+    void MenuDumperIW6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
+    {
+        const auto* menu = asset.Asset();
+        const auto menuFilePath = GetPathForMenu(asset);
+
+        if (ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
+        {
+            // Don't dump menu file separately if the name matches the menu list
+            const auto* menuListParent = GetParentMenuList(asset);
+            if (menuListParent && menuFilePath == menuListParent->name)
+                return;
+        }
+
+        const auto assetFile = context.OpenAssetFile(menuFilePath);
+
+        if (!assetFile)
+            return;
+
+        auto menuWriter = CreateMenuWriterIW6(*assetFile);
+
+        menuWriter->Start();
+        menuWriter->WriteMenu(*menu);
+        menuWriter->End();
+    }
+} // namespace menu

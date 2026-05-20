@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Game/IW5/IW5.h"
+#include "Game/IW6/IW6.h"
 #include "Loading/AssetLoadingActions.h"
 
-namespace IW5
+namespace IW6
 {
     class Actions_GfxImage final : public AssetLoadingActions
     {
@@ -11,6 +11,6 @@ namespace IW5
         explicit Actions_GfxImage(Zone& zone);
 
         void OnImageLoaded(GfxImage* image) const;
-        void LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const;
+        //void LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const;
     };
-} // namespace IW5
+} // namespace IW6
