@@ -119,7 +119,7 @@ namespace IW6
         WeaponAttachment* attachment;
         WeaponCompleteDef* weapon;
         SndDriverGlobals* sndDriverGlobals;
-        const FxEffectDef* fx;
+        FxEffectDef* fx;
         FxImpactTable* impactFx;
         SurfaceFxTable* surfaceFx;
         RawFile* rawfile;
@@ -139,14 +139,65 @@ namespace IW6
         void* data;
     };
 
-    enum PhysPresetScaling : __int32
+    union vec2_t
+    {
+        float v[2];
+
+        struct
+        {
+            float x;
+            float y;
+        };
+    };
+
+    union vec3_t
+    {
+        struct
+        {
+            float x;
+            float y;
+            float z;
+        };
+
+        float v[3];
+    };
+
+    union vec4_t
+    {
+        float v[4];
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+    };
+
+    typedef tdef_align32(16) char raw_byte16;
+    typedef tdef_align32(16) float raw_float16;
+    typedef tdef_align32(128) unsigned int raw_uint128;
+    typedef unsigned char raw_byte;
+    typedef unsigned int raw_uint;
+    typedef unsigned short r_index_t;
+
+    enum PhysPresetScaling : int
     {
         PHYSPRESET_SCALING_LINEAR = 0x0,
         PHYSPRESET_SCALING_QUADRATIC = 0x1,
         PHYSPRESET_SCALING_COUNT = 0x2,
     };
 
-    const struct __declspec(align(4)) PhysPreset
+    struct PhysPreset
     {
         const char* name;
         int type;
@@ -170,53 +221,74 @@ namespace IW6
         bool perSurfaceSndAlias;
     };
 
-    /* 11151 */
+    struct PhysPresetInfo
+    {
+        float mass;
+        float bounce;
+        float friction;
+        int isFrictionInfinity;
+        float bulletForceScale;
+        float explosiveForceScale;
+        const char* sndAliasPrefix;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        float minMomentum;
+        float maxMomentum;
+        float minVolume;
+        float maxVolume;
+        float minPitch;
+        float maxPitch;
+        PhysPresetScaling volumeType;
+        PhysPresetScaling pitchType;
+        bool tempDefaultToCylinder;
+        bool perSurfaceSndAlias;
+    };
+
+    struct Bounds
+    {
+        vec3_t midPoint;
+        vec3_t halfSize;
+    };
+
     struct cplane_s
     {
         float normal[3];
         float dist;
-        unsigned __int8 type;
-        unsigned __int8 pad[3];
+        unsigned char type;
+        unsigned char pad[3];
     };
 
-    /* 11152 */
     struct cbrushside_t
     {
         cplane_s* plane;
-        unsigned __int16 materialNum;
-        unsigned __int8 firstAdjacentSideOffset;
-        unsigned __int8 edgeCount;
+        unsigned short materialNum;
+        unsigned char firstAdjacentSideOffset;
+        unsigned char edgeCount;
     };
 
-    /* 11153 */
-    struct cbrush_t
+    typedef unsigned char cbrushedge_t;
+
+    struct cbrushWrapper_t
     {
-        unsigned __int16 numsides;
-        unsigned __int16 glassPieceIndex;
+        unsigned short numsides;
+        unsigned short glassPieceIndex;
         cbrushside_t* sides;
-        unsigned __int8* baseAdjacentSide;
-        __int16 axialMaterialNum[2][3];
-        unsigned __int8 firstAdjacentSideOffsets[2][3];
-        unsigned __int8 edgeCount[2][3];
+        cbrushedge_t* baseAdjacentSide;
+        short axialMaterialNum[2][3];
+        unsigned char firstAdjacentSideOffsets[2][3];
+        unsigned char edgeCount[2][3];
     };
 
-    /* 10956 */
-    struct Bounds
-    {
-        float midPoint[3];
-        float halfSize[3];
-    };
+    typedef cbrushWrapper_t cbrush_t;
 
-    /* 11154 */
     struct BrushWrapper
     {
         Bounds bounds;
-        cbrush_t brush;
+        cbrushWrapper_t brush;
         int totalEdgeCount;
         cplane_s* planes;
     };
 
-    /* 11155 */
     struct PhysGeomInfo
     {
         BrushWrapper* brushWrapper;
@@ -225,7 +297,6 @@ namespace IW6
         Bounds bounds;
     };
 
-    /* 11156 */
     struct PhysMass
     {
         float centerOfMass[3];
@@ -233,7 +304,6 @@ namespace IW6
         float productsOfInertia[3];
     };
 
-    /* 11157 */
     struct PhysCollmap
     {
         const char* name;
@@ -243,43 +313,35 @@ namespace IW6
         Bounds bounds;
     };
 
-    /* 11362 */
     union XAnimIndices
     {
-        unsigned __int8* _1;
-        unsigned __int16* _2;
+        unsigned char* _1;
+        unsigned short* _2;
         void* data;
     };
 
-    /* 13770 */
-    struct scr_string_t_int
-    {
-        unsigned int value;
-    };
-
-    /* 11363 */
     struct XAnimNotifyInfo
     {
         ScriptString name;
         float time;
     };
 
-    /* 11364 */
+    typedef unsigned char ByteVec[3];
+    typedef tdef_align32(4) unsigned short UShortVec[3];
+
     union XAnimDynamicFrames
     {
-        unsigned __int8 (*_1)[3];
-        unsigned __int16 (*_2)[3];
+        ByteVec* _1;
+        UShortVec* _2;
     };
 
-    /* 11365 */
     union XAnimDynamicIndices
     {
-        unsigned __int8 _1[1];
-        unsigned __int16 _2[1];
+        uint8_t _1[1];
+        uint16_t _2[1];
     };
 
-    /* 11366 */
-    struct __declspec(align(4)) XAnimPartTransFrames
+    struct type_align32(4) XAnimPartTransFrames
     {
         float mins[3];
         float size[3];
@@ -287,64 +349,65 @@ namespace IW6
         XAnimDynamicIndices indices;
     };
 
-    /* 11367 */
     union XAnimPartTransData
     {
         XAnimPartTransFrames frames;
-        float frame0[3];
+        vec3_t frame0;
     };
 
-    /* 11368 */
     struct XAnimPartTrans
     {
-        unsigned __int16 size;
-        unsigned __int8 smallTrans;
+        unsigned short size;
+        unsigned char smallTrans;
         XAnimPartTransData u;
     };
 
-    /* 11369 */
-    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames2
+    struct type_align(4) XQuat2
     {
-        __int16 (*frames)[2];
+        int16_t value[2];
+    };
+
+    struct type_align32(4) XAnimDeltaPartQuatDataFrames2
+    {
+        XQuat2* frames;
         XAnimDynamicIndices indices;
     };
 
-    /* 11370 */
     union XAnimDeltaPartQuatData2
     {
         XAnimDeltaPartQuatDataFrames2 frames;
-        __int16 frame0[2];
+        XQuat2 frame0;
     };
 
-    /* 11371 */
     struct XAnimDeltaPartQuat2
     {
-        unsigned __int16 size;
+        unsigned short size;
         XAnimDeltaPartQuatData2 u;
     };
 
-    /* 11372 */
-    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames
+    struct type_align(4) XQuat
     {
-        __int16 (*frames)[4];
+        int16_t value[4];
+    };
+
+    struct XAnimDeltaPartQuatDataFrames
+    {
+        XQuat* frames;
         XAnimDynamicIndices indices;
     };
 
-    /* 11373 */
     union XAnimDeltaPartQuatData
     {
         XAnimDeltaPartQuatDataFrames frames;
-        __int16 frame0[4];
+        XQuat frame0;
     };
 
-    /* 11374 */
     struct XAnimDeltaPartQuat
     {
-        unsigned __int16 size;
+        uint16_t size;
         XAnimDeltaPartQuatData u;
     };
 
-    /* 11375 */
     struct XAnimDeltaPart
     {
         XAnimPartTrans* trans;
@@ -352,56 +415,54 @@ namespace IW6
         XAnimDeltaPartQuat* quat;
     };
 
-    /* 11376 */
     struct XAnimParts
     {
         const char* name;
-        unsigned __int16 dataByteCount;
-        unsigned __int16 dataShortCount;
-        unsigned __int16 dataIntCount;
-        unsigned __int16 randomDataByteCount;
-        unsigned __int16 randomDataIntCount;
-        unsigned __int16 numframes;
-        unsigned __int8 flags;
-        unsigned __int8 boneCount[12];
-        unsigned __int8 notifyCount;
-        unsigned __int8 assetType;
-        unsigned __int8 ikType;
+        unsigned short dataByteCount;
+        unsigned short dataShortCount;
+        unsigned short dataIntCount;
+        unsigned short randomDataByteCount;
+        unsigned short randomDataIntCount;
+        unsigned short numframes;
+        unsigned char flags;
+        unsigned char boneCount[12];
+        unsigned char notifyCount;
+        unsigned char assetType;
+        unsigned char ikType;
         unsigned int randomDataShortCount;
         unsigned int indexCount;
         float framerate;
         float frequency;
         ScriptString* names;
-        unsigned __int8* dataByte;
-        __int16* dataShort;
+        unsigned char* dataByte;
+        short* dataShort;
         int* dataInt;
-        __int16* randomDataShort;
-        unsigned __int8* randomDataByte;
+        short* randomDataShort;
+        unsigned char* randomDataByte;
         int* randomDataInt;
         XAnimIndices indices;
         XAnimNotifyInfo* notify;
         XAnimDeltaPart* deltaPart;
     };
 
-    /* 11140 */
     struct XSurfaceCollisionAabb
     {
-        unsigned __int16 mins[3];
-        unsigned __int16 maxs[3];
+        unsigned short mins[3];
+        unsigned short maxs[3];
     };
 
     /* 11141 */
     struct XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
-        unsigned __int16 childBeginIndex;
-        unsigned __int16 childCount;
+        unsigned short childBeginIndex;
+        unsigned short childCount;
     };
 
     /* 11142 */
     struct XSurfaceCollisionLeaf
     {
-        unsigned __int16 triangleBeginIndex;
+        unsigned short triangleBeginIndex;
     };
 
     /* 11143 */
@@ -418,10 +479,10 @@ namespace IW6
     /* 11144 */
     struct XRigidVertList
     {
-        unsigned __int16 boneOffset;
-        unsigned __int16 vertCount;
-        unsigned __int16 triOffset;
-        unsigned __int16 triCount;
+        unsigned short boneOffset;
+        unsigned short vertCount;
+        unsigned short triOffset;
+        unsigned short triCount;
         XSurfaceCollisionTree* collisionTree;
     };
 
@@ -440,8 +501,8 @@ namespace IW6
     /* 11132 */
     struct GfxQuantizedNoColorVertex
     {
-        __int16 xyz[3];
-        __int16 binormalSign;
+        short xyz[3];
+        short binormalSign;
         PackedUnitVec normal;
         PackedUnitVec tangent;
         PackedTexCoords texCoord;
@@ -457,8 +518,8 @@ namespace IW6
     /* 11134 */
     struct GfxQuantizedNoColorMotionVertex
     {
-        __int16 xyz[3];
-        __int16 binormalSignAndHeight;
+        short xyz[3];
+        short binormalSignAndHeight;
         PackedUnitVec normal;
         PackedUnitVec tangent;
         PackedTexCoords texCoord;
@@ -468,8 +529,8 @@ namespace IW6
     /* 11135 */
     struct GfxQuantizedVertex
     {
-        __int16 xyz[3];
-        __int16 binormalSign;
+        short xyz[3];
+        short binormalSign;
         PackedUnitVec normal;
         PackedUnitVec tangent;
         PackedTexCoords texCoord;
@@ -479,8 +540,8 @@ namespace IW6
     /* 11136 */
     struct GfxQuantizedMotionVertex
     {
-        __int16 xyz[3];
-        __int16 binormalSignAndHeight;
+        short xyz[3];
+        short binormalSignAndHeight;
         PackedUnitVec normal;
         PackedUnitVec tangent;
         PackedTexCoords texCoord;
@@ -533,23 +594,16 @@ namespace IW6
     };
 
     /* 3564 */
-    struct $E41E24A1CD47CDFA361AA9F99910948B
+    struct GPUVERTEX_FETCH_CONSTANT
     {
-        unsigned __int32 Type : 2;
-        unsigned __int32 BaseAddress : 30;
-        unsigned __int32 Endian : 2;
-        unsigned __int32 Size : 24;
-        unsigned __int32 AddressClamp : 1;
-        unsigned __int32 : 1;
-        unsigned __int32 RequestSize : 2;
-        unsigned __int32 ClampDisable : 2;
-    };
-
-    /* 3565 */
-    union GPUVERTEX_FETCH_CONSTANT
-    {
-        $E41E24A1CD47CDFA361AA9F99910948B __s0;
-        unsigned int dword[2];
+        unsigned int Type : 2;
+        unsigned int BaseAddress : 30;
+        unsigned int Endian : 2;
+        unsigned int Size : 24;
+        unsigned int AddressClamp : 1;
+        unsigned int Unused: 1;
+        unsigned int RequestSize : 2;
+        unsigned int ClampDisable : 2;
     };
 
     /* 4101 */
@@ -568,19 +622,20 @@ namespace IW6
     /* 11145 */
     struct XSurface
     {
-        unsigned __int8 flags;
-        unsigned __int8 tileMode;
-        unsigned __int16 vertCount;
-        unsigned __int16 triCount;
-        unsigned __int8 rigidVertListCount;
-        unsigned __int8 pad;
-        __int16 blendVertCounts[4];
-        GfxVertexUnion0 verts0;
-        unsigned __int16* triIndices;
+        unsigned char flags;
+        unsigned char tileMode;
+        unsigned short vertCount;
+        unsigned short triCount;
+        unsigned char rigidVertListCount;
+        unsigned char pad;
+        short blendVertCounts[4];
+        //GfxVertexUnion0 verts0;
+        GfxPackedVertex *verts0;
+        unsigned short* triIndices;
         D3DVertexBuffer vb0;
         D3DIndexBuffer indexBuffer;
         XRigidVertList* rigidVertLists;
-        unsigned __int16* blendVerts;
+        unsigned short* blendVerts;
         unsigned int vertexLightingIndex;
         float quantizeScale;
         int partBits[6];
@@ -591,12 +646,12 @@ namespace IW6
     {
         const char* name;
         XSurface* surfs;
-        unsigned __int16 numsurfs;
+        unsigned short numsurfs;
         int partBits[6];
     };
 
     /* 11149 */
-    union $3F5B938DF5E4F97F8E1F05029085C3EA
+    union XBoneRadius
     {
         float radiusSquared;
         unsigned int radiusSquaredAsInt;
@@ -606,7 +661,7 @@ namespace IW6
     struct XBoneInfo
     {
         Bounds bounds;
-        $3F5B938DF5E4F97F8E1F05029085C3EA ___u1;
+        XBoneRadius ___u1;
     };
 
     /* 11128 */
@@ -628,8 +683,8 @@ namespace IW6
     struct XModelLodInfo
     {
         float dist;
-        unsigned __int16 numsurfs;
-        unsigned __int16 surfIndex;
+        unsigned short numsurfs;
+        unsigned short surfIndex;
         XModelSurfs* modelSurfs;
         int partBits[6];
         XSurface* surfs;
@@ -648,17 +703,17 @@ namespace IW6
     struct XModel
     {
         const char* name;
-        unsigned __int8 numBones;
-        unsigned __int8 numRootBones;
-        unsigned __int8 numsurfs;
-        unsigned __int8 numReactiveMotionParts;
+        unsigned char numBones;
+        unsigned char numRootBones;
+        unsigned char numsurfs;
+        unsigned char numReactiveMotionParts;
         float scale;
         unsigned int noScalePartBits[6];
         ScriptString* boneNames;
-        unsigned __int8* parentList;
-        __int16* quats;
+        unsigned char* parentList;
+        short* quats;
         float* trans;
-        unsigned __int8* partClassification;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         ReactiveMotionModelPart* reactiveMotionParts;
         Material** materialHandles;
@@ -666,14 +721,14 @@ namespace IW6
         char maxLoadedLod;
         char numLods;
         char collLod;
-        unsigned __int8 flags;
+        unsigned char flags;
         XModelCollSurf_s* collSurfs;
         int numCollSurfs;
         int contents;
         XBoneInfo* boneInfo;
         float radius;
         Bounds bounds;
-        unsigned __int16* invHighMipRadius;
+        unsigned short* invHighMipRadius;
         int memUsage;
         PhysPreset* physPreset;
         PhysCollmap* physCollmap;
@@ -683,36 +738,36 @@ namespace IW6
     /* 11098 */
     struct GfxDrawSurfFields
     {
-        unsigned __int64 objectId : 15;
-        unsigned __int64 reflectionProbeIndex : 8;
-        unsigned __int64 hasGfxEntIndex : 1;
-        unsigned __int64 customIndex : 5;
-        unsigned __int64 materialSortedIndex : 12;
-        unsigned __int64 prepass : 2;
-        unsigned __int64 useHeroLighting : 1;
-        unsigned __int64 sceneLightIndex : 8;
-        unsigned __int64 viewModelRender : 1;
-        unsigned __int64 surfType : 4;
-        unsigned __int64 primarySortKey : 6;
-        unsigned __int64 unused : 1;
+        uint64_t objectId : 15;
+        uint64_t reflectionProbeIndex : 8;
+        uint64_t hasGfxEntIndex : 1;
+        uint64_t customIndex : 5;
+        uint64_t materialSortedIndex : 12;
+        uint64_t prepass : 2;
+        uint64_t useHeroLighting : 1;
+        uint64_t sceneLightIndex : 8;
+        uint64_t viewModelRender : 1;
+        uint64_t surfType : 4;
+        uint64_t primarySortKey : 6;
+        uint64_t unused : 1;
     };
 
     /* 11099 */
     union GfxDrawSurf
     {
         GfxDrawSurfFields fields;
-        unsigned __int64 packed;
+        uint64_t packed;
     };
 
     /* 11100 */
-    struct __declspec(align(8)) MaterialInfo
+    struct MaterialInfo
     {
         const char* name;
-        unsigned __int8 gameFlags;
-        unsigned __int8 sortKey;
-        unsigned __int8 textureAtlasRowCount;
-        unsigned __int8 textureAtlasColumnCount;
-        unsigned __int8 textureAtlasFrameBlend;
+        unsigned char gameFlags;
+        unsigned char sortKey;
+        unsigned char textureAtlasRowCount;
+        unsigned char textureAtlasColumnCount;
+        unsigned char textureAtlasFrameBlend;
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
     };
@@ -720,25 +775,21 @@ namespace IW6
     /* 11101 */
     struct MaterialStreamRouting
     {
-        unsigned __int8 source;
-        unsigned __int8 dest;
-    };
-
-    struct D3DVertexDeclaration : D3DResource
-    {
+        unsigned char source;
+        unsigned char dest;
     };
 
     /* 11102 */
     union MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[15];
-        D3DVertexDeclaration* decl[26];
+        void* decl[26];
     };
 
     /* 11103 */
     struct MaterialVertexDeclaration
     {
-        unsigned __int8 streamCount;
+        unsigned char streamCount;
         bool hasOptionalSource;
         MaterialVertexStreamRouting routing;
     };
@@ -746,22 +797,17 @@ namespace IW6
     /* 11104 */
     struct GfxVertexShaderLoadDef
     {
-        unsigned __int8* cachedPart;
-        unsigned __int8* physicalPart;
-        unsigned __int16 cachedPartSize;
-        unsigned __int16 physicalPartSize;
+        unsigned char* cachedPart;
+        unsigned char* physicalPart;
+        unsigned short cachedPartSize;
+        unsigned short physicalPartSize;
         unsigned int microCodeCrc;
-    };
-
-    /* 3794 */
-    struct D3DVertexShader : D3DResource
-    {
     };
 
     /* 11105 */
     union MaterialVertexShaderProgram
     {
-        D3DVertexShader* vs;
+        void* vs;
         GfxVertexShaderLoadDef loadDef;
     };
 
@@ -775,22 +821,17 @@ namespace IW6
     /* 11107 */
     struct GfxPixelShaderLoadDef
     {
-        unsigned __int8* cachedPart;
-        unsigned __int8* physicalPart;
-        unsigned __int16 cachedPartSize;
-        unsigned __int16 physicalPartSize;
+        unsigned char* cachedPart;
+        unsigned char* physicalPart;
+        unsigned short cachedPartSize;
+        unsigned short physicalPartSize;
         unsigned int microCodeCrc;
-    };
-
-    /* 3406 */
-    struct D3DPixelShader : D3DResource
-    {
     };
 
     /* 11108 */
     union MaterialPixelShaderProgram
     {
-        D3DPixelShader* ps;
+        void* ps;
         GfxPixelShaderLoadDef loadDef;
     };
 
@@ -804,9 +845,9 @@ namespace IW6
     /* 11110 */
     struct MaterialArgumentCodeConst
     {
-        unsigned __int16 index;
-        unsigned __int8 firstRow;
-        unsigned __int8 rowCount;
+        unsigned short index;
+        unsigned char firstRow;
+        unsigned char rowCount;
     };
 
     /* 11111 */
@@ -818,11 +859,33 @@ namespace IW6
         unsigned int nameHash;
     };
 
+    /* 1310 */
+    enum MaterialShaderArgumentType : unsigned short
+    {
+        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
+        MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
+        MTL_ARG_MATERIAL_VERTEX_SAMPLER = 0x2,
+        MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x3,
+
+        MTL_ARG_CODE_PRIM_BEGIN = 0x4,
+
+        MTL_ARG_CODE_VERTEX_CONST = 0x4,
+        MTL_ARG_CODE_PIXEL_SAMPLER = 0x5,
+        MTL_ARG_CODE_PIXEL_CONST = 0x6,
+
+        MTL_ARG_CODE_PRIM_END = 0x7,
+
+        MTL_ARG_MATERIAL_PIXEL_CONST = 0x7,
+        MTL_ARG_LITERAL_PIXEL_CONST = 0x8,
+
+        MTL_ARG_COUNT = 0x9,
+    };
+
     /* 11112 */
     struct MaterialShaderArgument
     {
-        unsigned __int16 type;
-        unsigned __int16 dest;
+        MaterialShaderArgumentType type;
+        unsigned short dest;
         MaterialArgumentDef u;
     };
 
@@ -833,21 +896,362 @@ namespace IW6
         MaterialVertexShader* vertexShaderArray[26];
         MaterialVertexShader* vertexShader;
         MaterialPixelShader* pixelShader;
-        unsigned __int8 perPrimArgCount;
-        unsigned __int8 perObjArgCount;
-        unsigned __int8 stableArgCount;
-        unsigned __int8 customSamplerFlags;
-        unsigned __int8 precompiledIndex;
-        unsigned __int8 stageConfig;
+        unsigned char perPrimArgCount;
+        unsigned char perObjArgCount;
+        unsigned char stableArgCount;
+        unsigned char customSamplerFlags;
+        unsigned char precompiledIndex;
+        unsigned char stageConfig;
         MaterialShaderArgument* args;
+    };
+
+    /* 858 */
+    enum MaterialTechniqueType : int32_t
+    {
+        TECHNIQUE_STANDARD_BEGIN = 0x0,
+        TECHNIQUE_DEPTH_PREPASS = 0x0,
+        TECHNIQUE_BUILD_FLOAT_Z = 0x1,
+        TECHNIQUE_BUILD_SHADOWMAP_DEPTH = 0x2,
+        TECHNIQUE_UNLIT = 0x3,
+        TECHNIQUE_EMISSIVE = 0x4,
+        TECHNIQUE_EMISSIVE_DFOG = 0x5,
+        TECHNIQUE_EMISSIVE_SHADOW = 0x6,
+        TECHNIQUE_EMISSIVE_SHADOW_DFOG = 0x7,
+        TECHNIQUE_LIT_BEGIN = 0x8,
+        TECHNIQUE_LIT = 0x8,
+        TECHNIQUE_LIT_DFOG = 0x9,
+        TECHNIQUE_LIT_SUN = 0xA,
+        TECHNIQUE_LIT_SUN_DFOG = 0xB,
+        TECHNIQUE_LIT_SUN_SHADOW = 0xC,
+        TECHNIQUE_LIT_SUN_SHADOW_DFOG = 0xD,
+        TECHNIQUE_LIT_SPOT = 0xE,
+        TECHNIQUE_LIT_SPOT_DFOG = 0xF,
+        TECHNIQUE_LIT_SPOT_SHADOW = 0x10,
+        TECHNIQUE_LIT_SPOT_SHADOW_DFOG = 0x11,
+        TECHNIQUE_LIT_SPOT_SHADOW_CUCOLORIS = 0x12,
+        TECHNIQUE_LIT_SPOT_SHADOW_CUCOLORIS_DFOG = 0x13,
+        TECHNIQUE_LIT_OMNI = 0x14,
+        TECHNIQUE_LIT_OMNI_DFOG = 0x15,
+        TECHNIQUE_LIT_OMNI_SHADOW = 0x16,
+        TECHNIQUE_LIT_OMNI_SHADOW_DFOG = 0x17,
+        TECHNIQUE_LIT_END = 0x18,
+        TECHNIQUE_LIGHT_SPOT = 0x18,
+        TECHNIQUE_LIGHT_OMNI = 0x19,
+        TECHNIQUE_LIGHT_SPOT_SHADOW = 0x1A,
+        TECHNIQUE_LIGHT_SPOT_SHADOW_CUCOLORIS = 0x1B,
+        TECHNIQUE_FAKELIGHT_NORMAL = 0x1C,
+        TECHNIQUE_FAKELIGHT_VIEW = 0x1D,
+        TECHNIQUE_SUNLIGHT_PREVIEW = 0x1E,
+        TECHNIQUE_CASE_TEXTURE = 0x1F,
+        TECHNIQUE_WIREFRAME_SOLID = 0x20,
+        TECHNIQUE_WIREFRAME_SHADED = 0x21,
+        TECHNIQUE_THERMAL = 0x22,
+        TECHNIQUE_DEBUG_TEXEL_DENSITY = 0x23,
+        TECHNIQUE_DEBUG_BUMPMAP = 0x24,
+        TECHNIQUE_STANDARD_LAST = 0x24,
+        TECHNIQUE_COUNT = 0x25,
+        TECHNIQUE_TOTAL_COUNT = 0x26,
+        TECHNIQUE_NONE = 0x27,
+    };
+
+    /* 1298 */
+    enum MaterialWorldVertexFormat : int32_t
+    {
+        MTL_WORLDVERT_T1 = 0x0,
+        MTL_WORLDVERT_T2N1 = 0x1,
+        MTL_WORLDVERT_T2N2 = 0x2,
+        MTL_WORLDVERT_T3N1 = 0x3,
+        MTL_WORLDVERT_T3N2 = 0x4,
+        MTL_WORLDVERT_T3N3 = 0x5,
+        MTL_WORLDVERT_T4N1 = 0x6,
+        MTL_WORLDVERT_T4N2 = 0x7,
+        MTL_WORLDVERT_T4N3 = 0x8,
+        MTL_WORLDVERT_T5N1 = 0x9,
+        MTL_WORLDVERT_T5N2 = 0xA,
+        MTL_WORLDVERT_T5N3 = 0xB,
+        MTL_WORLDVERT_COUNT = 0xC,
+    };
+
+    /* 1300 */
+    enum MaterialStreamStreamSource_e : int32_t
+    {
+        STREAM_SRC_POSITION = 0x0,
+        STREAM_SRC_COLOR = 0x1,
+        STREAM_SRC_TEXCOORD_0 = 0x2,
+        STREAM_SRC_NORMAL = 0x3,
+        STREAM_SRC_TANGENT = 0x4,
+        STREAM_SRC_OPTIONAL_BEGIN = 0x5,
+        STREAM_SRC_PRE_OPTIONAL_BEGIN = 0x4,
+        STREAM_SRC_TEXCOORD_1 = 0x5,
+        STREAM_SRC_TEXCOORD_2 = 0x6,
+        STREAM_SRC_VERTEX_LIT_0 = 0x7,
+        STREAM_SRC_VERTEX_LIT_1 = 0x8,
+        STREAM_SRC_VERTEX_LIT_2 = 0x9,
+        STREAM_SRC_NORMAL_TRANSFORM_0 = 0xA,
+        STREAM_SRC_NORMAL_TRANSFORM_1 = 0xB,
+        STREAM_SRC_COUNT = 0xC,
+    };
+
+    /* 1301 */
+    enum MaterialStreamDestination_e : int32_t
+    {
+        STREAM_DST_POSITION = 0x0,
+        STREAM_DST_NORMAL = 0x1,
+        STREAM_DST_COLOR_0 = 0x2,
+        STREAM_DST_COLOR_1 = 0x3,
+        STREAM_DST_COLOR_LAST = 0x4,
+        STREAM_DST_COLOR_END = 0x3,
+        STREAM_DST_DEPTH = 0x4,
+        STREAM_DST_TEXCOORD_0 = 0x5,
+        STREAM_DST_TEXCOORD_1 = 0x6,
+        STREAM_DST_TEXCOORD_2 = 0x7,
+        STREAM_DST_TEXCOORD_3 = 0x8,
+        STREAM_DST_TEXCOORD_4 = 0x9,
+        STREAM_DST_TEXCOORD_5 = 0xA,
+        STREAM_DST_TEXCOORD_6 = 0xB,
+        STREAM_DST_TEXCOORD_7 = 0xC,
+        STREAM_DST_TEXCOORD_8 = 0xD,
+        STREAM_DST_TEXCOORD_9 = 0xE,
+        STREAM_DST_COUNT = 0xF,
+        STREAM_DST_TEXCOORD_COUNT = 0xA,
+        STREAM_DST_COLOR_COUNT = 0x2,
+        STREAM_DST_CUSTOM = 0xF,
+    };
+
+    /* 1293 */
+    enum MaterialConstantSource : int32_t
+    {
+        CONST_SRC_CODE_MAYBE_DIRTY_PS_BEGIN = 0x0,
+        CONST_SRC_CODE_LIGHT_POSITION = 0x0,
+        CONST_SRC_CODE_LIGHT_DIFFUSE = 0x1,
+        CONST_SRC_CODE_LIGHT_SPECULAR = 0x2,
+        CONST_SRC_CODE_LIGHT_SPOTDIR = 0x3,
+        CONST_SRC_CODE_LIGHT_SPOTFACTORS = 0x4,
+        CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT = 0x5,
+        CONST_SRC_CODE_PARTICLE_CLOUD_COLOR = 0x6,
+        CONST_SRC_CODE_GAMETIME = 0x7,
+        CONST_SRC_CODE_GENERIC_MATERIAL_DATA = 0x8,
+        CONST_SRC_CODE_EYEOFFSET = 0x9,
+        CONST_SRC_CODE_MAYBE_DIRTY_PS_END = 0xA,
+        CONST_SRC_CODE_ALWAYS_DIRTY_PS_BEGIN = 0xA,
+        CONST_SRC_CODE_PIXEL_COST_FRACS = 0xA,
+        CONST_SRC_CODE_PIXEL_COST_DECODE = 0xB,
+        CONST_SRC_CODE_FILTER_TAP_0 = 0xC,
+        CONST_SRC_CODE_FILTER_TAP_1 = 0xD,
+        CONST_SRC_CODE_FILTER_TAP_2 = 0xE,
+        CONST_SRC_CODE_FILTER_TAP_3 = 0xF,
+        CONST_SRC_CODE_FILTER_TAP_4 = 0x10,
+        CONST_SRC_CODE_FILTER_TAP_5 = 0x11,
+        CONST_SRC_CODE_FILTER_TAP_6 = 0x12,
+        CONST_SRC_CODE_FILTER_TAP_7 = 0x13,
+        CONST_SRC_CODE_COLOR_MATRIX_R = 0x14,
+        CONST_SRC_CODE_COLOR_MATRIX_G = 0x15,
+        CONST_SRC_CODE_COLOR_MATRIX_B = 0x16,
+        CONST_SRC_CODE_RENDER_TARGET_SIZE = 0x17,
+        CONST_SRC_CODE_RENDER_SOURCE_SIZE = 0x18,
+        CONST_SRC_CODE_ALWAYS_DIRTY_PS_END = 0x19,
+        CONST_SRC_CODE_FIXED_PS_BEGIN = 0x19,
+        CONST_SRC_CODE_DOF_EQUATION_VIEWMODEL_AND_FAR_BLUR = 0x19,
+        CONST_SRC_CODE_DOF_EQUATION_SCENE = 0x1A,
+        CONST_SRC_CODE_DOF_LERP_SCALE = 0x1B,
+        CONST_SRC_CODE_DOF_LERP_BIAS = 0x1C,
+        CONST_SRC_CODE_DOF_ROW_DELTA = 0x1D,
+        CONST_SRC_CODE_MOTION_MATRIX_X = 0x1E,
+        CONST_SRC_CODE_MOTION_MATRIX_Y = 0x1F,
+        CONST_SRC_CODE_MOTION_MATRIX_W = 0x20,
+        CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION = 0x21,
+        CONST_SRC_CODE_SHADOWMAP_SCALE = 0x22,
+        CONST_SRC_CODE_ZNEAR = 0x23,
+        CONST_SRC_CODE_LIGHTING_LOOKUP_SCALE = 0x24,
+        CONST_SRC_CODE_RIM_LIGHT_0_DIR = 0x25,
+        CONST_SRC_CODE_RIM_LIGHT_0_COLOR = 0x26,
+        CONST_SRC_CODE_RIM_LIGHT_1_DIR = 0x27,
+        CONST_SRC_CODE_RIM_LIGHT_1_COLOR = 0x28,
+        CONST_SRC_CODE_RIM_LIGHT_TECHNIQUE = 0x29,
+        CONST_SRC_CODE_DEBUG_BUMPMAP = 0x2A,
+        CONST_SRC_CODE_MATERIAL_COLOR = 0x2B,
+        CONST_SRC_CODE_FOG = 0x2C,
+        CONST_SRC_CODE_FOG_COLOR_LINEAR = 0x2D,
+        CONST_SRC_CODE_FOG_COLOR_GAMMA = 0x2E,
+        CONST_SRC_CODE_FOG_SUN_CONSTS = 0x2F,
+        CONST_SRC_CODE_FOG_SUN_COLOR_LINEAR = 0x30,
+        CONST_SRC_CODE_FOG_SUN_COLOR_GAMMA = 0x31,
+        CONST_SRC_CODE_FOG_SUN_DIR = 0x32,
+        CONST_SRC_CODE_FOG_HEIGHT = 0x33,
+        CONST_SRC_CODE_GLOW_SETUP = 0x34,
+        CONST_SRC_CODE_GLOW_APPLY = 0x35,
+        CONST_SRC_CODE_GLOW_SETUP_ALT_COLOR_SCALE = 0x36,
+        CONST_SRC_CODE_COLOR_BIAS = 0x37,
+        CONST_SRC_CODE_COLOR_TINT_BASE = 0x38,
+        CONST_SRC_CODE_COLOR_TINT_DELTA = 0x39,
+        CONST_SRC_CODE_COLOR_TINT_QUADRATIC_DELTA = 0x3A,
+        CONST_SRC_CODE_MCOLOR_BIAS_AND_RANGE1 = 0x3B,
+        CONST_SRC_CODE_MCOLOR_CONTRAST_SCALE1 = 0x3C,
+        CONST_SRC_CODE_MCOLOR_CONTRAST_POW_AND_SAT1 = 0x3D,
+        CONST_SRC_CODE_MCOLOR_BIAS2_AND_RANGE_SCALE = 0x3E,
+        CONST_SRC_CODE_MCOLOR_CONTRAST_SCALE2 = 0x3F,
+        CONST_SRC_CODE_MCOLOR_CONTRAST_POW_AND_SAT2 = 0x40,
+        CONST_SRC_CODE_OUTDOOR_FEATHER_PARMS = 0x41,
+        CONST_SRC_CODE_ENVMAP_PARMS = 0x42,
+        CONST_SRC_CODE_SUN_SHADOWMAP_PIXEL_ADJUST = 0x43,
+        CONST_SRC_CODE_SPOT_SHADOWMAP_PIXEL_ADJUST = 0x44,
+        CONST_SRC_CODE_COMPOSITE_FX_DISTORTION = 0x45,
+        CONST_SRC_CODE_POSTFX_FADE_EFFECT = 0x46,
+        CONST_SRC_CODE_SNOWAMBIENTCOLOR = 0x47,
+        CONST_SRC_CODE_VIEWPORT_DIMENSIONS = 0x48,
+        CONST_SRC_CODE_FRAMEBUFFER_READ = 0x49,
+        CONST_SRC_CODE_THERMAL_COLOR_OFFSET = 0x4A,
+        CONST_SRC_CODE_THERMAL_FADE_CONTROL = 0x4B,
+        CONST_SRC_CODE_THERMAL_FADE_COLOR = 0x4C,
+        CONST_SRC_CODE_PLAYLIST_POPULATION_PARAMS = 0x4D,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX_R0_PS = 0x4E,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX_R1_PS = 0x4F,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX_R2_PS = 0x50,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX_R3_PS = 0x51,
+        CONST_SRC_CODE_FIXED_PS_END = 0x52,
+        CONST_SRC_CODE_NON_PS_BEGIN = 0x52,
+        CONST_SRC_CODE_BASE_LIGHTING_COORDS = 0x52,
+        CONST_SRC_CODE_LIGHT_PROBE_AMBIENT = 0x53,
+        CONST_SRC_CODE_NEARPLANE_ORG = 0x54,
+        CONST_SRC_CODE_NEARPLANE_DX = 0x55,
+        CONST_SRC_CODE_NEARPLANE_DY = 0x56,
+        CONST_SRC_CODE_CLIP_SPACE_LOOKUP_SCALE = 0x57,
+        CONST_SRC_CODE_CLIP_SPACE_LOOKUP_OFFSET = 0x58,
+        CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX0 = 0x59,
+        CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX1 = 0x5A,
+        CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX2 = 0x5B,
+        CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR0 = 0x5C,
+        CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR1 = 0x5D,
+        CONST_SRC_CODE_PARTICLE_CLOUD_SPARK_COLOR2 = 0x5E,
+        CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM0 = 0x5F,
+        CONST_SRC_CODE_PARTICLE_FOUNTAIN_PARM1 = 0x60,
+        CONST_SRC_CODE_REACTIVEMOTION_CENTERS = 0x61,
+        CONST_SRC_CODE_DEPTH_FROM_CLIP = 0x71,
+        CONST_SRC_CODE_CODE_MESH_ARG_0 = 0x72,
+        CONST_SRC_CODE_CODE_MESH_ARG_1 = 0x73,
+        CONST_SRC_CODE_CODE_MESH_ARG_LAST = 0x73,
+        CONST_SRC_CODE_NON_PS_END = 0x74,
+        CONST_SRC_CODE_COUNT_FLOAT4 = 0x74,
+        CONST_SRC_FIRST_CODE_MATRIX = 0x74,
+        CONST_SRC_CODE_VIEW_MATRIX = 0x74,
+        CONST_SRC_CODE_INVERSE_VIEW_MATRIX = 0x75,
+        CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX = 0x76,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX = 0x77,
+        CONST_SRC_CODE_PROJECTION_MATRIX = 0x78,
+        CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX = 0x79,
+        CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX = 0x7A,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX = 0x7B,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX = 0x7C,
+        CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX = 0x7D,
+        CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX = 0x7E,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX = 0x7F,
+        CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX = 0x80,
+        CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX = 0x81,
+        CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX = 0x82,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX = 0x83,
+        CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0x84,
+        CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0x85,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0x86,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0x87,
+        CONST_SRC_CODE_WORLD_MATRIX0 = 0x88,
+        CONST_SRC_CODE_INVERSE_WORLD_MATRIX0 = 0x89,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX0 = 0x8A,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX0 = 0x8B,
+        CONST_SRC_CODE_WORLD_VIEW_MATRIX0 = 0x8C,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX0 = 0x8D,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX0 = 0x8E,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX0 = 0x8F,
+        CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX0 = 0x90,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX0 = 0x91,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0 = 0x92,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX0 = 0x93,
+        CONST_SRC_CODE_WORLD_MATRIX1 = 0x94,
+        CONST_SRC_CODE_INVERSE_WORLD_MATRIX1 = 0x95,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX1 = 0x96,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX1 = 0x97,
+        CONST_SRC_CODE_WORLD_VIEW_MATRIX1 = 0x98,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX1 = 0x99,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX1 = 0x9A,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX1 = 0x9B,
+        CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX1 = 0x9C,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX1 = 0x9D,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1 = 0x9E,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX1 = 0x9F,
+        CONST_SRC_CODE_WORLD_MATRIX2 = 0xA0,
+        CONST_SRC_CODE_INVERSE_WORLD_MATRIX2 = 0xA1,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX2 = 0xA2,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX2 = 0xA3,
+        CONST_SRC_CODE_WORLD_VIEW_MATRIX2 = 0xA4,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX2 = 0xA5,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX2 = 0xA6,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX2 = 0xA7,
+        CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX2 = 0xA8,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX2 = 0xA9,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2 = 0xAA,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX2 = 0xAB,
+        CONST_SRC_TOTAL_COUNT = 0xAC,
+        CONST_SRC_NONE = 0xAD,
+    };
+
+    enum MaterialTextureSource
+    {
+        TEXTURE_SRC_CODE_BLACK = 0x0,
+        TEXTURE_SRC_CODE_WHITE = 0x1,
+        TEXTURE_SRC_CODE_IDENTITY_NORMAL_MAP = 0x2,
+        TEXTURE_SRC_CODE_MODEL_LIGHTING = 0x3,
+        TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY = 0x4,
+        TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY = 0x5,
+        TEXTURE_SRC_CODE_SHADOWMAP_SUN = 0x6,
+        TEXTURE_SRC_CODE_SHADOWMAP_SPOT = 0x7,
+        TEXTURE_SRC_CODE_FEEDBACK = 0x8,
+        TEXTURE_SRC_CODE_RESOLVED_POST_SUN = 0x9,
+        TEXTURE_SRC_CODE_RESOLVED_SCENE = 0xA,
+        TEXTURE_SRC_CODE_POST_EFFECT_0 = 0xB,
+        TEXTURE_SRC_CODE_POST_EFFECT_1 = 0xC,
+        TEXTURE_SRC_CODE_LIGHT_ATTENUATION = 0xD,
+        TEXTURE_SRC_CODE_LIGHT_CUCOLORIS = 0xE,
+        TEXTURE_SRC_CODE_OUTDOOR = 0xF,
+        TEXTURE_SRC_CODE_FLOATZ = 0x10,
+        TEXTURE_SRC_CODE_PROCESSED_FLOATZ = 0x11,
+        TEXTURE_SRC_CODE_RAW_FLOATZ = 0x12,
+        TEXTURE_SRC_CODE_HALF_PARTICLES = 0x13,
+        TEXTURE_SRC_CODE_HALF_PARTICLES_Z = 0x14,
+        TEXTURE_SRC_CODE_CASE_TEXTURE = 0x15,
+        TEXTURE_SRC_CODE_CINEMATIC_Y = 0x16,
+        TEXTURE_SRC_CODE_CINEMATIC_CR = 0x17,
+        TEXTURE_SRC_CODE_CINEMATIC_CB = 0x18,
+        TEXTURE_SRC_CODE_CINEMATIC_A = 0x19,
+        TEXTURE_SRC_CODE_REFLECTION_PROBE = 0x1A,
+        TEXTURE_SRC_CODE_PIP_SCENE = 0x1B,
+        TEXTURE_SRC_CODE_COLOR_MANIPULATION = 0x1C,
+        TEXTURE_SRC_CODE_STREAMING_LOADING = 0x1D,
+
+        TEXTURE_SRC_CODE_COUNT
+    };
+
+    enum TechniqueFlags
+    {
+        MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN = 0x1,
+        MTL_TECHFLAG_NEEDS_RESOLVED_SCENE = 0x2,
+
+        MTL_TECHFLAG_ZPREPASS = 0x4,
+        MTL_TECHFLAG_BUILD_FLOATZ = 0x8,
+        MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL = 0x10,
+
+        MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE = 0x20,
+
+        MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS = 0x40,
+        MTL_TECHFLAG_USES_FLOATZ = 0x80,
+        MTL_TECHFLAG_USES_DISTORTION_FLOATZ = 0x100,
+        TECHNIQUE_FLAG_200 = 0x200,
     };
 
     /* 11114 */
     struct MaterialTechnique
     {
         const char* name;
-        unsigned __int16 flags;
-        unsigned __int16 passCount;
+        unsigned short flags;
+        unsigned short passCount;
         MaterialPass passArray[1];
     };
 
@@ -855,61 +1259,60 @@ namespace IW6
     struct MaterialTechniqueSet
     {
         const char* name;
-        unsigned __int8 worldVertFormat;
-        unsigned __int8 unused1;
-        unsigned __int8 unused2;
+        unsigned char worldVertFormat;
+        unsigned char unused[2];
         MaterialTechnique* techniques[37];
     };
 
     /* 2960 */
     struct GPUTEXTURESIZE_1D
     {
-        unsigned __int32 Width : 24;
+        unsigned int Width : 24;
     };
 
     /* 2961 */
     struct GPUTEXTURESIZE_2D
     {
-        unsigned __int32 Width : 13;
-        unsigned __int32 Height : 13;
+        unsigned int Width : 13;
+        unsigned int Height : 13;
     };
 
     /* 2962 */
     struct GPUTEXTURESIZE_3D
     {
-        unsigned __int32 Width : 11;
-        unsigned __int32 Height : 11;
-        unsigned __int32 Depth : 10;
+        unsigned int Width : 11;
+        unsigned int Height : 11;
+        unsigned int Depth : 10;
     };
 
     /* 2963 */
     struct GPUTEXTURESIZE_STACK
     {
-        unsigned __int32 Width : 13;
-        unsigned __int32 Height : 13;
-        unsigned __int32 Depth : 6;
+        unsigned int Width : 13;
+        unsigned int Height : 13;
+        unsigned int Depth : 6;
     };
 
     /* 2965 */
-    struct $C2354D7D01587C3B2B4A95E9F6F8F12E
+    struct GPUTEXTURE_FETCH_CONSTANT
     {
-        unsigned __int32 Type : 2;
-        unsigned __int32 SignX : 2;
-        unsigned __int32 SignY : 2;
-        unsigned __int32 SignZ : 2;
-        unsigned __int32 SignW : 2;
-        unsigned __int32 ClampX : 3;
-        unsigned __int32 ClampY : 3;
-        unsigned __int32 ClampZ : 3;
-        unsigned __int32 : 3;
-        unsigned __int32 Pitch : 9;
-        unsigned __int32 Tiled : 1;
-        unsigned __int32 DataFormat : 6;
-        unsigned __int32 Endian : 2;
-        unsigned __int32 RequestSize : 2;
-        unsigned __int32 Stacked : 1;
-        unsigned __int32 ClampPolicy : 1;
-        unsigned __int32 BaseAddress : 20;
+        unsigned int Type : 2;
+        unsigned int SignX : 2;
+        unsigned int SignY : 2;
+        unsigned int SignZ : 2;
+        unsigned int SignW : 2;
+        unsigned int ClampX : 3;
+        unsigned int ClampY : 3;
+        unsigned int ClampZ : 3;
+        unsigned int Unused: 3;
+        unsigned int Pitch : 9;
+        unsigned int Tiled : 1;
+        unsigned int DataFormat : 6;
+        unsigned int Endian : 2;
+        unsigned int RequestSize : 2;
+        unsigned int Stacked : 1;
+        unsigned int ClampPolicy : 1;
+        unsigned int BaseAddress : 20;
         union
         {
             GPUTEXTURESIZE_1D OneD;
@@ -917,41 +1320,34 @@ namespace IW6
             GPUTEXTURESIZE_3D ThreeD;
             GPUTEXTURESIZE_STACK Stack;
         } Size;
-        unsigned __int32 NumFormat : 1;
-        unsigned __int32 SwizzleX : 3;
-        unsigned __int32 SwizzleY : 3;
-        unsigned __int32 SwizzleZ : 3;
-        unsigned __int32 SwizzleW : 3;
-        __int32 ExpAdjust : 6;
-        unsigned __int32 MagFilter : 2;
-        unsigned __int32 MinFilter : 2;
-        unsigned __int32 MipFilter : 2;
-        unsigned __int32 AnisoFilter : 3;
-        unsigned __int32 : 3;
-        unsigned __int32 BorderSize : 1;
-        unsigned __int32 VolMagFilter : 1;
-        unsigned __int32 VolMinFilter : 1;
-        unsigned __int32 MinMipLevel : 4;
-        unsigned __int32 MaxMipLevel : 4;
-        unsigned __int32 MagAnisoWalk : 1;
-        unsigned __int32 MinAnisoWalk : 1;
-        __int32 LODBias : 10;
-        __int32 GradExpAdjustH : 5;
-        __int32 GradExpAdjustV : 5;
-        unsigned __int32 BorderColor : 2;
-        unsigned __int32 ForceBCWToMax : 1;
-        unsigned __int32 TriClamp : 2;
-        __int32 AnisoBias : 4;
-        unsigned __int32 Dimension : 2;
-        unsigned __int32 PackedMips : 1;
-        unsigned __int32 MipAddress : 20;
-    };
-
-    /* 2966 */
-    union GPUTEXTURE_FETCH_CONSTANT
-    {
-        $C2354D7D01587C3B2B4A95E9F6F8F12E __s0;
-        unsigned int dword[6];
+        unsigned int NumFormat : 1;
+        unsigned int SwizzleX : 3;
+        unsigned int SwizzleY : 3;
+        unsigned int SwizzleZ : 3;
+        unsigned int SwizzleW : 3;
+        int ExpAdjust : 6;
+        unsigned int MagFilter : 2;
+        unsigned int MinFilter : 2;
+        unsigned int MipFilter : 2;
+        unsigned int AnisoFilter : 3;
+        unsigned int Unused2: 3;
+        unsigned int BorderSize : 1;
+        unsigned int VolMagFilter : 1;
+        unsigned int VolMinFilter : 1;
+        unsigned int MinMipLevel : 4;
+        unsigned int MaxMipLevel : 4;
+        unsigned int MagAnisoWalk : 1;
+        unsigned int MinAnisoWalk : 1;
+        int LODBias : 10;
+        int GradExpAdjustH : 5;
+        int GradExpAdjustV : 5;
+        unsigned int BorderColor : 2;
+        unsigned int ForceBCWToMax : 1;
+        unsigned int TriClamp : 2;
+        int AnisoBias : 4;
+        unsigned int Dimension : 2;
+        unsigned int PackedMips : 1;
+        unsigned int MipAddress : 20;
     };
 
     /* 2967 */
@@ -1000,9 +1396,36 @@ namespace IW6
     /* 11118 */
     struct GfxImageStreamData
     {
-        unsigned __int16 width;
-        unsigned __int16 height;
+        unsigned short width;
+        unsigned short height;
         unsigned int pixelSize;
+    };
+
+    /* 1303 */
+    enum ImageCategory : unsigned char
+    {
+        IMG_CATEGORY_UNKNOWN = 0x0,
+        IMG_CATEGORY_AUTO_GENERATED = 0x1,
+        IMG_CATEGORY_LIGHTMAP = 0x2,
+        IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+        IMG_CATEGORY_RAW = 0x4,
+        IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+        IMG_CATEGORY_WATER = 0x5,
+        IMG_CATEGORY_RENDERTARGET = 0x6,
+        IMG_CATEGORY_TEMP = 0x7,
+    };
+
+    /* 1511 */
+    enum ImageMapType : unsigned char
+    {
+        MAPTYPE_NONE = 0x0,
+        MAPTYPE_INVALID1 = 0x1,
+        MAPTYPE_1D = 0x2,
+        MAPTYPE_2D = 0x3,
+        MAPTYPE_3D = 0x4,
+        MAPTYPE_CUBE = 0x5,
+        MAPTYPE_ARRAY = 0x6,
+        MAPTYPE_COUNT = 0x7,
     };
 
     /* 11119 */
@@ -1010,17 +1433,17 @@ namespace IW6
     {
         GfxTexture texture;
         int format;
-        unsigned __int8 mapType;
-        unsigned __int8 semantic;
-        unsigned __int8 category;
-        unsigned __int8 flags;
+        ImageMapType mapType;
+        unsigned char semantic;
+        ImageCategory category;
+        unsigned char flags;
         CardMemory cardMemory;
-        unsigned __int16 width;
-        unsigned __int16 height;
-        unsigned __int16 depth;
-        unsigned __int8 levelCount;
-        unsigned __int8 cached;
-        unsigned __int8* pixels;
+        unsigned short width;
+        unsigned short height;
+        unsigned short depth;
+        unsigned char levelCount;
+        unsigned char cached;
+        unsigned char* pixels;
         GfxImageStreamData streams[4];
         const char* name;
     };
@@ -1056,14 +1479,57 @@ namespace IW6
         water_t* water;
     };
 
+    /* 1302 */
+    enum TextureSemantic : unsigned char
+    {
+        TS_2D = 0x0,
+        TS_FUNCTION = 0x1,
+        TS_COLOR_MAP = 0x2,
+        TS_DETAIL_MAP = 0x3,
+        TS_UNUSED_2 = 0x4,
+        TS_NORMAL_MAP = 0x5,
+        TS_UNUSED_3 = 0x6,
+        TS_UNUSED_4 = 0x7,
+        TS_SPECULAR_MAP = 0x8,
+        TS_UNUSED_5 = 0x9,
+        TS_OCEANFLOW_DISPLACEMENT_MAP = 0xA,
+        TS_WATER_MAP = 0xB,
+        TS_OCEAN_DISPLACEMENT_MAP = 0xC,
+        TS_DISPLACEMENT_MAP = 0xD,
+        TS_PARALLAX_MAP = 0xE,
+
+        TS_COUNT = 0xF,
+    };
+
+    /* 946 */
+    enum GfxCameraRegionType : int32_t
+    {
+        CAMERA_REGION_LIT_OPAQUE = 0x0,
+        CAMERA_REGION_LIT_TRANS = 0x1,
+        CAMERA_REGION_EMISSIVE = 0x2,
+        CAMERA_REGION_DEPTH_HACK = 0x3,
+        CAMERA_REGION_LIGHT_MAP_OPAQUE = 0x4,
+        CAMERA_REGION_COUNT = 0x5,
+        CAMERA_REGION_NONE = 0x5,
+    };
+
+    struct MaterialTextureDefSamplerState
+    {
+        unsigned char filter : 3;
+        unsigned char mipMap : 2;
+        unsigned char clampU : 1;
+        unsigned char clampV : 1;
+        unsigned char clampW : 1;
+    };
+
     /* 11123 */
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        unsigned __int8 samplerState;
-        unsigned __int8 semantic;
+        MaterialTextureDefSamplerState samplerState;
+        TextureSemantic semantic;
         MaterialTextureDefInfo u;
     };
 
@@ -1073,6 +1539,101 @@ namespace IW6
         unsigned int nameHash;
         char name[12];
         float literal[4];
+    };
+
+    /* 1285 */
+    enum GfxStencilOp : int32_t
+    {
+        GFXS_STENCILOP_KEEP = 0x0,
+        GFXS_STENCILOP_ZERO = 0x1,
+        GFXS_STENCILOP_REPLACE = 0x2,
+        GFXS_STENCILOP_INCRSAT = 0x3,
+        GFXS_STENCILOP_DECRSAT = 0x4,
+        GFXS_STENCILOP_INVERT = 0x5,
+        GFXS_STENCILOP_INCR = 0x6,
+        GFXS_STENCILOP_DECR = 0x7,
+        GFXS_STENCILOP_COUNT = 0x8,
+    };
+
+    /* 1287 */
+    enum GfxStencilFunc : int32_t
+    {
+        GFXS_STENCILFUNC_NEVER = 0x0,
+        GFXS_STENCILFUNC_LESS = 0x1,
+        GFXS_STENCILFUNC_EQUAL = 0x2,
+        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
+        GFXS_STENCILFUNC_GREATER = 0x4,
+        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
+        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
+        GFXS_STENCILFUNC_ALWAYS = 0x7,
+        GFXS_STENCILFUNC_COUNT = 0x8,
+    };
+
+    /* 1282 */
+    enum GfxBlend : int32_t
+    {
+        GFXS_BLEND_DISABLED = 0x0,
+        GFXS_BLEND_ZERO = 0x1,
+        GFXS_BLEND_ONE = 0x2,
+        GFXS_BLEND_SRCCOLOR = 0x3,
+        GFXS_BLEND_INVSRCCOLOR = 0x4,
+        GFXS_BLEND_SRCALPHA = 0x5,
+        GFXS_BLEND_INVSRCALPHA = 0x6,
+        GFXS_BLEND_DESTALPHA = 0x7,
+        GFXS_BLEND_INVDESTALPHA = 0x8,
+        GFXS_BLEND_DESTCOLOR = 0x9,
+        GFXS_BLEND_INVDESTCOLOR = 0xA,
+        GFXS_BLEND_MASK = 0xF,
+    };
+
+    /* 1283 */
+    enum GfxBlendOp : int32_t
+    {
+        GFXS_BLENDOP_DISABLED = 0x0,
+        GFXS_BLENDOP_ADD = 0x1,
+        GFXS_BLENDOP_SUBTRACT = 0x2,
+        GFXS_BLENDOP_REVSUBTRACT = 0x3,
+        GFXS_BLENDOP_MIN = 0x4,
+        GFXS_BLENDOP_MAX = 0x5,
+        GFXS_BLENDOP_MASK = 0x7,
+    };
+
+    /* 1280 */
+    enum TextureFilter : int32_t
+    {
+        TEXTURE_FILTER_DISABLED = 0x0,
+        TEXTURE_FILTER_NEAREST = 0x1,
+        TEXTURE_FILTER_LINEAR = 0x2,
+        TEXTURE_FILTER_ANISO2X = 0x3,
+        TEXTURE_FILTER_ANISO4X = 0x4,
+        TEXTURE_FILTER_CMP = 0x5,
+        TEXTURE_FILTER_ANISO16X = 0x6,
+    };
+
+    /* 1281 */
+    enum SamplerFilter : int32_t
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_CMP = 0x5,
+        SAMPLER_FILTER_ANISO16X = 0x6,
+        SAMPLER_FILTER_MASK = 0x7,
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
     };
 
     /* 11125 */
@@ -1085,14 +1646,14 @@ namespace IW6
     struct Material
     {
         MaterialInfo info;
-        unsigned __int8 stateBitsEntry[37];
-        unsigned __int8 textureCount;
-        unsigned __int8 constantCount;
-        unsigned __int8 stateBitsCount;
-        unsigned __int8 stateFlags;
-        unsigned __int8 cameraRegion;
-        unsigned __int8 materialType;
-        unsigned __int8 layerCount;
+        unsigned char stateBitsEntry[37];
+        unsigned char textureCount;
+        unsigned char constantCount;
+        unsigned char stateBitsCount;
+        unsigned char stateFlags;
+        unsigned char cameraRegion;
+        unsigned char materialType;
+        unsigned char layerCount;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
@@ -1100,29 +1661,43 @@ namespace IW6
         const char** subMaterials;
     };
 
+    /* 1820 */
+    enum ERiffAudioFormat : char
+    {
+        SND_FORMAT_INVALID = 0x0,
+        SND_FORMAT_PCM = 0x1,
+        SND_FORMAT_XMA2 = 0x2,
+        SND_FORMAT_ADPCM = 0x3,
+        SND_FORMAT_XWMA = 0x4,
+        SND_FORMAT_MP3 = 0x5,
+        SND_FORMAT_WIIUDSP = 0x6,
+        SND_FORMAT_FLAC = 0x7,
+        SND_FORMAT_COUNT = 0x8,
+    };
+
     /* 11172 */
-    struct __declspec(align(4)) RiffAudioInfo
+    struct type_align32(4) RiffAudioInfo
     {
         unsigned int sampleRate;
         unsigned int dataByteCount;
         unsigned int numSamples;
         unsigned int avgBytesPerSec;
-        unsigned __int16 channels;
-        unsigned __int16 numBits;
-        unsigned __int16 blockAlign;
-        unsigned __int16 BlockCount;
+        unsigned short channels;
+        unsigned short numBits;
+        unsigned short blockAlign;
+        unsigned short BlockCount;
         unsigned int PlayBegin;
         unsigned int PlayLength;
         unsigned int LoopBegin;
         unsigned int LoopLength;
         unsigned int BytesPerBlock;
-        char format;
+        ERiffAudioFormat format;
     };
 
     /* 11173 */
     struct XA2Sound
     {
-        unsigned __int8* data;
+        unsigned char* data;
         unsigned int* seekTable;
         RiffAudioInfo format;
         int loadedSize;
@@ -1189,11 +1764,21 @@ namespace IW6
         PrimedSound primedSnd;
     };
 
+    /* 1015 */
+    enum snd_alias_type_t : uint8_t
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_PRIMED = 0x3,
+        SAT_COUNT = 0x4,
+    };
+
     /* 11182 */
     struct SoundFile
     {
-        unsigned __int8 type;
-        unsigned __int8 exists;
+        snd_alias_type_t type;
+        unsigned char exists;
         SoundFileRef u;
     };
 
@@ -1202,7 +1787,7 @@ namespace IW6
     {
         bool isDefault;
         const char* filename;
-        unsigned __int16 knotCount;
+        unsigned short knotCount;
         float knots[16][2];
     };
 
@@ -1270,7 +1855,7 @@ namespace IW6
         float distMax;
         float velocityMin;
         int flags;
-        unsigned __int8 masterPriority;
+        unsigned char masterPriority;
         float masterPercentage;
         float slavePercentage;
         float probability;
@@ -1286,7 +1871,7 @@ namespace IW6
         SpeakerMap* speakerMap;
         float wetMixOverride;
         OcclusionShape* occlusionShape;
-        unsigned __int8 allowDoppler;
+        unsigned char allowDoppler;
         DopplerPreset* dopplerPreset;
     };
 
@@ -1299,7 +1884,7 @@ namespace IW6
     };
 
     /* 1508 */
-    enum DynEntityType : __int32
+    enum DynEntityType : int
     {
         DYNENT_TYPE_INVALID = 0x0,
         DYNENT_TYPE_CLUTTER = 0x1,
@@ -1334,12 +1919,12 @@ namespace IW6
     {
         DynEntityType type;
         GfxPlacement pose;
-        const XModel* baseModel;
-        unsigned __int16 brushModel;
-        unsigned __int16 physicsBrushModel;
-        unsigned __int16 scriptableIndex;
-        unsigned __int16 health;
-        const FxEffectDef* destroyFx;
+        XModel* baseModel;
+        unsigned short brushModel;
+        unsigned short physicsBrushModel;
+        unsigned short scriptableIndex;
+        unsigned short health;
+        FxEffectDef* destroyFx;
         PhysPreset* physPreset;
         DynEntityHingeDef* hinge;
         PhysMass mass;
@@ -1371,18 +1956,18 @@ namespace IW6
     struct DynEntityClient
     {
         int physObjId;
-        unsigned __int16 flags;
-        unsigned __int16 lightingHandle;
-        unsigned __int16 health;
+        unsigned short flags;
+        unsigned short lightingHandle;
+        unsigned short health;
         Hinge* hinge;
-        const XModel* activeModel;
+        XModel* activeModel;
     };
 
     /* 11829 */
     struct DynEntityColl
     {
-        unsigned __int16 sector;
-        unsigned __int16 nextEntInSector;
+        unsigned short sector;
+        unsigned short nextEntInSector;
         float linkMins[2];
         float linkMaxs[2];
     };
@@ -1390,10 +1975,10 @@ namespace IW6
     /* 11830 */
     struct ScriptableEventStateChangeDef
     {
-        unsigned __int8 targetIndex;
-        unsigned __int8 delayStreamIndex;
-        unsigned __int16 delayMin;
-        unsigned __int16 delayMax;
+        unsigned char targetIndex;
+        unsigned char delayStreamIndex;
+        unsigned short delayMin;
+        unsigned short delayMax;
     };
 
     /* 11831 */
@@ -1412,15 +1997,15 @@ namespace IW6
     /* 11160 */
     union FxEffectDefRef
     {
-        const FxEffectDef* handle;
+        FxEffectDef* handle;
         const char* name;
     };
 
     /* 11161 */
-    struct __declspec(align(4)) GfxLightImage
+    struct type_align32(4) GfxLightImage
     {
         GfxImage* image;
-        unsigned __int8 samplerState;
+        unsigned char samplerState;
     };
 
     /* 11162 */
@@ -1477,7 +2062,7 @@ namespace IW6
         int vertCount;
         FxTrailVertex* verts;
         int indCount;
-        unsigned __int16* inds;
+        unsigned short* inds;
     };
 
     /* 11167 */
@@ -1571,13 +2156,13 @@ namespace IW6
     /* 11092 */
     struct FxElemAtlas
     {
-        unsigned __int8 behavior;
-        unsigned __int8 index;
-        unsigned __int8 fps;
-        unsigned __int8 loopCount;
-        unsigned __int8 colIndexBits;
-        unsigned __int8 rowIndexBits;
-        __int16 entryCount;
+        unsigned char behavior;
+        unsigned char index;
+        unsigned char fps;
+        unsigned char loopCount;
+        unsigned char colIndexBits;
+        unsigned char rowIndexBits;
+        short entryCount;
     };
 
     /* 11093 */
@@ -1604,7 +2189,7 @@ namespace IW6
     /* 11096 */
     struct FxElemVisualState
     {
-        unsigned __int8 color[4];
+        unsigned char color[4];
         float rotationDelta;
         float rotationTotal;
         float size[2];
@@ -1639,10 +2224,10 @@ namespace IW6
         FxFloatRange gravity;
         FxFloatRange reflectionFactor;
         FxElemAtlas atlas;
-        unsigned __int8 elemType;
-        unsigned __int8 visualCount;
-        unsigned __int8 velIntervalCount;
-        unsigned __int8 visStateIntervalCount;
+        unsigned char elemType;
+        unsigned char visualCount;
+        unsigned char velIntervalCount;
+        unsigned char visStateIntervalCount;
         const FxElemVelStateSample* velSamples;
         const FxElemVisStateSample* visSamples;
         FxElemDefVisuals visuals;
@@ -1653,11 +2238,44 @@ namespace IW6
         FxFloatRange emitDist;
         FxFloatRange emitDistVariance;
         FxElemExtendedDefPtr extended;
-        unsigned __int8 sortOrder;
-        unsigned __int8 lightingFrac;
-        unsigned __int8 useItemClip;
-        unsigned __int8 fadeInfo;
+        unsigned char sortOrder;
+        unsigned char lightingFrac;
+        unsigned char useItemClip;
+        unsigned char fadeInfo;
         int randomSeed;
+    };
+
+    /* 1337 */
+    enum FxElemClass : int32_t
+    {
+        FX_ELEM_CLASS_SPRITE = 0x0,
+        FX_ELEM_CLASS_NONSPRITE = 0x1,
+        FX_ELEM_CLASS_CLOUD = 0x2,
+        FX_ELEM_CLASS_COUNT = 0x3,
+    };
+
+    /* 1341 */
+    enum FxElemType : int32_t
+    {
+        FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
+        FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,
+        FX_ELEM_TYPE_TAIL = 0x2,
+        FX_ELEM_TYPE_TRAIL = 0x3,
+        FX_ELEM_TYPE_FLARE = 0x4,
+        FX_ELEM_TYPE_PARTICLE_SIM_ANIMATION = 0x5,
+        FX_ELEM_TYPE_CLOUD = 0x6,
+        FX_ELEM_TYPE_SPARK_CLOUD = 0x7,
+        FX_ELEM_TYPE_SPARK_FOUNTAIN = 0x8,
+        FX_ELEM_TYPE_MODEL = 0x9,
+        FX_ELEM_TYPE_OMNI_LIGHT = 0xA,
+        FX_ELEM_TYPE_SPOT_LIGHT = 0xB,
+        FX_ELEM_TYPE_SOUND = 0xC,
+        FX_ELEM_TYPE_DECAL = 0xD,
+        FX_ELEM_TYPE_RUNNER = 0xE,
+        FX_ELEM_TYPE_VECTORFIELD = 0xF,
+        FX_ELEM_TYPE_COUNT = 0x10,
+        FX_ELEM_TYPE_LAST_SPRITE = 0x5,
+        FX_ELEM_TYPE_LAST_DRAWN = 0xB,
     };
 
     /* 11159 */
@@ -1674,21 +2292,21 @@ namespace IW6
         int occlusionQueryFadeIn;
         int occlusionQueryFadeOut;
         FxFloatRange occlusionQueryScaleRange;
-        const FxElemDef* elemDefs;
+        FxElemDef* elemDefs;
     };
 
     /* 11832 */
-    struct __declspec(align(4)) ScriptableEventFxDef
+    struct ScriptableEventFxDef
     {
-        const FxEffectDef* handle;
+        FxEffectDef* handle;
         ScriptString tagName;
-        unsigned __int16 loopTime;
-        unsigned __int8 loopTimeStreamIndex;
+        unsigned short loopTime;
+        unsigned char loopTimeStreamIndex;
         bool tagUseAngles;
     };
 
     /* 11833 */
-    struct __declspec(align(4)) ScriptableEventSoundDef
+    struct ScriptableEventSoundDef
     {
         snd_alias_list_t* alias;
         bool looping;
@@ -1699,32 +2317,32 @@ namespace IW6
     {
         const char* animName;
         bool override;
-        unsigned __int8 animEntryIndex;
-        unsigned __int16 timeOffsetMin;
-        unsigned __int16 timeOffsetMax;
-        unsigned __int16 playbackRateMin;
-        unsigned __int16 playbackRateMax;
-        unsigned __int16 blendTime;
+        unsigned char animEntryIndex;
+        unsigned short timeOffsetMin;
+        unsigned short timeOffsetMax;
+        unsigned short playbackRateMin;
+        unsigned short playbackRateMax;
+        unsigned short blendTime;
     };
 
     /* 11835 */
-    struct __declspec(align(2)) ScriptableEventExplodeDef
+    struct ScriptableEventExplodeDef
     {
-        unsigned __int16 forceMin;
-        unsigned __int16 forceMax;
-        unsigned __int16 radius;
-        unsigned __int16 damageMin;
-        unsigned __int16 damageMax;
+        unsigned short forceMin;
+        unsigned short forceMax;
+        unsigned short radius;
+        unsigned short damageMin;
+        unsigned short damageMax;
         bool aiAvoid;
     };
 
     /* 11836 */
-    struct __declspec(align(2)) ScriptableEventHealthDef
+    struct ScriptableEventHealthDef
     {
-        unsigned __int16 amount;
-        unsigned __int16 interval;
-        unsigned __int16 badPlaceRadius;
-        unsigned __int8 streamIndex;
+        unsigned short amount;
+        unsigned short interval;
+        unsigned short badPlaceRadius;
+        unsigned char streamIndex;
     };
 
     /* 11837 */
@@ -1736,34 +2354,34 @@ namespace IW6
     /* 11838 */
     struct ScriptableEventLightSettingsDef
     {
-        unsigned __int8 color[4];
-        unsigned __int8 lightIndexConstIndex;
-        unsigned __int8 transStateStreamIndex;
-        unsigned __int8 useColor;
-        unsigned __int8 useStateTransitionTime;
-        unsigned __int16 intensityScaleMin;
-        unsigned __int16 intensityScaleMax;
-        unsigned __int16 radiusScaleMin;
-        unsigned __int16 radiusScaleMax;
+        unsigned char color[4];
+        unsigned char lightIndexConstIndex;
+        unsigned char transStateStreamIndex;
+        unsigned char useColor;
+        unsigned char useStateTransitionTime;
+        unsigned short intensityScaleMin;
+        unsigned short intensityScaleMax;
+        unsigned short radiusScaleMin;
+        unsigned short radiusScaleMax;
         const char* noteworthy;
-        unsigned __int16 transitionTimeMin;
-        unsigned __int16 transitionTimeMax;
+        unsigned short transitionTimeMin;
+        unsigned short transitionTimeMax;
     };
 
     /* 11839 */
     struct ScriptableEventSunlightSettingsDef
     {
-        unsigned __int8 color[4];
-        unsigned __int8 transStateStreamIndex;
-        unsigned __int8 flags;
-        unsigned __int16 intensityScaleMin;
-        unsigned __int16 intensityScaleMax;
-        unsigned __int16 pitchMin;
-        unsigned __int16 pitchMax;
-        unsigned __int16 headingMin;
-        unsigned __int16 headingMax;
-        unsigned __int16 transitionTimeMin;
-        unsigned __int16 transitionTimeMax;
+        unsigned char color[4];
+        unsigned char transStateStreamIndex;
+        unsigned char flags;
+        unsigned short intensityScaleMin;
+        unsigned short intensityScaleMax;
+        unsigned short pitchMin;
+        unsigned short pitchMax;
+        unsigned short headingMin;
+        unsigned short headingMax;
+        unsigned short transitionTimeMin;
+        unsigned short transitionTimeMax;
     };
 
     /* 11840 */
@@ -1782,7 +2400,7 @@ namespace IW6
     };
 
     /* 1491 */
-    enum ScriptableEventType : __int32
+    enum ScriptableEventType : int
     {
         SCRIPTABLE_EVENT_MODEL = 0x0,
         SCRIPTABLE_EVENT_FX = 0x1,
@@ -1809,70 +2427,70 @@ namespace IW6
         ScriptString name;
         ScriptString tagName;
         ScriptableEventDef* onEnterEvents;
-        unsigned __int8 onEnterEventCount;
-        unsigned __int8 damageFlags;
-        unsigned __int16 maxHealth;
+        unsigned char onEnterEventCount;
+        unsigned char damageFlags;
+        unsigned short maxHealth;
     };
 
     /* 11843 */
-    struct __declspec(align(4)) ScriptablePartDef
+    struct ScriptablePartDef
     {
         ScriptableStateDef* states;
         ScriptString name;
-        unsigned __int8 stateCount;
-        unsigned __int8 flags;
-        unsigned __int8 eventStreamTimeRemainIndex;
-        unsigned __int8 eventStreamNextChangeTimeIndex;
+        unsigned char stateCount;
+        unsigned char flags;
+        unsigned char eventStreamTimeRemainIndex;
+        unsigned char eventStreamNextChangeTimeIndex;
     };
 
     /* 11844 */
-    struct __declspec(align(4)) ScriptableDef
+    struct ScriptableDef
     {
         const char* name;
         XModel* baseModel;
         const char* baseCollisionBrush;
         const char* destroyedCollisionBrush;
         ScriptablePartDef* parts;
-        unsigned __int8 partCount;
-        unsigned __int8 flags;
-        unsigned __int8 serverPartCount;
-        unsigned __int8 eventStreamSize;
-        unsigned __int8 eventConstantsSize;
+        unsigned char partCount;
+        unsigned char flags;
+        unsigned char serverPartCount;
+        unsigned char eventStreamSize;
+        unsigned char eventConstantsSize;
     };
 
     /* 11845 */
     struct ScriptableInstancePartState
     {
-        unsigned __int8 flags;
-        unsigned __int8 stateIndex;
-        unsigned __int16 curHealth;
+        unsigned char flags;
+        unsigned char stateIndex;
+        unsigned short curHealth;
     };
 
     /* 11846 */
-    struct __declspec(align(4)) ScriptableInstance
+    struct ScriptableInstance
     {
         ScriptableDef* def;
         float origin[3];
         float angles[3];
         ScriptString targetname;
-        unsigned __int16 preBrushModel;
-        unsigned __int16 postBrushModel;
-        unsigned __int8 flags;
+        unsigned short preBrushModel;
+        unsigned short postBrushModel;
+        unsigned char flags;
         XModel* currentModel;
         unsigned int currentPartBits[6];
         ScriptableInstancePartState* partStates;
-        unsigned __int8* eventStreamBuf;
-        unsigned __int8* eventConstantsBuf;
-        unsigned __int16 updateNextInstance;
-        unsigned __int16 linkedObject;
-        unsigned __int16 damageOwner;
+        unsigned char* eventStreamBuf;
+        unsigned char* eventConstantsBuf;
+        unsigned short updateNextInstance;
+        unsigned short linkedObject;
+        unsigned short damageOwner;
     };
 
     /* 11847 */
     struct ScriptableAnimationEntry
     {
         const char* animName;
-        unsigned __int64 runtimeBuf;
+        uint64_t runtimeBuf;
     };
 
     /* 11848 */
@@ -1889,7 +2507,7 @@ namespace IW6
     /* 11798 */
     struct cLeafBrushNodeLeaf_t
     {
-        unsigned __int16* brushes;
+        unsigned short* brushes;
     };
 
     /* 11799 */
@@ -1897,7 +2515,7 @@ namespace IW6
     {
         float dist;
         float range;
-        unsigned __int16 childOffset[2];
+        unsigned short childOffset[2];
     };
 
     /* 11800 */
@@ -1910,8 +2528,8 @@ namespace IW6
     /* 11801 */
     struct cLeafBrushNode_s
     {
-        unsigned __int8 axis;
-        __int16 leafBrushCount;
+        unsigned char axis;
+        short leafBrushCount;
         int contents;
         cLeafBrushNodeData_t data;
     };
@@ -1934,12 +2552,12 @@ namespace IW6
         unsigned int numBrushSides;
         cbrushside_t* brushsides;
         unsigned int numBrushEdges;
-        unsigned __int8* brushEdges;
+        unsigned char* brushEdges;
         unsigned int leafbrushNodesCount;
         cLeafBrushNode_s* leafbrushNodes;
         unsigned int numLeafBrushes;
-        unsigned __int16* leafbrushes;
-        unsigned __int16 numBrushes;
+        unsigned short* leafbrushes;
+        unsigned short numBrushes;
         cbrush_t* brushes;
         Bounds* brushBounds;
         int* brushContents;
@@ -1958,14 +2576,14 @@ namespace IW6
     struct cNode_t
     {
         cplane_s* plane;
-        __int16 children[2];
+        short children[2];
     };
 
     /* 11805 */
     struct cLeaf_t
     {
-        unsigned __int16 firstCollAabbIndex;
-        unsigned __int16 collAabbCount;
+        unsigned short firstCollAabbIndex;
+        unsigned short collAabbCount;
         int brushContents;
         int terrainContents;
         Bounds bounds;
@@ -1985,9 +2603,9 @@ namespace IW6
     /* 11807 */
     struct CollisionPartition
     {
-        unsigned __int8 triCount;
-        unsigned __int8 borderCount;
-        unsigned __int8 firstVertSegment;
+        unsigned char triCount;
+        unsigned char borderCount;
+        unsigned char firstVertSegment;
         int firstTri;
         CollisionBorder* borders;
     };
@@ -2003,8 +2621,8 @@ namespace IW6
     struct CollisionAabbTree
     {
         float midPoint[3];
-        unsigned __int16 materialIndex;
-        unsigned __int16 childCount;
+        unsigned short materialIndex;
+        unsigned short childCount;
         float halfSize[3];
         CollisionAabbTreeIndex u;
     };
@@ -2022,8 +2640,8 @@ namespace IW6
     struct TriggerModel
     {
         int contents;
-        unsigned __int16 hullCount;
-        unsigned __int16 firstHull;
+        unsigned short hullCount;
+        unsigned short firstHull;
     };
 
     /* 11812 */
@@ -2031,8 +2649,8 @@ namespace IW6
     {
         Bounds bounds;
         int contents;
-        unsigned __int16 slabCount;
-        unsigned __int16 firstSlab;
+        unsigned short slabCount;
+        unsigned short firstSlab;
     };
 
     /* 11813 */
@@ -2058,25 +2676,25 @@ namespace IW6
     struct ClientTriggerAabbNode
     {
         Bounds bounds;
-        unsigned __int16 firstChild;
-        unsigned __int16 childCount;
+        unsigned short firstChild;
+        unsigned short childCount;
     };
 
     /* 11816 */
     struct ClientTriggers
     {
         MapTriggers trigger;
-        unsigned __int16 numClientTriggerNodes;
+        unsigned short numClientTriggerNodes;
         ClientTriggerAabbNode* clientTriggerAabbTree;
         unsigned int triggerStringLength;
         char* triggerString;
-        __int16* visionSetTriggers;
-        unsigned __int8* triggerType;
+        short* visionSetTriggers;
+        unsigned char* triggerType;
         float (*origins)[3];
         float* scriptDelay;
-        __int16* audioTriggers;
-        __int16* blendLookup;
-        __int16* npcTriggers;
+        short* audioTriggers;
+        short* blendLookup;
+        short* npcTriggers;
     };
 
     /* 11817 */
@@ -2084,21 +2702,21 @@ namespace IW6
     {
         float pointA[3];
         float pointB[3];
-        unsigned __int16 triggerA;
-        unsigned __int16 triggerB;
+        unsigned short triggerA;
+        unsigned short triggerB;
     };
 
     /* 11818 */
     struct ClientTriggerBlend
     {
-        unsigned __int16 numClientTriggerBlendNodes;
+        unsigned short numClientTriggerBlendNodes;
         ClientTriggerBlendNode* blendNodes;
     };
 
     /* 11474 */
     const struct SpawnPointEntityRecord
     {
-        unsigned __int16 index;
+        unsigned short index;
         ScriptString name;
         ScriptString target;
         ScriptString script_noteworthy;
@@ -2109,7 +2727,7 @@ namespace IW6
     /* 11819 */
     struct SpawnPointRecordList
     {
-        unsigned __int16 spawnsCount;
+        unsigned short spawnsCount;
         SpawnPointEntityRecord* spawns;
     };
 
@@ -2126,24 +2744,24 @@ namespace IW6
     };
 
     /* 11821 */
-    struct __declspec(align(2)) Stage
+    struct Stage
     {
         const char* name;
         float origin[3];
-        unsigned __int16 triggerIndex;
-        unsigned __int8 sunPrimaryLightIndex;
+        unsigned short triggerIndex;
+        unsigned char sunPrimaryLightIndex;
     };
 
     /* 11822 */
     struct SModelAabbNode
     {
         Bounds bounds;
-        unsigned __int16 firstChild;
-        unsigned __int16 childCount;
+        unsigned short firstChild;
+        unsigned short childCount;
     };
 
     /* 11849 */
-    struct __declspec(align(128)) clipMap_t
+    struct clipMap_t
     {
         const char* name;
         int isInUse;
@@ -2156,10 +2774,10 @@ namespace IW6
         unsigned int numLeafs;
         cLeaf_t* leafs;
         unsigned int vertCount;
-        float (*verts)[3];
+        vec3_t* verts;
         int triCount;
-        unsigned __int16* triIndices;
-        unsigned __int8* triEdgeIsWalkable;
+        unsigned short* triIndices;
+        unsigned char* triEdgeIsWalkable;
         int borderCount;
         CollisionBorder* borders;
         int partitionCount;
@@ -2170,11 +2788,11 @@ namespace IW6
         cmodel_t* cmodels;
         MapEnts* mapEnts;
         Stage* stages;
-        unsigned __int8 stageCount;
+        unsigned char stageCount;
         MapTriggers stageTrigger;
-        unsigned __int16 smodelNodeCount;
+        unsigned short smodelNodeCount;
         SModelAabbNode* smodelNodes;
-        unsigned __int16 dynEntCount[2];
+        unsigned short dynEntCount[2];
         DynEntityDef* dynEntDefList[2];
         DynEntityPose* dynEntPoseList[2];
         DynEntityClient* dynEntClientList[2];
@@ -2186,10 +2804,10 @@ namespace IW6
     /* 11850 */
     struct ComPrimaryLight
     {
-        unsigned __int8 type;
-        unsigned __int8 canUseShadowMap;
-        unsigned __int8 exponent;
-        unsigned __int8 unused;
+        unsigned char type;
+        unsigned char canUseShadowMap;
+        unsigned char exponent;
+        unsigned char unused;
         float color[3];
         float dir[3];
         float up[3];
@@ -2213,13 +2831,13 @@ namespace IW6
     };
 
     /* 11852 */
-    struct __declspec(align(2)) G_GlassPiece
+    struct G_GlassPiece
     {
-        unsigned __int16 damageTaken;
-        unsigned __int16 collapseTime;
+        unsigned short damageTaken;
+        unsigned short collapseTime;
         int lastStateChangeTime;
-        unsigned __int8 impactDir;
-        unsigned __int8 impactPos[2];
+        unsigned char impactDir;
+        unsigned char impactPos[2];
     };
 
     /* 11853 */
@@ -2227,8 +2845,8 @@ namespace IW6
     {
         char* nameStr;
         ScriptString name;
-        unsigned __int16 pieceCount;
-        unsigned __int16* pieceIndices;
+        unsigned short pieceCount;
+        unsigned short* pieceIndices;
     };
 
     /* 11854 */
@@ -2236,11 +2854,11 @@ namespace IW6
     {
         G_GlassPiece* glassPieces;
         unsigned int pieceCount;
-        unsigned __int16 damageToWeaken;
-        unsigned __int16 damageToDestroy;
+        unsigned short damageToWeaken;
+        unsigned short damageToDestroy;
         unsigned int glassNameCount;
         G_GlassName* glassNames;
-        unsigned __int8 pad[108];
+        unsigned char pad[108];
     };
 
     /* 11855 */
@@ -2261,7 +2879,7 @@ namespace IW6
     struct pathnode_tree_nodes_t
     {
         int nodeCount;
-        unsigned __int16* nodes;
+        unsigned short* nodes;
     };
 
     struct pathnode_tree_t;
@@ -2284,7 +2902,7 @@ namespace IW6
     /* 11860 */
     struct PathDynamicNodeGroup
     {
-        unsigned __int16 parentIndex;
+        unsigned short parentIndex;
         int nodeTreeCount;
         pathnode_tree_t* nodeTree;
     };
@@ -2300,29 +2918,29 @@ namespace IW6
     struct pathlink_s
     {
         float fDist;
-        unsigned __int16 nodeNum;
-        unsigned __int8 disconnectCount;
-        unsigned __int8 negotiationLink;
-        unsigned __int8 flags;
-        unsigned __int8 ubBadPlaceCount[3];
+        unsigned short nodeNum;
+        unsigned char disconnectCount;
+        unsigned char negotiationLink;
+        unsigned char flags;
+        unsigned char ubBadPlaceCount[3];
     };
 
     /* 11005 */
-    union $E38C7A9523D6E08EE02BA50DE59FF9A9
+    union pathnode_angles_t
     {
         pathnode_yaworient_t yaw_orient;
         float angles[3];
     };
 
     /* 11006 */
-    union $F1B88591D6269D2097FFDF40357A0237
+    union pathnode_parent_t
     {
-        unsigned __int16 parentIndex;
+        unsigned short parentIndex;
         ScriptString parentName;
     };
 
     /* 1697 */
-    enum PathNodeErrorCode : __int32
+    enum PathNodeErrorCode : int
     {
         PNERR_NONE = 0x0,
         PNERR_INSOLID = 0x1,
@@ -2337,7 +2955,7 @@ namespace IW6
     };
 
     /* 11007 */
-    union $91DC8512562747732C7AFCF50E8F092E
+    union pathnode_error_t
     {
         float minUseDistSq;
         PathNodeErrorCode error;
@@ -2346,7 +2964,7 @@ namespace IW6
     /* 11008 */
     struct pathnode_constant_t
     {
-        unsigned __int16 type;
+        unsigned short type;
         unsigned int spawnflags;
         ScriptString targetname;
         ScriptString script_linkName;
@@ -2355,19 +2973,19 @@ namespace IW6
         ScriptString animscript;
         int animscriptfunc;
         float vLocalOrigin[3];
-        $E38C7A9523D6E08EE02BA50DE59FF9A9 ___u9;
-        $F1B88591D6269D2097FFDF40357A0237 ___u10;
-        $91DC8512562747732C7AFCF50E8F092E ___u11;
-        __int16 wOverlapNode[2];
-        unsigned __int16 totalLinkCount;
+        pathnode_angles_t ___u9;
+        pathnode_parent_t ___u10;
+        pathnode_error_t ___u11;
+        short wOverlapNode[2];
+        unsigned short totalLinkCount;
         pathlink_s* Links;
     };
 
     /* 11009 */
     struct SentientHandle
     {
-        unsigned __int16 number;
-        unsigned __int16 infoIndex;
+        unsigned short number;
+        unsigned short infoIndex;
     };
 
     /* 11010 */
@@ -2376,19 +2994,19 @@ namespace IW6
         SentientHandle pOwner;
         int iFreeTime;
         int iValidTime[3];
-        __int16 wLinkCount;
-        __int16 wOverlapCount;
-        __int16 turretEntNumber;
-        unsigned __int8 userCount;
-        unsigned __int8 hasBadPlaceLink;
+        short wLinkCount;
+        short wOverlapCount;
+        short turretEntNumber;
+        unsigned char userCount;
+        unsigned char hasBadPlaceLink;
         int spreadUsedTime[2];
-        __int16 flags;
-        __int16 dangerousCount;
+        short flags;
+        short dangerousCount;
         int recentUseProxTime;
     };
 
     /* 11012 */
-    union $73F238679C0419BE2C31C6559E8604FC
+    union pathnode_transient_cost_t
     {
         float nodeCost;
         int linkIndex;
@@ -2405,7 +3023,7 @@ namespace IW6
         pathnode_t* pParent;
         float fCost;
         float fHeuristic;
-        $73F238679C0419BE2C31C6559E8604FC ___u6;
+        pathnode_transient_cost_t ___u6;
     };
 
     /* 11011 */
@@ -2424,22 +3042,22 @@ namespace IW6
         pathnode_t* nodes;
         pathbasenode_t* basenodes;
         bool parentIndexResolved;
-        unsigned __int16 version;
+        unsigned short version;
         int visBytes;
-        unsigned __int8* pathVis;
+        unsigned char* pathVis;
         int nodeTreeCount;
         pathnode_tree_t* nodeTree;
         int dynamicNodeGroupCount;
         PathDynamicNodeGroup* dynamicNodeGroups;
         int exposureBytes;
-        unsigned __int8* pathExposure;
+        unsigned char* pathExposure;
         int noPeekVisBytes;
-        unsigned __int8* pathNoPeekVis;
+        unsigned char* pathNoPeekVis;
         int zoneCount;
         int zonesBytes;
-        unsigned __int8* pathZones;
+        unsigned char* pathZones;
         int dynStatesBytes;
-        unsigned __int8* pathDynStates;
+        unsigned char* pathDynStates;
     };
 
     /* 11044 */
@@ -2497,11 +3115,11 @@ namespace IW6
         GfxColor color;
         Material* material;
         Material* materialShattered;
-        const PhysPreset* physPreset;
-        const FxEffectDef* pieceBreakEffect;
-        const FxEffectDef* shatterEffect;
-        const FxEffectDef* shatterSmallEffect;
-        const FxEffectDef* crackDecalEffect;
+        PhysPreset* physPreset;
+        FxEffectDef* pieceBreakEffect;
+        FxEffectDef* shatterEffect;
+        FxEffectDef* shatterSmallEffect;
+        FxEffectDef* crackDecalEffect;
         float invHighMipRadius;
         float shatteredInvHighMipRadius;
         int numCrackRings;
@@ -2515,7 +3133,7 @@ namespace IW6
     };
 
     /* 11864 */
-    struct $49863DD27C3219B1D9F8D0E691D655ED
+    struct FxGlassPieceFrame
     {
         FxSpatialFrame frame;
         float radius;
@@ -2524,7 +3142,7 @@ namespace IW6
     /* 11865 */
     union FxGlassPiecePlace
     {
-        $49863DD27C3219B1D9F8D0E691D655ED __s0;
+        FxGlassPieceFrame __s0;
         unsigned int nextFree;
     };
 
@@ -2533,15 +3151,15 @@ namespace IW6
     {
         float texCoordOrigin[2];
         unsigned int supportMask;
-        unsigned __int16 initIndex;
-        unsigned __int16 geoDataStart;
-        unsigned __int8 defIndex;
-        unsigned __int8 pad[5];
-        unsigned __int8 vertCount;
-        unsigned __int8 holeDataCount;
-        unsigned __int8 crackDataCount;
-        unsigned __int8 fanDataCount;
-        unsigned __int16 flags;
+        unsigned short initIndex;
+        unsigned short geoDataStart;
+        unsigned char defIndex;
+        unsigned char pad[5];
+        unsigned char vertCount;
+        unsigned char holeDataCount;
+        unsigned char crackDataCount;
+        unsigned char fanDataCount;
+        unsigned short flags;
         float areaX2;
     };
 
@@ -2558,24 +3176,24 @@ namespace IW6
     /* 11868 */
     struct FxGlassVertex
     {
-        __int16 x;
-        __int16 y;
+        short x;
+        short y;
     };
 
     /* 11869 */
     struct FxGlassHoleHeader
     {
-        unsigned __int16 uniqueVertCount;
-        unsigned __int8 touchVert;
-        unsigned __int8 pad[1];
+        unsigned short uniqueVertCount;
+        unsigned char touchVert;
+        unsigned char pad[1];
     };
 
     /* 11870 */
     struct FxGlassCrackHeader
     {
-        unsigned __int16 uniqueVertCount;
-        unsigned __int8 beginVertIndex;
-        unsigned __int8 endVertIndex;
+        unsigned short uniqueVertCount;
+        unsigned char beginVertIndex;
+        unsigned char endVertIndex;
     };
 
     /* 11871 */
@@ -2584,8 +3202,8 @@ namespace IW6
         FxGlassVertex vert;
         FxGlassHoleHeader hole;
         FxGlassCrackHeader crack;
-        unsigned __int8 asBytes[4];
-        __int16 anonymous[2];
+        unsigned char asBytes[4];
+        short anonymous[2];
     };
 
     /* 11872 */
@@ -2596,10 +3214,10 @@ namespace IW6
         float texCoordOrigin[2];
         unsigned int supportMask;
         float areaX2;
-        unsigned __int8 defIndex;
-        unsigned __int8 vertCount;
-        unsigned __int8 fanDataCount;
-        unsigned __int8 pad[1];
+        unsigned char defIndex;
+        unsigned char vertCount;
+        unsigned char fanDataCount;
+        unsigned char pad[1];
     };
 
     /* 11873 */
@@ -2624,14 +3242,14 @@ namespace IW6
         FxGlassGeometryData* geoData;
         unsigned int* isInUse;
         unsigned int* cellBits;
-        unsigned __int8* visData;
+        unsigned char* visData;
         float (*linkOrg)[3];
         float* halfThickness;
-        unsigned __int16* lightingHandles;
+        unsigned short* lightingHandles;
         FxGlassInitPieceState* initPieceStates;
         FxGlassGeometryData* initGeoData;
         bool needToCompactData;
-        unsigned __int8 initCount;
+        unsigned char initCount;
         float effectChanceAccum;
         int lastPieceDeletionTime;
     };
@@ -2648,18 +3266,18 @@ namespace IW6
     {
         unsigned int vertexLayerData;
         unsigned int firstVertex;
-        unsigned __int16 vertexCount;
-        unsigned __int16 triCount;
+        unsigned short vertexCount;
+        unsigned short triCount;
         unsigned int baseIndex;
     };
 
     /* 11911 */
     struct GfxSurfaceLightingAndFlagsFields
     {
-        unsigned __int8 lightmapIndex;
-        unsigned __int8 reflectionProbeIndex;
-        unsigned __int8 primaryLightIndex;
-        unsigned __int8 flags;
+        unsigned char lightmapIndex;
+        unsigned char reflectionProbeIndex;
+        unsigned char primaryLightIndex;
+        unsigned char flags;
     };
 
     /* 11912 */
@@ -2678,11 +3296,11 @@ namespace IW6
     };
 
     /* 11914 */
-    struct __declspec(align(2)) GfxSurfaceBounds
+    struct GfxSurfaceBounds
     {
         Bounds bounds;
-        unsigned __int16 mipRadius;
-        unsigned __int8 invHighMipRadius[5];
+        unsigned short mipRadius;
+        unsigned char invHighMipRadius[5];
     };
 
     /* 11915 */
@@ -2696,9 +3314,9 @@ namespace IW6
     /* 11916 */
     struct GfxStaticModelVertexLighting
     {
-        unsigned __int8 ambientColorUint8[4];
-        unsigned __int8 highlightColorUint8[4];
-        unsigned __int8 highlightDir[4];
+        unsigned char ambientColorUint8[4];
+        unsigned char highlightColorUint8[4];
+        unsigned char highlightDir[4];
     };
 
     /* 11917 */
@@ -2710,19 +3328,19 @@ namespace IW6
     };
 
     /* 11918 */
-    struct __declspec(align(2)) GfxStaticModelDrawInst
+    struct GfxStaticModelDrawInst
     {
         GfxPackedPlacement placement;
         XModel* model;
         GfxColor groundLighting;
         GfxStaticModelVertexLightingInfo vertexLightingInfo;
-        unsigned __int16 lightingHandle;
-        unsigned __int16 cullDist;
-        unsigned __int16 flags;
-        unsigned __int16 staticModelId;
-        unsigned __int8 primaryLightIndex;
-        unsigned __int8 reflectionProbeIndex;
-        unsigned __int8 firstMtlSkinIndex;
+        unsigned short lightingHandle;
+        unsigned short cullDist;
+        unsigned short flags;
+        unsigned short staticModelId;
+        unsigned char primaryLightIndex;
+        unsigned char reflectionProbeIndex;
+        unsigned char firstMtlSkinIndex;
     };
 
     /* 11909 */
@@ -2747,9 +3365,9 @@ namespace IW6
         unsigned int emissiveSurfsEnd;
         unsigned int smodelVisDataCount;
         unsigned int surfaceVisDataCount;
-        unsigned __int8* smodelVisData[3];
-        unsigned __int8* surfaceVisData[3];
-        unsigned __int16* sortedSurfIndex;
+        unsigned char* smodelVisData[3];
+        unsigned char* surfaceVisData[3];
+        unsigned short* sortedSurfIndex;
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxSurfaceBounds* surfacesBounds;
@@ -2765,14 +3383,14 @@ namespace IW6
         unsigned int dynEntClientWordCount[2];
         unsigned int dynEntClientCount[2];
         unsigned int* dynEntCellBits[2];
-        unsigned __int8* dynEntVisData[2][3];
+        unsigned char* dynEntVisData[2][3];
     };
 
     /* 11921 */
     struct GfxHeroOnlyLight
     {
-        unsigned __int8 type;
-        unsigned __int8 unused[3];
+        unsigned char type;
+        unsigned char unused[3];
         float color[3];
         float dir[3];
         float up[3];
@@ -2786,38 +3404,38 @@ namespace IW6
     /* 11901 */
     struct XModelDrawInfo
     {
-        unsigned __int8 hasGfxEntIndex;
-        unsigned __int8 lod;
-        unsigned __int16 surfId;
+        unsigned char hasGfxEntIndex;
+        unsigned char lod;
+        unsigned short surfId;
     };
 
     /* 11902 */
     struct GfxSceneDynModel
     {
         XModelDrawInfo info;
-        unsigned __int16 dynEntId;
+        unsigned short dynEntId;
     };
 
     /* 11903 */
     struct BModelDrawInfo
     {
-        unsigned __int16 surfId;
+        unsigned short surfId;
     };
 
     /* 11904 */
     struct GfxSceneDynBrush
     {
         BModelDrawInfo info;
-        unsigned __int16 dynEntId;
+        unsigned short dynEntId;
     };
 
     /* 11905 */
     struct GfxShadowGeometry
     {
-        unsigned __int16 surfaceCount;
-        unsigned __int16 smodelCount;
-        unsigned __int16* sortedSurfIndex;
-        unsigned __int16* smodelIndex;
+        unsigned short surfaceCount;
+        unsigned short smodelCount;
+        unsigned short* sortedSurfIndex;
+        unsigned short* smodelIndex;
     };
 
     /* 11906 */
@@ -2845,12 +3463,12 @@ namespace IW6
     };
 
     /* 11875 */
-    struct __declspec(align(4)) GfxSky
+    struct type_align32(4) GfxSky
     {
         int skySurfCount;
         int* skyStartSurfs;
         GfxImage* skyImage;
-        unsigned __int8 skySamplerState;
+        unsigned char skySamplerState;
     };
 
     /* 11876 */
@@ -2858,7 +3476,7 @@ namespace IW6
     {
         int cellCount;
         cplane_s* planes;
-        unsigned __int16* nodes;
+        unsigned short* nodes;
         unsigned int* sceneEntCellBits;
     };
 
@@ -2872,11 +3490,11 @@ namespace IW6
     struct GfxAabbTree
     {
         Bounds bounds;
-        unsigned __int16 childCount;
-        unsigned __int16 surfaceCount;
-        unsigned __int16 startSurfIndex;
-        unsigned __int16 smodelIndexCount;
-        unsigned __int16* smodelIndexes;
+        unsigned short childCount;
+        unsigned short surfaceCount;
+        unsigned short startSurfIndex;
+        unsigned short smodelIndexCount;
+        unsigned short* smodelIndexes;
         int childrenOffset;
     };
 
@@ -2893,8 +3511,8 @@ namespace IW6
     {
         bool isQueued;
         bool isAncestor;
-        unsigned __int8 recursionDepth;
-        unsigned __int8 hullPointCount;
+        unsigned char recursionDepth;
+        unsigned char hullPointCount;
         float (*hullPoints)[2];
         GfxPortal* queuedParent;
     };
@@ -2911,8 +3529,8 @@ namespace IW6
         GfxPortalWritable writable;
         DpvsPlane plane;
         float (*vertices)[3];
-        unsigned __int16 cellIndex;
-        unsigned __int8 vertexCount;
+        unsigned short cellIndex;
+        unsigned char vertexCount;
         float hullAxis[2][3];
     };
 
@@ -2922,10 +3540,10 @@ namespace IW6
         Bounds bounds;
         int portalCount;
         GfxPortal* portals;
-        unsigned __int8 reflectionProbeCount;
-        unsigned __int8* reflectionProbes;
-        unsigned __int8 reflectionProbeReferenceCount;
-        unsigned __int8* reflectionProbeReferences;
+        unsigned char reflectionProbeCount;
+        unsigned char* reflectionProbes;
+        unsigned char reflectionProbeReferenceCount;
+        unsigned char* reflectionProbeReferences;
     };
 
     /* 11884 */
@@ -2951,7 +3569,7 @@ namespace IW6
     /* 11887 */
     struct GfxReflectionProbeReference
     {
-        unsigned __int8 index;
+        unsigned char index;
     };
 
     /* 11888 */
@@ -2983,7 +3601,7 @@ namespace IW6
     /* 11891 */
     struct GfxWorldVertexLayerData
     {
-        unsigned __int8* data;
+        unsigned char* data;
         D3DVertexBuffer layerVb;
     };
 
@@ -3009,28 +3627,28 @@ namespace IW6
         unsigned int vertexLayerDataSize;
         GfxWorldVertexLayerData vld;
         unsigned int indexCount;
-        unsigned __int16* indices;
+        unsigned short* indices;
         D3DIndexBuffer indexBuffer;
     };
 
     /* 11893 */
     struct GfxLightGridEntry
     {
-        unsigned __int16 colorsIndex;
-        unsigned __int8 primaryLightIndex;
-        unsigned __int8 needsTrace;
+        unsigned short colorsIndex;
+        unsigned char primaryLightIndex;
+        unsigned char needsTrace;
     };
 
     /* 11894 */
     struct GfxLightGridColors
     {
-        unsigned __int8 rgb[56][3];
+        unsigned char rgb[56][3];
     };
 
     /* 11895 */
     struct GfxLightGridTree
     {
-        unsigned __int8 maxDepth;
+        unsigned char maxDepth;
         int nodeCount;
         int leafCount;
         int coordMinGridSpace[3];
@@ -3040,7 +3658,7 @@ namespace IW6
         int defaultLightIndexBitCount;
         unsigned int* p_nodeTable;
         int leafTableSize;
-        unsigned __int8* p_leafTable;
+        unsigned char* p_leafTable;
     };
 
     /* 11896 */
@@ -3049,13 +3667,13 @@ namespace IW6
         bool hasLightRegions;
         bool useSkyForLowZ;
         unsigned int lastSunPrimaryLightIndex;
-        unsigned __int16 mins[3];
-        unsigned __int16 maxs[3];
+        unsigned short mins[3];
+        unsigned short maxs[3];
         unsigned int rowAxis;
         unsigned int colAxis;
-        unsigned __int16* rowDataStart;
+        unsigned short* rowDataStart;
         unsigned int rawRowDataSize;
-        unsigned __int8* rawRowData;
+        unsigned char* rawRowData;
         unsigned int entryCount;
         GfxLightGridEntry* entries;
         unsigned int colorCount;
@@ -3066,12 +3684,12 @@ namespace IW6
         char rangeExponent8BitsEncoding;
         char rangeExponent12BitsEncoding;
         char rangeExponent16BitsEncoding;
-        unsigned __int8 stageCount;
+        unsigned char stageCount;
         float* stageLightingContrastGain;
         unsigned int paletteEntryCount;
         int* paletteEntryAddress;
         unsigned int paletteBitstreamSize;
-        unsigned __int8* paletteBitstream;
+        unsigned char* paletteBitstream;
         GfxLightGridColors skyLightGridColors;
         GfxLightGridColors defaultLightGridColors;
         GfxLightGridTree tree;
@@ -3089,8 +3707,8 @@ namespace IW6
         GfxBrushModelWritable writable;
         Bounds bounds;
         float radius;
-        unsigned __int16 startSurfIndex;
-        unsigned __int16 surfaceCount;
+        unsigned short startSurfIndex;
+        unsigned short surfaceCount;
     };
 
     /* 11899 */
@@ -3128,7 +3746,7 @@ namespace IW6
     };
 
     /* 11922 */
-    struct __declspec(align(4)) GfxWorld
+    struct type_align32(4) GfxWorld
     {
         const char* name;
         const char* baseName;
@@ -3165,7 +3783,7 @@ namespace IW6
         GfxSceneDynBrush* sceneDynBrush;
         unsigned int* primaryLightEntityShadowVis;
         unsigned int* primaryLightDynEntShadowVis[2];
-        unsigned __int8* nonSunPrimaryLightForModelDynEnt;
+        unsigned char* nonSunPrimaryLightForModelDynEnt;
         GfxShadowGeometry* shadowGeom;
         GfxLightRegion* lightRegion;
         GfxWorldDpvsStatic dpvs;
@@ -3173,18 +3791,18 @@ namespace IW6
         unsigned int mapVtxChecksum;
         unsigned int heroOnlyLightCount;
         GfxHeroOnlyLight* heroOnlyLights;
-        unsigned __int8 fogTypesAllowed;
+        unsigned char fogTypesAllowed;
     };
 
     /* 11489 */
     struct Glyph
     {
-        unsigned __int16 letter;
+        unsigned short letter;
         char x0;
         char y0;
-        unsigned __int8 dx;
-        unsigned __int8 pixelWidth;
-        unsigned __int8 pixelHeight;
+        unsigned char dx;
+        unsigned char pixelWidth;
+        unsigned char pixelHeight;
         float s0;
         float t0;
         float s1;
@@ -3200,6 +3818,38 @@ namespace IW6
         Material* material;
         Material* glowMaterial;
         Glyph* glyphs;
+    };
+
+    enum ItemFloatExpressionTarget
+    {
+        ITEM_FLOATEXP_TGT_RECT_X = 0x0,
+        ITEM_FLOATEXP_TGT_RECT_Y = 0x1,
+        ITEM_FLOATEXP_TGT_RECT_W = 0x2,
+        ITEM_FLOATEXP_TGT_RECT_H = 0x3,
+        ITEM_FLOATEXP_TGT_FORECOLOR_R = 0x4,
+        ITEM_FLOATEXP_TGT_FORECOLOR_G = 0x5,
+        ITEM_FLOATEXP_TGT_FORECOLOR_B = 0x6,
+        ITEM_FLOATEXP_TGT_FORECOLOR_RGB = 0x7,
+        ITEM_FLOATEXP_TGT_FORECOLOR_A = 0x8,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_R = 0x9,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_G = 0xA,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_B = 0xB,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB = 0xC,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_A = 0xD,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_R = 0xE,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_G = 0xF,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_B = 0x10,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_RGB = 0x11,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_A = 0x12,
+
+        ITEM_FLOATEXP_TGT_COUNT
+    };
+
+    struct ItemExpressionTargetBinding
+    {
+        int target;
+        const char* name;
+        const char* componentName;
     };
 
     /* 11953 */
@@ -3225,7 +3875,7 @@ namespace IW6
     };
 
     /* 1103 */
-    enum expDataType : __int32
+    enum expDataType : int
     {
         VAL_INT = 0x0,
         VAL_FLOAT = 0x1,
@@ -3243,7 +3893,7 @@ namespace IW6
     };
 
     /* 1117 */
-    enum operationEnum : __int32
+    enum operationEnum : int
     {
         OP_NOOP = 0x0,
         OP_RIGHTPAREN = 0x1,
@@ -3611,7 +4261,29 @@ namespace IW6
         OP_GETPRIVATEPLAYERDATASPLITSCREEN = 0x169,
         OP_GETCOOPPLAYERDATASPLITSCREEN = 0x16A,
         OP_GETCOMMONPLAYERDATASPLITSCREEN = 0x16B,
-        NUM_OPERATORS = 0x16C,
+
+        OP_COUNT,
+
+        EXP_FUNC_STATIC_DVAR_INT = OP_COUNT,
+        EXP_FUNC_STATIC_DVAR_BOOL,
+        EXP_FUNC_STATIC_DVAR_FLOAT,
+        EXP_FUNC_STATIC_DVAR_STRING,
+
+        EXP_FUNC_DYN_START,
+
+        EXP_FUNC_INT = EXP_FUNC_DYN_START,
+        EXP_FUNC_STRING,
+        EXP_FUNC_FLOAT,
+        EXP_FUNC_SIN,
+        EXP_FUNC_COS,
+        EXP_FUNC_MIN,
+        EXP_FUNC_MAX,
+        EXP_FUNC_MILLISECONDS,
+        EXP_FUNC_LOCAL_CLIENT_UI_MILLISECONDS,
+        EXP_FUNC_DVAR_INT,
+        EXP_FUNC_DVAR_BOOL,
+        EXP_FUNC_DVAR_FLOAT,
+        EXP_FUNC_DVAR_STRING
     };
 
     /* 11928 */
@@ -3621,11 +4293,17 @@ namespace IW6
         Operand operand;
     };
 
+    enum expressionEntryType : int
+    {
+        EET_OPERATOR = 0x0,
+        EET_OPERAND = 0x1,
+    };
+
     /* 11929 */
     struct expressionEntry
     {
         entryInternalData data;
-        int type;
+        expressionEntryType type;
     };
 
     /* 11930 */
@@ -3671,7 +4349,7 @@ namespace IW6
         float value;
         float vector[4];
         const char* string;
-        unsigned __int8 color[4];
+        unsigned char color[4];
     };
 
     /* 11486 */
@@ -3680,7 +4358,7 @@ namespace IW6
         const char* name;
         const char* description;
         unsigned int flags;
-        unsigned __int8 type;
+        unsigned char type;
         bool modified;
         DvarValue current;
         DvarValue latched;
@@ -3761,11 +4439,26 @@ namespace IW6
         SetLocalVarData* setLocalVarData;
     };
 
+    /* 1794 */
+    enum EventType : unsigned char
+    {
+        EVENT_UNCONDITIONAL = 0x0,
+        EVENT_IF = 0x1,
+        EVENT_ELSE = 0x2,
+
+        EVENT_SET_LOCAL_VAR_BOOL = 0x3,
+        EVENT_SET_LOCAL_VAR_INT = 0x4,
+        EVENT_SET_LOCAL_VAR_FLOAT = 0x5,
+        EVENT_SET_LOCAL_VAR_STRING = 0x6,
+
+        EVENT_COUNT = 0x7,
+    };
+
     /* 11939 */
-    struct __declspec(align(4)) MenuEventHandler
+    struct type_align32(4) MenuEventHandler
     {
         EventData eventData;
-        unsigned __int8 eventType;
+        EventType eventType;
     };
 
     /* 11923 */
@@ -3795,7 +4488,7 @@ namespace IW6
     };
 
     /* 11942 */
-    struct __declspec(align(4)) menuData_t
+    struct type_align32(4) menuData_t
     {
         int fullScreen;
         int fadeCycle;
@@ -3826,18 +4519,47 @@ namespace IW6
         menuTransition xTransition[4];
         menuTransition yTransition[4];
         ExpressionSupportingData* expressionData;
-        unsigned __int8 priority;
+        unsigned char priority;
     };
 
     /* 11943 */
-    struct __declspec(align(4)) rectDef_s
+    struct type_align32(4) rectDef_s
     {
         float x;
         float y;
         float w;
         float h;
-        unsigned __int8 horzAlign;
-        unsigned __int8 vertAlign;
+        unsigned char horzAlign;
+        unsigned char vertAlign;
+    };
+
+    // This is data from IW4, could be different for IW6, to be investigated
+    enum WindowDefStaticFlag : unsigned int
+    {
+        WINDOW_FLAG_DECORATION = 0x100000,
+        WINDOW_FLAG_HORIZONTAL_SCROLL = 0x200000,
+        WINDOW_FLAG_OUT_OF_BOUNDS_CLICK = 0x2000000,
+        WINDOW_FLAG_SCREEN_SPACE = 0x400000,
+        WINDOW_FLAG_AUTO_WRAPPED = 0x800000,
+        WINDOW_FLAG_POPUP = 0x1000000,
+        WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
+        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000, // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,      // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,         // confirmed
+        WINDOW_FLAG_TEXT_ONLY_FOCUS = 0x80000000,
+    };
+
+    // This is data from IW4, could be different for IW6, to be investigated
+    enum WindowDefDynamicFlag : unsigned int
+    {
+        WINDOW_FLAG_HOVERED = 0x1, // guessed
+        WINDOW_FLAG_FOCUSED = 0x2,
+        WINDOW_FLAG_VISIBLE = 0x4, // confirmed
+        WINDOW_FLAG_FADING_OUT = 0x10,
+        WINDOW_FLAG_FADING_IN = 0x20,
+        WINDOW_FLAG_80 = 0x80,
+        WINDOW_FLAG_NON_DEFAULT_BACKCOLOR = 0x8000,
+        WINDOW_FLAG_NON_DEFAULT_FORECOLOR = 0x10000
     };
 
     /* 11944 */
@@ -3861,15 +4583,6 @@ namespace IW6
         float outlineColor[4];
         float disableColor[4];
         Material* background;
-    };
-
-    /* 11945 */
-    struct menuDef_t
-    {
-        menuData_t* data;
-        windowDef_t window;
-        int itemCount;
-        itemDef_t** items;
     };
 
     /* 11946 */
@@ -3952,12 +4665,59 @@ namespace IW6
         void* data;
     };
 
+    struct menuDef_t;
+
+    enum ItemDefType : int
+    {
+        ITEM_TYPE_TEXT = 0x0,
+        ITEM_TYPE_BUTTON = 0x1,
+        ITEM_TYPE_RADIOBUTTON = 0x2,
+        ITEM_TYPE_CHECKBOX = 0x3,
+        ITEM_TYPE_EDITFIELD = 0x4,
+        ITEM_TYPE_COMBO = 0x5,
+        ITEM_TYPE_LISTBOX = 0x6,
+        ITEM_TYPE_MODEL = 0x7,
+        ITEM_TYPE_OWNERDRAW = 0x8,
+        ITEM_TYPE_NUMERICFIELD = 0x9,
+        ITEM_TYPE_SLIDER = 0xA,
+        ITEM_TYPE_YESNO = 0xB,
+        ITEM_TYPE_MULTI = 0xC,
+        ITEM_TYPE_DVARENUM = 0xD,
+        ITEM_TYPE_BIND = 0xE,
+        ITEM_TYPE_MENUMODEL = 0xF,
+        ITEM_TYPE_VALIDFILEFIELD = 0x10,
+        ITEM_TYPE_DECIMALFIELD = 0x11,
+        ITEM_TYPE_UPREDITFIELD = 0x12,
+        ITEM_TYPE_GAME_MESSAGE_WINDOW = 0x13,
+        ITEM_TYPE_NEWS_TICKER = 0x14,
+        ITEM_TYPE_TEXT_SCROLL = 0x15,
+        ITEM_TYPE_EMAILFIELD = 0x16,
+        ITEM_TYPE_PASSWORDFIELD = 0x17
+    };
+
+    // This is data from IW4, could be different for IW6, to be investigated
+    enum ItemDefFlag : unsigned int
+    {
+        ITEM_FLAG_SAVE_GAME_INFO = 0x1,
+        ITEM_FLAG_CINEMATIC_SUBTITLE = 0x2,
+    };
+
+    // This is data from IW4, could be different for IW6, to be investigated
+    enum ItemDefDvarFlag
+    {
+        ITEM_DVAR_FLAG_ENABLE = 0x1,
+        ITEM_DVAR_FLAG_DISABLE = 0x2,
+        ITEM_DVAR_FLAG_SHOW = 0x4,
+        ITEM_DVAR_FLAG_HIDE = 0x8,
+        ITEM_DVAR_FLAG_FOCUS = 0x10,
+    };
+
     /* 11954 */
     struct itemDef_t
     {
         windowDef_t window;
         rectDef_s textRect[4];
-        int type;
+        ItemDefType type;
         int dataType;
         int alignment;
         int fontEnum;
@@ -4006,6 +4766,15 @@ namespace IW6
         Statement_s* textAlignYExp;
     };
 
+    /* 11945 */
+    struct menuDef_t
+    {
+        menuData_t* data;
+        windowDef_t window;
+        int itemCount;
+        itemDef_t** items;
+    };
+
     /* 11955 */
     struct MenuList
     {
@@ -4037,8 +4806,8 @@ namespace IW6
         ScriptString name;
         ScriptString notify;
         float blendTime;
-        unsigned __int8 flags;
-        unsigned __int8 entryCount;
+        unsigned char flags;
+        unsigned char entryCount;
         AnimationAimSet* aimSet;
         AnimationEntry* animEntries;
         unsigned int* animIndices;
@@ -4048,14 +4817,14 @@ namespace IW6
     struct AnimationStateMachine
     {
         ScriptString name;
-        unsigned __int16 stateCount;
-        unsigned __int16 aimSetCount;
+        unsigned short stateCount;
+        unsigned short aimSetCount;
         AnimationState* states;
         AnimationAimSet* aimSets;
     };
 
     /* 1852 */
-    enum AnimationController : __int32
+    enum AnimationController : int
     {
         ANIMCTRL_NONE = 0x0,
         ANIMCTRL_PLAYER = 0x1,
@@ -4070,12 +4839,12 @@ namespace IW6
         AnimationStateMachine* stateMachine;
         AnimationController animCtrl;
         ScriptString animTree;
-        unsigned __int16 soundCount;
-        unsigned __int16 effectCount;
+        unsigned short soundCount;
+        unsigned short effectCount;
         ScriptString* soundNotes;
         ScriptString* soundNames;
         ScriptString* effectNotes;
-        const FxEffectDef** effectDefs;
+        FxEffectDef** effectDefs;
         ScriptString* effectTags;
     };
 
@@ -4087,7 +4856,7 @@ namespace IW6
     };
 
     /* 988 */
-    enum AttachmentType : __int32
+    enum AttachmentType : int
     {
         ATTACHMENT_SCOPE = 0x0,
         ATTACHMENT_UNDERBARREL = 0x1,
@@ -4096,7 +4865,7 @@ namespace IW6
     };
 
     /* 975 */
-    enum weapType_t : __int32
+    enum weapType_t : int
     {
         WEAPTYPE_NONE = 0x0,
         WEAPTYPE_BULLET = 0x1,
@@ -4107,7 +4876,7 @@ namespace IW6
     };
 
     /* 976 */
-    enum weapClass_t : __int32
+    enum weapClass_t : int
     {
         WEAPCLASS_RIFLE = 0x0,
         WEAPCLASS_SNIPER = 0x1,
@@ -4139,7 +4908,7 @@ namespace IW6
     };
 
     /* 978 */
-    enum PenetrateType : __int32
+    enum PenetrateType : int
     {
         PENETRATE_TYPE_NONE = 0x0,
         PENETRATE_TYPE_SMALL = 0x1,
@@ -4149,7 +4918,7 @@ namespace IW6
     };
 
     /* 979 */
-    enum ImpactType : __int32
+    enum ImpactType : int
     {
         IMPACT_TYPE_NONE = 0x0,
         IMPACT_TYPE_BULLET_SMALL = 0x1,
@@ -4166,7 +4935,7 @@ namespace IW6
     };
 
     /* 950 */
-    enum weapFireType_t : __int32
+    enum weapFireType_t : int
     {
         WEAPON_FIRETYPE_FULLAUTO = 0x0,
         WEAPON_FIRETYPE_SINGLESHOT = 0x1,
@@ -4180,7 +4949,7 @@ namespace IW6
     };
 
     /* 11192 */
-    struct __declspec(align(4)) AttAmmoGeneral
+    struct type_align32(4) AttAmmoGeneral
     {
         PenetrateType penetrateType;
         float penetrateMultiplier;
@@ -4392,7 +5161,7 @@ namespace IW6
     };
 
     /* 980 */
-    enum weapOverlayReticle_t : __int32
+    enum weapOverlayReticle_t : int
     {
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
@@ -4414,14 +5183,14 @@ namespace IW6
     };
 
     /* 11208 */
-    struct __declspec(align(4)) AttADSOverlay
+    struct type_align32(4) AttADSOverlay
     {
         ADSOverlay overlay;
         bool thermalScope;
     };
 
     /* 981 */
-    enum weaponIconRatioType_t : __int32
+    enum weaponIconRatioType_t : int
     {
         WEAPON_ICON_RATIO_1TO1 = 0x0,
         WEAPON_ICON_RATIO_2TO1 = 0x1,
@@ -4430,7 +5199,7 @@ namespace IW6
     };
 
     /* 982 */
-    enum ammoCounterClipType_t : __int32
+    enum ammoCounterClipType_t : int
     {
         AMMO_COUNTER_CLIP_NONE = 0x0,
         AMMO_COUNTER_CLIP_MAGAZINE = 0x1,
@@ -4460,7 +5229,7 @@ namespace IW6
     };
 
     /* 977 */
-    enum weapProjExposion_t : __int32
+    enum weapProjExposion_t : int
     {
         WEAPPROJEXP_GRENADE = 0x0,
         WEAPPROJEXP_ROCKET = 0x1,
@@ -4485,23 +5254,23 @@ namespace IW6
         float projectileLifetime;
         XModel* projectileModel;
         weapProjExposion_t projExplosionType;
-        const FxEffectDef* projExplosionEffect;
+        FxEffectDef* projExplosionEffect;
         bool projExplosionEffectForceNormalUp;
         snd_alias_list_t* projExplosionSound;
-        const FxEffectDef* projDudEffect;
+        FxEffectDef* projDudEffect;
         snd_alias_list_t* projDudSound;
         bool projImpactExplode;
         float destabilizationRateTime;
         float destabilizationCurvatureMax;
         int destabilizeDistance;
-        const FxEffectDef* projTrailEffect;
+        FxEffectDef* projTrailEffect;
         int projIgnitionDelay;
-        const FxEffectDef* projIgnitionEffect;
+        FxEffectDef* projIgnitionEffect;
         snd_alias_list_t* projIgnitionSound;
     };
 
     /* 11212 */
-    struct __declspec(align(4)) WeaponAttachment
+    struct type_align32(4) WeaponAttachment
     {
         const char* szInternalName;
         const char* szDisplayName;
@@ -4550,7 +5319,7 @@ namespace IW6
     };
 
     /* 983 */
-    enum weapInventoryType_t : __int32
+    enum weapInventoryType_t : int
     {
         WEAPINVENTORY_PRIMARY = 0x0,
         WEAPINVENTORY_OFFHAND = 0x1,
@@ -4562,7 +5331,7 @@ namespace IW6
     };
 
     /* 822 */
-    enum OffhandClass : __int32
+    enum OffhandClass : int
     {
         OFFHAND_CLASS_NONE = 0x0,
         OFFHAND_CLASS_FRAG_GRENADE = 0x1,
@@ -4574,7 +5343,7 @@ namespace IW6
     };
 
     /* 984 */
-    enum weapStance_t : __int32
+    enum weapStance_t : int
     {
         WEAPSTANCE_STAND = 0x0,
         WEAPSTANCE_DUCK = 0x1,
@@ -4583,7 +5352,7 @@ namespace IW6
     };
 
     /* 986 */
-    enum activeReticleType_t : __int32
+    enum activeReticleType_t : int
     {
         VEH_ACTIVE_RETICLE_NONE = 0x0,
         VEH_ACTIVE_RETICLE_PIP_ON_A_STICK = 0x1,
@@ -4645,7 +5414,7 @@ namespace IW6
     };
 
     /* 985 */
-    enum WeapOverlayInteface_t : __int32
+    enum WeapOverlayInteface_t : int
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
@@ -4654,7 +5423,7 @@ namespace IW6
     };
 
     /* 825 */
-    enum WeapStickinessType : __int32
+    enum WeapStickinessType : int
     {
         WEAPSTICKINESS_NONE = 0x0,
         WEAPSTICKINESS_ALL = 0x1,
@@ -4666,13 +5435,77 @@ namespace IW6
     };
 
     /* 987 */
-    enum guidedMissileType_t : __int32
+    enum guidedMissileType_t : int
     {
         MISSILE_GUIDANCE_NONE = 0x0,
         MISSILE_GUIDANCE_SIDEWINDER = 0x1,
         MISSILE_GUIDANCE_HELLFIRE = 0x2,
         MISSILE_GUIDANCE_JAVELIN = 0x3,
         MISSILE_GUIDANCE_COUNT = 0x4,
+    };
+
+    enum hitLocation_t : int32_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+        HITLOC_GUN = 0x12,
+        HITLOC_SHIELD = 0x13,
+
+        HITLOC_COUNT,
+    };
+
+
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_RIOT_SHIELD,
+        SURF_TYPE_SLUSH,
+
+        SURF_TYPE_COUNT
     };
 
     /* 11232 */
@@ -4689,7 +5522,7 @@ namespace IW6
         ScriptString* notetrackRumbleMapKeys;
         ScriptString* notetrackRumbleMapValues;
         ScriptString* notetrackFXMapKeys;
-        const FxEffectDef** notetrackFXMapValues;
+        FxEffectDef** notetrackFXMapValues;
         ScriptString* notetrackFXMapTagValues;
         int playerAnimType;
         weapType_t weapType;
@@ -4699,10 +5532,10 @@ namespace IW6
         weapFireType_t fireType;
         OffhandClass offhandClass;
         weapStance_t stance;
-        unsigned __int8 rattleSoundType;
-        const FxEffectDef* viewFlashEffect;
-        const FxEffectDef* worldFlashEffect;
-        const FxEffectDef* viewFlashADSEffect;
+        unsigned char rattleSoundType;
+        FxEffectDef* viewFlashEffect;
+        FxEffectDef* worldFlashEffect;
+        FxEffectDef* viewFlashADSEffect;
         snd_alias_list_t* pickupSound;
         snd_alias_list_t* pickupSoundPlayer;
         snd_alias_list_t* ammoPickupSound;
@@ -4753,11 +5586,11 @@ namespace IW6
         snd_alias_list_t* changeVariableZoomSound;
         snd_alias_list_t** bounceSound;
         snd_alias_list_t** rollingSound;
-        const FxEffectDef* viewShellEjectEffect;
-        const FxEffectDef* worldShellEjectEffect;
-        const FxEffectDef* viewLastShotEjectEffect;
-        const FxEffectDef* worldLastShotEjectEffect;
-        const FxEffectDef* viewMagEjectEffect;
+        FxEffectDef* viewShellEjectEffect;
+        FxEffectDef* worldShellEjectEffect;
+        FxEffectDef* viewLastShotEjectEffect;
+        FxEffectDef* worldLastShotEjectEffect;
+        FxEffectDef* viewMagEjectEffect;
         Material* reticleCenter;
         Material* reticleSide;
         int iReticleCenterSize;
@@ -4894,8 +5727,8 @@ namespace IW6
         float projectileCurvature;
         XModel* projectileModel;
         weapProjExposion_t projExplosion;
-        const FxEffectDef* projExplosionEffect;
-        const FxEffectDef* projDudEffect;
+        FxEffectDef* projExplosionEffect;
+        FxEffectDef* projDudEffect;
         snd_alias_list_t* projExplosionSound;
         snd_alias_list_t* projDudSound;
         WeapStickinessType stickiness;
@@ -4906,13 +5739,13 @@ namespace IW6
         float riotShieldDamageMult;
         float* parallelBounce;
         float* perpendicularBounce;
-        const FxEffectDef* projTrailEffect;
-        const FxEffectDef* projBeaconEffect;
+        FxEffectDef* projTrailEffect;
+        FxEffectDef* projBeaconEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
         float maxSteeringAccel;
         int projIgnitionDelay;
-        const FxEffectDef* projIgnitionEffect;
+        FxEffectDef* projIgnitionEffect;
         snd_alias_list_t* projIgnitionSound;
         float fAdsAimPitch;
         float fAdsCrosshairInFrac;
@@ -4952,9 +5785,10 @@ namespace IW6
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        const char* accuracyGraphName[2];
-        float (*originalAccuracyGraphKnots[2])[2];
-        unsigned __int16 originalAccuracyGraphKnotCount[2];
+        const char* aiVsAiAccuracyGraphName;
+        const char* aiVsPlayerAccuracyGraphName;
+        vec2_t* originalAiVsAiAccuracyGraphKnots;
+        vec2_t* originalAiVsPlayerAccuracyGraphKnots;
         int iPositionReloadTransTime;
         float leftArc;
         float rightArc;
@@ -5004,7 +5838,7 @@ namespace IW6
         float turretOverheatDownRate;
         float turretOverheatPenalty;
         snd_alias_list_t* turretOverheatSound;
-        const FxEffectDef* turretOverheatEffect;
+        FxEffectDef* turretOverheatEffect;
         const char* turretBarrelSpinRumble;
         float turretBarrelSpinSpeed;
         float turretBarrelSpinUpTime;
@@ -5104,8 +5938,8 @@ namespace IW6
     /* 11233 */
     struct AnimOverrideEntry
     {
-        unsigned __int16 attachment1;
-        unsigned __int16 attachment2;
+        unsigned short attachment1;
+        unsigned short attachment2;
         const char* overrideAnim;
         const char* altmodeAnim;
         unsigned int animTreeType;
@@ -5113,24 +5947,49 @@ namespace IW6
         int altTime;
     };
 
+    /* 2002 */
+    enum SoundOverrideTypes : unsigned int
+    {
+        SNDTYPE_NONE = 0x0,
+        SNDTYPE_FIRE = 0x1,
+        SNDTYPE_PLAYER_FIRE = 0x2,
+        SNDTYPE_PLAYER_AKIMBO = 0x3,
+        SNDTYPE_PLAYER_LASTSHOT = 0x4,
+
+        NUM_SOUND_OVERRIDE_TYPES = 0x5,
+    };
+
     /* 11234 */
     struct SoundOverrideEntry
     {
-        unsigned __int16 attachment1;
-        unsigned __int16 attachment2;
+        unsigned short attachment1;
+        unsigned short attachment2;
         snd_alias_list_t* overrideSound;
         snd_alias_list_t* altmodeSound;
-        unsigned int soundType;
+        SoundOverrideTypes soundType;
+    };
+
+    /* 2003 */
+    enum FXOverrideTypes : unsigned int
+    {
+        FXTYPE_NONE = 0x0,
+        FXTYPE_VIEW_FLASH = 0x1,
+        FXTYPE_WORLD_FLASH = 0x2,
+        FXTYPE_VIEW_SHELL_EJECT = 0x3,
+        FXTYPE_WORLD_SHELL_EJECT = 0x4,
+        FXTYPE_VIEW_MAG_EJECT = 0x5,
+        FXTYPE_VIEW_FLASH_ADS = 0x6,
+        NUM_FX_OVERRIDE_TYPES = 0x7,
     };
 
     /* 11235 */
     struct FXOverrideEntry
     {
-        unsigned __int16 attachment1;
-        unsigned __int16 attachment2;
-        const FxEffectDef* overrideFX;
-        const FxEffectDef* altmodeFX;
-        unsigned int fxType;
+        unsigned short attachment1;
+        unsigned short attachment2;
+        FxEffectDef* overrideFX;
+        FxEffectDef* altmodeFX;
+        FXOverrideTypes fxType;
     };
 
     /* 11236 */
@@ -5147,6 +6006,126 @@ namespace IW6
         int attachment;
         ScriptString* notetrackSoundMapKeys;
         ScriptString* notetrackSoundMapValues;
+    };
+
+    /* 804 */
+    enum weapAnimFiles_t : int32_t
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE = 0x3,
+        WEAP_ANIM_HOLD_FIRE = 0x4,
+        WEAP_ANIM_LASTSHOT = 0x5,
+        WEAP_ANIM_RECHAMBER = 0x6,
+        WEAP_ANIM_MELEE_SWIPE = 0x7,
+        WEAP_ANIM_MELEE_HIT = 0x8,
+        WEAP_ANIM_MELEE_FATAL = 0x9,
+        WEAP_ANIM_MELEE_MISS = 0xA,
+        WEAP_ANIM_MELEE_VICTIM_CROUCHING_HIT = 0xB,
+        WEAP_ANIM_MELEE_VICTIM_CROUCHING_FATAL = 0xC,
+        WEAP_ANIM_MELEE_VICTIM_CROUCHING_MISS = 0xD,
+        WEAP_ANIM_RELOAD = 0xE,
+        WEAP_ANIM_RELOAD_EMPTY = 0xF,
+        WEAP_ANIM_RELOAD_START = 0x10,
+        WEAP_ANIM_RELOAD_END = 0x11,
+        WEAP_ANIM_FAST_RELOAD = 0x12,
+        WEAP_ANIM_FAST_RELOAD_EMPTY = 0x13,
+        WEAP_ANIM_FAST_RELOAD_START = 0x14,
+        WEAP_ANIM_FAST_RELOAD_END = 0x15,
+        WEAP_ANIM_RAISE = 0x16,
+        WEAP_ANIM_FIRST_RAISE = 0x17,
+        WEAP_ANIM_BREACH_RAISE = 0x18,
+        WEAP_ANIM_DROP = 0x19,
+        WEAP_ANIM_ALT_RAISE = 0x1A,
+        WEAP_ANIM_ALT_DROP = 0x1B,
+        WEAP_ANIM_QUICK_RAISE = 0x1C,
+        WEAP_ANIM_QUICK_DROP = 0x1D,
+        WEAP_ANIM_EMPTY_RAISE = 0x1E,
+        WEAP_ANIM_EMPTY_DROP = 0x1F,
+        WEAP_ANIM_SPRINT_IN = 0x20,
+        WEAP_ANIM_SPRINT_IN_CANCEL = 0x21,
+        WEAP_ANIM_SPRINT_LOOP = 0x22,
+        WEAP_ANIM_SPRINT_OUT = 0x23,
+        WEAP_ANIM_STUNNED_START = 0x24,
+        WEAP_ANIM_STUNNED_LOOP = 0x25,
+        WEAP_ANIM_STUNNED_END = 0x26,
+        WEAP_ANIM_DETONATE = 0x27,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x28,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x29,
+        WEAP_ANIM_ADS_FIRE = 0x2A,
+        WEAP_ANIM_ADS_LASTSHOT = 0x2B,
+        WEAP_ANIM_ADS_RECHAMBER = 0x2C,
+        WEAP_ANIM_BLAST_FRONT = 0x2D,
+        WEAP_ANIM_BLAST_RIGHT = 0x2E,
+        WEAP_ANIM_BLAST_BACK = 0x2F,
+        WEAP_ANIM_BLAST_LEFT = 0x30,
+        WEAP_ANIM_SLIDE_IN = 0x31,
+        WEAP_ANIM_SLIDE_LOOP = 0x32,
+        WEAP_ANIM_SLIDE_OUT = 0x33,
+        WEAP_ANIM_RECOIL_SETTLE = 0x34,
+        WEAP_ANIM_SWIM_LOOP = 0x35,
+        WEAP_ANIM_MANTLE_UP_64 = 0x36,
+        WEAP_ANIM_MANTLE_UP_56 = 0x37,
+        WEAP_ANIM_MANTLE_UP_48 = 0x38,
+        WEAP_ANIM_MANTLE_UP_40 = 0x39,
+        WEAP_ANIM_MANTLE_UP_32 = 0x3A,
+        WEAP_ANIM_MANTLE_UP_24 = 0x3B,
+        WEAP_ANIM_MANTLE_UP_16 = 0x3C,
+        WEAP_ANIM_MANTLE_OVER_64 = 0x3D,
+        WEAP_ANIM_MANTLE_OVER_56 = 0x3E,
+        WEAP_ANIM_MANTLE_OVER_48 = 0x3F,
+        WEAP_ANIM_MANTLE_OVER_40 = 0x40,
+        WEAP_ANIM_MANTLE_OVER_32 = 0x41,
+        WEAP_ANIM_MANTLE_OVER_24 = 0x42,
+        WEAP_ANIM_MANTLE_OVER_16 = 0x43,
+        WEAP_ANIM_ADS_UP = 0x44,
+        WEAP_ANIM_ADS_DOWN = 0x45,
+        WEAP_ANIM_RECOIL = 0x46,
+        WEAP_ALT_ANIM_ADJUST = 0x47,
+        WEAP_ANIM_ADDITIVE_ADS_ROOT = 0x48,
+        WEAP_ANIM_ADDITIVE_ADS_UP = 0x49,
+        WEAP_ANIM_ADDITIVE_DRAG_LEFT_ROOT = 0x4A,
+        WEAP_ANIM_ADDITIVE_DRAG_LEFT = 0x4B,
+        WEAP_ANIM_ADDITIVE_DRAG_RIGHT_ROOT = 0x4C,
+        WEAP_ANIM_ADDITIVE_DRAG_RIGHT = 0x4D,
+        WEAP_ANIM_ADDITIVE_DRAG_UP_ROOT = 0x4E,
+        WEAP_ANIM_ADDITIVE_DRAG_UP = 0x4F,
+        WEAP_ANIM_ADDITIVE_DRAG_DOWN_ROOT = 0x50,
+        WEAP_ANIM_ADDITIVE_DRAG_DOWN = 0x51,
+        WEAP_ANIM_ADDITIVE_SWIM_FORWARD_ROOT = 0x52,
+        WEAP_ANIM_ADDITIVE_SWIM_FORWARD = 0x53,
+        WEAP_ANIM_ADDITIVE_SWIM_BACKWARD_ROOT = 0x54,
+        WEAP_ANIM_ADDITIVE_SWIM_BACKWARD = 0x55,
+        WEAP_ANIM_ADDITIVE_JUMP_ROOT = 0x56,
+        WEAP_ANIM_ADDITIVE_JUMP = 0x57,
+        WEAP_ANIM_ADDITIVE_JUMP_LAND_ROOT = 0x58,
+        WEAP_ANIM_ADDITIVE_JUMP_LAND = 0x59,
+        WEAP_ANIM_ADDITIVE_WALK_ROOT = 0x5A,
+        WEAP_ANIM_ADDITIVE_WALK = 0x5B,
+        NUM_WEAP_ANIMS = 0x5C,
+        WEAP_ANIM_VIEWMODEL_START = 0x1,
+        WEAP_ANIM_VIEWMODEL_END = 0x44,
+        WEAP_ANIM_ADDITIVE_START = 0x48,
+        WEAP_ANIM_ADDITIVE_END = 0x5C,
+
+        WEAP_ANIM_COUNT
+    };
+
+    union WeaponAttachmentCombination
+    {
+        struct
+        {
+            uint32_t weaponIdx : 8;
+            uint32_t weaponVariation : 4;
+            uint32_t weaponScopes : 3;
+            uint32_t weaponUnderBarrels : 3;
+            uint32_t weaponOthers : 8;
+            uint32_t scopeVariation : 3;
+            uint32_t padding : 3;
+        };
+
+        unsigned short fields;
     };
 
     /* 11238 */
@@ -5194,8 +6173,10 @@ namespace IW6
         int ammoDropStockMax;
         float adsDofStart;
         float adsDofEnd;
-        unsigned __int16 accuracyGraphKnotCount[2];
-        float (*accuracyGraphKnots[2])[2];
+        unsigned short aiVsAiAccuracyGraphKnotCount;
+        unsigned short aiVsPlayerAccuracyGraphKnotCount;
+        float* aiVsAiAccuracyGraphKnots;
+        float* aiVsPlayerAccuracyGraphKnots;
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;
@@ -5244,8 +6225,8 @@ namespace IW6
     /* 11964 */
     struct FxImpactEntry
     {
-        const FxEffectDef* nonflesh[31];
-        const FxEffectDef* flesh[4];
+        FxEffectDef* nonflesh[31];
+        FxEffectDef* flesh[4];
     };
 
     /* 11965 */
@@ -5258,7 +6239,7 @@ namespace IW6
     /* 11966 */
     struct SurfaceFxEntry
     {
-        const FxEffectDef* surfaceEffect[31];
+        FxEffectDef* surfaceEffect[31];
     };
 
     /* 11967 */
@@ -5285,7 +6266,7 @@ namespace IW6
         int len;
         int bytecodeLen;
         const char* buffer;
-        unsigned __int8* bytecode;
+        unsigned char* bytecode;
     };
 
     /* 11334 */
@@ -5305,7 +6286,7 @@ namespace IW6
     };
 
     /* 1235 */
-    enum StatsGroup : __int32
+    enum StatsGroup : int
     {
         STATSGROUP_RANKED = 0x0,
         STATSGROUP_PRIVATE = 0x1,
@@ -5316,7 +6297,7 @@ namespace IW6
     };
 
     /* 1247 */
-    enum LbColType : __int32
+    enum LbColType : int
     {
         LBCOL_TYPE_NUMBER = 0x0,
         LBCOL_TYPE_TIME = 0x1,
@@ -5329,7 +6310,7 @@ namespace IW6
     };
 
     /* 1248 */
-    enum LbAggType : __int32
+    enum LbAggType : int
     {
         LBAGG_TYPE_MIN = 0x0,
         LBAGG_TYPE_MAX = 0x1,
@@ -5355,12 +6336,26 @@ namespace IW6
     };
 
     /* 1249 */
-    enum LbUpdateType : __int32
+    enum LbUpdateType : int
     {
         LBUPDATE_TYPE_NORMAL = 0x0,
         LBUPDATE_TYPE_RANK = 0x1,
         LBUPDATE_TYPE_COMBINE = 0x2,
         LBUPDATE_TYPE_COUNT = 0x3,
+    };
+
+    enum LbTrackTypes : int
+    {
+        LBTRK_TYPE_ALLTIME = 0x0,
+        LBTRK_TYPE_WEEKLY = 0x1,
+        LBTRK_TYPE_MONTHLY = 0x2,
+        LBTRK_TYPE_PRESTIGE_ALLTIME = 0x3,
+        LBTRK_TYPE_PRESTIGE_WEEKLY = 0x4,
+        LBTRK_TYPE_PRESTIGE_MONTHLY = 0x5,
+        LBTRK_TYPE_DAILY = 0x6,
+        LBTRK_TYPE_PRESTIGE_DAILY = 0x7,
+
+        LBTRK_TYPE_COUNT = 0x8,
     };
 
     /* 11971 */
@@ -5377,10 +6372,10 @@ namespace IW6
     };
 
     /* 11972 */
-    struct __declspec(align(4)) StructuredDataEnumEntry
+    struct type_align32(4) StructuredDataEnumEntry
     {
         const char* string;
-        unsigned __int16 index;
+        unsigned short index;
     };
 
     /* 11973 */
@@ -5402,7 +6397,7 @@ namespace IW6
     };
 
     /* 1154 */
-    enum StructuredDataTypeCategory : __int32
+    enum StructuredDataTypeCategory : int
     {
         DATA_INT = 0x0,
         DATA_BYTE = 0x1,
@@ -5425,7 +6420,7 @@ namespace IW6
     };
 
     /* 1184 */
-    enum StructuredDataValidationType : __int32
+    enum StructuredDataValidationType : int
     {
         VALIDATION_NONE = 0x0,
         VALIDATION_CONSTANT = 0x1,
@@ -5497,7 +6492,7 @@ namespace IW6
     };
 
     /* 1097 */
-    enum VehicleType : __int32
+    enum VehicleType : int
     {
         VEH_WHEELS_4 = 0x0,
         VEH_TANK = 0x1,
@@ -5512,7 +6507,7 @@ namespace IW6
     };
 
     /* 1099 */
-    enum VehicleAxleType : __int32
+    enum VehicleAxleType : int
     {
         VEH_AXLE_FRONT = 0x0,
         VEH_AXLE_REAR = 0x1,
@@ -5525,7 +6520,7 @@ namespace IW6
     {
         int physicsEnabled;
         const char* physPresetName;
-        const PhysPreset* physPreset;
+        PhysPreset* physPreset;
         const char* accelGraphName;
         VehicleAxleType steeringAxle;
         VehicleAxleType powerAxle;
@@ -5571,7 +6566,7 @@ namespace IW6
     };
 
     /* 1098 */
-    enum VehCamZOffsetMode : __int32
+    enum VehCamZOffsetMode : int
     {
         VEHCAM_ZMODE_WORLD = 0x0,
         VEHCAM_ZMODE_VEHICLE = 0x1,
@@ -5580,7 +6575,7 @@ namespace IW6
     };
 
     /* 2775 */
-    enum VehicleTurretFireType : __int32
+    enum VehicleTurretFireType : int
     {
         VEH_TURRET_SINGLE_FIRE = 0x0,
         VEH_TURRET_DUAL_FIRE = 0x1,
@@ -5669,8 +6664,8 @@ namespace IW6
         float vehHelicopterLookaheadTime;
         int vehHelicopterSoftCollisions;
         int vehHelicopterUseGroundFX;
-        const FxEffectDef* vehHelicopterGroundFx;
-        const FxEffectDef* vehHelicopterGroundWaterFx;
+        FxEffectDef* vehHelicopterGroundFx;
+        FxEffectDef* vehHelicopterGroundWaterFx;
         float vehHelicopterGroundFxDefaultRepeatRate;
         float vehHelicopterGroundFxSlowestRepeatRate;
         float vehHelicopterGroundFxFastestRepeatRate;
@@ -5737,8 +6732,8 @@ namespace IW6
         int trophyAmmoCount;
         float trophyReloadTime;
         ScriptString trophyTags[4];
-        const FxEffectDef* trophyExplodeFx;
-        const FxEffectDef* trophyFlashFx;
+        FxEffectDef* trophyExplodeFx;
+        FxEffectDef* trophyFlashFx;
         Material* compassFriendlyIcon;
         Material* compassEnemyIcon;
         Material* compassFriendlyAltIcon;
@@ -5798,7 +6793,7 @@ namespace IW6
     };
 
     /* 1771 */
-    enum NetConstStringType : __int32
+    enum NetConstStringType : int
     {
         NETCONSTSTRINGTYPE_XMODEL = 0x0,
         NETCONSTSTRINGTYPE_MATERIAL = 0x1,
@@ -5830,7 +6825,7 @@ namespace IW6
     };
 
     /* 1772 */
-    enum NetConstStringSource : __int32
+    enum NetConstStringSource : int
     {
         NETCONSTSTRINGSOURCE_MAP = 0x0,
         NETCONSTSTRINGSOURCE_PRE_MAP = 0x1,
@@ -5876,7 +6871,7 @@ namespace IW6
     {
         const char* name;
         int len;
-        const unsigned __int8* buffer;
+        const unsigned char* buffer;
     };
 
     /* 11986 */

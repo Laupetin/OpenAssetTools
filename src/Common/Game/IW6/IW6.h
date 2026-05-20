@@ -219,12 +219,13 @@ namespace IW6
     using AssetXModelSurfs = Asset<ASSET_TYPE_XMODEL_SURFS, XModelSurfs>;
     using AssetXModel = Asset<ASSET_TYPE_XMODEL, XModel>;
     using AssetMaterial = Asset<ASSET_TYPE_MATERIAL, Material>;
+    using AssetVertexShader = Asset<ASSET_TYPE_VERTEXSHADER, MaterialVertexShader>;
     using AssetPixelShader = Asset<ASSET_TYPE_PIXELSHADER, MaterialPixelShader>;
     using AssetTechniqueSet = Asset<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>;
     using AssetImage = Asset<ASSET_TYPE_IMAGE, GfxImage>;
     using AssetSound = Asset<ASSET_TYPE_SOUND, snd_alias_list_t>;
     using AssetSoundCurve = Asset<ASSET_TYPE_SOUND_CURVE, SndCurve>;
-    using AssetLpfCurve= Asset<ASSET_TYPE_LPF_CURVE, SndCurve>;
+    using AssetLpfCurve = Asset<ASSET_TYPE_LPF_CURVE, SndCurve>;
     using AssetReverbCurve= Asset<ASSET_TYPE_REVERB_CURVE, SndCurve>;
     using AssetLoadedSound = Asset<ASSET_TYPE_LOADED_SOUND, LoadedSound>;
     using AssetClipMap = Asset<ASSET_TYPE_CLIPMAP, clipMap_t>;
@@ -239,7 +240,7 @@ namespace IW6
     using AssetFont = Asset<ASSET_TYPE_FONT, Font_s>;
     using AssetMenuList = Asset<ASSET_TYPE_MENULIST, MenuList>;
     using AssetMenu = Asset<ASSET_TYPE_MENU, menuDef_t>;
-    using AssetAnimClass= Asset<ASSET_TYPE_ANIMCLASS, AnimationClass>;
+    using AssetAnimationClass = Asset<ASSET_TYPE_ANIMCLASS, AnimationClass>;
     using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
     using AssetAttachment = Asset<ASSET_TYPE_ATTACHMENT, WeaponAttachment>;
     using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponCompleteDef>;
@@ -256,10 +257,10 @@ namespace IW6
     using AssetAddonMapEnts = Asset<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>;
     using AssetNetConstStrings = Asset<ASSET_TYPE_NET_CONST_STRINGS, NetConstStrings>;
     using AssetReverbPreset = Asset<ASSET_TYPE_REVERB_PRESET, ReverbPreset>;
-    using AssetLuaFile= Asset<ASSET_TYPE_LUA_FILE, LuaFile>;
+    using AssetLuaFile = Asset<ASSET_TYPE_LUA_FILE, LuaFile>;
     using AssetScriptable = Asset<ASSET_TYPE_SCRIPTABLE, ScriptableDef>;
     using AssetEquipmentSoundTable = Asset<ASSET_TYPE_EQUIPMENT_SND_TABLE, EquipmentSoundTable>;
-    using AssetDopplerPreset= Asset<ASSET_TYPE_DOPPLER_PRESET, DopplerPreset>;
+    using AssetDopplerPreset = Asset<ASSET_TYPE_DOPPLER_PRESET, DopplerPreset>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
 } // namespace IW6
@@ -270,6 +271,7 @@ DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXAnim, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXModelSurfs, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXModel, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetMaterial, info.name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetVertexShader, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetPixelShader, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetTechniqueSet, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetImage, name);
@@ -290,7 +292,7 @@ DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLightDef, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetFont, fontName);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetMenuList, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetMenu, window.name);
-DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetAnimClass, className);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetAnimationClass, className);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLocalize, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetAttachment, szInternalName);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetWeapon, szInternalName);

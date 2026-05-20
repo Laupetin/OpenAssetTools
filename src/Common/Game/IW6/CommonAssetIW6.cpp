@@ -17,13 +17,15 @@ namespace IW6
             CommonAssetType::XMODEL_SURFS,                      // ASSET_TYPE_XMODEL_SURFS
             CommonAssetType::XMODEL,                            // ASSET_TYPE_XMODEL
             CommonAssetType::MATERIAL,                          // ASSET_TYPE_MATERIAL
-            CommonAssetType::PIXEL_SHADER,                      // ASSET_TYPE_PIXELSHADER
             CommonAssetType::VERTEX_SHADER,                     // ASSET_TYPE_VERTEXSHADER
+            CommonAssetType::PIXEL_SHADER,                      // ASSET_TYPE_PIXELSHADER
             CommonAssetType::VERTEX_DECL,                       // ASSET_TYPE_VERTEXDECL
             CommonAssetType::TECHNIQUE_SET,                     // ASSET_TYPE_TECHNIQUE_SET
             CommonAssetType::IMAGE,                             // ASSET_TYPE_IMAGE
             CommonAssetType::SOUND,                             // ASSET_TYPE_SOUND
             CommonAssetType::SOUND_CURVE,                       // ASSET_TYPE_SOUND_CURVE
+            CommonAssetType::LPF_CURVE,                         // ASSET_TYPE_SOUND_CURVE
+            CommonAssetType::REVERB_CURVE,                      // ASSET_TYPE_SOUND_CURVE
             CommonAssetType::LOADED_SOUND,                      // ASSET_TYPE_LOADED_SOUND
             CommonAssetType::CLIP_MAP,                          // ASSET_TYPE_CLIPMAP
             CommonAssetType::COM_WORLD,                         // ASSET_TYPE_COMWORLD
@@ -84,13 +86,15 @@ namespace IW6
             MAP_COMMON(CommonAssetType::XMODEL_SURFS, ASSET_TYPE_XMODEL_SURFS)
             MAP_COMMON(CommonAssetType::XMODEL, ASSET_TYPE_XMODEL)
             MAP_COMMON(CommonAssetType::MATERIAL, ASSET_TYPE_MATERIAL)
-            MAP_COMMON(CommonAssetType::PIXEL_SHADER, ASSET_TYPE_PIXELSHADER)
             MAP_COMMON(CommonAssetType::VERTEX_SHADER, ASSET_TYPE_VERTEXSHADER)
+            MAP_COMMON(CommonAssetType::PIXEL_SHADER, ASSET_TYPE_PIXELSHADER)
             MAP_COMMON(CommonAssetType::VERTEX_DECL, ASSET_TYPE_VERTEXDECL)
             MAP_COMMON(CommonAssetType::TECHNIQUE_SET, ASSET_TYPE_TECHNIQUE_SET)
             MAP_COMMON(CommonAssetType::IMAGE, ASSET_TYPE_IMAGE)
             MAP_COMMON(CommonAssetType::SOUND, ASSET_TYPE_SOUND)
             MAP_COMMON(CommonAssetType::SOUND_CURVE, ASSET_TYPE_SOUND_CURVE)
+            MAP_COMMON(CommonAssetType::LPF_CURVE, ASSET_TYPE_LPF_CURVE)
+            MAP_COMMON(CommonAssetType::REVERB_CURVE, ASSET_TYPE_REVERB_CURVE)
             MAP_COMMON(CommonAssetType::LOADED_SOUND, ASSET_TYPE_LOADED_SOUND)
             MAP_COMMON(CommonAssetType::CLIP_MAP, ASSET_TYPE_CLIPMAP)
             MAP_COMMON(CommonAssetType::COM_WORLD, ASSET_TYPE_COMWORLD)

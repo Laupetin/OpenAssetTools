@@ -38,7 +38,7 @@ namespace
         "font",
         "menulist",
         "menu",
-        "animclass",
+        "animationclass",
         "localize",
         "attachment",
         "weapon",

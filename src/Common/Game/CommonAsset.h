@@ -8,108 +8,112 @@
 
 enum class CommonAssetType : std::uint8_t
 {
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     PHYS_PRESET,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     XANIM,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     XMODEL,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     MATERIAL,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     TECHNIQUE_SET,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     IMAGE,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     SOUND,
-    // IW3, IW4, IW5
+    // IW3, IW4, IW5, IW6
     SOUND_CURVE,
-    // IW3, IW4, IW5
+    // IW3, IW4, IW5, IW6
     LOADED_SOUND,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     CLIP_MAP,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     COM_WORLD,
     // IW3, IW4, T5, T6
     GAME_WORLD_SP,
     // IW3, IW4, T5, T6
     GAME_WORLD_MP,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     MAP_ENTS,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     GFX_WORLD,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     LIGHT_DEF,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     UI_MAP,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     FONT,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     MENU_LIST,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     MENU,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     LOCALIZE_ENTRY,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     WEAPON,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     SOUND_DRIVER_GLOBALS,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     FX,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     IMPACT_FX,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     AI_TYPE,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     MP_TYPE,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     CHARACTER,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     XMODEL_ALIAS,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     RAW_FILE,
-    // IW3, IW4, IW5, T5, T6
+    // IW3, IW4, IW5, IW6, T5, T6
     STRING_TABLE,
 
     // IW3, T5, T6
     XMODEL_PIECES,
 
-    // IW4, IW5
+    // IW4, IW5, IW6
     PHYS_COLL_MAP,
-    // IW4, IW5
+    // IW4, IW5, IW6
     XMODEL_SURFS,
-    // IW4, IW5
+    // IW4, IW5, IW6
     PIXEL_SHADER,
-    // IW4, IW5
+    // IW4, IW5, IW6
     VERTEX_SHADER,
-    // IW4, IW5
+    // IW4, IW5, IW6
     VERTEX_DECL,
-    // IW4, IW5
+    // IW4, IW5, IW6
     FX_WORLD,
-    // IW4, IW5, T6
+    // IW4, IW5, IW6, T6
     LEADERBOARD,
-    // IW4, IW5
+    // IW4, IW5, IW6
     STRUCTURED_DATA_DEF,
-    // IW4, IW5, T6
+    // IW4, IW5, IW6, T6
     TRACER,
-    // IW4, IW5, T6
+    // IW4, IW5, IW6, T6
     VEHICLE,
-    // IW4, IW5, T6
+    // IW4, IW5, IW6, T6
     ADDON_MAP_ENTS,
 
-    // IW5
+    // IW5, IW6
     GLASS_WORLD,
-    // IW5
+    // IW5, IW6
     PATH_DATA,
-    // IW5
+    // IW5, IW6
     VEHICLE_TRACK,
-    // IW5, T6
+    // IW5, IW6, T6
     ATTACHMENT,
-    // IW5
+    // IW5, IW6
     SURFACE_FX,
-    // IW5, T6
+    // IW5, IW6, T6
     SCRIPT,
 
+    // IW6
+    LPF_CURVE,
+    // IW6
+    REVERB_CURVE,
     // IW6
     ANIMCLASS,
     // IW6
