@@ -238,7 +238,11 @@ namespace
 
     bool ShouldApplyFlag200(const MaterialTechnique& technique)
     {
+#ifdef FEATURE_IW6
+        for (auto passIndex = 0u; passIndex < technique.hdr.passCount; passIndex++)
+#else
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+#endif
         {
             const auto& pass = technique.passArray[passIndex];
             if (!pass.args)
@@ -266,7 +270,11 @@ namespace
 
     bool AnyDeclHasOptionalSource(const MaterialTechnique& technique, AssetCreationContext& context)
     {
+#ifdef FEATURE_IW6
+        for (auto passIndex = 0u; passIndex < technique.hdr.passCount; passIndex++)
+#else
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+#endif
         {
             const auto& pass = technique.passArray[passIndex];
             if (!pass.vertexDecl)
@@ -299,7 +307,7 @@ namespace
 #if defined(FEATURE_IW3)
         if (lowerTechniqueName == "zprepass")
             technique.flags |= MTL_TECHFLAG_ZPREPASS;
-#elif defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_IW6)
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
         if (lowerTechniqueName == "zprepass")
@@ -314,6 +322,21 @@ namespace
 
         if (ShouldApplyFlag200(technique))
             technique.flags |= TECHNIQUE_FLAG_200;
+#elif defined(FEATURE_IW6)
+        // Not a particularly cool way to do this but...
+        // the game actually does this :shrug:
+        if (lowerTechniqueName == "zprepass")
+            technique.hdr.flags |= MTL_TECHFLAG_ZPREPASS;
+        else if (lowerTechniqueName == "build_floatz")
+            technique.hdr.flags |= MTL_TECHFLAG_BUILD_FLOATZ;
+        else if (lowerTechniqueName == "build_shadowmap_depth" || lowerTechniqueName == "build_shadowmap_model")
+            technique.hdr.flags |= MTL_TECHFLAG_BUILD_SHADOW_MAP_DEPTH_OR_MODEL;
+
+        if (technique.hdr.flags & MTL_TECHFLAG_USES_FLOATZ && lowerTechniqueName.starts_with("distortion_"))
+            technique.hdr.flags = (technique.hdr.flags & ~MTL_TECHFLAG_USES_FLOATZ) | MTL_TECHFLAG_USES_DISTORTION_FLOATZ;
+
+        if (ShouldApplyFlag200(technique))
+            technique.hdr.flags |= TECHNIQUE_FLAG_200;
 #elif defined(FEATURE_T5)
         // Not a particularly cool way to do this but...
         // the game actually does this :shrug:
@@ -332,8 +355,13 @@ namespace
         }
 #endif
 
+#if defined(FEATURE_IW6)
+        if (AnyDeclHasOptionalSource(technique, context))
+            technique.hdr.flags |= MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE;
+#else
         if (AnyDeclHasOptionalSource(technique, context))
             technique.flags |= MTL_TECHFLAG_DECL_HAS_OPTIONAL_SOURCE;
+#endif
     }
 
     MaterialTechnique* ConvertTechnique(const techset::CommonTechnique& commonTechnique, AssetCreationContext& context, MemoryManager& memory)
@@ -341,17 +369,25 @@ namespace
         const auto additionalPassCount = std::max(commonTechnique.m_passes.size(), 1uz) - 1uz;
         auto* technique = static_cast<MaterialTechnique*>(memory.AllocRaw(sizeof(MaterialTechnique) + additionalPassCount * sizeof(MaterialPass)));
 
+#ifdef FEATURE_IW6
+        const auto passCount = static_cast<decltype(MaterialTechnique::hdr.passCount)>(commonTechnique.m_passes.size());
+        technique->hdr.name = memory.Dup(commonTechnique.m_name.c_str());
+        technique->hdr.passCount = passCount;
+#else
         const auto passCount = static_cast<decltype(MaterialTechnique::passCount)>(commonTechnique.m_passes.size());
-
         technique->name = memory.Dup(commonTechnique.m_name.c_str());
-
         technique->passCount = passCount;
+#endif
 
         for (auto passIndex = 0u; passIndex < passCount; passIndex++)
             ConvertMaterialPass(technique->passArray[passIndex], commonTechnique.m_passes[passIndex], context, memory);
 
         // Take common flags and apply further logic
+#ifdef FEATURE_IW6
+        technique->hdr.flags = static_cast<decltype(MaterialTechnique::hdr.flags)>(commonTechnique.m_flags);
+#else
         technique->flags = static_cast<decltype(MaterialTechnique::flags)>(commonTechnique.m_flags);
+#endif
         UpdateTechniqueFlags(*technique, commonTechnique, context);
 
         return technique;

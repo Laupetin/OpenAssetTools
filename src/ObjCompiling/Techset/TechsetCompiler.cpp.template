@@ -37,37 +37,49 @@ using namespace GAME;
 
 namespace
 {
+#ifdef FEATURE_IW6
+    MaterialWorldVertexFormat GetWorldVertFormat(int T, int N, int D)
+    {
+        if (T == 1)
+        {
+            return static_cast<MaterialWorldVertexFormat>(0);
+        }
+
+        int index = 1;
+        for (int t = 2; t < T; t++)
+        {
+            int nCount = t - 0;
+            int dCount = t + 1;
+
+            index += nCount * dCount;
+        }
+        index += (N - 1) * (T + 1);
+        index += D;
+
+        return static_cast<MaterialWorldVertexFormat>(index);
+    }
+#endif
+
     MaterialWorldVertexFormat GetWorldVertexFormat(const std::string& name)
     {
         if (name.contains("lit_"))
         {
+
+#ifdef FEATURE_IW6
+            size_t texCount = 0u, normalCount = 0u, diffuseCount = 0u;
+            techset::CountWorldVertFormatParameters(name, texCount, normalCount, diffuseCount);
+
+            texCount = std::max(texCount, 1uz);
+            normalCount = std::max(normalCount, 1uz);
+            diffuseCount = std::max(normalCount, 1uz);
+            return GetWorldVertFormat(texCount, normalCount, diffuseCount);
+#else
             size_t texCount = 0u, normalCount = 0u;
             techset::CountWorldVertFormatParameters(name, texCount, normalCount);
 
             // 0 and 1 seem to be treated equally
             texCount = std::max(texCount, 1uz);
             normalCount = std::max(normalCount, 1uz);
-
-            #ifdef FEATURE_IW6
-            if (texCount == 1 && normalCount == 1)
-                return MTL_WORLDVERT_T1;
-            if (texCount == 2 && normalCount == 1)
-                return MTL_WORLDVERT_T2N1;
-            if (texCount == 2 && normalCount == 2)
-                return MTL_WORLDVERT_T2N2;
-            if (texCount == 3 && normalCount == 1)
-                return MTL_WORLDVERT_T3N1;
-            if (texCount == 3 && normalCount == 2)
-                return MTL_WORLDVERT_T3N2;
-            if (texCount == 3 && normalCount == 3)
-                return MTL_WORLDVERT_T3N3;
-            if (texCount == 4 && normalCount == 1)
-                return MTL_WORLDVERT_T4N1;
-            if (texCount == 4 && normalCount == 2)
-                return MTL_WORLDVERT_T4N2;
-            if (texCount == 4 && normalCount == 3)
-                return MTL_WORLDVERT_T4N3;
-            #else
             if (texCount == 1 && normalCount == 1)
                 return MTL_WORLDVERT_TEX_1_NRM_1;
             if (texCount == 2 && normalCount == 1)
@@ -86,7 +98,7 @@ namespace
                 return MTL_WORLDVERT_TEX_4_NRM_2;
             if (texCount == 4 && normalCount == 3)
                 return MTL_WORLDVERT_TEX_4_NRM_3;
-            #endif
+#endif
         }
 
         return static_cast<MaterialWorldVertexFormat>(0);
