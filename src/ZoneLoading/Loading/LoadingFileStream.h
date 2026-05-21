@@ -10,6 +10,7 @@ class LoadingFileStream final : public ILoadingStream
 public:
     explicit LoadingFileStream(std::istream& stream);
 
+    void Skip(size_t length) override;
     size_t Load(void* buffer, size_t length) override;
     int64_t Pos() override;
 

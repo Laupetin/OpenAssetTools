@@ -14,8 +14,8 @@ void Actions_LoadedSound::SetSoundData(XA2Sound* sound) const
     
     if (sound->format.dataByteCount > 0)
     {
-        unsigned char* tempData = sound->data;
-        sound->data = m_zone.Memory().Alloc<unsigned char>(sound->loadedSize);
+        char* tempData = sound->data;
+        sound->data = m_zone.Memory().Alloc<char>(sound->loadedSize);
         memcpy(sound->data, tempData, sound->loadedSize);
     }
     else

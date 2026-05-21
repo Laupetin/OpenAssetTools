@@ -12,26 +12,7 @@ namespace
 
         void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
         {
-            uint8_t tempBuffer[128];
-            auto skippedBytes = 0uz;
-
-            while (skippedBytes < m_skip_count)
-            {
-                size_t toSkip;
-
-                if (m_skip_count - skippedBytes < sizeof(tempBuffer))
-                {
-                    toSkip = m_skip_count - skippedBytes;
-                }
-                else
-                {
-                    toSkip = sizeof(tempBuffer);
-                }
-
-                stream.Load(tempBuffer, toSkip);
-
-                skippedBytes += toSkip;
-            }
+            stream.Skip(m_skip_count);
         }
 
     private:

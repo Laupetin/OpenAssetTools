@@ -25,7 +25,7 @@ protected:
     ContentLoaderBase(Zone& zone, ZoneInputStream& stream);
 
     void LoadXString(bool atStreamStart) const;
-    void LoadXStringArray(bool atStreamStart, size_t count);
+    void LoadXStringArray(bool atStreamStart, size_t count, size_t width = 4u);
 
     [[nodiscard]] ZonePointerType GetZonePointerType(const void* zonePtr) const;
 
@@ -40,7 +40,7 @@ protected:
     MemoryManager& m_memory;
     ZoneInputStream& m_stream;
 
-private:
+protected:
     const void* m_zone_ptr_following;
     const void* m_zone_ptr_insert;
 };

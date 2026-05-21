@@ -41,7 +41,7 @@ void ContentLoaderBase::LoadXString(const bool atStreamStart) const
     }
 }
 
-void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t count)
+void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t count, size_t width)
 {
     assert(varXString != nullptr);
 
@@ -51,12 +51,12 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
 #else
     if (atStreamStart)
     {
-        const auto fill = m_stream.LoadWithFill(4u * count);
+        const auto fill = m_stream.LoadWithFill(width * count);
 
         for (size_t index = 0; index < count; index++)
         {
-            fill.FillPtr(varXString[index], 4u * index);
-            m_stream.AddPointerLookup(&varXString[index], fill.BlockBuffer(4u * index));
+            fill.FillPtr(varXString[index], width * index);
+            m_stream.AddPointerLookup(&varXString[index], fill.BlockBuffer(width * index));
         }
     }
 #endif

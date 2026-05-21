@@ -14,6 +14,11 @@ ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
       varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
+    // -1
+    m_zone_ptr_following = reinterpret_cast<const void*>(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - stream.GetPointerBitCount()));
+
+    // -2
+    m_zone_ptr_insert = reinterpret_cast<const void*>(-144680337052532737);
 }
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
@@ -22,15 +27,15 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
     if (varScriptStringList->strings != nullptr)
     {
-        assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
+        //assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
 #ifdef ARCH_x86
         varScriptStringList->strings = m_stream.Alloc<const char*>(4);
 #else
-        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
+        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(8, varScriptStringList->count);
 #endif
         varXString = varScriptStringList->strings;
-        LoadXStringArray(true, varScriptStringList->count);
+        LoadXStringArray(true, varScriptStringList->count, 8);
 
         if (varScriptStringList->strings && varScriptStringList->count > 0)
             m_zone.m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
@@ -65,15 +70,18 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
         LOAD_ASSET(ASSET_TYPE_XMODEL_SURFS, XModelSurfs, modelSurfs)
         LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
         LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+        LOAD_ASSET(ASSET_TYPE_COMPUTESHADER, ComputeShader, computeShader)
         LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader)
+        LOAD_ASSET(ASSET_TYPE_HULLSHADER, MaterialHullShader, hullShader)
+        LOAD_ASSET(ASSET_TYPE_DOMAINSHADER, MaterialDomainShader, domainShader)
         LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader)
-        SKIP_ASSET(ASSET_TYPE_VERTEXDECL)
+        LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl)
         LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
         LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
         LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
-        LOAD_ASSET(ASSET_TYPE_LPF_CURVE, SndCurve, lpfCurve)
-        LOAD_ASSET(ASSET_TYPE_REVERB_CURVE, SndCurve, reverbCurve)
+        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SoundCurve, sndCurve)
+        LOAD_ASSET(ASSET_TYPE_LPF_CURVE, LpfCurve, lpfCurve)
+        LOAD_ASSET(ASSET_TYPE_REVERB_CURVE, ReverbCurve, reverbCurve)
         LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
         LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
         LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
@@ -92,7 +100,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
         LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
         LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment)
         LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon)
-        SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS)
+        LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
         LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
         LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
         LOAD_ASSET(ASSET_TYPE_SURFACE_FX, SurfaceFxTable, surfaceFx)
@@ -112,8 +120,13 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
         LOAD_ASSET(ASSET_TYPE_REVERB_PRESET, ReverbPreset, reverbPreset)
         LOAD_ASSET(ASSET_TYPE_LUA_FILE, LuaFile, luaFile)
         LOAD_ASSET(ASSET_TYPE_SCRIPTABLE, ScriptableDef, scriptable)
+        LOAD_ASSET(ASSET_TYPE_COLORIZATION, Colorization, colorization)
+        LOAD_ASSET(ASSET_TYPE_COLORIZATIONSET, ColorizationSet, colorizationSet)
+        LOAD_ASSET(ASSET_TYPE_TONEMAPPING, ToneMapping, toneMapping)
         LOAD_ASSET(ASSET_TYPE_EQUIPMENT_SND_TABLE, EquipmentSoundTable, equipSndTable)
+        LOAD_ASSET(ASSET_TYPE_VECTORFIELD, VectorField, vectorField)
         LOAD_ASSET(ASSET_TYPE_DOPPLER_PRESET, DopplerPreset, dopplerPreset)
+        LOAD_ASSET(ASSET_TYPE_PARTICLE_SIM_ANIMATION, FxParticleSimAnimation, particleSimAnimation)
 
     default:
     {
@@ -163,13 +176,13 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
     m_stream.LoadDataRaw(&assetList, sizeof(assetList));
 #else
-    const auto fillAccessor = m_stream.LoadWithFill(16u);
+    const auto fillAccessor = m_stream.LoadWithFill(32u);
     varScriptStringList = &varXAssetList->stringList;
     fillAccessor.Fill(varScriptStringList->count, 0u);
-    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
+    fillAccessor.FillPtr(varScriptStringList->strings, 8u);
 
-    fillAccessor.Fill(varXAssetList->assetCount, 8u);
-    fillAccessor.FillPtr(varXAssetList->assets, 12u);
+    fillAccessor.Fill(varXAssetList->assetCount, 16u);
+    fillAccessor.FillPtr(varXAssetList->assets, 24u);
 #endif
 
     m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);

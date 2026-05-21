@@ -16,34 +16,39 @@
 #include "Loading/Steps/StepLoadZoneSizes.h"
 #include "Loading/Steps/StepRemoveProcessor.h"
 #include "Loading/Steps/StepSkipBytes.h"
+#include "Loading/Steps/StepReadValue.h"
+#include "Loading/Steps/StepCallback.h"
 #include "Loading/Steps/StepVerifyFileName.h"
 #include "Loading/Steps/StepVerifyHash.h"
+#include "Loading/Steps/StepDumpData.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 
+#include <filesystem>
 #include <cassert>
 #include <cstring>
 #include <iostream>
 #include <type_traits>
 
+#define DO_RAW_DUMP
+
 using namespace IW6;
+namespace fs = std::filesystem;
 
 namespace
 {
     void SetupBlock(ZoneLoader& zoneLoader)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
-
+        
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_SCRIPT, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
@@ -81,12 +86,12 @@ namespace
         // If file is signed setup a RSA instance.
         auto rsa = SetupRsa(inspectResult.m_is_official);
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
-
         auto subHeaderHash = step::CreateStepLoadHash(sizeof(DB_AuthHash::bytes), 1);
         auto* subHeaderHashPtr = subHeaderHash.get();
         zoneLoader.AddLoadingStep(std::move(subHeaderHash));
+
+        zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
+        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
         auto subHeaderHashSignature = step::CreateStepLoadSignature(sizeof(DB_AuthSignature::bytes));
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
@@ -119,6 +124,25 @@ namespace
                                                    cryptography::CreateSha256(),
                                                    masterBlockHashesPtr)));
     }
+
+    struct IW6HeaderState
+    {
+        uint8_t isOnline{};
+        uint8_t compressionType{};
+        uint8_t pointerSize{};
+        uint8_t longSize{};
+
+        uint32_t unknown0{};
+        uint32_t languageMask{};
+        uint32_t entryCount{};
+        uint32_t unknown1{};
+    };
+
+    enum FFCompressionType
+    {
+        FF_COMPRESSION_ZLIB = 0x0,
+        FF_COMPRESSION_LZX = 0x1,
+    };
 } // namespace
 
 std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
@@ -131,7 +155,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(c
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW6,
             .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
+            .m_word_size = GameWordSize::ARCH_64,
             .m_platform = GamePlatform::PC,
             .m_is_official = true,
             .m_is_signed = true,
@@ -144,7 +168,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(c
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW6,
             .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
+            .m_word_size = GameWordSize::ARCH_64,
             .m_platform = GamePlatform::PC,
             .m_is_official = false,
             .m_is_signed = false,
@@ -173,16 +197,41 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
 
     SetupBlock(*zoneLoader);
 
-    // Skip unknown 1 byte field that the game ignores as well
-    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(1));
+    auto state = std::make_shared<IW6HeaderState>();
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->isOnline));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->compressionType));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->pointerSize));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->longSize));
 
-    // Skip timestamp
-    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->unknown0));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->languageMask));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->entryCount));
+    zoneLoader->AddLoadingStep(step::CreateStepReadValue(&state->unknown1));
+
+    zoneLoader->AddLoadingStep(step::CreateStepCallback(
+        [state](ZoneLoader& zoneLoader, ILoadingStream& stream)
+        {
+            stream.Skip(state->entryCount * 24);
+        }));
+
+    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(12));
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     AddAuthHeaderSteps(*inspectResult, *zoneLoader, fileName);
 
-    zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
+    auto compressionType = state.get()->compressionType;
+    if (compressionType == FF_COMPRESSION_ZLIB)
+    {
+        zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(20000000)));
+    }
+    else if (compressionType == FF_COMPRESSION_LZX)
+    {
+        con::warn("LZX not handled yet!");
+    }
+    else
+    {
+        con::warn("Unknown compression: {}", compressionType);
+    }
 
     // Start of the XFile struct
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
@@ -194,7 +243,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
         {
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
-        32u,
+        64u,
         ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
         zonePtr->Memory(),
