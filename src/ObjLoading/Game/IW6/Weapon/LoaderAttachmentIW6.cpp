@@ -557,70 +557,70 @@ namespace
 
             projectile.projExplosionType = jProjectile.projExplosionType;
 
-            //if (jProjectile.projExplosionEffect)
+            // if (jProjectile.projExplosionEffect)
             //{
-            //    if (!CreateFxFromJson(jProjectile.projExplosionEffect.value(), projectile.projExplosionEffect, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projExplosionEffect = nullptr;
+            //     if (!CreateFxFromJson(jProjectile.projExplosionEffect.value(), projectile.projExplosionEffect, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projExplosionEffect = nullptr;
 
-            //projectile.projExplosionEffectForceNormalUp = jProjectile.projExplosionEffectForceNormalUp;
+            // projectile.projExplosionEffectForceNormalUp = jProjectile.projExplosionEffectForceNormalUp;
 
-            //if (jProjectile.projExplosionSound)
+            // if (jProjectile.projExplosionSound)
             //{
-            //    if (!CreateSoundFromJson(jProjectile.projExplosionSound.value(), projectile.projExplosionSound, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projExplosionSound.name = nullptr;
+            //     if (!CreateSoundFromJson(jProjectile.projExplosionSound.value(), projectile.projExplosionSound, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projExplosionSound.name = nullptr;
 
-            //if (jProjectile.projDudEffect)
+            // if (jProjectile.projDudEffect)
             //{
-            //    if (!CreateFxFromJson(jProjectile.projDudEffect.value(), projectile.projDudEffect, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projDudEffect = nullptr;
+            //     if (!CreateFxFromJson(jProjectile.projDudEffect.value(), projectile.projDudEffect, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projDudEffect = nullptr;
 
-            //if (jProjectile.projDudSound)
+            // if (jProjectile.projDudSound)
             //{
-            //    if (!CreateSoundFromJson(jProjectile.projDudSound.value(), projectile.projDudSound, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projDudSound.name = nullptr;
+            //     if (!CreateSoundFromJson(jProjectile.projDudSound.value(), projectile.projDudSound, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projDudSound.name = nullptr;
 
-            //projectile.projImpactExplode = jProjectile.projImpactExplode;
-            //projectile.destabilizationRateTime = jProjectile.destabilizationRateTime;
-            //projectile.destabilizationCurvatureMax = jProjectile.destabilizationCurvatureMax;
-            //projectile.destabilizeDistance = jProjectile.destabilizeDistance;
+            // projectile.projImpactExplode = jProjectile.projImpactExplode;
+            // projectile.destabilizationRateTime = jProjectile.destabilizationRateTime;
+            // projectile.destabilizationCurvatureMax = jProjectile.destabilizationCurvatureMax;
+            // projectile.destabilizeDistance = jProjectile.destabilizeDistance;
 
-            //if (jProjectile.projTrailEffect)
+            // if (jProjectile.projTrailEffect)
             //{
-            //    if (!CreateFxFromJson(jProjectile.projTrailEffect.value(), projectile.projTrailEffect, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projTrailEffect = nullptr;
+            //     if (!CreateFxFromJson(jProjectile.projTrailEffect.value(), projectile.projTrailEffect, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projTrailEffect = nullptr;
 
-            //projectile.projIgnitionDelay = jProjectile.projIgnitionDelay;
+            // projectile.projIgnitionDelay = jProjectile.projIgnitionDelay;
 
-            //if (jProjectile.projIgnitionEffect)
+            // if (jProjectile.projIgnitionEffect)
             //{
-            //    if (!CreateFxFromJson(jProjectile.projIgnitionEffect.value(), projectile.projIgnitionEffect, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projIgnitionEffect = nullptr;
+            //     if (!CreateFxFromJson(jProjectile.projIgnitionEffect.value(), projectile.projIgnitionEffect, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projIgnitionEffect = nullptr;
 
-            //if (jProjectile.projIgnitionSound)
+            // if (jProjectile.projIgnitionSound)
             //{
-            //    if (!CreateSoundFromJson(jProjectile.projIgnitionSound.value(), projectile.projIgnitionSound, attachment))
-            //        return false;
-            //}
-            //else
-            //    projectile.projIgnitionSound.name = nullptr;
+            //     if (!CreateSoundFromJson(jProjectile.projIgnitionSound.value(), projectile.projIgnitionSound, attachment))
+            //         return false;
+            // }
+            // else
+            //     projectile.projIgnitionSound.name = nullptr;
 
             return true;
         }

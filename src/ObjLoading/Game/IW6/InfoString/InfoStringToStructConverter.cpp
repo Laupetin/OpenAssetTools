@@ -153,49 +153,49 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         return true;
-    }/*
+    } /*
 
-    case CSPFT_PHYS_COLLMAP:
-    {
-        if (value.empty())
-        {
-            *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-            return true;
-        }
+     case CSPFT_PHYS_COLLMAP:
+     {
+         if (value.empty())
+         {
+             *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+             return true;
+         }
 
-        auto* collmap = m_context.LoadDependency<AssetPhysCollMap>(value);
+         auto* collmap = m_context.LoadDependency<AssetPhysCollMap>(value);
 
-        if (collmap == nullptr)
-        {
-            con::error("Failed to load collmap asset \"{}\"", value);
-            return false;
-        }
+         if (collmap == nullptr)
+         {
+             con::error("Failed to load collmap asset \"{}\"", value);
+             return false;
+         }
 
-        m_registration.AddDependency(collmap);
-        *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = collmap->Asset();
+         m_registration.AddDependency(collmap);
+         *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = collmap->Asset();
 
-        return true;
-    }
+         return true;
+     }
 
-    case CSPFT_SOUND:
-    {
-        if (value.empty())
-        {
-            reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = nullptr;
-            return true;
-        }
+     case CSPFT_SOUND:
+     {
+         if (value.empty())
+         {
+             reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = nullptr;
+             return true;
+         }
 
-        auto* name = m_memory.Alloc<snd_alias_list_name>();
-        name->soundName = m_memory.Dup(value.c_str());
+         auto* name = m_memory.Alloc<snd_alias_list_name>();
+         name->soundName = m_memory.Dup(value.c_str());
 
-        reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;
+         reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;
 
-        m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(value));
-        return true;
-    }
+         m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(value));
+         return true;
+     }
 
-    case CSPFT_SCRIPT_STRING:
-        return ConvertScriptString(value, field.iOffset);*/
+     case CSPFT_SCRIPT_STRING:
+         return ConvertScriptString(value, field.iOffset);*/
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:

@@ -19,7 +19,7 @@ namespace techset
         return std::format("techsets/{}.techset", assetName);
     }
 
-    size_t CountCountWorldVertFormatParameter(const std::string& assetName, char vertType) 
+    size_t CountCountWorldVertFormatParameter(const std::string& assetName, char vertType)
     {
         size_t count = 0;
         if (assetName.empty())

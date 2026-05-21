@@ -276,7 +276,7 @@ namespace IW6
     using AssetColorizationSet = Asset<ASSET_TYPE_COLORIZATIONSET, ColorizationSet>;
     using AssetToneMapping = Asset<ASSET_TYPE_TONEMAPPING, ToneMapping>;
     using AssetEquipmentSoundTable = Asset<ASSET_TYPE_EQUIPMENT_SND_TABLE, EquipmentSoundTable>;
-    using AssetVectorField= Asset<ASSET_TYPE_VECTORFIELD, VectorField>;
+    using AssetVectorField = Asset<ASSET_TYPE_VECTORFIELD, VectorField>;
     using AssetDopplerPreset = Asset<ASSET_TYPE_DOPPLER_PRESET, DopplerPreset>;
     using AssetFxParticleSimAnimation = Asset<ASSET_TYPE_PARTICLE_SIM_ANIMATION, FxParticleSimAnimation>;
 

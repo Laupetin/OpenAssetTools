@@ -55,8 +55,8 @@ namespace
 
     std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)
     {
-        //if (image.texture)
-        //    return LoadImageFromLoadDef(image);
+        // if (image.texture)
+        //     return LoadImageFromLoadDef(image);
 
         return LoadImageFromIwi(image, searchPath);
     }

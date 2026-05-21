@@ -74,25 +74,25 @@ namespace
             CONVERT_XMODEL_ARRAY(viewModels, ATTACHMENT_VIEW_MODEL_COUNT)
             CONVERT_XMODEL_ARRAY(reticleViewModels, ATTACHMENT_RETICLE_VIEW_MODEL_COUNT)
 
-            //CONVERT_ATTRIBUTE(JsonAttAmmoGeneral, ammoGeneral)
-            //CONVERT_ATTRIBUTE(JsonAttSight, sight)
-            //CONVERT_ATTRIBUTE(JsonAttReload, reload)
-            //CONVERT_ATTRIBUTE(JsonAttAddOns, addOns)
-            //CONVERT_ATTRIBUTE(JsonAttGeneral, general)
-            //CONVERT_ATTRIBUTE(JsonAttAimAssist, aimAssist)
-            //CONVERT_ATTRIBUTE(JsonAttAmmunition, ammunition)
-            //CONVERT_ATTRIBUTE(JsonAttDamage, damage)
-            //CONVERT_ATTRIBUTE(JsonAttLocationDamage, locationDamage)
-            //CONVERT_ATTRIBUTE(JsonAttIdleSettings, idleSettings)
-            //CONVERT_ATTRIBUTE(JsonAttADSSettings, adsSettings)
-            //CONVERT_ATTRIBUTE(JsonAttADSSettings, adsSettingsMain)
-            //CONVERT_ATTRIBUTE(JsonAttHipSpread, hipSpread)
-            //CONVERT_ATTRIBUTE(JsonAttGunKick, gunKick)
-            //CONVERT_ATTRIBUTE(JsonAttViewKick, viewKick)
-            //CONVERT_ATTRIBUTE(JsonAttADSOverlay, adsOverlay)
-            //CONVERT_ATTRIBUTE(JsonAttUI, ui)
-            //CONVERT_ATTRIBUTE(JsonAttRumbles, rumbles)
-            //CONVERT_ATTRIBUTE(JsonAttProjectile, projectile)
+            // CONVERT_ATTRIBUTE(JsonAttAmmoGeneral, ammoGeneral)
+            // CONVERT_ATTRIBUTE(JsonAttSight, sight)
+            // CONVERT_ATTRIBUTE(JsonAttReload, reload)
+            // CONVERT_ATTRIBUTE(JsonAttAddOns, addOns)
+            // CONVERT_ATTRIBUTE(JsonAttGeneral, general)
+            // CONVERT_ATTRIBUTE(JsonAttAimAssist, aimAssist)
+            // CONVERT_ATTRIBUTE(JsonAttAmmunition, ammunition)
+            // CONVERT_ATTRIBUTE(JsonAttDamage, damage)
+            // CONVERT_ATTRIBUTE(JsonAttLocationDamage, locationDamage)
+            // CONVERT_ATTRIBUTE(JsonAttIdleSettings, idleSettings)
+            // CONVERT_ATTRIBUTE(JsonAttADSSettings, adsSettings)
+            // CONVERT_ATTRIBUTE(JsonAttADSSettings, adsSettingsMain)
+            // CONVERT_ATTRIBUTE(JsonAttHipSpread, hipSpread)
+            // CONVERT_ATTRIBUTE(JsonAttGunKick, gunKick)
+            // CONVERT_ATTRIBUTE(JsonAttViewKick, viewKick)
+            // CONVERT_ATTRIBUTE(JsonAttADSOverlay, adsOverlay)
+            // CONVERT_ATTRIBUTE(JsonAttUI, ui)
+            // CONVERT_ATTRIBUTE(JsonAttRumbles, rumbles)
+            // CONVERT_ATTRIBUTE(JsonAttProjectile, projectile)
 
             jAttachment.ammunitionScale = attachment.ammunitionScale;
             jAttachment.damageScale = attachment.damageScale;
@@ -363,14 +363,14 @@ namespace
 
             jProjectile.projExplosionEffectForceNormalUp = projectile.projExplosionEffectForceNormalUp;
 
-            //if (projectile.projExplosionSound.name && projectile.projExplosionSound.name->soundName)
-            //    jProjectile.projExplosionSound = projectile.projExplosionSound.name->soundName;
+            // if (projectile.projExplosionSound.name && projectile.projExplosionSound.name->soundName)
+            //     jProjectile.projExplosionSound = projectile.projExplosionSound.name->soundName;
 
-            //if (projectile.projDudEffect && projectile.projDudEffect->name)
-            //    jProjectile.projDudEffect = AssetName(projectile.projDudEffect->name);
+            // if (projectile.projDudEffect && projectile.projDudEffect->name)
+            //     jProjectile.projDudEffect = AssetName(projectile.projDudEffect->name);
 
-            //if (projectile.projDudSound.name && projectile.projDudSound.name->soundName)
-            //    jProjectile.projDudSound = projectile.projDudSound.name->soundName;
+            // if (projectile.projDudSound.name && projectile.projDudSound.name->soundName)
+            //     jProjectile.projDudSound = projectile.projDudSound.name->soundName;
 
             jProjectile.projImpactExplode = projectile.projImpactExplode;
             jProjectile.destabilizationRateTime = projectile.destabilizationRateTime;
@@ -385,8 +385,8 @@ namespace
             if (projectile.projIgnitionEffect && projectile.projIgnitionEffect->name)
                 jProjectile.projIgnitionEffect = AssetName(projectile.projIgnitionEffect->name);
 
-            //if (projectile.projIgnitionSound.name && projectile.projIgnitionSound.name->soundName)
-            //    jProjectile.projIgnitionSound = projectile.projIgnitionSound.name->soundName;
+            // if (projectile.projIgnitionSound.name && projectile.projIgnitionSound.name->soundName)
+            //     jProjectile.projIgnitionSound = projectile.projIgnitionSound.name->soundName;
         }
 
         std::ostream& m_stream;

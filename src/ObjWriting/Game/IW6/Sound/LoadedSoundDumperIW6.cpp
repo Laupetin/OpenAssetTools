@@ -39,28 +39,28 @@ namespace sound
         case WavFormat::PCM:
             DumpWavPcm(loadedSound, stream);
             break;
-        // TODO: Figure out
-        //case WavFormat::XMA2:
-        //    DumpWavXma2(loadedSound, stream);
-        //    break;
-        //case WavFormat::ADPCM:
-        //    DumpWavADPcm(loadedSound, stream);
-        //    break;
-        //case WavFormat::XWMA:
-        //    DumpWavXWMA(loadedSound, stream);
-        //    break;
-        //case WavFormat::MP3:
-        //    DumpWavMp3(loadedSound, stream);
-        //    break;
-        //case WavFormat::WIIUDSP:
-        //    DumpWavWiiUDSP(loadedSound, stream);
-        //    break;
-        //case WavFormat::FLAC:
-        //    DumpWavFlac(loadedSound, stream);
-        //    break;
+            // TODO: Figure out
+            // case WavFormat::XMA2:
+            //    DumpWavXma2(loadedSound, stream);
+            //    break;
+            // case WavFormat::ADPCM:
+            //    DumpWavADPcm(loadedSound, stream);
+            //    break;
+            // case WavFormat::XWMA:
+            //    DumpWavXWMA(loadedSound, stream);
+            //    break;
+            // case WavFormat::MP3:
+            //    DumpWavMp3(loadedSound, stream);
+            //    break;
+            // case WavFormat::WIIUDSP:
+            //    DumpWavWiiUDSP(loadedSound, stream);
+            //    break;
+            // case WavFormat::FLAC:
+            //    DumpWavFlac(loadedSound, stream);
+            //    break;
 
         default:
-            //con::error("Unknown format {} for loaded sound: {}", loadedSound->sound.format.format, loadedSound->name);
+            // con::error("Unknown format {} for loaded sound: {}", loadedSound->sound.format.format, loadedSound->name);
             break;
         }
     }

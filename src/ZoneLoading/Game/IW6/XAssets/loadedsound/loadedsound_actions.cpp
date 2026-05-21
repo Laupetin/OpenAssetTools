@@ -11,7 +11,7 @@ Actions_LoadedSound::Actions_LoadedSound(Zone& zone)
 
 void Actions_LoadedSound::SetSoundData(XA2Sound* sound) const
 {
-    
+
     if (sound->format.dataByteCount > 0)
     {
         char* tempData = sound->data;

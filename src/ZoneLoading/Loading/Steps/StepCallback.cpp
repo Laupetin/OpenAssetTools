@@ -7,7 +7,7 @@ namespace step
     {
     }
 
-    void StepCallback::PerformStep(ZoneLoader& loader, ILoadingStream& stream) 
+    void StepCallback::PerformStep(ZoneLoader& loader, ILoadingStream& stream)
     {
         m_callback(loader, stream);
     }

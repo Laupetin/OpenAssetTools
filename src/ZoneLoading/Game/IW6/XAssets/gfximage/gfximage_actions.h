@@ -11,6 +11,6 @@ namespace IW6
         explicit Actions_GfxImage(Zone& zone);
 
         void OnImageLoaded(GfxImage* image) const;
-        //void LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const;
+        // void LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const;
     };
 } // namespace IW6

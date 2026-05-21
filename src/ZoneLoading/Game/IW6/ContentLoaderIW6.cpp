@@ -15,7 +15,8 @@ ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
       varScriptStringList(nullptr)
 {
     // -1
-    m_zone_ptr_following = reinterpret_cast<const void*>(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - stream.GetPointerBitCount()));
+    m_zone_ptr_following =
+        reinterpret_cast<const void*>(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - stream.GetPointerBitCount()));
 
     // -2
     m_zone_ptr_insert = reinterpret_cast<const void*>(-144680337052532737);
@@ -27,7 +28,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
     if (varScriptStringList->strings != nullptr)
     {
-        //assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
+        // assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
 #ifdef ARCH_x86
         varScriptStringList->strings = m_stream.Alloc<const char*>(4);

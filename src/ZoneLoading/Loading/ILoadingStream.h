@@ -13,7 +13,7 @@ public:
     ILoadingStream& operator=(const ILoadingStream& other) = default;
     ILoadingStream& operator=(ILoadingStream&& other) noexcept = default;
 
-    virtual void Skip (size_t length) = 0;
+    virtual void Skip(size_t length) = 0;
     virtual size_t Load(void* buffer, size_t length) = 0;
     virtual int64_t Pos() = 0;
 };

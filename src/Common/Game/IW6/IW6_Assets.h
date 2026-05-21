@@ -32,7 +32,7 @@ namespace IW6
         MAX_XFILE_COUNT
     };
 
-   struct PhysPreset;
+    struct PhysPreset;
     struct PhysCollmap;
     struct XAnimParts;
     struct XModelSurfs;
@@ -731,7 +731,7 @@ namespace IW6
 
     struct MaterialInfo
     {
-        const char* name;                 // 0
+        const char* name;                      // 0
         unsigned char gameFlags;               // 8
         unsigned char sortKey;                 // 9
         unsigned char textureAtlasRowCount;    // 10
@@ -1195,6 +1195,7 @@ namespace IW6
         MTL_ARG_LITERAL_PIXEL_CONST = 0x8,
         MTL_ARG_COUNT = 0x9,
     };
+
     struct MaterialShaderArgument
     {
         unsigned char type;
@@ -1878,7 +1879,7 @@ namespace IW6
 
     struct XAnimDeltaPartQuatDataFrames2
     {
-        short(*frames)[2];
+        short (*frames)[2];
         XAnimDynamicIndices indices;
     };
 
@@ -1896,7 +1897,7 @@ namespace IW6
 
     struct XAnimDeltaPartQuatDataFrames
     {
-        short(*frames)[4];
+        short (*frames)[4];
         XAnimDynamicIndices indices;
     };
 
@@ -1943,7 +1944,7 @@ namespace IW6
 
     struct XAnimParts
     {
-        const char* name;              // 0
+        const char* name;                   // 0
         unsigned short dataByteCount;       // 8
         unsigned short dataShortCount;      // 10
         unsigned short dataIntCount;        // 12
@@ -1959,16 +1960,16 @@ namespace IW6
         unsigned int indexCount;            // 40
         float framerate;                    // 44
         float frequency;                    // 48
-        ScriptString* names;           // 56
-        char* dataByte;                // 64
-        short* dataShort;              // 72
-        int* dataInt;                  // 80
-        short* randomDataShort;        // 88
-        unsigned char* randomDataByte; // 96
-        int* randomDataInt;            // 104
+        ScriptString* names;                // 56
+        char* dataByte;                     // 64
+        short* dataShort;                   // 72
+        int* dataInt;                       // 80
+        short* randomDataShort;             // 88
+        unsigned char* randomDataByte;      // 96
+        int* randomDataInt;                 // 104
         XAnimIndices indices;               // 112
-        XAnimNotifyInfo* notify;       // 120
-        XAnimDeltaPart* deltaPart;     // 128
+        XAnimNotifyInfo* notify;            // 120
+        XAnimDeltaPart* deltaPart;          // 128
     };
 
     struct DObjAnimMat
@@ -2197,35 +2198,35 @@ namespace IW6
 
     struct XSurface
     {
-        unsigned short flags;                                 // 0
-        unsigned short vertCount;                             // 2
-        unsigned short triCount;                              // 4
-        unsigned char rigidVertListCount;                     // 6
-        unsigned char subdivLevelCount;                       // 7
-        short blendVertCounts[8];                             // 8
-        GfxVertexUnion0 verts0;                               // 24
-        Face* triIndices;                                // 32
-        int* vb0;                                             // 40
-        int* vb0View;                                    // 48
-        int* indexBuffer;                                     // 56
-        XRigidVertList* rigidVertLists;                  // 64
-        XBlendInfo* blendVerts;                          // 72
-        BlendVertsUnknown* blendVertsTable;              // 80
-        int* blendVertsBuffer;                           // 88
-        int* blendVertsView;                             // 96
-        float(*lmapUnwrap)[2];                           // 104
-        int* vblmapBuffer;                               // 112
-        int* vblmapView;                                 // 120
-        XSurfaceSubdivInfo* subdiv;                      // 128
-        float* tensionData;                              // 136
-        unsigned short* tensionAccumTable;               // 144
-        int* tensionAccumTableBuffer;                    // 152
-        int* tensionAccumTableView;                      // 160
-        int* tensionDataBuffer;                          // 168
-        int* tensionDataView;                            // 176
-        int* indexBufferView;                            // 184
-        unsigned int vertexLightingIndex;                     // 192
-        int partBits[8];                                      // 196
+        unsigned short flags;               // 0
+        unsigned short vertCount;           // 2
+        unsigned short triCount;            // 4
+        unsigned char rigidVertListCount;   // 6
+        unsigned char subdivLevelCount;     // 7
+        short blendVertCounts[8];           // 8
+        GfxVertexUnion0 verts0;             // 24
+        Face* triIndices;                   // 32
+        int* vb0;                           // 40
+        int* vb0View;                       // 48
+        int* indexBuffer;                   // 56
+        XRigidVertList* rigidVertLists;     // 64
+        XBlendInfo* blendVerts;             // 72
+        BlendVertsUnknown* blendVertsTable; // 80
+        int* blendVertsBuffer;              // 88
+        int* blendVertsView;                // 96
+        float (*lmapUnwrap)[2];             // 104
+        int* vblmapBuffer;                  // 112
+        int* vblmapView;                    // 120
+        XSurfaceSubdivInfo* subdiv;         // 128
+        float* tensionData;                 // 136
+        unsigned short* tensionAccumTable;  // 144
+        int* tensionAccumTableBuffer;       // 152
+        int* tensionAccumTableView;         // 160
+        int* tensionDataBuffer;             // 168
+        int* tensionDataView;               // 176
+        int* indexBufferView;               // 184
+        unsigned int vertexLightingIndex;   // 192
+        int partBits[8];                    // 196
     };
 
     struct XModelSurfs
@@ -2345,13 +2346,13 @@ namespace IW6
     struct XModel
     {
         const char* name;                             // 0
-        unsigned char numBones;                            // 8
-        unsigned char numRootBones;                        // 9
-        unsigned char numsurfs;                            // 10
-        unsigned char numReactiveMotionParts;              // 11
-        float scale;                                       // 12
-        char __pad0[4];                                    // unsigned char lodRampType; // 16
-        unsigned int noScalePartBits[6];                   // 20
+        unsigned char numBones;                       // 8
+        unsigned char numRootBones;                   // 9
+        unsigned char numsurfs;                       // 10
+        unsigned char numReactiveMotionParts;         // 11
+        float scale;                                  // 12
+        char __pad0[4];                               // unsigned char lodRampType; // 16
+        unsigned int noScalePartBits[6];              // 20
         ScriptString* boneNames;                      // 48
         unsigned char* parentList;                    // 56
         XModelAngle* tagAngles;                       // 64
@@ -2359,23 +2360,23 @@ namespace IW6
         unsigned char* partClassification;            // 80
         DObjAnimMat* baseMat;                         // 88
         ReactiveMotionModelPart* reactiveMotionParts; // 96
-        Material** materialHandles;              // 104
-        XModelLodInfo lodInfo[6];                          // 112
-        char maxLoadedLod;                                 // 496
-        char numLods;                                      // 497
-        char collLod;                                      // 498
-        unsigned char flags;                               // 499
-        int numCollSurfs;                                  // 500
+        Material** materialHandles;                   // 104
+        XModelLodInfo lodInfo[6];                     // 112
+        char maxLoadedLod;                            // 496
+        char numLods;                                 // 497
+        char collLod;                                 // 498
+        unsigned char flags;                          // 499
+        int numCollSurfs;                             // 500
         XModelCollSurf_s* collSurfs;                  // 504
-        int contents;                                      // 512
+        int contents;                                 // 512
         XBoneInfo* boneInfo;                          // 520
-        float radius;                                      // 528
-        Bounds bounds;                                     // 532
+        float radius;                                 // 528
+        Bounds bounds;                                // 532
         unsigned short* invHighMipRadius;             // 560
-        int memUsage;                                      // 568
+        int memUsage;                                 // 568
         PhysPreset* physPreset;                       // 576
         PhysCollmap* physCollmap;                     // 584
-        float quantization;                                // 592
+        float quantization;                           // 592
         float unk;
     };
 
@@ -2600,21 +2601,21 @@ namespace IW6
         float knots[16][2];
     };
 
-    //struct CommonCurve
+    // struct CommonCurve
     //{
-    //};
+    // };
 
-    struct SoundCurve// : CommonCurve
+    struct SoundCurve // : CommonCurve
     {
         SndCurve curve;
     };
 
-    struct LpfCurve// : CommonCurve
+    struct LpfCurve // : CommonCurve
     {
         SndCurve curve;
     };
 
-    struct ReverbCurve// : CommonCurve
+    struct ReverbCurve // : CommonCurve
     {
         SndCurve curve;
     };
@@ -3214,7 +3215,7 @@ namespace IW6
     {
         GfxPortalWritable writable;
         DpvsPlane plane;
-        float(*vertices)[3];
+        float (*vertices)[3];
         unsigned short cellIndex;
         unsigned short closeDistance;
         unsigned char vertexCount;
@@ -3305,7 +3306,7 @@ namespace IW6
         GfxWorldVertexLayerData vld;
         unsigned int indexCount;
         unsigned short* indices;
-        //int* indexBuffer;
+        // int* indexBuffer;
     };
 
     struct GfxLightGridEntry
@@ -3583,20 +3584,20 @@ namespace IW6
 
     struct GfxWorldDpvsStatic
     {
-        unsigned int smodelCount;                        // 0
-        unsigned int staticSurfaceCount;                 // 4
-        unsigned int litOpaqueSurfsBegin;                // 8
-        unsigned int litOpaqueSurfsEnd;                  // 12
-        unsigned int litDecalSurfsBegin;                 // 16
-        unsigned int litDecalSurfsEnd;                   // 20
-        unsigned int litTransSurfsBegin;                 // 24
-        unsigned int litTransSurfsEnd;                   // 28
-        unsigned int shadowCasterSurfsBegin;             // 32
-        unsigned int shadowCasterSurfsEnd;               // 36
-        unsigned int emissiveSurfsBegin;                 // 40
-        unsigned int emissiveSurfsEnd;                   // 44
-        unsigned int smodelVisDataCount;                 // 48
-        unsigned int surfaceVisDataCount;                // 52
+        unsigned int smodelCount;                   // 0
+        unsigned int staticSurfaceCount;            // 4
+        unsigned int litOpaqueSurfsBegin;           // 8
+        unsigned int litOpaqueSurfsEnd;             // 12
+        unsigned int litDecalSurfsBegin;            // 16
+        unsigned int litDecalSurfsEnd;              // 20
+        unsigned int litTransSurfsBegin;            // 24
+        unsigned int litTransSurfsEnd;              // 28
+        unsigned int shadowCasterSurfsBegin;        // 32
+        unsigned int shadowCasterSurfsEnd;          // 36
+        unsigned int emissiveSurfsBegin;            // 40
+        unsigned int emissiveSurfsEnd;              // 44
+        unsigned int smodelVisDataCount;            // 48
+        unsigned int surfaceVisDataCount;           // 52
         unsigned int* smodelVisData[3];             // 56
         unsigned int* surfaceVisData[3];            // 80
         unsigned int* unknownData01[3];             // 104
@@ -3610,12 +3611,12 @@ namespace IW6
         GfxStaticModelDrawInst* smodelDrawInsts;    // 216
         GfxDrawSurf* surfaceMaterials;              // 224
         unsigned int* surfaceCastsSunShadow;        // 232
-        unsigned int sunShadowOptCount;                  // 240
-        unsigned int sunSurfVisDataCount;                // 244
+        unsigned int sunShadowOptCount;             // 240
+        unsigned int sunSurfVisDataCount;           // 244
         unsigned int* surfaceCastsSunShadowOpt;     // 248
-        char** constantBuffersLit;             // 256
-        char** constantBuffersAmbient;         // 264
-        volatile int usageCount;                         // 272
+        char** constantBuffersLit;                  // 256
+        char** constantBuffersAmbient;              // 264
+        volatile int usageCount;                    // 272
     };
 
     struct GfxWorldDpvsDynamic
@@ -3652,34 +3653,34 @@ namespace IW6
     {
         const char* name;                                 // 0
         const char* baseName;                             // 8
-        unsigned int bspVersion;                               // 16
-        int planeCount;                                        // 20
-        int nodeCount;                                         // 24
-        unsigned int surfaceCount;                             // 28
-        int skyCount;                                          // 32
+        unsigned int bspVersion;                          // 16
+        int planeCount;                                   // 20
+        int nodeCount;                                    // 24
+        unsigned int surfaceCount;                        // 28
+        int skyCount;                                     // 32
         GfxSky* skies;                                    // 40
-        unsigned int lastSunPrimaryLightIndex;                 // 48
-        unsigned int primaryLightCount;                        // 52
-        unsigned int primaryLightEnvCount;                     // 56
-        unsigned int sortKeyLitDecal;                          // 60
-        unsigned int sortKeyEffectDecal;                       // 64
-        unsigned int sortKeyTopDecal;                          // 68
-        unsigned int sortKeyEffectAuto;                        // 72
-        unsigned int sortKeyDistortion;                        // 76
-        GfxWorldDpvsPlanes dpvsPlanes;                         // 80
-        GfxCellTreeCount* aabbTreeCounts;                      // 112
+        unsigned int lastSunPrimaryLightIndex;            // 48
+        unsigned int primaryLightCount;                   // 52
+        unsigned int primaryLightEnvCount;                // 56
+        unsigned int sortKeyLitDecal;                     // 60
+        unsigned int sortKeyEffectDecal;                  // 64
+        unsigned int sortKeyTopDecal;                     // 68
+        unsigned int sortKeyEffectAuto;                   // 72
+        unsigned int sortKeyDistortion;                   // 76
+        GfxWorldDpvsPlanes dpvsPlanes;                    // 80
+        GfxCellTreeCount* aabbTreeCounts;                 // 112
         GfxCellTree* aabbTrees;                           // 120
         GfxCell* cells;                                   // 128
-        GfxWorldDraw draw;                                     // 136
-        GfxLightGrid lightGrid;                                // 312
-        int modelCount;                                        // 1880
+        GfxWorldDraw draw;                                // 136
+        GfxLightGrid lightGrid;                           // 312
+        int modelCount;                                   // 1880
         GfxBrushModel* models;                            // 1888
-        Bounds bounds;                                         // 1896
-        unsigned int checksum;                                 // 1920
-        int materialMemoryCount;                               // 1924
+        Bounds bounds;                                    // 1896
+        unsigned int checksum;                            // 1920
+        int materialMemoryCount;                          // 1924
         MaterialMemory* materialMemory;                   // 1928
-        sunflare_t sun;                                        // 1936
-        float outdoorLookupMatrix[4][4];                       // 2160
+        sunflare_t sun;                                   // 1936
+        float outdoorLookupMatrix[4][4];                  // 2160
         GfxImage* outdoorImage;                           // 2176
         unsigned int* cellCasterBits;                     // 2120
         unsigned int* cellHasSunLitSurfsBits;             // 2128
@@ -3691,15 +3692,15 @@ namespace IW6
         GfxShadowGeometry* shadowGeom;                    // 2184
         GfxShadowGeometry* shadowGeomOptimized;           // 2192
         GfxLightRegion* lightRegion;                      // 2200
-        GfxWorldDpvsStatic dpvs;                               // 2208
-        GfxWorldDpvsDynamic dpvsDyn;                           // 2488
-        unsigned int mapVtxChecksum;                           // 2512
-        unsigned int heroOnlyLightCount;                       // 2520
+        GfxWorldDpvsStatic dpvs;                          // 2208
+        GfxWorldDpvsDynamic dpvsDyn;                      // 2488
+        unsigned int mapVtxChecksum;                      // 2512
+        unsigned int heroOnlyLightCount;                  // 2520
         GfxHeroOnlyLight* heroOnlyLights;                 // 2520
-        unsigned char fogTypesAllowed;                         // 2528
-        unsigned int umbraTomeSize;                            // 2588
+        unsigned char fogTypesAllowed;                    // 2528
+        unsigned int umbraTomeSize;                       // 2588
         char* umbraTomeData;                              // 2592
-        umbraTomePtr_t umbraTomePtr;                           // 2600
+        umbraTomePtr_t umbraTomePtr;                      // 2600
     };
 
     enum CSurfaceFlags : uint32_t
@@ -6850,15 +6851,15 @@ namespace IW6
 
     struct XGfxGlobals
     {
-        unsigned int depthStencilStateCount;            // 0
-        unsigned int blendStateCount;                   // 4
-        uint64_t* depthStencilStateBits;      // 8
+        unsigned int depthStencilStateCount;       // 0
+        unsigned int blendStateCount;              // 4
+        uint64_t* depthStencilStateBits;           // 8
         GfxBlendStateBits* blendStateBits;         // 16
         GfxZoneTableEntry* depthStencilStates;     // 24
         GfxZoneTableEntry* blendStates;            // 32
-        unsigned int perPrimConstantBufferCount;        // 40
-        unsigned int perObjConstantBufferCount;         // 44
-        unsigned int stableConstantBufferCount;         // 48
+        unsigned int perPrimConstantBufferCount;   // 40
+        unsigned int perObjConstantBufferCount;    // 44
+        unsigned int stableConstantBufferCount;    // 48
         unsigned int* perPrimConstantBufferSizes;  // 56
         unsigned int* perObjConstantBufferSizes;   // 64
         unsigned int* stableConstantBufferSizes;   // 72
@@ -8576,7 +8577,6 @@ namespace IW6
         const char* name;
         const char* componentName;
     };
-
 
 #ifndef __zonecodegenerator
 #ifndef __ida

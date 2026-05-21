@@ -218,7 +218,7 @@ namespace
                     return false;
 
                 if (!ParseAnimFile(overrideValues[2], animOverride.animTreeType))
-                     return false;
+                    return false;
 
                 ParseAnim(overrideValues[3], animOverride.overrideAnim->name);
                 ParseAnim(overrideValues[4], animOverride.altmodeAnim->name);
@@ -296,11 +296,11 @@ namespace
                 if (!ParseFxType(overrideValues[2], fxOverride.fxType))
                     return false;
 
-                 if (!ParseFxEffectDef(overrideValues[3], fxOverride.overrideFX))
-                     return false;
+                if (!ParseFxEffectDef(overrideValues[3], fxOverride.overrideFX))
+                    return false;
 
-                 if (!ParseFxEffectDef(overrideValues[4], fxOverride.altmodeFX))
-                     return false;
+                if (!ParseFxEffectDef(overrideValues[4], fxOverride.altmodeFX))
+                    return false;
             }
 
             m_weapon.fxOverrides = fxOverrides;
@@ -325,8 +325,8 @@ namespace
             {
                 auto& reloadOverride = reloadOverrides[i++];
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[0], reloadOverride.attachment))
-                //    return false;
+                // if (!ParseSingleWeaponAttachment(overrideValues[0], reloadOverride.attachment))
+                //     return false;
 
                 if (!ParseInt(overrideValues[1], reloadOverride.reloadAddTime))
                     return false;
@@ -662,31 +662,31 @@ namespace
 
     void InitWeaponCompleteDef(WeaponCompleteDef& weapon)
     {
-       /* weapon.weapCompleteDef.weapDef = &weapon.weapDef;
-        weapon.weapCompleteDef.hideTags = weapon.hideTags;
-        weapon.weapCompleteDef.szXAnims = weapon.szXAnims;
-        weapon.weapCompleteDef.scopes = weapon.scopes;
-        weapon.weapCompleteDef.underBarrels = weapon.underBarrels;
-        weapon.weapCompleteDef.others = weapon.others;
-        weapon.weapDef.gunXModel = weapon.gunXModel;
-        weapon.weapDef.szXAnimsRightHanded = weapon.szXAnimsRightHanded;
-        weapon.weapDef.szXAnimsLeftHanded = weapon.szXAnimsLeftHanded;
-        weapon.weapDef.notetrackSoundMapKeys = weapon.notetrackSoundMapKeys;
-        weapon.weapDef.notetrackSoundMapValues = weapon.notetrackSoundMapValues;
-        weapon.weapDef.notetrackRumbleMapKeys = weapon.notetrackRumbleMapKeys;
-        weapon.weapDef.notetrackRumbleMapValues = weapon.notetrackRumbleMapValues;
-        weapon.weapDef.worldModel = weapon.worldModel;
-        weapon.weapDef.parallelBounce = weapon.parallelBounce;
-        weapon.weapDef.perpendicularBounce = weapon.perpendicularBounce;
-        weapon.weapDef.locationDamageMultipliers = weapon.locationDamageMultipliers;
+        /* weapon.weapCompleteDef.weapDef = &weapon.weapDef;
+         weapon.weapCompleteDef.hideTags = weapon.hideTags;
+         weapon.weapCompleteDef.szXAnims = weapon.szXAnims;
+         weapon.weapCompleteDef.scopes = weapon.scopes;
+         weapon.weapCompleteDef.underBarrels = weapon.underBarrels;
+         weapon.weapCompleteDef.others = weapon.others;
+         weapon.weapDef.gunXModel = weapon.gunXModel;
+         weapon.weapDef.szXAnimsRightHanded = weapon.szXAnimsRightHanded;
+         weapon.weapDef.szXAnimsLeftHanded = weapon.szXAnimsLeftHanded;
+         weapon.weapDef.notetrackSoundMapKeys = weapon.notetrackSoundMapKeys;
+         weapon.weapDef.notetrackSoundMapValues = weapon.notetrackSoundMapValues;
+         weapon.weapDef.notetrackRumbleMapKeys = weapon.notetrackRumbleMapKeys;
+         weapon.weapDef.notetrackRumbleMapValues = weapon.notetrackRumbleMapValues;
+         weapon.weapDef.worldModel = weapon.worldModel;
+         weapon.weapDef.parallelBounce = weapon.parallelBounce;
+         weapon.weapDef.perpendicularBounce = weapon.perpendicularBounce;
+         weapon.weapDef.locationDamageMultipliers = weapon.locationDamageMultipliers;
 
-        for (const auto& field : weapon_fields)
-        {
-            if (field.iFieldType != CSPFT_STRING)
-                continue;
+         for (const auto& field : weapon_fields)
+         {
+             if (field.iFieldType != CSPFT_STRING)
+                 continue;
 
-            *reinterpret_cast<const char**>(reinterpret_cast<char*>(&weapon) + field.iOffset) = "";
-        }*/
+             *reinterpret_cast<const char**>(reinterpret_cast<char*>(&weapon) + field.iOffset) = "";
+         }*/
     }
 
     void CheckProjectileValues(const WeaponCompleteDef& weaponCompleteDef, const WeaponDef& weaponDef)
@@ -737,59 +737,59 @@ namespace
 
     void CalculateWeaponFields(WeaponCompleteDef& weapon, MemoryManager& memory)
     {
-       /* auto& weaponCompleteDef = weapon.weapCompleteDef;
-        auto& weaponDef = weapon.weapDef;
+        /* auto& weaponCompleteDef = weapon.weapCompleteDef;
+         auto& weaponDef = weapon.weapDef;
 
-        if (!weaponDef.viewLastShotEjectEffect)
-            weaponDef.viewLastShotEjectEffect = weaponDef.viewShellEjectEffect;
-        if (!weaponDef.worldLastShotEjectEffect)
-            weaponDef.worldLastShotEjectEffect = weaponDef.worldShellEjectEffect;
+         if (!weaponDef.viewLastShotEjectEffect)
+             weaponDef.viewLastShotEjectEffect = weaponDef.viewShellEjectEffect;
+         if (!weaponDef.worldLastShotEjectEffect)
+             weaponDef.worldLastShotEjectEffect = weaponDef.worldShellEjectEffect;
 
-        if (weaponCompleteDef.iAdsTransInTime <= 0)
-            weaponDef.fOOPosAnimLength[0] = 0.0033333334f;
-        else
-            weaponDef.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weaponCompleteDef.iAdsTransInTime);
+         if (weaponCompleteDef.iAdsTransInTime <= 0)
+             weaponDef.fOOPosAnimLength[0] = 0.0033333334f;
+         else
+             weaponDef.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weaponCompleteDef.iAdsTransInTime);
 
-        if (weaponCompleteDef.iAdsTransOutTime <= 0)
-            weaponDef.fOOPosAnimLength[1] = 0.0020000001f;
-        else
-            weaponDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weaponCompleteDef.iAdsTransOutTime);
+         if (weaponCompleteDef.iAdsTransOutTime <= 0)
+             weaponDef.fOOPosAnimLength[1] = 0.0020000001f;
+         else
+             weaponDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weaponCompleteDef.iAdsTransOutTime);
 
-        if (weaponDef.fMaxDamageRange < 0.0f)
-            weaponDef.fMaxDamageRange = 999999.0f;
-        if (weaponDef.fMinDamageRange < 0.0f)
-            weaponDef.fMinDamageRange = 999999.12f;
+         if (weaponDef.fMaxDamageRange < 0.0f)
+             weaponDef.fMaxDamageRange = 999999.0f;
+         if (weaponDef.fMinDamageRange < 0.0f)
+             weaponDef.fMinDamageRange = 999999.12f;
 
-        if (weaponDef.enemyCrosshairRange > 15000.0f)
-            con::error("Enemy crosshair ranges should be less than {}", 15000.0f);
+         if (weaponDef.enemyCrosshairRange > 15000.0f)
+             con::error("Enemy crosshair ranges should be less than {}", 15000.0f);
 
-        if (weaponDef.weapType == WEAPTYPE_PROJECTILE)
-            CheckProjectileValues(weaponCompleteDef, weaponDef);
+         if (weaponDef.weapType == WEAPTYPE_PROJECTILE)
+             CheckProjectileValues(weaponCompleteDef, weaponDef);
 
-        if (weaponDef.turretBarrelSpinEnabled)
-            CheckTurretBarrelSpin(weaponCompleteDef, weaponDef);
+         if (weaponDef.turretBarrelSpinEnabled)
+             CheckTurretBarrelSpin(weaponCompleteDef, weaponDef);
 
-        if (weaponDef.thermalScope)
-            CheckThermalScope(weaponCompleteDef, weaponDef);
+         if (weaponDef.thermalScope)
+             CheckThermalScope(weaponCompleteDef, weaponDef);
 
-        if (weaponDef.offhandClass && !weaponDef.bClipOnly)
-        {
-            con::error("Weapon {} ({}) is an offhand weapon but is not set to clip only, which is not supported since we can't reload the offhand slot.",
-                       weaponCompleteDef.szInternalName,
-                       weaponCompleteDef.szDisplayName);
-        }
+         if (weaponDef.offhandClass && !weaponDef.bClipOnly)
+         {
+             con::error("Weapon {} ({}) is an offhand weapon but is not set to clip only, which is not supported since we can't reload the offhand slot.",
+                        weaponCompleteDef.szInternalName,
+                        weaponCompleteDef.szDisplayName);
+         }
 
-        if (weaponDef.weapType == WEAPTYPE_BULLET)
-        {
-            if (weaponDef.bulletExplDmgMult <= 0.0f)
-                con::error("Detected invalid bulletExplDmgMult of '{}' for weapon '{}'; please update weapon settings.",
-                           weaponDef.bulletExplDmgMult,
-                           weaponCompleteDef.szInternalName);
-            if (weaponDef.bulletExplRadiusMult <= 0.0f)
-                con::error("Detected invalid bulletExplRadiusMult of '{}' for weapon '{}'; please update weapon settings.",
-                           weaponDef.bulletExplRadiusMult,
-                           weaponCompleteDef.szInternalName);
-        }*/
+         if (weaponDef.weapType == WEAPTYPE_BULLET)
+         {
+             if (weaponDef.bulletExplDmgMult <= 0.0f)
+                 con::error("Detected invalid bulletExplDmgMult of '{}' for weapon '{}'; please update weapon settings.",
+                            weaponDef.bulletExplDmgMult,
+                            weaponCompleteDef.szInternalName);
+             if (weaponDef.bulletExplRadiusMult <= 0.0f)
+                 con::error("Detected invalid bulletExplRadiusMult of '{}' for weapon '{}'; please update weapon settings.",
+                            weaponDef.bulletExplRadiusMult,
+                            weaponCompleteDef.szInternalName);
+         }*/
     }
 
     void ConvertAccuracyGraph(const GenericGraph2D& graph,
@@ -860,26 +860,26 @@ namespace weapon
 
     AssetCreationResult InfoStringLoaderIW6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
-       /* auto* WeaponCompleteDef = m_memory.Alloc<WeaponCompleteDef>();
+        /* auto* WeaponCompleteDef = m_memory.Alloc<WeaponCompleteDef>();
 
-        InitWeaponCompleteDef(*WeaponCompleteDef);
-        WeaponCompleteDef->weapCompleteDef.szInternalName = m_memory.Dup(assetName.c_str());
+         InitWeaponCompleteDef(*WeaponCompleteDef);
+         WeaponCompleteDef->weapCompleteDef.szInternalName = m_memory.Dup(assetName.c_str());
 
-        AssetRegistration<AssetWeapon> registration(assetName, &WeaponCompleteDef->weapCompleteDef);
+         AssetRegistration<AssetWeapon> registration(assetName, &WeaponCompleteDef->weapCompleteDef);
 
-        InfoStringToWeaponConverter converter(
-            infoString, *WeaponCompleteDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
-        if (!converter.Convert())
-        {
-            con::error("Failed to parse weapon: \"{}\"", assetName);
-            return AssetCreationResult::Failure();
-        }
+         InfoStringToWeaponConverter converter(
+             infoString, *WeaponCompleteDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
+         if (!converter.Convert())
+         {
+             con::error("Failed to parse weapon: \"{}\"", assetName);
+             return AssetCreationResult::Failure();
+         }
 
-        CalculateWeaponFields(*WeaponCompleteDef, m_memory);
+         CalculateWeaponFields(*WeaponCompleteDef, m_memory);
 
-        LoadAccuracyGraphs(*WeaponCompleteDef, m_memory, m_search_path, context);
+         LoadAccuracyGraphs(*WeaponCompleteDef, m_memory, m_search_path, context);
 
-        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));*/
+         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));*/
         return AssetCreationResult::NoAction();
     }
 } // namespace weapon

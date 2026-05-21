@@ -136,15 +136,15 @@ namespace
                 std::stringstream ss;
                 bool first = true;
 
-                //for (auto i = 0u; i < std::extent_v<decltype(WeaponDef::hideTags)>; i++)
+                // for (auto i = 0u; i < std::extent_v<decltype(WeaponDef::hideTags)>; i++)
                 //{
-                //    const auto& str = m_get_scr_string(hideTags[i]);
-                //    if (!str.empty())
-                //    {
-                //        if (!first)
-                //            ss << "\n";
-                //        else
-                //            first = false;
+                //     const auto& str = m_get_scr_string(hideTags[i]);
+                //     if (!str.empty())
+                //     {
+                //         if (!first)
+                //             ss << "\n";
+                //         else
+                //             first = false;
 
                 //        ss << str;
                 //    }
@@ -253,40 +253,40 @@ namespace
             std::stringstream ss;
             bool first = true;
 
-            //for (const auto& scope : m_weapon->scopes)
+            // for (const auto& scope : m_weapon->scopes)
             //{
-            //    if (scope && scope->szInternalName)
-            //    {
-            //        if (!first)
-            //            ss << "\n";
-            //        else
-            //            first = false;
+            //     if (scope && scope->szInternalName)
+            //     {
+            //         if (!first)
+            //             ss << "\n";
+            //         else
+            //             first = false;
 
             //        ss << scope->szInternalName;
             //    }
             //}
 
-            //for (const auto& underBarrel : m_weapon->underBarrels)
+            // for (const auto& underBarrel : m_weapon->underBarrels)
             //{
-            //    if (underBarrel && underBarrel->szInternalName)
-            //    {
-            //        if (!first)
-            //            ss << "\n";
-            //        else
-            //            first = false;
+            //     if (underBarrel && underBarrel->szInternalName)
+            //     {
+            //         if (!first)
+            //             ss << "\n";
+            //         else
+            //             first = false;
 
             //        ss << underBarrel->szInternalName;
             //    }
             //}
 
-            //for (const auto& other : m_weapon->others)
+            // for (const auto& other : m_weapon->others)
             //{
-            //    if (other && other->szInternalName)
-            //    {
-            //        if (!first)
-            //            ss << "\n";
-            //        else
-            //            first = false;
+            //     if (other && other->szInternalName)
+            //     {
+            //         if (!first)
+            //             ss << "\n";
+            //         else
+            //             first = false;
 
             //        ss << other->szInternalName;
             //    }
@@ -298,28 +298,28 @@ namespace
         [[nodiscard]] std::string GetNameForSingleWeaponAttachment(const WeaponAttachmentCombination& combination) const
         {
             // Only one attachment type can be set
-            //assert(combination.scope == 0 || (combination.underBarrel == 0 && combination.other == 0));
-            //assert(combination.underBarrel == 0 || (combination.scope == 0 && combination.other == 0));
-            //assert(combination.other == 0 || (combination.scope == 0 && std::popcount(combination.other) == 1));
+            // assert(combination.scope == 0 || (combination.underBarrel == 0 && combination.other == 0));
+            // assert(combination.underBarrel == 0 || (combination.scope == 0 && combination.other == 0));
+            // assert(combination.other == 0 || (combination.scope == 0 && std::popcount(combination.other) == 1));
 
-            //if (combination.scope > 0 && m_weapon->weapCompleteDef.scopes)
+            // if (combination.scope > 0 && m_weapon->weapCompleteDef.scopes)
             //{
-            //    const auto attachment = m_weapon->weapCompleteDef.scopes[combination.scope - 1];
-            //    if (attachment && attachment->szInternalName)
-            //        return attachment->szInternalName;
-            //}
-            //else if (combination.underBarrel > 0 && m_weapon->weapCompleteDef.underBarrels)
+            //     const auto attachment = m_weapon->weapCompleteDef.scopes[combination.scope - 1];
+            //     if (attachment && attachment->szInternalName)
+            //         return attachment->szInternalName;
+            // }
+            // else if (combination.underBarrel > 0 && m_weapon->weapCompleteDef.underBarrels)
             //{
-            //    const auto attachment = m_weapon->weapCompleteDef.underBarrels[combination.underBarrel - 1];
-            //    if (attachment && attachment->szInternalName)
-            //        return attachment->szInternalName;
-            //}
-            //else if (combination.other > 0 && m_weapon->weapCompleteDef.others)
+            //     const auto attachment = m_weapon->weapCompleteDef.underBarrels[combination.underBarrel - 1];
+            //     if (attachment && attachment->szInternalName)
+            //         return attachment->szInternalName;
+            // }
+            // else if (combination.other > 0 && m_weapon->weapCompleteDef.others)
             //{
-            //    const auto attachment = m_weapon->weapCompleteDef.others[std::countr_zero(combination.other)];
-            //    if (attachment && attachment->szInternalName)
-            //        return attachment->szInternalName;
-            //}
+            //     const auto attachment = m_weapon->weapCompleteDef.others[std::countr_zero(combination.other)];
+            //     if (attachment && attachment->szInternalName)
+            //         return attachment->szInternalName;
+            // }
 
             return {};
         }
@@ -338,20 +338,20 @@ namespace
                 else
                     first = false;
 
-                //assert(animOverride.attachment1.fields);
-                //assert(animOverride.animTreeType < WEAP_ANIM_COUNT);
+                // assert(animOverride.attachment1.fields);
+                // assert(animOverride.animTreeType < WEAP_ANIM_COUNT);
 
-                //if (animOverride.attachment1.fields)
-                //    ss << GetNameForSingleWeaponAttachment(animOverride.attachment1);
-                //else
-                //    ss << "none";
+                // if (animOverride.attachment1.fields)
+                //     ss << GetNameForSingleWeaponAttachment(animOverride.attachment1);
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
-                //if (animOverride.attachment2.fields)
-                //    ss << GetNameForSingleWeaponAttachment(animOverride.attachment2);
-                //else
-                //    ss << "none";
+                // if (animOverride.attachment2.fields)
+                //     ss << GetNameForSingleWeaponAttachment(animOverride.attachment2);
+                // else
+                //     ss << "none";
 
                 ss << ' ';
 
@@ -390,36 +390,36 @@ namespace
                 else
                     first = false;
 
-                //assert(soundOverride.soundType < SNDTYPE_PLAYER_COUNT);
+                // assert(soundOverride.soundType < SNDTYPE_PLAYER_COUNT);
 
-                //if (soundOverride.attachment1.fields)
-                //    ss << GetNameForSingleWeaponAttachment(soundOverride.attachment1);
-                //else
-                //    ss << "none";
+                // if (soundOverride.attachment1.fields)
+                //     ss << GetNameForSingleWeaponAttachment(soundOverride.attachment1);
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
-                //if (soundOverride.attachment2.fields)
-                //    ss << GetNameForSingleWeaponAttachment(soundOverride.attachment2);
-                //else
-                //    ss << "none";
+                // if (soundOverride.attachment2.fields)
+                //     ss << GetNameForSingleWeaponAttachment(soundOverride.attachment2);
+                // else
+                //     ss << "none";
 
                 ss << ' ';
 
-                //if (soundOverride.soundType < SNDTYPE_PLAYER_COUNT)
-                //    ss << soundOverrideTypeNames[soundOverride.soundType] << ' ';
+                // if (soundOverride.soundType < SNDTYPE_PLAYER_COUNT)
+                //     ss << soundOverrideTypeNames[soundOverride.soundType] << ' ';
 
-                //if (soundOverride.overrideSound.name && soundOverride.overrideSound.name->soundName && soundOverride.overrideSound.name->soundName[0])
-                //    ss << soundOverride.overrideSound.name->soundName;
-                //else
-                //    ss << "none";
+                // if (soundOverride.overrideSound.name && soundOverride.overrideSound.name->soundName && soundOverride.overrideSound.name->soundName[0])
+                //     ss << soundOverride.overrideSound.name->soundName;
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
-                //if (soundOverride.altmodeSound.name && soundOverride.altmodeSound.name->soundName && soundOverride.altmodeSound.name->soundName[0])
-                //    ss << soundOverride.altmodeSound.name->soundName;
-                //else
-                //    ss << "none";
+                // if (soundOverride.altmodeSound.name && soundOverride.altmodeSound.name->soundName && soundOverride.altmodeSound.name->soundName[0])
+                //     ss << soundOverride.altmodeSound.name->soundName;
+                // else
+                //     ss << "none";
             }
 
             m_info_string.SetValueForKey(key, ss.str());
@@ -439,36 +439,36 @@ namespace
                 else
                     first = false;
 
-                //assert(fxOverride.fxType < FXTYPE_COUNT);
+                // assert(fxOverride.fxType < FXTYPE_COUNT);
 
-                //if (fxOverride.attachment1.fields)
-                //    ss << GetNameForSingleWeaponAttachment(fxOverride.attachment1);
-                //else
-                //    ss << "none";
+                // if (fxOverride.attachment1.fields)
+                //     ss << GetNameForSingleWeaponAttachment(fxOverride.attachment1);
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
-                //if (fxOverride.attachment2.fields)
-                //    ss << GetNameForSingleWeaponAttachment(fxOverride.attachment2);
-                //else
-                //    ss << "none";
+                // if (fxOverride.attachment2.fields)
+                //     ss << GetNameForSingleWeaponAttachment(fxOverride.attachment2);
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
                 ////if (fxOverride.fxType < FXTYPE_COUNT)
                 ////    ss << fxOverrideTypeNames[fxOverride.fxType] << ' ';
 
-                //if (fxOverride.overrideFx && fxOverride.overrideFx->name && fxOverride.overrideFx->name[0])
-                //    ss << fxOverride.overrideFx->name;
-                //else
-                //    ss << "none";
+                // if (fxOverride.overrideFx && fxOverride.overrideFx->name && fxOverride.overrideFx->name[0])
+                //     ss << fxOverride.overrideFx->name;
+                // else
+                //     ss << "none";
 
-                //ss << ' ';
+                // ss << ' ';
 
-                //if (fxOverride.altmodeFx && fxOverride.altmodeFx->name && fxOverride.altmodeFx->name[0])
-                //    ss << fxOverride.altmodeFx->name;
-                //else
-                //    ss << "none";
+                // if (fxOverride.altmodeFx && fxOverride.altmodeFx->name && fxOverride.altmodeFx->name[0])
+                //     ss << fxOverride.altmodeFx->name;
+                // else
+                //     ss << "none";
             }
 
             m_info_string.SetValueForKey(key, ss.str());
@@ -488,10 +488,10 @@ namespace
                 else
                     first = false;
 
-                //if (reloadOverride.attachment.fields)
-                //    ss << GetNameForSingleWeaponAttachment(reloadOverride.attachment);
-                //else
-                //    ss << "none";
+                // if (reloadOverride.attachment.fields)
+                //     ss << GetNameForSingleWeaponAttachment(reloadOverride.attachment);
+                // else
+                //     ss << "none";
 
                 ss << ' ' << reloadOverride.reloadAddTime << ' ' << reloadOverride.reloadStartAddTime;
             }
@@ -711,23 +711,23 @@ namespace
         if (!weapDef)
             return;
 
-        //if (weapDef->aiVsAiAccuracyGraphName && weapDef->originalAiVsAiAccuracyGraphKnots
-        //    && accuracyGraphWriter->ShouldDumpAiVsAiGraph(weapDef->aiVsAiAccuracyGraphName))
+        // if (weapDef->aiVsAiAccuracyGraphName && weapDef->originalAiVsAiAccuracyGraphKnots
+        //     && accuracyGraphWriter->ShouldDumpAiVsAiGraph(weapDef->aiVsAiAccuracyGraphName))
         //{
-        //    AccuracyGraphWriter::DumpAiVsAiGraph(context,
-        //                                         ConvertAccuracyGraph(weapDef->aiVsAiAccuracyGraphName,
-        //                                                              weapDef->originalAiVsAiAccuracyGraphKnots,
-        //                                                              weapDef->originalAiVsAiAccuracyGraphKnotCount));
-        //}
+        //     AccuracyGraphWriter::DumpAiVsAiGraph(context,
+        //                                          ConvertAccuracyGraph(weapDef->aiVsAiAccuracyGraphName,
+        //                                                               weapDef->originalAiVsAiAccuracyGraphKnots,
+        //                                                               weapDef->originalAiVsAiAccuracyGraphKnotCount));
+        // }
 
-        //if (weapDef->aiVsPlayerAccuracyGraphName && weapDef->originalAiVsPlayerAccuracyGraphKnots
-        //    && accuracyGraphWriter->ShouldDumpAiVsPlayerGraph(weapDef->aiVsPlayerAccuracyGraphName))
+        // if (weapDef->aiVsPlayerAccuracyGraphName && weapDef->originalAiVsPlayerAccuracyGraphKnots
+        //     && accuracyGraphWriter->ShouldDumpAiVsPlayerGraph(weapDef->aiVsPlayerAccuracyGraphName))
         //{
-        //    AccuracyGraphWriter::DumpAiVsPlayerGraph(context,
-        //                                             ConvertAccuracyGraph(weapDef->aiVsPlayerAccuracyGraphName,
-        //                                                                  weapDef->originalAiVsPlayerAccuracyGraphKnots,
-        //                                                                  weapDef->originalAiVsPlayerAccuracyGraphKnotCount));
-        //}
+        //     AccuracyGraphWriter::DumpAiVsPlayerGraph(context,
+        //                                              ConvertAccuracyGraph(weapDef->aiVsPlayerAccuracyGraphName,
+        //                                                                   weapDef->originalAiVsPlayerAccuracyGraphKnots,
+        //                                                                   weapDef->originalAiVsPlayerAccuracyGraphKnotCount));
+        // }
     }
 } // namespace
 

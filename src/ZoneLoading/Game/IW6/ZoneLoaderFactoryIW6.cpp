@@ -10,25 +10,25 @@
 #include "Loading/Processor/ProcessorInflate.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
+#include "Loading/Steps/StepCallback.h"
+#include "Loading/Steps/StepDumpData.h"
 #include "Loading/Steps/StepLoadHash.h"
 #include "Loading/Steps/StepLoadSignature.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadZoneSizes.h"
+#include "Loading/Steps/StepReadValue.h"
 #include "Loading/Steps/StepRemoveProcessor.h"
 #include "Loading/Steps/StepSkipBytes.h"
-#include "Loading/Steps/StepReadValue.h"
-#include "Loading/Steps/StepCallback.h"
 #include "Loading/Steps/StepVerifyFileName.h"
 #include "Loading/Steps/StepVerifyHash.h"
-#include "Loading/Steps/StepDumpData.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 
-#include <filesystem>
 #include <cassert>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <type_traits>
 
@@ -42,7 +42,7 @@ namespace
     void SetupBlock(ZoneLoader& zoneLoader)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
-        
+
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
         zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));

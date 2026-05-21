@@ -40,14 +40,14 @@ namespace IW6
 
     NLOHMANN_JSON_SERIALIZE_ENUM(LbTrackTypes,
                                  {
-                                     {LBTRK_TYPE_ALLTIME,           "ALLTIME"         },
-                                     {LBTRK_TYPE_WEEKLY,            "WEEKLY"          },
-                                     {LBTRK_TYPE_MONTHLY,           "MONTHLY"         },
-                                     {LBTRK_TYPE_PRESTIGE_ALLTIME,  "PRESTIGE_ALLTIME"},
-                                     {LBTRK_TYPE_PRESTIGE_WEEKLY,   "PRESTIGE_WEEKLY" },
-                                     {LBTRK_TYPE_PRESTIGE_MONTHLY,  "PRESTIGE_MONTHLY"},
-                                     {LBTRK_TYPE_DAILY,             "DAILY"           },
-                                     {LBTRK_TYPE_PRESTIGE_DAILY,    "PRESTIGE_DAILY"  },
+                                     {LBTRK_TYPE_ALLTIME,          "ALLTIME"         },
+                                     {LBTRK_TYPE_WEEKLY,           "WEEKLY"          },
+                                     {LBTRK_TYPE_MONTHLY,          "MONTHLY"         },
+                                     {LBTRK_TYPE_PRESTIGE_ALLTIME, "PRESTIGE_ALLTIME"},
+                                     {LBTRK_TYPE_PRESTIGE_WEEKLY,  "PRESTIGE_WEEKLY" },
+                                     {LBTRK_TYPE_PRESTIGE_MONTHLY, "PRESTIGE_MONTHLY"},
+                                     {LBTRK_TYPE_DAILY,            "DAILY"           },
+                                     {LBTRK_TYPE_PRESTIGE_DAILY,   "PRESTIGE_DAILY"  },
     });
 
     class JsonColumnDef

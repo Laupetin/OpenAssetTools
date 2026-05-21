@@ -63,16 +63,13 @@ void Actions_XModelSurfs::ReallocGfxVertexUnion0(const GfxVertexUnion0* vertexUn
     }
 }
 
-void Actions_XModelSurfs::ReallocXBlendInfo(const XBlendInfo* blendInfo, XSurface* surface) const 
+void Actions_XModelSurfs::ReallocXBlendInfo(const XBlendInfo* blendInfo, XSurface* surface) const
 {
     assert(blendInfo);
     assert(surface);
 
-    size_t blendVertsCount = 2 * (
-            7 * surface->blendVertCounts[3] + 
-            5 * surface->blendVertCounts[2] + 
-            3 * surface->blendVertCounts[1] + 
-            surface->blendVertCounts[0]);
+    size_t blendVertsCount =
+        2 * (7 * surface->blendVertCounts[3] + 5 * surface->blendVertCounts[2] + 3 * surface->blendVertCounts[1] + surface->blendVertCounts[0]);
 
     auto* blendVerts = m_zone.Memory().Alloc<XBlendInfo>(blendVertsCount);
 
