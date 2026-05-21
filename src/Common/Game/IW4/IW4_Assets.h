@@ -2469,9 +2469,23 @@ namespace IW4
         float amplitude;
     };
 
+    struct FxElemDefAtlasBehaviorBits
+    {
+        uint8_t startRandom : 1;
+        uint8_t startIndexed : 1;
+        uint8_t playOverLife : 1;
+        uint8_t loopOnlyNTimes : 1;
+    }; // startFixed if zero
+
+    union FxElemDefAtlasBehavior
+    {
+        uint8_t rawBehavior;
+        FxElemDefAtlasBehaviorBits bitBehavior;
+    };
+
     struct FxElemAtlas
     {
-        char behavior;
+        FxElemDefAtlasBehavior behavior;
         char index;
         char fps;
         char loopCount;
@@ -2584,9 +2598,30 @@ namespace IW4
         char* unknownDef;
     };
 
+    struct FxElemDefFlagsBits
+    {
+        int unknown1 : 1;
+        int spawnRelative : 1;
+        int spawnFrustumCull : 1;
+        int unknown2 : 4;
+        int spawnOffsetNone : 2;
+        int unknown3 : 16;
+        int runRelToEffect : 1;
+        int runRelToSpawn : 1;
+        int unknown4 : 1;
+        int nonUniformScale : 1;
+        int unknown5 : 3;
+    };
+
+    union FxElemDefFlags
+    {
+        int rawFlags;
+        FxElemDefFlagsBits bitFlags;
+    };
+
     struct FxElemDef
     {
-        int flags;
+        FxElemDefFlags flags;
         FxSpawnDef spawn;
         FxFloatRange spawnRange;
         FxFloatRange fadeInRange;
