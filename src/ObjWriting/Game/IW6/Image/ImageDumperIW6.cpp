@@ -25,6 +25,8 @@ namespace
 
         textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
 
+        const auto& loadDef = *image.texture.mapUnion.loadDef;
+
         if (image.mapType == MAPTYPE_3D)
             textureLoader.Type(TextureType::T_3D);
         else if (image.mapType == MAPTYPE_CUBE)
@@ -32,9 +34,9 @@ namespace
         else
             textureLoader.Type(TextureType::T_2D);
 
-        textureLoader.Format(static_cast<oat::D3DFORMAT>(image.format));
-        //textureLoader.HasMipMaps(!(loadDef.flags & image::iwi8::IMG_FLAG_NOMIPMAPS));
-        return textureLoader.LoadTexture(image.pixels);
+        textureLoader.Format(static_cast<oat::D3DFORMAT>(image.imageFormat));
+        textureLoader.HasMipMaps(!(loadDef.flags & image::iwi8::IMG_FLAG_NOMIPMAPS));
+        return textureLoader.LoadTexture(image.pixelData);
     }
 
     std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)

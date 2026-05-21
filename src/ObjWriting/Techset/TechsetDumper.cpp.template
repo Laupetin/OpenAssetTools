@@ -94,8 +94,11 @@ namespace
         {
             if (!technique || !shaderState->ShouldDumpTechnique(technique))
                 continue;
-
+#ifdef FEATURE_IW6
+            for (auto passIndex = 0u; passIndex < technique->hdr.passCount; passIndex++)
+#else
             for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+#endif
             {
                 const auto* pixelShader = technique->passArray[passIndex].pixelShader;
                 if (pixelShader && shaderState->ShouldDumpPixelShader(pixelShader))
@@ -350,10 +353,14 @@ namespace
     }
 
     techset::CommonTechnique ConvertToCommonTechnique(const MaterialTechnique& technique, const bool debug)
-    {
+    { 
+#ifdef FEATURE_IW6
+        techset::CommonTechnique commonTechnique(technique.hdr.name ? technique.hdr.name : std::string(), technique.hdr.flags);
+        for (auto passIndex = 0u; passIndex < technique.hdr.passCount; passIndex++)
+#else
         techset::CommonTechnique commonTechnique(technique.name ? technique.name : std::string(), technique.flags);
-
         for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+#endif
         {
             const auto& pass = technique.passArray[passIndex];
 
@@ -420,8 +427,13 @@ namespace
         for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>; techniqueIndex++)
         {
             const auto* technique = techset.techniques[techniqueIndex];
+#ifdef FEATURE_IW6
+            if (technique && technique->hdr.name)
+                techniqueNames[techniqueIndex] = technique->hdr.name;
+#else
             if (technique && technique->name)
                 techniqueNames[techniqueIndex] = technique->name;
+#endif
         }
 
         return techset::CommonTechset(techset.name, std::move(techniqueNames));

@@ -241,8 +241,8 @@ namespace
             jAdsSettings.adsZoomOutFrac = adsSettings.adsZoomOutFrac;
             jAdsSettings.adsBobFactor = adsSettings.adsBobFactor;
             jAdsSettings.adsViewBobMult = adsSettings.adsViewBobMult;
-            jAdsSettings.adsViewErrorMin = adsSettings.adsViewErrorMin;
-            jAdsSettings.adsViewErrorMax = adsSettings.adsViewErrorMax;
+            // jAdsSettings.adsViewErrorMin = adsSettings.adsViewErrorMin;
+            // jAdsSettings.adsViewErrorMax = adsSettings.adsViewErrorMax;
         }
 
         static void ConvertJsonAttHipSpread(JsonAttHipSpread& jHipSpread, const AttHipSpread& hipSpread)

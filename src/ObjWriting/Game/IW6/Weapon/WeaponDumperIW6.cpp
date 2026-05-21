@@ -358,14 +358,14 @@ namespace
                 /*if (animOverride.animTreeType < WEAP_ANIM_COUNT)
                     ss << weapAnimFilesNames[animOverride.animTreeType] << ' ';*/
 
-                if (animOverride.overrideAnim && animOverride.overrideAnim[0])
+                if (animOverride.overrideAnim && animOverride.overrideAnim[0].name)
                     ss << animOverride.overrideAnim;
                 else
                     ss << "none";
 
                 ss << ' ';
 
-                if (animOverride.altmodeAnim && animOverride.altmodeAnim[0])
+                if (animOverride.altmodeAnim && animOverride.altmodeAnim[0].name)
                     ss << animOverride.altmodeAnim;
                 else
                     ss << "none";

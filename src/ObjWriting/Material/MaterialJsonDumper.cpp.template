@@ -360,7 +360,11 @@ namespace
 
             jMaterial.stateBits.resize(material.stateBitsCount);
             for (auto i = 0u; i < material.stateBitsCount; i++)
+#ifdef FEATURE_IW6
+                CreateJsonStateBitsTableEntry(jMaterial.stateBits[i], material.stateMap[i]);
+#else
                 CreateJsonStateBitsTableEntry(jMaterial.stateBits[i], material.stateBitsTable[i]);
+#endif
 
 #ifdef FEATURE_T6
             if (material.thermalMaterial && material.thermalMaterial->info.name)
