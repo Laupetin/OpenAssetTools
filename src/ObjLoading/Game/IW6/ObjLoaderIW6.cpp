@@ -44,13 +44,18 @@ namespace
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXModelSurfs>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXModel>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMaterial>>(memory));
-        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPixelShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetComputeShader>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVertexShader>>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVertexDecl>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetHullShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetDomainShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPixelShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVertexDecl>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetTechniqueSet>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetImage>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSound>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSoundCurve>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLpfCurve>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetReverbCurve>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLoadedSound>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetClipMap>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetComWorld>>(memory));
@@ -64,6 +69,7 @@ namespace
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFont>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenuList>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenu>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetAnimationClass>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLocalize>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetAttachment>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetWeapon>>(memory));
@@ -78,6 +84,17 @@ namespace
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetTracer>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVehicle>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetAddonMapEnts>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetNetConstStrings>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetReverbPreset>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLuaFile>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetScriptable>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetColorization>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetColorizationSet>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetToneMapping>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetEquipmentSoundTable>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVectorField>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetDopplerPreset>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFxParticleSimAnimation>>(memory));
     }
 
     void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -88,13 +105,18 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetXModelSurfs>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetXModel>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMaterial>>(zone));
-        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetPixelShader>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetComputeShader>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVertexShader>>(zone));
-        // collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVertexDecl>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetHullShader>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetDomainShader>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetPixelShader>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVertexDecl>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetTechniqueSet>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetImage>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSound>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundCurve>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLpfCurve>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetReverbCurve>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLoadedSound>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMap>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetComWorld>>(zone));
@@ -108,6 +130,7 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFont>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMenuList>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMenu>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAnimationClass>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLocalize>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAttachment>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetWeapon>>(zone));
@@ -122,6 +145,17 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetTracer>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVehicle>>(zone));
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAddonMapEnts>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetNetConstStrings>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetReverbPreset>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLuaFile>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetScriptable>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetColorization>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetColorizationSet>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetToneMapping>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetEquipmentSoundTable>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVectorField>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetDopplerPreset>>(zone));
+        collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFxParticleSimAnimation>>(zone));
     }
 
     void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
@@ -135,7 +169,10 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
         collection.AddAssetCreator(xmodel::CreateLoaderIW6(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW6(memory, searchPath));
+        // collection.AddAssetCreator(techset::CreateComputeShaderLoaderIW6(memory, searchPath));
         collection.AddAssetCreator(techset::CreateVertexShaderLoaderIW6(memory, searchPath));
+        // collection.AddAssetCreator(techset::CreateHullShaderLoaderIW6(memory, searchPath));
+        // collection.AddAssetCreator(techset::CreateDomainShaderLoaderIW6(memory, searchPath));
         collection.AddAssetCreator(techset::CreatePixelShaderLoaderIW6(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW6(memory, searchPath));

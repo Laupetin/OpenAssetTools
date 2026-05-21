@@ -386,8 +386,8 @@ namespace
             adsSettings.adsZoomOutFrac = jAdsSettings.adsZoomOutFrac;
             adsSettings.adsBobFactor = jAdsSettings.adsBobFactor;
             adsSettings.adsViewBobMult = jAdsSettings.adsViewBobMult;
-            adsSettings.adsViewErrorMin = jAdsSettings.adsViewErrorMin;
-            adsSettings.adsViewErrorMax = jAdsSettings.adsViewErrorMax;
+            // adsSettings.adsViewErrorMin = jAdsSettings.adsViewErrorMin;
+            // adsSettings.adsViewErrorMax = jAdsSettings.adsViewErrorMax;
 
             return true;
         }

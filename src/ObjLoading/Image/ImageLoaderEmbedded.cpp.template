@@ -86,17 +86,17 @@ namespace
 
             auto* image = m_memory.Alloc<GfxImage>();
             image->name = m_memory.Dup(assetName.c_str());
-#ifndef FEATURE_IW6
             image->picmip.platform[0] = 0;
             image->picmip.platform[1] = 0;
+#ifndef FEATURE_IW6
             image->noPicmip = !texture->HasMipMaps();
 #endif
             image->semantic = TS_FUNCTION;
 #ifndef FEATURE_IW6
             image->track = 0;
-#endif
             image->cardMemory.platform[0] = 0;
             image->cardMemory.platform[1] = 0;
+#endif
             image->width = static_cast<uint16_t>(texture->GetWidth());
             image->height = static_cast<uint16_t>(texture->GetHeight());
             image->depth = static_cast<uint16_t>(texture->GetDepth());

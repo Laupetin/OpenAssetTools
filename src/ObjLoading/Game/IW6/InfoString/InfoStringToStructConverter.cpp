@@ -153,7 +153,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         return true;
-    }
+    }/*
 
     case CSPFT_PHYS_COLLMAP:
     {
@@ -195,7 +195,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     }
 
     case CSPFT_SCRIPT_STRING:
-        return ConvertScriptString(value, field.iOffset);
+        return ConvertScriptString(value, field.iOffset);*/
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:

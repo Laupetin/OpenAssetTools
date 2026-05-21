@@ -43,26 +43,26 @@ namespace
                 return AssetCreationResult::Failure();
             }
 
-            auto* sndCurve = m_memory.Alloc<SndCurve>();
-            sndCurve->filename = m_memory.Dup(assetName.c_str());
-            sndCurve->knotCount = static_cast<uint16_t>(sndCurveData->knots.size());
+            auto* soundCurve = m_memory.Alloc<SoundCurve>();
+            soundCurve->curve.filename = m_memory.Dup(assetName.c_str());
+            soundCurve->curve.knotCount = static_cast<uint16_t>(sndCurveData->knots.size());
 
             for (auto i = 0u; i < std::extent_v<decltype(SndCurve::knots)>; i++)
             {
                 if (i < sndCurveData->knots.size())
                 {
                     const auto& [x, y] = sndCurveData->knots[i];
-                    sndCurve->knots[i][0] = static_cast<float>(x);
-                    sndCurve->knots[i][1] = static_cast<float>(y);
+                    soundCurve->curve.knots[i][0] = static_cast<float>(x);
+                    soundCurve->curve.knots[i][1] = static_cast<float>(y);
                 }
                 else
                 {
-                    sndCurve->knots[i][0] = 0;
-                    sndCurve->knots[i][1] = 0;
+                    soundCurve->curve.knots[i][0] = 0;
+                    soundCurve->curve.knots[i][1] = 0;
                 }
             }
 
-            return AssetCreationResult::Success(context.AddAsset<AssetSoundCurve>(assetName, sndCurve));
+            return AssetCreationResult::Success(context.AddAsset<AssetSoundCurve>(assetName, soundCurve));
         }
 
     private:

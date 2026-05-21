@@ -334,18 +334,19 @@ namespace
 #if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
                 // For some reason some games allocate for a vec4 here. it is treated as a vec3 though?
                 xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
-#else
-                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 3u);
 #endif
 #ifndef FEATURE_IW6
+                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 3u);
                 xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
 #endif
             }
             else
             {
                 xmodel.parentList = nullptr;
+#ifndef FEATURE_IW6
                 xmodel.trans = nullptr;
                 xmodel.quats = nullptr;
+#endif
             }
 
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
@@ -363,6 +364,7 @@ namespace
                 xmodel.boneInfo[boneIndex].collmap = -1;
 #endif
 
+#ifndef FEATURE_IW6
                 if (xmodel.numRootBones <= boneIndex)
                 {
                     const auto nonRootIndex = boneIndex - xmodel.numRootBones;
@@ -376,16 +378,16 @@ namespace
                     trans[1] = bone.localOffset[1];
                     trans[2] = bone.localOffset[2];
                     
-#ifndef FEATURE_IW6
                     auto& quats = xmodel.quats[nonRootIndex];
                     quats.v[0] = QuatInt16::ToInt16(bone.localRotation.x);
                     quats.v[1] = QuatInt16::ToInt16(bone.localRotation.y);
                     quats.v[2] = QuatInt16::ToInt16(bone.localRotation.z);
                     quats.v[3] = QuatInt16::ToInt16(bone.localRotation.w);
-#endif
                 }
+#endif
             }
-
+            
+#ifndef FEATURE_IW6
             // Viewhands seem to have nulled trans for some reason?
             if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
             {
@@ -395,6 +397,7 @@ namespace
                 memset(xmodel.trans, 0, sizeof(float) * 3 * (xmodel.numBones - xmodel.numRootBones));
 #endif
             }
+#endif
 
             return true;
         }
@@ -978,10 +981,10 @@ namespace
                 const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
 #endif
 
+#ifndef FEATURE_IW6
                 if (!surface.verts0)
                     continue;
                     
-#ifndef FEATURE_IW6
                 for (auto vertIndex = 0u; vertIndex < surface.vertCount; vertIndex++)
                 {
                     const auto& vertex = surface.verts0[vertIndex];

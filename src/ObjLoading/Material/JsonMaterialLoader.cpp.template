@@ -498,18 +498,30 @@ namespace
             if (!jMaterial.stateBits.empty())
             {
                 material.stateBitsCount = static_cast<unsigned char>(jMaterial.stateBits.size());
+#ifdef FEATURE_IW6
+                material.stateMap = m_memory.Alloc<GfxStateBits>(material.stateBitsCount);
+#else
                 material.stateBitsTable = m_memory.Alloc<GfxStateBits>(material.stateBitsCount);
+#endif
 
                 for (auto i = 0u; i < material.stateBitsCount; i++)
                 {
+#ifdef FEATURE_IW6
+                    if (!CreateStateBitsTableEntryFromJson(jMaterial.stateBits[i], material.stateMap[i], material))
+#else
                     if (!CreateStateBitsTableEntryFromJson(jMaterial.stateBits[i], material.stateBitsTable[i], material))
+#endif
                         return false;
                 }
             }
             else
             {
                 material.stateBitsCount = 0;
+#ifdef FEATURE_IW6
+                material.stateMap = nullptr;
+#else
                 material.stateBitsTable = nullptr;
+#endif
             }
 
 #ifdef FEATURE_T6

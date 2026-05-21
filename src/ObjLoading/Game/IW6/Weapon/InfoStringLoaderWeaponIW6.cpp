@@ -211,17 +211,17 @@ namespace
             {
                 auto& animOverride = animOverrides[i++];
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[0], animOverride.attachment1))
-                //    return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[0], animOverride.attachment1))
+                    return false;
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[1], animOverride.attachment2))
-                //    return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[1], animOverride.attachment2))
+                    return false;
 
-                // if (!ParseAnimFile(overrideValues[2], animOverride.animTreeType))
-                //     return false;
+                if (!ParseAnimFile(overrideValues[2], animOverride.animTreeType))
+                     return false;
 
-                ParseAnim(overrideValues[3], animOverride.overrideAnim);
-                ParseAnim(overrideValues[4], animOverride.altmodeAnim);
+                ParseAnim(overrideValues[3], animOverride.overrideAnim->name);
+                ParseAnim(overrideValues[4], animOverride.altmodeAnim->name);
 
                 if (!ParseInt(overrideValues[5], animOverride.animTime))
                     return false;
@@ -252,11 +252,11 @@ namespace
             {
                 auto& soundOverride = soundOverrides[i++];
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[0], soundOverride.attachment1))
-                //    return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[0], soundOverride.attachment1))
+                    return false;
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[1], soundOverride.attachment2))
-                //    return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[1], soundOverride.attachment2))
+                    return false;
 
                 if (!ParseSoundType(overrideValues[2], soundOverride.soundType))
                     return false;
@@ -287,20 +287,20 @@ namespace
             {
                 auto& fxOverride = fxOverrides[i++];
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[0], fxOverride.attachment1))
-                //    return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[0], fxOverride.attachment1))
+                    return false;
 
-                //if (!ParseSingleWeaponAttachment(overrideValues[1], fxOverride.attachment2))
-               //     return false;
+                if (!ParseSingleWeaponAttachment(overrideValues[1], fxOverride.attachment2))
+                    return false;
 
                 if (!ParseFxType(overrideValues[2], fxOverride.fxType))
                     return false;
 
-                // if (!ParseFxEffectDef(overrideValues[3], fxOverride.overrideFX)
-                //     return false;
+                 if (!ParseFxEffectDef(overrideValues[3], fxOverride.overrideFX))
+                     return false;
 
-                // if (!ParseFxEffectDef(overrideValues[4], fxOverride.altmodeFX))
-                //     return false;
+                 if (!ParseFxEffectDef(overrideValues[4], fxOverride.altmodeFX))
+                     return false;
             }
 
             m_weapon.fxOverrides = fxOverrides;
@@ -363,8 +363,8 @@ namespace
                     if (currentOverrideKeyOffset > 0u)
                         overrideVector.emplace_back(currentOverride);
 
-                    //if (!ParseSingleWeaponAttachment(overrideValues[0], currentOverride.attachment))
-                    //    return false;
+                    if (!ParseSingleWeaponAttachment(overrideValues[0], currentOverride.attachment))
+                        return false;
 
                     currentOverride.notetrackSoundMapKeys = m_memory.Alloc<ScriptString>(24u);
                     currentOverride.notetrackSoundMapValues = m_memory.Alloc<ScriptString>(24u);
@@ -395,7 +395,7 @@ namespace
 
         bool ParseSingleWeaponAttachment(const std::string& value, WeaponAttachmentCombination& attachment)
         {
-            attachment.fields = 0u;
+            attachment.packed = 0u;
             if (value == "none")
                 return true;
 
@@ -404,7 +404,7 @@ namespace
                 const auto* scope = m_weapon.scopes[i];
                 if (scope && scope->szInternalName && value == scope->szInternalName)
                 {
-                    attachment.weaponScopes = static_cast<unsigned short>(i + 1);
+                    attachment.fields.scope = static_cast<unsigned short>(i + 1);
                     return true;
                 }
             }
@@ -414,7 +414,7 @@ namespace
                 const auto* underBarrel = m_weapon.underBarrels[i];
                 if (underBarrel && underBarrel->szInternalName && value == underBarrel->szInternalName)
                 {
-                    attachment.weaponUnderBarrels = static_cast<unsigned short>(i + 1);
+                    attachment.fields.underBarrel = static_cast<unsigned short>(i + 1);
                     return true;
                 }
             }
@@ -424,7 +424,7 @@ namespace
                 const auto* other = m_weapon.others[i];
                 if (other && other->szInternalName && value == other->szInternalName)
                 {
-                    attachment.weaponOthers = static_cast<unsigned short>(1u << i);
+                    attachment.fields.other = static_cast<unsigned short>(1u << i);
                     return true;
                 }
             }

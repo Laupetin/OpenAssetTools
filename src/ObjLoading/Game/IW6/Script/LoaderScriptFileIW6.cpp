@@ -68,7 +68,7 @@ namespace
             std::memcpy(const_cast<char*>(scriptFile->buffer), fileBuffer.get() + offset, scriptFile->compressedLen);
             offset += scriptFile->compressedLen;
 
-            scriptFile->bytecode = m_memory.Alloc<unsigned char>(scriptFile->bytecodeLen);
+            scriptFile->bytecode = m_memory.Alloc<char>(scriptFile->bytecodeLen);
             std::memcpy(scriptFile->bytecode, fileBuffer.get() + offset, scriptFile->bytecodeLen);
 
             return AssetCreationResult::Success(context.AddAsset<AssetScript>(assetName, scriptFile));
