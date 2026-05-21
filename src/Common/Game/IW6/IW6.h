@@ -115,7 +115,7 @@ namespace IW6
 
     struct ScriptStringList
     {
-        int count;
+        int64_t count;
         const char** strings;
     };
 
@@ -128,7 +128,7 @@ namespace IW6
     struct XAssetList
     {
         ScriptStringList stringList;
-        int assetCount;
+        int64_t assetCount;
         XAsset* assets;
     };
 
