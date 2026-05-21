@@ -19,7 +19,10 @@ namespace IW6
         ASSET_TYPE_XMODEL_SURFS,
         ASSET_TYPE_XMODEL,
         ASSET_TYPE_MATERIAL,
+        ASSET_TYPE_COMPUTESHADER,
         ASSET_TYPE_VERTEXSHADER,
+        ASSET_TYPE_HULLSHADER,
+        ASSET_TYPE_DOMAINSHADER,
         ASSET_TYPE_PIXELSHADER,
         ASSET_TYPE_VERTEXDECL,
         ASSET_TYPE_TECHNIQUE_SET,
@@ -66,8 +69,13 @@ namespace IW6
         ASSET_TYPE_REVERB_PRESET,
         ASSET_TYPE_LUA_FILE,
         ASSET_TYPE_SCRIPTABLE,
+        ASSET_TYPE_COLORIZATION,
+        ASSET_TYPE_COLORIZATIONSET,
+        ASSET_TYPE_TONEMAPPING,
         ASSET_TYPE_EQUIPMENT_SND_TABLE,
+        ASSET_TYPE_VECTORFIELD,
         ASSET_TYPE_DOPPLER_PRESET,
+        ASSET_TYPE_PARTICLE_SIM_ANIMATION,
 
         ASSET_TYPE_COUNT,
     };
@@ -219,14 +227,18 @@ namespace IW6
     using AssetXModelSurfs = Asset<ASSET_TYPE_XMODEL_SURFS, XModelSurfs>;
     using AssetXModel = Asset<ASSET_TYPE_XMODEL, XModel>;
     using AssetMaterial = Asset<ASSET_TYPE_MATERIAL, Material>;
+    using AssetComputeShader = Asset<ASSET_TYPE_COMPUTESHADER, ComputeShader>;
     using AssetVertexShader = Asset<ASSET_TYPE_VERTEXSHADER, MaterialVertexShader>;
+    using AssetHullShader = Asset<ASSET_TYPE_HULLSHADER, MaterialHullShader>;
+    using AssetDomainShader = Asset<ASSET_TYPE_DOMAINSHADER, MaterialDomainShader>;
     using AssetPixelShader = Asset<ASSET_TYPE_PIXELSHADER, MaterialPixelShader>;
+    using AssetVertexDecl = Asset<ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration>;
     using AssetTechniqueSet = Asset<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>;
     using AssetImage = Asset<ASSET_TYPE_IMAGE, GfxImage>;
     using AssetSound = Asset<ASSET_TYPE_SOUND, snd_alias_list_t>;
-    using AssetSoundCurve = Asset<ASSET_TYPE_SOUND_CURVE, SndCurve>;
-    using AssetLpfCurve = Asset<ASSET_TYPE_LPF_CURVE, SndCurve>;
-    using AssetReverbCurve= Asset<ASSET_TYPE_REVERB_CURVE, SndCurve>;
+    using AssetSoundCurve = Asset<ASSET_TYPE_SOUND_CURVE, SoundCurve>;
+    using AssetLpfCurve = Asset<ASSET_TYPE_LPF_CURVE, LpfCurve>;
+    using AssetReverbCurve = Asset<ASSET_TYPE_REVERB_CURVE, ReverbCurve>;
     using AssetLoadedSound = Asset<ASSET_TYPE_LOADED_SOUND, LoadedSound>;
     using AssetClipMap = Asset<ASSET_TYPE_CLIPMAP, clipMap_t>;
     using AssetComWorld = Asset<ASSET_TYPE_COMWORLD, ComWorld>;
@@ -244,6 +256,7 @@ namespace IW6
     using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
     using AssetAttachment = Asset<ASSET_TYPE_ATTACHMENT, WeaponAttachment>;
     using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponCompleteDef>;
+    using AssetSoundDriverGlobals = Asset<ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals>;
     using AssetFx = Asset<ASSET_TYPE_FX, FxEffectDef>;
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetSurfaceFx = Asset<ASSET_TYPE_SURFACE_FX, SurfaceFxTable>;
@@ -259,8 +272,13 @@ namespace IW6
     using AssetReverbPreset = Asset<ASSET_TYPE_REVERB_PRESET, ReverbPreset>;
     using AssetLuaFile = Asset<ASSET_TYPE_LUA_FILE, LuaFile>;
     using AssetScriptable = Asset<ASSET_TYPE_SCRIPTABLE, ScriptableDef>;
+    using AssetColorization = Asset<ASSET_TYPE_COLORIZATION, Colorization>;
+    using AssetColorizationSet = Asset<ASSET_TYPE_COLORIZATIONSET, ColorizationSet>;
+    using AssetToneMapping = Asset<ASSET_TYPE_TONEMAPPING, ToneMapping>;
     using AssetEquipmentSoundTable = Asset<ASSET_TYPE_EQUIPMENT_SND_TABLE, EquipmentSoundTable>;
+    using AssetVectorField= Asset<ASSET_TYPE_VECTORFIELD, VectorField>;
     using AssetDopplerPreset = Asset<ASSET_TYPE_DOPPLER_PRESET, DopplerPreset>;
+    using AssetFxParticleSimAnimation = Asset<ASSET_TYPE_PARTICLE_SIM_ANIMATION, FxParticleSimAnimation>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
 } // namespace IW6
@@ -271,14 +289,18 @@ DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXAnim, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXModelSurfs, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetXModel, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetMaterial, info.name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetComputeShader, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetVertexShader, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetHullShader, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetDomainShader, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetPixelShader, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetVertexDecl, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetTechniqueSet, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetImage, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetSound, aliasName);
-DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetSoundCurve, filename);
-DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLpfCurve, filename);
-DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetReverbCurve, filename);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetSoundCurve, curve.filename);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLpfCurve, curve.filename);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetReverbCurve, curve.filename);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLoadedSound, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetClipMap, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetComWorld, name);
@@ -296,6 +318,7 @@ DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetAnimationClass, className);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLocalize, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetAttachment, szInternalName);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetWeapon, szInternalName);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetSoundDriverGlobals, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetFx, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetImpactFx, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetSurfaceFx, name);
@@ -311,5 +334,10 @@ DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetNetConstStrings, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetReverbPreset, p_name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetLuaFile, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetScriptable, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetColorization, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetColorizationSet, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetToneMapping, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetEquipmentSoundTable, szName);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetVectorField, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetDopplerPreset, p_name);
+DEFINE_ASSET_NAME_ACCESSOR(IW6::AssetFxParticleSimAnimation, name);

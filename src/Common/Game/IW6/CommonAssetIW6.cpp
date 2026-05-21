@@ -17,15 +17,18 @@ namespace IW6
             CommonAssetType::XMODEL_SURFS,                      // ASSET_TYPE_XMODEL_SURFS
             CommonAssetType::XMODEL,                            // ASSET_TYPE_XMODEL
             CommonAssetType::MATERIAL,                          // ASSET_TYPE_MATERIAL
+            CommonAssetType::COMPUTE_SHADER,                    // ASSET_TYPE_COMPUTESHADER
             CommonAssetType::VERTEX_SHADER,                     // ASSET_TYPE_VERTEXSHADER
+            CommonAssetType::HULL_SHADER,                       // ASSET_TYPE_HULLSHADER
+            CommonAssetType::DOMAIN_SHADER,                     // ASSET_TYPE_DOMAINSHADER
             CommonAssetType::PIXEL_SHADER,                      // ASSET_TYPE_PIXELSHADER
             CommonAssetType::VERTEX_DECL,                       // ASSET_TYPE_VERTEXDECL
             CommonAssetType::TECHNIQUE_SET,                     // ASSET_TYPE_TECHNIQUE_SET
             CommonAssetType::IMAGE,                             // ASSET_TYPE_IMAGE
             CommonAssetType::SOUND,                             // ASSET_TYPE_SOUND
             CommonAssetType::SOUND_CURVE,                       // ASSET_TYPE_SOUND_CURVE
-            CommonAssetType::LPF_CURVE,                         // ASSET_TYPE_SOUND_CURVE
-            CommonAssetType::REVERB_CURVE,                      // ASSET_TYPE_SOUND_CURVE
+            CommonAssetType::LPF_CURVE,                         // ASSET_TYPE_LPF_CURVE
+            CommonAssetType::REVERB_CURVE,                      // ASSET_TYPE_REVERB_CURVE
             CommonAssetType::LOADED_SOUND,                      // ASSET_TYPE_LOADED_SOUND
             CommonAssetType::CLIP_MAP,                          // ASSET_TYPE_CLIPMAP
             CommonAssetType::COM_WORLD,                         // ASSET_TYPE_COMWORLD
@@ -64,8 +67,13 @@ namespace IW6
             CommonAssetType::REVERB_PRESET,                     // ASSET_TYPE_REVERB_PRESET
             CommonAssetType::LUA_FILE,                          // ASSET_TYPE_LUA_FILE
             CommonAssetType::SCRIPTABLE,                        // ASSET_TYPE_SCRIPTABLE
+            CommonAssetType::COLORIZATION,                      // ASSET_TYPE_COLORIZATION 
+            CommonAssetType::COLORIZATION_SET,                  // ASSET_TYPE_COLORIZATIONSET 
+            CommonAssetType::TONE_MAPPING,                      // ASSET_TYPE_TONEMAPPING 
             CommonAssetType::EQUIPMENT_SND_TABLE,               // ASSET_TYPE_EQUIPMENT_SND_TABLE
+            CommonAssetType::VECTOR_FIELD,                      // ASSET_TYPE_VECTORFIELD
             CommonAssetType::DOPPLER_PRESET,                    // ASSET_TYPE_DOPPLER_PRESET
+            CommonAssetType::PARTICLE_SIM_ANIMATION,            // ASSET_TYPE_PARTICLE_SIM_ANIMATION 
         };
 
         assert(gameAssetType < ASSET_TYPE_COUNT);
@@ -86,7 +94,10 @@ namespace IW6
             MAP_COMMON(CommonAssetType::XMODEL_SURFS, ASSET_TYPE_XMODEL_SURFS)
             MAP_COMMON(CommonAssetType::XMODEL, ASSET_TYPE_XMODEL)
             MAP_COMMON(CommonAssetType::MATERIAL, ASSET_TYPE_MATERIAL)
+            MAP_COMMON(CommonAssetType::COMPUTE_SHADER, ASSET_TYPE_COMPUTESHADER)
             MAP_COMMON(CommonAssetType::VERTEX_SHADER, ASSET_TYPE_VERTEXSHADER)
+            MAP_COMMON(CommonAssetType::HULL_SHADER, ASSET_TYPE_HULLSHADER)
+            MAP_COMMON(CommonAssetType::DOMAIN_SHADER, ASSET_TYPE_DOMAINSHADER)
             MAP_COMMON(CommonAssetType::PIXEL_SHADER, ASSET_TYPE_PIXELSHADER)
             MAP_COMMON(CommonAssetType::VERTEX_DECL, ASSET_TYPE_VERTEXDECL)
             MAP_COMMON(CommonAssetType::TECHNIQUE_SET, ASSET_TYPE_TECHNIQUE_SET)
@@ -133,8 +144,13 @@ namespace IW6
             MAP_COMMON(CommonAssetType::REVERB_PRESET, ASSET_TYPE_REVERB_PRESET)
             MAP_COMMON(CommonAssetType::LUA_FILE, ASSET_TYPE_LUA_FILE)
             MAP_COMMON(CommonAssetType::SCRIPTABLE, ASSET_TYPE_SCRIPTABLE)
+            MAP_COMMON(CommonAssetType::COLORIZATION, ASSET_TYPE_COLORIZATION)
+            MAP_COMMON(CommonAssetType::COLORIZATION_SET, ASSET_TYPE_COLORIZATIONSET)
+            MAP_COMMON(CommonAssetType::TONE_MAPPING, ASSET_TYPE_TONEMAPPING)
             MAP_COMMON(CommonAssetType::EQUIPMENT_SND_TABLE, ASSET_TYPE_EQUIPMENT_SND_TABLE)
+            MAP_COMMON(CommonAssetType::VECTOR_FIELD, ASSET_TYPE_VECTORFIELD)
             MAP_COMMON(CommonAssetType::DOPPLER_PRESET, ASSET_TYPE_DOPPLER_PRESET)
+            MAP_COMMON(CommonAssetType::PARTICLE_SIM_ANIMATION, ASSET_TYPE_PARTICLE_SIM_ANIMATION)
 
         default:
             return std::nullopt;

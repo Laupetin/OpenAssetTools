@@ -111,6 +111,12 @@ enum class CommonAssetType : std::uint8_t
     SCRIPT,
 
     // IW6
+    COMPUTE_SHADER,
+    // IW6
+    HULL_SHADER,
+    // IW6
+    DOMAIN_SHADER,
+    // IW6
     LPF_CURVE,
     // IW6
     REVERB_CURVE,
@@ -125,9 +131,19 @@ enum class CommonAssetType : std::uint8_t
     // IW6
     SCRIPTABLE,
     // IW6
+    COLORIZATION,
+    // IW6
+    COLORIZATION_SET,
+    // IW6
+    TONE_MAPPING,
+    // IW6
     EQUIPMENT_SND_TABLE,
     // IW6
+    VECTOR_FIELD,
+    // IW6
     DOPPLER_PRESET,
+    // IW6
+    PARTICLE_SIM_ANIMATION,
 
     // T5, T6
     PHYS_CONSTRAINTS,

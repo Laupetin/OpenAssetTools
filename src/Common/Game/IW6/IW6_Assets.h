@@ -32,19 +32,24 @@ namespace IW6
         MAX_XFILE_COUNT
     };
 
-    struct PhysPreset;
+   struct PhysPreset;
     struct PhysCollmap;
     struct XAnimParts;
     struct XModelSurfs;
     struct XModel;
     struct Material;
     struct MaterialVertexShader;
+    struct ComputeShader;
+    struct MaterialHullShader;
+    struct MaterialDomainShader;
     struct MaterialPixelShader;
     struct MaterialVertexDeclaration;
     struct MaterialTechniqueSet;
     struct GfxImage;
     struct snd_alias_list_t;
-    struct SndCurve;
+    struct SoundCurve;
+    struct LpfCurve;
+    struct ReverbCurve;
     struct LoadedSound;
     struct clipMap_t;
     struct ComWorld;
@@ -79,8 +84,13 @@ namespace IW6
     struct ReverbPreset;
     struct LuaFile;
     struct ScriptableDef;
+    struct Colorization;
+    struct ColorizationSet;
+    struct ToneMapping;
     struct EquipmentSoundTable;
+    struct VectorField;
     struct DopplerPreset;
+    struct FxParticleSimAnimation;
 
     typedef unsigned short ScriptString;
 
@@ -92,15 +102,18 @@ namespace IW6
         XModelSurfs* modelSurfs;
         XModel* model;
         Material* material;
+        ComputeShader* computeShader;
         MaterialVertexShader* vertexShader;
+        MaterialHullShader* hullShader;
+        MaterialDomainShader* domainShader;
         MaterialPixelShader* pixelShader;
         MaterialVertexDeclaration* vertexDecl;
         MaterialTechniqueSet* techniqueSet;
         GfxImage* image;
         snd_alias_list_t* sound;
-        SndCurve* sndCurve;
-        SndCurve* lpfCurve;
-        SndCurve* reverbCurve;
+        SoundCurve* sndCurve;
+        LpfCurve* lpfCurve;
+        ReverbCurve* reverbCurve;
         LoadedSound* loadSnd;
         clipMap_t* clipMap;
         ComWorld* comWorld;
@@ -134,8 +147,13 @@ namespace IW6
         ReverbPreset* reverbPreset;
         LuaFile* luaFile;
         ScriptableDef* scriptable;
+        Colorization* colorization;
+        ColorizationSet* colorizationSet;
+        ToneMapping* toneMapping;
         EquipmentSoundTable* equipSndTable;
+        VectorField* vectorField;
         DopplerPreset* dopplerPreset;
+        FxParticleSimAnimation* particleSimAnimation;
         void* data;
     };
 

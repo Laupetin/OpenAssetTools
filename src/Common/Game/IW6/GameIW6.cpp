@@ -15,7 +15,10 @@ namespace
         "xmodelsurfs",
         "xmodel",
         "material",
+        "computeshader",
         "vertexshader",
+        "hullshader",
+        "domainshader",
         "pixelshader",
         "vertexdecl",
         "techniqueset",
@@ -62,8 +65,13 @@ namespace
         "reverbpreset",
         "luafile",
         "scriptable",
+        "colorization",
+        "colorizationset",
+        "tonemapping",
         "equipmentsoundtable",
+        "vectorfield",
         "dopplerpreset",
+        "particlesimanimation",
     };
     static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
