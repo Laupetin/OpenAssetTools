@@ -44,6 +44,7 @@
 #include <nlohmann/json.hpp>
 #pragma warning(pop)
 
+#include "XModel/CollisionTreeCreator.h"
 #include "XModel/PartClassificationState.h"
 #include "XModel/TangentData.h"
 #include "XModel/Tangentspace.h"
@@ -59,6 +60,47 @@ using namespace GAME;
 
 namespace
 {
+    constexpr uint16_t XSURFACE_COLLISION_NODE_HAS_LEAFS = 0x8000;
+    constexpr uint16_t XSURFACE_COLLISION_LEAF_TWO_TRIANGLES = 0x8000;
+    
+    Eigen::Vector3f ToEigen(const vec3_t& vec)
+    {
+        return Eigen::Vector3f(vec.x, vec.y, vec.z);
+    }
+
+    class RigidVertListAccessor : public xmodel::IRigidVertListAccessor
+    {
+    public:
+        RigidVertListAccessor(const XSurface& surface, const XRigidVertList& rigidVertList)
+            : m_surface(surface), 
+              m_rigid_vert_list(rigidVertList)
+        {
+        }
+        
+        [[nodiscard]] size_t GetTriOffset() const override
+        {
+            return m_rigid_vert_list.triOffset;
+        }
+        
+        [[nodiscard]] size_t GetTriCount() const override
+        {
+            return m_rigid_vert_list.triCount;
+        }
+        
+        [[nodiscard]] std::array<Eigen::Vector3f, 3> GetCoordinatesForTri(const size_t triIndex) const override
+        {
+            return std::array<Eigen::Vector3f, 3>({
+                ToEigen(m_surface.verts0[m_surface.triIndices[triIndex].i[0]].xyz),
+                ToEigen(m_surface.verts0[m_surface.triIndices[triIndex].i[1]].xyz),
+                ToEigen(m_surface.verts0[m_surface.triIndices[triIndex].i[2]].xyz),
+            });
+        }
+        
+    private:
+        const XSurface& m_surface;
+        const XRigidVertList& m_rigid_vert_list;
+    };
+    
     class XModelLoader final : public AssetCreator<AssetXModel>
     {
     public:
@@ -505,6 +547,49 @@ namespace
             const auto shiftValue = 31u - (boneIndex % 32u);
             surface.partBits[partBitsIndex] |= 1 << shiftValue;
         }
+        
+        [[nodiscard]] XSurfaceCollisionTree* ConvertCollisionTree(const xmodel::CommonCollisionTree& commonTree) const
+        {
+            auto* tree = m_memory.Alloc<XSurfaceCollisionTree>();
+            tree->trans.x = commonTree.trans.x();
+            tree->trans.y = commonTree.trans.y();
+            tree->trans.z = commonTree.trans.z();
+            tree->scale.x = commonTree.scale.x();
+            tree->scale.y = commonTree.scale.y();
+            tree->scale.z = commonTree.scale.z();
+            tree->nodeCount = static_cast<decltype(XSurfaceCollisionTree::nodeCount)>(commonTree.nodes.size());
+            tree->nodes = m_memory.Alloc<XSurfaceCollisionNode>(tree->nodeCount);
+            for (auto nodeIndex = 0u; nodeIndex < tree->nodeCount; nodeIndex++)
+            {
+                auto& node = tree->nodes[nodeIndex];
+                const auto& commonNode = commonTree.nodes[nodeIndex];
+                
+                node.aabb.mins[0] = commonNode.aabb.mins[0];
+                node.aabb.mins[1] = commonNode.aabb.mins[1];
+                node.aabb.mins[2] = commonNode.aabb.mins[2];
+                node.aabb.maxs[0] = commonNode.aabb.maxs[0];
+                node.aabb.maxs[1] = commonNode.aabb.maxs[1];
+                node.aabb.maxs[2] = commonNode.aabb.maxs[2];
+                node.childBeginIndex = commonNode.childBeginIndex;
+                node.childCount = commonNode.childCount;
+                if (commonNode.childrenAreLeafs)
+                    node.childCount |= XSURFACE_COLLISION_NODE_HAS_LEAFS;
+            }
+            
+            tree->leafCount = commonTree.leafs.size();
+            tree->leafs = m_memory.Alloc<XSurfaceCollisionLeaf>(tree->leafCount);
+            for (auto leafIndex = 0u; leafIndex < tree->leafCount; leafIndex++)
+            {
+                auto& leaf = tree->leafs[leafIndex];
+                const auto& commonLeaf = commonTree.leafs[leafIndex];
+                
+                leaf.triangleBeginIndex = commonLeaf.triangleBeginIndex;
+                if (commonLeaf.twoTriangles)
+                    leaf.triangleBeginIndex |= XSURFACE_COLLISION_LEAF_TWO_TRIANGLES;
+            }
+            
+            return tree;
+        }
 
         void CreateVertListData(XSurface& surface, const std::vector<size_t>& xmodelToCommonVertexIndexLookup, const XModelCommon& common) const
         {
@@ -538,7 +623,10 @@ namespace
 
                 if (boneVertList.triCount > 0 || boneVertList.vertCount > 0)
                 {
-                    boneVertList.collisionTree = nullptr; // TODO
+                    RigidVertListAccessor vertListAccessor(surface, boneVertList);
+                    const auto commonCollisionTree = xmodel::CreateCollisionTree(vertListAccessor);
+                    boneVertList.collisionTree = ConvertCollisionTree(*commonCollisionTree);
+                    
                     vertLists.emplace_back(boneVertList);
 
                     currentVertexTail = currentVertexHead;

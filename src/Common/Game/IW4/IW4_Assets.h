@@ -468,8 +468,8 @@ namespace IW4
 
     struct XSurfaceCollisionTree
     {
-        float trans[3];
-        float scale[3];
+        vec3_t trans;
+        vec3_t scale;
         unsigned int nodeCount;
         XSurfaceCollisionNode* nodes;
         unsigned int leafCount;
