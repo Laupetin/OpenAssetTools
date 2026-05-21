@@ -44,12 +44,8 @@ namespace
               m_blocks(blocks),
               m_block_bit_count(blockBitCount),
               m_pointer_byte_count(pointerBitCount / 8u),
-
-              // -1
               m_zone_ptr_following(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)),
-
-              // -2
-              m_zone_ptr_insert((std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)) - 1u)
+              m_zone_ptr_insert((std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)) - 1u),
         {
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));

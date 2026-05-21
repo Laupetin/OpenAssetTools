@@ -15,7 +15,7 @@ namespace IW6
         static constexpr const char* MAGIC_SIGNED_INFINITY_WARD = "IWff0100";
         static constexpr const char* MAGIC_SIGNED_OAT = "ABff0100";
         static constexpr const char* MAGIC_UNSIGNED = "IWffu100";
-        static constexpr int ZONE_VERSION = 1;
+        static constexpr int ZONE_VERSION = 565;
 
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_INFINITY_WARD) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
