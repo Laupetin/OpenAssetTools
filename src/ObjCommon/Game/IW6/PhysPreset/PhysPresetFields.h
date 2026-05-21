@@ -8,8 +8,7 @@ namespace IW6
         {"mass",                  offsetof(PhysPresetInfo, mass),                  CSPFT_FLOAT   },
         {"bounce",                offsetof(PhysPresetInfo, bounce),                CSPFT_FLOAT   },
         {"friction",              offsetof(PhysPresetInfo, friction),              CSPFT_FLOAT   },
-        // TODO: See if this is explicitly added for all PhysPresetInfo structs
-        // {"isFrictionInfinity",    offsetof(PhysPresetInfo, isFrictionInfinity),    CSPFT_QBOOLEAN},
+        {"isFrictionInfinity",    offsetof(PhysPresetInfo, isFrictionInfinity),    CSPFT_QBOOLEAN},
         {"bulletForceScale",      offsetof(PhysPresetInfo, bulletForceScale),      CSPFT_FLOAT   },
         {"explosiveForceScale",   offsetof(PhysPresetInfo, explosiveForceScale),   CSPFT_FLOAT   },
         {"sndAliasPrefix",        offsetof(PhysPresetInfo, sndAliasPrefix),        CSPFT_STRING  },

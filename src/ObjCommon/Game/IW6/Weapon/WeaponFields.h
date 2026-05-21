@@ -987,6 +987,9 @@ namespace IW6
         "hold_fire",                    // WEAP_ANIM_HOLD_FIRE
         "lastshot",                     // WEAP_ANIM_LASTSHOT
         "rechamber",                    // WEAP_ANIM_RECHAMBER
+        
+        "grenade_prime",                // WEAP_ANIM_RECHAMBER
+        "grenade_prime_ready_to_throw", // WEAP_ANIM_RECHAMBER
 
         "melee_swipe",                  // WEAP_ANIM_MELEE_SWIPE
         "melee_hit",                    // WEAP_ANIM_MELEE_HIT
@@ -1006,97 +1009,134 @@ namespace IW6
         "fast_reload_start",            // WEAP_ANIM_FAST_RELOAD_START
         "fast_reload_end",              // WEAP_ANIM_FAST_RELOAD_END
 
-        "raise",        // WEAP_ANIM_RAISE
-        "first_raise",  // WEAP_ANIM_FIRST_RAISE
-        "breach_raise", // WEAP_ANIM_BREACH_RAISE
-        "drop",         // WEAP_ANIM_DROP
-        "alt_raise",    // WEAP_ANIM_ALT_RAISE
-        "alt_drop",     // WEAP_ANIM_ALT_DROP
-        "quick_raise",  // WEAP_ANIM_QUICK_RAISE
-        "quick_drop",   // WEAP_ANIM_QUICK_DROP
-        "empty_raise",  // WEAP_ANIM_EMPTY_RAISE
-        "empty_drop",   // WEAP_ANIM_EMPTY_DROP
+        "raise",                        // WEAP_ANIM_RAISE
+        "first_raise",                  // WEAP_ANIM_FIRST_RAISE
+        "breach_raise",                 // WEAP_ANIM_BREACH_RAISE
+        "drop",                         // WEAP_ANIM_DROP
+        "alt_raise",                    // WEAP_ANIM_ALT_RAISE
+        "alt_drop",                     // WEAP_ANIM_ALT_DROP
+        "alt_override",                 // WEAP_ANIM_ALT_OVERRIDE
+        "toggle_override",              // WEAP_ANIM_TOGGLE_OVERRIDE
+        "scope_toggle_on",              // WEAP_ANIM_SCOPE_TOGGLE_ON
+        "scope_toggle_off",             // WEAP_ANIM_SCOPE_TOGGLE_OFF
+        "quick_raise",                  // WEAP_ANIM_QUICK_RAISE
+        "quick_drop",                   // WEAP_ANIM_QUICK_DROP
+        "empty_raise",                  // WEAP_ANIM_EMPTY_RAISE
+        "empty_drop",                   // WEAP_ANIM_EMPTY_DROP
 
-        "sprint_in",        // WEAP_ANIM_SPRINT_IN
-        "sprint_in_cancel", // WEAP_ANIM_SPRINT_IN_CANCEL
-        "sprint_loop",      // WEAP_ANIM_SPRINT_LOOP
-        "sprint_out",       // WEAP_ANIM_SPRINT_OUT
+        "sprint_in",                    // WEAP_ANIM_SPRINT_IN
+        "sprint_in_cancel",             // WEAP_ANIM_SPRINT_IN_CANCEL
+        "sprint_loop",                  // WEAP_ANIM_SPRINT_LOOP
+        "sprint_out",                   // WEAP_ANIM_SPRINT_OUT
 
-        "stunned_start", // WEAP_ANIM_STUNNED_START
-        "stunned_loop",  // WEAP_ANIM_STUNNED_LOOP
-        "stunned_end",   // WEAP_ANIM_STUNNED_END
+        "stunned_start",                // WEAP_ANIM_STUNNED_START
+        "stunned_loop",                 // WEAP_ANIM_STUNNED_LOOP
+        "stunned_end",                  // WEAP_ANIM_STUNNED_END
 
-        "detonate",           // WEAP_ANIM_DETONATE
-        "nightvision_wear",   // WEAP_ANIM_NIGHTVISION_WEAR
-        "nightvision_remove", // WEAP_ANIM_NIGHTVISION_REMOVE
+        "detonate",                     // WEAP_ANIM_DETONATE
+        "nightvision_wear",             // WEAP_ANIM_NIGHTVISION_WEAR
+        "nightvision_remove",           // WEAP_ANIM_NIGHTVISION_REMOVE
 
-        "ads_fire",      // WEAP_ANIM_ADS_FIRE
-        "ads_lastshot",  // WEAP_ANIM_ADS_LASTSHOT
-        "ads_rechamber", // WEAP_ANIM_ADS_RECHAMBER
+        "ads_fire",                     // WEAP_ANIM_ADS_FIRE
+        "ads_lastshot",                 // WEAP_ANIM_ADS_LASTSHOT
+        "ads_rechamber",                // WEAP_ANIM_ADS_RECHAMBER
 
-        "blast_front", // WEAP_ANIM_BLAST_FRONT
-        "blast_right", // WEAP_ANIM_BLAST_RIGHT
-        "blast_back",  // WEAP_ANIM_BLAST_BACK
-        "blast_left",  // WEAP_ANIM_BLAST_LEFT
+        "blast_front",                  // WEAP_ANIM_BLAST_FRONT
+        "blast_right",                  // WEAP_ANIM_BLAST_RIGHT
+        "blast_back",                   // WEAP_ANIM_BLAST_BACK
+        "blast_left",                   // WEAP_ANIM_BLAST_LEFT
 
-        "slide_in",   // WEAP_ANIM_SLIDE_IN
-        "slide_loop", // WEAP_ANIM_SLIDE_LOOP
-        "slide_out",  // WEAP_ANIM_SLIDE_OUT
+        "slide_in",                     // WEAP_ANIM_SLIDE_IN
+        "slide_loop",                   // WEAP_ANIM_SLIDE_LOOP
+        "slide_out",                    // WEAP_ANIM_SLIDE_OUT
 
-        "recoil_settle", // WEAP_ANIM_RECOIL_SETTLE
-        "swim_loop",     // WEAP_ANIM_SWIM_LOOP
+        "recoil_settle",                // WEAP_ANIM_RECOIL_SETTLE
+        "swim_loop",                    // WEAP_ANIM_SWIM_LOOP
 
-        "mantle_up_64", // WEAP_ANIM_MANTLE_UP_64
-        "mantle_up_56", // WEAP_ANIM_MANTLE_UP_56
-        "mantle_up_48", // WEAP_ANIM_MANTLE_UP_48
-        "mantle_up_40", // WEAP_ANIM_MANTLE_UP_40
-        "mantle_up_32", // WEAP_ANIM_MANTLE_UP_32
-        "mantle_up_24", // WEAP_ANIM_MANTLE_UP_24
-        "mantle_up_16", // WEAP_ANIM_MANTLE_UP_16
+        "mantle_up_64",                 // WEAP_ANIM_MANTLE_UP_64
+        "mantle_up_56",                 // WEAP_ANIM_MANTLE_UP_56
+        "mantle_up_48",                 // WEAP_ANIM_MANTLE_UP_48
+        "mantle_up_40",                 // WEAP_ANIM_MANTLE_UP_40
+        "mantle_up_32",                 // WEAP_ANIM_MANTLE_UP_32
+        "mantle_up_24",                 // WEAP_ANIM_MANTLE_UP_24
+        "mantle_up_16",                 // WEAP_ANIM_MANTLE_UP_16
 
-        "mantle_over_64", // WEAP_ANIM_MANTLE_OVER_64
-        "mantle_over_56", // WEAP_ANIM_MANTLE_OVER_56
-        "mantle_over_48", // WEAP_ANIM_MANTLE_OVER_48
-        "mantle_over_40", // WEAP_ANIM_MANTLE_OVER_40
-        "mantle_over_32", // WEAP_ANIM_MANTLE_OVER_32
-        "mantle_over_24", // WEAP_ANIM_MANTLE_OVER_24
-        "mantle_over_16", // WEAP_ANIM_MANTLE_OVER_16
+        "mantle_over_64",               // WEAP_ANIM_MANTLE_OVER_64
+        "mantle_over_56",               // WEAP_ANIM_MANTLE_OVER_56
+        "mantle_over_48",               // WEAP_ANIM_MANTLE_OVER_48
+        "mantle_over_40",               // WEAP_ANIM_MANTLE_OVER_40
+        "mantle_over_32",               // WEAP_ANIM_MANTLE_OVER_32
+        "mantle_over_24",               // WEAP_ANIM_MANTLE_OVER_24
+        "mantle_over_16",               // WEAP_ANIM_MANTLE_OVER_16
 
-        "ads_up",   // WEAP_ANIM_ADS_UP
-        "ads_down", // WEAP_ANIM_ADS_DOWN
+        "reload_multiple_1",            // WEAP_ANIM_RELOAD_MULTIPLE_1
+        "reload_multiple_2",            // WEAP_ANIM_RELOAD_MULTIPLE_2
+        "reload_multiple_3",            // WEAP_ANIM_RELOAD_MULTIPLE_3
+        "reload_multiple_4",            // WEAP_ANIM_RELOAD_MULTIPLE_4
+        "reload_multiple_5",            // WEAP_ANIM_RELOAD_MULTIPLE_5
+        "reload_multiple_6",            // WEAP_ANIM_RELOAD_MULTIPLE_6
+        "reload_multiple_7",            // WEAP_ANIM_RELOAD_MULTIPLE_7
+        "reload_multiple_8",            // WEAP_ANIM_RELOAD_MULTIPLE_8
 
-        "recoil",     // WEAP_ANIM_RECOIL
-        "alt_adjust", // WEAP_ALT_ANIM_ADJUST
+        "reload_multiple_fast_1",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_1
+        "reload_multiple_fast_2",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_2
+        "reload_multiple_fast_3",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_3
+        "reload_multiple_fast_4",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_4
+        "reload_multiple_fast_5",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_5
+        "reload_multiple_fast_6",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_6
+        "reload_multiple_fast_7",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_7
+        "reload_multiple_fast_8",       // WEAP_ANIM_RELOAD_MULTIPLE_FAST_8
 
-        "additive_ads_root", // WEAP_ANIM_ADDITIVE_ADS_ROOT
-        "additive_ads_up",   // WEAP_ANIM_ADDITIVE_ADS_UP
+        "ads_up",                       // WEAP_ANIM_ADS_UP
+        "ads_down",                     // WEAP_ANIM_ADS_DOWN
 
-        "additive_drag_left_root", // WEAP_ANIM_ADDITIVE_DRAG_LEFT_ROOT
-        "additive_drag_left",      // WEAP_ANIM_ADDITIVE_DRAG_LEFT
+        "recoil",                       // WEAP_ANIM_RECOIL
+        "alt_adjust",                   // WEAP_ALT_ANIM_ADJUST
 
-        "additive_drag_right_root", // WEAP_ANIM_ADDITIVE_DRAG_RIGHT_ROOT
-        "additive_drag_right",      // WEAP_ANIM_ADDITIVE_DRAG_RIGHT
+        "additive_ads_root",            // WEAP_ANIM_ADDITIVE_ADS_ROOT
+        "additive_ads_up",              // WEAP_ANIM_ADDITIVE_ADS_UP
 
-        "additive_drag_up_root", // WEAP_ANIM_ADDITIVE_DRAG_UP_ROOT
-        "additive_drag_up",      // WEAP_ANIM_ADDITIVE_DRAG_UP
+        "additive_drag_left_root",      // WEAP_ANIM_ADDITIVE_DRAG_LEFT_ROOT
+        "additive_drag_left",           // WEAP_ANIM_ADDITIVE_DRAG_LEFT
 
-        "additive_drag_down_root", // WEAP_ANIM_ADDITIVE_DRAG_DOWN_ROOT
-        "additive_drag_down",      // WEAP_ANIM_ADDITIVE_DRAG_DOWN
+        "additive_drag_right_root",     // WEAP_ANIM_ADDITIVE_DRAG_RIGHT_ROOT
+        "additive_drag_right",          // WEAP_ANIM_ADDITIVE_DRAG_RIGHT
 
-        "additive_swim_forward_root", // WEAP_ANIM_ADDITIVE_SWIM_FORWARD_ROOT
-        "additive_swim_forward",      // WEAP_ANIM_ADDITIVE_SWIM_FORWARD
+        "additive_drag_up_root",        // WEAP_ANIM_ADDITIVE_DRAG_UP_ROOT
+        "additive_drag_up",             // WEAP_ANIM_ADDITIVE_DRAG_UP
 
-        "additive_swim_backward_root", // WEAP_ANIM_ADDITIVE_SWIM_BACKWARD_ROOT
-        "additive_swim_backward",      // WEAP_ANIM_ADDITIVE_SWIM_BACKWARD
+        "additive_drag_down_root",      // WEAP_ANIM_ADDITIVE_DRAG_DOWN_ROOT
+        "additive_drag_down",           // WEAP_ANIM_ADDITIVE_DRAG_DOWN
 
-        "additive_jump_root", // WEAP_ANIM_ADDITIVE_JUMP_ROOT
-        "additive_jump",      // WEAP_ANIM_ADDITIVE_JUMP
+        "additive_swim_forward_root",   // WEAP_ANIM_ADDITIVE_SWIM_FORWARD_ROOT
+        "additive_swim_forward",        // WEAP_ANIM_ADDITIVE_SWIM_FORWARD
 
-        "additive_jump_land_root", // WEAP_ANIM_ADDITIVE_JUMP_LAND_ROOT
-        "additive_jump_land",      // WEAP_ANIM_ADDITIVE_JUMP_LAND
+        "additive_swim_backward_root",  // WEAP_ANIM_ADDITIVE_SWIM_BACKWARD_ROOT
+        "additive_swim_backward",       // WEAP_ANIM_ADDITIVE_SWIM_BACKWARD
 
-        "additive_walk_root", // WEAP_ANIM_ADDITIVE_WALK_ROOT
-        "additive_walk",      // WEAP_ANIM_ADDITIVE_WALK
+        "additive_jump_root",           // WEAP_ANIM_ADDITIVE_JUMP_ROOT
+        "additive_jump",                // WEAP_ANIM_ADDITIVE_JUMP
+
+        "additive_jump_land_root",      // WEAP_ANIM_ADDITIVE_JUMP_LAND_ROOT
+        "additive_jump_land",           // WEAP_ANIM_ADDITIVE_JUMP_LAND
+        
+        "additive_walk_root",           // WEAP_ANIM_ADDITIVE_WALK_ROOT
+        "additive_walk",                // WEAP_ANIM_ADDITIVE_WALK
+        
+        "additive_crawl_in_root",        // WEAP_ANIM_ADDITIVE_CRAWL_IN_ROOT
+        "additive_crawl_in",             // WEAP_ANIM_ADDITIVE_CRAWL_IN
+        
+        "additive_crawl_loop_root",      // WEAP_ANIM_ADDITIVE_CRAWL_LOOP_ROOT
+        "additive_crawl_loop",           // WEAP_ANIM_ADDITIVE_CRAWL_LOOP
+        
+        "additive_crawl_loop_left_root", // WEAP_ANIM_ADDITIVE_CRAWL_LOOP_LEFT_ROOT
+        "additive_crawl_loop_left",      // WEAP_ANIM_ADDITIVE_CRAWL_LOOP_LEFT
+        
+        "additive_crawl_loop_right_root",// WEAP_ANIM_ADDITIVE_CRAWL_LOOP_RIGHT_ROOT
+        "additive_crawl_loop_right",     // WEAP_ANIM_ADDITIVE_CRAWL_LOOP_RIGHT
+        
+        "additive_prone_drop_root",      // WEAP_ANIM_ADDITIVE_PRONE_DROP_ROOT
+        "additive_prone_drop",           // WEAP_ANIM_ADDITIVE_PRONE_DROP
     };
 
     static_assert(std::extent_v<decltype(weapAnimFilesNames)> == NUM_WEAP_ANIMS);

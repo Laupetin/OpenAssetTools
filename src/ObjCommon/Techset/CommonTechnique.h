@@ -46,8 +46,12 @@ namespace techset
         MATERIAL_CONST,
         // Value is set to a float4 value calculated in code
         CODE_CONST,
+        // 
+        MATERIAL_TEXTURE,
         // Value is set to a sampler from the material
         MATERIAL_SAMPLER,
+        //
+        CODE_TEXTURE,
         // Value is set to a sampler generated in code
         CODE_SAMPLER,
 
