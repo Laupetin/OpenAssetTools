@@ -1,0 +1,12 @@
+// =========================================
+// ColorizationSet
+// =========================================
+use ColorizationSet;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set reusable colorization;
+set reusable colorizationAlternate;
+set reusable colorizationLow;
+set reusable colorizationMid;
+set reusable colorizationHigh;
+set reusable alternateMaskMaterial;

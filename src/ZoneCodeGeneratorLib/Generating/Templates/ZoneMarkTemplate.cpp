@@ -82,7 +82,7 @@ namespace
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_pointer_array_reference_exists && type->m_info->m_requires_marking)
+                if (type->m_pointer_array_reference_exists && type->m_info && type->m_info->m_requires_marking)
                 {
                     PrintHeaderPtrArrayMarkMethodDeclaration(type->m_type);
                 }
@@ -161,7 +161,7 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_pointer_array_reference_exists && type->m_info->m_requires_marking)
+                if (type->m_pointer_array_reference_exists && type->m_info && type->m_info->m_requires_marking)
                 {
                     LINE("")
                     PrintMarkPtrArrayMethod(type->m_type, type->m_info, type->m_pointer_array_reference_is_reusable);

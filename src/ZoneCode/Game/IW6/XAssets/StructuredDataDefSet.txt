@@ -17,10 +17,10 @@ set count enumedArrays enumedArrayCount;
 set count StructuredDataEnum::entries entryCount;
 
 // StructuredDataEnumEntry
-set string StructuredDataEnumEntry::string;
+set scriptstring StructuredDataEnumEntry::string;
 
 // StructuredDataStruct
 set count StructuredDataStruct::properties propertyCount;
 
 // StructuredDataStructProperty
-set string StructuredDataStructProperty::name;
+set scriptstring StructuredDataStructProperty::name;

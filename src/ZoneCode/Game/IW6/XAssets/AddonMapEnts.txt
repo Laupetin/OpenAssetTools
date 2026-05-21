@@ -2,13 +2,11 @@
 // AddonMapEnts
 // =========================================
 use AddonMapEnts;
-set block XFILE_BLOCK_TEMP;
+set block XFILE_BLOCK_VIRTUAL;
 set string name;
 set count entityString numEntityChars;
 set reusable info;
-set reusable cmodels;
 set count cmodels numSubModels;
-set reusable models;
 set count models numSubModels;
 
 // MapTriggers
@@ -19,7 +17,6 @@ set reusable hulls;
 set count hulls hullCount;
 set reusable slabs;
 set count slabs slabCount;
-
 
 // ClipInfo
 use ClipInfo;

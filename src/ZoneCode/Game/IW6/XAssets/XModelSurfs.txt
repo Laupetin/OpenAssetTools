@@ -8,14 +8,21 @@ set count surfs numsurfs;
 
 // XSurface
 use XSurface;
-set reusable rigidVertLists;
-set count rigidVertLists rigidVertListCount;
+set reusable verts0;
 set reusable triIndices;
 set block triIndices XFILE_BLOCK_INDEX;
 set count triIndices triCount;
-set reusable verts0;
-set block verts0 XFILE_BLOCK_VERTEX;
-set count verts0 XSurface::vertCount;
+set reusable rigidVertLists;
+set count rigidVertLists rigidVertListCount;
+set reusable blendVerts;
+set action blendVerts ReallocXBlendInfo(XBlendInfo, XSurface);
+set condition verts0::quantizedNoColorVerts0 never;
+set condition verts0::quantizedNoColorMotionVerts0 never;
+set condition verts0::quantizedVerts0 never;
+set condition verts0::quantizedMotionVerts0 never;
+set condition verts0::packedVerts0 never;
+set condition verts0::packedMotionVerts0 never;
+set action verts0 ReallocGfxVertexUnion0(GfxVertexUnion0, XSurface);
 reorder:
     verts0
     rigidVertLists

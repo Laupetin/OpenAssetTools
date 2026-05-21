@@ -9,15 +9,18 @@ asset XAnimParts AssetXAnim;
 asset XModelSurfs AssetXModelSurfs;
 asset XModel AssetXModel;
 asset Material AssetMaterial;
+asset ComputeShader AssetComputeShader;
 asset MaterialVertexShader AssetVertexShader;
+asset MaterialHullShader AssetHullShader;
+asset MaterialDomainShader AssetDomainShader;
 asset MaterialPixelShader AssetPixelShader;
-//asset MaterialVertexDeclaration AssetVertexDecl;
+asset MaterialVertexDeclaration AssetVertexDecl;
 asset MaterialTechniqueSet AssetTechniqueSet;
 asset GfxImage AssetImage;
 asset snd_alias_list_t AssetSound;
-asset SndCurve AssetSoundCurve;
-asset SndCurve AssetLpfCurve;
-asset SndCurve AssetReverbCurve;
+asset SoundCurve AssetSoundCurve;
+asset LpfCurve AssetLpfCurve;
+asset ReverbCurve AssetReverbCurve;
 asset LoadedSound AssetLoadedSound;
 asset clipMap_t AssetClipMap;
 asset ComWorld AssetComWorld;
@@ -35,6 +38,7 @@ asset AnimationClass AssetAnimationClass;
 asset LocalizeEntry AssetLocalize;
 asset WeaponAttachment AssetAttachment;
 asset WeaponCompleteDef AssetWeapon;
+asset SndDriverGlobals AssetSoundDriverGlobals;
 asset FxEffectDef AssetFx;
 asset FxImpactTable AssetImpactFx;
 asset SurfaceFxTable AssetSurfaceFx;
@@ -50,8 +54,13 @@ asset NetConstStrings AssetNetConstStrings;
 asset ReverbPreset AssetReverbPreset;
 asset LuaFile AssetLuaFile;
 asset ScriptableDef AssetScriptable;
+asset Colorization AssetColorization;
+asset ColorizationSet AssetColorizationSet;
+asset ToneMapping AssetToneMapping;
 asset EquipmentSoundTable AssetEquipmentSoundTable;
+asset VectorField AssetVectorField;
 asset DopplerPreset AssetDopplerPreset;
+asset FxParticleSimAnimation AssetFxParticleSimAnimation;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -70,13 +79,18 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/XModelSurfs.txt"
 #include "XAssets/XModel.txt"
 #include "XAssets/Material.txt"
-#include "XAssets/MaterialPixelShader.txt"
+#include "XAssets/ComputeShader.txt"
 #include "XAssets/MaterialVertexShader.txt"
-//#include "XAssets/MaterialVertexDeclaration.txt"
+#include "XAssets/MaterialHullShader.txt"
+#include "XAssets/MaterialDomainShader.txt"
+#include "XAssets/MaterialPixelShader.txt"
+#include "XAssets/MaterialVertexDeclaration.txt"
 #include "XAssets/MaterialTechniqueSet.txt"
 #include "XAssets/GfxImage.txt"
 #include "XAssets/snd_alias_list_t.txt"
-#include "XAssets/SndCurve.txt"
+#include "XAssets/SoundCurve.txt"
+#include "XAssets/LpfCurve.txt"
+#include "XAssets/ReverbCurve.txt"
 #include "XAssets/LoadedSound.txt"
 #include "XAssets/clipMap_t.txt"
 #include "XAssets/ComWorld.txt"
@@ -94,6 +108,7 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/LocalizeEntry.txt"
 #include "XAssets/WeaponAttachment.txt"
 #include "XAssets/WeaponCompleteDef.txt"
+#include "XAssets/SndDriverGlobals.txt"
 #include "XAssets/FxEffectDef.txt"
 #include "XAssets/FxImpactTable.txt"
 #include "XAssets/SurfaceFxTable.txt"
@@ -109,6 +124,11 @@ block normal  XFILE_BLOCK_SCRIPT;
 #include "XAssets/ReverbPreset.txt"
 #include "XAssets/LuaFile.txt"
 #include "XAssets/ScriptableDef.txt"
+#include "XAssets/Colorization.txt"
+#include "XAssets/ColorizationSet.txt"
+#include "XAssets/ToneMapping.txt"
 #include "XAssets/EquipmentSoundTable.txt"
+#include "XAssets/VectorField.txt"
 #include "XAssets/DopplerPreset.txt"
+#include "XAssets/FxParticleSimAnimation.txt"
 

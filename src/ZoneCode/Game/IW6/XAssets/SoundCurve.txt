@@ -1,6 +1,6 @@
 // =========================================
-// SndCurve
+// SoundCurve
 // =========================================
-use SndCurve;
+use SoundCurve;
 set block XFILE_BLOCK_TEMP;
-set string filename;
+set string curve::filename;

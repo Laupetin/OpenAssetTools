@@ -5,6 +5,7 @@ use ScriptableDef;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set reusable baseModel;
+set assetref baseModel::name AssetXModel;
 set string baseCollisionBrush;
 set string destroyedCollisionBrush;
 set reusable parts;
@@ -25,6 +26,7 @@ set count onEnterEvents onEnterEventCount;
 
 // ScriptableEventDef
 use ScriptableEventDef;
+set condition data::stateChange type == SCRIPTABLE_EVENT_STATECHANGE;
 set condition data::setModel type == SCRIPTABLE_EVENT_MODEL;
 set condition data::playFx type == SCRIPTABLE_EVENT_FX;
 set condition data::playSound type == SCRIPTABLE_EVENT_SOUND;
@@ -33,7 +35,14 @@ set condition data::doExplosion type == SCRIPTABLE_EVENT_EXPLODE;
 set condition data::healthDrain type == SCRIPTABLE_EVENT_HEALTHDRAIN;
 set condition data::physicsLaunch type == SCRIPTABLE_EVENT_PHYSICSLAUNCH;
 set condition data::lightSettings type == SCRIPTABLE_EVENT_LIGHTSETTINGS;
-set condition data::stateChange type == SCRIPTABLE_EVENT_STATECHANGE;
+set condition data::sunlightSettings type == SCRIPTABLE_EVENT_SUNLIGHTSETTINGS;
+set condition data::shake type == SCRIPTABLE_EVENT_SHAKE;
+
+// ScriptableNotetrackDef
+use ScriptableNotetrackDef;
+set scriptstring name;
+set condition data::playFx type == SCRIPTABLE_NT_FX;
+set condition data::playSound type == SCRIPTABLE_NT_SOUND;
 
 // ScriptableEventAnimationDef
 use ScriptableEventAnimationDef;

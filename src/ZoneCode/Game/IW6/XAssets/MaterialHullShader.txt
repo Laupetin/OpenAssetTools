@@ -1,0 +1,12 @@
+// =========================================
+// MaterialHullShader
+// =========================================
+use MaterialHullShader;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// GfxHullShaderLoadDef
+set count GfxHullShaderLoadDef::program GfxHullShaderLoadDef::programSize;
+
+// MaterialHullShaderProgram
+set condition MaterialHullShaderProgram::hs never;

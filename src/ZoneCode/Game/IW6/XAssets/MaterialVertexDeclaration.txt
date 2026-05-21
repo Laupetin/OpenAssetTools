@@ -3,6 +3,7 @@
 // =========================================
 use MaterialVertexDeclaration;
 set block XFILE_BLOCK_TEMP;
+set string name;
 
 // MaterialVertexStreamRouting
 set condition MaterialVertexStreamRouting::decl never;

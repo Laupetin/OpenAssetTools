@@ -8,11 +8,8 @@ set reusable techniques;
 
 // MaterialTechnique
 use MaterialTechnique;
-set string name;
-set arraysize passArray passCount;
-reorder:
-    passArray
-    name;
+set string hdr::name;
+set arraysize passArray hdr::passCount;
 
 // MaterialPass
 use MaterialPass;

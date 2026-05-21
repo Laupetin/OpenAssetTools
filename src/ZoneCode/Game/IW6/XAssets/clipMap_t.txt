@@ -2,7 +2,7 @@
 // clipMap_t
 // =========================================
 use clipMap_t;
-set block XFILE_BLOCK_TEMP;
+set block XFILE_BLOCK_VIRTUAL;
 set string name;
 set block pInfo XFILE_BLOCK_TEMP;
 set reusable pInfo;
@@ -81,8 +81,8 @@ use cmodel_t;
 set block info XFILE_BLOCK_TEMP;
 set reusable info;
 
-// cbrushWrapper_t
-use cbrushWrapper_t;
+// cbrush_t
+use cbrush_t;
 set reusable sides;
 set reusable baseAdjacentSide;
 
@@ -104,5 +104,3 @@ set scriptstring ScriptableInstance::targetname;
 set reusable ScriptableInstance::currentModel;
 set reusable ScriptableInstance::partStates;
 set count ScriptableInstance::partStates def::partCount;
-set string ScriptableInstance::eventStreamBuf;
-set string ScriptableInstance::eventConstantsBuf;

@@ -15,10 +15,8 @@ set reusable underBarrels;
 set count underBarrels 3;
 set reusable others;
 set count others 4;
-set string szXAnims;
-set assetref szXAnims AssetXAnim;
 set reusable szXAnims;
-set count szXAnims WEAP_ANIM_COUNT;
+set count szXAnims NUM_WEAP_ANIMS;
 set reusable animOverrides;
 set count animOverrides numAnimOverrides;
 set reusable soundOverrides;
@@ -30,18 +28,19 @@ set count reloadOverrides numReloadStateTimerOverrides;
 set reusable notetrackOverrides;
 set count notetrackOverrides numNotetrackOverrides;
 set string szAltWeaponName;
-set reusable aiVsAiAccuracyGraphKnots;
-set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
-set reusable aiVsPlayerAccuracyGraphKnots;
-set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set assetref killIcon::info::name AssetMaterial;
+set assetref dpadIcon::info::name AssetMaterial;
+set reusable accuracyGraphKnots;
+set count accuracyGraphKnots[0] accuracyGraphKnotCount[0];
+set count accuracyGraphKnots[1] accuracyGraphKnotCount[1];
 set string szAdsrBaseSetting;
 
 // AnimOverrideEntry
 use AnimOverrideEntry;
-set string overrideAnim;
-set string altmodeAnim;
-set assetref overrideAnim AssetXAnim;
-set assetref altmodeAnim AssetXAnim;
+set string overrideAnim::name;
+set string altmodeAnim::name;
+set assetref overrideAnim::name AssetXAnim;
+set assetref altmodeAnim::name AssetXAnim;
 
 // NoteTrackToSoundEntry
 use NoteTrackToSoundEntry;
@@ -52,20 +51,26 @@ set reusable notetrackSoundMapValues;
 set scriptstring notetrackSoundMapValues;
 set count notetrackSoundMapValues 24;
 
-
 // WeaponDef
 use WeaponDef;
 set string szOverlayName;
 set reusable gunXModel;
 set count gunXModel 16;
+set assetref handXModel::name AssetXModel;
+set assetref camoWorldModel::name AssetXModel;
+set assetref camoViewModel::name AssetXModel;
+set assetref camoWorldModelMaterialOverride::info::name AssetMaterial;
+set assetref camoViewModelMaterialOverride::info::name AssetMaterial;
+set reusable camoMaterialTarget;
+set count camoMaterialTarget 16;
 set reusable szXAnimsRightHanded;
-set string szXAnimsRightHanded;
-set assetref szXAnimsRightHanded AssetXAnim;
-set count szXAnimsRightHanded WEAP_ANIM_COUNT;
+set string szXAnimsRightHanded::name;
+set assetref szXAnimsRightHanded::name AssetXAnim;
+set count szXAnimsRightHanded NUM_WEAP_ANIMS;
 set reusable szXAnimsLeftHanded;
-set string szXAnimsLeftHanded;
-set assetref szXAnimsLeftHanded AssetXAnim;
-set count szXAnimsLeftHanded WEAP_ANIM_COUNT;
+set string szXAnimsLeftHanded::name;
+set assetref szXAnimsLeftHanded::name AssetXAnim;
+set count szXAnimsLeftHanded NUM_WEAP_ANIMS;
 set string szModeName;
 set reusable notetrackSoundMapKeys;
 set scriptstring notetrackSoundMapKeys;
@@ -100,12 +105,11 @@ set reusable parallelBounce;
 set count parallelBounce SURF_TYPE_COUNT;
 set reusable perpendicularBounce;
 set count perpendicularBounce SURF_TYPE_COUNT;
-set string aiVsAiAccuracyGraphName;
-set string aiVsPlayerAccuracyGraphName;
-set reusable originalAiVsAiAccuracyGraphKnots;
-set count originalAiVsAiAccuracyGraphKnots WeaponCompleteDef::aiVsAiAccuracyGraphKnotCount;
-set reusable originalAiVsPlayerAccuracyGraphKnots;
-set count originalAiVsPlayerAccuracyGraphKnots WeaponCompleteDef::aiVsPlayerAccuracyGraphKnotCount;
+set string accuracyGraphName1;
+set string accuracyGraphName2;
+set reusable originalAccuracyGraphKnots;
+set count originalAccuracyGraphKnots[0] originalAccuracyGraphKnotCount[0];
+set count originalAccuracyGraphKnots[1] originalAccuracyGraphKnotCount[1];
 set string szUseHintString;
 set string dropHintString;
 set string szScript;
@@ -113,12 +117,15 @@ set reusable locationDamageMultipliers;
 set count locationDamageMultipliers HITLOC_COUNT;
 set string fireRumble;
 set string meleeImpactRumble;
+
+set assetref turretOverheatSound::aliasName AssetSound;
+set assetref turretOverheatEffect::name AssetFx;
 set string turretBarrelSpinRumble;
 set scriptstring knifeAttachTagOverride;
 set scriptstring stowTag;
+set assetref stowOffsetModel::name AssetXModel;
 reorder:
     ...
-    aiVsAiAccuracyGraphName
-    originalAiVsAiAccuracyGraphKnots
-    aiVsPlayerAccuracyGraphName
-    originalAiVsPlayerAccuracyGraphKnots;
+    accuracyGraphName1
+    originalAccuracyGraphKnots
+    accuracyGraphName2;

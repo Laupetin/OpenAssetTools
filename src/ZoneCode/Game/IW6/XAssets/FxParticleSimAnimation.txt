@@ -1,0 +1,13 @@
+// =========================================
+// FxParticleSimAnimation
+// =========================================
+use FxParticleSimAnimation;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set reusable material;
+set reusable particleData;
+set count particleData header::particleDataCount;
+set reusable frames;
+set count frames header::frameCount;
+set reusable colorTable;
+set count colorTable header::colorTableSize;

@@ -11,8 +11,10 @@ reorder:
 
 // GfxTexture
 use GfxTexture;
-set condition basemap GfxImage::mapType == MAPTYPE_2D;
-set condition linemap GfxImage::mapType == MAPTYPE_1D;
-set condition map GfxImage::mapType == MAPTYPE_NONE;
-set condition volmap GfxImage::mapType == MAPTYPE_3D;
-set condition cubemap GfxImage::mapType == MAPTYPE_CUBE;
+set condition shaderView never;
+set condition shaderViewAlternate never;
+set condition GfxTextureMapUnion::linemap GfxImage::mapType == MAPTYPE_1D;
+set condition GfxTextureMapUnion::map GfxImage::mapType == MAPTYPE_NONE;
+set condition GfxTextureMapUnion::volmap GfxImage::mapType == MAPTYPE_3D;
+set condition GfxTextureMapUnion::cubemap GfxImage::mapType == MAPTYPE_CUBE;
+set condition GfxTextureMapUnion::loadDef GfxImage::mapType == MAPTYPE_2D;

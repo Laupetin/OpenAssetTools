@@ -1,7 +1,6 @@
 // =========================================
-// PhysPreset
+// SndDriverGlobals
 // =========================================
-use PhysPreset;
+use SndDriverGlobals;
 set block XFILE_BLOCK_VIRTUAL;
 set string name;
-set string sndAliasPrefix;

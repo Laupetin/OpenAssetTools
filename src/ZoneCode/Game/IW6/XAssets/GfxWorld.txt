@@ -42,10 +42,7 @@ set block sceneEntCellBits XFILE_BLOCK_RUNTIME;
 set count sceneEntCellBits cellCount * 0x200;
 
 // GfxCellTree
-// Extremly dirty hack caused by IW doing an extremly dirty hack in their code as well.
-// No idea why they decided to separate the count from the pointer that uses the count.
-// Thank you Treyarch for doing better in your games at least.
-set count GfxCellTree::aabbTree GfxWorld::aabbTreeCounts[GfxCellTree - GfxWorld::aabbTrees];
+set action GfxCellTree::aabbTree ReallocGfxAabbTree(GfxAabbTree, GfxWorld);
 
 // GfxAabbTree
 use GfxAabbTree;
@@ -115,6 +112,10 @@ set block surfaceMaterials XFILE_BLOCK_RUNTIME;
 set count surfaceMaterials GfxWorld::surfaceCount;
 set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME;
 set count surfaceCastsSunShadow surfaceVisDataCount;
+set block constantBuffersLit XFILE_BLOCK_RUNTIME;
+set count constantBuffersLit smodelCount;
+set block constantBuffersAmbient XFILE_BLOCK_RUNTIME;
+set count constantBuffersAmbient smodelCount;
 
 // GfxWorldDpvsDynamic
 use GfxWorldDpvsDynamic;

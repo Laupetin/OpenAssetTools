@@ -1,0 +1,6 @@
+// =========================================
+// ReverbCurve
+// =========================================
+use ReverbCurve;
+set block XFILE_BLOCK_TEMP;
+set string curve::filename;

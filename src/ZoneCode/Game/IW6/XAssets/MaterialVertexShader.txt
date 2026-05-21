@@ -5,9 +5,10 @@ use MaterialVertexShader;
 set block XFILE_BLOCK_TEMP;
 set string name;
 
-// GfxVertexShaderLoadDef
-set count GfxVertexShaderLoadDef::cachedPart cachedPartSize;
-set count GfxVertexShaderLoadDef::physicalPart physicalPartSize;
-
 // MaterialVertexShaderProgram
-set condition MaterialVertexShaderProgram::vs never;
+use MaterialVertexShaderProgram;
+set condition vs never;
+
+// GfxVertexShaderLoadDef
+use GfxVertexShaderLoadDef;
+set count program programSize;

@@ -1,0 +1,6 @@
+// =========================================
+// Colorization
+// =========================================
+use Colorization;
+set block XFILE_BLOCK_TEMP;
+set string name;

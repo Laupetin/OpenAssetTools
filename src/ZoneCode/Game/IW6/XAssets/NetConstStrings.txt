@@ -2,7 +2,7 @@
 // NetConstStrings
 // =========================================
 use NetConstStrings;
-set block XFILE_BLOCK_TEMP;
+set block XFILE_BLOCK_VIRTUAL;
 set string name;
 set reusable stringList;
 set count stringList entryCount;

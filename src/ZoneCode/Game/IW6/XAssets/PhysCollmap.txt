@@ -2,23 +2,21 @@
 // PhysCollmap
 // =========================================
 use PhysCollmap;
-set block XFILE_BLOCK_TEMP;
+set block XFILE_BLOCK_VIRTUAL;
 set string name;
 set count geoms count;
-
-// PhysGeomInfo
-use PhysGeomInfo;
-set count brushWrapper 1;
 
 // BrushWrapper
 use BrushWrapper;
 set reusable planes;
 set count planes brush::numsides;
 
-// cbrushWrapper_t
-use cbrushWrapper_t;
+// cbrush_t
+use cbrush_t;
+set reusable sides;
 set count sides numsides;
-set count baseAdjacentSide BrushWrapper::totalEdgeCount;
+set reusable baseAdjacentSide;
+set count baseAdjacentSide 1;
 
 // cbrushside_t
 use cbrushside_t;

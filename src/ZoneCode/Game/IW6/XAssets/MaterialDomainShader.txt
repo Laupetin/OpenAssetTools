@@ -1,0 +1,12 @@
+// =========================================
+// MaterialDomainShader
+// =========================================
+use MaterialDomainShader;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// GfxDomainShaderLoadDef
+set count GfxDomainShaderLoadDef::program GfxDomainShaderLoadDef::programSize;
+
+// MaterialDomainShaderProgram
+set condition MaterialDomainShaderProgram::ds never;

@@ -16,3 +16,15 @@ set count reticleViewModels 8;
 use AttRumbles;
 set string fireRumble;
 set string meleeImpactRumble;
+
+// AttProjectile
+use AttProjectile;
+set string projectileName;
+set assetref projectileModel::name AssetXModel;
+set assetref projExplosionEffect::name AssetFx;
+set assetref projExplosionSound::aliasName AssetSound;
+set assetref projDudEffect::name AssetFx;
+set assetref projDudSound::aliasName AssetSound;
+set assetref projTrailEffect::name AssetFx;
+set assetref projIgnitionEffect::name AssetFx;
+set assetref projIgnitionSound::aliasName AssetSound;
