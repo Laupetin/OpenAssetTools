@@ -662,7 +662,7 @@ namespace xmodel
             options.maxs[leafIndex][2] = bounds.m_maxs.z();
         }
 
-        const auto nodeCount = aabbTreeBuilder.BuildAabbTree(&options);
+        const auto nodeCount = options.itemCount > 0 ? aabbTreeBuilder.BuildAabbTree(&options) : 0;
 
         tree->nodes.resize(nodeCount);
         for (auto nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
