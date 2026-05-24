@@ -576,7 +576,7 @@ namespace
                     node.childCount |= XSURFACE_COLLISION_NODE_HAS_LEAFS;
             }
             
-            tree->leafCount = commonTree.leafs.size();
+            tree->leafCount = static_cast<decltype(tree->leafCount)>(commonTree.leafs.size());
             tree->leafs = m_memory.Alloc<XSurfaceCollisionLeaf>(tree->leafCount);
             for (auto leafIndex = 0u; leafIndex < tree->leafCount; leafIndex++)
             {
