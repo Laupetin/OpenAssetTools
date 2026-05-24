@@ -492,8 +492,8 @@ namespace IW5
 
     struct XSurfaceCollisionTree
     {
-        float trans[3];
-        float scale[3];
+        vec3_t trans;
+        vec3_t scale;
         unsigned int nodeCount;
         XSurfaceCollisionNode* nodes;
         unsigned int leafCount;
@@ -515,6 +515,11 @@ namespace IW5
     };
 
     typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
+
+    enum XSurfaceFlag
+    {
+        XSURFACE_FLAG_DEFORMED = 0x40
+    };
 
     struct XSurface
     {
