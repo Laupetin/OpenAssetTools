@@ -1,11 +1,14 @@
-name: check-formatting
+name: linting
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
 jobs:
-  check-formatting:
-    name: Check formatting
+  check-clang-format-formatting:
+    name: Check clang-format formatting
     runs-on: ubuntu-latest
     container: ubuntu:24.04
     defaults:
@@ -19,8 +22,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          submodules: recursive
 
       - name: Configure clang
         uses: ./.github/actions/configure-clang
@@ -30,3 +31,25 @@ jobs:
       - name: Test formatting for all files
         working-directory: ${{ github.workspace }}
         run: ./scripts/check-format.sh
+
+  modman-linting:
+    name: Lint ModMan UI
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install node
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+
+      - name: Lint UI
+        working-directory: ${{ github.workspace }}
+        run: |
+          npm install
+          npm run lint
