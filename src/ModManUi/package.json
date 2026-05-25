@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
+    "build": "run-p build:type-check \"build:vite {@}\" --",
+    "build:vite": "vite build",
+    "build:type-check": "vue-tsc --build",
+    "lint": "run-p lint:eslint lint:prettier",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check .",
     "format": "prettier --write ."
   },
   "dependencies": {
