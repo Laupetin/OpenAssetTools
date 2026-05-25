@@ -1,5 +1,5 @@
 {
-  "name": "openassettools",
+  "name": "@openassettools/modman",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write **/*.{js,ts,vue,html,json,yml,yaml,md}"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@fontsource/inter": "5.2.8",
@@ -42,11 +42,5 @@
     "vite-plugin-vue-devtools": "8.1.1",
     "vitest": "4.1.4",
     "vue-tsc": "3.2.6"
-  },
-  "enginesComment": {
-    "npm": "Required for min-release-age setting"
-  },
-  "engines": {
-    "npm": ">=11.10.0"
   }
 }
