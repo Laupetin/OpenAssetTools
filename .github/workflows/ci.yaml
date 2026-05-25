@@ -67,9 +67,9 @@ jobs:
       - name: Build UI
         working-directory: ${{ github.workspace }}
         run: |
-          npm --prefix src/ModManUi install
-          npm --prefix src/ModManUi run lint
-          npm --prefix src/ModManUi run build
+          npm install
+          npm run lint
+          npm run build
 
       - name: Build
         working-directory: ${{ github.workspace }}
@@ -126,9 +126,9 @@ jobs:
       - name: Build UI
         working-directory: ${{ github.workspace }}
         run: |
-          npm --prefix src/ModManUi install
-          npm --prefix src/ModManUi run lint
-          npm --prefix src/ModManUi run build
+          npm install
+          npm run lint
+          npm run build
 
       - name: Build
         working-directory: ${{ github.workspace }}

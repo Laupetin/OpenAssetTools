@@ -20,13 +20,13 @@ This will require NodeJS to be installed on your machine.
 
 ```shell
 # Download dependencies
-npm --prefix src/ModManUi install
+npm install
 
 # Build frontend
-npm --prefix src/ModManUi run build
+npm run build
 
 # Optional: Dev Server for UI development
-npm --prefix src/ModManUi run dev
+npm run dev
 ```
 
 ## How does it work
@@ -36,6 +36,6 @@ Unlike frameworks like Electron this does not ship a browser engine alongside it
 On Windows, this makes use of [WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2), on Linux it uses [WebKitGTK](https://webkitgtk.org).
 
 This adds the following dependencies:
-* **Windows**: An up-to-date OS with at the very least Windows10. The WebView2 library for development is downloaded by premake.
-* **Linux**: Developing and using ModMan requires the following dependencies to be installed: `gtk4 webkitgtk-6.0`
 
+- **Windows**: An up-to-date OS with at the very least Windows10. The WebView2 library for development is downloaded by premake.
+- **Linux**: Developing and using ModMan requires the following dependencies to be installed: `gtk4 webkitgtk-6.0`

@@ -1,0 +1,21 @@
+{
+  "name": "openassettools",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "src/ModManUi"
+  ],
+  "scripts": {
+    "dev": "npm --workspaces run dev",
+    "build": "npm --workspaces run build",
+    "lint": "npm --workspaces run lint",
+    "format": "npm --workspaces run format"
+  },
+  "enginesComment": {
+    "npm": "Required for min-release-age setting"
+  },
+  "engines": {
+    "npm": ">=11.10.0"
+  }
+}
