@@ -1,5 +1,6 @@
 #include "XAnimDumperIW3.h"
 
+#include "Utils/Alignment.h"
 #include "XAnim/XAnimCommon.h"
 
 #include <array>
@@ -880,17 +881,17 @@ namespace xanim
 
         if (!boneTracks.empty())
         {
-            const auto bitmaskSize = (boneTracks.size() + 7uz) / 8uz;
+            const auto bitmaskSize = utils::Align<size_t>(boneTracks.size(), 8u) / 8u;
             std::vector<uint8_t> flipQuat(bitmaskSize, 0);
             std::vector<uint8_t> simpleQuat(bitmaskSize, 0);
 
-            for (auto i = 0uz; i < boneTracks.size(); i++)
+            for (size_t i = 0u; i < boneTracks.size(); i++)
             {
                 if (encodedBoneQuats[i].flipQuat)
-                    flipQuat[i >> 3u] |= static_cast<uint8_t>(1u << (i & 7u));
+                    flipQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
 
                 if (QuatTypeUsesSimpleMask(boneTracks[i].quat.type))
-                    simpleQuat[i >> 3u] |= static_cast<uint8_t>(1u << (i & 7u));
+                    simpleQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
             }
 
             stream.write(reinterpret_cast<const char*>(flipQuat.data()), static_cast<std::streamsize>(flipQuat.size()));
