@@ -181,7 +181,7 @@ namespace IW3
 
     union XAnimIndices
     {
-        char* _1;
+        unsigned char* _1;
         uint16_t* _2;
         void* data;
     };
@@ -197,7 +197,7 @@ namespace IW3
 
     union XAnimDynamicIndicesTrans
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -224,7 +224,7 @@ namespace IW3
     struct XAnimPartTrans
     {
         uint16_t size;
-        char smallTrans;
+        unsigned char smallTrans;
         XAnimPartTransData u;
     };
 
@@ -235,7 +235,7 @@ namespace IW3
 
     union XAnimDynamicIndicesQuat
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -291,19 +291,19 @@ namespace IW3
         bool bLoop;
         bool bDelta;
         unsigned char boneCount[PART_TYPE_COUNT];
-        char notifyCount;
-        char assetType;
+        unsigned char notifyCount;
+        unsigned char assetType;
         bool isDefault;
         unsigned int randomDataShortCount;
         unsigned int indexCount;
         float framerate;
         float frequency;
         ScriptString* names;
-        char* dataByte;
+        unsigned char* dataByte;
         int16_t* dataShort;
         int* dataInt;
         int16_t* randomDataShort;
-        char* randomDataByte;
+        unsigned char* randomDataByte;
         int* randomDataInt;
         XAnimIndices indices;
         XAnimNotifyInfo* notify;

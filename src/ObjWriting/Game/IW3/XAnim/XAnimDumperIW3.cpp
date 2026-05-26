@@ -340,10 +340,10 @@ namespace
             bones[i].name = ResolveScriptString(asset, parts.names[i]);
 
         auto cursor = FlatDataCursor{
-            .dataByte = reinterpret_cast<const uint8_t*>(parts.dataByte),
+            .dataByte = parts.dataByte,
             .dataShort = parts.dataShort,
             .dataInt = parts.dataInt,
-            .randomDataByte = reinterpret_cast<const uint8_t*>(parts.randomDataByte),
+            .randomDataByte = parts.randomDataByte,
             .randomDataShort = parts.randomDataShort,
             .indices = parts.indices._2,
         };
@@ -453,10 +453,10 @@ namespace
         for (auto i = 0uz; i < nameCount; i++)
             assert(transAssigned[i]);
 
-        const auto dataByteEnd = AdvancePtr(reinterpret_cast<const uint8_t*>(parts.dataByte), parts.dataByteCount);
+        const auto dataByteEnd = AdvancePtr(parts.dataByte, parts.dataByteCount);
         const auto dataShortEnd = AdvancePtr(parts.dataShort, parts.dataShortCount);
         const auto dataIntEnd = AdvancePtr(parts.dataInt, parts.dataIntCount);
-        const auto randomDataByteEnd = AdvancePtr(reinterpret_cast<const uint8_t*>(parts.randomDataByte), parts.randomDataByteCount);
+        const auto randomDataByteEnd = AdvancePtr(parts.randomDataByte, parts.randomDataByteCount);
         const auto randomDataShortEnd = AdvancePtr(parts.randomDataShort, parts.randomDataShortCount);
 
         if (cursor.dataByte != dataByteEnd)
@@ -807,7 +807,7 @@ namespace
     void WriteNotifyTail(std::ostream& stream, const XAssetInfo<XAnimParts>& asset)
     {
         const auto& parts = *asset.Asset();
-        const auto notifyCount = static_cast<size_t>(static_cast<unsigned char>(parts.notifyCount));
+        const auto notifyCount = static_cast<size_t>(parts.notifyCount);
 
         size_t rawNotifyCount = notifyCount;
         if (notifyCount > 0uz)
@@ -864,7 +864,7 @@ namespace xanim
 
         const auto flags = static_cast<uint8_t>((parts->bLoop ? 1u : 0u) | (parts->bDelta ? 2u : 0u));
         const auto boneCount = static_cast<uint16_t>(parts->boneCount[PART_TYPE_ALL]);
-        const auto assetType = static_cast<uint8_t>(static_cast<unsigned char>(parts->assetType));
+        const auto assetType = static_cast<uint8_t>(parts->assetType);
         const auto framerate = static_cast<uint16_t>(std::lround(parts->framerate));
 
         WriteValue(stream, RAW_VERSION);
