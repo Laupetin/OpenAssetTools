@@ -218,7 +218,7 @@ class FxElemDefDumper : AbstractTextDumper
 public:
     explicit FxElemDefDumper(std::ostream& stream);
 
-    void Init() const;
+    void Init(int version = -1) const;
     void WriteComment(const std::string& key) const;
 
     void BeginElement();
@@ -233,15 +233,35 @@ public:
     void WriteEnumEntry(const std::string& entry) const;
 
     void WriteKeyValue(const std::string& key, const std::string& value) const;
-    void WriteFloatArray(const std::string& key, const float* floatArray, unsigned int floatCount) const;
+    void WriteKeyValue(const std::string& key, const char* value) const;
+    void WriteFloatArray(const std::string& key, const float* floatArray, unsigned int floatCount, int precision = 0) const;
     void WriteEnum(const std::string& key, unsigned char val, const char* enumStrings[]) const;
     void WriteFxElemDefVisuals(const fx_elem_def::FxElemDefVisuals& fxElemDefVisuals,
                                unsigned char visualCount,
                                fx_elem_def::FxElemType elemType,
                                const char* elemTypeStrings[]);
     void WriteFxSpawnDef(const fx_elem_def::FxSpawnDef& fxSpawnDef) const;
-    void WriteFxFloatRange(const std::string& key, const fx_elem_def::FxFloatRange& fxFloatRange) const;
+    void WriteFxFloatRange(const std::string& key, const fx_elem_def::FxFloatRange& fxFloatRange, int precision = 0) const;
     void WriteFxIntRange(const std::string& key, const fx_elem_def::FxIntRange& fxIntRange) const;
+
+    void WriteVelGraph(const char* name,
+                       const float* localBase,
+                       const float* localAmp,
+                       const float* localDeltaBase,
+                       const float* localDeltaAmp,
+                       const float* worldBase,
+                       const float* worldAmp,
+                       const float* worldDeltaBase,
+                       const float* worldDeltaAmp,
+                       float scale,
+                       int precision = 0);
+    void WriteAlphaGraph(const char* name, const char baseAlpha, const char ampAlpha, float scale, int precision = 0);
+    void WriteColorGraph(const char* name, const char baseColor[4], const char ampColor[4], float scale, int precision = 0);
+    void WriteScaleGraph(const char* name, float baseScale, float ampScale, float scale, int precision = 0);
+    void WriteSizeGraph(const char* name, const float* baseSize, const float* ampSize, float scale, int precision = 0);
+    void WriteRotGraph(const char* name, float baseRot, float ampRot, float scale, int precision = 0);
+    void WriteSpawnSound(const std::string& key, const char* soundName);
+    void WriteSpawnSound(const std::string& key, const std::string& soundName);
 
     void WriteFloat(const std::string& key, const float& value, int precision = -1) const;
     void WriteInt(const std::string& key, const int& value) const;

@@ -129,7 +129,7 @@ namespace
         fxElemDefDumper.WriteInt("atlasEntryCount", 0);
 
         fxElemDefDumper.WriteFloat("lightingFrac", static_cast<unsigned char>(subAsset->lightingFrac) / 255.0f, 2);
-        fxElemDefDumper.WriteFloatArray("collOffset", subAsset->collMins, 3);
+        fxElemDefDumper.WriteFloatArray("collOffset", subAsset->collBounds.halfSize.v, 3);
         fxElemDefDumper.WriteKeyValue("collRadius", "");
 
         std::string impactName = "";
@@ -152,11 +152,20 @@ namespace
         fxElemDefDumper.WriteFxFloatRange("emitDistVariance", fx_elem_def::FxFloatRange(subAsset->emitDistVariance.base, subAsset->emitDistVariance.amplitude));
 
         int splitDist = 0, scrollTimeMsec = 0, repeatDist = 0;
-        if (subAsset->trailDef)
+        if (subAsset->elemType == FX_ELEM_TYPE_TRAIL && subAsset->extended.trailDef)
         {
-            splitDist = subAsset->trailDef->splitDist;
-            scrollTimeMsec = subAsset->trailDef->scrollTimeMsec;
-            repeatDist = subAsset->trailDef->repeatDist;
+            splitDist = subAsset->extended.trailDef->invSplitDist;
+            scrollTimeMsec = subAsset->extended.trailDef->scrollTimeMsec;
+            repeatDist = subAsset->extended.trailDef->repeatDist;
+        }
+        else if (subAsset->elemType == FX_ELEM_TYPE_SPARK_FOUNTAIN && subAsset->extended.sparkFountainDef)
+        {
+            // splitDist = subAsset->extended.sparkFountainDef->splitDist;
+            // scrollTimeMsec = subAsset->extended.sparkFountainDef->scrollTimeMsec;
+            // repeatDist = subAsset->extended.sparkFountainDef->repeatDist;
+        }
+        else if (subAsset->extended.unknownDef)
+        {
         }
         fxElemDefDumper.WriteInt("trailSplitDist", splitDist);
         fxElemDefDumper.WriteInt("trailScrollTime", scrollTimeMsec);
@@ -164,39 +173,47 @@ namespace
 
         fxElemDefDumper.BeginVisuals(fx_elem_type_names[subAsset->elemType]);
 
-        if (subAsset->elemType == FX_ELEM_TYPE_DECAL)
+        for (int i = 0; i < subAsset->visualCount; i++)
         {
-            // Load FxElemMarkVisualsArray
-        }
-        else if (subAsset->visualCount < 1u)
-        {
-            // Load FxElemVisualsArray
-        }
-        else if (subAsset->elemType == FX_ELEM_TYPE_MODEL)
-        {
-            // Load xmodel
-        }
-        else if (subAsset->elemType == FX_ELEM_TYPE_SOUND)
-        {
-            // Load sound name
-        }
-        else if (subAsset->elemType == FX_ELEM_TYPE_RUNNER)
-        {
-            // Load FxEffectDef + name?
-        }
-        else if (subAsset->elemType != FX_ELEM_TYPE_OMNI_LIGHT && subAsset->elemType != FX_ELEM_TYPE_SPOT_LIGHT)
-        {
-            // Load material
-            auto* material = subAsset->visuals.instance.material;
-            if (material && material->info.name)
+            FxElemMarkVisuals* markVisuals = subAsset->visuals.markArray;
+            if (subAsset->elemType == FX_ELEM_TYPE_DECAL && markVisuals)
             {
-                if (material->info.name[0] == ',')
+                for (int j = 0; j < 2; j++)
                 {
-                    fxElemDefDumper.WriteVisualEntry(material->info.name + 1);
+                    if (markVisuals[i].materials[j])
+                    {
+                        fxElemDefDumper.WriteVisualEntry(markVisuals[i].materials[j]->info.name);
+                    }
                 }
-                else
+            }
+            else if (subAsset->elemType == FX_ELEM_TYPE_MODEL && subAsset->visuals.instance.model)
+            {
+                // Load xmodel
+                fxElemDefDumper.WriteVisualEntry(subAsset->visuals.instance.model->name);
+            }
+            else if (subAsset->elemType == FX_ELEM_TYPE_SOUND && subAsset->visuals.instance.soundName)
+            {
+                // Load sound name
+                fxElemDefDumper.WriteVisualEntry(subAsset->visuals.instance.soundName);
+            }
+            else if (subAsset->elemType == FX_ELEM_TYPE_RUNNER)
+            {
+                // Load FxEffectDef + name?
+            }
+            else if (subAsset->elemType != FX_ELEM_TYPE_OMNI_LIGHT && subAsset->elemType != FX_ELEM_TYPE_SPOT_LIGHT)
+            {
+                // Load material
+                auto* material = subAsset->visuals.instance.material;
+                if (material && material->info.name)
                 {
-                    fxElemDefDumper.WriteVisualEntry(material->info.name);
+                    if (material->info.name[0] == ',')
+                    {
+                        fxElemDefDumper.WriteVisualEntry(material->info.name + 1);
+                    }
+                    else
+                    {
+                        fxElemDefDumper.WriteVisualEntry(material->info.name);
+                    }
                 }
             }
         }

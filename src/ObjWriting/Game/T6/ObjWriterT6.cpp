@@ -16,6 +16,7 @@
 #include "Slug/SlugDumperT6.h"
 #include "Sound/SndBankDumperT6.h"
 #include "Sound/SndDriverGlobalsDumperT6.h"
+#include "FxEffectDef/FxEffectDefDumperT6.h"
 #include "StringTable/StringTableDumperT6.h"
 #include "Tracer/TracerDumperT6.h"
 #include "Vehicle/VehicleDumperT6.h"
@@ -62,7 +63,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<attachment_unique::DumperT6>());
     RegisterAssetDumper(std::make_unique<camo::JsonDumperT6>());
     RegisterAssetDumper(std::make_unique<sound::SndDriverGlobalsDumperT6>());
-    // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
+    RegisterAssetDumper(std::make_unique<fx_effect_def::DumperT6>());
     // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
     RegisterAssetDumper(std::make_unique<raw_file::DumperT6>());
     RegisterAssetDumper(std::make_unique<string_table::DumperT6>());

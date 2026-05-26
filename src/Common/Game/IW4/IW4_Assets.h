@@ -2420,7 +2420,7 @@ namespace IW4
         menuDef_t** menus;
     };
 
-    enum FxElemType
+    enum FxElemType : unsigned __int8
     {
         FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
         FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,

@@ -220,7 +220,7 @@ namespace fx_effect_def
             return;
 
         FxElemDefDumper fxElemDefDumper(*assetFile);
-        fxElemDefDumper.Init();
+        fxElemDefDumper.Init(1);
 
         size_t defCount = fxEffectDef->elemDefCountEmission + fxEffectDef->elemDefCountLooping + fxEffectDef->elemDefCountOneShot;
         for (unsigned int i = 0; i < defCount; i++)
