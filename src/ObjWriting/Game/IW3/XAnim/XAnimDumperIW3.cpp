@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <format>
 #include <limits>
 #include <ostream>
 #include <stdexcept>
@@ -148,8 +149,8 @@ namespace
     [[nodiscard]] std::array<float, 3> ReadFloat3(const int*& dataInt)
     {
         std::array<float, 3> result{};
-        for (auto i = 0uz; i < result.size(); i++)
-            result[i] = IntBitsToFloat(*dataInt++);
+        for (float& i : result)
+            i = IntBitsToFloat(*dataInt++);
         return result;
     }
 
@@ -323,6 +324,11 @@ namespace
         return EncodeQuatFrames(delta.quat.values.data(), frameCount, 2uz, false);
     }
 
+    [[noreturn]] void ThrowReconstructionError(const XAssetInfo<XAnimParts>& asset, const char* field)
+    {
+        throw std::runtime_error(std::format("IW3 xanim raw reconstruction cursor mismatch for asset \"{}\" in {}", asset.m_name, field));
+    }
+
     [[nodiscard]] std::vector<BoneTrack> ReconstructBoneTracks(const XAssetInfo<XAnimParts>& asset)
     {
         const auto& parts = *asset.Asset();
@@ -334,16 +340,12 @@ namespace
             bones[i].name = ResolveScriptString(asset, parts.names[i]);
 
         auto cursor = FlatDataCursor{
-            reinterpret_cast<const uint8_t*>(parts.dataByte),
-            parts.dataShort,
-            parts.dataInt,
-            reinterpret_cast<const uint8_t*>(parts.randomDataByte),
-            parts.randomDataShort,
-            parts.indices._2,
-        };
-        const auto failReconstruction = [&asset](const char* field)
-        {
-            throw std::runtime_error("IW3 xanim raw reconstruction cursor mismatch for asset \"" + asset.m_name + "\" in " + field);
+            .dataByte = reinterpret_cast<const uint8_t*>(parts.dataByte),
+            .dataShort = parts.dataShort,
+            .dataInt = parts.dataInt,
+            .randomDataByte = reinterpret_cast<const uint8_t*>(parts.randomDataByte),
+            .randomDataShort = parts.randomDataShort,
+            .indices = parts.indices._2,
         };
 
         size_t boneIndex = 0;
@@ -458,21 +460,21 @@ namespace
         const auto randomDataShortEnd = AdvancePtr(parts.randomDataShort, parts.randomDataShortCount);
 
         if (cursor.dataByte != dataByteEnd)
-            failReconstruction("dataByte");
+            ThrowReconstructionError(asset, "dataByte");
         if (cursor.dataShort != dataShortEnd)
-            failReconstruction("dataShort");
+            ThrowReconstructionError(asset, "dataShort");
         if (cursor.dataInt != dataIntEnd)
-            failReconstruction("dataInt");
+            ThrowReconstructionError(asset, "dataInt");
         if (cursor.randomDataByte != randomDataByteEnd)
-            failReconstruction("randomDataByte");
+            ThrowReconstructionError(asset, "randomDataByte");
         if (cursor.randomDataShort != randomDataShortEnd)
-            failReconstruction("randomDataShort");
+            ThrowReconstructionError(asset, "randomDataShort");
 
         if (!useByteIndices)
         {
             const auto indicesEnd = AdvancePtr(parts.indices._2, parts.indexCount);
             if (cursor.indices != indicesEnd)
-                failReconstruction("indices");
+                ThrowReconstructionError(asset, "indices");
         }
         else
         {
@@ -695,8 +697,9 @@ namespace
             WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.indices, numLoopFrames, useByteIndices);
 
-            const auto smallTrans = static_cast<uint8_t>(1);
+            constexpr auto smallTrans = static_cast<uint8_t>(1);
             WriteValue(stream, smallTrans);
+
             for (const auto value : trans.mins)
                 WriteValue(stream, value);
             for (const auto value : trans.size)
@@ -715,8 +718,9 @@ namespace
             WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.indices, numLoopFrames, useByteIndices);
 
-            const auto smallTrans = static_cast<uint8_t>(0);
+            constexpr auto smallTrans = static_cast<uint8_t>(0);
             WriteValue(stream, smallTrans);
+
             for (const auto value : trans.mins)
                 WriteValue(stream, value);
             for (const auto value : trans.size)
@@ -850,6 +854,7 @@ namespace xanim
         const auto useByteIndices = UseByteIndices(*parts);
         const auto boneTracks = ReconstructBoneTracks(asset);
         const auto deltaTrack = ReconstructDeltaTrack(*parts);
+
         std::vector<EncodedQuatTrack> encodedBoneQuats;
         encodedBoneQuats.reserve(boneTracks.size());
         for (const auto& bone : boneTracks)
