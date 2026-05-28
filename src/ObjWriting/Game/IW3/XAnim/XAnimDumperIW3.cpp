@@ -805,7 +805,7 @@ namespace
         }
     }
 
-    void WriteNotifyTail(std::ostream& stream, const XAssetInfo<XAnimParts>& asset)
+    void WriteNoteTracks(std::ostream& stream, const XAssetInfo<XAnimParts>& asset)
     {
         const auto& parts = *asset.Asset();
         const auto notifyCount = static_cast<size_t>(parts.notifyCount);
@@ -907,6 +907,6 @@ namespace xanim
             }
         }
 
-        WriteNotifyTail(stream, asset);
+        WriteNoteTracks(stream, asset);
     }
 } // namespace xanim
