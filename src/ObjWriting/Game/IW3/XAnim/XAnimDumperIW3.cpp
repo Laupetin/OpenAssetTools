@@ -23,36 +23,36 @@ namespace
     // The linker decodes raw trans size[] with these exact float literals.
     // They correspond to 1.0f / 255.0f and 1.0f / 65535.0f, but we keep the
     // decompiled values to preserve binary-stable round trips.
-    constexpr auto SMALL_TRANS_SIZE_SCALE = 0.003921568859368563f;
+    constexpr auto HALF_TRANS_SIZE_SCALE = 0.003921568859368563f;
     constexpr auto FULL_TRANS_SIZE_SCALE = 0.00001525902189314365f;
 
     enum class QuatType : uint8_t
     {
-        IDENTITY = 0,
-        SIMPLE_KEYFRAMED = 1,
-        FULL_KEYFRAMED = 2,
-        SIMPLE_CONSTANT = 3,
-        FULL_CONSTANT = 4,
+        NO_QUAT = 0,
+        HALF_QUAT = 1,
+        FULL_QUAT = 2,
+        HALF_QUAT_NO_SIZE = 3,
+        FULL_QUAT_NO_SIZE = 4,
     };
 
     enum class TransType : uint8_t
     {
-        SIMPLE_KEYFRAMED = 5,
-        FULL_KEYFRAMED = 6,
-        CONSTANT = 7,
-        IDENTITY = 8,
+        SMALL_TRANS = 5,
+        FULL_TRANS = 6,
+        TRANS_NO_SIZE = 7,
+        NO_TRANS = 8,
     };
 
     struct QuatTrack
     {
-        QuatType type = QuatType::IDENTITY;
+        QuatType type = QuatType::NO_QUAT;
         std::vector<uint16_t> indices;
         std::vector<int16_t> values;
     };
 
     struct TransTrack
     {
-        TransType type = TransType::IDENTITY;
+        TransType type = TransType::NO_TRANS;
         std::vector<uint16_t> indices;
         std::array<float, 3> mins{};
         std::array<float, 3> size{};
@@ -211,14 +211,14 @@ namespace
         return true;
     }
 
-    [[nodiscard]] bool QuatTypeUsesSimpleMask(const QuatType type)
+    [[nodiscard]] bool QuatTypeUsesHalf(const QuatType type)
     {
-        return type == QuatType::IDENTITY || type == QuatType::SIMPLE_KEYFRAMED || type == QuatType::SIMPLE_CONSTANT;
+        return type == QuatType::NO_QUAT || type == QuatType::HALF_QUAT || type == QuatType::HALF_QUAT_NO_SIZE;
     }
 
     [[nodiscard]] float EncodeRawTransSize(const float value, const bool smallTrans)
     {
-        const auto scale = smallTrans ? SMALL_TRANS_SIZE_SCALE : FULL_TRANS_SIZE_SCALE;
+        const auto scale = smallTrans ? HALF_TRANS_SIZE_SCALE : FULL_TRANS_SIZE_SCALE;
         return value / scale;
     }
 
@@ -278,25 +278,25 @@ namespace
     {
         switch (quat.type)
         {
-        case QuatType::IDENTITY:
+        case QuatType::NO_QUAT:
             return {};
 
-        case QuatType::SIMPLE_CONSTANT:
+        case QuatType::HALF_QUAT_NO_SIZE:
             assert(quat.values.size() == 2uz);
             return EncodeQuatFrames(quat.values.data(), 1uz, 2uz, true);
 
-        case QuatType::FULL_CONSTANT:
+        case QuatType::FULL_QUAT_NO_SIZE:
             assert(quat.values.size() == 4uz);
             return EncodeQuatFrames(quat.values.data(), 1uz, 4uz, true);
 
-        case QuatType::SIMPLE_KEYFRAMED:
+        case QuatType::HALF_QUAT:
         {
             const auto frameCount = quat.indices.size();
             assert(quat.values.size() == frameCount * 2uz);
             return EncodeQuatFrames(quat.values.data(), frameCount, 2uz, true);
         }
 
-        case QuatType::FULL_KEYFRAMED:
+        case QuatType::FULL_QUAT:
         {
             const auto frameCount = quat.indices.size();
             assert(quat.values.size() == frameCount * 4uz);
@@ -352,12 +352,12 @@ namespace
         size_t boneIndex = 0;
 
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_NO_QUAT]; i++, boneIndex++)
-            bones[boneIndex].quat.type = QuatType::IDENTITY;
+            bones[boneIndex].quat.type = QuatType::NO_QUAT;
 
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_HALF_QUAT]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
-            quat.type = QuatType::SIMPLE_KEYFRAMED;
+            quat.type = QuatType::HALF_QUAT;
             const auto storedSize = static_cast<uint16_t>(*cursor.dataShort++);
             const auto frameCount = static_cast<size_t>(storedSize) + 1uz;
             quat.indices = ReadPackedIndices(cursor, storedSize, useByteIndices);
@@ -368,7 +368,7 @@ namespace
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_FULL_QUAT]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
-            quat.type = QuatType::FULL_KEYFRAMED;
+            quat.type = QuatType::FULL_QUAT;
             const auto storedSize = static_cast<uint16_t>(*cursor.dataShort++);
             const auto frameCount = static_cast<size_t>(storedSize) + 1uz;
             quat.indices = ReadPackedIndices(cursor, storedSize, useByteIndices);
@@ -379,7 +379,7 @@ namespace
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_HALF_QUAT_NO_SIZE]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
-            quat.type = QuatType::SIMPLE_CONSTANT;
+            quat.type = QuatType::HALF_QUAT_NO_SIZE;
             quat.values.assign(cursor.dataShort, cursor.dataShort + 2);
             cursor.dataShort += 2;
         }
@@ -387,7 +387,7 @@ namespace
         for (auto i = 0u; i < parts.boneCount[PART_TYPE_FULL_QUAT_NO_SIZE]; i++, boneIndex++)
         {
             auto& quat = bones[boneIndex].quat;
-            quat.type = QuatType::FULL_CONSTANT;
+            quat.type = QuatType::FULL_QUAT_NO_SIZE;
             quat.values.assign(cursor.dataShort, cursor.dataShort + 4);
             cursor.dataShort += 4;
         }
@@ -401,7 +401,7 @@ namespace
 
             auto& trans = bones[bone].trans;
             transAssigned[bone] = true;
-            trans.type = TransType::SIMPLE_KEYFRAMED;
+            trans.type = TransType::SMALL_TRANS;
 
             const auto storedSize = static_cast<uint16_t>(*cursor.dataShort++);
             const auto frameCount = static_cast<size_t>(storedSize) + 1uz;
@@ -419,7 +419,7 @@ namespace
 
             auto& trans = bones[bone].trans;
             transAssigned[bone] = true;
-            trans.type = TransType::FULL_KEYFRAMED;
+            trans.type = TransType::FULL_TRANS;
 
             const auto storedSize = static_cast<uint16_t>(*cursor.dataShort++);
             const auto frameCount = static_cast<size_t>(storedSize) + 1uz;
@@ -438,7 +438,7 @@ namespace
 
             auto& trans = bones[bone].trans;
             transAssigned[bone] = true;
-            trans.type = TransType::CONSTANT;
+            trans.type = TransType::TRANS_NO_SIZE;
             trans.constant = ReadFloat3(cursor.dataInt);
         }
 
@@ -447,7 +447,7 @@ namespace
             const auto bone = static_cast<size_t>(*cursor.dataByte++);
             assert(bone < nameCount && !transAssigned[bone]);
 
-            bones[bone].trans.type = TransType::IDENTITY;
+            bones[bone].trans.type = TransType::NO_TRANS;
             transAssigned[bone] = true;
         }
 
@@ -618,13 +618,13 @@ namespace
     {
         switch (quat.type)
         {
-        case QuatType::IDENTITY:
+        case QuatType::NO_QUAT:
         {
             WriteValue(stream, static_cast<uint16_t>(0));
             break;
         }
 
-        case QuatType::SIMPLE_CONSTANT:
+        case QuatType::HALF_QUAT_NO_SIZE:
         {
             assert(encodedQuat.storedValues.size() == 1uz);
             WriteValue(stream, static_cast<uint16_t>(1));
@@ -632,7 +632,7 @@ namespace
             break;
         }
 
-        case QuatType::FULL_CONSTANT:
+        case QuatType::FULL_QUAT_NO_SIZE:
         {
             assert(encodedQuat.storedValues.size() == 3uz);
             WriteValue(stream, static_cast<uint16_t>(1));
@@ -641,7 +641,7 @@ namespace
             break;
         }
 
-        case QuatType::SIMPLE_KEYFRAMED:
+        case QuatType::HALF_QUAT:
         {
             const auto frameCount = quat.indices.size();
             assert(frameCount > 0uz);
@@ -655,7 +655,7 @@ namespace
             break;
         }
 
-        case QuatType::FULL_KEYFRAMED:
+        case QuatType::FULL_QUAT:
         {
             const auto frameCount = quat.indices.size();
             assert(frameCount > 0uz);
@@ -675,13 +675,13 @@ namespace
     {
         switch (trans.type)
         {
-        case TransType::IDENTITY:
+        case TransType::NO_TRANS:
         {
             WriteValue(stream, static_cast<uint16_t>(0));
             break;
         }
 
-        case TransType::CONSTANT:
+        case TransType::TRANS_NO_SIZE:
         {
             WriteValue(stream, static_cast<uint16_t>(1));
             for (const auto value : trans.constant)
@@ -689,7 +689,7 @@ namespace
             break;
         }
 
-        case TransType::SIMPLE_KEYFRAMED:
+        case TransType::SMALL_TRANS:
         {
             const auto frameCount = trans.indices.size();
             assert(frameCount > 0uz);
@@ -710,7 +710,7 @@ namespace
             break;
         }
 
-        case TransType::FULL_KEYFRAMED:
+        case TransType::FULL_TRANS:
         {
             const auto frameCount = trans.indices.size();
             assert(frameCount > 0uz);
@@ -883,19 +883,19 @@ namespace xanim
         {
             const auto bitmaskSize = utils::Align<size_t>(boneTracks.size(), 8u) / 8u;
             std::vector<uint8_t> flipQuat(bitmaskSize, 0);
-            std::vector<uint8_t> simpleQuat(bitmaskSize, 0);
+            std::vector<uint8_t> halfQuat(bitmaskSize, 0);
 
             for (size_t i = 0u; i < boneTracks.size(); i++)
             {
                 if (encodedBoneQuats[i].flipQuat)
                     flipQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
 
-                if (QuatTypeUsesSimpleMask(boneTracks[i].quat.type))
-                    simpleQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
+                if (QuatTypeUsesHalf(boneTracks[i].quat.type))
+                    halfQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
             }
 
             stream.write(reinterpret_cast<const char*>(flipQuat.data()), static_cast<std::streamsize>(flipQuat.size()));
-            stream.write(reinterpret_cast<const char*>(simpleQuat.data()), static_cast<std::streamsize>(simpleQuat.size()));
+            stream.write(reinterpret_cast<const char*>(halfQuat.data()), static_cast<std::streamsize>(halfQuat.size()));
 
             for (const auto& bone : boneTracks)
                 WriteCString(stream, bone.name);
