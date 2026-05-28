@@ -186,7 +186,11 @@ namespace
                 result[i] = cursor.indices[i];
 
             cursor.indices += count;
-            cursor.dataShort += ((count - 2uz) >> 8u) + 2uz;
+
+            // The game inserts checkpoint values in dataShort
+            // Those checkpoint values are copied from positions in the full index list: the first entry, then every 256th entry, and always the final entry.
+            // The final entry is included even when it does not land exactly on a 256-entry boundary.
+            cursor.dataShort += ((count - 2uz) / 256u) + 2uz;
             return result;
         }
 
@@ -339,6 +343,9 @@ namespace
         std::vector<BoneTrack> bones(nameCount);
         for (auto i = 0uz; i < nameCount; i++)
             bones[i].name = ResolveScriptString(asset, parts.names[i]);
+
+        // Root indices should only ever be used when it is !useByteIndices, therefore we should be safe to always use the short version
+        assert(!useByteIndices || parts.indices._1 == nullptr);
 
         auto cursor = FlatDataCursor{
             .dataByte = parts.dataByte,
