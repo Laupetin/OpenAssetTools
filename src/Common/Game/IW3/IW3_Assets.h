@@ -230,6 +230,11 @@ namespace IW3
 
     struct type_align(4) XQuat
     {
+        int16_t value[4];
+    };
+
+    struct type_align(4) XQuat2
+    {
         int16_t value[2];
     };
 
@@ -241,14 +246,14 @@ namespace IW3
 
     struct XAnimDeltaPartQuatDataFrames
     {
-        XQuat* frames;
+        XQuat2* frames;
         XAnimDynamicIndicesQuat indices;
     };
 
     union XAnimDeltaPartQuatData
     {
         XAnimDeltaPartQuatDataFrames frames;
-        XQuat frame0;
+        XQuat2 frame0;
     };
 
     struct XAnimDeltaPartQuat
