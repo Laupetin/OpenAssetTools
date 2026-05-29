@@ -1,6 +1,7 @@
 #include "XAnimDumperIW3.h"
 
 #include "Utils/Alignment.h"
+#include "Utils/StreamUtils.h"
 #include "XAnim/XAnimCommon.h"
 
 #include <array>
@@ -127,16 +128,6 @@ namespace
     [[nodiscard]] bool UseByteIndices(const XAnimParts& parts)
     {
         return parts.numframes < 256;
-    }
-
-    template<typename T> void WriteValue(std::ostream& stream, const T& value)
-    {
-        stream.write(reinterpret_cast<const char*>(&value), sizeof(value));
-    }
-
-    void WriteCString(std::ostream& stream, const std::string& value)
-    {
-        stream.write(value.c_str(), static_cast<std::streamsize>(value.size() + 1));
     }
 
     [[nodiscard]] float IntBitsToFloat(const int value)
@@ -610,13 +601,13 @@ namespace
             {
                 assert(index <= std::numeric_limits<uint8_t>::max());
                 const auto asByte = static_cast<uint8_t>(index);
-                WriteValue(stream, asByte);
+                stream::WriteValue(stream, asByte);
             }
         }
         else
         {
             for (const auto index : indices)
-                WriteValue(stream, index);
+                stream::WriteValue(stream, index);
         }
     }
 
@@ -627,24 +618,24 @@ namespace
         {
         case QuatType::NO_QUAT:
         {
-            WriteValue(stream, static_cast<uint16_t>(0));
+            stream::WriteValue(stream, static_cast<uint16_t>(0));
             break;
         }
 
         case QuatType::HALF_QUAT_NO_SIZE:
         {
             assert(encodedQuat.storedValues.size() == 1uz);
-            WriteValue(stream, static_cast<uint16_t>(1));
-            WriteValue(stream, encodedQuat.storedValues[0]);
+            stream::WriteValue(stream, static_cast<uint16_t>(1));
+            stream::WriteValue(stream, encodedQuat.storedValues[0]);
             break;
         }
 
         case QuatType::FULL_QUAT_NO_SIZE:
         {
             assert(encodedQuat.storedValues.size() == 3uz);
-            WriteValue(stream, static_cast<uint16_t>(1));
+            stream::WriteValue(stream, static_cast<uint16_t>(1));
             for (const auto value : encodedQuat.storedValues)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             break;
         }
 
@@ -655,10 +646,10 @@ namespace
             assert(quat.values.size() == frameCount * 2uz);
             assert(encodedQuat.storedValues.size() == frameCount);
 
-            WriteValue(stream, static_cast<uint16_t>(frameCount));
+            stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, quat.indices, numLoopFrames, useByteIndices);
             for (const auto value : encodedQuat.storedValues)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             break;
         }
 
@@ -669,10 +660,10 @@ namespace
             assert(quat.values.size() == frameCount * 4uz);
             assert(encodedQuat.storedValues.size() == frameCount * 3uz);
 
-            WriteValue(stream, static_cast<uint16_t>(frameCount));
+            stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, quat.indices, numLoopFrames, useByteIndices);
             for (const auto value : encodedQuat.storedValues)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             break;
         }
         }
@@ -684,15 +675,15 @@ namespace
         {
         case TransType::NO_TRANS:
         {
-            WriteValue(stream, static_cast<uint16_t>(0));
+            stream::WriteValue(stream, static_cast<uint16_t>(0));
             break;
         }
 
         case TransType::TRANS_NO_SIZE:
         {
-            WriteValue(stream, static_cast<uint16_t>(1));
+            stream::WriteValue(stream, static_cast<uint16_t>(1));
             for (const auto value : trans.constant)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             break;
         }
 
@@ -702,18 +693,18 @@ namespace
             assert(frameCount > 0uz);
             assert(trans.byteFrames.size() == frameCount * 3uz);
 
-            WriteValue(stream, static_cast<uint16_t>(frameCount));
+            stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.indices, numLoopFrames, useByteIndices);
 
             constexpr auto smallTrans = static_cast<uint8_t>(1);
-            WriteValue(stream, smallTrans);
+            stream::WriteValue(stream, smallTrans);
 
             for (const auto value : trans.mins)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             for (const auto value : trans.size)
-                WriteValue(stream, EncodeRawTransSize(value, true));
+                stream::WriteValue(stream, EncodeRawTransSize(value, true));
 
-            stream.write(reinterpret_cast<const char*>(trans.byteFrames.data()), static_cast<std::streamsize>(trans.byteFrames.size()));
+            stream::Write(stream, trans.byteFrames.data(), trans.byteFrames.size());
             break;
         }
 
@@ -723,19 +714,19 @@ namespace
             assert(frameCount > 0uz);
             assert(trans.shortFrames.size() == frameCount * 3uz);
 
-            WriteValue(stream, static_cast<uint16_t>(frameCount));
+            stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.indices, numLoopFrames, useByteIndices);
 
             constexpr auto smallTrans = static_cast<uint8_t>(0);
-            WriteValue(stream, smallTrans);
+            stream::WriteValue(stream, smallTrans);
 
             for (const auto value : trans.mins)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             for (const auto value : trans.size)
-                WriteValue(stream, EncodeRawTransSize(value, false));
+                stream::WriteValue(stream, EncodeRawTransSize(value, false));
 
             for (const auto value : trans.shortFrames)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             break;
         }
         }
@@ -747,13 +738,13 @@ namespace
 
         if (!delta.hasQuat)
         {
-            WriteValue(stream, static_cast<uint16_t>(0));
+            stream::WriteValue(stream, static_cast<uint16_t>(0));
         }
         else if (!delta.quatKeyframed)
         {
             assert(encodedDeltaQuat.storedValues.size() == 1uz);
-            WriteValue(stream, static_cast<uint16_t>(1));
-            WriteValue(stream, encodedDeltaQuat.storedValues[0]);
+            stream::WriteValue(stream, static_cast<uint16_t>(1));
+            stream::WriteValue(stream, encodedDeltaQuat.storedValues[0]);
         }
         else
         {
@@ -762,53 +753,53 @@ namespace
             assert(delta.quat.values.size() == frameCount * 2uz);
             assert(encodedDeltaQuat.storedValues.size() == frameCount);
 
-            WriteValue(stream, static_cast<uint16_t>(frameCount));
+            stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, delta.quat.indices, numLoopFrames, useByteIndices);
             for (const auto value : encodedDeltaQuat.storedValues)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
         }
 
         if (!delta.trans.exists)
         {
-            WriteValue(stream, static_cast<uint16_t>(0));
+            stream::WriteValue(stream, static_cast<uint16_t>(0));
             return;
         }
 
         if (!delta.trans.keyframed)
         {
-            WriteValue(stream, static_cast<uint16_t>(1));
+            stream::WriteValue(stream, static_cast<uint16_t>(1));
             for (const auto value : delta.trans.constant)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
             return;
         }
 
         const auto frameCount = delta.trans.indices.size();
         assert(frameCount > 0uz);
 
-        WriteValue(stream, static_cast<uint16_t>(frameCount));
+        stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
         WriteIndicesIfNeeded(stream, delta.trans.indices, numLoopFrames, useByteIndices);
 
         const auto smallTrans = static_cast<uint8_t>(delta.trans.smallTrans ? 1 : 0);
-        WriteValue(stream, smallTrans);
+        stream::WriteValue(stream, smallTrans);
         for (const auto value : delta.trans.mins)
-            WriteValue(stream, value);
+            stream::WriteValue(stream, value);
 
         if (delta.trans.smallTrans)
         {
             assert(delta.trans.byteFrames.size() == frameCount * 3uz);
             for (const auto value : delta.trans.size)
-                WriteValue(stream, EncodeRawTransSize(value, true));
+                stream::WriteValue(stream, EncodeRawTransSize(value, true));
 
-            stream.write(reinterpret_cast<const char*>(delta.trans.byteFrames.data()), static_cast<std::streamsize>(delta.trans.byteFrames.size()));
+            stream::Write(stream, delta.trans.byteFrames.data(), delta.trans.byteFrames.size());
         }
         else
         {
             assert(delta.trans.shortFrames.size() == frameCount * 3uz);
             for (const auto value : delta.trans.size)
-                WriteValue(stream, EncodeRawTransSize(value, false));
+                stream::WriteValue(stream, EncodeRawTransSize(value, false));
 
             for (const auto value : delta.trans.shortFrames)
-                WriteValue(stream, value);
+                stream::WriteValue(stream, value);
         }
     }
 
@@ -830,11 +821,11 @@ namespace
 
         assert(rawNotifyCount < 255uz);
         const auto rawNotifyCountByte = static_cast<uint8_t>(rawNotifyCount);
-        WriteValue(stream, rawNotifyCountByte);
+        stream::WriteValue(stream, rawNotifyCountByte);
 
         for (auto i = 0uz; i < rawNotifyCount; i++)
         {
-            WriteCString(stream, ResolveScriptString(asset, parts.notify[i].name));
+            stream::WriteCString(stream, ResolveScriptString(asset, parts.notify[i].name));
 
             uint16_t frame = 0;
             if (parts.numframes > 0)
@@ -844,7 +835,7 @@ namespace
                 frame = static_cast<uint16_t>(scaled);
             }
 
-            WriteValue(stream, frame);
+            stream::WriteValue(stream, frame);
         }
     }
 } // namespace
@@ -875,13 +866,13 @@ namespace xanim
         const auto assetType = static_cast<uint8_t>(parts->assetType);
         const auto framerate = static_cast<uint16_t>(std::lround(parts->framerate));
 
-        WriteValue(stream, RAW_VERSION);
+        stream::WriteValue(stream, RAW_VERSION);
         // Looped raws store numframes directly; non-looped raws store numframes + 1.
-        WriteValue(stream, static_cast<uint16_t>(parts->bLoop ? parts->numframes : numLoopFrames));
-        WriteValue(stream, boneCount);
-        WriteValue(stream, flags);
-        WriteValue(stream, assetType);
-        WriteValue(stream, framerate);
+        stream::WriteValue(stream, static_cast<uint16_t>(parts->bLoop ? parts->numframes : numLoopFrames));
+        stream::WriteValue(stream, boneCount);
+        stream::WriteValue(stream, flags);
+        stream::WriteValue(stream, assetType);
+        stream::WriteValue(stream, framerate);
 
         if (parts->bDelta)
             WriteDeltaTrack(stream, deltaTrack, numLoopFrames, useByteIndices);
@@ -901,11 +892,11 @@ namespace xanim
                     halfQuat[i / 8u] |= static_cast<uint8_t>(1u << (i % 8u));
             }
 
-            stream.write(reinterpret_cast<const char*>(flipQuat.data()), static_cast<std::streamsize>(flipQuat.size()));
-            stream.write(reinterpret_cast<const char*>(halfQuat.data()), static_cast<std::streamsize>(halfQuat.size()));
+            stream::Write(stream, flipQuat.data(), flipQuat.size());
+            stream::Write(stream, halfQuat.data(), halfQuat.size());
 
             for (const auto& bone : boneTracks)
-                WriteCString(stream, bone.name);
+                stream::WriteCString(stream, bone.name);
 
             for (auto i = 0uz; i < boneTracks.size(); i++)
             {
