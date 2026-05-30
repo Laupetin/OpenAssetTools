@@ -11,6 +11,7 @@
 #include <cstring>
 #include <format>
 #include <limits>
+#include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -85,13 +86,13 @@ namespace
 
     struct DeltaQuatTrack
     {
+        bool keyframed = false;
         std::vector<uint16_t> indices;
         std::vector<int16_t> values;
     };
 
     struct DeltaTransTrack
     {
-        bool exists = false;
         bool keyframed = false;
         bool smallTrans = false;
         std::vector<uint16_t> indices;
@@ -104,10 +105,8 @@ namespace
 
     struct DeltaTrack
     {
-        bool hasQuat = false;
-        bool quatKeyframed = false;
-        DeltaQuatTrack quat;
-        DeltaTransTrack trans;
+        std::optional<DeltaQuatTrack> quat;
+        std::optional<DeltaTransTrack> trans;
     };
 
     struct EncodedQuatTrack
@@ -309,19 +308,19 @@ namespace
 
     [[nodiscard]] EncodedQuatTrack EncodeDeltaQuatTrack(const DeltaTrack& delta)
     {
-        if (!delta.hasQuat)
+        if (!delta.quat)
             return {};
 
         // Delta quats are serialized without the per-bone flipQuat mask used by normal bone quats.
-        if (!delta.quatKeyframed)
+        if (!delta.quat->keyframed)
         {
-            assert(delta.quat.values.size() == 2uz);
-            return EncodeQuatFrames(delta.quat.values.data(), 1uz, 2uz, false);
+            assert(delta.quat->values.size() == 2uz);
+            return EncodeQuatFrames(delta.quat->values.data(), 1uz, 2uz, false);
         }
 
-        const auto frameCount = delta.quat.indices.size();
-        assert(delta.quat.values.size() == frameCount * 2uz);
-        return EncodeQuatFrames(delta.quat.values.data(), frameCount, 2uz, false);
+        const auto frameCount = delta.quat->indices.size();
+        assert(delta.quat->values.size() == frameCount * 2uz);
+        return EncodeQuatFrames(delta.quat->values.data(), frameCount, 2uz, false);
     }
 
     [[noreturn]] void ThrowReconstructionError(const XAssetInfo<XAnimParts>& asset, const char* field)
@@ -498,89 +497,89 @@ namespace
 
         if (const auto* quat = parts.deltaPart->quat; quat)
         {
-            result.hasQuat = true;
+            result.quat.emplace();
 
             if (quat->size > 0)
             {
-                result.quatKeyframed = true;
+                result.quat->keyframed = true;
                 const auto frameCount = static_cast<size_t>(quat->size) + 1uz;
-                result.quat.values.reserve(frameCount * 2uz);
-                result.quat.indices.reserve(frameCount);
+                result.quat->values.reserve(frameCount * 2uz);
+                result.quat->indices.reserve(frameCount);
 
                 for (auto i = 0uz; i < frameCount; i++)
                 {
-                    result.quat.values.emplace_back(quat->u.frames.frames[i].value[0]);
-                    result.quat.values.emplace_back(quat->u.frames.frames[i].value[1]);
+                    result.quat->values.emplace_back(quat->u.frames.frames[i].value[0]);
+                    result.quat->values.emplace_back(quat->u.frames.frames[i].value[1]);
                 }
 
                 if (useByteIndices)
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.quat.indices.emplace_back(static_cast<uint8_t>(quat->u.frames.indices._1[i]));
+                        result.quat->indices.emplace_back(static_cast<uint8_t>(quat->u.frames.indices._1[i]));
                 }
                 else
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.quat.indices.emplace_back(quat->u.frames.indices._2[i]);
+                        result.quat->indices.emplace_back(quat->u.frames.indices._2[i]);
                 }
 
-                assert(result.quat.indices.size() <= numLoopFrames);
+                assert(result.quat->indices.size() <= numLoopFrames);
             }
             else
             {
-                result.quat.values.emplace_back(quat->u.frame0.value[0]);
-                result.quat.values.emplace_back(quat->u.frame0.value[1]);
+                result.quat->values.emplace_back(quat->u.frame0.value[0]);
+                result.quat->values.emplace_back(quat->u.frame0.value[1]);
             }
         }
 
         if (const auto* trans = parts.deltaPart->trans; trans)
         {
-            result.trans.exists = true;
+            result.trans.emplace();
 
             if (trans->size > 0)
             {
-                result.trans.keyframed = true;
-                result.trans.smallTrans = trans->smallTrans;
-                result.trans.mins = {trans->u.frames.mins.x, trans->u.frames.mins.y, trans->u.frames.mins.z};
-                result.trans.size = {trans->u.frames.size.x, trans->u.frames.size.y, trans->u.frames.size.z};
+                result.trans->keyframed = true;
+                result.trans->smallTrans = trans->smallTrans;
+                result.trans->mins = {trans->u.frames.mins.x, trans->u.frames.mins.y, trans->u.frames.mins.z};
+                result.trans->size = {trans->u.frames.size.x, trans->u.frames.size.y, trans->u.frames.size.z};
 
                 const auto frameCount = static_cast<size_t>(trans->size) + 1uz;
-                result.trans.indices.reserve(frameCount);
+                result.trans->indices.reserve(frameCount);
                 if (useByteIndices)
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.trans.indices.emplace_back(static_cast<uint8_t>(trans->u.frames.indices._1[i]));
+                        result.trans->indices.emplace_back(static_cast<uint8_t>(trans->u.frames.indices._1[i]));
                 }
                 else
                 {
                     for (auto i = 0uz; i < frameCount; i++)
-                        result.trans.indices.emplace_back(trans->u.frames.indices._2[i]);
+                        result.trans->indices.emplace_back(trans->u.frames.indices._2[i]);
                 }
 
                 if (trans->smallTrans)
                 {
-                    result.trans.byteFrames.reserve(frameCount * 3uz);
+                    result.trans->byteFrames.reserve(frameCount * 3uz);
                     for (auto i = 0uz; i < frameCount; i++)
                     {
-                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][0]);
-                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][1]);
-                        result.trans.byteFrames.emplace_back(trans->u.frames.frames._1[i][2]);
+                        result.trans->byteFrames.emplace_back(trans->u.frames.frames._1[i][0]);
+                        result.trans->byteFrames.emplace_back(trans->u.frames.frames._1[i][1]);
+                        result.trans->byteFrames.emplace_back(trans->u.frames.frames._1[i][2]);
                     }
                 }
                 else
                 {
-                    result.trans.shortFrames.reserve(frameCount * 3uz);
+                    result.trans->shortFrames.reserve(frameCount * 3uz);
                     for (auto i = 0uz; i < frameCount; i++)
                     {
-                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][0]);
-                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][1]);
-                        result.trans.shortFrames.emplace_back(trans->u.frames.frames._2[i][2]);
+                        result.trans->shortFrames.emplace_back(trans->u.frames.frames._2[i][0]);
+                        result.trans->shortFrames.emplace_back(trans->u.frames.frames._2[i][1]);
+                        result.trans->shortFrames.emplace_back(trans->u.frames.frames._2[i][2]);
                     }
                 }
             }
             else
             {
-                result.trans.constant = {trans->u.frame0.v[0], trans->u.frame0.v[1], trans->u.frame0.v[2]};
+                result.trans->constant = {trans->u.frame0.v[0], trans->u.frame0.v[1], trans->u.frame0.v[2]};
             }
         }
 
@@ -740,11 +739,11 @@ namespace
     {
         const auto encodedDeltaQuat = EncodeDeltaQuatTrack(delta);
 
-        if (!delta.hasQuat)
+        if (!delta.quat)
         {
             stream::WriteValue(stream, static_cast<uint16_t>(0));
         }
-        else if (!delta.quatKeyframed)
+        else if (!delta.quat->keyframed)
         {
             assert(encodedDeltaQuat.storedValues.size() == 1uz);
             stream::WriteValue(stream, static_cast<uint16_t>(1));
@@ -752,57 +751,57 @@ namespace
         }
         else
         {
-            const auto frameCount = delta.quat.indices.size();
+            const auto frameCount = delta.quat->indices.size();
             assert(frameCount > 0uz);
-            assert(delta.quat.values.size() == frameCount * 2uz);
+            assert(delta.quat->values.size() == frameCount * 2uz);
             assert(encodedDeltaQuat.storedValues.size() == frameCount);
 
             stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
-            WriteIndicesIfNeeded(stream, delta.quat.indices, numLoopFrames, useByteIndices);
+            WriteIndicesIfNeeded(stream, delta.quat->indices, numLoopFrames, useByteIndices);
             for (const auto value : encodedDeltaQuat.storedValues)
                 stream::WriteValue(stream, value);
         }
 
-        if (!delta.trans.exists)
+        if (!delta.trans)
         {
             stream::WriteValue(stream, static_cast<uint16_t>(0));
             return;
         }
 
-        if (!delta.trans.keyframed)
+        if (!delta.trans->keyframed)
         {
             stream::WriteValue(stream, static_cast<uint16_t>(1));
-            for (const auto value : delta.trans.constant)
+            for (const auto value : delta.trans->constant)
                 stream::WriteValue(stream, value);
             return;
         }
 
-        const auto frameCount = delta.trans.indices.size();
+        const auto frameCount = delta.trans->indices.size();
         assert(frameCount > 0uz);
 
         stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
-        WriteIndicesIfNeeded(stream, delta.trans.indices, numLoopFrames, useByteIndices);
+        WriteIndicesIfNeeded(stream, delta.trans->indices, numLoopFrames, useByteIndices);
 
-        const auto smallTrans = static_cast<uint8_t>(delta.trans.smallTrans ? 1 : 0);
+        const auto smallTrans = static_cast<uint8_t>(delta.trans->smallTrans ? 1 : 0);
         stream::WriteValue(stream, smallTrans);
-        for (const auto value : delta.trans.mins)
+        for (const auto value : delta.trans->mins)
             stream::WriteValue(stream, value);
 
-        if (delta.trans.smallTrans)
+        if (delta.trans->smallTrans)
         {
-            assert(delta.trans.byteFrames.size() == frameCount * 3uz);
-            for (const auto value : delta.trans.size)
+            assert(delta.trans->byteFrames.size() == frameCount * 3uz);
+            for (const auto value : delta.trans->size)
                 stream::WriteValue(stream, EncodeRawTransSize(value, true));
 
-            stream::Write(stream, delta.trans.byteFrames.data(), delta.trans.byteFrames.size());
+            stream::Write(stream, delta.trans->byteFrames.data(), delta.trans->byteFrames.size());
         }
         else
         {
-            assert(delta.trans.shortFrames.size() == frameCount * 3uz);
-            for (const auto value : delta.trans.size)
+            assert(delta.trans->shortFrames.size() == frameCount * 3uz);
+            for (const auto value : delta.trans->size)
                 stream::WriteValue(stream, EncodeRawTransSize(value, false));
 
-            for (const auto value : delta.trans.shortFrames)
+            for (const auto value : delta.trans->shortFrames)
                 stream::WriteValue(stream, value);
         }
     }
