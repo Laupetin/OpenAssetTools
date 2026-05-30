@@ -735,7 +735,7 @@ namespace
         }
     }
 
-    void WriteDeltaTrack(std::ostream& stream, const DeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
+    void WriteDeltaQuatTrack(std::ostream& stream, const DeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
     {
         const auto encodedDeltaQuat = EncodeDeltaQuatTrack(delta);
 
@@ -761,7 +761,10 @@ namespace
             for (const auto value : encodedDeltaQuat.storedValues)
                 stream::WriteValue(stream, value);
         }
+    }
 
+    void WriteDeltaTransTrack(std::ostream& stream, const DeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
+    {
         if (!delta.trans)
         {
             stream::WriteValue(stream, static_cast<uint16_t>(0));
@@ -804,6 +807,12 @@ namespace
             for (const auto value : delta.trans->shortFrames)
                 stream::WriteValue(stream, value);
         }
+    }
+
+    void WriteDeltaTrack(std::ostream& stream, const DeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
+    {
+        WriteDeltaQuatTrack(stream, delta, numLoopFrames, useByteIndices);
+        WriteDeltaTransTrack(stream, delta, numLoopFrames, useByteIndices);
     }
 
     void WriteNoteTracks(std::ostream& stream, const XAssetInfo<XAnimParts>& asset)
