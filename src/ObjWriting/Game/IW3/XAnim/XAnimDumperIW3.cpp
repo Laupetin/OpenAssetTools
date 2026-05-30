@@ -489,6 +489,8 @@ namespace
     [[nodiscard]] DeltaTrack ReconstructDeltaTrack(const XAnimParts& parts)
     {
         DeltaTrack result;
+
+        assert(static_cast<bool>(parts.deltaPart) == static_cast<bool>(parts.bDelta));
         if (!parts.deltaPart)
             return result;
 
