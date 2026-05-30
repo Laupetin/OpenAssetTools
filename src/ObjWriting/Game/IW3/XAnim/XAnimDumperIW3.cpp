@@ -537,8 +537,8 @@ namespace
             {
                 result.trans.keyframed = true;
                 result.trans.smallTrans = trans->smallTrans;
-                result.trans.mins = {trans->u.frames.mins[0], trans->u.frames.mins[1], trans->u.frames.mins[2]};
-                result.trans.size = {trans->u.frames.size[0], trans->u.frames.size[1], trans->u.frames.size[2]};
+                result.trans.mins = {trans->u.frames.mins.x, trans->u.frames.mins.y, trans->u.frames.mins.z};
+                result.trans.size = {trans->u.frames.size.x, trans->u.frames.size.y, trans->u.frames.size.z};
 
                 const auto frameCount = static_cast<size_t>(trans->size) + 1uz;
                 result.trans.indices.reserve(frameCount);

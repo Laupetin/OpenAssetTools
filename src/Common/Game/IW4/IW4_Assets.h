@@ -295,8 +295,8 @@ namespace IW4
 
     struct type_align32(4) XAnimPartTransFrames
     {
-        float mins[3];
-        float size[3];
+        vec3_t mins;
+        vec3_t size;
         XAnimDynamicFrames frames;
         XAnimDynamicIndicesTrans indices;
     };
