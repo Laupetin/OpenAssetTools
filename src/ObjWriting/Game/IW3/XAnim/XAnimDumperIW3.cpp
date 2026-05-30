@@ -20,7 +20,11 @@ using namespace IW3;
 
 namespace
 {
-    constexpr auto RAW_VERSION = static_cast<uint16_t>(17);
+    constexpr uint16_t RAW_VERSION = 17;
+
+    constexpr uint8_t FLAG_LOOPED = 1u;
+    constexpr uint8_t FLAG_DELTA = 2u;
+
     // The linker decodes raw trans size[] with these exact float literals.
     // They correspond to 1.0f / 255.0f and 1.0f / 65535.0f, but we keep the
     // decompiled values to preserve binary-stable round trips.
@@ -861,7 +865,7 @@ namespace xanim
 
         auto& stream = *assetFile;
 
-        const auto flags = static_cast<uint8_t>((parts->bLoop ? 1u : 0u) | (parts->bDelta ? 2u : 0u));
+        const auto flags = static_cast<uint8_t>((parts->bLoop ? FLAG_LOOPED : 0u) | (parts->bDelta ? FLAG_DELTA : 0u));
         const auto boneCount = static_cast<uint16_t>(parts->boneCount[PART_TYPE_ALL]);
         const auto assetType = static_cast<uint8_t>(parts->assetType);
         const auto framerate = static_cast<uint16_t>(std::lround(parts->framerate));
