@@ -248,13 +248,13 @@ namespace
 
         for (auto frameIndex = 0uz; frameIndex < frameCount; frameIndex++)
         {
-            const auto* frame = values + frameIndex * componentCount;
+            const auto* frame = &values[frameIndex * componentCount];
             const auto omittedNegative = frame[storedComponentCount] < 0;
 
             auto continuityNegated = false;
             if (frameIndex > 0uz && omittedNegative != targetNegativeOmitted)
             {
-                const auto* prevFrame = values + (frameIndex - 1uz) * componentCount;
+                const auto* prevFrame = &values[(frameIndex - 1uz) * componentCount];
                 continuityNegated = ComputeQuatDot(prevFrame, frame, componentCount) > 0;
             }
 
