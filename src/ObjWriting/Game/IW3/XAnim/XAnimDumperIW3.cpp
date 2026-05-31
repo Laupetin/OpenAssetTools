@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <expected>
 #include <format>
 #include <limits>
 #include <optional>
@@ -327,12 +328,12 @@ namespace
         return EncodeQuatFrames(delta.quat->values.data(), frameCount, 2uz, false);
     }
 
-    [[noreturn]] void ThrowReconstructionError(const XAssetInfo<XAnimParts>& asset, const char* field)
+    std::string CreateReconstructionError(const XAssetInfo<XAnimParts>& asset, const char* field)
     {
-        throw std::runtime_error(std::format("IW3 xanim raw reconstruction cursor mismatch for asset \"{}\" in {}", asset.m_name, field));
+        return std::format("IW3 xanim raw reconstruction cursor mismatch for asset \"{}\" in {}", asset.m_name, field);
     }
 
-    [[nodiscard]] std::vector<BoneTrack> ReconstructBoneTracks(const XAssetInfo<XAnimParts>& asset)
+    [[nodiscard]] std::expected<std::vector<BoneTrack>, std::string> ReconstructBoneTracks(const XAssetInfo<XAnimParts>& asset)
     {
         const auto& parts = *asset.Asset();
         const auto nameCount = static_cast<size_t>(parts.boneCount[PART_TYPE_ALL]);
@@ -466,21 +467,21 @@ namespace
         const auto randomDataShortEnd = AdvancePtr(parts.randomDataShort, parts.randomDataShortCount);
 
         if (cursor.dataByte != dataByteEnd)
-            ThrowReconstructionError(asset, "dataByte");
+            return std::unexpected(CreateReconstructionError(asset, "dataByte"));
         if (cursor.dataShort != dataShortEnd)
-            ThrowReconstructionError(asset, "dataShort");
+            return std::unexpected(CreateReconstructionError(asset, "dataShort"));
         if (cursor.dataInt != dataIntEnd)
-            ThrowReconstructionError(asset, "dataInt");
+            return std::unexpected(CreateReconstructionError(asset, "dataInt"));
         if (cursor.randomDataByte != randomDataByteEnd)
-            ThrowReconstructionError(asset, "randomDataByte");
+            return std::unexpected(CreateReconstructionError(asset, "randomDataByte"));
         if (cursor.randomDataShort != randomDataShortEnd)
-            ThrowReconstructionError(asset, "randomDataShort");
+            return std::unexpected(CreateReconstructionError(asset, "randomDataShort"));
 
         if (!useByteIndices)
         {
             const auto indicesEnd = AdvancePtr(parts.indices._2, parts.indexCount);
             if (cursor.indices != indicesEnd)
-                ThrowReconstructionError(asset, "indices");
+                return std::unexpected(CreateReconstructionError(asset, "indices"));
         }
         else
         {
@@ -869,8 +870,15 @@ namespace xanim
 
         const auto numLoopFrames = GetNumLoopFrames(*parts);
         const auto useByteIndices = UseByteIndices(*parts);
-        const auto boneTracks = ReconstructBoneTracks(asset);
+        auto maybeBoneTracks = ReconstructBoneTracks(asset);
         const auto deltaTrack = ReconstructDeltaTrack(*parts);
+
+        if (!maybeBoneTracks.has_value())
+        {
+            con::error(maybeBoneTracks.error());
+            return;
+        }
+        const auto boneTracks = std::move(maybeBoneTracks).value();
 
         std::vector<EncodedQuatTrack> encodedBoneQuats;
         encodedBoneQuats.reserve(boneTracks.size());
