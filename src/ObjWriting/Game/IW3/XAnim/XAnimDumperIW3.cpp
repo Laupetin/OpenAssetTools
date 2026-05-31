@@ -135,10 +135,14 @@ namespace
 
     [[nodiscard]] float IntBitsToFloat(const int value)
     {
-        float result;
-        static_assert(sizeof(result) == sizeof(value));
-        std::memcpy(&result, &value, sizeof(result));
-        return result;
+        union
+        {
+            int i;
+            float f;
+        };
+
+        i = value;
+        return f;
     }
 
     [[nodiscard]] std::array<float, 3> ReadFloat3(const int*& dataInt)
