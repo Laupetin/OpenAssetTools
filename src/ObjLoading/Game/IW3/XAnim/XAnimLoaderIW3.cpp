@@ -719,7 +719,12 @@ namespace
             std::ranges::sort(boneOrder,
                               [&boneTracks](const size_t i0, const size_t i1)
                               {
-                                  return std::to_underlying(boneTracks[i0].quat.type) < std::to_underlying(boneTracks[i1].quat.type);
+                                  const auto type0 = std::to_underlying(boneTracks[i0].quat.type);
+                                  const auto type1 = std::to_underlying(boneTracks[i1].quat.type);
+                                  if (type0 != type1)
+                                      return type0 < type1;
+
+                                  return i0 < i1;
                               });
 
             // The parts bone indices are based on the quats order
@@ -739,9 +744,14 @@ namespace
 
             // Trans are ordered differently
             std::ranges::sort(boneOrder,
-                              [&boneTracks](const size_t i0, const size_t i1)
+                              [&boneTracks, &boneTrackIndexToPartsBoneIndex](const size_t i0, const size_t i1)
                               {
-                                  return std::to_underlying(boneTracks[i0].trans.type) < std::to_underlying(boneTracks[i1].trans.type);
+                                  const auto type0 = std::to_underlying(boneTracks[i0].trans.type);
+                                  const auto type1 = std::to_underlying(boneTracks[i1].trans.type);
+                                  if (type0 != type1)
+                                      return type0 < type1;
+
+                                  return boneTrackIndexToPartsBoneIndex[i0] < boneTrackIndexToPartsBoneIndex[i1];
                               });
             for (auto partsBoneIndex = 0u; partsBoneIndex < boneCount; ++partsBoneIndex)
             {
