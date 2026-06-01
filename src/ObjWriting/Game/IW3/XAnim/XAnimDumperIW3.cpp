@@ -864,21 +864,22 @@ namespace xanim
     void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXAnim::Type>& asset)
     {
         const auto* parts = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(GetCompiledFileNameForAssetName(asset.m_name));
-        if (!assetFile)
-            return;
 
-        const auto numLoopFrames = GetNumLoopFrames(*parts);
-        const auto useByteIndices = UseByteIndices(*parts);
         auto maybeBoneTracks = ReconstructBoneTracks(asset);
-        const auto deltaTrack = ReconstructDeltaTrack(*parts);
-
         if (!maybeBoneTracks.has_value())
         {
             con::error(maybeBoneTracks.error());
             return;
         }
         const auto boneTracks = std::move(maybeBoneTracks).value();
+
+        const auto assetFile = context.OpenAssetFile(GetCompiledFileNameForAssetName(asset.m_name));
+        if (!assetFile)
+            return;
+
+        const auto numLoopFrames = GetNumLoopFrames(*parts);
+        const auto useByteIndices = UseByteIndices(*parts);
+        const auto deltaTrack = ReconstructDeltaTrack(*parts);
 
         std::vector<EncodedQuatTrack> encodedBoneQuats;
         encodedBoneQuats.reserve(boneTracks.size());
