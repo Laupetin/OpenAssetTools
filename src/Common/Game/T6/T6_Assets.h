@@ -468,9 +468,25 @@ namespace T6
 
     union XAnimIndices
     {
-        char* _1;
+        unsigned char* _1;
         uint16_t* _2;
         void* data;
+    };
+
+    enum XAnimPartType
+    {
+        PART_TYPE_NO_QUAT = 0x0,
+        PART_TYPE_HALF_QUAT = 0x1,
+        PART_TYPE_FULL_QUAT = 0x2,
+        PART_TYPE_HALF_QUAT_NO_SIZE = 0x3,
+        PART_TYPE_FULL_QUAT_NO_SIZE = 0x4,
+        PART_TYPE_SMALL_TRANS = 0x5,
+        PART_TYPE_TRANS = 0x6,
+        PART_TYPE_TRANS_NO_SIZE = 0x7,
+        PART_TYPE_NO_TRANS = 0x8,
+        PART_TYPE_ALL = 0x9,
+
+        PART_TYPE_COUNT
     };
 
     struct XAnimParts
@@ -487,9 +503,9 @@ namespace T6
         bool bDelta3D;
         bool bLeftHandGripIK;
         unsigned int streamedFileSize;
-        unsigned char boneCount[10];
+        unsigned char boneCount[PART_TYPE_COUNT];
         unsigned char notifyCount;
-        char assetType;
+        unsigned char assetType;
         bool isDefault;
         unsigned int randomDataShortCount;
         unsigned int indexCount;
@@ -498,11 +514,11 @@ namespace T6
         float primedLength;
         float loopEntryTime;
         uint16_t* names;
-        char* dataByte;
+        unsigned char* dataByte;
         int16_t* dataShort;
         int* dataInt;
         int16_t* randomDataShort;
-        char* randomDataByte;
+        unsigned char* randomDataByte;
         int* randomDataInt;
         XAnimIndices indices;
         XAnimNotifyInfo* notify;
@@ -5627,7 +5643,7 @@ namespace T6
 
     union XAnimDynamicIndicesTrans
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -5648,13 +5664,13 @@ namespace T6
     struct XAnimPartTrans
     {
         uint16_t size;
-        char smallTrans;
+        unsigned char smallTrans;
         XAnimPartTransData u;
     };
 
     union XAnimDynamicIndicesDeltaQuat2
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -5683,7 +5699,7 @@ namespace T6
 
     union XAnimDynamicIndicesDeltaQuat
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 

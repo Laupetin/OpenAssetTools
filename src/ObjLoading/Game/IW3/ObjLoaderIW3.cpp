@@ -18,6 +18,7 @@
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
+#include "XAnim/XAnimLoaderIW3.h"
 
 #include <memory>
 
@@ -99,7 +100,7 @@ namespace
 
         collection.AddAssetCreator(phys_preset::CreateRawLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderIW3(memory, gdt, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
+        collection.AddAssetCreator(xanim::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(xmodel::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));

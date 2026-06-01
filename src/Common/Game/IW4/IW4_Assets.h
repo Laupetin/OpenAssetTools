@@ -267,7 +267,7 @@ namespace IW4
 
     union XAnimIndices
     {
-        char* _1;
+        unsigned char* _1;
         uint16_t* _2;
         void* data;
     };
@@ -289,14 +289,14 @@ namespace IW4
 
     union XAnimDynamicIndicesTrans
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
     struct type_align32(4) XAnimPartTransFrames
     {
-        float mins[3];
-        float size[3];
+        vec3_t mins;
+        vec3_t size;
         XAnimDynamicFrames frames;
         XAnimDynamicIndicesTrans indices;
     };
@@ -310,13 +310,13 @@ namespace IW4
     struct XAnimPartTrans
     {
         uint16_t size;
-        char smallTrans;
+        unsigned char smallTrans;
         XAnimPartTransData u;
     };
 
     union XAnimDynamicIndicesQuat2
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -345,7 +345,7 @@ namespace IW4
 
     union XAnimDynamicIndicesQuat
     {
-        char _1[1];
+        unsigned char _1[1];
         uint16_t _2[1];
     };
 
@@ -379,6 +379,22 @@ namespace IW4
         XAnimDeltaPartQuat* quat;
     };
 
+    enum XAnimPartType
+    {
+        PART_TYPE_NO_QUAT = 0x0,
+        PART_TYPE_HALF_QUAT = 0x1,
+        PART_TYPE_FULL_QUAT = 0x2,
+        PART_TYPE_HALF_QUAT_NO_SIZE = 0x3,
+        PART_TYPE_FULL_QUAT_NO_SIZE = 0x4,
+        PART_TYPE_SMALL_TRANS = 0x5,
+        PART_TYPE_TRANS = 0x6,
+        PART_TYPE_TRANS_NO_SIZE = 0x7,
+        PART_TYPE_NO_TRANS = 0x8,
+        PART_TYPE_ALL = 0x9,
+
+        PART_TYPE_COUNT
+    };
+
     struct XAnimParts
     {
         const char* name;
@@ -389,20 +405,20 @@ namespace IW4
         uint16_t randomDataIntCount;
         uint16_t numframes;
         char flags;
-        unsigned char boneCount[10];
-        char notifyCount;
-        char assetType;
+        unsigned char boneCount[PART_TYPE_COUNT];
+        unsigned char notifyCount;
+        unsigned char assetType;
         bool isDefault;
         unsigned int randomDataShortCount;
         unsigned int indexCount;
         float framerate;
         float frequency;
         ScriptString* names;
-        char* dataByte;
+        unsigned char* dataByte;
         int16_t* dataShort;
         int* dataInt;
         int16_t* randomDataShort;
-        char* randomDataByte;
+        unsigned char* randomDataByte;
         int* randomDataInt;
         XAnimIndices indices;
         XAnimNotifyInfo* notify;
