@@ -538,7 +538,7 @@ namespace
                 registration.AddScriptString(notify.name);
 
                 const auto frame = stream::ReadValue<uint16_t>(stream);
-                notify.time = static_cast<float>(frame) / static_cast<float>(parts.numframes);
+                notify.time = parts.numframes > 0 ? static_cast<float>(frame) / static_cast<float>(parts.numframes) : 0;
                 assert(notify.time >= 0.0f && notify.time <= 1.0f);
             }
 
