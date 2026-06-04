@@ -8,6 +8,46 @@
 
 namespace xanim
 {
+    CommonXQuat::CommonXQuat()
+        : value{}
+    {
+    }
+
+    CommonXQuat::CommonXQuat(const int16_t v0, const int16_t v1, const int16_t v2, const int16_t v3)
+        : value{v0, v1, v2, v3}
+    {
+    }
+
+    CommonXQuat2::CommonXQuat2()
+        : value{}
+    {
+    }
+
+    CommonXQuat2::CommonXQuat2(const int16_t v0, const int16_t v1)
+        : value{v0, v1}
+    {
+    }
+
+    CommonVec3U8::CommonVec3U8()
+        : value{}
+    {
+    }
+
+    CommonVec3U8::CommonVec3U8(const uint8_t x, const uint8_t y, const uint8_t z)
+        : value{x, y, z}
+    {
+    }
+
+    CommonVec3U16::CommonVec3U16()
+        : value{}
+    {
+    }
+
+    CommonVec3U16::CommonVec3U16(const uint16_t x, const uint16_t y, const uint16_t z)
+        : value{x, y, z}
+    {
+    }
+
     QuatTrack::QuatTrack()
         : m_type(QuatType::NO_QUAT)
     {

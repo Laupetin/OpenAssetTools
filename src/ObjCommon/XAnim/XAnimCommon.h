@@ -34,21 +34,33 @@ namespace xanim
 
     struct CommonXQuat
     {
+        CommonXQuat();
+        CommonXQuat(int16_t v0, int16_t v1, int16_t v2, int16_t v3);
+
         int16_t value[4];
     };
 
     struct CommonXQuat2
     {
+        CommonXQuat2();
+        CommonXQuat2(int16_t v0, int16_t v1);
+
         int16_t value[2];
     };
 
     struct CommonVec3U8
     {
+        CommonVec3U8();
+        CommonVec3U8(uint8_t x, uint8_t y, uint8_t z);
+
         uint8_t value[3];
     };
 
     struct CommonVec3U16
     {
+        CommonVec3U16();
+        CommonVec3U16(uint16_t x, uint16_t y, uint16_t z);
+
         uint16_t value[3];
     };
 
