@@ -83,7 +83,10 @@ namespace xanim
     CommonXAnimParts::CommonXAnimParts()
         : m_num_frames(0),
           m_looped(false),
+          m_left_hand_grip_ik(false),
+          m_streamable(false),
           m_frame_rate(0),
+          m_primed_length(0),
           m_asset_type(0)
     {
     }

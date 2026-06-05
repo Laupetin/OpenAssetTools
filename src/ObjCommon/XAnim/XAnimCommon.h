@@ -9,12 +9,6 @@
 
 namespace xanim
 {
-    enum class CompiledXAnimVersion : uint8_t
-    {
-        // IW3
-        VERSION_17 = 17
-    };
-
     enum class QuatType : uint8_t
     {
         NO_QUAT = 0,
@@ -152,7 +146,10 @@ namespace xanim
 
         size_t m_num_frames;
         bool m_looped;
+        bool m_left_hand_grip_ik;
+        bool m_streamable;
         float m_frame_rate;
+        float m_primed_length;
         uint8_t m_asset_type;
         std::vector<BoneTrack> m_bone_tracks;
         std::vector<CommonXAnimNotifyInfo> m_notifies;

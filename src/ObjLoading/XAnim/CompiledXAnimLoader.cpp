@@ -2,6 +2,7 @@
 
 #include "Utils/Alignment.h"
 #include "Utils/StreamUtils.h"
+#include "XAnim/BinaryXAnimCommon.h"
 
 #include <algorithm>
 #include <cassert>

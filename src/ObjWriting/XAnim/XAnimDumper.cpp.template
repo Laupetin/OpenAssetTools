@@ -1,4 +1,4 @@
-#options GAME(IW3)
+#options GAME(IW3, T5)
 
 #filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".cpp"
 
@@ -6,12 +6,14 @@
 
 #if GAME == "IW3"
 #define FEATURE_IW3
+#define ANIM_17
 #elif GAME == "IW4"
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #elif GAME == "T5"
 #define FEATURE_T5
+#define ANIM_19
 #elif GAME == "T6"
 #define FEATURE_T6
 #endif
@@ -252,12 +254,27 @@ namespace xanim
         CommonXAnimParts commonParts;
         commonParts.m_num_frames = parts->numframes;
         commonParts.m_looped = parts->bLoop;
+#if defined(FEATURE_T5)
+        commonParts.m_left_hand_grip_ik = parts->bLeftHandGripIK;
+        commonParts.m_streamable = parts->bStreamable;
+#endif
         commonParts.m_frame_rate = parts->framerate;
+#ifdef defined(FEATURE_T5)
+        commonParts.m_primed_length = parts->primedLength;
+#endif
         commonParts.m_asset_type = parts->assetType;
         commonParts.m_bone_tracks = std::move(maybeBoneTracks).value();
         commonParts.m_notifies = ConvertNotifies(*parts, asset);
         commonParts.m_delta_track = ConvertDeltaTrack(*parts, useByteIndices, numLoopFrames);
 
-        WriteCompiledXAnim(*assetFile, commonParts);
+        WriteCompiledXAnim(
+            *assetFile,
+            commonParts,
+#ifdef ANIM_17
+            CompiledXAnimVersion::VERSION_17
+#elif defined(ANIM_19)
+            CompiledXAnimVersion::VERSION_19
+#endif
+        );
     }
 } // namespace xanim

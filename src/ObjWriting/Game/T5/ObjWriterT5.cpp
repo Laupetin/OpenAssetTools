@@ -3,6 +3,7 @@
 #include "Game/T5/Image/ImageDumperT5.h"
 #include "Game/T5/Material/MaterialJsonDumperT5.h"
 #include "Game/T5/Techset/TechsetDumperT5.h"
+#include "Game/T5/XAnim/XAnimDumperT5.h"
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "LightDef/LightDefDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
@@ -17,7 +18,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperT5>());
     // REGISTER_DUMPER(AssetDumperPhysConstraints, m_phys_constraints)
     // REGISTER_DUMPER(AssetDumperDestructibleDef, m_destructible_def)
-    // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
+    RegisterAssetDumper(std::make_unique<xanim::DumperT5>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperT5>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT5>());
     RegisterAssetDumper(std::make_unique<techset::DumperT5>(

@@ -11,9 +11,6 @@ using namespace xanim;
 
 namespace
 {
-    constexpr uint8_t FLAG_LOOPED = 1u;
-    constexpr uint8_t FLAG_DELTA = 2u;
-
     // The linker decodes raw trans size[] with these exact float literals.
     // They correspond to 1.0f / 255.0f and 1.0f / 65535.0f, but we keep the
     // decompiled values to preserve binary-stable round trips.
@@ -26,6 +23,34 @@ namespace
         bool m_flip_quat = false;
         std::vector<int16_t> m_stored_values;
     };
+
+    uint8_t GetFlagsForVersion(const CompiledXAnimVersion version, const CommonXAnimParts& parts)
+    {
+        uint8_t flags = 0;
+
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_17:
+            if (parts.m_looped)
+                flags |= binary17::FLAG_LOOPED;
+            if (parts.m_delta_track)
+                flags |= binary17::FLAG_DELTA;
+            break;
+
+        case CompiledXAnimVersion::VERSION_19:
+            if (parts.m_looped)
+                flags |= binary19::FLAG_LOOPED;
+            if (parts.m_delta_track)
+                flags |= binary19::FLAG_DELTA;
+            if (parts.m_left_hand_grip_ik)
+                flags |= binary19::FLAG_LEFT_HAND_GRIP_IK;
+            if (parts.m_streamable)
+                flags |= binary19::FLAG_STREAMABLE;
+            break;
+        }
+
+        return flags;
+    }
 
     [[nodiscard]] uint16_t GetNumLoopFrames(const CommonXAnimParts& parts)
     {
@@ -425,7 +450,7 @@ namespace
 
 namespace xanim
 {
-    void WriteCompiledXAnim(std::ostream& stream, const CommonXAnimParts& parts)
+    void WriteCompiledXAnim(std::ostream& stream, const CommonXAnimParts& parts, CompiledXAnimVersion version)
     {
         const auto numLoopFrames = GetNumLoopFrames(parts);
         const auto useByteIndices = parts.m_num_frames < 256;
@@ -435,18 +460,20 @@ namespace xanim
         for (const auto& bone : parts.m_bone_tracks)
             encodedBoneQuats.emplace_back(EncodeQuatTrack(bone.m_quat));
 
-        const auto flags = static_cast<uint8_t>((parts.m_looped ? FLAG_LOOPED : 0u) | (parts.m_delta_track ? FLAG_DELTA : 0u));
+        const auto flags = GetFlagsForVersion(version, parts);
         const auto boneCount = static_cast<uint16_t>(parts.m_bone_tracks.size());
         const auto assetType = static_cast<uint8_t>(parts.m_asset_type);
         const auto framerate = static_cast<uint16_t>(std::lround(parts.m_frame_rate));
 
-        stream::WriteValue(stream, static_cast<uint16_t>(CompiledXAnimVersion::VERSION_17));
+        stream::WriteValue(stream, static_cast<uint16_t>(version));
         // Looped raws store numframes directly; non-looped raws store numframes + 1.
         stream::WriteValue(stream, static_cast<uint16_t>(parts.m_looped ? parts.m_num_frames : numLoopFrames));
         stream::WriteValue(stream, boneCount);
         stream::WriteValue(stream, flags);
         stream::WriteValue(stream, assetType);
         stream::WriteValue(stream, framerate);
+        if (version == CompiledXAnimVersion::VERSION_19 && parts.m_streamable)
+            stream::WriteValue(stream, parts.m_primed_length);
 
         if (parts.m_delta_track)
             WriteDeltaTrack(stream, *parts.m_delta_track, numLoopFrames, useByteIndices);
