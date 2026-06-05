@@ -1,4 +1,26 @@
-#include "XAnimDumperIW3.h"
+#options GAME(IW3)
+
+#filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"XAnimDumper" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See XAnimDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
 
 #include "XAnim/CompiledXAnimWriter.h"
 #include "XAnim/FlatXAnimReader.h"
@@ -15,7 +37,7 @@
 #include <vector>
 
 using namespace xanim;
-using namespace IW3;
+using namespace GAME;
 
 namespace
 {
@@ -62,21 +84,21 @@ namespace
         CommonDeltaQuatTrack result;
         if (deltaQuat.size > 0)
         {
-            const auto frameCount = static_cast<size_t>(deltaQuat.size) + 1uz;
+            const auto frameCount = static_cast<size_t>(deltaQuat.size) + 1u;
             result.m_frames2.reserve(frameCount);
             result.m_indices.reserve(frameCount);
 
-            for (auto i = 0uz; i < frameCount; i++)
+            for (size_t i = 0u; i < frameCount; i++)
                 result.m_frames2.emplace_back(deltaQuat.u.frames.frames[i].value[0], deltaQuat.u.frames.frames[i].value[1]);
 
             if (useByteIndices)
             {
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                     result.m_indices.emplace_back(deltaQuat.u.frames.indices._1[i]);
             }
             else
             {
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                     result.m_indices.emplace_back(deltaQuat.u.frames.indices._2[i]);
             }
 
@@ -107,23 +129,23 @@ namespace
                 deltaTrans.u.frames.size.z,
             };
 
-            const auto frameCount = static_cast<size_t>(deltaTrans.size) + 1uz;
+            const auto frameCount = static_cast<size_t>(deltaTrans.size) + 1u;
             result.m_indices.reserve(frameCount);
             if (useByteIndices)
             {
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                     result.m_indices.emplace_back(static_cast<uint8_t>(deltaTrans.u.frames.indices._1[i]));
             }
             else
             {
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                     result.m_indices.emplace_back(deltaTrans.u.frames.indices._2[i]);
             }
 
             if (deltaTrans.smallTrans)
             {
                 result.m_frames_u8.reserve(frameCount);
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                 {
                     result.m_frames_u8.emplace_back(
                         deltaTrans.u.frames.frames._1[i][0], deltaTrans.u.frames.frames._1[i][1], deltaTrans.u.frames.frames._1[i][2]);
@@ -132,7 +154,7 @@ namespace
             else
             {
                 result.m_frames_u16.reserve(frameCount);
-                for (auto i = 0uz; i < frameCount; i++)
+                for (size_t i = 0u; i < frameCount; i++)
                 {
                     result.m_frames_u16.emplace_back(
                         deltaTrans.u.frames.frames._2[i][0], deltaTrans.u.frames.frames._2[i][1], deltaTrans.u.frames.frames._2[i][2]);
@@ -172,9 +194,11 @@ namespace
     }
 } // namespace
 
+#set CLASS_NAME "Dumper" + GAME
+
 namespace xanim
 {
-    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXAnim::Type>& asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXAnim::Type>& asset)
     {
         const auto* parts = asset.Asset();
 
