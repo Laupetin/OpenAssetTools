@@ -1,4 +1,4 @@
-#options GAME(IW3)
+#options GAME(IW3, T5)
 
 #filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".cpp"
 
@@ -70,6 +70,18 @@ namespace
 
             notify.time = commonNotify.m_time;
         }
+        
+#ifdef FEATURE_T5
+        const auto loopBegin = std::ranges::find_if(commonParts.m_notifies, [](const xanim::CommonXAnimNotifyInfo& notify)
+        {
+            return notify.m_name == "loop_begin";
+        });
+        
+        if (loopBegin != commonParts.m_notifies.end())
+            parts.loopEntryTime = loopBegin->m_time;
+        else
+            parts.loopEntryTime = 0;
+#endif
     }
 
     template<typename T> void ConvertIndices(T& indices, const std::vector<uint16_t>& commonIndices, const bool useByteIndices)
@@ -279,9 +291,16 @@ namespace
     {
         parts.numframes = static_cast<decltype(XAnimParts::numframes)>(commonParts.m_num_frames);
         parts.bLoop = commonParts.m_looped;
+#ifdef FEATURE_T5
+        parts.bLeftHandGripIK = commonParts.m_left_hand_grip_ik;
+        parts.bStreamable = commonParts.m_streamable;
+#endif
         parts.assetType = commonParts.m_asset_type;
         parts.framerate = commonParts.m_frame_rate;
         parts.frequency = parts.numframes > 0 ? parts.framerate / static_cast<float>(parts.numframes) : 0;
+#ifdef FEATURE_T5
+        parts.primedLength = commonParts.m_primed_length;
+#endif
 
         const auto useByteIndices = parts.numframes < 256;
 

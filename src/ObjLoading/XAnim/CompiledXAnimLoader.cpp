@@ -14,9 +14,6 @@ using namespace xanim;
 
 namespace
 {
-    constexpr uint8_t FLAG_LOOPED = 1u;
-    constexpr uint8_t FLAG_DELTA = 2u;
-
     // The linker decodes raw trans size[] with these exact float literals.
     // They correspond to 1.0f / 255.0f and 1.0f / 65535.0f, but we keep the
     // decompiled values to preserve binary-stable round trips.
@@ -30,6 +27,8 @@ namespace
         {
         case CompiledXAnimVersion::VERSION_17:
             return CompiledXAnimVersion::VERSION_17;
+        case CompiledXAnimVersion::VERSION_19:
+            return CompiledXAnimVersion::VERSION_19;
         default:
             return std::unexpected(std::format("Version {} is not supported", fileVersion));
         }
@@ -347,6 +346,54 @@ namespace
         // This notify is always automatically added
         parts.m_notifies.emplace_back("end", 1.0f);
     }
+
+    bool IsLooped(const uint8_t flags, const CompiledXAnimVersion version)
+    {
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_17:
+            return (flags & binary17::FLAG_LOOPED) > 0;
+        case CompiledXAnimVersion::VERSION_19:
+            return (flags & binary19::FLAG_LOOPED) > 0;
+        }
+
+        return false;
+    }
+
+    bool HasDelta(const uint8_t flags, const CompiledXAnimVersion version)
+    {
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_17:
+            return (flags & binary17::FLAG_DELTA) > 0;
+        case CompiledXAnimVersion::VERSION_19:
+            return (flags & binary19::FLAG_DELTA) > 0;
+        }
+
+        return false;
+    }
+
+    bool IsLeftHandGripIk(const uint8_t flags, const CompiledXAnimVersion version)
+    {
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_19:
+            return (flags & binary19::FLAG_LEFT_HAND_GRIP_IK) > 0;
+        default:
+            return false;
+        }
+    }
+
+    bool IsStreamable(const uint8_t flags, const CompiledXAnimVersion version)
+    {
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_19:
+            return (flags & binary19::FLAG_STREAMABLE) > 0;
+        default:
+            return false;
+        }
+    }
 } // namespace
 
 namespace xanim
@@ -360,7 +407,6 @@ namespace xanim
         auto parts = std::make_unique<CommonXAnimParts>();
 
         const auto version = maybeVersion.value();
-        assert(version == CompiledXAnimVersion::VERSION_17);
 
         const auto numFrames = stream::ReadValue<uint16_t>(stream);
         const auto boneCount = stream::ReadValue<uint16_t>(stream);
@@ -370,14 +416,21 @@ namespace xanim
         if (stream.fail())
             return std::unexpected("Truncated file");
 
-        const bool isLooped = flags & FLAG_LOOPED;
-        const bool hasDelta = flags & FLAG_DELTA;
+        const bool isLooped = IsLooped(flags, version);
+        const bool hasDelta = HasDelta(flags, version);
+        const bool leftHandGripIk = IsLeftHandGripIk(flags, version);
+        const bool streamable = IsStreamable(flags, version);
         const uint16_t numLoopFrames = isLooped ? numFrames + 1u : numFrames;
 
         parts->m_num_frames = numLoopFrames - 1;
         parts->m_looped = isLooped;
+        parts->m_left_hand_grip_ik = leftHandGripIk;
+        parts->m_streamable = streamable;
         parts->m_asset_type = assetType;
         parts->m_frame_rate = static_cast<float>(framerate);
+
+        if (version == CompiledXAnimVersion::VERSION_19 && streamable)
+            parts->m_primed_length = stream::ReadValue<float>(stream);
 
         const auto useByteIndices = parts->m_num_frames < 256;
 
