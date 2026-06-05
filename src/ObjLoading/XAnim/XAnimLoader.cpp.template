@@ -1,4 +1,26 @@
-#include "XAnimLoaderIW3.h"
+#options GAME(IW3)
+
+#filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"XAnimLoader" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See XAnimLoader.cpp.template.
+// Do not modify, changes will be lost.
+
+#include LOADER_HEADER
 
 #include "Utils/Logging/Log.h"
 #include "XAnim/CompiledXAnimLoader.h"
@@ -16,7 +38,7 @@
 #include <utility>
 #include <vector>
 
-using namespace IW3;
+using namespace GAME;
 
 namespace
 {
@@ -325,9 +347,11 @@ namespace
     };
 } // namespace
 
+#set METHOD_NAME "CreateLoader" + GAME
+
 namespace xanim
 {
-    std::unique_ptr<AssetCreator<AssetXAnim>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetXAnim>> METHOD_NAME(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<XAnimLoader>(memory, searchPath, zone.m_script_strings);
     }

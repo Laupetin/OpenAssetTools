@@ -8,6 +8,7 @@
 #include "Game/IW3/Image/ImageLoaderExternalIW3.h"
 #include "Game/IW3/Techset/PixelShaderLoaderIW3.h"
 #include "Game/IW3/Techset/VertexShaderLoaderIW3.h"
+#include "Game/IW3/XAnim/XAnimLoaderIW3.h"
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
 #include "LightDef/LightDefLoaderIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
@@ -18,7 +19,6 @@
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
-#include "XAnim/XAnimLoaderIW3.h"
 
 #include <memory>
 
