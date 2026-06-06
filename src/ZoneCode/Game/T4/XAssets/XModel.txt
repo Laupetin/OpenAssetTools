@@ -22,8 +22,6 @@ set count surfs numsurfs;
 set count materialHandles numsurfs;
 set count collSurfs numCollSurfs;
 set count boneInfo numBones;
-// The DB loader does not follow XModelStreamInfo::highMipBounds here.
-set condition streamInfo::highMipBounds never;
 set reusable physGeoms;
 set count physGeoms 1;
 set reusable collmap;

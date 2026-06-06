@@ -598,7 +598,7 @@ namespace T4
 
     struct XModelStreamInfo
     {
-        XModelHighMipBounds* highMipBounds;
+        char pad;
     };
 
     struct XModelQuat
