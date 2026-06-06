@@ -53,7 +53,6 @@ set string dvar;
 set string dvarTest;
 set string onListboxSelectionChange;
 set string enableDvar;
-set condition focusSound never;
 
 // itemDefData_t
 use itemDefData_t;
