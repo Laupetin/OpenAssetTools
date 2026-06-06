@@ -122,6 +122,40 @@ namespace
         CommonDeltaQuatTrack deltaQuatTrack;
         if (numQuatIndices == 1)
         {
+            deltaQuatTrack.m_frames.emplace_back(ConsumeQuat(stream));
+            return deltaQuatTrack;
+        }
+
+        LoadIndicesIfNeeded(stream, deltaQuatTrack.m_indices, numQuatIndices, useByteIndices, numLoopFrames);
+
+        deltaQuatTrack.m_frames.reserve(numQuatIndices);
+        for (auto quatIndexNum = 0u; quatIndexNum < numQuatIndices; ++quatIndexNum)
+        {
+            auto& curFrame = deltaQuatTrack.m_frames.emplace_back(ConsumeQuat(stream));
+
+            if (quatIndexNum > 0)
+            {
+                const auto& prevFrame = deltaQuatTrack.m_frames[quatIndexNum - 1];
+                const auto dot = prevFrame.value[0] * curFrame.value[0] + prevFrame.value[1] * curFrame.value[1] + prevFrame.value[2] * curFrame.value[2]
+                                 + prevFrame.value[3] * curFrame.value[3];
+                if (dot < 0)
+                    FlipQuat(curFrame);
+            }
+        }
+
+        return deltaQuatTrack;
+    }
+
+    std::expected<std::optional<CommonDeltaQuatTrack>, std::string>
+        LoadDeltaQuat2Track(std::istream& stream, const bool useByteIndices, const uint16_t numLoopFrames)
+    {
+        const auto numQuatIndices = stream::ReadValue<uint16_t>(stream);
+        if (numQuatIndices == 0)
+            return std::nullopt;
+
+        CommonDeltaQuatTrack deltaQuatTrack;
+        if (numQuatIndices == 1)
+        {
             deltaQuatTrack.m_frames2.emplace_back(ConsumeQuat2(stream));
             return deltaQuatTrack;
         }
@@ -189,11 +223,12 @@ namespace
     }
 
     std::expected<std::unique_ptr<CommonXAnimDeltaTrack>, std::string>
-        LoadDeltaTrack(std::istream& stream, const bool useByteIndices, const uint16_t numLoopFrames)
+        LoadDeltaTrack(std::istream& stream, const bool hasDelta3D, const bool useByteIndices, const uint16_t numLoopFrames)
     {
         auto delta = std::make_unique<CommonXAnimDeltaTrack>();
 
-        auto maybeLoadedDeltaQuat = LoadDeltaQuatTrack(stream, useByteIndices, numLoopFrames);
+        auto maybeLoadedDeltaQuat =
+            hasDelta3D ? LoadDeltaQuatTrack(stream, useByteIndices, numLoopFrames) : LoadDeltaQuat2Track(stream, useByteIndices, numLoopFrames);
         if (!maybeLoadedDeltaQuat.has_value())
             return std::unexpected(std::move(maybeLoadedDeltaQuat).error());
         delta->m_quat = std::move(maybeLoadedDeltaQuat).value();
@@ -373,15 +408,32 @@ namespace
         return false;
     }
 
+    bool HasDelta3D(const uint8_t flags, const CompiledXAnimVersion version)
+    {
+        switch (version)
+        {
+        case CompiledXAnimVersion::VERSION_19:
+            return (flags & binary19::FLAG_T6_COMPATIBILITY) > 0 && (flags & binary19::FLAG_T6_DELTA_3D) > 0;
+        case CompiledXAnimVersion::VERSION_17:
+            return false;
+        }
+
+        return false;
+    }
+
     bool IsLeftHandGripIk(const uint8_t flags, const CompiledXAnimVersion version)
     {
         switch (version)
         {
         case CompiledXAnimVersion::VERSION_19:
-            return (flags & binary19::FLAG_LEFT_HAND_GRIP_IK) > 0;
-        default:
+            if (flags & binary19::FLAG_T6_COMPATIBILITY)
+                return (flags & binary19::FLAG_T6_LEFT_HAND_GRIP_IK) > 0;
+            return (flags & binary19::FLAG_T5_LEFT_HAND_GRIP_IK) > 0;
+        case CompiledXAnimVersion::VERSION_17:
             return false;
         }
+
+        return false;
     }
 
     bool IsStreamable(const uint8_t flags, const CompiledXAnimVersion version)
@@ -389,7 +441,9 @@ namespace
         switch (version)
         {
         case CompiledXAnimVersion::VERSION_19:
-            return (flags & binary19::FLAG_STREAMABLE) > 0;
+            if (flags & binary19::FLAG_T6_COMPATIBILITY)
+                return false;
+            return (flags & binary19::FLAG_T5_STREAMABLE) > 0;
         default:
             return false;
         }
@@ -418,6 +472,7 @@ namespace xanim
 
         const bool isLooped = IsLooped(flags, version);
         const bool hasDelta = HasDelta(flags, version);
+        const bool hasDelta3D = HasDelta3D(flags, version);
         const bool leftHandGripIk = IsLeftHandGripIk(flags, version);
         const bool streamable = IsStreamable(flags, version);
         const uint16_t numLoopFrames = isLooped ? numFrames + 1u : numFrames;
@@ -434,9 +489,9 @@ namespace xanim
 
         const auto useByteIndices = parts->m_num_frames < 256;
 
-        if (hasDelta)
+        if (hasDelta || hasDelta3D)
         {
-            auto maybeBoneTrack = LoadDeltaTrack(stream, useByteIndices, numLoopFrames);
+            auto maybeBoneTrack = LoadDeltaTrack(stream, hasDelta3D, useByteIndices, numLoopFrames);
             if (!maybeBoneTrack.has_value())
                 return std::unexpected(std::move(maybeBoneTrack).error());
 

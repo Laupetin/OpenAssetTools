@@ -108,7 +108,10 @@ namespace xanim
     public:
         CommonDeltaQuatTrack() = default;
 
+        [[nodiscard]] bool Is3DTrack() const;
+
         std::vector<uint16_t> m_indices;
+        std::vector<CommonXQuat> m_frames;
         std::vector<CommonXQuat2> m_frames2;
     };
 

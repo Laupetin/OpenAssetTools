@@ -1,4 +1,4 @@
-#options GAME(IW3, T5)
+#options GAME(IW3, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".cpp"
 
@@ -8,12 +8,15 @@
 #define FEATURE_IW3
 #elif GAME == "IW4"
 #define FEATURE_IW4
+#define HAS_DELTA_QUAT_3D
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define HAS_DELTA_QUAT_3D
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
+#define HAS_DELTA_QUAT_3D
 #endif
 
 // This file was templated.
@@ -71,7 +74,7 @@ namespace
             notify.time = commonNotify.m_time;
         }
         
-#ifdef FEATURE_T5
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         const auto loopBegin = std::ranges::find_if(commonParts.m_notifies, [](const xanim::CommonXAnimNotifyInfo& notify)
         {
             return notify.m_name == "loop_begin";
@@ -184,17 +187,36 @@ namespace
         }
     }
 
+#ifdef HAS_DELTA_QUAT_3D
+#define DELTA_QUAT_2D_MEMBER quat2
+#define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat2
+#define DELTA_QUAT_2D_DATA_STRUCT XAnimDeltaPartQuatData2
+#define DELTA_QUAT_2D_FRAMES_STRUCT XAnimDeltaPartQuatDataFrames2
+#else
+#define DELTA_QUAT_2D_MEMBER quat
+#define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat
+#define DELTA_QUAT_2D_DATA_STRUCT XAnimDeltaPartQuatData
+#define DELTA_QUAT_2D_FRAMES_STRUCT XAnimDeltaPartQuatDataFrames
+#endif
+
+#ifdef HAS_DELTA_QUAT_3D
     void ConvertCommonDeltaQuatPart(XAnimDeltaPart& deltaPart,
                                     const xanim::CommonDeltaQuatTrack& commonDeltaQuatTrack,
                                     MemoryManager& memory,
                                     const bool useByteIndices)
     {
-        if (commonDeltaQuatTrack.m_frames2.size() == 1)
+        if (commonDeltaQuatTrack.m_frames.size() == 1)
         {
             deltaPart.quat = static_cast<XAnimDeltaPartQuat*>(memory.AllocRaw(offsetof(XAnimDeltaPartQuat, u) + sizeof(XAnimDeltaPartQuatData::frame0)));
             deltaPart.quat->size = 0;
-            deltaPart.quat->u.frame0.value[0] = commonDeltaQuatTrack.m_frames2[0].value[0];
-            deltaPart.quat->u.frame0.value[1] = commonDeltaQuatTrack.m_frames2[0].value[1];
+            
+            const auto& commonFrame = commonDeltaQuatTrack.m_frames[0];
+            auto& frame = deltaPart.quat->u.frame0;
+            
+            frame.value[0] = commonFrame.value[0];
+            frame.value[1] = commonFrame.value[1];
+            frame.value[2] = commonFrame.value[2];
+            frame.value[3] = commonFrame.value[3];
             return;
         }
 
@@ -209,12 +231,56 @@ namespace
         ConvertIndices(frames.indices, commonDeltaQuatTrack.m_indices, useByteIndices);
 
         deltaPart.quat->size = static_cast<uint16_t>(numQuatIndices - 1);
-        deltaPart.quat->u.frames.frames = memory.Alloc<XQuat2>(numQuatIndices);
+        deltaPart.quat->u.frames.frames = memory.Alloc<XQuat>(numQuatIndices);
+
+        for (auto quatIndexNum = 0u; quatIndexNum < numQuatIndices; ++quatIndexNum)
+        {
+            const auto& commonFrame = commonDeltaQuatTrack.m_frames[quatIndexNum];
+            auto& curFrame = deltaPart.quat->u.frames.frames[quatIndexNum];
+
+            curFrame.value[0] = commonFrame.value[0];
+            curFrame.value[1] = commonFrame.value[1];
+            curFrame.value[2] = commonFrame.value[2];
+            curFrame.value[3] = commonFrame.value[3];
+        }
+    }
+#endif
+
+    void ConvertCommonDeltaQuat2Part(XAnimDeltaPart& deltaPart,
+                                    const xanim::CommonDeltaQuatTrack& commonDeltaQuatTrack,
+                                    MemoryManager& memory,
+                                    const bool useByteIndices)
+    {
+        if (commonDeltaQuatTrack.m_frames2.size() == 1)
+        {
+            deltaPart.DELTA_QUAT_2D_MEMBER = static_cast<DELTA_QUAT_2D_STRUCT*>(memory.AllocRaw(offsetof(DELTA_QUAT_2D_STRUCT, u) + sizeof(DELTA_QUAT_2D_DATA_STRUCT::frame0)));
+            deltaPart.DELTA_QUAT_2D_MEMBER->size = 0;
+
+            const auto& commonFrame = commonDeltaQuatTrack.m_frames2[0];
+            auto& frame = deltaPart.DELTA_QUAT_2D_MEMBER->u.frame0;
+
+            frame.value[0] = commonFrame.value[0];
+            frame.value[1] = commonFrame.value[1];
+            return;
+        }
+
+        const auto numQuatIndices = commonDeltaQuatTrack.m_indices.size();
+        const auto indicesArraySize =
+            useByteIndices ? numQuatIndices * sizeof(XAnimDynamicIndicesQuat::_1) : numQuatIndices * sizeof(XAnimDynamicIndicesQuat::_2);
+
+        deltaPart.DELTA_QUAT_2D_MEMBER = static_cast<DELTA_QUAT_2D_STRUCT*>(
+            memory.AllocRaw(offsetof(DELTA_QUAT_2D_STRUCT, u) + offsetof(DELTA_QUAT_2D_FRAMES_STRUCT, indices) + indicesArraySize));
+
+        auto& frames = deltaPart.DELTA_QUAT_2D_MEMBER->u.frames;
+        ConvertIndices(frames.indices, commonDeltaQuatTrack.m_indices, useByteIndices);
+
+        deltaPart.DELTA_QUAT_2D_MEMBER->size = static_cast<uint16_t>(numQuatIndices - 1);
+        deltaPart.DELTA_QUAT_2D_MEMBER->u.frames.frames = memory.Alloc<XQuat2>(numQuatIndices);
 
         for (auto quatIndexNum = 0u; quatIndexNum < numQuatIndices; ++quatIndexNum)
         {
             const auto& commonFrame = commonDeltaQuatTrack.m_frames2[quatIndexNum];
-            auto& curFrame = deltaPart.quat->u.frames.frames[quatIndexNum];
+            auto& curFrame = deltaPart.DELTA_QUAT_2D_MEMBER->u.frames.frames[quatIndexNum];
 
             curFrame.value[0] = commonFrame.value[0];
             curFrame.value[1] = commonFrame.value[1];
@@ -277,8 +343,18 @@ namespace
                                 MemoryManager& memory,
                                 const bool useByteIndices)
     {
+#ifdef HAS_DELTA_QUAT_3D
         if (commonXAnimDeltaTrack.m_quat)
-            ConvertCommonDeltaQuatPart(deltaPart, *commonXAnimDeltaTrack.m_quat, memory, useByteIndices);
+        {
+            if (commonXAnimDeltaTrack.m_quat->Is3DTrack())
+                ConvertCommonDeltaQuatPart(deltaPart, *commonXAnimDeltaTrack.m_quat, memory, useByteIndices);
+            else
+                ConvertCommonDeltaQuat2Part(deltaPart, *commonXAnimDeltaTrack.m_quat, memory, useByteIndices);
+        }
+#else
+        if (commonXAnimDeltaTrack.m_quat)
+            ConvertCommonDeltaQuat2Part(deltaPart, *commonXAnimDeltaTrack.m_quat, memory, useByteIndices);
+#endif
         if (commonXAnimDeltaTrack.m_trans)
             ConvertCommonDeltaTransPart(deltaPart, *commonXAnimDeltaTrack.m_trans, memory, useByteIndices);
     }
@@ -291,14 +367,16 @@ namespace
     {
         parts.numframes = static_cast<decltype(XAnimParts::numframes)>(commonParts.m_num_frames);
         parts.bLoop = commonParts.m_looped;
-#ifdef FEATURE_T5
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         parts.bLeftHandGripIK = commonParts.m_left_hand_grip_ik;
+#endif
+#if defined(FEATURE_T5)
         parts.bStreamable = commonParts.m_streamable;
 #endif
         parts.assetType = commonParts.m_asset_type;
         parts.framerate = commonParts.m_frame_rate;
         parts.frequency = parts.numframes > 0 ? parts.framerate / static_cast<float>(parts.numframes) : 0;
-#ifdef FEATURE_T5
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         parts.primedLength = commonParts.m_primed_length;
 #endif
 
@@ -307,7 +385,14 @@ namespace
         if (commonParts.m_delta_track)
         {
             parts.deltaPart = memory.Alloc<XAnimDeltaPart>();
+#ifdef HAS_DELTA_QUAT_3D
+            if (commonParts.m_delta_track->m_quat && commonParts.m_delta_track->m_quat->Is3DTrack())
+                parts.bDelta3D = true;
+            else
+                parts.bDelta = true;
+#else
             parts.bDelta = true;
+#endif
             ConvertCommonDeltaPart(*parts.deltaPart, *commonParts.m_delta_track, memory, useByteIndices);
         }
 

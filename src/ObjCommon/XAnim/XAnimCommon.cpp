@@ -72,6 +72,11 @@ namespace xanim
     {
     }
 
+    bool CommonDeltaQuatTrack::Is3DTrack() const
+    {
+        return !m_frames.empty();
+    }
+
     CommonDeltaTransTrack::CommonDeltaTransTrack()
         : m_constant(std::nullopt),
           m_small_trans(false),

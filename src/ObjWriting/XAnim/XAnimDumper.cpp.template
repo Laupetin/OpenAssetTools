@@ -1,4 +1,4 @@
-#options GAME(IW3, T5)
+#options GAME(IW3, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".cpp"
 
@@ -6,16 +6,17 @@
 
 #if GAME == "IW3"
 #define FEATURE_IW3
-#define ANIM_17
 #elif GAME == "IW4"
 #define FEATURE_IW4
+#define HAS_DELTA_QUAT_3D
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define HAS_DELTA_QUAT_3D
 #elif GAME == "T5"
 #define FEATURE_T5
-#define ANIM_19
 #elif GAME == "T6"
 #define FEATURE_T6
+#define HAS_DELTA_QUAT_3D
 #endif
 
 // This file was templated.
@@ -81,7 +82,53 @@ namespace
         return result;
     }
 
+#ifdef HAS_DELTA_QUAT_3D
+#define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat2
+#else
+#define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat
+#endif
+
+#ifdef HAS_DELTA_QUAT_3D
     CommonDeltaQuatTrack ConvertDeltaQuatTrack(const XAnimDeltaPartQuat& deltaQuat, const bool useByteIndices, const uint16_t numLoopFrames)
+    {
+        CommonDeltaQuatTrack result;
+        if (deltaQuat.size > 0)
+        {
+            const auto frameCount = static_cast<size_t>(deltaQuat.size) + 1u;
+            result.m_frames.reserve(frameCount);
+            result.m_indices.reserve(frameCount);
+
+            for (size_t i = 0u; i < frameCount; i++)
+            {
+                result.m_frames.emplace_back(deltaQuat.u.frames.frames[i].value[0],
+                                             deltaQuat.u.frames.frames[i].value[1],
+                                             deltaQuat.u.frames.frames[i].value[2],
+                                             deltaQuat.u.frames.frames[i].value[3]);
+            }
+
+            if (useByteIndices)
+            {
+                for (size_t i = 0u; i < frameCount; i++)
+                    result.m_indices.emplace_back(deltaQuat.u.frames.indices._1[i]);
+            }
+            else
+            {
+                for (size_t i = 0u; i < frameCount; i++)
+                    result.m_indices.emplace_back(deltaQuat.u.frames.indices._2[i]);
+            }
+
+            assert(result.m_indices.size() <= numLoopFrames);
+        }
+        else
+        {
+            result.m_frames.emplace_back(deltaQuat.u.frame0.value[0], deltaQuat.u.frame0.value[1], deltaQuat.u.frame0.value[2], deltaQuat.u.frame0.value[3]);
+        }
+
+        return result;
+    }
+#endif
+
+    CommonDeltaQuatTrack ConvertDeltaQuat2Track(const DELTA_QUAT_2D_STRUCT& deltaQuat, const bool useByteIndices, const uint16_t numLoopFrames)
     {
         CommonDeltaQuatTrack result;
         if (deltaQuat.size > 0)
@@ -182,12 +229,29 @@ namespace
 
         auto result = std::make_unique<CommonXAnimDeltaTrack>();
 
+#ifdef HAS_DELTA_QUAT_3D
+        assert(static_cast<bool>(parts.deltaPart) == static_cast<bool>(parts.bDelta) || static_cast<bool>(parts.bDelta3D));
+#else
         assert(static_cast<bool>(parts.deltaPart) == static_cast<bool>(parts.bDelta));
+#endif
+
         if (!parts.deltaPart)
             return result;
 
-        if (parts.deltaPart->quat)
+#ifdef HAS_DELTA_QUAT_3D
+        if (parts.deltaPart->quat2)
+        {
+            result->m_quat = ConvertDeltaQuat2Track(*parts.deltaPart->quat2, useByteIndices, numLoopFrames);
+            assert(!parts.deltaPart->quat);
+        }
+        else if (parts.deltaPart->quat)
+        {
             result->m_quat = ConvertDeltaQuatTrack(*parts.deltaPart->quat, useByteIndices, numLoopFrames);
+        }
+#else
+        if (parts.deltaPart->quat)
+            result->m_quat = ConvertDeltaQuat2Track(*parts.deltaPart->quat, useByteIndices, numLoopFrames);
+#endif
 
         if (parts.deltaPart->trans)
             result->m_trans = ConvertDeltaTransTrack(*parts.deltaPart->trans, useByteIndices);
@@ -254,12 +318,14 @@ namespace xanim
         CommonXAnimParts commonParts;
         commonParts.m_num_frames = parts->numframes;
         commonParts.m_looped = parts->bLoop;
-#if defined(FEATURE_T5)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         commonParts.m_left_hand_grip_ik = parts->bLeftHandGripIK;
+#endif
+#if defined(FEATURE_T5)
         commonParts.m_streamable = parts->bStreamable;
 #endif
         commonParts.m_frame_rate = parts->framerate;
-#ifdef defined(FEATURE_T5)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         commonParts.m_primed_length = parts->primedLength;
 #endif
         commonParts.m_asset_type = parts->assetType;
@@ -270,9 +336,9 @@ namespace xanim
         WriteCompiledXAnim(
             *assetFile,
             commonParts,
-#ifdef ANIM_17
+#if defined(FEATURE_IW3)
             CompiledXAnimVersion::VERSION_17
-#elif defined(ANIM_19)
+#elif defined(FEATURE_T5) || defined(FEATURE_T6)
             CompiledXAnimVersion::VERSION_19
 #endif
         );

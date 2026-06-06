@@ -38,15 +38,22 @@ namespace
             break;
 
         case CompiledXAnimVersion::VERSION_19:
+        {
+            const auto hasDelta3D = parts.m_delta_track && parts.m_delta_track->m_quat && parts.m_delta_track->m_quat->Is3DTrack();
+            const auto requiresT6Compatibility = hasDelta3D;
+
+            if (requiresT6Compatibility)
+                flags |= binary19::FLAG_T6_COMPATIBILITY;
             if (parts.m_looped)
                 flags |= binary19::FLAG_LOOPED;
             if (parts.m_delta_track)
-                flags |= binary19::FLAG_DELTA;
+                flags |= hasDelta3D ? binary19::FLAG_T6_DELTA_3D : binary19::FLAG_DELTA;
             if (parts.m_left_hand_grip_ik)
-                flags |= binary19::FLAG_LEFT_HAND_GRIP_IK;
-            if (parts.m_streamable)
-                flags |= binary19::FLAG_STREAMABLE;
-            break;
+                flags |= requiresT6Compatibility ? binary19::FLAG_T6_LEFT_HAND_GRIP_IK : binary19::FLAG_T5_LEFT_HAND_GRIP_IK;
+            if (parts.m_streamable && !requiresT6Compatibility)
+                flags |= binary19::FLAG_T5_STREAMABLE;
+        }
+        break;
         }
 
         return flags;
@@ -192,7 +199,35 @@ namespace
         }
     }
 
-    void WriteDeltaQuatTrack(std::ostream& stream, const CommonXAnimDeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
+    void WriteDeltaQuatTrack(std::ostream& stream, const CommonDeltaQuatTrack& quat, const uint16_t numLoopFrames, const bool useByteIndices)
+    {
+        const auto numQuatIndices = static_cast<uint16_t>(quat.m_frames.size());
+        assert(numQuatIndices > 0);
+
+        stream::WriteValue(stream, numQuatIndices);
+
+        const auto encodedDeltaQuatFrames = EncodeQuatFrames(quat.m_frames, false);
+
+        if (numQuatIndices == 1)
+        {
+            assert(encodedDeltaQuatFrames.m_stored_values.size() == 3);
+            stream::WriteValue(stream, encodedDeltaQuatFrames.m_stored_values[0]);
+            stream::WriteValue(stream, encodedDeltaQuatFrames.m_stored_values[1]);
+            stream::WriteValue(stream, encodedDeltaQuatFrames.m_stored_values[2]);
+        }
+        else
+        {
+            assert(numQuatIndices > 1u);
+            assert(quat.m_indices.size() == numQuatIndices);
+            assert(encodedDeltaQuatFrames.m_stored_values.size() == numQuatIndices * 3);
+
+            WriteIndicesIfNeeded(stream, quat.m_indices, numLoopFrames, useByteIndices);
+            for (const auto value : encodedDeltaQuatFrames.m_stored_values)
+                stream::WriteValue(stream, value);
+        }
+    }
+
+    void WriteDeltaQuat2Track(std::ostream& stream, const CommonXAnimDeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
     {
         if (!delta.m_quat)
         {
@@ -287,7 +322,10 @@ namespace
 
     void WriteDeltaTrack(std::ostream& stream, const CommonXAnimDeltaTrack& delta, const uint16_t numLoopFrames, const bool useByteIndices)
     {
-        WriteDeltaQuatTrack(stream, delta, numLoopFrames, useByteIndices);
+        if (delta.m_quat && delta.m_quat->Is3DTrack())
+            WriteDeltaQuatTrack(stream, *delta.m_quat, numLoopFrames, useByteIndices);
+        else
+            WriteDeltaQuat2Track(stream, delta, numLoopFrames, useByteIndices);
         WriteDeltaTransTrack(stream, delta, numLoopFrames, useByteIndices);
     }
 
@@ -472,7 +510,7 @@ namespace xanim
         stream::WriteValue(stream, flags);
         stream::WriteValue(stream, assetType);
         stream::WriteValue(stream, framerate);
-        if (version == CompiledXAnimVersion::VERSION_19 && parts.m_streamable)
+        if (version == CompiledXAnimVersion::VERSION_19 && parts.m_streamable && (flags & binary19::FLAG_T6_COMPATIBILITY) == 0)
             stream::WriteValue(stream, parts.m_primed_length);
 
         if (parts.m_delta_track)
