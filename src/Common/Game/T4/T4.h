@@ -83,7 +83,6 @@ namespace T4
         XAsset* assets;
     };
 
-    using AssetXModelPieces = Asset<ASSET_TYPE_XMODELPIECES, XModelPieces>;
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysConstraints = Asset<ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints>;
     using AssetDestructibleDef = Asset<ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef>;
@@ -120,7 +119,6 @@ namespace T4
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace T4
 
-DEFINE_ASSET_NAME_ACCESSOR(T4::AssetXModelPieces, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetPhysPreset, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetPhysConstraints, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetDestructibleDef, name);
