@@ -186,8 +186,8 @@ namespace T4
         const char* sndAliasPrefix;
         float piecesSpreadFraction;
         float piecesUpwardVelocity;
-        bool tempDefaultToCylinder;
         int canFloat;
+        float gravityScale;
     };
 
     struct PhysPresetInfo
@@ -201,7 +201,8 @@ namespace T4
         const char* sndAliasPrefix;
         float piecesSpreadFraction;
         float piecesUpwardVelocity;
-        int tempDefaultToCylinder;
+        int canFloat;
+        float gravityScale;
     };
 
     union XAnimIndices
