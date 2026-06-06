@@ -59,12 +59,6 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
     if (atStreamStart)
         m_stream.Load<XAsset>(varXAsset);
 
-    const auto assetTypeName = IGame::GetGameById(m_zone.m_game_id)->GetAssetTypeName(varXAsset->type);
-    if (assetTypeName.has_value())
-        con::debug(R"(Loading {})", *assetTypeName);
-    else
-        con::debug("Loading asset type {}", static_cast<int>(varXAsset->type));
-
     switch (varXAsset->type)
     {
         SKIP_ASSET(ASSET_TYPE_XMODELPIECES, XModelPieces, data)
@@ -136,6 +130,10 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     {
         LoadXAsset(false);
         varXAsset++;
+
+#ifdef DEBUG_OFFSETS
+        m_stream.DebugOffsets(index);
+#endif
     }
 }
 

@@ -44,6 +44,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(c
             .m_endianness = GameEndianness::LE,
             .m_word_size = GameWordSize::ARCH_32,
             .m_platform = GamePlatform::PC,
+            // There is no way to know whether unsigned zones are official.
             .m_is_official = false,
             .m_is_signed = false,
             .m_is_encrypted = false,
