@@ -8,6 +8,7 @@
 #include "Game/T5/T5.h"
 #include "Game/T5/Techset/PixelShaderLoaderT5.h"
 #include "Game/T5/Techset/VertexShaderLoaderT5.h"
+#include "Game/T5/XAnim/XAnimLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "LightDef/LightDefLoaderT5.h"
 #include "Localize/LoaderLocalizeT5.h"
@@ -112,7 +113,7 @@ namespace
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderT5(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
+        collection.AddAssetCreator(xanim::CreateLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(xmodel::CreateLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));

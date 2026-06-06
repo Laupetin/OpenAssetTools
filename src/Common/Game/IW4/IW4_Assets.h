@@ -395,6 +395,13 @@ namespace IW4
         PART_TYPE_COUNT
     };
 
+    enum XAnimFlags
+    {
+        ANIM_LOOP = 0x1,
+        ANIM_DELTA = 0x2,
+        ANIM_DELTA_3D = 0x4,
+    };
+
     struct XAnimParts
     {
         const char* name;
@@ -404,7 +411,7 @@ namespace IW4
         uint16_t randomDataByteCount;
         uint16_t randomDataIntCount;
         uint16_t numframes;
-        char flags;
+        unsigned char flags;
         unsigned char boneCount[PART_TYPE_COUNT];
         unsigned char notifyCount;
         unsigned char assetType;

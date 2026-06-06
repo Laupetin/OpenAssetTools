@@ -1,0 +1,25 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See XAnimLoader.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+#set METHOD_NAME "CreateLoader" + GAME
+
+namespace xanim
+{
+    std::unique_ptr<AssetCreator<GAME::AssetXAnim>> METHOD_NAME(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace xanim

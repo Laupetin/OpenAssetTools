@@ -8,6 +8,7 @@
 #include "Game/IW4/Image/ImageLoaderExternalIW4.h"
 #include "Game/IW4/Techset/PixelShaderLoaderIW4.h"
 #include "Game/IW4/Techset/VertexShaderLoaderIW4.h"
+#include "Game/IW4/XAnim/XAnimLoaderIW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
 #include "LightDef/LightDefLoaderIW4.h"
@@ -125,8 +126,7 @@ namespace
         collection.AddAssetCreator(phys_preset::CreateRawLoaderIW4(memory, searchPath, zone));
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderIW4(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysCollMap>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
+        collection.AddAssetCreator(xanim::CreateLoaderIW4(memory, searchPath, zone));
         collection.AddAssetCreator(xmodel::CreateLoaderIW4(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(techset::CreateVertexShaderLoaderIW4(memory, searchPath));

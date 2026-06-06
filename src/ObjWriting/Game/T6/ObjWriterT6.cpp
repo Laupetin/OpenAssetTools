@@ -4,6 +4,7 @@
 #include "Game/T6/Image/ImageDumperT6.h"
 #include "Game/T6/Material/MaterialJsonDumperT6.h"
 #include "Game/T6/Techset/TechsetDumperT6.h"
+#include "Game/T6/XAnim/XAnimDumperT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "LightDef/LightDefDumperT6.h"
@@ -33,7 +34,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperT6>());
     RegisterAssetDumper(std::make_unique<phys_constraints::InfoStringDumperT6>());
     // REGISTER_DUMPER(AssetDumperDestructibleDef, m_destructible_def)
-    // REGISTER_DUMPER(AssetDumperXAnimParts, m_xanim_parts)
+    RegisterAssetDumper(std::make_unique<xanim::DumperT6>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperT6>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT6>());
     RegisterAssetDumper(std::make_unique<techset::DumperT6>(

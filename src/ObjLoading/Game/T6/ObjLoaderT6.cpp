@@ -11,6 +11,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Techset/PixelShaderLoaderT6.h"
 #include "Game/T6/Techset/VertexShaderLoaderT6.h"
+#include "Game/T6/XAnim/XAnimLoaderT6.h"
 #include "Game/T6/XModel/LoaderXModelT6.h"
 #include "Image/Dx12TextureLoader.h"
 #include "Image/IwiLoader.h"
@@ -386,7 +387,7 @@ namespace T6
             collection.AddAssetCreator(phys_constraints::CreateRawLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(phys_constraints::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
+            collection.AddAssetCreator(xanim::CreateLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(xmodel::CreateLoaderT6(memory, searchPath, zone));
             collection.AddAssetCreator(material::CreateLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));

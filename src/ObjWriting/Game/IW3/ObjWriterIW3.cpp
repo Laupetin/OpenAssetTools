@@ -3,6 +3,7 @@
 #include "Game/IW3/Image/ImageDumperIW3.h"
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
+#include "Game/IW3/XAnim/XAnimDumperIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "LightDef/LightDefDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
@@ -12,7 +13,6 @@
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "Sound/SndCurveDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
-#include "XAnim/XAnimDumperIW3.h"
 
 using namespace IW3;
 

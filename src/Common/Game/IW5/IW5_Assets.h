@@ -419,6 +419,13 @@ namespace IW5
         PART_TYPE_COUNT
     };
 
+    enum XAnimFlags
+    {
+        ANIM_LOOP = 0x1,
+        ANIM_DELTA = 0x2,
+        ANIM_DELTA_3D = 0x4,
+    };
+
     struct XAnimParts
     {
         const char* name;

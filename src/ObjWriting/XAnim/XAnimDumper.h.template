@@ -1,0 +1,25 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See XAnimDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "Dumper" + GAME
+
+namespace xanim
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetXAnim>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetXAnim::Type>& asset) override;
+    };
+} // namespace xanim

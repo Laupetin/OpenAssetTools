@@ -3,6 +3,8 @@ SystemTests = {}
 function SystemTests:include(includes)
     if includes:handle(self:name()) then
 		includedirs {
+			"%{wks.location}/src/ObjLoading",
+			"%{wks.location}/src/ObjWriting",
 			path.join(TestFolder(), "SystemTests")
 		}
 	end
