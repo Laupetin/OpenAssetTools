@@ -45,6 +45,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <expected>
 #include <format>
 #include <limits>
 #include <string>
@@ -348,10 +349,10 @@ namespace
         }
     }
 
-    void ConvertCommonDeltaPart(XAnimDeltaPart& deltaPart,
-                                const xanim::CommonXAnimDeltaTrack& commonXAnimDeltaTrack,
-                                MemoryManager& memory,
-                                const bool useByteIndices)
+    std::expected<void, std::string> ConvertCommonDeltaPart(XAnimDeltaPart& deltaPart,
+                                                            const xanim::CommonXAnimDeltaTrack& commonXAnimDeltaTrack,
+                                                            MemoryManager& memory,
+                                                            const bool useByteIndices)
     {
 #ifdef HAS_DELTA_QUAT_3D
         if (commonXAnimDeltaTrack.m_quat)
@@ -363,17 +364,24 @@ namespace
         }
 #else
         if (commonXAnimDeltaTrack.m_quat)
+        {
+            if (commonXAnimDeltaTrack.m_quat->Is3DTrack())
+                return std::unexpected("XAnim uses delta3D which is unsupported in this game");
+            
             ConvertCommonDeltaQuat2Part(deltaPart, *commonXAnimDeltaTrack.m_quat, memory, useByteIndices);
+        }
 #endif
         if (commonXAnimDeltaTrack.m_trans)
             ConvertCommonDeltaTransPart(deltaPart, *commonXAnimDeltaTrack.m_trans, memory, useByteIndices);
+
+        return {};
     }
 
-    void ConvertCommonXAnim(XAnimParts& parts,
-                            const xanim::CommonXAnimParts& commonParts,
-                            AssetRegistration<AssetXAnim>& registration,
-                            MemoryManager& memory,
-                            ZoneScriptStrings& scriptStrings)
+    std::expected<void, std::string> ConvertCommonXAnim(XAnimParts& parts,
+                                                        const xanim::CommonXAnimParts& commonParts,
+                                                        AssetRegistration<AssetXAnim>& registration,
+                                                        MemoryManager& memory,
+                                                        ZoneScriptStrings& scriptStrings)
     {
         parts.numframes = static_cast<decltype(XAnimParts::numframes)>(commonParts.m_num_frames);
         if (commonParts.m_looped)
@@ -404,7 +412,9 @@ namespace
 #else
             SET_HAS_DELTA();
 #endif
-            ConvertCommonDeltaPart(*parts.deltaPart, *commonParts.m_delta_track, memory, useByteIndices);
+            auto result = ConvertCommonDeltaPart(*parts.deltaPart, *commonParts.m_delta_track, memory, useByteIndices);
+            if (!result.has_value())
+                return std::unexpected(std::move(result).error());
         }
 
         parts.names = memory.Alloc<ScriptString>(commonParts.m_bone_tracks.size());
@@ -421,6 +431,8 @@ namespace
 
         const auto flatData = xanim::CreateFlatDataFromCommonXAnim(commonParts);
         ConvertFlatData(parts, flatData, memory);
+        
+        return {};
     }
 
     class XAnimLoader final : public AssetCreator<AssetXAnim>
@@ -451,7 +463,12 @@ namespace
             parts->name = m_memory.Dup(assetName.c_str());
 
             AssetRegistration<AssetXAnim> registration(assetName, parts);
-            ConvertCommonXAnim(*parts, *commonParts, registration, m_memory, m_script_strings);
+            const auto conversionResult = ConvertCommonXAnim(*parts, *commonParts, registration, m_memory, m_script_strings);
+            if (!conversionResult.has_value())
+            {
+                con::error("Failed to load xanim \"{}\": {}", assetName, conversionResult.error());
+                return AssetCreationResult::Failure();
+            }
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
