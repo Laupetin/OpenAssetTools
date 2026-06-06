@@ -3124,7 +3124,7 @@ namespace T5
         unsigned int dynEntClientWordCount[2];
         unsigned int dynEntClientCount[2];
         unsigned int* dynEntCellBits[2];
-        char* dynEntVisData[2][3];
+        raw_byte16* dynEntVisData[2][3];
     };
 
     struct GfxWorldLodChain
