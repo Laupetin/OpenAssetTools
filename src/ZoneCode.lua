@@ -138,6 +138,7 @@ ZoneCode.Assets = {
         "FxImpactTable",
         "RawFile",
         "StringTable",
+        "PackIndex",
     },
 
     T5 = {

@@ -112,6 +112,7 @@ namespace T4
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
+    using AssetPackIndex = Asset<ASSET_TYPE_PACK_INDEX, PackIndex>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
@@ -148,3 +149,4 @@ DEFINE_ASSET_NAME_ACCESSOR(T4::AssetFx, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetImpactFx, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetRawFile, name);
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetStringTable, name);
+DEFINE_ASSET_NAME_ACCESSOR(T4::AssetPackIndex, name);

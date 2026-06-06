@@ -30,6 +30,7 @@ asset FxEffectDef AssetFx;
 asset FxImpactTable AssetImpactFx;
 asset RawFile AssetRawFile;
 asset StringTable AssetStringTable;
+asset PackIndex AssetPackIndex;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -67,3 +68,4 @@ block normal  XFILE_BLOCK_PHYSICAL;
 #include "XAssets/Font_s.txt"
 #include "XAssets/RawFile.txt"
 #include "XAssets/StringTable.txt"
+#include "XAssets/PackIndex.txt"

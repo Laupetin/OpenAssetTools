@@ -101,7 +101,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
         SKIP_ASSET(ASSET_TYPE_XMODELALIAS, XModelAlias, data)
         LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
         LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-        SKIP_ASSET(ASSET_TYPE_PACK_INDEX, PackIndex, data)
+        LOAD_ASSET(ASSET_TYPE_PACK_INDEX, PackIndex, packIndex)
 
     default:
     {

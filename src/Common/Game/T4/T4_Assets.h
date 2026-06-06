@@ -52,6 +52,7 @@ namespace T4
     struct FxImpactTable;
     struct RawFile;
     struct StringTable;
+    struct PackIndex;
 
     typedef unsigned short ScriptString;
 
@@ -87,6 +88,7 @@ namespace T4
         FxImpactTable* impactFx;
         RawFile* rawfile;
         StringTable* stringTable;
+        PackIndex* packIndex;
         void* data;
     };
 
@@ -4066,6 +4068,29 @@ namespace T4
         int columnCount;
         int rowCount;
         const char** values;
+    };
+
+    struct PackIndexEntry
+    {
+        unsigned int hash;
+        unsigned int offset;
+        unsigned int size;
+    };
+
+    struct PackIndexHeader
+    {
+        unsigned int magic;
+        unsigned int timestamp;
+        unsigned int count;
+        unsigned int alignment;
+        unsigned int data_start;
+    };
+
+    struct PackIndex
+    {
+        const char* name;
+        PackIndexHeader header;
+        PackIndexEntry* entries;
     };
 
 #ifndef __zonecodegenerator
