@@ -416,7 +416,7 @@ namespace
         {
             const auto frameCount = trans.m_indices.size();
             assert(frameCount > 0uz);
-            assert(trans.m_byte_frames.size() == frameCount * 3uz);
+            assert(trans.m_frames_u8.size() == frameCount);
 
             stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.m_indices, numLoopFrames, useByteIndices);
@@ -429,7 +429,7 @@ namespace
             for (const auto value : trans.m_size)
                 stream::WriteValue(stream, EncodeRawTransSize(value, true));
 
-            stream::Write(stream, trans.m_byte_frames.data(), trans.m_byte_frames.size());
+            stream::Write(stream, trans.m_frames_u8.data(), trans.m_frames_u8.size() * sizeof(CommonVec3U8));
             break;
         }
 
@@ -437,7 +437,7 @@ namespace
         {
             const auto frameCount = trans.m_indices.size();
             assert(frameCount > 0uz);
-            assert(trans.m_short_frames.size() == frameCount * 3uz);
+            assert(trans.m_frames_u16.size() == frameCount);
 
             stream::WriteValue(stream, static_cast<uint16_t>(frameCount));
             WriteIndicesIfNeeded(stream, trans.m_indices, numLoopFrames, useByteIndices);
@@ -450,8 +450,7 @@ namespace
             for (const auto value : trans.m_size)
                 stream::WriteValue(stream, EncodeRawTransSize(value, false));
 
-            for (const auto value : trans.m_short_frames)
-                stream::WriteValue(stream, value);
+            stream::Write(stream, trans.m_frames_u16.data(), trans.m_frames_u16.size() * sizeof(CommonVec3U16));
             break;
         }
         }

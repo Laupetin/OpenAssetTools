@@ -343,9 +343,9 @@ namespace xanim
                 trans.m_size = ReadFloat3(cursor);
                 trans.m_indices = ReadPackedIndices(cursor, storedSize, useByteIndices);
 
-                static_assert(sizeof(decltype(trans.m_byte_frames)::value_type) == sizeof(uint8_t));
-                trans.m_byte_frames.resize(frameCount * 3uz);
-                cursor.ReadRandomDataByte(trans.m_byte_frames.data(), frameCount * 3uz);
+                static_assert(sizeof(decltype(trans.m_frames_u8)::value_type) == sizeof(uint8_t) * 3u);
+                trans.m_frames_u8.resize(frameCount);
+                cursor.ReadRandomDataByte(trans.m_frames_u8.data(), frameCount * 3u);
             }
 
             for (auto i = 0u; i < boneCounts.GetCountForTransType(TransType::FULL_TRANS); i++)
@@ -363,9 +363,9 @@ namespace xanim
                 trans.m_size = ReadFloat3(cursor);
                 trans.m_indices = ReadPackedIndices(cursor, storedSize, useByteIndices);
 
-                static_assert(sizeof(decltype(trans.m_short_frames)::value_type) == sizeof(int16_t));
-                trans.m_short_frames.resize(frameCount * 3uz);
-                cursor.ReadRandomDataShort(trans.m_short_frames.data(), frameCount * 3uz);
+                static_assert(sizeof(decltype(trans.m_frames_u16)::value_type) == sizeof(int16_t) * 3u);
+                trans.m_frames_u16.resize(frameCount);
+                cursor.ReadRandomDataShort(trans.m_frames_u16.data(), frameCount * 3uz);
             }
 
             for (auto i = 0u; i < boneCounts.GetCountForTransType(TransType::TRANS_NO_SIZE); i++)

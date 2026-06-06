@@ -78,8 +78,8 @@ namespace xanim
         std::vector<uint16_t> m_indices;
         std::array<float, 3> m_mins;
         std::array<float, 3> m_size;
-        std::vector<uint8_t> m_byte_frames;
-        std::vector<uint16_t> m_short_frames;
+        std::vector<CommonVec3U8> m_frames_u8;
+        std::vector<CommonVec3U16> m_frames_u16;
         std::array<float, 3> m_constant;
     };
 

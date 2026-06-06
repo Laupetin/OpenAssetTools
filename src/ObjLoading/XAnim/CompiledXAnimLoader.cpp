@@ -353,13 +353,15 @@ namespace
 
         if (smallTrans)
         {
-            transTrack.m_byte_frames.resize(numTransIndices * 3);
-            stream::Read(stream, transTrack.m_byte_frames.data(), numTransIndices * sizeof(uint8_t) * 3);
+            static_assert(sizeof(decltype(transTrack.m_frames_u8)::value_type) == sizeof(uint8_t) * 3u);
+            transTrack.m_frames_u8.resize(numTransIndices);
+            stream::Read(stream, transTrack.m_frames_u8.data(), numTransIndices * sizeof(uint8_t) * 3);
         }
         else
         {
-            transTrack.m_short_frames.resize(numTransIndices * 3);
-            stream::Read(stream, transTrack.m_short_frames.data(), numTransIndices * sizeof(uint16_t) * 3);
+            static_assert(sizeof(decltype(transTrack.m_frames_u16)::value_type) == sizeof(int16_t) * 3u);
+            transTrack.m_frames_u16.resize(numTransIndices);
+            stream::Read(stream, transTrack.m_frames_u16.data(), numTransIndices * sizeof(uint16_t) * 3);
         }
 
         return transTrack;

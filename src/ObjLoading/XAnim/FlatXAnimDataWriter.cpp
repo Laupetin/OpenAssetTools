@@ -128,16 +128,30 @@ namespace
             WritePackedIndices(writeCursor, transTrack.m_indices, useByteIndices);
             WriteFloat3(writeCursor, transTrack.m_mins);
             WriteFloat3(writeCursor, transTrack.m_size);
-            assert(transTrack.m_byte_frames.size() == transTrack.m_indices.size() * 3);
-            std::ranges::copy(transTrack.m_byte_frames, std::back_inserter(writeCursor.m_random_data_byte));
+            assert(transTrack.m_frames_u8.size() == transTrack.m_indices.size());
+
+            writeCursor.m_random_data_byte.reserve(writeCursor.m_random_data_byte.size() + transTrack.m_frames_u8.size() * 3);
+            for (const auto& vec : transTrack.m_frames_u8)
+            {
+                writeCursor.m_random_data_byte.emplace_back(vec.value[0]);
+                writeCursor.m_random_data_byte.emplace_back(vec.value[1]);
+                writeCursor.m_random_data_byte.emplace_back(vec.value[2]);
+            }
             break;
 
         case TransType::FULL_TRANS:
             WritePackedIndices(writeCursor, transTrack.m_indices, useByteIndices);
             WriteFloat3(writeCursor, transTrack.m_mins);
             WriteFloat3(writeCursor, transTrack.m_size);
-            assert(transTrack.m_short_frames.size() == transTrack.m_indices.size() * 3);
-            std::ranges::copy(transTrack.m_short_frames, std::back_inserter(writeCursor.m_random_data_short));
+            assert(transTrack.m_frames_u16.size() == transTrack.m_indices.size());
+
+            writeCursor.m_random_data_short.reserve(writeCursor.m_random_data_short.size() + transTrack.m_frames_u16.size() * 3);
+            for (const auto& vec : transTrack.m_frames_u16)
+            {
+                writeCursor.m_random_data_short.emplace_back(vec.value[0]);
+                writeCursor.m_random_data_short.emplace_back(vec.value[1]);
+                writeCursor.m_random_data_short.emplace_back(vec.value[2]);
+            }
             break;
 
         case TransType::TRANS_NO_SIZE:
