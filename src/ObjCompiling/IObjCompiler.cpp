@@ -3,6 +3,7 @@
 #include "Game/IW3/ObjCompilerIW3.h"
 #include "Game/IW4/ObjCompilerIW4.h"
 #include "Game/IW5/ObjCompilerIW5.h"
+#include "Game/T4/ObjCompilerT4.h"
 #include "Game/T5/ObjCompilerT5.h"
 #include "Game/T6/ObjCompilerT6.h"
 
@@ -12,7 +13,7 @@ const IObjCompiler* IObjCompiler::GetObjCompilerForGame(GameId game)
 {
     static const IObjCompiler* objCompilers[static_cast<unsigned>(GameId::COUNT)]{
         new IW3::ObjCompiler(),
-        nullptr,
+        new T4::ObjCompiler(),
         new IW4::ObjCompiler(),
         new IW5::ObjCompiler(),
         new T5::ObjCompiler(),
