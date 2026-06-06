@@ -1,5 +1,6 @@
 #include "ObjWriterIW5.h"
 
+#include "Game/IW4/XAnim/XAnimDumperIW4.h"
 #include "Game/IW5/Image/ImageDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
@@ -27,8 +28,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW5>());
     // REGISTER_DUMPER(AssetDumperPhysCollmap)
-    // REGISTER_DUMPER(AssetDumperXAnimParts)
-    // REGISTER_DUMPER(AssetDumperXModelSurfs)
+    RegisterAssetDumper(std::make_unique<xanim::DumperIW4>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW5>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW5>());
     RegisterAssetDumper(std::make_unique<techset::PixelShaderDumperIW5>());

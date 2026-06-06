@@ -27,11 +27,13 @@ namespace
         {
         case CompiledXAnimVersion::VERSION_17:
             return CompiledXAnimVersion::VERSION_17;
+        case CompiledXAnimVersion::VERSION_18:
+            return CompiledXAnimVersion::VERSION_18;
         case CompiledXAnimVersion::VERSION_19:
             return CompiledXAnimVersion::VERSION_19;
-        default:
-            return std::unexpected(std::format("Version {} is not supported", fileVersion));
         }
+
+        return std::unexpected(std::format("Version {} is not supported", fileVersion));
     }
 
     CommonXQuat ConsumeQuat(std::istream& stream)
@@ -388,6 +390,8 @@ namespace
         {
         case CompiledXAnimVersion::VERSION_17:
             return (flags & binary17::FLAG_LOOPED) > 0;
+        case CompiledXAnimVersion::VERSION_18:
+            return (flags & binary18::FLAG_LOOPED) > 0;
         case CompiledXAnimVersion::VERSION_19:
             return (flags & binary19::FLAG_LOOPED) > 0;
         }
@@ -401,6 +405,8 @@ namespace
         {
         case CompiledXAnimVersion::VERSION_17:
             return (flags & binary17::FLAG_DELTA) > 0;
+        case CompiledXAnimVersion::VERSION_18:
+            return (flags & binary18::FLAG_DELTA) > 0;
         case CompiledXAnimVersion::VERSION_19:
             return (flags & binary19::FLAG_DELTA) > 0;
         }
@@ -412,6 +418,8 @@ namespace
     {
         switch (version)
         {
+        case CompiledXAnimVersion::VERSION_18:
+            return (flags & binary18::FLAG_DELTA_3D) > 0;
         case CompiledXAnimVersion::VERSION_19:
             return (flags & binary19::FLAG_T6_COMPATIBILITY) > 0 && (flags & binary19::FLAG_T6_DELTA_3D) > 0;
         case CompiledXAnimVersion::VERSION_17:
@@ -430,6 +438,7 @@ namespace
                 return (flags & binary19::FLAG_T6_LEFT_HAND_GRIP_IK) > 0;
             return (flags & binary19::FLAG_T5_LEFT_HAND_GRIP_IK) > 0;
         case CompiledXAnimVersion::VERSION_17:
+        case CompiledXAnimVersion::VERSION_18:
             return false;
         }
 
@@ -444,9 +453,13 @@ namespace
             if (flags & binary19::FLAG_T6_COMPATIBILITY)
                 return false;
             return (flags & binary19::FLAG_T5_STREAMABLE) > 0;
-        default:
+
+        case CompiledXAnimVersion::VERSION_17:
+        case CompiledXAnimVersion::VERSION_18:
             return false;
         }
+
+        return false;
     }
 } // namespace
 

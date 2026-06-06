@@ -5,6 +5,7 @@
 #include "Game/IW4/Techset/PixelShaderDumperIW4.h"
 #include "Game/IW4/Techset/TechsetDumperIW4.h"
 #include "Game/IW4/Techset/VertexShaderDumperIW4.h"
+#include "Game/IW4/XAnim/XAnimDumperIW4.h"
 #include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
 #include "LightDef/LightDefDumperIW4.h"
@@ -30,7 +31,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperIW4>());
     RegisterAssetDumper(std::make_unique<phys_collmap::DumperIW4>());
-    // REGISTER_DUMPER(AssetDumperXAnimParts)
+    RegisterAssetDumper(std::make_unique<xanim::DumperIW4>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperIW4>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperIW4>());
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION

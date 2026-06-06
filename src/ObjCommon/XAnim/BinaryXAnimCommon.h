@@ -8,6 +8,8 @@ namespace xanim
     {
         // IW3, T4
         VERSION_17 = 17,
+        // IW4, IW5
+        VERSION_18 = 18,
         // T5, T6 (slightly different format however)
         VERSION_19 = 19
     };
@@ -17,6 +19,13 @@ namespace xanim
         constexpr uint8_t FLAG_LOOPED = 0x1;
         constexpr uint8_t FLAG_DELTA = 0x2;
     } // namespace binary17
+
+    namespace binary18
+    {
+        constexpr uint8_t FLAG_LOOPED = 0x1;
+        constexpr uint8_t FLAG_DELTA = 0x2;
+        constexpr uint8_t FLAG_DELTA_3D = 0x4;
+    } // namespace binary18
 
     namespace binary19
     {

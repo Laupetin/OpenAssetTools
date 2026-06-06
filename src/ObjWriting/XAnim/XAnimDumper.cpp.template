@@ -1,4 +1,4 @@
-#options GAME(IW3, T5, T6)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".cpp"
 
@@ -17,6 +17,16 @@
 #elif GAME == "T6"
 #define FEATURE_T6
 #define HAS_DELTA_QUAT_3D
+#endif
+
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#define IS_LOOPED static_cast<bool>(parts.flags & ANIM_LOOP)
+#define HAS_DELTA static_cast<bool>(parts.flags & ANIM_DELTA)
+#define HAS_DELTA_3D static_cast<bool>(parts.flags & ANIM_DELTA_3D)
+#else
+#define IS_LOOPED parts.bLoop
+#define HAS_DELTA parts.bDelta
+#define HAS_DELTA_3D parts.bDelta3D
 #endif
 
 // This file was templated.
@@ -230,9 +240,9 @@ namespace
         auto result = std::make_unique<CommonXAnimDeltaTrack>();
 
 #ifdef HAS_DELTA_QUAT_3D
-        assert(static_cast<bool>(parts.deltaPart) == static_cast<bool>(parts.bDelta) || static_cast<bool>(parts.bDelta3D));
+        assert(static_cast<bool>(parts.deltaPart) == HAS_DELTA || HAS_DELTA_3D);
 #else
-        assert(static_cast<bool>(parts.deltaPart) == static_cast<bool>(parts.bDelta));
+        assert(static_cast<bool>(parts.deltaPart) == HAS_DELTA);
 #endif
 
         if (!parts.deltaPart)
@@ -266,48 +276,48 @@ namespace xanim
 {
     void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetXAnim::Type>& asset)
     {
-        const auto* parts = asset.Asset();
+        const auto& parts = *asset.Asset();
 
-        const auto useByteIndices = UseByteIndices(*parts);
-        const auto numLoopFrames = GetNumLoopFrames(*parts);
+        const auto useByteIndices = UseByteIndices(parts);
+        const auto numLoopFrames = GetNumLoopFrames(parts);
 
         std::vector<std::string> boneNames;
-        if (parts->names)
+        if (parts.names)
         {
-            boneNames.reserve(parts->boneCount[PART_TYPE_ALL]);
-            for (auto i = 0u; i < parts->boneCount[PART_TYPE_ALL]; i++)
-                boneNames.emplace_back(asset.m_zone->m_script_strings.Value(parts->names[i]));
+            boneNames.reserve(parts.boneCount[PART_TYPE_ALL]);
+            for (auto i = 0u; i < parts.boneCount[PART_TYPE_ALL]; i++)
+                boneNames.emplace_back(asset.m_zone->m_script_strings.Value(parts.names[i]));
         }
 
-        const XAnimBoneCounts boneCounts(parts->boneCount[PART_TYPE_NO_QUAT],
-                                         parts->boneCount[PART_TYPE_HALF_QUAT],
-                                         parts->boneCount[PART_TYPE_FULL_QUAT],
-                                         parts->boneCount[PART_TYPE_HALF_QUAT_NO_SIZE],
-                                         parts->boneCount[PART_TYPE_FULL_QUAT_NO_SIZE],
-                                         parts->boneCount[PART_TYPE_SMALL_TRANS],
-                                         parts->boneCount[PART_TYPE_TRANS],
-                                         parts->boneCount[PART_TYPE_TRANS_NO_SIZE],
-                                         parts->boneCount[PART_TYPE_NO_TRANS]);
+        const XAnimBoneCounts boneCounts(parts.boneCount[PART_TYPE_NO_QUAT],
+                                         parts.boneCount[PART_TYPE_HALF_QUAT],
+                                         parts.boneCount[PART_TYPE_FULL_QUAT],
+                                         parts.boneCount[PART_TYPE_HALF_QUAT_NO_SIZE],
+                                         parts.boneCount[PART_TYPE_FULL_QUAT_NO_SIZE],
+                                         parts.boneCount[PART_TYPE_SMALL_TRANS],
+                                         parts.boneCount[PART_TYPE_TRANS],
+                                         parts.boneCount[PART_TYPE_TRANS_NO_SIZE],
+                                         parts.boneCount[PART_TYPE_NO_TRANS]);
 
         // Root indices should only ever be used when it is !useByteIndices, therefore we should be safe to always use the short version
-        assert(!useByteIndices || parts->indices._1 == nullptr);
-        FlatXAnimReadCursor flatData(parts->dataByte,
-                                     parts->dataByteCount,
-                                     parts->dataShort,
-                                     parts->dataShortCount,
-                                     parts->dataInt,
-                                     parts->dataIntCount,
-                                     parts->randomDataByte,
-                                     parts->randomDataByteCount,
-                                     parts->randomDataShort,
-                                     parts->randomDataShortCount,
-                                     parts->indices._2,
-                                     parts->indexCount);
+        assert(!useByteIndices || parts.indices._1 == nullptr);
+        FlatXAnimReadCursor flatData(parts.dataByte,
+                                     parts.dataByteCount,
+                                     parts.dataShort,
+                                     parts.dataShortCount,
+                                     parts.dataInt,
+                                     parts.dataIntCount,
+                                     parts.randomDataByte,
+                                     parts.randomDataByteCount,
+                                     parts.randomDataShort,
+                                     parts.randomDataShortCount,
+                                     parts.indices._2,
+                                     parts.indexCount);
 
         auto maybeBoneTracks = CreateBoneTracksFromFlatData(std::move(boneNames), boneCounts, flatData, useByteIndices);
         if (!maybeBoneTracks.has_value())
         {
-            con::error("Failed to reconstruct bone tracks from XAnim {}: {}", parts->name, maybeBoneTracks.error());
+            con::error("Failed to reconstruct bone tracks from XAnim {}: {}", parts.name, maybeBoneTracks.error());
             return;
         }
 
@@ -316,28 +326,31 @@ namespace xanim
             return;
 
         CommonXAnimParts commonParts;
-        commonParts.m_num_frames = parts->numframes;
-        commonParts.m_looped = parts->bLoop;
+        commonParts.m_num_frames = parts.numframes;
+        commonParts.m_looped = IS_LOOPED;
 #if defined(FEATURE_T5) || defined(FEATURE_T6)
-        commonParts.m_left_hand_grip_ik = parts->bLeftHandGripIK;
+        commonParts.m_left_hand_grip_ik = parts.bLeftHandGripIK;
 #endif
 #if defined(FEATURE_T5)
-        commonParts.m_streamable = parts->bStreamable;
+        commonParts.m_streamable = parts.bStreamable;
 #endif
-        commonParts.m_frame_rate = parts->framerate;
+        commonParts.m_frame_rate = parts.framerate;
 #if defined(FEATURE_T5) || defined(FEATURE_T6)
-        commonParts.m_primed_length = parts->primedLength;
+        commonParts.m_primed_length = parts.primedLength;
 #endif
-        commonParts.m_asset_type = parts->assetType;
+        commonParts.m_asset_type = parts.assetType;
         commonParts.m_bone_tracks = std::move(maybeBoneTracks).value();
-        commonParts.m_notifies = ConvertNotifies(*parts, asset);
-        commonParts.m_delta_track = ConvertDeltaTrack(*parts, useByteIndices, numLoopFrames);
+        commonParts.m_notifies = ConvertNotifies(parts, asset);
+        commonParts.m_delta_track = ConvertDeltaTrack(parts, useByteIndices, numLoopFrames);
 
         WriteCompiledXAnim(
             *assetFile,
             commonParts,
 #if defined(FEATURE_IW3)
             CompiledXAnimVersion::VERSION_17
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            // Make sure we dump as many anims as possible in an IW3 modtools compatible way
+            HAS_DELTA_3D ? CompiledXAnimVersion::VERSION_18 : CompiledXAnimVersion::VERSION_17
 #elif defined(FEATURE_T5) || defined(FEATURE_T6)
             CompiledXAnimVersion::VERSION_19
 #endif

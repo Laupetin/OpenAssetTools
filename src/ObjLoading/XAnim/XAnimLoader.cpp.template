@@ -1,4 +1,4 @@
-#options GAME(IW3, T5, T6)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".cpp"
 
@@ -17,6 +17,16 @@
 #elif GAME == "T6"
 #define FEATURE_T6
 #define HAS_DELTA_QUAT_3D
+#endif
+
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#define SET_IS_LOOPED() parts.flags |= ANIM_LOOP
+#define SET_HAS_DELTA() parts.flags |= ANIM_DELTA
+#define SET_HAS_DELTA_3D() parts.flags |= ANIM_DELTA_3D
+#else
+#define SET_IS_LOOPED() parts.bLoop = true
+#define SET_HAS_DELTA() parts.bDelta = true
+#define SET_HAS_DELTA_3D() parts.bDelta3D = true
 #endif
 
 // This file was templated.
@@ -366,7 +376,8 @@ namespace
                             ZoneScriptStrings& scriptStrings)
     {
         parts.numframes = static_cast<decltype(XAnimParts::numframes)>(commonParts.m_num_frames);
-        parts.bLoop = commonParts.m_looped;
+        if (commonParts.m_looped)
+            SET_IS_LOOPED();
 #if defined(FEATURE_T5) || defined(FEATURE_T6)
         parts.bLeftHandGripIK = commonParts.m_left_hand_grip_ik;
 #endif
@@ -387,11 +398,11 @@ namespace
             parts.deltaPart = memory.Alloc<XAnimDeltaPart>();
 #ifdef HAS_DELTA_QUAT_3D
             if (commonParts.m_delta_track->m_quat && commonParts.m_delta_track->m_quat->Is3DTrack())
-                parts.bDelta3D = true;
+                SET_HAS_DELTA_3D();
             else
-                parts.bDelta = true;
+                SET_HAS_DELTA();
 #else
-            parts.bDelta = true;
+            SET_HAS_DELTA();
 #endif
             ConvertCommonDeltaPart(*parts.deltaPart, *commonParts.m_delta_track, memory, useByteIndices);
         }

@@ -28,6 +28,7 @@ namespace
     {
         uint8_t flags = 0;
 
+        const auto hasDelta3D = parts.m_delta_track && parts.m_delta_track->m_quat && parts.m_delta_track->m_quat->Is3DTrack();
         switch (version)
         {
         case CompiledXAnimVersion::VERSION_17:
@@ -37,9 +38,15 @@ namespace
                 flags |= binary17::FLAG_DELTA;
             break;
 
+        case CompiledXAnimVersion::VERSION_18:
+            if (parts.m_looped)
+                flags |= binary18::FLAG_LOOPED;
+            if (parts.m_delta_track)
+                flags |= hasDelta3D ? binary18::FLAG_DELTA_3D : binary18::FLAG_DELTA;
+            break;
+
         case CompiledXAnimVersion::VERSION_19:
         {
-            const auto hasDelta3D = parts.m_delta_track && parts.m_delta_track->m_quat && parts.m_delta_track->m_quat->Is3DTrack();
             const auto requiresT6Compatibility = hasDelta3D;
 
             if (requiresT6Compatibility)
