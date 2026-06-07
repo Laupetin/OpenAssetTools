@@ -122,6 +122,39 @@ The following section specify which assets are supported to be dumped to disk (u
 | VehicleDef                | ❌              | ❌              |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.                                                    |
 
+## T4 (Call of Duty: World at War)
+
+| Asset Type           | Dumping Support | Loading Support | Notes                                                |
+| -------------------- | --------------- | --------------- | ---------------------------------------------------- |
+| PhysPreset           | ❌              | ❌              |                                                      |
+| PhysConstraints      | ❌              | ❌              |                                                      |
+| DestructibleDef      | ❌              | ❌              |                                                      |
+| XAnimParts           | ❌              | ❌              |                                                      |
+| XModel               | ❌              | ❌              |                                                      |
+| Material             | ❌              | ❌              |                                                      |
+| MaterialTechniqueSet | ❌              | ❌              |                                                      |
+| GfxImage             | ✅              | ❌              | A few special image encodings are not yet supported. |
+| snd_alias_list_t     | ❌              | ❌              |                                                      |
+| SndDriverGlobals     | ❌              | ❌              |                                                      |
+| LoadedSound          | ❌              | ❌              |                                                      |
+| clipMap_t            | ❌              | ❌              |                                                      |
+| ComWorld             | ❌              | ❌              |                                                      |
+| GameWorldSp          | ❌              | ❌              |                                                      |
+| GameWorldMp          | ❌              | ❌              |                                                      |
+| MapEnts              | ❌              | ❌              |                                                      |
+| GfxWorld             | ❌              | ❌              |                                                      |
+| GfxLightDef          | ❌              | ❌              |                                                      |
+| Font_s               | ❌              | ❌              |                                                      |
+| MenuList             | ❌              | ❌              |                                                      |
+| menuDef_t            | ❌              | ❌              |                                                      |
+| LocalizeEntry        | ✅              | ❌              |                                                      |
+| WeaponDef            | ❌              | ❌              |                                                      |
+| FxEffectDef          | ❌              | ❌              |                                                      |
+| FxImpactTable        | ❌              | ❌              |                                                      |
+| RawFile              | ✅              | ❌              |                                                      |
+| StringTable          | ✅              | ❌              |                                                      |
+| PackIndex            | ❌              | ❌              |                                                      |
+
 ## T5 (Call of Duty: Black Ops)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |

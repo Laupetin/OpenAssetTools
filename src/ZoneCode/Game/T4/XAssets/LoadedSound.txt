@@ -1,0 +1,10 @@
+// =========================================
+// LoadedSound
+// =========================================
+use LoadedSound;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// snd_asset
+use snd_asset;
+set count data data_size;

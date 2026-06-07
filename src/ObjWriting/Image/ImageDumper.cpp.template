@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageDumper" + GAME + ".cpp"
 
@@ -6,6 +6,10 @@
 
 #if GAME == "IW3"
 #define FEATURE_IW3
+#define DX9
+#define IWI6
+#elif GAME == "T4"
+#define FEATURE_T4
 #define DX9
 #define IWI6
 #elif GAME == "IW4"
@@ -80,7 +84,7 @@ namespace
 #endif
 
         const auto& loadDef = *image.texture.loadDef;
-#ifdef FEATURE_IW3
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
         textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
 #else
         textureLoader.Width(image.width).Height(image.height).Depth(image.depth);

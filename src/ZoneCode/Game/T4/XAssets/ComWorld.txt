@@ -1,0 +1,18 @@
+// =========================================
+// ComWorld
+// =========================================
+use ComWorld;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count primaryLights primaryLightCount;
+set allocalign waterCells 4;
+set count waterCells numWaterCells;
+set count burnableCells numBurnableCells;
+
+// ComPrimaryLight
+use ComPrimaryLight;
+set string defName;
+
+// ComBurnableCell
+use ComBurnableCell;
+set count data 32;

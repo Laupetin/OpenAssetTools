@@ -196,13 +196,15 @@ XAssetInfoGeneric* GameGlobalAssetPools::GetAsset(const asset_type_t assetType, 
 
 GameGlobalAssetPools* GameGlobalAssetPools::GetGlobalPoolsForGame(GameId gameId)
 {
-    static GameGlobalAssetPools* globalAssetPools[static_cast<unsigned>(GameId::COUNT)]{
+    static GameGlobalAssetPools* globalAssetPools[]{
         new GameGlobalAssetPools(GameId::IW3),
         new GameGlobalAssetPools(GameId::IW4),
         new GameGlobalAssetPools(GameId::IW5),
+        new GameGlobalAssetPools(GameId::T4),
         new GameGlobalAssetPools(GameId::T5),
         new GameGlobalAssetPools(GameId::T6),
     };
+    static_assert(std::extent_v<decltype(globalAssetPools)> == static_cast<unsigned>(GameId::COUNT));
 
     assert(static_cast<unsigned>(gameId) < static_cast<unsigned>(GameId::COUNT));
     auto* result = globalAssetPools[static_cast<unsigned>(gameId)];

@@ -17,7 +17,7 @@ void Actions_GfxImage::OnImageLoaded(GfxImage* image) const
 
 void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const
 {
-    const size_t loadDefSize = offsetof(IW4::GfxImageLoadDef, data) + loadDef->resourceSize;
+    const size_t loadDefSize = offsetof(GfxImageLoadDef, data) + loadDef->resourceSize;
 
     image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone.Memory().AllocRaw(loadDefSize));
     memcpy(image->texture.loadDef, loadDef, loadDefSize);

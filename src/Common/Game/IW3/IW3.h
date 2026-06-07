@@ -159,7 +159,6 @@ namespace IW3
         WFT_NUM_FIELD_TYPES
     };
 
-    using AssetXModelPieces = Asset<ASSET_TYPE_XMODELPIECES, XModelPieces>;
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetXAnim = Asset<ASSET_TYPE_XANIMPARTS, XAnimParts>;
     using AssetXModel = Asset<ASSET_TYPE_XMODEL, XModel>;
@@ -194,7 +193,6 @@ namespace IW3
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace IW3
 
-DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXModelPieces, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetPhysPreset, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXAnim, name);
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXModel, name);

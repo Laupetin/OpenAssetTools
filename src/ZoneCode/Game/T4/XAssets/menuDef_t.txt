@@ -1,0 +1,80 @@
+// =========================================
+// menuDef_t
+// =========================================
+use menuDef_t;
+set block XFILE_BLOCK_TEMP;
+set string window::name;
+set string font;
+set string onOpen;
+set string onFocus;
+set string onClose;
+set string onESC;
+set reusable visibleExp;
+set string allowedBinding;
+set string soundName;
+set reusable rectXExp;
+set reusable rectYExp;
+set count items itemCount;
+
+// windowDef_t
+use windowDef_t;
+set string name;
+set string group;
+
+// ItemKeyHandler
+set string ItemKeyHandler::action;
+
+// statement_s
+set count statement_s::entries numEntries;
+
+// expressionEntry
+set condition expressionEntry::data::operand type == EET_OPERAND;
+
+// Operand
+use Operand;
+set condition internals::intVal dataType == VAL_INT;
+set condition internals::floatVal dataType == VAL_FLOAT;
+set condition internals::string dataType == VAL_STRING;
+set string internals::string;
+
+// itemDef_s
+use itemDef_s;
+set string text;
+set condition parent never;
+set string mouseEnterText;
+set string mouseExitText;
+set string mouseEnter;
+set string mouseExit;
+set string action;
+set string onAccept;
+set string onFocus;
+set string leaveFocus;
+set string dvar;
+set string dvarTest;
+set string onListboxSelectionChange;
+set string enableDvar;
+
+// itemDefData_t
+use itemDefData_t;
+set string enumDvarName;
+set condition data never;
+set condition listBox itemDef_s::type == ITEM_TYPE_LISTBOX;
+set condition editField itemDef_s::type == ITEM_TYPE_TEXT
+    || itemDef_s::type == ITEM_TYPE_EDITFIELD
+    || itemDef_s::type == ITEM_TYPE_NUMERICFIELD
+    || itemDef_s::type == ITEM_TYPE_SLIDER
+    || itemDef_s::type == ITEM_TYPE_YESNO
+    || itemDef_s::type == ITEM_TYPE_BIND
+    || itemDef_s::type == ITEM_TYPE_VALIDFILEFIELD
+    || itemDef_s::type == ITEM_TYPE_DECIMALFIELD
+    || itemDef_s::type == ITEM_TYPE_UPREDITFIELD;
+set condition multi itemDef_s::type == ITEM_TYPE_MULTI;
+set condition enumDvarName itemDef_s::type == ITEM_TYPE_DVARENUM;
+
+// listBoxDef_s
+set string listBoxDef_s::doubleClick;
+
+// multiDef_s
+use multiDef_s;
+set string dvarList;
+set string dvarStr;
