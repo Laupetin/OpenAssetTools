@@ -108,6 +108,7 @@ std::string XAssetInfoGeneric::NormalizeAssetName(std::string input)
     utils::MakeStringLowerCase(input);
 
     std::ranges::replace(input, '\\', '/');
+    utils::StringTrim(input);
 
     return input;
 }
