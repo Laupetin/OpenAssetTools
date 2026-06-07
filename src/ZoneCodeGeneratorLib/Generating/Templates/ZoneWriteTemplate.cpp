@@ -1201,7 +1201,7 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINEF("m_stream->Align({0});", info->m_definition->GetAlignment())
+            LINEF("m_stream->Align({0});", MakeAllocAlignment(*info))
             LINEF("m_stream->ReusableAddOffset(*{0});", MakeTypePtrVarName(info->m_definition))
             LINE("")
             if (!info->m_is_leaf)
@@ -1478,7 +1478,8 @@ namespace
 
         void PrintWritePtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info, const bool reusable) const
         {
-            LINEF("m_stream->Align({0});", def->GetAlignment())
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
+            LINEF("m_stream->Align({0});", alignment)
 
             if (reusable)
             {

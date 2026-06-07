@@ -31,9 +31,9 @@ void SequenceAllocAlign::ProcessMatch(CommandsParserState* state, SequenceResult
     if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), type, memberChain))
         throw ParsingException(typeNameToken.GetPos(), "Unknown type");
 
-    if (memberChain.empty())
-        throw ParsingException(typeNameToken.GetPos(), "Need to specify a member");
-
     auto allocAlignEvaluation = CommandsCommonMatchers::ProcessEvaluation(state, result, type);
-    memberChain.back()->m_alloc_alignment = std::move(allocAlignEvaluation);
+    if (memberChain.empty())
+        type->m_alloc_alignment = std::move(allocAlignEvaluation);
+    else
+        memberChain.back()->m_alloc_alignment = std::move(allocAlignEvaluation);
 }

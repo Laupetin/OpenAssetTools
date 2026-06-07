@@ -256,6 +256,14 @@ void BaseTemplate::MakeEvaluationInternal(const IEvaluation* evaluation, std::os
         MakeOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation), str);
 }
 
+std::string BaseTemplate::MakeAllocAlignment(const StructureInformation& info)
+{
+    if (info.m_alloc_alignment)
+        return MakeEvaluation(info.m_alloc_alignment.get());
+
+    return std::to_string(info.m_definition->GetAlignment());
+}
+
 std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
 {
     std::ostringstream str;

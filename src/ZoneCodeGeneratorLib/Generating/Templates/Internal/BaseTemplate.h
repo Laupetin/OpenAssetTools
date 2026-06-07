@@ -33,6 +33,7 @@ protected:
     static std::string MakeArrayIndices(const DeclarationModifierComputations& modifierComputations);
     static std::string MakeCustomActionCall(const CustomAction* action);
     static std::string MakeArrayCount(const ArrayDeclarationModifier* arrayModifier);
+    static std::string MakeAllocAlignment(const StructureInformation& info);
     static std::string MakeEvaluation(const IEvaluation* evaluation);
 
     static bool ShouldGenerateFillMethod(const RenderingUsedType& type);

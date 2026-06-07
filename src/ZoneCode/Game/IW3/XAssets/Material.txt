@@ -3,6 +3,7 @@
 // =========================================
 use Material;
 set block XFILE_BLOCK_TEMP;
+set allocalign Material 4;
 set string info::name;
 set reusable textureTable;
 set count textureTable textureCount;
