@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T4/AssetMarkerT4.h"
 #include "Game/T4/T4.h"
+#include "Localize/AssetLoaderLocalizeT4.h"
 
 using namespace T4;
 
@@ -82,7 +83,9 @@ namespace
 
     void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
     {
-        // TODO
+        auto& memory = zone.Memory();
+
+        collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
     }
 } // namespace
 
