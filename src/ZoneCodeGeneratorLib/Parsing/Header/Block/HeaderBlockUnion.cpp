@@ -61,15 +61,15 @@ void HeaderBlockUnion::OnClose(HeaderParserState* state)
     m_union_definition = unionDefinition.get();
 
     if (m_is_anonymous)
-        unionDefinition->m_anonymous = true;
+        unionDefinition->m_flags |= DefinitionWithMembers::FLAG_ANONYMOUS;
 
     for (auto& member : m_members)
         unionDefinition->m_members.emplace_back(std::move(member));
 
     if (m_has_custom_align)
     {
-        unionDefinition->m_alignment_override = static_cast<unsigned>(m_custom_alignment);
-        unionDefinition->m_has_alignment_override = true;
+        unionDefinition->m_alignment = static_cast<unsigned>(m_custom_alignment);
+        unionDefinition->m_flags |= DefinitionWithMembers::FLAG_ALIGNMENT_FORCED;
     }
 
     state->AddDataType(std::move(unionDefinition));

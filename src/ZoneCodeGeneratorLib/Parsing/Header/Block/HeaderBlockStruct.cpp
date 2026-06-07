@@ -61,15 +61,15 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
     m_struct_definition = structDefinition.get();
 
     if (m_is_anonymous)
-        structDefinition->m_anonymous = true;
+        structDefinition->m_flags |= DefinitionWithMembers::FLAG_ANONYMOUS;
 
     for (auto& member : m_members)
         structDefinition->m_members.emplace_back(std::move(member));
 
     if (m_has_custom_align)
     {
-        structDefinition->m_alignment_override = static_cast<unsigned>(m_custom_alignment);
-        structDefinition->m_has_alignment_override = true;
+        structDefinition->m_alignment = static_cast<unsigned>(m_custom_alignment);
+        structDefinition->m_flags |= DefinitionWithMembers::FLAG_ALIGNMENT_FORCED;
     }
 
     state->AddDataType(std::move(structDefinition));

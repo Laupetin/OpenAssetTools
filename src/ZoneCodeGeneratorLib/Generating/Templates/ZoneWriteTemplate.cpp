@@ -124,7 +124,7 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
                     && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                     LINE(VariableDecl(type->m_type))
             }
@@ -138,7 +138,7 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
                     LINE(WrittenVariableDecl(type->m_type))
             }
             for (const auto* type : m_env.m_used_types)
@@ -370,7 +370,7 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
                     && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                     PrintVariableInitialization(type->m_type);
             }
@@ -1282,7 +1282,7 @@ namespace
                                              const DeclarationModifierComputations& modifier,
                                              const size_t nestedBaseOffset)
         {
-            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->m_anonymous;
+            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->IsAnonymous();
 
             if (!hasAnonymousType)
             {
