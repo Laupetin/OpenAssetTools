@@ -4,6 +4,7 @@
 #include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -43,12 +44,7 @@ namespace
 
     bool CalculateAlign(IDataRepository* repository, DefinitionWithMembers* definition)
     {
-        if (definition->m_has_alignment_override)
-        {
-            definition->m_flags |= DefinitionWithMembers::FLAG_ALIGNMENT_FORCED;
-            definition->m_alignment = definition->m_alignment_override;
-        }
-        else
+        if (!definition->GetForceAlignment())
         {
             definition->m_alignment = 0;
             for (const auto& member : definition->m_members)
@@ -57,8 +53,7 @@ namespace
                     return false;
 
                 const auto memberAlignment = member->GetAlignment();
-                if (memberAlignment > definition->m_alignment)
-                    definition->m_alignment = memberAlignment;
+                definition->m_alignment = std::max(memberAlignment, definition->m_alignment);
             }
         }
 

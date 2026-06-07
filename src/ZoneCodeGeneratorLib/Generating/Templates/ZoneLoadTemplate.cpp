@@ -138,7 +138,7 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
                     && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                 {
                     LINE(VariableDecl(type->m_type))
@@ -345,7 +345,7 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
                     && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                 {
                     PrintVariableInitialization(type->m_type);
@@ -480,7 +480,7 @@ namespace
                                              const DeclarationModifierComputations& modifier,
                                              const size_t nestedBaseOffset)
         {
-            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->m_anonymous;
+            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->IsAnonymous();
 
             if (!hasAnonymousType)
             {
@@ -888,10 +888,12 @@ namespace
 
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
             if (info && !info->m_has_matching_cross_platform_structure && StructureComputations(info).GetDynamicMember())
             {
+                assert(def == info->m_definition);
                 LINE("// Alloc first for alignment, then proceed to read as game does")
-                LINEF("m_stream.Alloc({0});", def->GetAlignment())
+                LINEF("m_stream.Alloc({0});", alignment)
                 LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(def))
                 LINEF("*{0} = static_cast<{1}*>(m_stream.AllocOutOfBlock(0, allocSize));", MakeTypePtrVarName(def), def->GetFullName())
             }
@@ -901,7 +903,7 @@ namespace
                       MakeTypePtrVarName(def),
                       m_env.m_word_size_mismatch ? "AllocOutOfBlock" : "Alloc",
                       def->GetFullName(),
-                      def->GetAlignment())
+                      alignment)
             }
 
             if (info && !info->m_is_leaf)
@@ -1989,7 +1991,7 @@ namespace
                   MakeTypePtrVarName(info->m_definition),
                   m_env.m_word_size_mismatch ? "AllocOutOfBlock" : "Alloc",
                   info->m_definition->GetFullName(),
-                  info->m_definition->GetAlignment())
+                  MakeAllocAlignment(*info))
 
             if (inTemp)
             {

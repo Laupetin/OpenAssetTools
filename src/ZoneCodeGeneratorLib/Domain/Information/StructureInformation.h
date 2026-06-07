@@ -21,6 +21,7 @@ public:
     TypeInformation* m_type_info;
     std::string m_asset_name;
 
+    std::unique_ptr<IEvaluation> m_alloc_alignment;
     std::vector<StructureInformation*> m_usages;
     std::vector<std::unique_ptr<MemberInformation>> m_ordered_members;
 

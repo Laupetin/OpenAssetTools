@@ -55,6 +55,7 @@ namespace IW3
     struct StringTable;
 
     typedef unsigned short ScriptString;
+    typedef tdef_align32(16) char raw_byte16;
 
     union XAssetHeader
     {
@@ -2382,7 +2383,7 @@ namespace IW3
         unsigned int dynEntClientWordCount[2];
         unsigned int dynEntClientCount[2];
         unsigned int* dynEntCellBits[2];
-        char* dynEntVisData[2][3];
+        raw_byte16* dynEntVisData[2][3];
     };
 
     struct GfxWorldStreamInfo

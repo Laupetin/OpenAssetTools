@@ -7,10 +7,7 @@ DefinitionWithMembers::DefinitionWithMembers(std::string _namespace, std::string
       m_flags(0),
       m_size(0),
       m_alignment(0),
-      m_has_alignment_override(false),
-      m_anonymous(false),
-      m_pack(pack),
-      m_alignment_override(0)
+      m_pack(pack)
 {
 }
 
@@ -23,8 +20,6 @@ unsigned DefinitionWithMembers::GetAlignment() const
 
 bool DefinitionWithMembers::GetForceAlignment() const
 {
-    assert(m_flags & FLAG_FIELDS_CALCULATED);
-
     return m_flags & FLAG_ALIGNMENT_FORCED;
 }
 
@@ -33,4 +28,9 @@ unsigned DefinitionWithMembers::GetSize() const
     assert(m_flags & FLAG_FIELDS_CALCULATED);
 
     return m_size;
+}
+
+bool DefinitionWithMembers::IsAnonymous() const
+{
+    return m_flags & FLAG_ANONYMOUS;
 }

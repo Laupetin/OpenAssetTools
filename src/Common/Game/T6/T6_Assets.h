@@ -1296,8 +1296,6 @@ namespace T6
         vec3_t sunFxPosition;
     };
 
-    typedef tdef_align32(4) GfxDrawSurf GfxDrawSurf_align4;
-
     struct GfxWorldDpvsStatic
     {
         unsigned int smodelCount;
@@ -1320,7 +1318,7 @@ namespace T6
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxStaticModelDrawInst* smodelDrawInsts;
-        GfxDrawSurf_align4* surfaceMaterials;
+        GfxDrawSurf* surfaceMaterials;
         raw_byte128* surfaceCastsSunShadow;
         raw_byte128* surfaceCastsShadow;
         raw_byte128* smodelCastsShadow;

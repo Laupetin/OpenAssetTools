@@ -162,6 +162,7 @@ set count surfaces GfxWorld::surfaceCount;
 set count smodelDrawInsts smodelCount;
 set block surfaceMaterials XFILE_BLOCK_RUNTIME_VIRTUAL;
 set count surfaceMaterials staticSurfaceCount;
+set allocalign surfaceMaterials 4;
 reorder:
     smodelVisData
     surfaceVisData

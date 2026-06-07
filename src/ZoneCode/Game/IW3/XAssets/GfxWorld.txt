@@ -109,6 +109,7 @@ set count cullGroups GfxWorld::cullGroupCount;
 set count smodelDrawInsts smodelCount;
 set block surfaceMaterials XFILE_BLOCK_RUNTIME;
 set count surfaceMaterials staticSurfaceCount;
+set allocalign surfaceMaterials 4;
 set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME;
 set count surfaceCastsSunShadow surfaceVisDataCount;
 
