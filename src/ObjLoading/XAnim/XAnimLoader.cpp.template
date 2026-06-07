@@ -203,11 +203,13 @@ namespace
 #define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat2
 #define DELTA_QUAT_2D_DATA_STRUCT XAnimDeltaPartQuatData2
 #define DELTA_QUAT_2D_FRAMES_STRUCT XAnimDeltaPartQuatDataFrames2
+#define DELTA_QUAT_2D_INDICES_STRUCT XAnimDynamicIndicesQuat2
 #else
 #define DELTA_QUAT_2D_MEMBER quat
 #define DELTA_QUAT_2D_STRUCT XAnimDeltaPartQuat
 #define DELTA_QUAT_2D_DATA_STRUCT XAnimDeltaPartQuatData
 #define DELTA_QUAT_2D_FRAMES_STRUCT XAnimDeltaPartQuatDataFrames
+#define DELTA_QUAT_2D_INDICES_STRUCT XAnimDynamicIndicesQuat
 #endif
 
 #ifdef HAS_DELTA_QUAT_3D
@@ -277,7 +279,7 @@ namespace
 
         const auto numQuatIndices = commonDeltaQuatTrack.m_indices.size();
         const auto indicesArraySize =
-            useByteIndices ? numQuatIndices * sizeof(XAnimDynamicIndicesQuat::_1) : numQuatIndices * sizeof(XAnimDynamicIndicesQuat::_2);
+            useByteIndices ? numQuatIndices * sizeof(DELTA_QUAT_2D_INDICES_STRUCT::_1) : numQuatIndices * sizeof(DELTA_QUAT_2D_INDICES_STRUCT::_2);
 
         deltaPart.DELTA_QUAT_2D_MEMBER = static_cast<DELTA_QUAT_2D_STRUCT*>(
             memory.AllocRaw(offsetof(DELTA_QUAT_2D_STRUCT, u) + offsetof(DELTA_QUAT_2D_FRAMES_STRUCT, indices) + indicesArraySize));

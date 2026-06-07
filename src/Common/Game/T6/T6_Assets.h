@@ -5668,21 +5668,21 @@ namespace T6
         XAnimPartTransData u;
     };
 
-    union XAnimDynamicIndicesQuat
-    {
-        unsigned char _1[1];
-        uint16_t _2[1];
-    };
-
     struct type_align(4) XQuat2
     {
         int16_t value[2];
     };
 
+    union XAnimDynamicIndicesQuat2
+    {
+        unsigned char _1[1];
+        uint16_t _2[1];
+    };
+
     struct type_align32(4) XAnimDeltaPartQuatDataFrames2
     {
         XQuat2* frames;
-        XAnimDynamicIndicesQuat indices;
+        XAnimDynamicIndicesQuat2 indices;
     };
 
     union XAnimDeltaPartQuatData2
@@ -5700,6 +5700,12 @@ namespace T6
     struct type_align(4) XQuat
     {
         int16_t value[4];
+    };
+
+    union XAnimDynamicIndicesQuat
+    {
+        unsigned char _1[1];
+        uint16_t _2[1];
     };
 
     struct type_align32(4) XAnimDeltaPartQuatDataFrames
