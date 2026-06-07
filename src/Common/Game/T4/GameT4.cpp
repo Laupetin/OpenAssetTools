@@ -16,21 +16,21 @@ namespace
         "xanim",
         "xmodel",
         "material",
-        "techset",
+        "techniqueset",
         "image",
         "sound",
-        "loaded_sound",
-        "col_map_sp",
-        "col_map_mp",
-        "com_map",
-        "game_map_sp",
-        "game_map_mp",
-        "map_ents",
-        "gfx_map",
+        "loadedsound",
+        "clipmap_unused",
+        "clipmap",
+        "comworld",
+        "gameworldsp",
+        "gameworldmp",
+        "mapents",
+        "gfxworld",
         "lightdef",
-        "ui_map",
+        "uimap",
         "font",
-        "menufile",
+        "menulist",
         "menu",
         "localize",
         "weapon",
@@ -62,19 +62,16 @@ namespace T4
         : AbstractGame(ASSET_TYPE_NAMES, std::extent_v<decltype(ASSET_TYPE_NAMES)>, SUB_ASSET_TYPE_NAMES, std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
     {
         AddAssetTypeNameAlias<AssetTechniqueSet>("techset");
-        AddAssetTypeNameAlias<AssetTechniqueSet>("techniqueset");
-        AddAssetTypeNameAlias<AssetLoadedSound>("loadedsound");
-        AddAssetTypeNameAlias<AssetClipMap>("clipmap_unused");
-        AddAssetTypeNameAlias<AssetClipMap>("clipmap_sp");
-        AddAssetTypeNameAlias<AssetClipMapPvs>("clipmap");
-        AddAssetTypeNameAlias<AssetClipMapPvs>("clipmap_mp");
-        AddAssetTypeNameAlias<AssetComWorld>("comworld");
-        AddAssetTypeNameAlias<AssetGameWorldSp>("gameworldsp");
-        AddAssetTypeNameAlias<AssetGameWorldMp>("gameworldmp");
-        AddAssetTypeNameAlias<AssetMapEnts>("mapents");
-        AddAssetTypeNameAlias<AssetGfxWorld>("gfxworld");
+        AddAssetTypeNameAlias<AssetLoadedSound>("loaded_sound");
+        AddAssetTypeNameAlias<AssetClipMap>("col_map_sp");
+        AddAssetTypeNameAlias<AssetClipMapPvs>("col_map_mp");
+        AddAssetTypeNameAlias<AssetComWorld>("com_map");
+        AddAssetTypeNameAlias<AssetGameWorldSp>("game_map_sp");
+        AddAssetTypeNameAlias<AssetGameWorldMp>("game_map_mp");
+        AddAssetTypeNameAlias<AssetMapEnts>("map_ents");
+        AddAssetTypeNameAlias<AssetGfxWorld>("gfx_map");
         AddAssetTypeNameAlias<AssetLightDef>("gfxlightdef");
-        AddAssetTypeNameAlias<AssetMenuList>("menulist");
+        AddAssetTypeNameAlias<AssetMenuList>("menufile");
     }
 
     GameId Game::GetId() const
