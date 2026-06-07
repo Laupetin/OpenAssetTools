@@ -11,14 +11,15 @@
 
 ICommonAssetTypeMapper* ICommonAssetTypeMapper::GetCommonAssetMapperByGame(GameId gameId)
 {
-    static ICommonAssetTypeMapper* assetTypeMappers[static_cast<unsigned>(GameId::COUNT)]{
+    static ICommonAssetTypeMapper* assetTypeMappers[]{
         new IW3::CommonAssetTypeMapper(),
-        new T4::CommonAssetTypeMapper(),
         new IW4::CommonAssetTypeMapper(),
         new IW5::CommonAssetTypeMapper(),
+        new T4::CommonAssetTypeMapper(),
         new T5::CommonAssetTypeMapper(),
         new T6::CommonAssetTypeMapper(),
     };
+    static_assert(std::extent_v<decltype(assetTypeMappers)> == static_cast<unsigned>(GameId::COUNT));
 
     assert(static_cast<unsigned>(gameId) < static_cast<unsigned>(GameId::COUNT));
     auto* result = assetTypeMappers[static_cast<unsigned>(gameId)];

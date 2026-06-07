@@ -11,11 +11,11 @@
 
 const IObjLoader* IObjLoader::GetObjLoaderForGame(GameId game)
 {
-    static const IObjLoader* zoneCreators[static_cast<unsigned>(GameId::COUNT)]{
+    static const IObjLoader* zoneCreators[]{
         new IW3::ObjLoader(),
-        new T4::ObjLoader(),
         new IW4::ObjLoader(),
         new IW5::ObjLoader(),
+        new T4::ObjLoader(),
         new T5::ObjLoader(),
         new T6::ObjLoader(),
     };

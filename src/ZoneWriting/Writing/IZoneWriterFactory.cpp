@@ -11,11 +11,11 @@
 
 const IZoneWriterFactory* IZoneWriterFactory::GetZoneWriterFactoryForGame(GameId game)
 {
-    static const IZoneWriterFactory* zoneCreators[static_cast<unsigned>(GameId::COUNT)]{
+    static const IZoneWriterFactory* zoneCreators[]{
         new IW3::ZoneWriterFactory(),
-        new T4::ZoneWriterFactory(),
         new IW4::ZoneWriterFactory(),
         new IW5::ZoneWriterFactory(),
+        new T4::ZoneWriterFactory(),
         new T5::ZoneWriterFactory(),
         new T6::ZoneWriterFactory(),
     };

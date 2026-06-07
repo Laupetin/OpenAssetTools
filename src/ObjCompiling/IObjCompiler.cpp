@@ -11,11 +11,11 @@
 
 const IObjCompiler* IObjCompiler::GetObjCompilerForGame(GameId game)
 {
-    static const IObjCompiler* objCompilers[static_cast<unsigned>(GameId::COUNT)]{
+    static const IObjCompiler* objCompilers[]{
         new IW3::ObjCompiler(),
-        new T4::ObjCompiler(),
         new IW4::ObjCompiler(),
         new IW5::ObjCompiler(),
+        new T4::ObjCompiler(),
         new T5::ObjCompiler(),
         new T6::ObjCompiler(),
     };

@@ -41,11 +41,11 @@ void IObjWriter::RegisterAssetDumper(std::unique_ptr<IAssetDumper> dumper)
 
 IObjWriter* IObjWriter::GetObjWriterForGame(GameId game)
 {
-    static IObjWriter* objWriters[static_cast<unsigned>(GameId::COUNT)]{
+    static IObjWriter* objWriters[]{
         new IW3::ObjWriter(),
-        new T4::ObjWriter(),
         new IW4::ObjWriter(),
         new IW5::ObjWriter(),
+        new T4::ObjWriter(),
         new T5::ObjWriter(),
         new T6::ObjWriter(),
     };

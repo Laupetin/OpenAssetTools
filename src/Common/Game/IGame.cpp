@@ -12,14 +12,15 @@
 
 IGame* IGame::GetGameById(GameId gameId)
 {
-    static IGame* games[static_cast<unsigned>(GameId::COUNT)]{
+    static IGame* games[]{
         new IW3::Game(),
-        new T4::Game(),
         new IW4::Game(),
         new IW5::Game(),
+        new T4::Game(),
         new T5::Game(),
         new T6::Game(),
     };
+    static_assert(std::extent_v<decltype(games)> == static_cast<unsigned>(GameId::COUNT));
 
     assert(static_cast<unsigned>(gameId) < static_cast<unsigned>(GameId::COUNT));
     auto* result = games[static_cast<unsigned>(gameId)];

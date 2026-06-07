@@ -1,8 +1,8 @@
 export enum GameId {
   IW3 = "IW3",
-  T4 = "T4",
   IW4 = "IW4",
   IW5 = "IW5",
+  T4 = "T4",
   T5 = "T5",
   T6 = "T6",
 }
