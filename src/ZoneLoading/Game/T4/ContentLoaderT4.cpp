@@ -1,10 +1,8 @@
 #include "ContentLoaderT4.h"
 
-#include "Game/IGame.h"
 #include "Game/T4/AssetLoaderT4.h"
 #include "Game/T4/T4.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
-#include "Utils/Logging/Log.h"
 
 #include <cassert>
 
