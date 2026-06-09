@@ -311,7 +311,6 @@ namespace
         std::vector<std::byte> out;
         out.reserve(static_cast<size_t>(clipMap.numLeafs) * 24uz);
 
-        auto nextCluster = 0;
         auto runningFirstLeafBrush = 0;
 
         for (auto leafIndex = 0uz; leafIndex < clipMap.numLeafs; leafIndex++)
@@ -321,12 +320,23 @@ namespace
                                             ? &clipMap.leafbrushNodes[leaf.leafBrushNode]
                                             : nullptr;
             const auto leafBrushCount = leafBrushNode && leafBrushNode->leafBrushCount > 0 ? static_cast<int32_t>(leafBrushNode->leafBrushCount) : 0;
-            const auto firstLeafBrush = leafBrushCount > 0
-                                            ? static_cast<int32_t>(PointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, leafBrushNode->data.leaf.brushes))
-                                            : runningFirstLeafBrush;
+            auto firstLeafBrush = runningFirstLeafBrush;
+            if (leafBrushCount > 0)
+            {
+                const auto brushesIndex = PointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, leafBrushNode->data.leaf.brushes);
 
-            // Leaf 0 is a dummy leaf. Real empty-space clusters start at the next non-solid leaf.
-            const auto cluster = leafBrushCount > 0 ? -1 : leafIndex == 0uz ? 0 : nextCluster++;
+                // Official linker-built assets keep leaf nodes pointing into
+                // clipMap.leafbrushes. OAT-built fastfiles can contain copied
+                // per-node brush arrays instead, so recover the raw leaf range
+                // from the monotonically packed leafbrush cursor in that case.
+                if (brushesIndex < PositiveCount(clipMap.numLeafBrushes))
+                    firstLeafBrush = static_cast<int32_t>(brushesIndex);
+            }
+
+            // The raw leaf record carries the cluster/cell assignment even for
+            // leaves that also reference brushes. Recomputing this from brush
+            // count makes valid source leaves look solid to Radiant.
+            const auto cluster = static_cast<int32_t>(leaf.cluster);
             const auto cellIndex = cluster >= 0 ? 0 : -1;
 
             Append(out, cluster);
