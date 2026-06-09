@@ -82,7 +82,9 @@ namespace
     constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
     constexpr auto SKY_LIGHTMAP_INDEX = 31u;
     constexpr auto PATHCONNECTIONS_VERSION = 8u;
-    constexpr auto DEG_TO_RAD = 3.14159265358979323846f / 180.0f;
+    // linker_pc uses this exact float literal when converting entity angles to
+    // radians. It is pi / 180, but the decompiled value avoids tiny ULP drift.
+    constexpr auto DEG_TO_RAD = 0.01745329238474369f;
 
     [[nodiscard]] const IW3::d3dbsp::File* GetBspForAsset(const std::string& assetName, ISearchPath& searchPath, AssetCreationContext& context)
     {
@@ -123,6 +125,52 @@ namespace
     [[nodiscard]] bool FitsInt16(const int value)
     {
         return value >= static_cast<int>(std::numeric_limits<int16_t>::min()) && value <= static_cast<int>(std::numeric_limits<int16_t>::max());
+    }
+
+    [[nodiscard]] float LinkerTrig(const float radians, const bool cosine)
+    {
+        // The stock x86 linker calls the double sin/cos functions and then
+        // stores the result into float locals before building the axis.
+        return static_cast<float>(cosine ? std::cos(static_cast<double>(radians)) : std::sin(static_cast<double>(radians)));
+    }
+
+    [[nodiscard]] float LinkerFloat(const double value)
+    {
+        // Make linker-style float spill points explicit. This keeps generated
+        // quaternions closer to the 32-bit stock tool than pure float math.
+        return static_cast<float>(value);
+    }
+
+    [[nodiscard]] float LinkerQuatSizeSq(const float (&candidate)[4], const size_t candidateIndex)
+    {
+        // Match the stock MatrixToQuat accumulation order for each candidate
+        // before the testSizeSq float is compared against 1.0f.
+        switch (candidateIndex)
+        {
+        case 0:
+            return LinkerFloat(static_cast<double>(candidate[3]) * candidate[3] + static_cast<double>(candidate[1]) * candidate[1]
+                               + static_cast<double>(candidate[0]) * candidate[0] + static_cast<double>(candidate[2]) * candidate[2]);
+
+        case 1:
+            return LinkerFloat(static_cast<double>(candidate[3]) * candidate[3] + static_cast<double>(candidate[2]) * candidate[2]
+                               + static_cast<double>(candidate[0]) * candidate[0] + static_cast<double>(candidate[1]) * candidate[1]);
+
+        case 2:
+            return LinkerFloat(static_cast<double>(candidate[3]) * candidate[3] + static_cast<double>(candidate[2]) * candidate[2]
+                               + static_cast<double>(candidate[0]) * candidate[0] + static_cast<double>(candidate[1]) * candidate[1]);
+
+        default:
+            return LinkerFloat(static_cast<double>(candidate[0]) * candidate[0] + static_cast<double>(candidate[1]) * candidate[1]
+                               + static_cast<double>(candidate[2]) * candidate[2] + static_cast<double>(candidate[3]) * candidate[3]);
+        }
+    }
+
+    [[nodiscard]] size_t NonSunPrimaryLightCount(const GfxWorld& world)
+    {
+        if (world.primaryLightCount <= world.sunPrimaryLightIndex + 1u)
+            return 0uz;
+
+        return world.primaryLightCount - world.sunPrimaryLightIndex - 1u;
     }
 
     [[nodiscard]] bool ValidateRecordLump(
@@ -637,6 +685,22 @@ namespace
         return block.classname == "misc_model";
     }
 
+    [[nodiscard]] bool IsDynModel(const EntityBlock& block)
+    {
+        return block.classname == "dyn_model";
+    }
+
+    [[nodiscard]] DynEntityType DynEntityTypeFromString(const std::string_view value)
+    {
+        if (value.empty() || value == "clutter")
+            return DYNENT_TYPE_CLUTTER;
+
+        if (value == "destruct")
+            return DYNENT_TYPE_DESTRUCT;
+
+        return DYNENT_TYPE_INVALID;
+    }
+
     [[nodiscard]] float StaticModelScale(const EntityBlock& block)
     {
         const auto parsedScale = ParseFloat(EntityField(block, "modelscale"));
@@ -652,22 +716,72 @@ namespace
         const auto yaw = angles[1] * DEG_TO_RAD;
         const auto roll = angles[2] * DEG_TO_RAD;
 
-        const auto sp = std::sin(pitch);
-        const auto cp = std::cos(pitch);
-        const auto sy = std::sin(yaw);
-        const auto cy = std::cos(yaw);
-        const auto sr = std::sin(roll);
-        const auto cr = std::cos(roll);
+        const auto sp = LinkerTrig(pitch, false);
+        const auto cp = LinkerTrig(pitch, true);
+        const auto sy = LinkerTrig(yaw, false);
+        const auto cy = LinkerTrig(yaw, true);
+        const auto sr = LinkerTrig(roll, false);
+        const auto cr = LinkerTrig(roll, true);
 
-        axis[0][0] = cp * cy;
-        axis[0][1] = cp * sy;
+        axis[0][0] = LinkerFloat(static_cast<double>(cp) * cy);
+        axis[0][1] = LinkerFloat(static_cast<double>(cp) * sy);
         axis[0][2] = -sp;
-        axis[1][0] = sr * sp * cy - cr * sy;
-        axis[1][1] = sr * sp * sy + cr * cy;
-        axis[1][2] = sr * cp;
-        axis[2][0] = cr * sp * cy + sr * sy;
-        axis[2][1] = cr * sp * sy - sr * cy;
-        axis[2][2] = cr * cp;
+
+        const auto srSp = LinkerFloat(static_cast<double>(sr) * sp);
+        axis[1][0] = LinkerFloat(static_cast<double>(cy) * srSp - static_cast<double>(cr) * sy);
+        axis[1][1] = LinkerFloat(static_cast<double>(srSp) * sy + static_cast<double>(cr) * cy);
+        axis[1][2] = LinkerFloat(static_cast<double>(sr) * cp);
+
+        const auto crSp = LinkerFloat(static_cast<double>(cr) * sp);
+        axis[2][0] = LinkerFloat(static_cast<double>(cy) * crSp + static_cast<double>(sy) * sr);
+        axis[2][1] = LinkerFloat(static_cast<double>(sy) * crSp - static_cast<double>(cy) * sr);
+        axis[2][2] = LinkerFloat(static_cast<double>(cr) * cp);
+    }
+
+    void AxisToQuat(const float (&axis)[3][3], float (&quat)[4])
+    {
+        // Match linker_pc's Com_Math MatrixToQuat path. It tests quaternion
+        // candidates in this fixed order, normalizes the first candidate with
+        // sizeSq >= 1, and intentionally preserves the resulting sign.
+        float candidates[4][4]{};
+        candidates[0][0] = LinkerFloat(static_cast<double>(axis[1][2]) - axis[2][1]);
+        candidates[0][1] = LinkerFloat(static_cast<double>(axis[2][0]) - axis[0][2]);
+        candidates[0][2] = LinkerFloat(static_cast<double>(axis[0][1]) - axis[1][0]);
+        candidates[0][3] = LinkerFloat(static_cast<double>(axis[1][1]) + axis[0][0] + axis[2][2] + 1.0);
+
+        candidates[1][0] = LinkerFloat(static_cast<double>(axis[2][0]) + axis[0][2]);
+        candidates[1][1] = LinkerFloat(static_cast<double>(axis[2][1]) + axis[1][2]);
+        candidates[1][2] = LinkerFloat(static_cast<double>(axis[2][2]) - axis[1][1] - axis[0][0] + 1.0);
+        candidates[1][3] = candidates[0][2];
+
+        candidates[2][0] = LinkerFloat(static_cast<double>(axis[0][0]) - axis[1][1] - axis[2][2] + 1.0);
+        candidates[2][1] = LinkerFloat(static_cast<double>(axis[1][0]) + axis[0][1]);
+        candidates[2][2] = candidates[1][0];
+        candidates[2][3] = candidates[0][0];
+
+        candidates[3][0] = candidates[2][1];
+        candidates[3][1] = LinkerFloat(static_cast<double>(axis[1][1]) - axis[0][0] - axis[2][2] + 1.0);
+        candidates[3][2] = candidates[1][1];
+        candidates[3][3] = candidates[0][1];
+
+        auto selectedCandidate = 3uz;
+        auto selectedSizeSq = 0.0f;
+
+        for (auto candidateIndex = 0uz; candidateIndex < 4uz; candidateIndex++)
+        {
+            const auto sizeSq = LinkerQuatSizeSq(candidates[candidateIndex], candidateIndex);
+
+            selectedCandidate = candidateIndex;
+            selectedSizeSq = sizeSq;
+
+            if (sizeSq >= 1.0f)
+                break;
+        }
+
+        const auto sqrtSize = LinkerFloat(std::sqrt(static_cast<double>(selectedSizeSq)));
+        const auto scale = LinkerFloat(1.0 / sqrtSize);
+        for (auto component = 0uz; component < 4uz; component++)
+            quat[component] = LinkerFloat(static_cast<double>(candidates[selectedCandidate][component]) * scale);
     }
 
     void TransformStaticModelPoint(
@@ -734,6 +848,73 @@ namespace
         return result;
     }
 
+    struct DynModelDependency
+    {
+        XAssetInfo<XModel>* model;
+        XAssetInfo<PhysPreset>* physPreset;
+    };
+
+    [[nodiscard]] std::vector<const EntityBlock*> DynModelEntityBlocks(const std::vector<EntityBlock>& blocks)
+    {
+        std::vector<const EntityBlock*> result;
+        for (const auto& block : blocks)
+        {
+            if (IsDynModel(block))
+                result.emplace_back(&block);
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] std::vector<DynModelDependency> LoadDynModelDependencies(const std::vector<const EntityBlock*>& dynModelBlocks, AssetCreationContext& context)
+    {
+        std::vector<DynModelDependency> result;
+        result.reserve(dynModelBlocks.size());
+
+        for (const auto* block : dynModelBlocks)
+        {
+            DynModelDependency dependency{};
+
+            const auto modelName = EntityField(*block, "model");
+            if (!modelName.empty())
+                dependency.model = context.LoadDependency<AssetXModel>(std::string(modelName));
+
+            const auto physPresetName = EntityField(*block, "physPreset");
+            if (!physPresetName.empty())
+                dependency.physPreset = context.LoadDependency<AssetPhysPreset>(std::string(physPresetName));
+
+            result.emplace_back(dependency);
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] PhysPreset* ResolveDynModelPhysPreset(const DynModelDependency& dependency, AssetCreationContext& context)
+    {
+        if (dependency.physPreset)
+            return dependency.physPreset->Asset();
+
+        if (dependency.model && dependency.model->Asset()->physPreset)
+            return dependency.model->Asset()->physPreset;
+
+        // linker_pc falls back to "default" when neither the entity nor the
+        // model provides a physics preset.
+        auto* defaultPreset = context.LoadDependency<AssetPhysPreset>("default");
+        return defaultPreset ? defaultPreset->Asset() : nullptr;
+    }
+
+    void PopulateDynModelMass(const EntityBlock& block, DynEntityDef& dynEnt)
+    {
+        if (const auto centerOfMass = ParseFloat3(EntityField(block, "centerofmass")))
+            std::copy(centerOfMass->begin(), centerOfMass->end(), dynEnt.mass.centerOfMass);
+
+        if (const auto momentsOfInertia = ParseFloat3(EntityField(block, "momofinertia")))
+            std::copy(momentsOfInertia->begin(), momentsOfInertia->end(), dynEnt.mass.momentsOfInertia);
+
+        if (const auto productsOfInertia = ParseFloat3(EntityField(block, "prodofinertia")))
+            std::copy(productsOfInertia->begin(), productsOfInertia->end(), dynEnt.mass.productsOfInertia);
+    }
+
     void PopulateStaticModels(
         clipMap_t& clipMap,
         const std::vector<const EntityBlock*>& staticModelBlocks,
@@ -782,6 +963,83 @@ namespace
             }
 
             BuildStaticModelBounds(*model, axis, origin, scale, staticModel);
+        }
+    }
+
+    void PopulateDynModelEntities(
+        clipMap_t& clipMap,
+        const std::vector<const EntityBlock*>& dynModelBlocks,
+        const std::vector<DynModelDependency>& dynModelDependencies,
+        AssetCreationContext& context,
+        MemoryManager& memory)
+    {
+        struct DynModelBuildEntry
+        {
+            const EntityBlock* block;
+            XModel* model;
+            PhysPreset* physPreset;
+            size_t sourceIndex;
+        };
+
+        std::vector<DynModelBuildEntry> validDynModels;
+        validDynModels.reserve(dynModelBlocks.size());
+
+        for (auto i = 0uz; i < dynModelBlocks.size(); i++)
+        {
+            if (i >= dynModelDependencies.size() || !dynModelDependencies[i].model)
+                continue;
+
+            const auto type = DynEntityTypeFromString(EntityField(*dynModelBlocks[i], "type"));
+            if (type == DYNENT_TYPE_INVALID)
+                continue;
+
+            validDynModels.emplace_back(dynModelBlocks[i], dynModelDependencies[i].model->Asset(), ResolveDynModelPhysPreset(dynModelDependencies[i], context), i);
+        }
+
+        if (validDynModels.empty())
+            return;
+
+        // linker_pc sorts dynents by runtime xmodel pointer before splitting the
+        // model/brush arrays. Pointer order depends on linker asset allocation,
+        // not the BSP payload, so OAT writes a deterministic canonical order.
+        std::stable_sort(validDynModels.begin(),
+                         validDynModels.end(),
+                         [](const DynModelBuildEntry& left, const DynModelBuildEntry& right)
+                         {
+                             const auto leftName = left.model && left.model->name ? left.model->name : "";
+                             const auto rightName = right.model && right.model->name ? right.model->name : "";
+                             const auto nameCompare = std::strcmp(leftName, rightName);
+                             if (nameCompare != 0)
+                                 return nameCompare < 0;
+
+                             return left.sourceIndex < right.sourceIndex;
+                         });
+
+        const auto count = std::min(validDynModels.size(), static_cast<size_t>(std::numeric_limits<uint16_t>::max()));
+        clipMap.dynEntCount[0] = static_cast<uint16_t>(count);
+        clipMap.dynEntDefList[0] = AllocZeroed<DynEntityDef>(memory, count);
+        clipMap.dynEntPoseList[0] = AllocZeroed<DynEntityPose>(memory, count);
+        clipMap.dynEntClientList[0] = AllocZeroed<DynEntityClient>(memory, count);
+        clipMap.dynEntCollList[0] = AllocZeroed<DynEntityColl>(memory, count);
+
+        for (auto dynEntIndex = 0uz; dynEntIndex < count; dynEntIndex++)
+        {
+            const auto& entry = validDynModels[dynEntIndex];
+            auto& dynEnt = clipMap.dynEntDefList[0][dynEntIndex];
+            const auto origin = ParseFloat3(EntityField(*entry.block, "origin")).value_or(std::array<float, 3>{});
+            const auto angles = ParseFloat3(EntityField(*entry.block, "angles")).value_or(std::array<float, 3>{});
+            float axis[3][3]{};
+
+            AnglesToAxis(angles, axis);
+
+            dynEnt.type = DynEntityTypeFromString(EntityField(*entry.block, "type"));
+            dynEnt.xModel = entry.model;
+            dynEnt.physPreset = entry.physPreset;
+            dynEnt.health = ParseInt(EntityField(*entry.block, "health"));
+            dynEnt.contents = entry.model ? entry.model->contents : 0;
+            std::copy(origin.begin(), origin.end(), dynEnt.pose.origin);
+            AxisToQuat(axis, dynEnt.pose.quat);
+            PopulateDynModelMass(*entry.block, dynEnt);
         }
     }
 
@@ -2390,6 +2648,60 @@ namespace
         return true;
     }
 
+    [[nodiscard]] bool PopulateWorldDynamicEntities(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
+    {
+        if (!clipMap)
+            return true;
+
+        if (world.dpvsPlanes.cellCount < 0)
+        {
+            error = "negative world cell count";
+            return false;
+        }
+
+        const auto nonSunLightCount = NonSunPrimaryLightCount(world);
+        if (nonSunLightCount > 0uz)
+        {
+            // linker_pc emits this runtime shadow visibility buffer zeroed. It
+            // is not sourced from a named d3dbsp lump, but its serialized size
+            // is derived from the number of non-sun primary lights.
+            world.primaryLightEntityShadowVis = AllocZeroed<unsigned int>(memory, nonSunLightCount * 4096uz);
+        }
+
+        for (auto dynType = 0uz; dynType < 2uz; dynType++)
+        {
+            const auto count = static_cast<unsigned>(clipMap->dynEntCount[dynType]);
+            world.dpvsDyn.dynEntClientCount[dynType] = count;
+            world.dpvsDyn.dynEntClientWordCount[dynType] = (count + 31u) / 32u;
+
+            if (count == 0u)
+                continue;
+
+            // These buffers are runtime visibility state. linker_pc emits them
+            // zeroed while sizing them from the clipmap dynamic entity counts.
+            if (dynType == 0uz)
+                world.sceneDynModel = AllocZeroed<GfxSceneDynModel4>(memory, count);
+            else
+                world.sceneDynBrush = AllocZeroed<GfxSceneDynBrush>(memory, count);
+
+            const auto wordCount = static_cast<size_t>(world.dpvsDyn.dynEntClientWordCount[dynType]);
+            const auto cellCount = static_cast<size_t>(world.dpvsPlanes.cellCount);
+            if (cellCount > 0uz)
+                world.dpvsDyn.dynEntCellBits[dynType] = AllocZeroed<unsigned int>(memory, wordCount * cellCount);
+
+            for (auto viewIndex = 0uz; viewIndex < 3uz; viewIndex++)
+                world.dpvsDyn.dynEntVisData[dynType][viewIndex] = AllocZeroed<raw_byte16>(memory, 32uz * wordCount);
+
+            if (nonSunLightCount > 0uz)
+                world.primaryLightDynEntShadowVis[dynType] = AllocZeroed<unsigned int>(memory, static_cast<size_t>(count) * nonSunLightCount);
+        }
+
+        if (world.dpvsDyn.dynEntClientCount[0] > 0u)
+            world.nonSunPrimaryLightForModelDynEnt = AllocZeroed<char>(memory, world.dpvsDyn.dynEntClientCount[0]);
+
+        return true;
+    }
+
     [[nodiscard]] bool PopulateWorldDpvsPlanes(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
     {
         if (!clipMap)
@@ -2455,7 +2767,10 @@ namespace
 
             const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
             const auto staticModelDependencies = LoadStaticModelDependencies(staticModelBlocks, context);
+            const auto dynModelBlocks = DynModelEntityBlocks(entityBlocks);
+            const auto dynModelDependencies = LoadDynModelDependencies(dynModelBlocks, context);
             PopulateStaticModels(*clipMap, staticModelBlocks, staticModelDependencies, m_memory);
+            PopulateDynModelEntities(*clipMap, dynModelBlocks, dynModelDependencies, context, m_memory);
 
             auto* mapEntsDependency = context.LoadDependency<AssetMapEnts>(assetName);
             if (mapEntsDependency)
@@ -2468,6 +2783,13 @@ namespace
             {
                 if (dependency)
                     registration.AddDependency(dependency);
+            }
+            for (const auto& dependency : dynModelDependencies)
+            {
+                if (dependency.model)
+                    registration.AddDependency(dependency.model);
+                if (dependency.physPreset)
+                    registration.AddDependency(dependency.physPreset);
             }
 
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
@@ -2798,6 +3120,7 @@ namespace
                 || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldLightGrid(*world, *bsp, m_memory, error)
                 || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
+                || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
                 || !PopulateWorldLightmaps(*world, assetName, *bsp, context, registration, m_memory, error)
                 || !PopulateWorldReflectionProbes(*world, assetName, *bsp, context, registration, m_memory, error))
             {
