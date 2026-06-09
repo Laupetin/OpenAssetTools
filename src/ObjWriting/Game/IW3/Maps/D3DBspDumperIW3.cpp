@@ -1514,28 +1514,30 @@ namespace
     {
         constexpr auto TYPE_OFFSET = 0uz;
         constexpr auto CAN_USE_SHADOW_MAP_OFFSET = 1uz;
-        constexpr auto EXPONENT_OFFSET = 2uz;
-        constexpr auto UNUSED_OFFSET = 3uz;
+        constexpr auto UNUSED_OFFSET = 2uz;
         constexpr auto COLOR_OFFSET = 4uz;
         constexpr auto DIR_OFFSET = 16uz;
         constexpr auto ORIGIN_OFFSET = 28uz;
         constexpr auto RADIUS_OFFSET = 40uz;
         constexpr auto COS_HALF_FOV_OUTER_OFFSET = 44uz;
         constexpr auto COS_HALF_FOV_INNER_OFFSET = 48uz;
-        constexpr auto COS_HALF_FOV_EXPANDED_OFFSET = 52uz;
+        constexpr auto EXPONENT_OFFSET = 52uz;
         constexpr auto ROTATION_LIMIT_OFFSET = 56uz;
         constexpr auto TRANSLATION_LIMIT_OFFSET = 60uz;
+        constexpr auto DEF_NAME_OFFSET = 64uz;
+        constexpr auto DEF_NAME_SIZE = 64uz;
 
         const auto baseOffset = out.size();
         out.resize(out.size() + IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE, std::byte{});
 
         out[baseOffset + TYPE_OFFSET] = static_cast<std::byte>(light.type);
         out[baseOffset + CAN_USE_SHADOW_MAP_OFFSET] = static_cast<std::byte>(light.canUseShadowMap);
-        out[baseOffset + EXPONENT_OFFSET] = static_cast<std::byte>(light.exponent);
         out[baseOffset + UNUSED_OFFSET] = static_cast<std::byte>(light.unused);
+        out[baseOffset + UNUSED_OFFSET + 1uz] = std::byte{};
 
-        // Raw BSP primary lights are the runtime ComPrimaryLight fields through
-        // translationLimit only. The runtime defName pointer is not present on disk.
+        // The v22 BSP stores DiskPrimaryLight, not the runtime ComPrimaryLight
+        // layout. cosHalfFovExpanded is derived by the linker from outer FOV and
+        // rotationLimit, while exponent is stored as a 32-bit disk field.
         std::copy_n(reinterpret_cast<const std::byte*>(light.color), sizeof(light.color), out.data() + baseOffset + COLOR_OFFSET);
         std::copy_n(reinterpret_cast<const std::byte*>(light.dir), sizeof(light.dir), out.data() + baseOffset + DIR_OFFSET);
         std::copy_n(reinterpret_cast<const std::byte*>(light.origin), sizeof(light.origin), out.data() + baseOffset + ORIGIN_OFFSET);
@@ -1544,12 +1546,16 @@ namespace
             reinterpret_cast<const std::byte*>(&light.cosHalfFovOuter), sizeof(light.cosHalfFovOuter), out.data() + baseOffset + COS_HALF_FOV_OUTER_OFFSET);
         std::copy_n(
             reinterpret_cast<const std::byte*>(&light.cosHalfFovInner), sizeof(light.cosHalfFovInner), out.data() + baseOffset + COS_HALF_FOV_INNER_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(&light.cosHalfFovExpanded),
-                    sizeof(light.cosHalfFovExpanded),
-                    out.data() + baseOffset + COS_HALF_FOV_EXPANDED_OFFSET);
+        const auto exponent = static_cast<int32_t>(static_cast<unsigned char>(light.exponent));
+        std::copy_n(reinterpret_cast<const std::byte*>(&exponent), sizeof(exponent), out.data() + baseOffset + EXPONENT_OFFSET);
         std::copy_n(reinterpret_cast<const std::byte*>(&light.rotationLimit), sizeof(light.rotationLimit), out.data() + baseOffset + ROTATION_LIMIT_OFFSET);
         std::copy_n(
             reinterpret_cast<const std::byte*>(&light.translationLimit), sizeof(light.translationLimit), out.data() + baseOffset + TRANSLATION_LIMIT_OFFSET);
+        if (light.defName)
+        {
+            const auto defNameLength = std::min(std::strlen(light.defName), DEF_NAME_SIZE - 1uz);
+            std::copy_n(reinterpret_cast<const std::byte*>(light.defName), defNameLength, out.data() + baseOffset + DEF_NAME_OFFSET);
+        }
     }
 
     [[nodiscard]] std::vector<std::byte> BuildPrimaryLights(const ComWorld& comWorld)

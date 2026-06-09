@@ -9,9 +9,10 @@ namespace IW3::d3dbsp
     inline constexpr std::array<char, 4> BSP_MAGIC{'I', 'B', 'S', 'P'};
     inline constexpr uint32_t BSP_VERSION = 22u;
 
-    // Lump 43 stores ComPrimaryLight fields up to translationLimit. The runtime
-    // defName pointer is not part of the raw BSP record.
-    inline constexpr size_t RAW_PRIMARY_LIGHT_SIZE = 64uz;
+    // IW3 v22 stores primary lights as DiskPrimaryLight records. The linker
+    // converts these to runtime ComPrimaryLight records and derives
+    // cosHalfFovExpanded while loading.
+    inline constexpr size_t RAW_PRIMARY_LIGHT_SIZE = 128uz;
 
     // Synthesized from cod4map/linker_pc/Radiant loader usage. IW3 v22 stores
     // some render geometry twice: layered data in the low lump range and simple
