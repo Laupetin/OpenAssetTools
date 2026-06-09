@@ -33,17 +33,18 @@ namespace
 
     constexpr auto RAW_LIGHT_TYPE_OFFSET = 0uz;
     constexpr auto RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET = 1uz;
-    constexpr auto RAW_LIGHT_EXPONENT_OFFSET = 2uz;
-    constexpr auto RAW_LIGHT_UNUSED_OFFSET = 3uz;
+    constexpr auto RAW_LIGHT_UNUSED_OFFSET = 2uz;
     constexpr auto RAW_LIGHT_COLOR_OFFSET = 4uz;
     constexpr auto RAW_LIGHT_DIR_OFFSET = 16uz;
     constexpr auto RAW_LIGHT_ORIGIN_OFFSET = 28uz;
     constexpr auto RAW_LIGHT_RADIUS_OFFSET = 40uz;
     constexpr auto RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET = 44uz;
     constexpr auto RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET = 48uz;
-    constexpr auto RAW_LIGHT_COS_HALF_FOV_EXPANDED_OFFSET = 52uz;
+    constexpr auto RAW_LIGHT_EXPONENT_OFFSET = 52uz;
     constexpr auto RAW_LIGHT_ROTATION_LIMIT_OFFSET = 56uz;
     constexpr auto RAW_LIGHT_TRANSLATION_LIMIT_OFFSET = 60uz;
+    constexpr auto RAW_LIGHT_DEF_NAME_OFFSET = 64uz;
+    constexpr auto RAW_LIGHT_DEF_NAME_SIZE = 64uz;
     constexpr auto RAW_MATERIAL_SIZE = 72uz;
     constexpr auto RAW_PLANE_SIZE = 16uz;
     constexpr auto RAW_BRUSHSIDE_SIZE = 8uz;
@@ -402,13 +403,18 @@ namespace
         std::unordered_map<std::string, std::string> fields;
     };
 
-    void ParsePrimaryLightRecord(const std::byte* record, ComPrimaryLight& light)
+    [[nodiscard]] float CosOfSumOfArcCos(const float cos0, const float cos1)
+    {
+        return cos0 * cos1 - std::sqrt((1.0f - cos0 * cos0) * (1.0f - cos1 * cos1));
+    }
+
+    void ParsePrimaryLightRecord(const std::byte* record, ComPrimaryLight& light, MemoryManager& memory)
     {
         light = {};
         light.type = ReadRawByte(record, RAW_LIGHT_TYPE_OFFSET);
         light.canUseShadowMap = ReadRawByte(record, RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET);
-        light.exponent = ReadRawByte(record, RAW_LIGHT_EXPONENT_OFFSET);
-        light.unused = ReadRawByte(record, RAW_LIGHT_UNUSED_OFFSET);
+        light.exponent = static_cast<char>(ReadI32(record, RAW_LIGHT_EXPONENT_OFFSET));
+        light.unused = 0;
 
         CopyFloat3(record + RAW_LIGHT_COLOR_OFFSET, light.color);
         CopyFloat3(record + RAW_LIGHT_DIR_OFFSET, light.dir);
@@ -416,12 +422,32 @@ namespace
         CopyUnaligned(record + RAW_LIGHT_RADIUS_OFFSET, light.radius);
         CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET, light.cosHalfFovOuter);
         CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET, light.cosHalfFovInner);
-        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_EXPANDED_OFFSET, light.cosHalfFovExpanded);
         CopyUnaligned(record + RAW_LIGHT_ROTATION_LIMIT_OFFSET, light.rotationLimit);
         CopyUnaligned(record + RAW_LIGHT_TRANSLATION_LIMIT_OFFSET, light.translationLimit);
 
-        // The raw 64-byte BSP record stops before the runtime defName pointer.
-        light.defName = nullptr;
+        // IW3 v22 stores a DiskPrimaryLight. The linker normalises this into a
+        // runtime ComPrimaryLight, including inner-FOV correction and derived
+        // expanded FOV for spot/omni lights.
+        if (light.type >= 2)
+        {
+            const auto defName = RawString(record + RAW_LIGHT_DEF_NAME_OFFSET, RAW_LIGHT_DEF_NAME_SIZE);
+            light.defName = defName.empty() ? nullptr : memory.Dup(defName.c_str());
+
+            if (light.cosHalfFovOuter >= light.cosHalfFovInner)
+                light.cosHalfFovInner = light.cosHalfFovOuter * 0.75f + 0.25f;
+
+            if (light.rotationLimit == 1.0f)
+                light.cosHalfFovExpanded = light.cosHalfFovOuter;
+            else if (-light.cosHalfFovOuter < light.rotationLimit)
+                light.cosHalfFovExpanded = CosOfSumOfArcCos(light.cosHalfFovOuter, light.rotationLimit);
+            else
+                light.cosHalfFovExpanded = -1.0f;
+        }
+        else
+        {
+            light.defName = nullptr;
+            light.cosHalfFovExpanded = light.cosHalfFovOuter;
+        }
     }
 
     [[nodiscard]] std::vector<std::string> QuotedEntityTokens(const std::string& block)
@@ -2095,14 +2121,14 @@ namespace
         light.type = ReadRawByte(record, RAW_LIGHT_TYPE_OFFSET);
         light.canUseShadowMap = ReadRawByte(record, RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET);
         light.unused[0] = ReadRawByte(record, RAW_LIGHT_UNUSED_OFFSET);
-        light.unused[1] = 0;
+        light.unused[1] = ReadRawByte(record, RAW_LIGHT_UNUSED_OFFSET + 1uz);
         CopyFloat3(record + RAW_LIGHT_COLOR_OFFSET, light.color);
         CopyFloat3(record + RAW_LIGHT_DIR_OFFSET, light.dir);
         CopyFloat3(record + RAW_LIGHT_ORIGIN_OFFSET, light.origin);
         CopyUnaligned(record + RAW_LIGHT_RADIUS_OFFSET, light.radius);
         CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET, light.cosHalfFovOuter);
         CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET, light.cosHalfFovInner);
-        light.exponent = static_cast<int>(std::to_integer<unsigned char>(record[RAW_LIGHT_EXPONENT_OFFSET]));
+        light.exponent = ReadI32(record, RAW_LIGHT_EXPONENT_OFFSET);
     }
 
     [[nodiscard]] bool InferWorldPrimaryLightCount(const IW3::d3dbsp::File& bsp, const size_t rawPrimaryLightCount, unsigned& primaryLightCount, std::string& error)
@@ -2170,9 +2196,19 @@ namespace
         if (rawPrimaryLightCount == 0uz)
             return true;
 
+        // Stock v22 maps normally reserve primary light 0 as "none" and store
+        // the sun at index 1. The stock loader uses that exact convention
+        // instead of scanning for any sun record.
         world.sunPrimaryLightIndex = 0u;
+        if (rawPrimaryLightCount > 1uz)
+        {
+            const auto* candidateSunRecord = primaryLights->data.data() + IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
+            if (ReadRawByte(candidateSunRecord, RAW_LIGHT_TYPE_OFFSET) == 1)
+                world.sunPrimaryLightIndex = 1u;
+        }
+
         world.sunLight = AllocZeroed<GfxLight>(memory);
-        ParseGfxLightRecord(primaryLights->data.data(), *world.sunLight);
+        ParseGfxLightRecord(primaryLights->data.data() + static_cast<size_t>(world.sunPrimaryLightIndex) * IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE, *world.sunLight);
         std::memcpy(world.sunColorFromBsp, world.sunLight->color, sizeof(world.sunColorFromBsp));
         world.lightGrid.sunPrimaryLightIndex = world.sunPrimaryLightIndex;
         return true;
@@ -2820,7 +2856,7 @@ namespace
                 for (auto lightIndex = 0uz; lightIndex < primaryLightCount; lightIndex++)
                 {
                     const auto* record = primaryLightsLump->data.data() + lightIndex * IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
-                    ParsePrimaryLightRecord(record, comWorld->primaryLights[lightIndex]);
+                    ParsePrimaryLightRecord(record, comWorld->primaryLights[lightIndex], m_memory);
                 }
             }
 
