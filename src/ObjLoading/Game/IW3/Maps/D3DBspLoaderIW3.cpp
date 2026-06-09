@@ -562,14 +562,32 @@ namespace
         return true;
     }
 
+    [[nodiscard]] bool IsLinkerConsumedMapEntity(const EntityBlock& block)
+    {
+        // linker_pc removes these editor/compiler entities from runtime
+        // MapEnts while building the corresponding static model, dynamic
+        // entity, reflection probe, prefab, or helper data.
+        if (block.classname == "misc_model" || block.classname == "misc_prefab" || block.classname == "dyn_brushmodel" || block.classname == "dyn_model"
+            || block.classname == "reflection_probe" || block.classname == "info_null" || block.classname == "func_group")
+        {
+            return true;
+        }
+
+        // linker_pc keeps primary-light entities only when the entity was tagged
+        // with a generated pl# key. Uncompiled light entities are consumed by the
+        // primary-light path and are not retained in runtime MapEnts.
+        if (block.classname == "light" && EntityField(block, "pl#").empty())
+            return true;
+
+        return false;
+    }
+
     [[nodiscard]] std::vector<std::byte> CompileMapEntsEntityString(const std::vector<EntityBlock>& blocks)
     {
         std::string out;
         for (const auto& block : blocks)
         {
-            // The original linker consumes misc_model while building static-model
-            // world data and does not retain those editor-only blocks in MapEnts.
-            if (block.classname == "misc_model")
+            if (IsLinkerConsumedMapEntity(block))
                 continue;
 
             out += block.text;
