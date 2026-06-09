@@ -1,6 +1,7 @@
 #include "D3DBspDumperIW3.h"
 
 #include "Game/IW3/CommonIW3.h"
+#include "Game/IW3/Maps/D3DBspCommonIW3.h"
 #include "Utils/StreamUtils.h"
 
 #include <algorithm>
@@ -23,130 +24,11 @@ using namespace IW3;
 
 namespace
 {
-    constexpr auto BSP_MAGIC = std::array{'I', 'B', 'S', 'P'};
-    constexpr auto BSP_VERSION = 22u;
-
-    // Synthesized from cod4map/linker_pc/Radiant loader usage. IW3 v22 stores
-    // some render geometry twice: layered data in the low lump range and simple
-    // data in the later lump range.
-    enum BspLumpType : unsigned
-    {
-        LUMP_MATERIALS = 0,
-        LUMP_LIGHTMAPS = 1,
-        LUMP_LIGHTGRID_ENTRIES = 2,
-        LUMP_LIGHTGRID_COLORS = 3,
-        LUMP_PLANES = 4,
-        LUMP_BRUSHSIDES = 5,
-        LUMP_BRUSHSIDE_EDGE_COUNTS = 6,
-        LUMP_BRUSHEDGES = 7,
-        LUMP_BRUSHES = 8,
-
-        // Layered world geometry. LUMP_VERTEX_LAYER_DATA is the extra payload
-        // paired with LUMP_LAYERED_VERTS.
-        LUMP_LAYERED_TRI_SOUPS = 9,
-        LUMP_LAYERED_VERTS = 10,
-        LUMP_LAYERED_INDICES = 11,
-        LUMP_CULLGROUPS = 12,
-        LUMP_CULLGROUP_INDICES = 13,
-
-        LUMP_OBSOLETE_1 = 14,
-        LUMP_OBSOLETE_2 = 15,
-        LUMP_OBSOLETE_3 = 16,
-        LUMP_OBSOLETE_4 = 17,
-        LUMP_OBSOLETE_5 = 18,
-        LUMP_PORTALVERTS = 19,
-        LUMP_OBSOLETE_6 = 20,
-        LUMP_UINDS = 21,
-        LUMP_BRUSHVERTSCOUNTS = 22,
-        LUMP_BRUSHVERTS = 23,
-        LUMP_LAYERED_AABBTREES = 24,
-        LUMP_CELLS = 25,
-        LUMP_PORTALS = 26,
-        LUMP_NODES = 27,
-        LUMP_LEAFS = 28,
-        LUMP_LEAFBRUSHES = 29,
-        LUMP_LEAFSURFACES = 30,
-        LUMP_COLLISIONVERTS = 31,
-        LUMP_COLLISIONTRIS = 32,
-        LUMP_COLLISION_EDGE_WALKABLE = 33,
-        LUMP_COLLISIONBORDERS = 34,
-        LUMP_COLLISIONPARTITIONS = 35,
-        LUMP_COLLISIONAABBS = 36,
-        LUMP_MODELS = 37,
-        LUMP_VISIBILITY = 38, // Optional PVS data; loaders can fall back when it is absent.
-        LUMP_ENTITIES = 39,
-        LUMP_PATHCONNECTIONS = 40, // SP path data; absent for many MP maps.
-        LUMP_REFLECTION_PROBES = 41,
-        LUMP_VERTEX_LAYER_DATA = 42,
-        LUMP_PRIMARY_LIGHTS = 43,
-        LUMP_LIGHTGRID_HEADER = 44,
-        LUMP_LIGHTGRID_ROWS = 45,
-        LUMP_OBSOLETE_10 = 46,
-
-        // Simple/non-layered world geometry. IW3 v22 keeps this alongside the
-        // layered set so the linker/Radiant can choose the appropriate path.
-        LUMP_SIMPLE_TRI_SOUPS = 47,
-        LUMP_SIMPLE_VERTS = 48,
-        LUMP_SIMPLE_INDICES = 49,
-        LUMP_SIMPLE_CULLGROUPS = 50,
-        LUMP_SIMPLE_AABBTREES = 51,
-        LUMP_LIGHT_REGION_COUNTS = 52,
-        LUMP_LIGHT_REGION_HULLS = 53,
-        LUMP_LIGHT_REGION_AXES = 54,
-    };
-
-    // IW3 v22 d3dbsp files use this order in the stock tools output.
-    constexpr auto LUMP_ORDER = std::array{
-        LUMP_MATERIALS,
-        LUMP_LIGHTMAPS,
-        LUMP_LIGHTGRID_HEADER,
-        LUMP_LIGHTGRID_ROWS,
-        LUMP_LIGHTGRID_ENTRIES,
-        LUMP_LIGHTGRID_COLORS,
-        LUMP_PLANES,
-        LUMP_BRUSHSIDES,
-        LUMP_BRUSHSIDE_EDGE_COUNTS,
-        LUMP_BRUSHEDGES,
-        LUMP_BRUSHES,
-        LUMP_LAYERED_TRI_SOUPS,
-        LUMP_LAYERED_VERTS,
-        LUMP_VERTEX_LAYER_DATA,
-        LUMP_LAYERED_INDICES,
-        LUMP_CULLGROUPS,
-        LUMP_CULLGROUP_INDICES,
-        LUMP_PORTALVERTS,
-        LUMP_LAYERED_AABBTREES,
-        LUMP_CELLS,
-        LUMP_PORTALS,
-        LUMP_NODES,
-        LUMP_LEAFS,
-        LUMP_LEAFBRUSHES,
-        LUMP_LEAFSURFACES,
-        LUMP_COLLISIONVERTS,
-        LUMP_COLLISIONTRIS,
-        LUMP_COLLISION_EDGE_WALKABLE,
-        LUMP_COLLISIONBORDERS,
-        LUMP_COLLISIONPARTITIONS,
-        LUMP_COLLISIONAABBS,
-        LUMP_MODELS,
-        LUMP_VISIBILITY,
-        LUMP_ENTITIES,
-        LUMP_PRIMARY_LIGHTS,
-        LUMP_LIGHT_REGION_COUNTS,
-        LUMP_LIGHT_REGION_HULLS,
-        LUMP_LIGHT_REGION_AXES,
-        LUMP_SIMPLE_TRI_SOUPS,
-        LUMP_SIMPLE_VERTS,
-        LUMP_SIMPLE_INDICES,
-        LUMP_SIMPLE_CULLGROUPS,
-        LUMP_SIMPLE_AABBTREES,
-        LUMP_PATHCONNECTIONS,
-        LUMP_REFLECTION_PROBES,
-    };
+    using enum IW3::d3dbsp::LumpType;
 
     struct BspLump
     {
-        BspLumpType id;
+        IW3::d3dbsp::LumpType id;
         std::vector<std::byte> data;
     };
 
@@ -232,6 +114,11 @@ namespace
         if (lastSlash != std::string_view::npos)
             result.remove_prefix(lastSlash + 1uz);
 
+        // A leading comma marks a fastfile reference asset. Raw BSP material
+        // names store the target name, so ",$default" must match "$default".
+        if (result.starts_with(','))
+            result.remove_prefix(1uz);
+
         return result;
     }
 
@@ -242,16 +129,6 @@ namespace
 
         // Runtime default material assets use explicit names, but raw d3dbsp stores the shared "$default" material.
         return rawName == "$default" && (assetName == "$default2d" || assetName == "$default3d");
-    }
-
-    [[nodiscard]] std::string GetPartialBspFileName(const std::string& assetName)
-    {
-        constexpr auto EXTENSION = std::string_view(".d3dbsp");
-
-        if (assetName.ends_with(EXTENSION))
-            return std::format("{}.partial{}", assetName.substr(0, assetName.size() - EXTENSION.size()), EXTENSION);
-
-        return assetName + ".partial.d3dbsp";
     }
 
     template<typename T> void Append(std::vector<std::byte>& out, const T& value)
@@ -988,54 +865,29 @@ namespace
         return remaps;
     }
 
-    [[nodiscard]] std::vector<const GfxSurface*> DiskOrderedSurfaces(const clipMap_t* clipMap, const GfxWorld& world)
-    {
-        std::vector<const GfxSurface*> surfaces;
-        surfaces.reserve(PositiveCount(world.surfaceCount));
-
-        for (auto i = 0uz; i < PositiveCount(world.surfaceCount); i++)
-            surfaces.emplace_back(&world.dpvs.surfaces[i]);
-
-        std::stable_sort(surfaces.begin(),
-                         surfaces.end(),
-                         [clipMap](const GfxSurface* left, const GfxSurface* right)
-                         {
-                             const auto leftMaterial = SurfaceMaterialIndex(clipMap, *left);
-                             const auto rightMaterial = SurfaceMaterialIndex(clipMap, *right);
-                             if (leftMaterial != rightMaterial)
-                                 return leftMaterial < rightMaterial;
-
-                             const auto leftPrimary = RawPrimaryLightIndex(*left);
-                             const auto rightPrimary = RawPrimaryLightIndex(*right);
-                             if (leftPrimary != rightPrimary)
-                                 return leftPrimary < rightPrimary;
-
-                             return left->tris.baseIndex < right->tris.baseIndex;
-                         });
-
-        return surfaces;
-    }
-
     [[nodiscard]] std::vector<std::byte> BuildSurfaces(const clipMap_t* clipMap, const GfxWorld& world, const std::vector<SurfaceLightmapRemap>& lightmapRemaps)
     {
         std::vector<std::byte> out;
         out.reserve(PositiveCount(world.surfaceCount) * 24uz);
 
-        for (const auto* surface : DiskOrderedSurfaces(clipMap, world))
+        // Surface order is part of the BSP's index space. Brush models and AABB
+        // ranges point into this same list, so reordering here requires remapping
+        // every dependent range as well.
+        for (auto surfaceIndex = 0uz; surfaceIndex < PositiveCount(world.surfaceCount); surfaceIndex++)
         {
-            const auto surfaceIndex = PointerIndex(world.dpvs.surfaces, PositiveCount(world.surfaceCount), surface);
-            const auto materialIndex = SurfaceMaterialIndex(clipMap, *surface);
+            const auto& surface = world.dpvs.surfaces[surfaceIndex];
+            const auto materialIndex = SurfaceMaterialIndex(clipMap, surface);
             const auto lightmapIndex =
-                surfaceIndex < lightmapRemaps.size() ? lightmapRemaps[surfaceIndex].rawLightmapIndex : static_cast<uint8_t>(surface->lightmapIndex);
-            const auto reflectionProbeIndex = static_cast<uint8_t>(surface->reflectionProbeIndex);
-            const auto primaryLightIndex = RawPrimaryLightIndex(*surface);
-            const auto flags = static_cast<uint8_t>(surface->flags);
+                surfaceIndex < lightmapRemaps.size() ? lightmapRemaps[surfaceIndex].rawLightmapIndex : static_cast<uint8_t>(surface.lightmapIndex);
+            const auto reflectionProbeIndex = static_cast<uint8_t>(surface.reflectionProbeIndex);
+            const auto primaryLightIndex = RawPrimaryLightIndex(surface);
+            const auto flags = static_cast<uint8_t>(surface.flags);
             const uint16_t padding = 0u;
-            const auto vertexLayerData = surface->tris.vertexLayerData;
-            const auto firstVertex = surface->tris.firstVertex;
-            const auto vertexCount = surface->tris.vertexCount;
-            const auto indexCount = static_cast<uint16_t>(surface->tris.triCount * 3u);
-            const auto baseIndex = surface->tris.baseIndex;
+            const auto vertexLayerData = surface.tris.vertexLayerData;
+            const auto firstVertex = surface.tris.firstVertex;
+            const auto vertexCount = surface.tris.vertexCount;
+            const auto indexCount = static_cast<uint16_t>(surface.tris.triCount * 3u);
+            const auto baseIndex = surface.tris.baseIndex;
 
             Append(out, materialIndex);
             Append(out, lightmapIndex);
@@ -1346,17 +1198,18 @@ namespace
             const auto& model = world.models[modelIndex];
             const auto startSurfIndex = static_cast<uint16_t>(model.startSurfIndex);
             const auto surfaceCount = model.surfaceCount;
+            const auto surfaceCountNoDecal = model.surfaceCountNoDecal;
             const uint16_t zeroShort = 0u;
             const uint32_t zero = 0u;
             const auto brushCount = modelIndex == 0uz && clipMap ? static_cast<uint32_t>(clipMap->numBrushes) : 0u;
 
             AppendBytes(out, model.bounds[0], sizeof(model.bounds[0]));
             AppendBytes(out, model.bounds[1], sizeof(model.bounds[1]));
-            // v22 reads start/count from the second pair; older paths read the first pair.
-            // The no-decal count is recomputed by the raw loader from surface/AABB data.
+            // Raw v22 stores the start index twice for older/newer loader paths,
+            // followed by the precomputed no-decal split and the total count.
             Append(out, startSurfIndex);
             Append(out, startSurfIndex);
-            Append(out, surfaceCount);
+            Append(out, surfaceCountNoDecal);
             Append(out, surfaceCount);
             Append(out, zeroShort);
             Append(out, zeroShort);
@@ -1389,7 +1242,11 @@ namespace
             Append(out, surfaceCount);
             Append(out, childCount);
 
-            // Keep the original AABB lump footprint where possible; some Radiant paths are sensitive to later lump positions.
+            // The loader does not yet reconstruct the original per-cell AABB
+            // hierarchy. For decal-split maps, emit one root leaf covering
+            // model0 so Radiant's no-decal compaction sees the full surface set.
+            // Keep the original lump footprint where possible; some Radiant
+            // paths are sensitive to later lump positions.
             for (auto treeIndex = 1uz; treeIndex < totalAabbTreeCount; treeIndex++)
             {
                 Append(out, 0u);
@@ -1655,26 +1512,30 @@ namespace
 
     void AppendPrimaryLight(std::vector<std::byte>& out, const ComPrimaryLight& light)
     {
-        constexpr auto RAW_PRIMARY_LIGHT_SIZE = 0x80uz;
         constexpr auto TYPE_OFFSET = 0uz;
         constexpr auto CAN_USE_SHADOW_MAP_OFFSET = 1uz;
+        constexpr auto EXPONENT_OFFSET = 2uz;
+        constexpr auto UNUSED_OFFSET = 3uz;
         constexpr auto COLOR_OFFSET = 4uz;
         constexpr auto DIR_OFFSET = 16uz;
         constexpr auto ORIGIN_OFFSET = 28uz;
         constexpr auto RADIUS_OFFSET = 40uz;
         constexpr auto COS_HALF_FOV_OUTER_OFFSET = 44uz;
         constexpr auto COS_HALF_FOV_INNER_OFFSET = 48uz;
-        constexpr auto EXPONENT_OFFSET = 52uz;
-        constexpr auto DEF_NAME_OFFSET = 56uz;
-        constexpr auto DEF_NAME_SIZE = RAW_PRIMARY_LIGHT_SIZE - DEF_NAME_OFFSET;
+        constexpr auto COS_HALF_FOV_EXPANDED_OFFSET = 52uz;
+        constexpr auto ROTATION_LIMIT_OFFSET = 56uz;
+        constexpr auto TRANSLATION_LIMIT_OFFSET = 60uz;
 
         const auto baseOffset = out.size();
-        out.resize(out.size() + RAW_PRIMARY_LIGHT_SIZE, std::byte{});
+        out.resize(out.size() + IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE, std::byte{});
 
         out[baseOffset + TYPE_OFFSET] = static_cast<std::byte>(light.type);
         out[baseOffset + CAN_USE_SHADOW_MAP_OFFSET] = static_cast<std::byte>(light.canUseShadowMap);
+        out[baseOffset + EXPONENT_OFFSET] = static_cast<std::byte>(light.exponent);
+        out[baseOffset + UNUSED_OFFSET] = static_cast<std::byte>(light.unused);
 
-        const auto exponent = static_cast<uint32_t>(static_cast<unsigned char>(light.exponent));
+        // Raw BSP primary lights are the runtime ComPrimaryLight fields through
+        // translationLimit only. The runtime defName pointer is not present on disk.
         std::copy_n(reinterpret_cast<const std::byte*>(light.color), sizeof(light.color), out.data() + baseOffset + COLOR_OFFSET);
         std::copy_n(reinterpret_cast<const std::byte*>(light.dir), sizeof(light.dir), out.data() + baseOffset + DIR_OFFSET);
         std::copy_n(reinterpret_cast<const std::byte*>(light.origin), sizeof(light.origin), out.data() + baseOffset + ORIGIN_OFFSET);
@@ -1683,12 +1544,12 @@ namespace
             reinterpret_cast<const std::byte*>(&light.cosHalfFovOuter), sizeof(light.cosHalfFovOuter), out.data() + baseOffset + COS_HALF_FOV_OUTER_OFFSET);
         std::copy_n(
             reinterpret_cast<const std::byte*>(&light.cosHalfFovInner), sizeof(light.cosHalfFovInner), out.data() + baseOffset + COS_HALF_FOV_INNER_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(&exponent), sizeof(exponent), out.data() + baseOffset + EXPONENT_OFFSET);
-
-        if (light.type >= 2 && light.defName)
-            std::copy_n(reinterpret_cast<const std::byte*>(light.defName),
-                        std::min(std::strlen(light.defName), DEF_NAME_SIZE - 1uz),
-                        out.data() + baseOffset + DEF_NAME_OFFSET);
+        std::copy_n(reinterpret_cast<const std::byte*>(&light.cosHalfFovExpanded),
+                    sizeof(light.cosHalfFovExpanded),
+                    out.data() + baseOffset + COS_HALF_FOV_EXPANDED_OFFSET);
+        std::copy_n(reinterpret_cast<const std::byte*>(&light.rotationLimit), sizeof(light.rotationLimit), out.data() + baseOffset + ROTATION_LIMIT_OFFSET);
+        std::copy_n(
+            reinterpret_cast<const std::byte*>(&light.translationLimit), sizeof(light.translationLimit), out.data() + baseOffset + TRANSLATION_LIMIT_OFFSET);
     }
 
     [[nodiscard]] std::vector<std::byte> BuildPrimaryLights(const ComWorld& comWorld)
@@ -1697,7 +1558,7 @@ namespace
             return {};
 
         std::vector<std::byte> out;
-        out.reserve(static_cast<size_t>(comWorld.primaryLightCount) * 0x80uz);
+        out.reserve(static_cast<size_t>(comWorld.primaryLightCount) * IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE);
         for (auto lightIndex = 0uz; lightIndex < comWorld.primaryLightCount; lightIndex++)
             AppendPrimaryLight(out, comWorld.primaryLights[lightIndex]);
         return out;
@@ -1762,21 +1623,21 @@ namespace
         return out;
     }
 
-    void AddLump(std::vector<BspLump>& lumps, const BspLumpType id, std::vector<std::byte>&& data)
+    void AddLump(std::vector<BspLump>& lumps, const IW3::d3dbsp::LumpType id, std::vector<std::byte>&& data)
     {
         if (!data.empty())
             lumps.emplace_back(id, std::move(data));
     }
 
-    [[nodiscard]] size_t LumpOrderIndex(const BspLumpType id)
+    [[nodiscard]] size_t LumpOrderIndex(const IW3::d3dbsp::LumpType id)
     {
-        for (auto i = 0uz; i < LUMP_ORDER.size(); i++)
+        for (auto i = 0uz; i < IW3::d3dbsp::LUMP_WRITE_ORDER.size(); i++)
         {
-            if (LUMP_ORDER[i] == id)
+            if (IW3::d3dbsp::LUMP_WRITE_ORDER[i] == id)
                 return i;
         }
 
-        return LUMP_ORDER.size();
+        return IW3::d3dbsp::LUMP_WRITE_ORDER.size();
     }
 
     void SortLumps(std::vector<BspLump>& lumps)
@@ -1794,13 +1655,13 @@ namespace
         SortLumps(lumps);
 
         const auto lumpCount = static_cast<uint32_t>(lumps.size());
-        stream::Write(stream, BSP_MAGIC.data(), BSP_MAGIC.size());
-        stream::WriteValue(stream, BSP_VERSION);
+        stream::Write(stream, IW3::d3dbsp::BSP_MAGIC.data(), IW3::d3dbsp::BSP_MAGIC.size());
+        stream::WriteValue(stream, IW3::d3dbsp::BSP_VERSION);
         stream::WriteValue(stream, lumpCount);
 
         for (const auto& lump : lumps)
         {
-            const auto id = static_cast<uint32_t>(lump.id);
+            const auto id = std::to_underlying(lump.id);
             const auto size = static_cast<uint32_t>(lump.data.size());
             stream::WriteValue(stream, id);
             stream::WriteValue(stream, size);
@@ -1833,7 +1694,7 @@ namespace map_d3dbsp
         const auto* gameWorldSp = gameWorldSpInfo ? gameWorldSpInfo->Asset() : nullptr;
 
         // A raw d3dbsp is reconstructed from several loaded map assets. GfxWorld
-        // alone does not contain enough data for collision, entities, or primary lights.
+        // alone does not contain enough data.
         assert(world);
         assert(clipMap);
         assert(comWorld);
@@ -1841,7 +1702,10 @@ namespace map_d3dbsp
         if (!world || !clipMap || !comWorld || !mapEnts)
             return;
 
-        const auto primaryLightCount = comWorld->primaryLightCount;
+        // Lump 43 is ComWorld primary-light data. Light-region lumps are sized
+        // by GfxWorld::primaryLightCount, which can be smaller than the ComWorld
+        // record count in stock BSPs.
+        const auto worldPrimaryLightCount = world->primaryLightCount;
         const auto lightmapPageLayout = BuildLightmapPageLayout(*world);
         const auto surfaceLightmapRemaps = BuildSurfaceLightmapRemaps(*world, lightmapPageLayout);
         const auto vertexLightmapRemaps = BuildVertexLightmapRemaps(*world, surfaceLightmapRemaps);
@@ -1885,14 +1749,14 @@ namespace map_d3dbsp
         AddLump(lumps, LUMP_ENTITIES, BuildEntities(*mapEnts, clipMap, world));
         AddLump(lumps, LUMP_PRIMARY_LIGHTS, BuildPrimaryLights(*comWorld));
 
-        AddLump(lumps, LUMP_LIGHT_REGION_COUNTS, BuildLightRegionCounts(*world, primaryLightCount));
-        AddLump(lumps, LUMP_LIGHT_REGION_HULLS, BuildLightRegionHulls(*world, primaryLightCount));
-        AddLump(lumps, LUMP_LIGHT_REGION_AXES, BuildLightRegionAxes(*world, primaryLightCount));
+        AddLump(lumps, LUMP_LIGHT_REGION_COUNTS, BuildLightRegionCounts(*world, worldPrimaryLightCount));
+        AddLump(lumps, LUMP_LIGHT_REGION_HULLS, BuildLightRegionHulls(*world, worldPrimaryLightCount));
+        AddLump(lumps, LUMP_LIGHT_REGION_AXES, BuildLightRegionAxes(*world, worldPrimaryLightCount));
 
         if (gameWorldSp)
             AddLump(lumps, LUMP_PATHCONNECTIONS, BuildGameWorldSpPath(*gameWorldSp));
 
-        const auto assetFile = context.OpenAssetFile(GetPartialBspFileName(asset.m_name));
+        const auto assetFile = context.OpenAssetFile(asset.m_name);
         if (assetFile)
             WriteBsp(*assetFile, std::move(lumps));
     }

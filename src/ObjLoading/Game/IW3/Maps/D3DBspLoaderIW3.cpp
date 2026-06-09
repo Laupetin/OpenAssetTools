@@ -1,0 +1,2849 @@
+#include "D3DBspLoaderIW3.h"
+
+#include "Asset/AssetRegistration.h"
+#include "D3DBspAssetCreationStateIW3.h"
+#include "Game/IW3/CommonIW3.h"
+#include "Game/IW3/Maps/D3DBspCommonIW3.h"
+#include "Image/D3DFormat.h"
+#include "Image/IwiTypes.h"
+#include "Utils/Logging/Log.h"
+
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <format>
+#include <limits>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+using namespace IW3;
+
+namespace
+{
+    using enum IW3::d3dbsp::LumpType;
+
+    constexpr auto RAW_LIGHT_TYPE_OFFSET = 0uz;
+    constexpr auto RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET = 1uz;
+    constexpr auto RAW_LIGHT_EXPONENT_OFFSET = 2uz;
+    constexpr auto RAW_LIGHT_UNUSED_OFFSET = 3uz;
+    constexpr auto RAW_LIGHT_COLOR_OFFSET = 4uz;
+    constexpr auto RAW_LIGHT_DIR_OFFSET = 16uz;
+    constexpr auto RAW_LIGHT_ORIGIN_OFFSET = 28uz;
+    constexpr auto RAW_LIGHT_RADIUS_OFFSET = 40uz;
+    constexpr auto RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET = 44uz;
+    constexpr auto RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET = 48uz;
+    constexpr auto RAW_LIGHT_COS_HALF_FOV_EXPANDED_OFFSET = 52uz;
+    constexpr auto RAW_LIGHT_ROTATION_LIMIT_OFFSET = 56uz;
+    constexpr auto RAW_LIGHT_TRANSLATION_LIMIT_OFFSET = 60uz;
+    constexpr auto RAW_MATERIAL_SIZE = 72uz;
+    constexpr auto RAW_PLANE_SIZE = 16uz;
+    constexpr auto RAW_BRUSHSIDE_SIZE = 8uz;
+    constexpr auto RAW_BRUSH_HEADER_SIZE = 4uz;
+    constexpr auto RAW_CLIP_NODE_SIZE = 36uz;
+    constexpr auto RAW_LEAF_SIZE = 24uz;
+    constexpr auto RAW_LEAF_BRUSH_SIZE = 4uz;
+    constexpr auto RAW_VEC3_SIZE = 12uz;
+    constexpr auto RAW_TRI_INDICES_SIZE = 6uz;
+    constexpr auto RAW_COLLISION_BORDER_SIZE = 28uz;
+    constexpr auto RAW_COLLISION_PARTITION_SIZE = 12uz;
+    constexpr auto RAW_COLLISION_AABB_SIZE = 32uz;
+    constexpr auto RAW_MODEL_SIZE = 48uz;
+    constexpr auto RAW_WORLD_SURFACE_SIZE = 24uz;
+    constexpr auto RAW_WORLD_VERTEX_SIZE = 68uz;
+    constexpr auto RAW_WORLD_AABB_TREE_SIZE = 12uz;
+    constexpr auto RAW_WORLD_CELL_SIZE = 112uz;
+    constexpr auto RAW_LIGHTGRID_ENTRY_SIZE = sizeof(GfxLightGridEntry);
+    constexpr auto RAW_LIGHTGRID_COLOR_SIZE = sizeof(GfxLightGridColors);
+    constexpr auto RAW_LIGHT_REGION_HULL_SIZE = 76uz;
+    constexpr auto RAW_LIGHT_REGION_AXIS_SIZE = sizeof(GfxLightRegionAxis);
+    constexpr auto LIGHTMAP_PRIMARY_RAW_PAGE_SIZE = 0x100000uz;
+    constexpr auto LIGHTMAP_SECONDARY_RAW_PAGE_SIZE = 0x200000uz;
+    constexpr auto LIGHTMAP_RAW_PAGE_SIZE = LIGHTMAP_SECONDARY_RAW_PAGE_SIZE + LIGHTMAP_PRIMARY_RAW_PAGE_SIZE;
+    constexpr auto LIGHTMAP_PRIMARY_RAW_WIDTH = 1024u;
+    constexpr auto LIGHTMAP_PRIMARY_RAW_HEIGHT = 1024u;
+    constexpr auto LIGHTMAP_SECONDARY_RAW_WIDTH = 512u;
+    constexpr auto LIGHTMAP_SECONDARY_RAW_HEIGHT = 1024u;
+    constexpr auto REFLECTION_PROBE_SIZE = 64u;
+    constexpr auto REFLECTION_PROBE_MIP_COUNT = 7u;
+    constexpr auto REFLECTION_PROBE_NAME_SIZE = 64uz;
+    constexpr auto REFLECTION_PROBE_RAW_DATA_SIZE = 0x1FFF8uz;
+    constexpr auto REFLECTION_PROBE_RECORD_SIZE = sizeof(float) * 3uz + REFLECTION_PROBE_NAME_SIZE + REFLECTION_PROBE_RAW_DATA_SIZE;
+    constexpr auto DEFAULT_MATERIAL_NAME = "$default";
+    constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
+    constexpr auto SKY_LIGHTMAP_INDEX = 31u;
+    constexpr auto PATHCONNECTIONS_VERSION = 8u;
+    constexpr auto DEG_TO_RAD = 3.14159265358979323846f / 180.0f;
+
+    [[nodiscard]] const IW3::d3dbsp::File* GetBspForAsset(const std::string& assetName, ISearchPath& searchPath, AssetCreationContext& context)
+    {
+        const auto& loadResult = context.GetZoneAssetCreationState<IW3::d3dbsp::AssetCreationState>().Load(assetName, searchPath);
+        if (loadResult.status == IW3::d3dbsp::LoadStatus::NotFound)
+            return nullptr;
+
+        if (loadResult.status == IW3::d3dbsp::LoadStatus::Invalid)
+        {
+            con::error("Could not load d3dbsp for asset \"{}\": {}", assetName, loadResult.message);
+            return nullptr;
+        }
+
+        return loadResult.file.get();
+    }
+
+    [[nodiscard]] bool BspWasInvalid(const std::string& assetName, ISearchPath& searchPath, AssetCreationContext& context)
+    {
+        const auto& loadResult = context.GetZoneAssetCreationState<IW3::d3dbsp::AssetCreationState>().Load(assetName, searchPath);
+        return loadResult.status == IW3::d3dbsp::LoadStatus::Invalid;
+    }
+
+    [[nodiscard]] bool FitsInt(const size_t value)
+    {
+        return value <= static_cast<size_t>(std::numeric_limits<int>::max());
+    }
+
+    [[nodiscard]] bool FitsUnsigned(const size_t value)
+    {
+        return value <= static_cast<size_t>(std::numeric_limits<unsigned>::max());
+    }
+
+    [[nodiscard]] bool FitsUint16(const size_t value)
+    {
+        return value <= static_cast<size_t>(std::numeric_limits<uint16_t>::max());
+    }
+
+    [[nodiscard]] bool FitsInt16(const int value)
+    {
+        return value >= static_cast<int>(std::numeric_limits<int16_t>::min()) && value <= static_cast<int>(std::numeric_limits<int16_t>::max());
+    }
+
+    [[nodiscard]] bool ValidateRecordLump(
+        const IW3::d3dbsp::File& bsp, const IW3::d3dbsp::Lump* lump, const IW3::d3dbsp::LumpType type, const size_t recordSize, std::string& error)
+    {
+        if (!lump)
+        {
+            error = std::format("missing lump {}", std::to_underlying(type));
+            return false;
+        }
+
+        if (recordSize == 0uz || lump->data.size() % recordSize != 0uz)
+        {
+            error = std::format("{} lump {} has funny size {}", bsp.m_file_name, std::to_underlying(type), lump->data.size());
+            return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] size_t RecordCount(const IW3::d3dbsp::Lump& lump, const size_t recordSize)
+    {
+        return recordSize > 0uz ? lump.data.size() / recordSize : 0uz;
+    }
+
+    template<typename T> T* AllocZeroed(MemoryManager& memory, const size_t count = 1uz)
+    {
+        auto* result = memory.Alloc<T>(count);
+        if (result && count > 0uz)
+            std::memset(result, 0, sizeof(T) * count);
+
+        return result;
+    }
+
+    template<typename T> T* AllocCopy(MemoryManager& memory, const std::vector<std::byte>& data)
+    {
+        if (data.empty())
+            return nullptr;
+
+        auto* result = memory.Alloc<T>(data.size() / sizeof(T));
+        std::memcpy(result, data.data(), data.size());
+        return result;
+    }
+
+    template<typename T> void CopyUnaligned(const std::byte* source, T& destination)
+    {
+        std::memcpy(&destination, source, sizeof(T));
+    }
+
+    template<typename T> [[nodiscard]] T ReadUnaligned(const std::byte* source)
+    {
+        T result;
+        std::memcpy(&result, source, sizeof(T));
+        return result;
+    }
+
+    void CopyFloat3(const std::byte* source, float (&destination)[3])
+    {
+        std::memcpy(destination, source, sizeof(destination));
+    }
+
+    [[nodiscard]] char ReadRawByte(const std::byte* source, const size_t offset)
+    {
+        return static_cast<char>(std::to_integer<unsigned char>(source[offset]));
+    }
+
+    [[nodiscard]] uint32_t ReadU32(const std::byte* source, const size_t offset = 0uz)
+    {
+        return ReadUnaligned<uint32_t>(source + offset);
+    }
+
+    [[nodiscard]] int32_t ReadI32(const std::byte* source, const size_t offset = 0uz)
+    {
+        return ReadUnaligned<int32_t>(source + offset);
+    }
+
+    [[nodiscard]] uint16_t ReadU16(const std::byte* source, const size_t offset = 0uz)
+    {
+        return ReadUnaligned<uint16_t>(source + offset);
+    }
+
+    [[nodiscard]] float ReadFloat(const std::byte* source, const size_t offset = 0uz)
+    {
+        return ReadUnaligned<float>(source + offset);
+    }
+
+    [[nodiscard]] std::optional<float> ParseFloat(std::string_view value)
+    {
+        std::string temp(value);
+        char* end = nullptr;
+        const auto result = std::strtof(temp.c_str(), &end);
+        if (end == temp.c_str())
+            return std::nullopt;
+
+        return result;
+    }
+
+    [[nodiscard]] int ParseInt(std::string_view value, const int fallback = 0)
+    {
+        std::string temp(value);
+        char* end = nullptr;
+        const auto result = std::strtol(temp.c_str(), &end, 10);
+        if (end == temp.c_str())
+            return fallback;
+
+        return static_cast<int>(result);
+    }
+
+    [[nodiscard]] std::optional<std::array<float, 3>> ParseFloat3(std::string_view value)
+    {
+        std::array<float, 3> result{};
+        std::string temp(value);
+        const char* cursor = temp.c_str();
+
+        for (auto i = 0uz; i < result.size(); i++)
+        {
+            while (*cursor && std::isspace(static_cast<unsigned char>(*cursor)))
+                cursor++;
+
+            char* end = nullptr;
+            result[i] = std::strtof(cursor, &end);
+            if (end == cursor)
+                return std::nullopt;
+
+            cursor = end;
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] std::string RawString(const std::byte* data, const size_t maxLength)
+    {
+        auto length = 0uz;
+        while (length < maxLength && data[length] != std::byte{})
+            length++;
+
+        return std::string(reinterpret_cast<const char*>(data), length);
+    }
+
+    [[nodiscard]] std::string RawMaterialName(const std::byte* record)
+    {
+        return RawString(record, 64uz);
+    }
+
+    [[nodiscard]] bool HasPathSeparator(const std::string_view value)
+    {
+        return value.find('/') != std::string_view::npos || value.find('\\') != std::string_view::npos;
+    }
+
+    void CrossProduct(const float (&left)[3], const float (&right)[3], float (&out)[3])
+    {
+        out[0] = left[1] * right[2] - left[2] * right[1];
+        out[1] = left[2] * right[0] - left[0] * right[2];
+        out[2] = left[0] * right[1] - left[1] * right[0];
+    }
+
+    [[nodiscard]] float DotProduct(const float (&left)[3], const float (&right)[3])
+    {
+        return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
+    }
+
+    [[nodiscard]] uint8_t ClampToByte(const int value)
+    {
+        return static_cast<uint8_t>(std::clamp(value, 0, 255));
+    }
+
+    [[nodiscard]] uint32_t PackRgba(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a)
+    {
+        return static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8u) | (static_cast<uint32_t>(b) << 16u) | (static_cast<uint32_t>(a) << 24u);
+    }
+
+    [[nodiscard]] uint32_t TransformReflectionProbeColor(const uint8_t r, const uint8_t g, const uint8_t b)
+    {
+        constexpr double LUMA_R = 0.1140000000596046;
+        constexpr double LUMA_G = 0.5870000123977661;
+        constexpr double LUMA_B = 0.2989999949932098;
+        constexpr double BLACK_LEVEL = 0.3;
+        constexpr double WHITE_LEVEL = 0.7;
+        constexpr double GAMMA = 1.2;
+        constexpr double SATURATION = 0.5;
+
+        const auto range = WHITE_LEVEL - BLACK_LEVEL;
+        double color[3]{
+            std::pow(std::max(0.0, (static_cast<double>(r) / 255.0 - BLACK_LEVEL) / range), GAMMA),
+            std::pow(std::max(0.0, (static_cast<double>(g) / 255.0 - BLACK_LEVEL) / range), GAMMA),
+            std::pow(std::max(0.0, (static_cast<double>(b) / 255.0 - BLACK_LEVEL) / range), GAMMA),
+        };
+
+        const auto luma = LUMA_R * color[0] + LUMA_G * color[1] + LUMA_B * color[2];
+        for (auto& channel : color)
+            channel = SATURATION * channel + (1.0 - SATURATION) * luma;
+
+        const auto scale = std::max({0.1, color[0], color[1], color[2]});
+        return PackRgba(ClampToByte(static_cast<int>(color[0] / scale * 255.0)),
+                        ClampToByte(static_cast<int>(color[1] / scale * 255.0)),
+                        ClampToByte(static_cast<int>(color[2] / scale * 255.0)),
+                        ClampToByte(static_cast<int>(255.0 * (scale * 0.25))));
+    }
+
+    [[nodiscard]] std::optional<uint8_t> ParseHexByte(const std::string_view value, const size_t offset)
+    {
+        if (offset + 2uz > value.size())
+            return std::nullopt;
+
+        const auto hexValue = [](const char c) -> int
+        {
+            if (c >= '0' && c <= '9')
+                return c - '0';
+            if (c >= 'a' && c <= 'f')
+                return c - 'a' + 10;
+            if (c >= 'A' && c <= 'F')
+                return c - 'A' + 10;
+            return -1;
+        };
+
+        const auto high = hexValue(value[offset]);
+        const auto low = hexValue(value[offset + 1uz]);
+        if (high < 0 || low < 0)
+            return std::nullopt;
+
+        return static_cast<uint8_t>((high << 4) | low);
+    }
+
+    [[nodiscard]] std::string GeneratedImageName(const std::string& assetName, const std::string_view kind, const size_t index)
+    {
+        return std::format("{}_{}_{}", assetName, kind, index);
+    }
+
+    [[nodiscard]] GfxImageLoadDef* CreateLoadDef(
+        MemoryManager& memory, const uint16_t width, const uint16_t height, const uint16_t depth, const int format, const char flags, const std::byte* data, const size_t dataSize)
+    {
+        auto* loadDef = static_cast<GfxImageLoadDef*>(memory.AllocRaw(offsetof(GfxImageLoadDef, data) + dataSize));
+        loadDef->levelCount = (flags & image::iwi6::IMG_FLAG_CUBEMAP) != 0 ? static_cast<char>(REFLECTION_PROBE_MIP_COUNT) : 1;
+        loadDef->flags = flags;
+        loadDef->dimensions[0] = width;
+        loadDef->dimensions[1] = height;
+        loadDef->dimensions[2] = depth;
+        loadDef->format = format;
+        loadDef->resourceSize = static_cast<unsigned>(dataSize);
+        if (data && dataSize > 0uz)
+            std::memcpy(loadDef->data, data, dataSize);
+
+        return loadDef;
+    }
+
+    [[nodiscard]] GfxImage* CreateGeneratedImage(
+        MemoryManager& memory,
+        const std::string& name,
+        const MapType mapType,
+        const TextureSemantic semantic,
+        const ImageCategory category,
+        const uint16_t width,
+        const uint16_t height,
+        const uint16_t depth,
+        const int format,
+        const char loadFlags,
+        const std::byte* data,
+        const size_t dataSize)
+    {
+        auto* image = AllocZeroed<GfxImage>(memory);
+        image->name = memory.Dup(name.c_str());
+        image->mapType = mapType;
+        image->noPicmip = true;
+        image->semantic = static_cast<char>(semantic);
+        image->category = static_cast<char>(category);
+        image->width = width;
+        image->height = height;
+        image->depth = depth;
+        image->delayLoadPixels = true;
+        image->texture.loadDef = CreateLoadDef(memory, width, height, depth, format, loadFlags, data, dataSize);
+        return image;
+    }
+
+    struct EntityBlock
+    {
+        std::string text;
+        std::string classname;
+        std::unordered_map<std::string, std::string> fields;
+    };
+
+    void ParsePrimaryLightRecord(const std::byte* record, ComPrimaryLight& light)
+    {
+        light = {};
+        light.type = ReadRawByte(record, RAW_LIGHT_TYPE_OFFSET);
+        light.canUseShadowMap = ReadRawByte(record, RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET);
+        light.exponent = ReadRawByte(record, RAW_LIGHT_EXPONENT_OFFSET);
+        light.unused = ReadRawByte(record, RAW_LIGHT_UNUSED_OFFSET);
+
+        CopyFloat3(record + RAW_LIGHT_COLOR_OFFSET, light.color);
+        CopyFloat3(record + RAW_LIGHT_DIR_OFFSET, light.dir);
+        CopyFloat3(record + RAW_LIGHT_ORIGIN_OFFSET, light.origin);
+        CopyUnaligned(record + RAW_LIGHT_RADIUS_OFFSET, light.radius);
+        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET, light.cosHalfFovOuter);
+        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET, light.cosHalfFovInner);
+        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_EXPANDED_OFFSET, light.cosHalfFovExpanded);
+        CopyUnaligned(record + RAW_LIGHT_ROTATION_LIMIT_OFFSET, light.rotationLimit);
+        CopyUnaligned(record + RAW_LIGHT_TRANSLATION_LIMIT_OFFSET, light.translationLimit);
+
+        // The raw 64-byte BSP record stops before the runtime defName pointer.
+        light.defName = nullptr;
+    }
+
+    [[nodiscard]] std::vector<std::string> QuotedEntityTokens(const std::string& block)
+    {
+        std::vector<std::string> tokens;
+        for (auto i = 0uz; i < block.size(); i++)
+        {
+            if (block[i] != '"')
+                continue;
+
+            std::string token;
+            bool escape = false;
+            for (++i; i < block.size(); i++)
+            {
+                const auto c = block[i];
+                if (escape)
+                {
+                    token.push_back(c);
+                    escape = false;
+                }
+                else if (c == '\\')
+                {
+                    escape = true;
+                }
+                else if (c == '"')
+                {
+                    break;
+                }
+                else
+                {
+                    token.push_back(c);
+                }
+            }
+
+            tokens.emplace_back(std::move(token));
+        }
+
+        return tokens;
+    }
+
+    [[nodiscard]] std::unordered_map<std::string, std::string> QuotedEntityFields(const std::string& block)
+    {
+        const auto tokens = QuotedEntityTokens(block);
+        std::unordered_map<std::string, std::string> fields;
+        fields.reserve(tokens.size() / 2uz);
+
+        for (auto i = 0uz; i + 1uz < tokens.size(); i += 2uz)
+            fields.emplace(tokens[i], tokens[i + 1uz]);
+
+        return fields;
+    }
+
+    [[nodiscard]] std::string_view EntityField(const EntityBlock& block, const std::string& key)
+    {
+        const auto existingField = block.fields.find(key);
+        if (existingField == block.fields.end())
+            return {};
+
+        return existingField->second;
+    }
+
+    [[nodiscard]] bool ParseEntityBlocks(const std::vector<std::byte>& lump, std::vector<EntityBlock>& blocks, std::string& error)
+    {
+        auto textLen = lump.size();
+        while (textLen > 0uz && lump[textLen - 1uz] == std::byte{})
+            textLen--;
+
+        const std::string text(reinterpret_cast<const char*>(lump.data()), textLen);
+        auto offset = 0uz;
+
+        while (offset < text.size())
+        {
+            while (offset < text.size() && text[offset] != '{')
+            {
+                if (!std::isspace(static_cast<unsigned char>(text[offset])))
+                {
+                    error = "unexpected non-whitespace before entity block";
+                    return false;
+                }
+                offset++;
+            }
+
+            if (offset >= text.size())
+                break;
+
+            const auto blockStart = offset;
+            auto depth = 1;
+            auto inQuote = false;
+            auto escape = false;
+
+            for (++offset; offset < text.size(); offset++)
+            {
+                const auto c = text[offset];
+                if (inQuote)
+                {
+                    if (escape)
+                        escape = false;
+                    else if (c == '\\')
+                        escape = true;
+                    else if (c == '"')
+                        inQuote = false;
+                }
+                else
+                {
+                    if (c == '"')
+                        inQuote = true;
+                    else if (c == '{')
+                        depth++;
+                    else if (c == '}')
+                    {
+                        depth--;
+                        if (depth == 0)
+                        {
+                            offset++;
+                            if (offset < text.size() && text[offset] == '\r')
+                                offset++;
+                            if (offset < text.size() && text[offset] == '\n')
+                                offset++;
+
+                            EntityBlock block;
+                            block.text = text.substr(blockStart, offset - blockStart);
+                            block.fields = QuotedEntityFields(block.text);
+                            block.classname = std::string(EntityField(block, "classname"));
+                            blocks.emplace_back(std::move(block));
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (depth != 0)
+            {
+                error = "unterminated entity block";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] std::vector<std::byte> CompileMapEntsEntityString(const std::vector<EntityBlock>& blocks)
+    {
+        std::string out;
+        for (const auto& block : blocks)
+        {
+            // The original linker consumes misc_model while building static-model
+            // world data and does not retain those editor-only blocks in MapEnts.
+            if (block.classname == "misc_model")
+                continue;
+
+            out += block.text;
+        }
+
+        if (out.size() >= 2uz && out[out.size() - 2uz] == '\r' && out[out.size() - 1uz] == '\n')
+            out.resize(out.size() - 2uz);
+        else if (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+            out.pop_back();
+
+        std::vector<std::byte> result;
+        result.reserve(out.size() + 1uz);
+        const auto* outBytes = reinterpret_cast<const std::byte*>(out.data());
+        result.insert(result.end(), outBytes, outBytes + out.size());
+        result.emplace_back(std::byte{});
+        return result;
+    }
+
+    [[nodiscard]] bool IsMiscModel(const EntityBlock& block)
+    {
+        return block.classname == "misc_model";
+    }
+
+    [[nodiscard]] float StaticModelScale(const EntityBlock& block)
+    {
+        const auto parsedScale = ParseFloat(EntityField(block, "modelscale"));
+        if (!parsedScale || *parsedScale <= std::numeric_limits<float>::epsilon())
+            return 1.0f;
+
+        return *parsedScale;
+    }
+
+    void AnglesToAxis(const std::array<float, 3>& angles, float (&axis)[3][3])
+    {
+        const auto pitch = angles[0] * DEG_TO_RAD;
+        const auto yaw = angles[1] * DEG_TO_RAD;
+        const auto roll = angles[2] * DEG_TO_RAD;
+
+        const auto sp = std::sin(pitch);
+        const auto cp = std::cos(pitch);
+        const auto sy = std::sin(yaw);
+        const auto cy = std::cos(yaw);
+        const auto sr = std::sin(roll);
+        const auto cr = std::cos(roll);
+
+        axis[0][0] = cp * cy;
+        axis[0][1] = cp * sy;
+        axis[0][2] = -sp;
+        axis[1][0] = sr * sp * cy - cr * sy;
+        axis[1][1] = sr * sp * sy + cr * cy;
+        axis[1][2] = sr * cp;
+        axis[2][0] = cr * sp * cy + sr * sy;
+        axis[2][1] = cr * sp * sy - sr * cy;
+        axis[2][2] = cr * cp;
+    }
+
+    void TransformStaticModelPoint(
+        const float (&axis)[3][3], const std::array<float, 3>& origin, const float scale, const float x, const float y, const float z, float (&out)[3])
+    {
+        for (auto component = 0uz; component < 3uz; component++)
+            out[component] = origin[component] + scale * (axis[0][component] * x + axis[1][component] * y + axis[2][component] * z);
+    }
+
+    void BuildStaticModelBounds(const XModel& model, const float (&axis)[3][3], const std::array<float, 3>& origin, const float scale, cStaticModel_s& out)
+    {
+        for (auto component = 0uz; component < 3uz; component++)
+        {
+            out.absmin[component] = std::numeric_limits<float>::max();
+            out.absmax[component] = std::numeric_limits<float>::lowest();
+        }
+
+        for (auto corner = 0u; corner < 8u; corner++)
+        {
+            const auto x = (corner & 1u) != 0u ? model.maxs.x : model.mins.x;
+            const auto y = (corner & 2u) != 0u ? model.maxs.y : model.mins.y;
+            const auto z = (corner & 4u) != 0u ? model.maxs.z : model.mins.z;
+
+            float transformed[3]{};
+            TransformStaticModelPoint(axis, origin, scale, x, y, z, transformed);
+            for (auto component = 0uz; component < 3uz; component++)
+            {
+                out.absmin[component] = std::min(out.absmin[component], transformed[component]);
+                out.absmax[component] = std::max(out.absmax[component], transformed[component]);
+            }
+        }
+    }
+
+    [[nodiscard]] std::vector<const EntityBlock*> StaticModelEntityBlocks(const std::vector<EntityBlock>& blocks)
+    {
+        std::vector<const EntityBlock*> result;
+        for (const auto& block : blocks)
+        {
+            if (IsMiscModel(block))
+                result.emplace_back(&block);
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] std::vector<XAssetInfo<XModel>*> LoadStaticModelDependencies(
+        const std::vector<const EntityBlock*>& staticModelBlocks, AssetCreationContext& context)
+    {
+        std::vector<XAssetInfo<XModel>*> result;
+        result.reserve(staticModelBlocks.size());
+
+        for (const auto* block : staticModelBlocks)
+        {
+            const auto modelName = EntityField(*block, "model");
+            if (modelName.empty())
+            {
+                result.emplace_back(nullptr);
+                continue;
+            }
+
+            result.emplace_back(context.LoadDependency<AssetXModel>(std::string(modelName)));
+        }
+
+        return result;
+    }
+
+    void PopulateStaticModels(
+        clipMap_t& clipMap,
+        const std::vector<const EntityBlock*>& staticModelBlocks,
+        const std::vector<XAssetInfo<XModel>*>& staticModelDependencies,
+        MemoryManager& memory)
+    {
+        std::vector<std::pair<const EntityBlock*, XModel*>> validStaticModels;
+        validStaticModels.reserve(staticModelBlocks.size());
+
+        for (auto i = 0uz; i < staticModelBlocks.size(); i++)
+        {
+            if (i >= staticModelDependencies.size() || !staticModelDependencies[i])
+                continue;
+
+            validStaticModels.emplace_back(staticModelBlocks[i], staticModelDependencies[i]->Asset());
+        }
+
+        if (validStaticModels.empty())
+            return;
+
+        clipMap.numStaticModels = static_cast<unsigned>(validStaticModels.size());
+        clipMap.staticModelList = AllocZeroed<cStaticModel_s>(memory, validStaticModels.size());
+
+        for (auto modelIndex = 0uz; modelIndex < validStaticModels.size(); modelIndex++)
+        {
+            const auto& [block, model] = validStaticModels[modelIndex];
+            auto& staticModel = clipMap.staticModelList[modelIndex];
+            const auto origin = ParseFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
+            const auto angles = ParseFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
+            const auto scale = StaticModelScale(*block);
+            float axis[3][3]{};
+
+            AnglesToAxis(angles, axis);
+
+            staticModel.writable.nextModelInWorldSector = std::numeric_limits<uint16_t>::max();
+            staticModel.xmodel = model;
+            std::copy(origin.begin(), origin.end(), staticModel.origin);
+
+            // Runtime cStaticModel_s stores the transpose of the model axis divided
+            // by scale. The raw BSP stores editor angles/modelscale, so this is the
+            // inverse of D3DBspDumperIW3::StaticModelAxis/StaticModelScale.
+            for (auto row = 0uz; row < 3uz; row++)
+            {
+                for (auto column = 0uz; column < 3uz; column++)
+                    staticModel.invScaledAxis[column][row] = axis[row][column] / scale;
+            }
+
+            BuildStaticModelBounds(*model, axis, origin, scale, staticModel);
+        }
+    }
+
+    [[nodiscard]] char PlaneTypeForNormal(const float (&normal)[3])
+    {
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            if (normal[axis] != 1.0f)
+                continue;
+
+            auto isAxial = true;
+            for (auto otherAxis = 0uz; otherAxis < 3uz; otherAxis++)
+            {
+                if (otherAxis != axis && normal[otherAxis] != 0.0f)
+                    isAxial = false;
+            }
+
+            if (isAxial)
+                return static_cast<char>(axis);
+        }
+
+        return 3;
+    }
+
+    [[nodiscard]] char PlaneSignBitsForNormal(const float (&normal)[3])
+    {
+        auto signBits = 0u;
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            if (normal[axis] < 0.0f)
+                signBits |= 1u << axis;
+        }
+
+        return static_cast<char>(signBits);
+    }
+
+    [[nodiscard]] float RadiusFromBounds(const float (&mins)[3], const float (&maxs)[3])
+    {
+        auto radiusSquared = 0.0f;
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            const auto extent = std::max(std::abs(mins[axis]), std::abs(maxs[axis]));
+            radiusSquared += extent * extent;
+        }
+
+        return std::sqrt(radiusSquared);
+    }
+
+    void SetLeafBoundsFromCollisionAabbs(const clipMap_t& clipMap, cLeaf_t& leaf)
+    {
+        if (!clipMap.aabbTrees || leaf.collAabbCount == 0u || leaf.firstCollAabbIndex >= clipMap.aabbTreeCount)
+            return;
+
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            leaf.mins[axis] = std::numeric_limits<float>::max();
+            leaf.maxs[axis] = std::numeric_limits<float>::lowest();
+        }
+
+        const auto endIndex = std::min<unsigned>(clipMap.aabbTreeCount, static_cast<unsigned>(leaf.firstCollAabbIndex) + leaf.collAabbCount);
+        for (auto aabbIndex = static_cast<unsigned>(leaf.firstCollAabbIndex); aabbIndex < endIndex; aabbIndex++)
+        {
+            const auto& aabb = clipMap.aabbTrees[aabbIndex];
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                leaf.mins[axis] = std::min(leaf.mins[axis], aabb.origin[axis] - aabb.halfSize[axis]);
+                leaf.maxs[axis] = std::max(leaf.maxs[axis], aabb.origin[axis] + aabb.halfSize[axis]);
+            }
+        }
+    }
+
+    [[nodiscard]] int BrushContents(const clipMap_t& clipMap, const cbrush_t& brush)
+    {
+        auto contents = 0;
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            for (auto side = 0uz; side < 2uz; side++)
+            {
+                const auto materialIndex = brush.axialMaterialNum[side][axis];
+                if (materialIndex >= 0 && static_cast<unsigned>(materialIndex) < clipMap.numMaterials)
+                    contents |= clipMap.materials[materialIndex].contentFlags;
+            }
+        }
+
+        for (auto sideIndex = 0uz; sideIndex < brush.numsides; sideIndex++)
+        {
+            const auto materialIndex = brush.sides[sideIndex].materialNum;
+            if (materialIndex < clipMap.numMaterials)
+                contents |= clipMap.materials[materialIndex].contentFlags;
+        }
+
+        return contents;
+    }
+
+    [[nodiscard]] bool PopulateClipMapMaterials(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* materials = bsp.GetLump(LUMP_MATERIALS);
+        if (!ValidateRecordLump(bsp, materials, LUMP_MATERIALS, RAW_MATERIAL_SIZE, error))
+            return false;
+
+        const auto count = RecordCount(*materials, RAW_MATERIAL_SIZE);
+        if (!FitsUnsigned(count))
+        {
+            error = "too many material records";
+            return false;
+        }
+
+        clipMap.numMaterials = static_cast<unsigned>(count);
+        clipMap.materials = AllocZeroed<dmaterial_t>(memory, count);
+
+        for (auto i = 0uz; i < count; i++)
+        {
+            const auto* record = materials->data.data() + i * RAW_MATERIAL_SIZE;
+            std::memcpy(clipMap.materials[i].material, record, sizeof(clipMap.materials[i].material));
+            clipMap.materials[i].surfaceFlags = ReadI32(record, 64uz);
+            clipMap.materials[i].contentFlags = ReadI32(record, 68uz);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapPlanes(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* planes = bsp.GetLump(LUMP_PLANES);
+        if (!ValidateRecordLump(bsp, planes, LUMP_PLANES, RAW_PLANE_SIZE, error))
+            return false;
+
+        const auto count = RecordCount(*planes, RAW_PLANE_SIZE);
+        if (!FitsInt(count))
+        {
+            error = "too many plane records";
+            return false;
+        }
+
+        clipMap.planeCount = static_cast<int>(count);
+        clipMap.planes = AllocZeroed<cplane_s>(memory, count);
+
+        for (auto i = 0uz; i < count; i++)
+        {
+            const auto* record = planes->data.data() + i * RAW_PLANE_SIZE;
+            CopyFloat3(record, clipMap.planes[i].normal);
+            clipMap.planes[i].dist = ReadFloat(record, 12uz);
+            clipMap.planes[i].type = PlaneTypeForNormal(clipMap.planes[i].normal);
+            clipMap.planes[i].signbits = PlaneSignBitsForNormal(clipMap.planes[i].normal);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapBrushes(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* brushHeaders = bsp.GetLump(LUMP_BRUSHES);
+        const auto* brushSides = bsp.GetLump(LUMP_BRUSHSIDES);
+        const auto* edgeCounts = bsp.GetLump(LUMP_BRUSHSIDE_EDGE_COUNTS);
+        const auto* brushEdges = bsp.GetLump(LUMP_BRUSHEDGES);
+
+        if (!ValidateRecordLump(bsp, brushHeaders, LUMP_BRUSHES, RAW_BRUSH_HEADER_SIZE, error)
+            || !ValidateRecordLump(bsp, brushSides, LUMP_BRUSHSIDES, RAW_BRUSHSIDE_SIZE, error) || !edgeCounts)
+            return false;
+
+        const auto brushCount = RecordCount(*brushHeaders, RAW_BRUSH_HEADER_SIZE);
+        if (!FitsUint16(brushCount))
+        {
+            error = "too many brush records";
+            return false;
+        }
+
+        auto totalSideCount = 0uz;
+        auto nonAxialSideCount = 0uz;
+        for (auto brushIndex = 0uz; brushIndex < brushCount; brushIndex++)
+        {
+            const auto sideCount = ReadU16(brushHeaders->data.data() + brushIndex * RAW_BRUSH_HEADER_SIZE);
+            if (sideCount < 6u)
+            {
+                error = "brush has fewer than six axial sides";
+                return false;
+            }
+
+            totalSideCount += sideCount;
+            nonAxialSideCount += sideCount - 6u;
+        }
+
+        if (brushSides->data.size() != totalSideCount * RAW_BRUSHSIDE_SIZE || edgeCounts->data.size() != totalSideCount)
+        {
+            error = "brush side/edge-count lumps do not match brush headers";
+            return false;
+        }
+
+        if (!FitsUnsigned(nonAxialSideCount))
+        {
+            error = "too many non-axial brush sides";
+            return false;
+        }
+
+        clipMap.numBrushes = static_cast<uint16_t>(brushCount);
+        clipMap.brushes = AllocZeroed<cbrush_t>(memory, brushCount);
+        clipMap.numBrushSides = static_cast<unsigned>(nonAxialSideCount);
+        clipMap.brushsides = nonAxialSideCount > 0uz ? AllocZeroed<cbrushside_t>(memory, nonAxialSideCount) : nullptr;
+        clipMap.numBrushEdges = brushEdges ? static_cast<unsigned>(brushEdges->data.size()) : 0u;
+        clipMap.brushEdges = brushEdges && !brushEdges->data.empty() ? AllocCopy<cbrushedge_t>(memory, brushEdges->data) : nullptr;
+
+        auto rawSideIndex = 0uz;
+        auto nonAxialSideIndex = 0uz;
+        auto edgeOffset = 0uz;
+
+        for (auto brushIndex = 0uz; brushIndex < brushCount; brushIndex++)
+        {
+            auto& brush = clipMap.brushes[brushIndex];
+            const auto* header = brushHeaders->data.data() + brushIndex * RAW_BRUSH_HEADER_SIZE;
+            const auto sideCount = ReadU16(header);
+            const auto nonAxialCount = static_cast<unsigned>(sideCount - 6u);
+
+            brush.numsides = nonAxialCount;
+            brush.sides = nonAxialCount > 0u ? &clipMap.brushsides[nonAxialSideIndex] : nullptr;
+            brush.baseAdjacentSide = clipMap.brushEdges && edgeOffset < clipMap.numBrushEdges ? &clipMap.brushEdges[edgeOffset] : nullptr;
+
+            auto localEdgeOffset = 0uz;
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                for (auto side = 0uz; side < 2uz; side++)
+                {
+                    const auto* rawSide = brushSides->data.data() + rawSideIndex * RAW_BRUSHSIDE_SIZE;
+                    const auto materialIndex = static_cast<int16_t>(ReadU32(rawSide, 4uz));
+                    const auto edgeCount = std::to_integer<unsigned char>(edgeCounts->data[rawSideIndex]);
+
+                    if (side == 0uz)
+                        brush.mins[axis] = ReadFloat(rawSide);
+                    else
+                        brush.maxs[axis] = ReadFloat(rawSide);
+
+                    brush.axialMaterialNum[side][axis] = materialIndex;
+                    brush.firstAdjacentSideOffsets[side][axis] = static_cast<int16_t>(localEdgeOffset);
+                    brush.edgeCount[side][axis] = static_cast<char>(edgeCount);
+                    localEdgeOffset += edgeCount;
+                    rawSideIndex++;
+                }
+            }
+
+            for (auto sideIndex = 0uz; sideIndex < nonAxialCount; sideIndex++)
+            {
+                const auto* rawSide = brushSides->data.data() + rawSideIndex * RAW_BRUSHSIDE_SIZE;
+                const auto planeIndex = ReadU32(rawSide);
+                const auto materialIndex = ReadU32(rawSide, 4uz);
+                if (planeIndex >= static_cast<unsigned>(std::max(clipMap.planeCount, 0)))
+                {
+                    error = "brush side references an invalid plane";
+                    return false;
+                }
+
+                auto& side = brush.sides[sideIndex];
+                side.plane = &clipMap.planes[planeIndex];
+                side.materialNum = materialIndex;
+                side.firstAdjacentSideOffset = static_cast<int16_t>(localEdgeOffset);
+                side.edgeCount = static_cast<char>(std::to_integer<unsigned char>(edgeCounts->data[rawSideIndex]));
+                localEdgeOffset += static_cast<unsigned char>(side.edgeCount);
+                rawSideIndex++;
+            }
+
+            edgeOffset += localEdgeOffset;
+            nonAxialSideIndex += nonAxialCount;
+            brush.contents = BrushContents(clipMap, brush);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapNodes(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* nodes = bsp.GetLump(LUMP_NODES);
+        if (!nodes)
+            return true;
+
+        if (nodes->data.size() % RAW_CLIP_NODE_SIZE != 0uz)
+        {
+            error = "node lump has funny size";
+            return false;
+        }
+
+        const auto nodeCount = RecordCount(*nodes, RAW_CLIP_NODE_SIZE);
+        if (!FitsUnsigned(nodeCount))
+        {
+            error = "too many node records";
+            return false;
+        }
+
+        clipMap.numNodes = static_cast<unsigned>(nodeCount);
+        clipMap.nodes = AllocZeroed<cNode_t>(memory, nodeCount);
+
+        for (auto nodeIndex = 0uz; nodeIndex < nodeCount; nodeIndex++)
+        {
+            const auto* record = nodes->data.data() + nodeIndex * RAW_CLIP_NODE_SIZE;
+            const auto planeIndex = ReadI32(record);
+            const auto child0 = ReadI32(record, 4uz);
+            const auto child1 = ReadI32(record, 8uz);
+
+            if (planeIndex < 0 || planeIndex >= clipMap.planeCount || !FitsInt16(child0) || !FitsInt16(child1))
+            {
+                error = "node record references invalid plane or child";
+                return false;
+            }
+
+            clipMap.nodes[nodeIndex].plane = &clipMap.planes[planeIndex];
+            clipMap.nodes[nodeIndex].children[0] = static_cast<int16_t>(child0);
+            clipMap.nodes[nodeIndex].children[1] = static_cast<int16_t>(child1);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapLeafBrushes(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* leafBrushes = bsp.GetLump(LUMP_LEAFBRUSHES);
+        if (!leafBrushes)
+            return true;
+
+        if (leafBrushes->data.size() % RAW_LEAF_BRUSH_SIZE != 0uz)
+        {
+            error = "leafbrush lump has funny size";
+            return false;
+        }
+
+        const auto leafBrushCount = RecordCount(*leafBrushes, RAW_LEAF_BRUSH_SIZE);
+        if (!FitsUnsigned(leafBrushCount))
+        {
+            error = "too many leafbrush records";
+            return false;
+        }
+
+        clipMap.numLeafBrushes = static_cast<unsigned>(leafBrushCount);
+        clipMap.leafbrushes = AllocZeroed<LeafBrush>(memory, leafBrushCount);
+
+        for (auto i = 0uz; i < leafBrushCount; i++)
+        {
+            const auto brushIndex = ReadU32(leafBrushes->data.data() + i * RAW_LEAF_BRUSH_SIZE);
+            if (brushIndex > std::numeric_limits<LeafBrush>::max())
+            {
+                error = "leafbrush index exceeds runtime range";
+                return false;
+            }
+
+            clipMap.leafbrushes[i] = static_cast<LeafBrush>(brushIndex);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapCollision(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* verts = bsp.GetLump(LUMP_COLLISIONVERTS);
+        if (verts)
+        {
+            if (verts->data.size() % RAW_VEC3_SIZE != 0uz || !FitsUnsigned(RecordCount(*verts, RAW_VEC3_SIZE)))
+            {
+                error = "collision vert lump has funny size";
+                return false;
+            }
+
+            clipMap.vertCount = static_cast<unsigned>(RecordCount(*verts, RAW_VEC3_SIZE));
+            clipMap.verts = AllocCopy<vec3_t>(memory, verts->data);
+        }
+
+        const auto* tris = bsp.GetLump(LUMP_COLLISIONTRIS);
+        if (tris)
+        {
+            if (tris->data.size() % RAW_TRI_INDICES_SIZE != 0uz || !FitsInt(RecordCount(*tris, RAW_TRI_INDICES_SIZE)))
+            {
+                error = "collision tri lump has funny size";
+                return false;
+            }
+
+            clipMap.triCount = static_cast<int>(RecordCount(*tris, RAW_TRI_INDICES_SIZE));
+            clipMap.triIndices = AllocCopy<uint16_t>(memory, tris->data);
+        }
+
+        const auto* walkable = bsp.GetLump(LUMP_COLLISION_EDGE_WALKABLE);
+        if (walkable)
+            clipMap.triEdgeIsWalkable = AllocCopy<char>(memory, walkable->data);
+
+        const auto* borders = bsp.GetLump(LUMP_COLLISIONBORDERS);
+        if (borders)
+        {
+            if (borders->data.size() % RAW_COLLISION_BORDER_SIZE != 0uz || !FitsInt(RecordCount(*borders, RAW_COLLISION_BORDER_SIZE)))
+            {
+                error = "collision border lump has funny size";
+                return false;
+            }
+
+            clipMap.borderCount = static_cast<int>(RecordCount(*borders, RAW_COLLISION_BORDER_SIZE));
+            clipMap.borders = AllocCopy<CollisionBorder>(memory, borders->data);
+        }
+
+        const auto* partitions = bsp.GetLump(LUMP_COLLISIONPARTITIONS);
+        if (partitions)
+        {
+            if (partitions->data.size() % RAW_COLLISION_PARTITION_SIZE != 0uz || !FitsInt(RecordCount(*partitions, RAW_COLLISION_PARTITION_SIZE)))
+            {
+                error = "collision partition lump has funny size";
+                return false;
+            }
+
+            const auto partitionCount = RecordCount(*partitions, RAW_COLLISION_PARTITION_SIZE);
+            clipMap.partitionCount = static_cast<int>(partitionCount);
+            clipMap.partitions = AllocZeroed<CollisionPartition>(memory, partitionCount);
+            for (auto i = 0uz; i < partitionCount; i++)
+            {
+                const auto* record = partitions->data.data() + i * RAW_COLLISION_PARTITION_SIZE;
+                const auto borderIndex = ReadU32(record, 8uz);
+                const auto borderCount = static_cast<unsigned char>(std::to_integer<unsigned char>(record[3]));
+                if (borderCount > 0u && borderIndex + borderCount > static_cast<unsigned>(std::max(clipMap.borderCount, 0)))
+                {
+                    error = "collision partition references invalid border";
+                    return false;
+                }
+
+                clipMap.partitions[i].triCount = static_cast<unsigned char>(std::to_integer<unsigned char>(record[2]));
+                clipMap.partitions[i].borderCount = borderCount;
+                clipMap.partitions[i].firstTri = ReadI32(record, 4uz);
+                clipMap.partitions[i].borders = clipMap.borders && borderCount > 0u ? &clipMap.borders[borderIndex] : nullptr;
+            }
+        }
+
+        const auto* aabbs = bsp.GetLump(LUMP_COLLISIONAABBS);
+        if (aabbs)
+        {
+            if (aabbs->data.size() % RAW_COLLISION_AABB_SIZE != 0uz || !FitsInt(RecordCount(*aabbs, RAW_COLLISION_AABB_SIZE)))
+            {
+                error = "collision AABB lump has funny size";
+                return false;
+            }
+
+            clipMap.aabbTreeCount = static_cast<int>(RecordCount(*aabbs, RAW_COLLISION_AABB_SIZE));
+            clipMap.aabbTrees = AllocCopy<CollisionAabbTree>(memory, aabbs->data);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapLeafs(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* leafs = bsp.GetLump(LUMP_LEAFS);
+        if (!leafs)
+            return true;
+
+        if (leafs->data.size() % RAW_LEAF_SIZE != 0uz || !FitsUnsigned(RecordCount(*leafs, RAW_LEAF_SIZE)))
+        {
+            error = "leaf lump has funny size";
+            return false;
+        }
+
+        const auto leafCount = RecordCount(*leafs, RAW_LEAF_SIZE);
+        auto leafBrushNodeCount = 0uz;
+        for (auto leafIndex = 0uz; leafIndex < leafCount; leafIndex++)
+        {
+            const auto* record = leafs->data.data() + leafIndex * RAW_LEAF_SIZE;
+            if (ReadI32(record, 16uz) > 0)
+                leafBrushNodeCount++;
+        }
+
+        clipMap.numLeafs = static_cast<unsigned>(leafCount);
+        clipMap.leafs = AllocZeroed<cLeaf_t>(memory, leafCount);
+        clipMap.leafbrushNodesCount = static_cast<unsigned>(leafBrushNodeCount);
+        clipMap.leafbrushNodes = leafBrushNodeCount > 0uz ? AllocZeroed<cLeafBrushNode_s>(memory, leafBrushNodeCount) : nullptr;
+
+        auto nextLeafBrushNode = 0uz;
+        auto maxCluster = -1;
+        for (auto leafIndex = 0uz; leafIndex < leafCount; leafIndex++)
+        {
+            const auto* record = leafs->data.data() + leafIndex * RAW_LEAF_SIZE;
+            auto& leaf = clipMap.leafs[leafIndex];
+            const auto cluster = ReadI32(record);
+            const auto firstCollAabbIndex = ReadI32(record, 4uz);
+            const auto collAabbCount = ReadI32(record, 8uz);
+            const auto firstLeafBrush = ReadI32(record, 12uz);
+            const auto leafBrushCount = ReadI32(record, 16uz);
+
+            if (firstCollAabbIndex < 0 || collAabbCount < 0 || firstLeafBrush < 0 || leafBrushCount < 0)
+            {
+                error = "leaf contains negative runtime count/index";
+                return false;
+            }
+
+            leaf.firstCollAabbIndex = static_cast<uint16_t>(std::min(firstCollAabbIndex, static_cast<int>(std::numeric_limits<uint16_t>::max())));
+            leaf.collAabbCount = static_cast<uint16_t>(std::min(collAabbCount, static_cast<int>(std::numeric_limits<uint16_t>::max())));
+            leaf.cluster = static_cast<int16_t>(
+                std::clamp(cluster, static_cast<int>(std::numeric_limits<int16_t>::min()), static_cast<int>(std::numeric_limits<int16_t>::max())));
+            leaf.leafBrushNode = -1;
+            SetLeafBoundsFromCollisionAabbs(clipMap, leaf);
+
+            if (cluster >= 0)
+                maxCluster = std::max(maxCluster, cluster);
+
+            if (leafBrushCount > 0)
+            {
+                if (static_cast<size_t>(firstLeafBrush + leafBrushCount) > clipMap.numLeafBrushes || nextLeafBrushNode >= leafBrushNodeCount)
+                {
+                    error = "leaf references invalid leafbrush range";
+                    return false;
+                }
+
+                auto& node = clipMap.leafbrushNodes[nextLeafBrushNode];
+                node.axis = -1;
+                node.leafBrushCount = static_cast<int16_t>(std::min(leafBrushCount, static_cast<int>(std::numeric_limits<int16_t>::max())));
+                node.data.leaf.brushes = &clipMap.leafbrushes[firstLeafBrush];
+                for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
+                {
+                    const auto brushIndex = clipMap.leafbrushes[firstLeafBrush + brushOffset];
+                    if (brushIndex < clipMap.numBrushes)
+                        node.contents |= clipMap.brushes[brushIndex].contents;
+                }
+
+                leaf.brushContents = node.contents;
+                leaf.leafBrushNode = static_cast<int>(nextLeafBrushNode);
+                nextLeafBrushNode++;
+            }
+        }
+
+        clipMap.numClusters = maxCluster + 1;
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapModels(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* models = bsp.GetLump(LUMP_MODELS);
+        if (!models)
+            return true;
+
+        if (models->data.size() % RAW_MODEL_SIZE != 0uz || !FitsUnsigned(RecordCount(*models, RAW_MODEL_SIZE)))
+        {
+            error = "model lump has funny size";
+            return false;
+        }
+
+        const auto modelCount = RecordCount(*models, RAW_MODEL_SIZE);
+        clipMap.numSubModels = static_cast<unsigned>(modelCount);
+        clipMap.cmodels = AllocZeroed<cmodel_t>(memory, modelCount);
+
+        for (auto modelIndex = 0uz; modelIndex < modelCount; modelIndex++)
+        {
+            const auto* record = models->data.data() + modelIndex * RAW_MODEL_SIZE;
+            auto& model = clipMap.cmodels[modelIndex];
+            CopyFloat3(record, model.mins);
+            CopyFloat3(record + 12uz, model.maxs);
+            model.radius = RadiusFromBounds(model.mins, model.maxs);
+            if (clipMap.numLeafs > 0u && clipMap.leafs)
+                model.leaf = clipMap.leafs[0];
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapVisibility(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* visibility = bsp.GetLump(LUMP_VISIBILITY);
+        if (!visibility || visibility->data.empty())
+            return true;
+
+        clipMap.visibility = AllocCopy<char>(memory, visibility->data);
+        clipMap.vised = 1;
+
+        if (clipMap.numClusters > 0)
+        {
+            if (visibility->data.size() % static_cast<size_t>(clipMap.numClusters) != 0uz)
+            {
+                error = "visibility lump does not divide by cluster count";
+                return false;
+            }
+
+            clipMap.clusterBytes = static_cast<int>(visibility->data.size() / static_cast<size_t>(clipMap.numClusters));
+        }
+        else
+        {
+            clipMap.clusterBytes = static_cast<int>(visibility->data.size());
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapLeafSurfaces(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* leafSurfaces = bsp.GetLump(LUMP_LEAFSURFACES);
+        if (!leafSurfaces)
+            return true;
+
+        if (leafSurfaces->data.size() % sizeof(uint32_t) != 0uz || !FitsUnsigned(leafSurfaces->data.size() / sizeof(uint32_t)))
+        {
+            error = "leafsurface lump has funny size";
+            return false;
+        }
+
+        clipMap.numLeafSurfaces = static_cast<unsigned>(leafSurfaces->data.size() / sizeof(uint32_t));
+        clipMap.leafsurfaces = AllocCopy<unsigned>(memory, leafSurfaces->data);
+        return true;
+    }
+
+    [[nodiscard]] const IW3::d3dbsp::Lump*
+        SelectWorldLump(const IW3::d3dbsp::File& bsp, const IW3::d3dbsp::LumpType preferred, const IW3::d3dbsp::LumpType fallback)
+    {
+        const auto* preferredLump = bsp.GetLump(preferred);
+        if (preferredLump && !preferredLump->data.empty())
+            return preferredLump;
+
+        return bsp.GetLump(fallback);
+    }
+
+    [[nodiscard]] const IW3::d3dbsp::Lump*
+        SelectSimpleWorldLump(const IW3::d3dbsp::File& bsp, const IW3::d3dbsp::LumpType simple, const IW3::d3dbsp::LumpType layered)
+    {
+        // IW3 v22 BSPs can contain both simple and layered render geometry. The
+        // layered surface records reference generated material names such as
+        // "*1n_2n"; linker_pc parses those names and synthesizes layered
+        // materials from their source material indices. Until this loader
+        // implements that synthesis, prefer the simple representation because it
+        // references regular world materials directly.
+        return SelectWorldLump(bsp, simple, layered);
+    }
+
+    [[nodiscard]] std::vector<std::string> WorldMaterialNameCandidates(const std::string& rawMaterialName)
+    {
+        std::vector<std::string> result;
+
+        if (rawMaterialName.empty())
+            return result;
+
+        // Raw v22 BSP world material names are stored as editor basenames
+        // ("me_wire_black"), while the stock linker loads the Material asset
+        // under the runtime name ("wc/me_wire_black"). Prefer the world
+        // category first so optional probes do not emit a missing-material error
+        // for the basename.
+        if (!HasPathSeparator(rawMaterialName) && rawMaterialName[0] != '$')
+            result.emplace_back(std::format("wc/{}", rawMaterialName));
+
+        result.emplace_back(rawMaterialName);
+
+        if (rawMaterialName == "$default")
+        {
+            result.emplace_back("$default3d");
+            result.emplace_back("$default2d");
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] XAssetInfo<Material>* TryLoadWorldMaterialDependency(AssetCreationContext& context, const std::string& materialName)
+    {
+        return static_cast<XAssetInfo<Material>*>(context.LoadDependencyGeneric(AssetMaterial::EnumEntry, materialName, false));
+    }
+
+    [[nodiscard]] XAssetInfo<Material>* GetOrCreateDefaultMaterialReference(AssetCreationContext& context, MemoryManager& memory)
+    {
+        if (auto* dependency = TryLoadWorldMaterialDependency(context, DEFAULT_MATERIAL_NAME))
+            return dependency;
+
+        // Raw BSPs can reference "$default" as a render material. The stock
+        // game always provides that fallback material, so emit it as a fastfile
+        // reference instead of requiring a local material file.
+        auto* material = memory.Alloc<Material>();
+        material->info.name = memory.Dup(DEFAULT_MATERIAL_REFERENCE_NAME);
+        return context.AddAsset<AssetMaterial>(DEFAULT_MATERIAL_REFERENCE_NAME, material);
+    }
+
+    [[nodiscard]] std::vector<bool> WorldSurfaceMaterialUsage(const IW3::d3dbsp::File& bsp, const size_t materialCount, std::string& error)
+    {
+        std::vector<bool> result(materialCount);
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        if (!surfaces)
+            return result;
+
+        if (surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz)
+        {
+            error = "world surface lump has funny size";
+            return {};
+        }
+
+        const auto surfaceCount = RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE);
+        for (auto surfaceIndex = 0uz; surfaceIndex < surfaceCount; surfaceIndex++)
+        {
+            const auto* record = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+            const auto materialIndex = static_cast<size_t>(ReadU16(record));
+            if (materialIndex >= materialCount)
+            {
+                error = std::format("world surface {} references invalid material index {}", surfaceIndex, materialIndex);
+                return {};
+            }
+
+            result[materialIndex] = true;
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] std::vector<XAssetInfo<Material>*>
+        LoadWorldMaterials(const IW3::d3dbsp::File& bsp, AssetCreationContext& context, MemoryManager& memory, std::string& error)
+    {
+        const auto* materials = bsp.GetLump(LUMP_MATERIALS);
+        if (!ValidateRecordLump(bsp, materials, LUMP_MATERIALS, RAW_MATERIAL_SIZE, error))
+            return {};
+
+        std::vector<XAssetInfo<Material>*> result;
+        const auto materialCount = RecordCount(*materials, RAW_MATERIAL_SIZE);
+        const auto renderMaterialUsage = WorldSurfaceMaterialUsage(bsp, materialCount, error);
+        if (!error.empty())
+            return {};
+
+        result.reserve(materialCount);
+
+        for (auto materialIndex = 0uz; materialIndex < materialCount; materialIndex++)
+        {
+            const auto* record = materials->data.data() + materialIndex * RAW_MATERIAL_SIZE;
+            auto materialName = RawMaterialName(record);
+            if (materialName.empty())
+            {
+                if (renderMaterialUsage[materialIndex])
+                {
+                    error = std::format("world surface references unnamed material index {}", materialIndex);
+                    return {};
+                }
+
+                result.emplace_back(nullptr);
+                continue;
+            }
+
+            // The BSP material table is shared by render and collision data.
+            // Tool-only entries such as "caulk" are valid in the table but are
+            // not Material assets required by GfxWorld.
+            if (!renderMaterialUsage[materialIndex])
+            {
+                result.emplace_back(nullptr);
+                continue;
+            }
+
+            XAssetInfo<Material>* dependency = nullptr;
+            if (materialName == DEFAULT_MATERIAL_NAME)
+            {
+                dependency = GetOrCreateDefaultMaterialReference(context, memory);
+            }
+            else
+            {
+                for (const auto& candidateName : WorldMaterialNameCandidates(materialName))
+                {
+                    dependency = TryLoadWorldMaterialDependency(context, candidateName);
+                    if (dependency)
+                        break;
+                }
+            }
+
+            if (!dependency)
+            {
+                error = std::format("missing render material \"{}\"", materialName);
+                return {};
+            }
+
+            result.emplace_back(dependency);
+        }
+
+        return result;
+    }
+
+    void SetWorldBoundsFromVertices(GfxWorld& world)
+    {
+        if (!world.vd.vertices || world.vertexCount == 0u)
+            return;
+
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            world.mins[axis] = std::numeric_limits<float>::max();
+            world.maxs[axis] = std::numeric_limits<float>::lowest();
+        }
+
+        for (auto vertexIndex = 0uz; vertexIndex < world.vertexCount; vertexIndex++)
+        {
+            const auto& vertex = world.vd.vertices[vertexIndex];
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                world.mins[axis] = std::min(world.mins[axis], vertex.xyz[axis]);
+                world.maxs[axis] = std::max(world.maxs[axis], vertex.xyz[axis]);
+            }
+        }
+    }
+
+    [[nodiscard]] bool PopulateWorldIndices(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* indices = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_INDICES, LUMP_LAYERED_INDICES);
+        if (!indices)
+            return true;
+
+        if (indices->data.size() % sizeof(uint16_t) != 0uz || !FitsInt(indices->data.size() / sizeof(uint16_t)))
+        {
+            error = "world index lump has funny size";
+            return false;
+        }
+
+        world.indexCount = static_cast<int>(indices->data.size() / sizeof(uint16_t));
+        world.indices = AllocCopy<uint16_t>(memory, indices->data);
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldVertices(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* verts = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_VERTS, LUMP_LAYERED_VERTS);
+        if (!verts)
+            return true;
+
+        if (verts->data.size() % RAW_WORLD_VERTEX_SIZE != 0uz || !FitsUnsigned(RecordCount(*verts, RAW_WORLD_VERTEX_SIZE)))
+        {
+            error = "world vertex lump has funny size";
+            return false;
+        }
+
+        world.vertexCount = static_cast<unsigned>(RecordCount(*verts, RAW_WORLD_VERTEX_SIZE));
+        world.vd.vertices = AllocZeroed<GfxWorldVertex>(memory, world.vertexCount);
+
+        for (auto vertexIndex = 0uz; vertexIndex < world.vertexCount; vertexIndex++)
+        {
+            const auto* record = verts->data.data() + vertexIndex * RAW_WORLD_VERTEX_SIZE;
+            auto& vertex = world.vd.vertices[vertexIndex];
+            float normal[3]{};
+            float tangent[3]{};
+            float binormal[3]{};
+            float expectedBinormal[3]{};
+
+            CopyFloat3(record, vertex.xyz);
+            CopyFloat3(record + 12uz, normal);
+            vertex.color.packed = ReadU32(record, 24uz);
+            std::memcpy(vertex.texCoord, record + 28uz, sizeof(vertex.texCoord));
+            std::memcpy(vertex.lmapCoord, record + 36uz, sizeof(vertex.lmapCoord));
+            CopyFloat3(record + 44uz, tangent);
+            CopyFloat3(record + 56uz, binormal);
+
+            CrossProduct(normal, tangent, expectedBinormal);
+            vertex.binormalSign = DotProduct(expectedBinormal, binormal) < 0.0f ? -1.0f : 1.0f;
+            vertex.normal = Common::Vec3PackUnitVec(normal);
+            vertex.tangent = Common::Vec3PackUnitVec(tangent);
+        }
+
+        SetWorldBoundsFromVertices(world);
+        return true;
+    }
+
+    void PopulateSurfaceBounds(GfxWorld& world, GfxSurface& surface)
+    {
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            surface.bounds[0][axis] = std::numeric_limits<float>::max();
+            surface.bounds[1][axis] = std::numeric_limits<float>::lowest();
+        }
+
+        auto foundVertex = false;
+        const auto firstIndex = surface.tris.baseIndex;
+        const auto indexCount = static_cast<int>(surface.tris.triCount) * 3;
+        if (world.indices && world.vd.vertices && firstIndex >= 0 && indexCount > 0 && firstIndex + indexCount <= world.indexCount)
+        {
+            for (auto indexOffset = 0; indexOffset < indexCount; indexOffset++)
+            {
+                const auto vertexIndex = surface.tris.firstVertex + world.indices[firstIndex + indexOffset];
+                if (vertexIndex < 0 || static_cast<unsigned>(vertexIndex) >= world.vertexCount)
+                    continue;
+
+                const auto& vertex = world.vd.vertices[vertexIndex];
+                for (auto axis = 0uz; axis < 3uz; axis++)
+                {
+                    surface.bounds[0][axis] = std::min(surface.bounds[0][axis], vertex.xyz[axis]);
+                    surface.bounds[1][axis] = std::max(surface.bounds[1][axis], vertex.xyz[axis]);
+                }
+                foundVertex = true;
+            }
+        }
+
+        if (!foundVertex)
+        {
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                surface.bounds[0][axis] = world.mins[axis];
+                surface.bounds[1][axis] = world.maxs[axis];
+            }
+        }
+    }
+
+    [[nodiscard]] bool PopulateWorldSurfaces(
+        GfxWorld& world,
+        const IW3::d3dbsp::File& bsp,
+        const std::vector<XAssetInfo<Material>*>& materialDependencies,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        if (!surfaces)
+            return true;
+
+        if (surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz || !FitsInt(RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE)))
+        {
+            error = "world surface lump has funny size";
+            return false;
+        }
+
+        world.surfaceCount = static_cast<int>(RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE));
+        world.dpvs.staticSurfaceCount = static_cast<unsigned>(world.surfaceCount);
+        world.dpvs.staticSurfaceCountNoDecal = static_cast<unsigned>(world.surfaceCount);
+        world.dpvs.litSurfsBegin = 0u;
+        world.dpvs.litSurfsEnd = static_cast<unsigned>(world.surfaceCount);
+        world.dpvs.surfaces = AllocZeroed<GfxSurface>(memory, world.surfaceCount);
+
+        for (auto surfaceIndex = 0uz; surfaceIndex < static_cast<size_t>(world.surfaceCount); surfaceIndex++)
+        {
+            const auto* record = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+            auto& surface = world.dpvs.surfaces[surfaceIndex];
+            const auto materialIndex = ReadU16(record);
+            if (materialIndex >= materialDependencies.size() || !materialDependencies[materialIndex])
+            {
+                error = std::format("world surface {} references missing render material index {}", surfaceIndex, materialIndex);
+                return false;
+            }
+
+            surface.material = materialDependencies[materialIndex]->Asset();
+
+            surface.lightmapIndex = static_cast<char>(std::to_integer<unsigned char>(record[2]));
+            surface.reflectionProbeIndex = static_cast<char>(std::to_integer<unsigned char>(record[3]));
+            surface.primaryLightIndex = static_cast<char>(std::to_integer<unsigned char>(record[4]));
+            surface.flags = static_cast<char>(std::to_integer<unsigned char>(record[5]));
+            surface.tris.vertexLayerData = ReadI32(record, 8uz);
+            surface.tris.firstVertex = ReadI32(record, 12uz);
+            surface.tris.vertexCount = ReadU16(record, 16uz);
+            surface.tris.triCount = static_cast<uint16_t>(ReadU16(record, 18uz) / 3u);
+            surface.tris.baseIndex = ReadI32(record, 20uz);
+            PopulateSurfaceBounds(world, surface);
+        }
+
+        if (world.surfaceCount > 0)
+        {
+            const auto sortedSurfIndexCount = static_cast<size_t>(world.dpvs.staticSurfaceCount + world.dpvs.staticSurfaceCountNoDecal);
+            world.dpvs.sortedSurfIndex = AllocZeroed<uint16_t>(memory, sortedSurfIndexCount);
+            for (auto i = 0uz; i < sortedSurfIndexCount; i++)
+                world.dpvs.sortedSurfIndex[i] = static_cast<uint16_t>(std::min(i % static_cast<size_t>(world.surfaceCount), static_cast<size_t>(UINT16_MAX)));
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldVertexLayerData(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* vertexLayerData = bsp.GetLump(LUMP_VERTEX_LAYER_DATA);
+        if (!vertexLayerData)
+            return true;
+
+        if (!FitsUnsigned(vertexLayerData->data.size()))
+        {
+            error = "vertex layer data lump is too large";
+            return false;
+        }
+
+        world.vertexLayerDataSize = static_cast<unsigned>(vertexLayerData->data.size());
+        world.vld.data = AllocCopy<char>(memory, vertexLayerData->data);
+        return true;
+    }
+
+    [[nodiscard]] XAssetInfo<GfxImage>*
+        AddGeneratedImage(AssetCreationContext& context, AssetRegistration<AssetGfxWorld>& registration, const std::string& imageName, GfxImage* image)
+    {
+        auto* imageInfo = context.AddAsset<AssetImage>(imageName, image);
+        if (imageInfo)
+            registration.AddDependency(imageInfo);
+        return imageInfo;
+    }
+
+    [[nodiscard]] bool PopulateWorldLightmaps(
+        GfxWorld& world,
+        const std::string& assetName,
+        const IW3::d3dbsp::File& bsp,
+        AssetCreationContext& context,
+        AssetRegistration<AssetGfxWorld>& registration,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        const auto* lightmaps = bsp.GetLump(LUMP_LIGHTMAPS);
+        if (!lightmaps || lightmaps->data.empty())
+            return true;
+
+        if (lightmaps->data.size() % LIGHTMAP_RAW_PAGE_SIZE != 0uz || !FitsInt(lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE))
+        {
+            error = "lightmap lump has funny size";
+            return false;
+        }
+
+        const auto pageCount = lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE;
+        world.lightmapCount = static_cast<int>(pageCount);
+        world.lightmaps = AllocZeroed<GfxLightmapArray>(memory, pageCount);
+
+        for (auto pageIndex = 0uz; pageIndex < pageCount; pageIndex++)
+        {
+            const auto* page = lightmaps->data.data() + pageIndex * LIGHTMAP_RAW_PAGE_SIZE;
+            const auto* secondaryData = page;
+            const auto* primaryData = page + LIGHTMAP_SECONDARY_RAW_PAGE_SIZE;
+
+            const auto primaryName = GeneratedImageName(assetName, "lightmap_primary", pageIndex);
+            const auto secondaryName = GeneratedImageName(assetName, "lightmap_secondary", pageIndex);
+            constexpr auto lightmapFlags = static_cast<char>(image::iwi6::IMG_FLAG_NOMIPMAPS);
+
+            auto* primary = CreateGeneratedImage(memory,
+                                                 primaryName,
+                                                 MAPTYPE_2D,
+                                                 TS_COLOR_MAP,
+                                                 IMG_CATEGORY_LIGHTMAP,
+                                                 LIGHTMAP_PRIMARY_RAW_WIDTH,
+                                                 LIGHTMAP_PRIMARY_RAW_HEIGHT,
+                                                 1u,
+                                                 oat::D3DFMT_A8,
+                                                 lightmapFlags,
+                                                 primaryData,
+                                                 LIGHTMAP_PRIMARY_RAW_PAGE_SIZE);
+            auto* secondary = CreateGeneratedImage(memory,
+                                                   secondaryName,
+                                                   MAPTYPE_2D,
+                                                   TS_COLOR_MAP,
+                                                   IMG_CATEGORY_LIGHTMAP,
+                                                   LIGHTMAP_SECONDARY_RAW_WIDTH,
+                                                   LIGHTMAP_SECONDARY_RAW_HEIGHT,
+                                                   1u,
+                                                   oat::D3DFMT_A8R8G8B8,
+                                                   lightmapFlags,
+                                                   secondaryData,
+                                                   LIGHTMAP_SECONDARY_RAW_PAGE_SIZE);
+
+            auto* primaryInfo = AddGeneratedImage(context, registration, primaryName, primary);
+            auto* secondaryInfo = AddGeneratedImage(context, registration, secondaryName, secondary);
+            if (!primaryInfo || !secondaryInfo)
+            {
+                error = "could not register generated lightmap image";
+                return false;
+            }
+
+            world.lightmaps[pageIndex].primary = primaryInfo->Asset();
+            world.lightmaps[pageIndex].secondary = secondaryInfo->Asset();
+        }
+
+        return true;
+    }
+
+    void CopyTransformedReflectionProbePixels(char* out, const std::byte* source)
+    {
+        const auto pixelCount = REFLECTION_PROBE_RAW_DATA_SIZE / sizeof(uint32_t);
+        for (auto pixelIndex = 0uz; pixelIndex < pixelCount; pixelIndex++)
+        {
+            const auto* pixel = source + pixelIndex * sizeof(uint32_t);
+            const auto transformed = TransformReflectionProbeColor(std::to_integer<uint8_t>(pixel[0]),
+                                                                   std::to_integer<uint8_t>(pixel[1]),
+                                                                   std::to_integer<uint8_t>(pixel[2]));
+            std::memcpy(out + pixelIndex * sizeof(uint32_t), &transformed, sizeof(transformed));
+        }
+    }
+
+    [[nodiscard]] bool PopulateWorldReflectionProbes(
+        GfxWorld& world,
+        const std::string& assetName,
+        const IW3::d3dbsp::File& bsp,
+        AssetCreationContext& context,
+        AssetRegistration<AssetGfxWorld>& registration,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        const auto* reflectionProbes = bsp.GetLump(LUMP_REFLECTION_PROBES);
+        if (!reflectionProbes || reflectionProbes->data.empty())
+        {
+            world.reflectionProbeCount = 1u;
+            world.reflectionProbes = AllocZeroed<GfxReflectionProbe>(memory, 1uz);
+            return true;
+        }
+
+        if (reflectionProbes->data.size() % REFLECTION_PROBE_RECORD_SIZE != 0uz || !FitsUnsigned(reflectionProbes->data.size() / REFLECTION_PROBE_RECORD_SIZE + 1uz))
+        {
+            error = "reflection-probe lump has funny size";
+            return false;
+        }
+
+        const auto rawProbeCount = reflectionProbes->data.size() / REFLECTION_PROBE_RECORD_SIZE;
+        world.reflectionProbeCount = static_cast<unsigned>(rawProbeCount + 1uz);
+        world.reflectionProbes = AllocZeroed<GfxReflectionProbe>(memory, world.reflectionProbeCount);
+
+        for (auto rawProbeIndex = 0uz; rawProbeIndex < rawProbeCount; rawProbeIndex++)
+        {
+            const auto probeIndex = rawProbeIndex + 1uz;
+            const auto* record = reflectionProbes->data.data() + rawProbeIndex * REFLECTION_PROBE_RECORD_SIZE;
+            auto& probe = world.reflectionProbes[probeIndex];
+            CopyFloat3(record, probe.origin);
+
+            const auto imageName = GeneratedImageName(assetName, "reflection_probe", probeIndex);
+            auto* image = CreateGeneratedImage(memory,
+                                               imageName,
+                                               MAPTYPE_CUBE,
+                                               TS_COLOR_MAP,
+                                               IMG_CATEGORY_AUTO_GENERATED,
+                                               REFLECTION_PROBE_SIZE,
+                                               REFLECTION_PROBE_SIZE,
+                                               1u,
+                                               oat::D3DFMT_A8R8G8B8,
+                                               static_cast<char>(image::iwi6::IMG_FLAG_CUBEMAP),
+                                               nullptr,
+                                               REFLECTION_PROBE_RAW_DATA_SIZE);
+            CopyTransformedReflectionProbePixels(image->texture.loadDef->data, record + sizeof(float) * 3uz + REFLECTION_PROBE_NAME_SIZE);
+
+            auto* imageInfo = AddGeneratedImage(context, registration, imageName, image);
+            if (!imageInfo)
+            {
+                error = "could not register generated reflection probe image";
+                return false;
+            }
+
+            probe.reflectionImage = imageInfo->Asset();
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldLightGrid(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* header = bsp.GetLump(LUMP_LIGHTGRID_HEADER);
+        if (header)
+        {
+            if (header->data.size() < 20uz || (header->data.size() - 20uz) % sizeof(uint16_t) != 0uz)
+            {
+                error = "lightgrid header lump has funny size";
+                return false;
+            }
+
+            auto& lightGrid = world.lightGrid;
+            std::memcpy(lightGrid.mins, header->data.data(), sizeof(lightGrid.mins));
+            std::memcpy(lightGrid.maxs, header->data.data() + sizeof(lightGrid.mins), sizeof(lightGrid.maxs));
+            lightGrid.rowAxis = ReadU32(header->data.data(), 12uz);
+            lightGrid.colAxis = ReadU32(header->data.data(), 16uz);
+
+            const auto rowCount = (header->data.size() - 20uz) / sizeof(uint16_t);
+            lightGrid.rowDataStart = rowCount > 0uz ? AllocZeroed<uint16_t>(memory, rowCount) : nullptr;
+            if (rowCount > 0uz)
+                std::memcpy(lightGrid.rowDataStart, header->data.data() + 20uz, rowCount * sizeof(uint16_t));
+        }
+
+        const auto* rawRows = bsp.GetLump(LUMP_LIGHTGRID_ROWS);
+        if (rawRows)
+        {
+            if (!FitsUnsigned(rawRows->data.size()))
+            {
+                error = "lightgrid raw row lump is too large";
+                return false;
+            }
+
+            world.lightGrid.rawRowDataSize = static_cast<unsigned>(rawRows->data.size());
+            world.lightGrid.rawRowData = AllocCopy<char>(memory, rawRows->data);
+        }
+
+        const auto* entries = bsp.GetLump(LUMP_LIGHTGRID_ENTRIES);
+        if (entries)
+        {
+            if (entries->data.size() % RAW_LIGHTGRID_ENTRY_SIZE != 0uz || !FitsUnsigned(RecordCount(*entries, RAW_LIGHTGRID_ENTRY_SIZE)))
+            {
+                error = "lightgrid entry lump has funny size";
+                return false;
+            }
+
+            world.lightGrid.entryCount = static_cast<unsigned>(RecordCount(*entries, RAW_LIGHTGRID_ENTRY_SIZE));
+            world.lightGrid.entries = AllocCopy<GfxLightGridEntry>(memory, entries->data);
+        }
+
+        const auto* colors = bsp.GetLump(LUMP_LIGHTGRID_COLORS);
+        if (colors)
+        {
+            if (colors->data.size() % RAW_LIGHTGRID_COLOR_SIZE != 0uz || !FitsUnsigned(RecordCount(*colors, RAW_LIGHTGRID_COLOR_SIZE) + 1uz))
+            {
+                error = "lightgrid color lump has funny size";
+                return false;
+            }
+
+            const auto rawColorCount = RecordCount(*colors, RAW_LIGHTGRID_COLOR_SIZE);
+            // The stock linker appends a runtime fallback color set that is not
+            // present in the raw BSP. Keep the raw colors first so dumping can
+            // drop the synthesized final entry again.
+            world.lightGrid.colorCount = static_cast<unsigned>(rawColorCount + 1uz);
+            world.lightGrid.colors = AllocZeroed<GfxLightGridColors>(memory, rawColorCount + 1uz);
+            if (rawColorCount > 0uz)
+                std::memcpy(world.lightGrid.colors, colors->data.data(), rawColorCount * RAW_LIGHTGRID_COLOR_SIZE);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] GfxAabbTree* BuildWorldAabbTrees(const GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, int& treeCount, std::string& error)
+    {
+        const auto* aabbTrees = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_AABBTREES, LUMP_LAYERED_AABBTREES);
+        if (!aabbTrees || aabbTrees->data.empty())
+        {
+            treeCount = world.surfaceCount > 0 ? 1 : 0;
+            if (treeCount == 0)
+                return nullptr;
+
+            auto* result = AllocZeroed<GfxAabbTree>(memory, 1uz);
+            std::memcpy(result->mins, world.mins, sizeof(result->mins));
+            std::memcpy(result->maxs, world.maxs, sizeof(result->maxs));
+            result->surfaceCount = static_cast<uint16_t>(std::min(world.surfaceCount, static_cast<int>(UINT16_MAX)));
+            result->surfaceCountNoDecal = result->surfaceCount;
+            return result;
+        }
+
+        if (aabbTrees->data.size() % RAW_WORLD_AABB_TREE_SIZE != 0uz || !FitsInt(RecordCount(*aabbTrees, RAW_WORLD_AABB_TREE_SIZE)))
+        {
+            error = "world AABB tree lump has funny size";
+            return nullptr;
+        }
+
+        treeCount = static_cast<int>(RecordCount(*aabbTrees, RAW_WORLD_AABB_TREE_SIZE));
+        auto* result = AllocZeroed<GfxAabbTree>(memory, treeCount);
+        for (auto treeIndex = 0uz; treeIndex < static_cast<size_t>(treeCount); treeIndex++)
+        {
+            const auto* record = aabbTrees->data.data() + treeIndex * RAW_WORLD_AABB_TREE_SIZE;
+            auto& tree = result[treeIndex];
+            std::memcpy(tree.mins, world.mins, sizeof(tree.mins));
+            std::memcpy(tree.maxs, world.maxs, sizeof(tree.maxs));
+            tree.startSurfIndex = static_cast<uint16_t>(std::min(ReadU32(record), static_cast<uint32_t>(UINT16_MAX)));
+            tree.surfaceCount = static_cast<uint16_t>(std::min(ReadU32(record, 4uz), static_cast<uint32_t>(UINT16_MAX)));
+            tree.childCount = static_cast<uint16_t>(std::min(ReadU32(record, 8uz), static_cast<uint32_t>(UINT16_MAX)));
+            tree.startSurfIndexNoDecal = tree.startSurfIndex;
+            tree.surfaceCountNoDecal = tree.surfaceCount;
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] bool PopulateWorldCells(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        int aabbTreeCount = 0;
+        auto* aabbTrees = BuildWorldAabbTrees(world, bsp, memory, aabbTreeCount, error);
+        if (!error.empty())
+            return false;
+
+        const auto* cells = bsp.GetLump(LUMP_CELLS);
+        auto cellCount = cells && !cells->data.empty() ? cells->data.size() / RAW_WORLD_CELL_SIZE : 1uz;
+        if (cells && cells->data.size() % RAW_WORLD_CELL_SIZE != 0uz)
+        {
+            error = "cell lump has funny size";
+            return false;
+        }
+
+        if (!FitsInt(cellCount))
+        {
+            error = "too many cell records";
+            return false;
+        }
+
+        world.dpvsPlanes.cellCount = static_cast<int>(cellCount);
+        world.cellBitsCount = static_cast<int>((cellCount + 31uz) / 32uz);
+        world.cells = AllocZeroed<GfxCell>(memory, cellCount);
+
+        for (auto cellIndex = 0uz; cellIndex < cellCount; cellIndex++)
+        {
+            auto& cell = world.cells[cellIndex];
+            if (cells && !cells->data.empty())
+            {
+                const auto* record = cells->data.data() + cellIndex * RAW_WORLD_CELL_SIZE;
+                CopyFloat3(record, cell.mins);
+                CopyFloat3(record + 12uz, cell.maxs);
+
+                constexpr auto REFLECTION_PROBE_LIST_OFFSET = 44uz;
+                cell.reflectionProbeCount = static_cast<char>(std::to_integer<unsigned char>(record[REFLECTION_PROBE_LIST_OFFSET]));
+                const auto reflectionProbeCount = std::to_integer<unsigned char>(record[REFLECTION_PROBE_LIST_OFFSET]);
+                if (reflectionProbeCount > 0u)
+                {
+                    cell.reflectionProbes = AllocZeroed<char>(memory, reflectionProbeCount);
+                    for (auto probeIndex = 0u; probeIndex < reflectionProbeCount && REFLECTION_PROBE_LIST_OFFSET + 1uz + probeIndex < RAW_WORLD_CELL_SIZE; probeIndex++)
+                        cell.reflectionProbes[probeIndex] = static_cast<char>(std::to_integer<unsigned char>(record[REFLECTION_PROBE_LIST_OFFSET + 1uz + probeIndex]));
+                }
+            }
+            else
+            {
+                std::memcpy(cell.mins, world.mins, sizeof(cell.mins));
+                std::memcpy(cell.maxs, world.maxs, sizeof(cell.maxs));
+            }
+        }
+
+        // The canonical OAT BSP currently stores AABB surface ranges without a
+        // full per-cell hierarchy. Assign them to the first cell, which mirrors
+        // the single-cell BSPs produced by the dumper.
+        if (cellCount > 0uz)
+        {
+            world.cells[0].aabbTreeCount = aabbTreeCount;
+            world.cells[0].aabbTree = aabbTrees;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldModels(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* models = bsp.GetLump(LUMP_MODELS);
+        if (!models)
+            return true;
+
+        if (models->data.size() % RAW_MODEL_SIZE != 0uz || !FitsInt(RecordCount(*models, RAW_MODEL_SIZE)))
+        {
+            error = "world model lump has funny size";
+            return false;
+        }
+
+        world.modelCount = static_cast<int>(RecordCount(*models, RAW_MODEL_SIZE));
+        world.models = AllocZeroed<GfxBrushModel>(memory, world.modelCount);
+
+        for (auto modelIndex = 0uz; modelIndex < static_cast<size_t>(world.modelCount); modelIndex++)
+        {
+            const auto* record = models->data.data() + modelIndex * RAW_MODEL_SIZE;
+            auto& model = world.models[modelIndex];
+            CopyFloat3(record, model.writable.mins);
+            CopyFloat3(record + 12uz, model.writable.maxs);
+            std::memcpy(model.bounds[0], model.writable.mins, sizeof(model.bounds[0]));
+            std::memcpy(model.bounds[1], model.writable.maxs, sizeof(model.bounds[1]));
+            // The raw model record keeps the no-decal surface split separately.
+            // Radiant recomputes this from AABB/surface data and asserts it
+            // still matches, so preserving it matters for round-tripped BSPs.
+            model.startSurfIndex = ReadU16(record, 26uz);
+            model.surfaceCountNoDecal = ReadU16(record, 28uz);
+            model.surfaceCount = ReadU16(record, 30uz);
+        }
+
+        if (world.modelCount > 0)
+        {
+            std::memcpy(world.mins, world.models[0].bounds[0], sizeof(world.mins));
+            std::memcpy(world.maxs, world.models[0].bounds[1], sizeof(world.maxs));
+
+            // The raw BSP loader recomputes the no-decal split while loading,
+            // but the stock BSP already carries enough of the split in model0
+            // to tell us whether AABB ranges need the decal-safe fallback when
+            // dumping again. Without this, imported maps with decal surfaces get
+            // dumped as if every static surface belonged to the no-decal range.
+            world.dpvs.staticSurfaceCountNoDecal = world.models[0].surfaceCountNoDecal;
+        }
+
+        return true;
+    }
+
+    void ParseGfxLightRecord(const std::byte* record, GfxLight& light)
+    {
+        light = {};
+        light.type = ReadRawByte(record, RAW_LIGHT_TYPE_OFFSET);
+        light.canUseShadowMap = ReadRawByte(record, RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET);
+        light.unused[0] = ReadRawByte(record, RAW_LIGHT_UNUSED_OFFSET);
+        light.unused[1] = 0;
+        CopyFloat3(record + RAW_LIGHT_COLOR_OFFSET, light.color);
+        CopyFloat3(record + RAW_LIGHT_DIR_OFFSET, light.dir);
+        CopyFloat3(record + RAW_LIGHT_ORIGIN_OFFSET, light.origin);
+        CopyUnaligned(record + RAW_LIGHT_RADIUS_OFFSET, light.radius);
+        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_OUTER_OFFSET, light.cosHalfFovOuter);
+        CopyUnaligned(record + RAW_LIGHT_COS_HALF_FOV_INNER_OFFSET, light.cosHalfFovInner);
+        light.exponent = static_cast<int>(std::to_integer<unsigned char>(record[RAW_LIGHT_EXPONENT_OFFSET]));
+    }
+
+    [[nodiscard]] bool InferWorldPrimaryLightCount(const IW3::d3dbsp::File& bsp, const size_t rawPrimaryLightCount, unsigned& primaryLightCount, std::string& error)
+    {
+        const auto* regionCounts = bsp.GetLump(LUMP_LIGHT_REGION_COUNTS);
+        if (regionCounts && !regionCounts->data.empty())
+        {
+            if (!FitsUnsigned(regionCounts->data.size()))
+            {
+                error = "light-region count lump is too large";
+                return false;
+            }
+
+            // The primary-light lump is ComWorld data. GfxWorld primary-light
+            // arrays are sized by the light-region count lump when it exists.
+            primaryLightCount = static_cast<unsigned>(regionCounts->data.size());
+            return true;
+        }
+
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        auto maxPrimaryLightIndex = 0u;
+        auto foundSurface = false;
+
+        if (surfaces && !surfaces->data.empty())
+        {
+            if (surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz)
+            {
+                error = "world surface lump has funny size";
+                return false;
+            }
+
+            const auto surfaceCount = RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE);
+            for (auto surfaceIndex = 0uz; surfaceIndex < surfaceCount; surfaceIndex++)
+            {
+                const auto* record = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+                maxPrimaryLightIndex = std::max(maxPrimaryLightIndex, std::to_integer<unsigned>(record[4]));
+                foundSurface = true;
+            }
+        }
+
+        primaryLightCount = foundSurface ? maxPrimaryLightIndex + 1u : static_cast<unsigned>(std::min(rawPrimaryLightCount, static_cast<size_t>(UINT32_MAX)));
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldPrimaryLights(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* primaryLights = bsp.GetLump(LUMP_PRIMARY_LIGHTS);
+        const auto size = primaryLights ? primaryLights->data.size() : 0uz;
+        if (size % IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE != 0uz || !FitsUnsigned(size / IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE))
+        {
+            error = "primary-light lump has funny size";
+            return false;
+        }
+
+        const auto rawPrimaryLightCount = size / IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
+        if (!InferWorldPrimaryLightCount(bsp, rawPrimaryLightCount, world.primaryLightCount, error))
+            return false;
+
+        if (world.primaryLightCount > rawPrimaryLightCount)
+        {
+            error = std::format("GfxWorld primary light count {} exceeds raw primary-light record count {}", world.primaryLightCount, rawPrimaryLightCount);
+            return false;
+        }
+
+        if (rawPrimaryLightCount == 0uz)
+            return true;
+
+        world.sunPrimaryLightIndex = 0u;
+        world.sunLight = AllocZeroed<GfxLight>(memory);
+        ParseGfxLightRecord(primaryLights->data.data(), *world.sunLight);
+        std::memcpy(world.sunColorFromBsp, world.sunLight->color, sizeof(world.sunColorFromBsp));
+        world.lightGrid.sunPrimaryLightIndex = world.sunPrimaryLightIndex;
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldLightRegions(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        if (world.primaryLightCount == 0u)
+            return true;
+
+        const auto* counts = bsp.GetLump(LUMP_LIGHT_REGION_COUNTS);
+        if (!counts || counts->data.empty())
+            return true;
+
+        world.lightGrid.hasLightRegions = true;
+        world.lightRegion = AllocZeroed<GfxLightRegion>(memory, world.primaryLightCount);
+
+        const auto* hulls = bsp.GetLump(LUMP_LIGHT_REGION_HULLS);
+        const auto* axes = bsp.GetLump(LUMP_LIGHT_REGION_AXES);
+        auto hullOffset = 0uz;
+        auto axisOffset = 0uz;
+
+        for (auto lightIndex = 0uz; lightIndex < world.primaryLightCount && lightIndex < counts->data.size(); lightIndex++)
+        {
+            const auto hullCount = std::to_integer<unsigned char>(counts->data[lightIndex]);
+            if (hullCount == 0u)
+                continue;
+
+            if (!hulls || hullOffset + static_cast<size_t>(hullCount) * RAW_LIGHT_REGION_HULL_SIZE > hulls->data.size())
+            {
+                error = "light-region hull lump is truncated";
+                return false;
+            }
+
+            auto& region = world.lightRegion[lightIndex];
+            region.hullCount = hullCount;
+            region.hulls = AllocZeroed<GfxLightRegionHull>(memory, hullCount);
+
+            for (auto hullIndex = 0uz; hullIndex < hullCount; hullIndex++)
+            {
+                const auto* hullRecord = hulls->data.data() + hullOffset;
+                auto& hull = region.hulls[hullIndex];
+                std::memcpy(hull.kdopMidPoint, hullRecord, sizeof(hull.kdopMidPoint));
+                std::memcpy(hull.kdopHalfSize, hullRecord + sizeof(hull.kdopMidPoint), sizeof(hull.kdopHalfSize));
+                hull.axisCount = ReadU32(hullRecord, 72uz);
+                hullOffset += RAW_LIGHT_REGION_HULL_SIZE;
+
+                if (hull.axisCount == 0u)
+                    continue;
+
+                if (!axes || axisOffset + static_cast<size_t>(hull.axisCount) * RAW_LIGHT_REGION_AXIS_SIZE > axes->data.size())
+                {
+                    error = "light-region axis lump is truncated";
+                    return false;
+                }
+
+                hull.axis = AllocZeroed<GfxLightRegionAxis>(memory, hull.axisCount);
+                std::memcpy(hull.axis, axes->data.data() + axisOffset, static_cast<size_t>(hull.axisCount) * RAW_LIGHT_REGION_AXIS_SIZE);
+                axisOffset += static_cast<size_t>(hull.axisCount) * RAW_LIGHT_REGION_AXIS_SIZE;
+            }
+        }
+
+        return true;
+    }
+
+    void PopulateStaticModelGroundLighting(const EntityBlock& block, GfxStaticModelInst& inst, GfxStaticModelDrawInst& drawInst)
+    {
+        const auto gndLt = EntityField(block, "gndLt");
+        if (gndLt.size() < 10uz)
+            return;
+
+        const auto b = ParseHexByte(gndLt, 0uz);
+        const auto g = ParseHexByte(gndLt, 2uz);
+        const auto r = ParseHexByte(gndLt, 4uz);
+        const auto a = ParseHexByte(gndLt, 6uz);
+        const auto primaryLightIndex = ParseHexByte(gndLt, 8uz);
+        if (!b || !g || !r || !a || !primaryLightIndex)
+            return;
+
+        // The linker parses gndLt as B,G,R,A,primaryLightIndex. Runtime
+        // GfxColor is stored in R,G,B,A byte order.
+        inst.groundLighting.array[0] = static_cast<char>(*r);
+        inst.groundLighting.array[1] = static_cast<char>(*g);
+        inst.groundLighting.array[2] = static_cast<char>(*b);
+        inst.groundLighting.array[3] = static_cast<char>(*a);
+        drawInst.primaryLightIndex = static_cast<char>(*primaryLightIndex);
+    }
+
+    [[nodiscard]] bool PopulateWorldStaticModels(
+        GfxWorld& world,
+        const clipMap_t* clipMap,
+        const std::vector<const EntityBlock*>& staticModelBlocks,
+        const std::vector<XAssetInfo<XModel>*>& staticModelDependencies,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        std::vector<std::pair<const EntityBlock*, XModel*>> validStaticModels;
+        validStaticModels.reserve(staticModelBlocks.size());
+        for (auto i = 0uz; i < staticModelBlocks.size(); i++)
+        {
+            if (i < staticModelDependencies.size() && staticModelDependencies[i])
+                validStaticModels.emplace_back(staticModelBlocks[i], staticModelDependencies[i]->Asset());
+        }
+
+        if (!FitsUnsigned(validStaticModels.size()))
+        {
+            error = "too many static model records";
+            return false;
+        }
+
+        world.dpvs.smodelCount = static_cast<unsigned>(validStaticModels.size());
+        if (validStaticModels.empty())
+            return true;
+
+        world.dpvs.smodelDrawInsts = AllocZeroed<GfxStaticModelDrawInst>(memory, validStaticModels.size());
+        world.dpvs.smodelInsts = AllocZeroed<GfxStaticModelInst>(memory, validStaticModels.size());
+
+        for (auto modelIndex = 0uz; modelIndex < validStaticModels.size(); modelIndex++)
+        {
+            const auto& [block, model] = validStaticModels[modelIndex];
+            auto& drawInst = world.dpvs.smodelDrawInsts[modelIndex];
+            auto& inst = world.dpvs.smodelInsts[modelIndex];
+            const auto origin = ParseFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
+            const auto angles = ParseFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
+            const auto scale = StaticModelScale(*block);
+
+            float axis[3][3]{};
+            AnglesToAxis(angles, axis);
+
+            drawInst.cullDist = std::numeric_limits<float>::max();
+            drawInst.model = model;
+            drawInst.placement.scale = scale;
+            std::copy(origin.begin(), origin.end(), drawInst.placement.origin);
+            std::memcpy(drawInst.placement.axis, axis, sizeof(drawInst.placement.axis));
+            drawInst.smodelCacheIndex[0] = std::numeric_limits<uint16_t>::max();
+            drawInst.smodelCacheIndex[1] = std::numeric_limits<uint16_t>::max();
+            drawInst.smodelCacheIndex[2] = std::numeric_limits<uint16_t>::max();
+            drawInst.smodelCacheIndex[3] = std::numeric_limits<uint16_t>::max();
+
+            if ((ParseInt(EntityField(*block, "spawnflags")) & 2) != 0)
+                drawInst.flags = 1;
+
+            if (clipMap && clipMap->staticModelList && modelIndex < clipMap->numStaticModels)
+            {
+                std::memcpy(inst.mins, clipMap->staticModelList[modelIndex].absmin, sizeof(inst.mins));
+                std::memcpy(inst.maxs, clipMap->staticModelList[modelIndex].absmax, sizeof(inst.maxs));
+            }
+            else if (model)
+            {
+                float mins[3]{};
+                float maxs[3]{};
+                for (auto axisIndex = 0uz; axisIndex < 3uz; axisIndex++)
+                {
+                    mins[axisIndex] = std::numeric_limits<float>::max();
+                    maxs[axisIndex] = std::numeric_limits<float>::lowest();
+                }
+
+                for (auto corner = 0u; corner < 8u; corner++)
+                {
+                    const auto x = (corner & 1u) != 0u ? model->maxs.x : model->mins.x;
+                    const auto y = (corner & 2u) != 0u ? model->maxs.y : model->mins.y;
+                    const auto z = (corner & 4u) != 0u ? model->maxs.z : model->mins.z;
+                    float transformed[3]{};
+                    TransformStaticModelPoint(axis, origin, scale, x, y, z, transformed);
+                    for (auto axisIndex = 0uz; axisIndex < 3uz; axisIndex++)
+                    {
+                        mins[axisIndex] = std::min(mins[axisIndex], transformed[axisIndex]);
+                        maxs[axisIndex] = std::max(maxs[axisIndex], transformed[axisIndex]);
+                    }
+                }
+
+                std::memcpy(inst.mins, mins, sizeof(inst.mins));
+                std::memcpy(inst.maxs, maxs, sizeof(inst.maxs));
+            }
+
+            PopulateStaticModelGroundLighting(*block, inst, drawInst);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldDpvsPlanes(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
+    {
+        if (!clipMap)
+            return true;
+
+        if (clipMap->planeCount > 0 && clipMap->planes)
+        {
+            world.planeCount = clipMap->planeCount;
+            world.dpvsPlanes.planes = AllocZeroed<cplane_s>(memory, static_cast<size_t>(clipMap->planeCount));
+            std::memcpy(world.dpvsPlanes.planes, clipMap->planes, static_cast<size_t>(clipMap->planeCount) * sizeof(cplane_s));
+        }
+
+        if (clipMap->numNodes > 0u && !FitsInt(clipMap->numNodes))
+        {
+            error = "too many clipmap nodes for gfxworld";
+            return false;
+        }
+
+        return true;
+    }
+
+    class ClipMapPvsLoader final : public AssetCreator<AssetClipMapPvs>
+    {
+    public:
+        ClipMapPvsLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            auto* clipMap = AllocZeroed<clipMap_t>(m_memory);
+            clipMap->name = m_memory.Dup(assetName.c_str());
+            clipMap->isInUse = 1;
+
+            std::string error;
+            if (!PopulateClipMapMaterials(*clipMap, *bsp, m_memory, error) || !PopulateClipMapPlanes(*clipMap, *bsp, m_memory, error)
+                || !PopulateClipMapBrushes(*clipMap, *bsp, m_memory, error) || !PopulateClipMapNodes(*clipMap, *bsp, m_memory, error)
+                || !PopulateClipMapLeafBrushes(*clipMap, *bsp, m_memory, error) || !PopulateClipMapCollision(*clipMap, *bsp, m_memory, error)
+                || !PopulateClipMapLeafs(*clipMap, *bsp, m_memory, error) || !PopulateClipMapModels(*clipMap, *bsp, m_memory, error)
+                || !PopulateClipMapVisibility(*clipMap, *bsp, m_memory, error) || !PopulateClipMapLeafSurfaces(*clipMap, *bsp, m_memory, error))
+            {
+                con::error("Could not create clipmap \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
+            std::vector<EntityBlock> entityBlocks;
+            const auto* entityLump = bsp->GetLump(LUMP_ENTITIES);
+            if (entityLump)
+            {
+                std::string parseError;
+                if (!ParseEntityBlocks(entityLump->data, entityBlocks, parseError))
+                {
+                    con::error("Could not create clipmap \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                    return AssetCreationResult::Failure();
+                }
+            }
+
+            const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
+            const auto staticModelDependencies = LoadStaticModelDependencies(staticModelBlocks, context);
+            PopulateStaticModels(*clipMap, staticModelBlocks, staticModelDependencies, m_memory);
+
+            auto* mapEntsDependency = context.LoadDependency<AssetMapEnts>(assetName);
+            if (mapEntsDependency)
+                clipMap->mapEnts = mapEntsDependency->Asset();
+
+            AssetRegistration<AssetClipMapPvs> registration(assetName, clipMap);
+            if (mapEntsDependency)
+                registration.AddDependency(mapEntsDependency);
+            for (auto* dependency : staticModelDependencies)
+            {
+                if (dependency)
+                    registration.AddDependency(dependency);
+            }
+
+            return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+
+    class MapEntsLoader final : public AssetCreator<AssetMapEnts>
+    {
+    public:
+        MapEntsLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            const auto* entities = bsp->GetLump(LUMP_ENTITIES);
+            if (!entities)
+            {
+                con::error("Could not create MapEnts \"{}\" from {}: missing entity lump", assetName, bsp->m_file_name);
+                return AssetCreationResult::Failure();
+            }
+
+            std::vector<EntityBlock> entityBlocks;
+            std::string parseError;
+            if (!ParseEntityBlocks(entities->data, entityBlocks, parseError))
+            {
+                con::error("Could not create MapEnts \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                return AssetCreationResult::Failure();
+            }
+
+            const auto compiledEntityString = CompileMapEntsEntityString(entityBlocks);
+            const auto entityCharCount = compiledEntityString.size();
+            if (!FitsInt(entityCharCount))
+            {
+                con::error("Could not create MapEnts \"{}\" from {}: entity lump is too large", assetName, bsp->m_file_name);
+                return AssetCreationResult::Failure();
+            }
+
+            auto* entityString = m_memory.Alloc<char>(std::max(1uz, entityCharCount));
+            std::memcpy(entityString, compiledEntityString.data(), compiledEntityString.size());
+
+            auto* mapEnts = m_memory.Alloc<MapEnts>();
+            mapEnts->name = m_memory.Dup(assetName.c_str());
+            mapEnts->entityString = entityString;
+            mapEnts->numEntityChars = static_cast<int>(entityCharCount);
+
+            return AssetCreationResult::Success(context.AddAsset<AssetMapEnts>(assetName, mapEnts));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+
+    [[nodiscard]] bool DecodePathVisRle(
+        const std::vector<std::byte>& data, size_t& offset, const size_t expectedSize, MemoryManager& memory, char*& pathVis, std::string& error)
+    {
+        pathVis = expectedSize > 0uz ? AllocZeroed<char>(memory, expectedSize) : nullptr;
+        auto outOffset = 0uz;
+
+        while (outOffset < expectedSize)
+        {
+            if (offset >= data.size())
+            {
+                error = "path visibility RLE ended early";
+                return false;
+            }
+
+            const auto marker = std::to_integer<unsigned char>(data[offset++]);
+            if ((marker & 0x80u) == 0u)
+            {
+                const auto zeroCount = static_cast<size_t>(marker);
+                if (zeroCount > expectedSize - outOffset || offset >= data.size())
+                {
+                    error = "path visibility zero run exceeds expected size";
+                    return false;
+                }
+
+                outOffset += zeroCount;
+                pathVis[outOffset++] = static_cast<char>(std::to_integer<unsigned char>(data[offset++]));
+            }
+            else
+            {
+                const auto literalCount = static_cast<size_t>(static_cast<unsigned char>(~marker));
+                if (literalCount > expectedSize - outOffset || literalCount > data.size() - offset)
+                {
+                    error = "path visibility literal run exceeds expected size";
+                    return false;
+                }
+
+                std::memcpy(pathVis + outOffset, data.data() + offset, literalCount);
+                outOffset += literalCount;
+                offset += literalCount;
+            }
+        }
+
+        return true;
+    }
+
+    class GameWorldSpLoader final : public AssetCreator<AssetGameWorldSp>
+    {
+    public:
+        GameWorldSpLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            const auto* pathConnections = bsp->GetLump(LUMP_PATHCONNECTIONS);
+            if (!pathConnections)
+                return AssetCreationResult::NoAction();
+
+            const auto& data = pathConnections->data;
+            if (data.size() < sizeof(uint32_t) + sizeof(uint16_t))
+            {
+                con::error("Could not create GameWorldSp \"{}\" from {}: pathconnections lump is truncated", assetName, bsp->m_file_name);
+                return AssetCreationResult::Failure();
+            }
+
+            auto offset = 0uz;
+            const auto version = ReadU32(data.data() + offset);
+            offset += sizeof(uint32_t);
+            if (version != PATHCONNECTIONS_VERSION)
+            {
+                con::error("Could not create GameWorldSp \"{}\" from {}: unsupported pathconnections version {}", assetName, bsp->m_file_name, version);
+                return AssetCreationResult::Failure();
+            }
+
+            const auto nodeCount = ReadU16(data.data() + offset);
+            offset += sizeof(uint16_t);
+
+            auto* gameWorld = AllocZeroed<GameWorldSp>(m_memory);
+            gameWorld->name = m_memory.Dup(assetName.c_str());
+            gameWorld->path.nodeCount = nodeCount;
+            gameWorld->path.nodes = nodeCount > 0u ? AllocZeroed<pathnode_t>(m_memory, nodeCount) : nullptr;
+            gameWorld->path.basenodes = nodeCount > 0u ? AllocZeroed<pathbasenode_t>(m_memory, nodeCount) : nullptr;
+
+            for (auto nodeIndex = 0uz; nodeIndex < nodeCount; nodeIndex++)
+            {
+                if (offset + sizeof(uint16_t) > data.size())
+                {
+                    con::error("Could not create GameWorldSp \"{}\" from {}: path link counts are truncated", assetName, bsp->m_file_name);
+                    return AssetCreationResult::Failure();
+                }
+
+                auto& node = gameWorld->path.nodes[nodeIndex];
+                const auto linkCount = ReadU16(data.data() + offset);
+                offset += sizeof(uint16_t);
+                node.constant.totalLinkCount = linkCount;
+                node.constant.Links = linkCount > 0u ? AllocZeroed<pathlink_s>(m_memory, linkCount) : nullptr;
+
+                for (auto linkIndex = 0uz; linkIndex < linkCount; linkIndex++)
+                {
+                    if (offset + sizeof(uint16_t) + sizeof(float) > data.size())
+                    {
+                        con::error("Could not create GameWorldSp \"{}\" from {}: path links are truncated", assetName, bsp->m_file_name);
+                        return AssetCreationResult::Failure();
+                    }
+
+                    auto& link = node.constant.Links[linkIndex];
+                    link.nodeNum = ReadU16(data.data() + offset);
+                    offset += sizeof(uint16_t);
+                    link.fDist = ReadFloat(data.data() + offset);
+                    offset += sizeof(float);
+                }
+            }
+
+            const auto visBytes = (static_cast<size_t>(nodeCount) * (static_cast<size_t>(nodeCount) - 1uz) + 7uz) >> 3uz;
+            gameWorld->path.visBytes = static_cast<int>(visBytes);
+
+            std::string error;
+            if (!DecodePathVisRle(data, offset, visBytes, m_memory, gameWorld->path.pathVis, error))
+            {
+                con::error("Could not create GameWorldSp \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
+            return AssetCreationResult::Success(context.AddAsset<AssetGameWorldSp>(assetName, gameWorld));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+
+    class GameWorldMpLoader final : public AssetCreator<AssetGameWorldMp>
+    {
+    public:
+        GameWorldMpLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            auto* gameWorld = AllocZeroed<GameWorldMp>(m_memory);
+            gameWorld->name = m_memory.Dup(assetName.c_str());
+            return AssetCreationResult::Success(context.AddAsset<AssetGameWorldMp>(assetName, gameWorld));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+
+    void PopulateWorldSkySurfaces(GfxWorld& world, MemoryManager& memory)
+    {
+        if (!world.dpvs.surfaces || world.surfaceCount <= 0)
+            return;
+
+        std::vector<int> skySurfaces;
+        for (auto surfaceIndex = 0; surfaceIndex < world.surfaceCount; surfaceIndex++)
+        {
+            if (static_cast<unsigned char>(world.dpvs.surfaces[surfaceIndex].lightmapIndex) == SKY_LIGHTMAP_INDEX)
+                skySurfaces.emplace_back(surfaceIndex);
+        }
+
+        if (skySurfaces.empty())
+            return;
+
+        world.skySurfCount = static_cast<int>(skySurfaces.size());
+        world.skyStartSurfs = AllocZeroed<int>(memory, skySurfaces.size());
+        std::memcpy(world.skyStartSurfs, skySurfaces.data(), skySurfaces.size() * sizeof(int));
+    }
+
+    void SetOutdoorLookupIdentity(GfxWorld& world)
+    {
+        for (auto row = 0uz; row < 4uz; row++)
+        {
+            for (auto column = 0uz; column < 4uz; column++)
+                world.outdoorLookupMatrix[row][column] = row == column ? 1.0f : 0.0f;
+        }
+    }
+
+    class GfxWorldLoader final : public AssetCreator<AssetGfxWorld>
+    {
+    public:
+        GfxWorldLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            auto* clipMapDependency = context.LoadDependency<AssetClipMapPvs>(assetName);
+            auto* mapEntsDependency = context.LoadDependency<AssetMapEnts>(assetName);
+            auto* comWorldDependency = context.LoadDependency<AssetComWorld>(assetName);
+            if (!clipMapDependency || !mapEntsDependency || !comWorldDependency)
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: required sibling map asset is missing", assetName, bsp->m_file_name);
+                return AssetCreationResult::Failure();
+            }
+
+            std::vector<EntityBlock> entityBlocks;
+            const auto* entityLump = bsp->GetLump(LUMP_ENTITIES);
+            if (entityLump)
+            {
+                std::string parseError;
+                if (!ParseEntityBlocks(entityLump->data, entityBlocks, parseError))
+                {
+                    con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                    return AssetCreationResult::Failure();
+                }
+            }
+
+            std::string error;
+            const auto materialDependencies = LoadWorldMaterials(*bsp, context, m_memory, error);
+            if (!error.empty())
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
+            const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
+            const auto staticModelDependencies = LoadStaticModelDependencies(staticModelBlocks, context);
+
+            auto* world = AllocZeroed<GfxWorld>(m_memory);
+            world->name = m_memory.Dup(assetName.c_str());
+            world->baseName = world->name;
+            SetOutdoorLookupIdentity(*world);
+
+            AssetRegistration<AssetGfxWorld> registration(assetName, world);
+            registration.AddDependency(clipMapDependency);
+            registration.AddDependency(mapEntsDependency);
+            registration.AddDependency(comWorldDependency);
+            for (auto* dependency : materialDependencies)
+            {
+                if (dependency)
+                    registration.AddDependency(dependency);
+            }
+            for (auto* dependency : staticModelDependencies)
+            {
+                if (dependency)
+                    registration.AddDependency(dependency);
+            }
+
+            const auto* clipMap = clipMapDependency->Asset();
+            if (!PopulateWorldDpvsPlanes(*world, clipMap, m_memory, error) || !PopulateWorldIndices(*world, *bsp, m_memory, error)
+                || !PopulateWorldVertices(*world, *bsp, m_memory, error)
+                || !PopulateWorldSurfaces(*world, *bsp, materialDependencies, m_memory, error) || !PopulateWorldVertexLayerData(*world, *bsp, m_memory, error)
+                || !PopulateWorldModels(*world, *bsp, m_memory, error) || !PopulateWorldCells(*world, *bsp, m_memory, error)
+                || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldLightGrid(*world, *bsp, m_memory, error)
+                || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
+                || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
+                || !PopulateWorldLightmaps(*world, assetName, *bsp, context, registration, m_memory, error)
+                || !PopulateWorldReflectionProbes(*world, assetName, *bsp, context, registration, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
+            PopulateWorldSkySurfaces(*world, m_memory);
+            return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+
+    class ComWorldLoader final : public AssetCreator<AssetComWorld>
+    {
+    public:
+        ComWorldLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* bsp = GetBspForAsset(assetName, m_search_path, context);
+            if (!bsp)
+                return BspWasInvalid(assetName, m_search_path, context) ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
+
+            const auto* primaryLightsLump = bsp->GetLump(LUMP_PRIMARY_LIGHTS);
+            const auto primaryLightsSize = primaryLightsLump ? primaryLightsLump->data.size() : 0uz;
+            if (primaryLightsSize % IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE != 0uz)
+            {
+                con::error("Could not create ComWorld \"{}\" from {}: primary-light lump has invalid size {}", assetName, bsp->m_file_name, primaryLightsSize);
+                return AssetCreationResult::Failure();
+            }
+
+            const auto primaryLightCount = primaryLightsSize / IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
+            if (primaryLightCount > static_cast<size_t>(std::numeric_limits<unsigned int>::max()))
+            {
+                con::error("Could not create ComWorld \"{}\" from {}: too many primary lights", assetName, bsp->m_file_name);
+                return AssetCreationResult::Failure();
+            }
+
+            auto* comWorld = m_memory.Alloc<ComWorld>();
+            comWorld->name = m_memory.Dup(assetName.c_str());
+            comWorld->isInUse = 1;
+            comWorld->primaryLightCount = static_cast<unsigned int>(primaryLightCount);
+            comWorld->primaryLights = nullptr;
+
+            if (primaryLightCount > 0uz)
+            {
+                comWorld->primaryLights = m_memory.Alloc<ComPrimaryLight>(primaryLightCount);
+                for (auto lightIndex = 0uz; lightIndex < primaryLightCount; lightIndex++)
+                {
+                    const auto* record = primaryLightsLump->data.data() + lightIndex * IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
+                    ParsePrimaryLightRecord(record, comWorld->primaryLights[lightIndex]);
+                }
+            }
+
+            return AssetCreationResult::Success(context.AddAsset<AssetComWorld>(assetName, comWorld));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace map_d3dbsp
+{
+    std::unique_ptr<AssetCreator<AssetClipMapPvs>> CreateClipMapPvsLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<ClipMapPvsLoader>(memory, searchPath);
+    }
+
+    std::unique_ptr<AssetCreator<AssetMapEnts>> CreateMapEntsLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<MapEntsLoader>(memory, searchPath);
+    }
+
+    std::unique_ptr<AssetCreator<AssetComWorld>> CreateComWorldLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<ComWorldLoader>(memory, searchPath);
+    }
+
+    std::unique_ptr<AssetCreator<AssetGameWorldSp>> CreateGameWorldSpLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<GameWorldSpLoader>(memory, searchPath);
+    }
+
+    std::unique_ptr<AssetCreator<AssetGameWorldMp>> CreateGameWorldMpLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<GameWorldMpLoader>(memory, searchPath);
+    }
+
+    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateGfxWorldLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<GfxWorldLoader>(memory, searchPath);
+    }
+} // namespace map_d3dbsp
