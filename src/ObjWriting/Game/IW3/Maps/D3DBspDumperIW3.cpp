@@ -176,23 +176,64 @@ namespace
         return value->name[0] == ',' ? &value->name[1] : value->name;
     }
 
-    template<typename T> [[nodiscard]] size_t PointerIndex(const T* base, const size_t count, const T* value)
+    template<typename T> [[nodiscard]] bool TryPointerIndex(const T* base, const size_t count, const T* value, size_t& index)
     {
         if (!base || !value || count == 0)
-            return 0uz;
+            return false;
 
         const auto baseAddress = reinterpret_cast<uintptr_t>(base);
         const auto valueAddress = reinterpret_cast<uintptr_t>(value);
         const auto endAddress = baseAddress + count * sizeof(T);
 
         if (valueAddress < baseAddress || valueAddress >= endAddress)
-            return 0uz;
+            return false;
 
         const auto offset = valueAddress - baseAddress;
         if (offset % sizeof(T) != 0)
-            return 0uz;
+            return false;
 
-        return offset / sizeof(T);
+        index = offset / sizeof(T);
+        return true;
+    }
+
+    template<typename T> [[nodiscard]] size_t PointerIndex(const T* base, const size_t count, const T* value)
+    {
+        auto index = 0uz;
+        return TryPointerIndex(base, count, value, index) ? index : 0uz;
+    }
+
+    [[nodiscard]] size_t FindLeafBrushRange(
+        const LeafBrush* leafBrushes,
+        const size_t leafBrushCount,
+        const LeafBrush* nodeBrushes,
+        const size_t nodeBrushCount,
+        const size_t searchStart)
+    {
+        if (!leafBrushes || !nodeBrushes || nodeBrushCount == 0 || nodeBrushCount > leafBrushCount)
+            return leafBrushCount;
+
+        const auto matchAt = [leafBrushes, nodeBrushes, nodeBrushCount](const size_t index)
+        {
+            return std::equal(nodeBrushes, nodeBrushes + nodeBrushCount, leafBrushes + index);
+        };
+
+        for (auto i = std::min(searchStart, leafBrushCount); i + nodeBrushCount <= leafBrushCount; i++)
+        {
+            if (matchAt(i))
+                return i;
+        }
+
+        // Fall back to a full scan for unusual cases where the raw leafbrush
+        // ranges are not monotonic. The normal linker layout is monotonic, so
+        // starting at the running cursor avoids picking earlier duplicate
+        // one-brush ranges when OAT-built fastfiles contain copied node arrays.
+        for (auto i = 0uz; i < std::min(searchStart, leafBrushCount); i++)
+        {
+            if (i + nodeBrushCount <= leafBrushCount && matchAt(i))
+                return i;
+        }
+
+        return leafBrushCount;
     }
 
     [[nodiscard]] std::vector<std::byte> BuildMaterials(const clipMap_t& clipMap)
@@ -323,14 +364,27 @@ namespace
             auto firstLeafBrush = runningFirstLeafBrush;
             if (leafBrushCount > 0)
             {
-                const auto brushesIndex = PointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, leafBrushNode->data.leaf.brushes);
+                auto brushesIndex = 0uz;
 
                 // Official linker-built assets keep leaf nodes pointing into
                 // clipMap.leafbrushes. OAT-built fastfiles can contain copied
                 // per-node brush arrays instead, so recover the raw leaf range
                 // from the monotonically packed leafbrush cursor in that case.
-                if (brushesIndex < PositiveCount(clipMap.numLeafBrushes))
+                if (TryPointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, leafBrushNode->data.leaf.brushes, brushesIndex))
+                {
                     firstLeafBrush = static_cast<int32_t>(brushesIndex);
+                }
+                else
+                {
+                    brushesIndex = FindLeafBrushRange(clipMap.leafbrushes,
+                        clipMap.numLeafBrushes,
+                        leafBrushNode->data.leaf.brushes,
+                        static_cast<size_t>(leafBrushCount),
+                        static_cast<size_t>(runningFirstLeafBrush));
+
+                    if (brushesIndex < clipMap.numLeafBrushes)
+                        firstLeafBrush = static_cast<int32_t>(brushesIndex);
+                }
             }
 
             // The raw leaf record carries the cluster/cell assignment even for
