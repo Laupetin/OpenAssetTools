@@ -3167,6 +3167,108 @@ namespace
         return true;
     }
 
+    [[nodiscard]] int CellForPoint(const GfxWorld& world, const float (&origin)[3])
+    {
+        if (!world.dpvsPlanes.nodes || !world.dpvsPlanes.planes || world.dpvsPlanes.cellCount <= 0)
+            return -1;
+
+        const auto cellCountPlusOne = world.dpvsPlanes.cellCount + 1;
+        auto* node = world.dpvsPlanes.nodes;
+        while (true)
+        {
+            const auto cellValue = static_cast<int>(node[0]);
+            const auto planeIndex = cellValue - cellCountPlusOne;
+            if (planeIndex < 0)
+                return cellValue - 1;
+
+            if (planeIndex >= world.planeCount)
+                return -1;
+
+            const auto& plane = world.dpvsPlanes.planes[planeIndex];
+            const auto dist = origin[0] * plane.normal[0] + origin[1] * plane.normal[1] + origin[2] * plane.normal[2] - plane.dist;
+            node += dist <= 0.0f ? node[1] : 2u;
+        }
+    }
+
+    [[nodiscard]] float DistanceSquared(const float (&left)[3], const float (&right)[3])
+    {
+        const auto x = left[0] - right[0];
+        const auto y = left[1] - right[1];
+        const auto z = left[2] - right[2];
+        return x * x + y * y + z * z;
+    }
+
+    [[nodiscard]] unsigned FindNearestReflectionProbe(const GfxWorld& world, const float (&origin)[3])
+    {
+        auto bestProbe = 0u;
+        auto bestProbeDist = std::numeric_limits<float>::max();
+
+        // Probe 0 is the generated default. The linker only falls back to it
+        // when there are no authored probes.
+        for (auto probeIndex = 1u; probeIndex < world.reflectionProbeCount; probeIndex++)
+        {
+            const auto testProbeDist = DistanceSquared(origin, world.reflectionProbes[probeIndex].origin);
+            if (testProbeDist < bestProbeDist)
+            {
+                bestProbeDist = testProbeDist;
+                bestProbe = probeIndex;
+            }
+        }
+
+        return bestProbe;
+    }
+
+    [[nodiscard]] unsigned FindNearestReflectionProbeInCell(const GfxWorld& world, const GfxCell& cell, const float (&origin)[3])
+    {
+        if (cell.reflectionProbeCount <= 0 || !cell.reflectionProbes)
+            return FindNearestReflectionProbe(world, origin);
+
+        auto bestProbe = 0u;
+        auto bestProbeDist = std::numeric_limits<float>::max();
+        for (auto cellProbeIndex = 0; cellProbeIndex < cell.reflectionProbeCount; cellProbeIndex++)
+        {
+            const auto probeIndex = static_cast<unsigned>(static_cast<unsigned char>(cell.reflectionProbes[cellProbeIndex]));
+            if (probeIndex >= world.reflectionProbeCount)
+                continue;
+
+            const auto testProbeDist = DistanceSquared(origin, world.reflectionProbes[probeIndex].origin);
+            if (testProbeDist < bestProbeDist)
+            {
+                bestProbeDist = testProbeDist;
+                bestProbe = probeIndex;
+            }
+        }
+
+        return bestProbe;
+    }
+
+    [[nodiscard]] unsigned CalcReflectionProbeIndex(const GfxWorld& world, const float (&origin)[3])
+    {
+        const auto cellIndex = CellForPoint(world, origin);
+        if (cellIndex < 0 || cellIndex >= world.dpvsPlanes.cellCount || !world.cells)
+            return FindNearestReflectionProbe(world, origin);
+
+        return FindNearestReflectionProbeInCell(world, world.cells[cellIndex], origin);
+    }
+
+    void PopulateWorldStaticModelReflectionProbes(GfxWorld& world)
+    {
+        if (world.reflectionProbeCount == 0u || !world.reflectionProbes || world.dpvs.smodelCount == 0u || !world.dpvs.smodelInsts || !world.dpvs.smodelDrawInsts)
+            return;
+
+        for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
+        {
+            const auto& smodelInst = world.dpvs.smodelInsts[smodelIndex];
+            float center[3]{
+                (smodelInst.mins[0] + smodelInst.maxs[0]) * 0.5f,
+                (smodelInst.mins[1] + smodelInst.maxs[1]) * 0.5f,
+                (smodelInst.mins[2] + smodelInst.maxs[2]) * 0.5f,
+            };
+
+            world.dpvs.smodelDrawInsts[smodelIndex].reflectionProbeIndex = static_cast<char>(CalcReflectionProbeIndex(world, center));
+        }
+    }
+
     [[nodiscard]] bool PopulateWorldLightGrid(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         const auto* header = bsp.GetLump(LUMP_LIGHTGRID_HEADER);
@@ -5429,6 +5531,7 @@ namespace
                 return AssetCreationResult::Failure();
             }
 
+            PopulateWorldStaticModelReflectionProbes(*world);
             PopulateWorldRuntimeData(*world, m_memory);
             if (!PopulateWorldSkySurfaces(*world, context, registration, m_memory, error))
             {
