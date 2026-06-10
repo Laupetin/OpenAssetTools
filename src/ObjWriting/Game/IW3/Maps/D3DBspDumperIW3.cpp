@@ -1395,6 +1395,8 @@ namespace
             const auto startSurfIndex = static_cast<uint16_t>(model.startSurfIndex);
             const auto surfaceCount = model.surfaceCount;
             const auto surfaceCountNoDecal = model.surfaceCountNoDecal;
+            const auto firstTriSoup = surfaceCount > 0u ? startSurfIndex : std::numeric_limits<uint16_t>::max();
+            const auto firstTriSoupNoDecal = surfaceCountNoDecal > 0u ? startSurfIndex : std::numeric_limits<uint16_t>::max();
             auto firstCollAabbIndex = 0u;
             auto collAabbCount = 0u;
             auto firstBrush = 0u;
@@ -1421,10 +1423,10 @@ namespace
 
             AppendBytes(out, model.bounds[0], sizeof(model.bounds[0]));
             AppendBytes(out, model.bounds[1], sizeof(model.bounds[1]));
-            // Raw v22 stores the start index twice for older/newer loader paths,
-            // followed by the precomputed no-decal split and the total count.
-            Append(out, startSurfIndex);
-            Append(out, startSurfIndex);
+            // Raw v22 stores firstTriSoup[2] and triSoupCount[2]. R_LoadSubmodels
+            // maps an empty tri-soup range to startSurfIndex 0xffff.
+            Append(out, firstTriSoupNoDecal);
+            Append(out, firstTriSoup);
             Append(out, surfaceCountNoDecal);
             Append(out, surfaceCount);
             // The render fields above are 16-bit, but the following collision
