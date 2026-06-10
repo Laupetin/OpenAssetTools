@@ -73,6 +73,8 @@ namespace
     constexpr auto LIGHTMAP_PRIMARY_RAW_HEIGHT = 1024u;
     constexpr auto LIGHTMAP_SECONDARY_RAW_WIDTH = 512u;
     constexpr auto LIGHTMAP_SECONDARY_RAW_HEIGHT = 1024u;
+    constexpr auto LIGHTMAP_SECONDARY_HALF_HEIGHT = LIGHTMAP_SECONDARY_RAW_HEIGHT / 2u;
+    constexpr auto LIGHTMAP_SECONDARY_PIXEL_SIZE = 4u;
     constexpr auto REFLECTION_PROBE_SIZE = 64u;
     constexpr auto REFLECTION_PROBE_MIP_COUNT = 7u;
     constexpr auto REFLECTION_PROBE_NAME_SIZE = 64uz;
@@ -81,6 +83,7 @@ namespace
     constexpr auto DEFAULT_MATERIAL_NAME = "$default";
     constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
     constexpr auto SKY_LIGHTMAP_INDEX = 31u;
+    constexpr auto MAX_LIGHTMAP_PAGE_COUNT = 31uz;
     constexpr auto PATHCONNECTIONS_VERSION = 8u;
     // linker_pc uses this exact float literal when converting entity angles to
     // radians. It is pi / 180, but the decompiled value avoids tiny ULP drift.
@@ -2060,6 +2063,284 @@ namespace
         return SelectWorldLump(bsp, simple, layered);
     }
 
+    struct LightmapAtlasGroup
+    {
+        unsigned wideCount = 1u;
+        unsigned highCount = 1u;
+        std::vector<unsigned> rawPageForPackedSlot;
+    };
+
+    struct LightmapAtlasLayout
+    {
+        unsigned rawPageCount = 0u;
+        std::vector<LightmapAtlasGroup> groups;
+        std::vector<unsigned> atlasIndexForRawPage;
+        std::vector<unsigned> packedSlotForRawPage;
+    };
+
+    [[nodiscard]] int SaturatingAdd(const int left, const int right)
+    {
+        if (right > 0 && left > std::numeric_limits<int>::max() - right)
+            return std::numeric_limits<int>::max();
+
+        return left + right;
+    }
+
+    [[nodiscard]] bool BuildLightmapCouplingMatrix(
+        const IW3::d3dbsp::File& bsp,
+        const unsigned rawPageCount,
+        std::array<int, MAX_LIGHTMAP_PAGE_COUNT * MAX_LIGHTMAP_PAGE_COUNT>& coupling,
+        std::string& error)
+    {
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        if (!surfaces)
+            return true;
+
+        if (surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz)
+        {
+            error = "world surface lump has funny size";
+            return false;
+        }
+
+        const auto* materials = bsp.GetLump(LUMP_MATERIALS);
+        const auto materialCount = materials && materials->data.size() % RAW_MATERIAL_SIZE == 0uz ? RecordCount(*materials, RAW_MATERIAL_SIZE) : 0uz;
+        const auto surfaceCount = RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE);
+
+        for (auto materialIndex = 0uz; materialIndex < materialCount; materialIndex++)
+        {
+            std::array<int, MAX_LIGHTMAP_PAGE_COUNT> vertexCountByLightmap{};
+
+            for (auto surfaceIndex = 0uz; surfaceIndex < surfaceCount; surfaceIndex++)
+            {
+                const auto* record = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+                if (ReadU16(record) != materialIndex)
+                    continue;
+
+                const auto lightmapIndex = std::to_integer<unsigned>(record[2]);
+                if (lightmapIndex == SKY_LIGHTMAP_INDEX)
+                    continue;
+
+                if (lightmapIndex >= rawPageCount)
+                {
+                    error = std::format("world surface {} references missing lightmap page {}", surfaceIndex, lightmapIndex);
+                    return false;
+                }
+
+                vertexCountByLightmap[lightmapIndex] =
+                    SaturatingAdd(vertexCountByLightmap[lightmapIndex], static_cast<int>(ReadU16(record, 16uz)));
+            }
+
+            for (auto left = 0u; left < rawPageCount; left++)
+            {
+                if (vertexCountByLightmap[left] == 0)
+                    continue;
+
+                for (auto right = left + 1u; right < rawPageCount; right++)
+                {
+                    if (vertexCountByLightmap[right] == 0)
+                        continue;
+
+                    const auto combinedWeight = SaturatingAdd(vertexCountByLightmap[left], vertexCountByLightmap[right]);
+                    auto& leftToRight = coupling[left * MAX_LIGHTMAP_PAGE_COUNT + right];
+                    leftToRight = SaturatingAdd(leftToRight, combinedWeight);
+                    coupling[right * MAX_LIGHTMAP_PAGE_COUNT + left] = leftToRight;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool ReferencedLightmapPageCount(const IW3::d3dbsp::File& bsp, unsigned& pageCount, std::string& error)
+    {
+        pageCount = 0u;
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        if (!surfaces)
+            return true;
+
+        if (surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz)
+        {
+            error = "world surface lump has funny size";
+            return false;
+        }
+
+        const auto surfaceCount = RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE);
+        for (auto surfaceIndex = 0uz; surfaceIndex < surfaceCount; surfaceIndex++)
+        {
+            const auto* record = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+            const auto lightmapIndex = std::to_integer<unsigned>(record[2]);
+            if (lightmapIndex == SKY_LIGHTMAP_INDEX)
+                continue;
+
+            if (lightmapIndex >= MAX_LIGHTMAP_PAGE_COUNT)
+            {
+                error = std::format("world surface {} has invalid lightmap page {}", surfaceIndex, lightmapIndex);
+                return false;
+            }
+
+            pageCount = std::max(pageCount, lightmapIndex + 1u);
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool BuildLightmapAtlasLayout(const IW3::d3dbsp::File& bsp, LightmapAtlasLayout& layout, std::string& error)
+    {
+        const auto* lightmaps = bsp.GetLump(LUMP_LIGHTMAPS);
+        if (!lightmaps || lightmaps->data.empty())
+            return true;
+
+        if (lightmaps->data.size() % LIGHTMAP_RAW_PAGE_SIZE != 0uz || !FitsUnsigned(lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE))
+        {
+            error = "lightmap lump has funny size";
+            return false;
+        }
+
+        layout.rawPageCount = static_cast<unsigned>(lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE);
+        if (layout.rawPageCount > MAX_LIGHTMAP_PAGE_COUNT)
+        {
+            error = std::format("lightmap lump has too many pages: {}", layout.rawPageCount);
+            return false;
+        }
+
+        unsigned referencedPageCount = 0u;
+        if (!ReferencedLightmapPageCount(bsp, referencedPageCount, error))
+            return false;
+
+        // linker_pc/Radiant treats the lightmap lump size and the highest
+        // non-sky surface lightmap index as the same original-page count.
+        if (referencedPageCount != layout.rawPageCount)
+        {
+            error = std::format("lightmap page count {} does not match surface references {}", layout.rawPageCount, referencedPageCount);
+            return false;
+        }
+
+        std::array<int, MAX_LIGHTMAP_PAGE_COUNT * MAX_LIGHTMAP_PAGE_COUNT> coupling{};
+        if (!BuildLightmapCouplingMatrix(bsp, layout.rawPageCount, coupling, error))
+            return false;
+
+        std::array<bool, MAX_LIGHTMAP_PAGE_COUNT> used{};
+        layout.atlasIndexForRawPage.assign(layout.rawPageCount, 0u);
+        layout.packedSlotForRawPage.assign(layout.rawPageCount, 0u);
+
+        auto wideCount = 2u;
+        auto highCount = 2u;
+        auto packedRawPageCount = 0u;
+        while (packedRawPageCount < layout.rawPageCount)
+        {
+            while (wideCount * highCount > layout.rawPageCount - packedRawPageCount)
+            {
+                if (wideCount < highCount)
+                    highCount >>= 1u;
+                else
+                    wideCount >>= 1u;
+            }
+
+            LightmapAtlasGroup group;
+            group.wideCount = std::max(1u, wideCount);
+            group.highCount = std::max(1u, highCount);
+            const auto groupPageCount = group.wideCount * group.highCount;
+            group.rawPageForPackedSlot.reserve(groupPageCount);
+
+            if (groupPageCount < 2u)
+            {
+                for (auto rawPage = 0u; rawPage < layout.rawPageCount; rawPage++)
+                {
+                    if (used[rawPage])
+                        continue;
+
+                    group.rawPageForPackedSlot.emplace_back(rawPage);
+                    used[rawPage] = true;
+                    break;
+                }
+            }
+            else
+            {
+                auto bestLeft = SKY_LIGHTMAP_INDEX;
+                auto bestRight = SKY_LIGHTMAP_INDEX;
+                for (auto left = 0u; left + 1u < layout.rawPageCount; left++)
+                {
+                    if (used[left])
+                        continue;
+
+                    for (auto right = left + 1u; right < layout.rawPageCount; right++)
+                    {
+                        if (used[right])
+                            continue;
+
+                        if (bestLeft == SKY_LIGHTMAP_INDEX
+                            || coupling[left * MAX_LIGHTMAP_PAGE_COUNT + right] > coupling[bestLeft * MAX_LIGHTMAP_PAGE_COUNT + bestRight])
+                        {
+                            bestLeft = left;
+                            bestRight = right;
+                        }
+                    }
+                }
+
+                if (bestLeft == SKY_LIGHTMAP_INDEX || bestRight == SKY_LIGHTMAP_INDEX)
+                {
+                    error = "could not pair lightmap pages";
+                    return false;
+                }
+
+                // The stock linker writes the selected pair into the atlas in
+                // right,left order, then greedily extends that group from the
+                // accumulated material-coupling weights.
+                group.rawPageForPackedSlot.emplace_back(bestRight);
+                group.rawPageForPackedSlot.emplace_back(bestLeft);
+                used[bestRight] = true;
+                used[bestLeft] = true;
+
+                std::array<int, MAX_LIGHTMAP_PAGE_COUNT> aggregateWeights{};
+                for (auto rawPage = 0u; rawPage < layout.rawPageCount; rawPage++)
+                    aggregateWeights[rawPage] = coupling[bestLeft * MAX_LIGHTMAP_PAGE_COUNT + rawPage];
+
+                auto selectedRawPage = bestRight;
+                while (group.rawPageForPackedSlot.size() < groupPageCount)
+                {
+                    for (auto rawPage = 0u; rawPage < layout.rawPageCount; rawPage++)
+                    {
+                        aggregateWeights[rawPage] =
+                            SaturatingAdd(aggregateWeights[rawPage], coupling[selectedRawPage * MAX_LIGHTMAP_PAGE_COUNT + rawPage]);
+                    }
+
+                    auto bestNext = SKY_LIGHTMAP_INDEX;
+                    for (auto rawPage = 0u; rawPage < layout.rawPageCount; rawPage++)
+                    {
+                        if (used[rawPage])
+                            continue;
+
+                        if (bestNext == SKY_LIGHTMAP_INDEX || aggregateWeights[rawPage] > aggregateWeights[bestNext])
+                            bestNext = rawPage;
+                    }
+
+                    if (bestNext == SKY_LIGHTMAP_INDEX)
+                    {
+                        error = "could not extend lightmap atlas group";
+                        return false;
+                    }
+
+                    group.rawPageForPackedSlot.emplace_back(bestNext);
+                    used[bestNext] = true;
+                    selectedRawPage = bestNext;
+                }
+            }
+
+            const auto atlasIndex = static_cast<unsigned>(layout.groups.size());
+            for (auto packedSlot = 0uz; packedSlot < group.rawPageForPackedSlot.size(); packedSlot++)
+            {
+                const auto rawPage = group.rawPageForPackedSlot[packedSlot];
+                layout.atlasIndexForRawPage[rawPage] = atlasIndex;
+                layout.packedSlotForRawPage[rawPage] = static_cast<unsigned>(packedSlot);
+            }
+
+            packedRawPageCount += static_cast<unsigned>(group.rawPageForPackedSlot.size());
+            layout.groups.emplace_back(std::move(group));
+        }
+
+        return true;
+    }
+
     [[nodiscard]] std::vector<std::string> WorldMaterialNameCandidates(const std::string& rawMaterialName)
     {
         std::vector<std::string> result;
@@ -2321,9 +2602,52 @@ namespace
         }
     }
 
+    void ApplySurfaceLightmapRemap(
+        GfxWorld& world,
+        const GfxSurface& surface,
+        const LightmapAtlasGroup& group,
+        const unsigned packedSlot,
+        std::vector<int>& vertexLightmapRemaps)
+    {
+        if (group.wideCount * group.highCount <= 1u || !world.indices || !world.vd.vertices)
+            return;
+
+        const auto firstIndex = surface.tris.baseIndex;
+        const auto indexCount = static_cast<int>(surface.tris.triCount) * 3;
+        if (firstIndex < 0 || indexCount <= 0 || firstIndex + indexCount > world.indexCount)
+            return;
+
+        const auto slotX = packedSlot % group.wideCount;
+        const auto slotY = packedSlot / group.wideCount;
+        const auto scaleU = LinkerFloat(1.0 / static_cast<double>(group.wideCount));
+        const auto scaleV = LinkerFloat(1.0 / static_cast<double>(group.highCount));
+        const auto offsetU = LinkerFloat(static_cast<double>(slotX) * scaleU);
+        const auto offsetV = LinkerFloat(static_cast<double>(slotY) * scaleV);
+
+        for (auto indexOffset = 0; indexOffset < indexCount; indexOffset++)
+        {
+            const auto vertexIndex = surface.tris.firstVertex + world.indices[firstIndex + indexOffset];
+            if (vertexIndex < 0 || static_cast<unsigned>(vertexIndex) >= world.vertexCount)
+                continue;
+
+            // Raw BSP vertices are shared by all surfaces that reference them.
+            // Applying the same atlas scale/offset repeatedly corrupts the UVs
+            // and later dumps as black lightmap stripes in Radiant.
+            auto& vertexRemap = vertexLightmapRemaps[vertexIndex];
+            if (vertexRemap >= 0)
+                continue;
+
+            vertexRemap = static_cast<int>(packedSlot);
+            auto& vertex = world.vd.vertices[vertexIndex];
+            vertex.lmapCoord[0] = LinkerFloat(static_cast<double>(vertex.lmapCoord[0]) * scaleU + offsetU);
+            vertex.lmapCoord[1] = LinkerFloat(static_cast<double>(vertex.lmapCoord[1]) * scaleV + offsetV);
+        }
+    }
+
     [[nodiscard]] bool PopulateWorldSurfaces(
         GfxWorld& world,
         const IW3::d3dbsp::File& bsp,
+        const LightmapAtlasLayout& lightmapLayout,
         const std::vector<XAssetInfo<Material>*>& materialDependencies,
         MemoryManager& memory,
         std::string& error)
@@ -2344,6 +2668,7 @@ namespace
         world.dpvs.litSurfsBegin = 0u;
         world.dpvs.litSurfsEnd = static_cast<unsigned>(world.surfaceCount);
         world.dpvs.surfaces = AllocZeroed<GfxSurface>(memory, world.surfaceCount);
+        std::vector<int> vertexLightmapRemaps(world.vertexCount, -1);
 
         for (auto surfaceIndex = 0uz; surfaceIndex < static_cast<size_t>(world.surfaceCount); surfaceIndex++)
         {
@@ -2358,7 +2683,8 @@ namespace
 
             surface.material = materialDependencies[materialIndex]->Asset();
 
-            surface.lightmapIndex = static_cast<char>(std::to_integer<unsigned char>(record[2]));
+            const auto rawLightmapIndex = std::to_integer<unsigned>(record[2]);
+            surface.lightmapIndex = static_cast<char>(rawLightmapIndex);
             surface.reflectionProbeIndex = static_cast<char>(std::to_integer<unsigned char>(record[3]));
             surface.primaryLightIndex = static_cast<char>(std::to_integer<unsigned char>(record[4]));
             surface.flags = static_cast<char>(std::to_integer<unsigned char>(record[5]));
@@ -2367,6 +2693,21 @@ namespace
             surface.tris.vertexCount = ReadU16(record, 16uz);
             surface.tris.triCount = static_cast<uint16_t>(ReadU16(record, 18uz) / 3u);
             surface.tris.baseIndex = ReadI32(record, 20uz);
+
+            if (rawLightmapIndex != SKY_LIGHTMAP_INDEX && rawLightmapIndex < lightmapLayout.atlasIndexForRawPage.size())
+            {
+                const auto atlasIndex = lightmapLayout.atlasIndexForRawPage[rawLightmapIndex];
+                const auto packedSlot = lightmapLayout.packedSlotForRawPage[rawLightmapIndex];
+                if (atlasIndex < lightmapLayout.groups.size())
+                {
+                    // Raw BSP surfaces reference original lightmap pages. The
+                    // linker replaces that with the merged runtime atlas index
+                    // and folds the original page slot into vertex lmap UVs.
+                    surface.lightmapIndex = static_cast<char>(atlasIndex);
+                    ApplySurfaceLightmapRemap(world, surface, lightmapLayout.groups[atlasIndex], packedSlot, vertexLightmapRemaps);
+                }
+            }
+
             PopulateSurfaceBounds(world, surface);
         }
 
@@ -2407,10 +2748,81 @@ namespace
         return imageInfo;
     }
 
+    [[nodiscard]] std::string LightmapImageName(const unsigned lightmapIndex, const std::string_view suffix)
+    {
+        return std::format("*lightmap{}_{}", lightmapIndex, suffix);
+    }
+
+    void CopyPrimaryLightmapRawPageToAtlas(
+        std::vector<std::byte>& out, const std::byte* page, const LightmapAtlasGroup& group, const unsigned packedSlot)
+    {
+        const auto atlasWidth = static_cast<size_t>(group.wideCount) * LIGHTMAP_PRIMARY_RAW_WIDTH;
+        const auto slotX = packedSlot % group.wideCount;
+        const auto slotY = packedSlot / group.wideCount;
+        const auto* source = page + LIGHTMAP_SECONDARY_RAW_PAGE_SIZE;
+        const auto destinationX = static_cast<size_t>(slotX) * LIGHTMAP_PRIMARY_RAW_WIDTH;
+        const auto destinationY = static_cast<size_t>(slotY) * LIGHTMAP_PRIMARY_RAW_HEIGHT;
+
+        for (auto row = 0u; row < LIGHTMAP_PRIMARY_RAW_HEIGHT; row++)
+        {
+            const auto destinationOffset = (destinationY + row) * atlasWidth + destinationX;
+            std::memcpy(out.data() + destinationOffset, source + static_cast<size_t>(row) * LIGHTMAP_PRIMARY_RAW_WIDTH, LIGHTMAP_PRIMARY_RAW_WIDTH);
+        }
+    }
+
+    void CopySecondaryLightmapRawPageToAtlas(
+        std::vector<std::byte>& out, const std::byte* page, const LightmapAtlasGroup& group, const unsigned packedSlot)
+    {
+        const auto atlasStride = static_cast<size_t>(group.wideCount) * LIGHTMAP_SECONDARY_RAW_WIDTH * LIGHTMAP_SECONDARY_PIXEL_SIZE;
+        const auto slotX = packedSlot % group.wideCount;
+        const auto slotY = packedSlot / group.wideCount;
+        const auto destinationX = static_cast<size_t>(slotX) * LIGHTMAP_SECONDARY_RAW_WIDTH * LIGHTMAP_SECONDARY_PIXEL_SIZE;
+        constexpr auto rowSize = static_cast<size_t>(LIGHTMAP_SECONDARY_RAW_WIDTH) * LIGHTMAP_SECONDARY_PIXEL_SIZE;
+
+        // Runtime secondary lightmaps keep all page top halves first, followed
+        // by all bottom halves. This is the inverse of the raw page layout.
+        for (auto row = 0u; row < LIGHTMAP_SECONDARY_HALF_HEIGHT; row++)
+        {
+            const auto destinationY = static_cast<size_t>(slotY) * LIGHTMAP_SECONDARY_HALF_HEIGHT + row;
+            const auto destinationOffset = destinationY * atlasStride + destinationX;
+            std::memcpy(out.data() + destinationOffset, page + static_cast<size_t>(row) * rowSize, rowSize);
+        }
+
+        for (auto row = 0u; row < LIGHTMAP_SECONDARY_HALF_HEIGHT; row++)
+        {
+            const auto destinationY = static_cast<size_t>(group.highCount + slotY) * LIGHTMAP_SECONDARY_HALF_HEIGHT + row;
+            const auto destinationOffset = destinationY * atlasStride + destinationX;
+            const auto sourceOffset = static_cast<size_t>(LIGHTMAP_SECONDARY_HALF_HEIGHT + row) * rowSize;
+            std::memcpy(out.data() + destinationOffset, page + sourceOffset, rowSize);
+        }
+    }
+
+    [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
+        BuildLightmapAtlasImages(const IW3::d3dbsp::Lump& lightmaps, const LightmapAtlasGroup& group)
+    {
+        const auto primaryAtlasSize =
+            static_cast<size_t>(group.wideCount) * LIGHTMAP_PRIMARY_RAW_WIDTH * static_cast<size_t>(group.highCount) * LIGHTMAP_PRIMARY_RAW_HEIGHT;
+        const auto secondaryAtlasSize = static_cast<size_t>(group.wideCount) * LIGHTMAP_SECONDARY_RAW_WIDTH * LIGHTMAP_SECONDARY_PIXEL_SIZE
+                                        * static_cast<size_t>(group.highCount) * LIGHTMAP_SECONDARY_RAW_HEIGHT;
+
+        std::vector<std::byte> primary(primaryAtlasSize);
+        std::vector<std::byte> secondary(secondaryAtlasSize);
+
+        for (auto packedSlot = 0uz; packedSlot < group.rawPageForPackedSlot.size(); packedSlot++)
+        {
+            const auto rawPage = group.rawPageForPackedSlot[packedSlot];
+            const auto* page = lightmaps.data.data() + static_cast<size_t>(rawPage) * LIGHTMAP_RAW_PAGE_SIZE;
+            CopySecondaryLightmapRawPageToAtlas(secondary, page, group, static_cast<unsigned>(packedSlot));
+            CopyPrimaryLightmapRawPageToAtlas(primary, page, group, static_cast<unsigned>(packedSlot));
+        }
+
+        return std::make_pair(std::move(primary), std::move(secondary));
+    }
+
     [[nodiscard]] bool PopulateWorldLightmaps(
         GfxWorld& world,
-        const std::string& assetName,
         const IW3::d3dbsp::File& bsp,
+        const LightmapAtlasLayout& lightmapLayout,
         AssetCreationContext& context,
         AssetRegistration<AssetGfxWorld>& registration,
         MemoryManager& memory,
@@ -2426,44 +2838,48 @@ namespace
             return false;
         }
 
-        const auto pageCount = lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE;
-        world.lightmapCount = static_cast<int>(pageCount);
-        world.lightmaps = AllocZeroed<GfxLightmapArray>(memory, pageCount);
-
-        for (auto pageIndex = 0uz; pageIndex < pageCount; pageIndex++)
+        const auto pageCount = static_cast<unsigned>(lightmaps->data.size() / LIGHTMAP_RAW_PAGE_SIZE);
+        if (pageCount != lightmapLayout.rawPageCount)
         {
-            const auto* page = lightmaps->data.data() + pageIndex * LIGHTMAP_RAW_PAGE_SIZE;
-            const auto* secondaryData = page;
-            const auto* primaryData = page + LIGHTMAP_SECONDARY_RAW_PAGE_SIZE;
+            error = "lightmap atlas layout does not match lightmap lump";
+            return false;
+        }
 
-            const auto primaryName = GeneratedImageName(assetName, "lightmap_primary", pageIndex);
-            const auto secondaryName = GeneratedImageName(assetName, "lightmap_secondary", pageIndex);
+        world.lightmapCount = static_cast<int>(lightmapLayout.groups.size());
+        world.lightmaps = AllocZeroed<GfxLightmapArray>(memory, lightmapLayout.groups.size());
+
+        for (auto lightmapIndex = 0uz; lightmapIndex < lightmapLayout.groups.size(); lightmapIndex++)
+        {
+            const auto& group = lightmapLayout.groups[lightmapIndex];
+            const auto [primaryPixels, secondaryPixels] = BuildLightmapAtlasImages(*lightmaps, group);
+            const auto primaryName = LightmapImageName(static_cast<unsigned>(lightmapIndex), "primary");
+            const auto secondaryName = LightmapImageName(static_cast<unsigned>(lightmapIndex), "secondary");
             constexpr auto lightmapFlags = static_cast<char>(image::iwi6::IMG_FLAG_NOMIPMAPS);
 
             auto* primary = CreateGeneratedImage(memory,
                                                  primaryName,
                                                  MAPTYPE_2D,
-                                                 TS_COLOR_MAP,
+                                                 TS_FUNCTION,
                                                  IMG_CATEGORY_LIGHTMAP,
-                                                 LIGHTMAP_PRIMARY_RAW_WIDTH,
-                                                 LIGHTMAP_PRIMARY_RAW_HEIGHT,
+                                                 static_cast<uint16_t>(group.wideCount * LIGHTMAP_PRIMARY_RAW_WIDTH),
+                                                 static_cast<uint16_t>(group.highCount * LIGHTMAP_PRIMARY_RAW_HEIGHT),
                                                  1u,
-                                                 oat::D3DFMT_A8,
+                                                 oat::D3DFMT_L8,
                                                  lightmapFlags,
-                                                 primaryData,
-                                                 LIGHTMAP_PRIMARY_RAW_PAGE_SIZE);
+                                                 primaryPixels.data(),
+                                                 primaryPixels.size());
             auto* secondary = CreateGeneratedImage(memory,
                                                    secondaryName,
                                                    MAPTYPE_2D,
-                                                   TS_COLOR_MAP,
+                                                   TS_FUNCTION,
                                                    IMG_CATEGORY_LIGHTMAP,
-                                                   LIGHTMAP_SECONDARY_RAW_WIDTH,
-                                                   LIGHTMAP_SECONDARY_RAW_HEIGHT,
+                                                   static_cast<uint16_t>(group.wideCount * LIGHTMAP_SECONDARY_RAW_WIDTH),
+                                                   static_cast<uint16_t>(group.highCount * LIGHTMAP_SECONDARY_RAW_HEIGHT),
                                                    1u,
                                                    oat::D3DFMT_A8R8G8B8,
                                                    lightmapFlags,
-                                                   secondaryData,
-                                                   LIGHTMAP_SECONDARY_RAW_PAGE_SIZE);
+                                                   secondaryPixels.data(),
+                                                   secondaryPixels.size());
 
             auto* primaryInfo = AddGeneratedImage(context, registration, primaryName, primary);
             auto* secondaryInfo = AddGeneratedImage(context, registration, secondaryName, secondary);
@@ -2473,8 +2889,8 @@ namespace
                 return false;
             }
 
-            world.lightmaps[pageIndex].primary = primaryInfo->Asset();
-            world.lightmaps[pageIndex].secondary = secondaryInfo->Asset();
+            world.lightmaps[lightmapIndex].primary = primaryInfo->Asset();
+            world.lightmaps[lightmapIndex].secondary = secondaryInfo->Asset();
         }
 
         return true;
@@ -3572,6 +3988,13 @@ namespace
             const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
             const auto staticModelDependencies = LoadStaticModelDependencies(staticModelBlocks, context);
 
+            LightmapAtlasLayout lightmapLayout;
+            if (!BuildLightmapAtlasLayout(*bsp, lightmapLayout, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
             auto* world = AllocZeroed<GfxWorld>(m_memory);
             world->name = m_memory.Dup(assetName.c_str());
             const auto baseName = BspBaseName(assetName);
@@ -3596,13 +4019,14 @@ namespace
             const auto* clipMap = clipMapDependency->Asset();
             if (!PopulateWorldDpvsPlanes(*world, clipMap, m_memory, error) || !PopulateWorldIndices(*world, *bsp, m_memory, error)
                 || !PopulateWorldVertices(*world, *bsp, m_memory, error)
-                || !PopulateWorldSurfaces(*world, *bsp, materialDependencies, m_memory, error) || !PopulateWorldVertexLayerData(*world, *bsp, m_memory, error)
+                || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error)
+                || !PopulateWorldVertexLayerData(*world, *bsp, m_memory, error)
                 || !PopulateWorldModels(*world, *bsp, m_memory, error) || !PopulateWorldCells(*world, *bsp, m_memory, error)
                 || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldLightGrid(*world, *bsp, m_memory, error)
                 || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
                 || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
-                || !PopulateWorldLightmaps(*world, assetName, *bsp, context, registration, m_memory, error)
+                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error)
                 || !PopulateWorldReflectionProbes(*world, assetName, *bsp, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
