@@ -51,6 +51,7 @@ namespace
     constexpr auto RAW_BRUSH_HEADER_SIZE = 4uz;
     constexpr auto RAW_CLIP_NODE_SIZE = 36uz;
     constexpr auto RAW_LEAF_SIZE = 24uz;
+    constexpr auto RAW_LEAF_CELL_INDEX_OFFSET = 20uz;
     constexpr auto RAW_LEAF_BRUSH_SIZE = 4uz;
     constexpr auto RAW_VEC3_SIZE = 12uz;
     constexpr auto RAW_TRI_INDICES_SIZE = 6uz;
@@ -2847,6 +2848,11 @@ namespace
 
         world.lightmapCount = static_cast<int>(lightmapLayout.groups.size());
         world.lightmaps = AllocZeroed<GfxLightmapArray>(memory, lightmapLayout.groups.size());
+        // These arrays are runtime handles. The fastfile DB loader only
+        // allocates them when the serialized pointers are non-null; R_LoadWorld
+        // fills them from the generated lightmap images after loading.
+        world.lightmapPrimaryTextures = AllocZeroed<GfxTexture>(memory, lightmapLayout.groups.size());
+        world.lightmapSecondaryTextures = AllocZeroed<GfxTexture>(memory, lightmapLayout.groups.size());
 
         for (auto lightmapIndex = 0uz; lightmapIndex < lightmapLayout.groups.size(); lightmapIndex++)
         {
@@ -2909,9 +2915,42 @@ namespace
         }
     }
 
+    [[nodiscard]] bool CreateDefaultReflectionProbe(
+        GfxWorld& world, AssetCreationContext& context, AssetRegistration<AssetGfxWorld>& registration, MemoryManager& memory, std::string& error)
+    {
+        auto* image = CreateGeneratedImage(memory,
+                                           "*reflection_probe0",
+                                           MAPTYPE_CUBE,
+                                           TS_COLOR_MAP,
+                                           IMG_CATEGORY_AUTO_GENERATED,
+                                           REFLECTION_PROBE_SIZE,
+                                           REFLECTION_PROBE_SIZE,
+                                           1u,
+                                           oat::D3DFMT_A8R8G8B8,
+                                           static_cast<char>(image::iwi6::IMG_FLAG_CUBEMAP),
+                                           nullptr,
+                                           REFLECTION_PROBE_RAW_DATA_SIZE);
+
+        // R_CreateDefaultProbe fills the raw probe with 0xFFFF0000 pixels, then
+        // runs it through the same reflection image generation path as authored
+        // probes. In raw byte order that is RGB 0,0,255.
+        const auto transformed = TransformReflectionProbeColor(0u, 0u, 255u);
+        for (auto pixelOffset = 0uz; pixelOffset < REFLECTION_PROBE_RAW_DATA_SIZE; pixelOffset += sizeof(uint32_t))
+            std::memcpy(image->texture.loadDef->data + pixelOffset, &transformed, sizeof(transformed));
+
+        auto* imageInfo = AddGeneratedImage(context, registration, image->name, image);
+        if (!imageInfo)
+        {
+            error = "could not register generated default reflection probe image";
+            return false;
+        }
+
+        world.reflectionProbes[0].reflectionImage = imageInfo->Asset();
+        return true;
+    }
+
     [[nodiscard]] bool PopulateWorldReflectionProbes(
         GfxWorld& world,
-        const std::string& assetName,
         const IW3::d3dbsp::File& bsp,
         AssetCreationContext& context,
         AssetRegistration<AssetGfxWorld>& registration,
@@ -2923,7 +2962,8 @@ namespace
         {
             world.reflectionProbeCount = 1u;
             world.reflectionProbes = AllocZeroed<GfxReflectionProbe>(memory, 1uz);
-            return true;
+            world.reflectionProbeTextures = AllocZeroed<GfxTexture>(memory, 1uz);
+            return CreateDefaultReflectionProbe(world, context, registration, memory, error);
         }
 
         if (reflectionProbes->data.size() % REFLECTION_PROBE_RECORD_SIZE != 0uz || !FitsUnsigned(reflectionProbes->data.size() / REFLECTION_PROBE_RECORD_SIZE + 1uz))
@@ -2935,6 +2975,13 @@ namespace
         const auto rawProbeCount = reflectionProbes->data.size() / REFLECTION_PROBE_RECORD_SIZE;
         world.reflectionProbeCount = static_cast<unsigned>(rawProbeCount + 1uz);
         world.reflectionProbes = AllocZeroed<GfxReflectionProbe>(memory, world.reflectionProbeCount);
+        // The fastfile DB loader only allocates this runtime array when the
+        // serialized pointer is non-null. R_LoadWorld then fills it from each
+        // probe image's basemap after the world has been loaded.
+        world.reflectionProbeTextures = AllocZeroed<GfxTexture>(memory, world.reflectionProbeCount);
+
+        if (!CreateDefaultReflectionProbe(world, context, registration, memory, error))
+            return false;
 
         for (auto rawProbeIndex = 0uz; rawProbeIndex < rawProbeCount; rawProbeIndex++)
         {
@@ -2943,7 +2990,7 @@ namespace
             auto& probe = world.reflectionProbes[probeIndex];
             CopyFloat3(record, probe.origin);
 
-            const auto imageName = GeneratedImageName(assetName, "reflection_probe", probeIndex);
+            const auto imageName = std::format("*reflection_probe{}", probeIndex);
             auto* image = CreateGeneratedImage(memory,
                                                imageName,
                                                MAPTYPE_CUBE,
@@ -3354,6 +3401,19 @@ namespace
         return true;
     }
 
+    [[nodiscard]] bool PopulateWorldShadowGeometry(GfxWorld& world, MemoryManager& memory)
+    {
+        if (world.primaryLightCount == 0u || world.shadowGeom)
+            return true;
+
+        // R_AllocShadowGeometryHeaderMemory creates one zeroed header per
+        // primary light while loading raw BSPs. Fastfile loading expects that
+        // array to already exist before R_SetPrimaryLightShadowSurfaces clears
+        // and rebuilds the surface counts at runtime.
+        world.shadowGeom = AllocZeroed<GfxShadowGeometry>(memory, world.primaryLightCount);
+        return true;
+    }
+
     void PopulateStaticModelGroundLighting(const EntityBlock& block, GfxStaticModelInst& inst, GfxStaticModelDrawInst& drawInst)
     {
         const auto gndLt = EntityField(block, "gndLt");
@@ -3606,7 +3666,202 @@ namespace
         }
     }
 
-    [[nodiscard]] bool PopulateWorldDpvsPlanes(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
+    struct DpvsNodeLoad
+    {
+        int planeIndex = -1;
+        int children[2]{};
+        int cellIndex = -2;
+    };
+
+    [[nodiscard]] bool SetDpvsNodeCells_r(std::vector<DpvsNodeLoad>& nodes, std::vector<uint8_t>& visitState, const size_t nodeIndex, const size_t rawNodeCount)
+    {
+        if (nodeIndex >= nodes.size())
+            return false;
+
+        if (nodeIndex >= rawNodeCount)
+            return true;
+
+        if (visitState[nodeIndex] == 1u)
+            return false;
+
+        if (visitState[nodeIndex] == 2u)
+            return true;
+
+        visitState[nodeIndex] = 1u;
+        auto& node = nodes[nodeIndex];
+        if (!SetDpvsNodeCells_r(nodes, visitState, static_cast<size_t>(node.children[0]), rawNodeCount)
+            || !SetDpvsNodeCells_r(nodes, visitState, static_cast<size_t>(node.children[1]), rawNodeCount))
+        {
+            return false;
+        }
+
+        node.cellIndex = -2;
+        if (nodes[static_cast<size_t>(node.children[0])].cellIndex == nodes[static_cast<size_t>(node.children[1])].cellIndex)
+            node.cellIndex = nodes[static_cast<size_t>(node.children[0])].cellIndex;
+
+        visitState[nodeIndex] = 2u;
+        return true;
+    }
+
+    [[nodiscard]] bool CountDpvsNodeStream_r(const std::vector<DpvsNodeLoad>& nodes, const size_t nodeIndex, size_t& count)
+    {
+        if (nodeIndex >= nodes.size())
+            return false;
+
+        const auto& node = nodes[nodeIndex];
+        if (node.cellIndex != -2)
+        {
+            count++;
+            return true;
+        }
+
+        count += 2uz;
+        return CountDpvsNodeStream_r(nodes, static_cast<size_t>(node.children[0]), count)
+               && CountDpvsNodeStream_r(nodes, static_cast<size_t>(node.children[1]), count);
+    }
+
+    [[nodiscard]] bool WriteDpvsNodeStream_r(
+        const std::vector<DpvsNodeLoad>& nodes,
+        const size_t nodeIndex,
+        const int cellCount,
+        uint16_t*& out)
+    {
+        const auto& node = nodes[nodeIndex];
+        if (node.cellIndex != -2)
+        {
+            const auto cellValue = node.cellIndex + 1;
+            if (cellValue < 0 || cellValue > static_cast<int>(std::numeric_limits<uint16_t>::max()))
+                return false;
+
+            *out++ = static_cast<uint16_t>(cellValue);
+            return true;
+        }
+
+        const auto internalValue = cellCount + node.planeIndex + 1;
+        if (internalValue < 0 || internalValue > static_cast<int>(std::numeric_limits<uint16_t>::max()))
+            return false;
+
+        auto* current = out;
+        *out++ = static_cast<uint16_t>(internalValue);
+        auto* rightChildOffset = out++;
+
+        if (!WriteDpvsNodeStream_r(nodes, static_cast<size_t>(node.children[0]), cellCount, out))
+            return false;
+
+        const auto offset = static_cast<size_t>(out - current);
+        if (!FitsUint16(offset))
+            return false;
+
+        *rightChildOffset = static_cast<uint16_t>(offset);
+        return WriteDpvsNodeStream_r(nodes, static_cast<size_t>(node.children[1]), cellCount, out);
+    }
+
+    [[nodiscard]] bool PopulateWorldDpvsNodes(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* rawNodes = bsp.GetLump(LUMP_NODES);
+        const auto* rawLeafs = bsp.GetLump(LUMP_LEAFS);
+        if (!rawNodes || rawNodes->data.empty() || !rawLeafs || rawLeafs->data.empty())
+        {
+            if (world.dpvsPlanes.cellCount <= 0)
+                return true;
+
+            // A valid runtime world still needs a root node for bounds-to-cell
+            // filtering. A single leaf routes all dynamic entities to cell 0.
+            world.nodeCount = 1;
+            world.dpvsPlanes.nodes = AllocZeroed<uint16_t>(memory, 1uz);
+            world.dpvsPlanes.nodes[0] = 1u;
+            return true;
+        }
+
+        if (rawNodes->data.size() % RAW_CLIP_NODE_SIZE != 0uz || rawLeafs->data.size() % RAW_LEAF_SIZE != 0uz)
+        {
+            error = "world node/leaf lump has funny size";
+            return false;
+        }
+
+        const auto rawNodeCount = RecordCount(*rawNodes, RAW_CLIP_NODE_SIZE);
+        const auto rawLeafCount = RecordCount(*rawLeafs, RAW_LEAF_SIZE);
+        if (rawNodeCount == 0uz || rawLeafCount == 0uz)
+        {
+            error = "world node tree is empty";
+            return false;
+        }
+
+        if (!FitsInt(rawNodeCount) || rawLeafCount > std::numeric_limits<size_t>::max() - rawNodeCount || !FitsInt(rawNodeCount + rawLeafCount))
+        {
+            error = "world node tree is too large";
+            return false;
+        }
+
+        std::vector<DpvsNodeLoad> nodes(rawNodeCount + rawLeafCount);
+        for (auto nodeIndex = 0uz; nodeIndex < rawNodeCount; nodeIndex++)
+        {
+            const auto* record = rawNodes->data.data() + nodeIndex * RAW_CLIP_NODE_SIZE;
+            auto& node = nodes[nodeIndex];
+            node.planeIndex = ReadI32(record);
+            node.cellIndex = -2;
+
+            if (node.planeIndex < 0 || node.planeIndex >= world.planeCount)
+            {
+                error = "world node references invalid plane";
+                return false;
+            }
+
+            for (auto childIndex = 0uz; childIndex < 2uz; childIndex++)
+            {
+                const auto rawChild = ReadI32(record, 4uz + childIndex * sizeof(int32_t));
+                const auto convertedChild = rawChild < 0 ? static_cast<int64_t>(rawNodeCount) - 1ll - rawChild : static_cast<int64_t>(rawChild);
+                if (convertedChild < 0 || static_cast<size_t>(convertedChild) >= nodes.size())
+                {
+                    error = "world node references invalid child";
+                    return false;
+                }
+
+                node.children[childIndex] = static_cast<int>(convertedChild);
+            }
+        }
+
+        for (auto leafIndex = 0uz; leafIndex < rawLeafCount; leafIndex++)
+        {
+            const auto cellIndex = ReadI32(rawLeafs->data.data() + leafIndex * RAW_LEAF_SIZE, RAW_LEAF_CELL_INDEX_OFFSET);
+            if (cellIndex < -1 || cellIndex >= world.dpvsPlanes.cellCount)
+            {
+                error = "world leaf references invalid cell";
+                return false;
+            }
+
+            nodes[rawNodeCount + leafIndex].cellIndex = cellIndex;
+        }
+
+        std::vector<uint8_t> visitState(rawNodeCount);
+        if (!SetDpvsNodeCells_r(nodes, visitState, 0uz, rawNodeCount))
+        {
+            error = "world node tree is cyclic or invalid";
+            return false;
+        }
+
+        auto streamCount = 0uz;
+        if (!CountDpvsNodeStream_r(nodes, 0uz, streamCount) || !FitsInt(streamCount))
+        {
+            error = "world node stream is too large";
+            return false;
+        }
+
+        world.nodeCount = static_cast<int>(streamCount);
+        world.dpvsPlanes.nodes = AllocZeroed<uint16_t>(memory, streamCount);
+
+        auto* out = world.dpvsPlanes.nodes;
+        if (!WriteDpvsNodeStream_r(nodes, 0uz, world.dpvsPlanes.cellCount, out) || static_cast<size_t>(out - world.dpvsPlanes.nodes) != streamCount)
+        {
+            error = "world node stream could not be packed";
+            return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldDpvsPlanes(
+        GfxWorld& world, const clipMap_t* clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         if (!clipMap)
             return true;
@@ -3618,13 +3873,7 @@ namespace
             std::memcpy(world.dpvsPlanes.planes, clipMap->planes, static_cast<size_t>(clipMap->planeCount) * sizeof(cplane_s));
         }
 
-        if (clipMap->numNodes > 0u && !FitsInt(clipMap->numNodes))
-        {
-            error = "too many clipmap nodes for gfxworld";
-            return false;
-        }
-
-        return true;
+        return PopulateWorldDpvsNodes(world, bsp, memory, error);
     }
 
     class ClipMapPvsLoader final : public AssetCreator<AssetClipMapPvs>
@@ -4025,17 +4274,17 @@ namespace
             }
 
             const auto* clipMap = clipMapDependency->Asset();
-            if (!PopulateWorldDpvsPlanes(*world, clipMap, m_memory, error) || !PopulateWorldIndices(*world, *bsp, m_memory, error)
-                || !PopulateWorldVertices(*world, *bsp, m_memory, error)
+            if (!PopulateWorldIndices(*world, *bsp, m_memory, error) || !PopulateWorldVertices(*world, *bsp, m_memory, error)
                 || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error)
                 || !PopulateWorldVertexLayerData(*world, *bsp, m_memory, error)
                 || !PopulateWorldModels(*world, *bsp, m_memory, error) || !PopulateWorldCells(*world, *bsp, m_memory, error)
-                || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldLightGrid(*world, *bsp, m_memory, error)
-                || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
+                || !PopulateWorldDpvsPlanes(*world, clipMap, *bsp, m_memory, error)
+                || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldShadowGeometry(*world, m_memory)
+                || !PopulateWorldLightGrid(*world, *bsp, m_memory, error) || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
                 || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
                 || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error)
-                || !PopulateWorldReflectionProbes(*world, assetName, *bsp, context, registration, m_memory, error))
+                || !PopulateWorldReflectionProbes(*world, *bsp, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
