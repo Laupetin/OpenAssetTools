@@ -63,6 +63,7 @@ namespace
     constexpr auto RAW_WORLD_VERTEX_SIZE = 68uz;
     constexpr auto RAW_WORLD_AABB_TREE_SIZE = 12uz;
     constexpr auto RAW_WORLD_CELL_SIZE = 112uz;
+    constexpr auto RAW_WORLD_PORTAL_SIZE = 16uz;
     constexpr auto RAW_LIGHTGRID_ENTRY_SIZE = sizeof(GfxLightGridEntry);
     constexpr auto RAW_LIGHTGRID_COLOR_SIZE = sizeof(GfxLightGridColors);
     constexpr auto RAW_LIGHT_REGION_HULL_SIZE = 76uz;
@@ -175,6 +176,41 @@ namespace
             return 0uz;
 
         return world.primaryLightCount - world.sunPrimaryLightIndex - 1u;
+    }
+
+    [[nodiscard]] unsigned char U8(const char value)
+    {
+        return static_cast<unsigned char>(value);
+    }
+
+    [[nodiscard]] const MaterialTechniqueSet* TechniqueSetForMaterial(const Material* material)
+    {
+        if (!material || !material->techniqueSet)
+            return nullptr;
+
+        return material->techniqueSet->remappedTechniqueSet ? material->techniqueSet->remappedTechniqueSet : material->techniqueSet;
+    }
+
+    [[nodiscard]] bool MaterialHasTechnique(const Material* material, const MaterialTechniqueType techniqueType)
+    {
+        const auto* techniqueSet = TechniqueSetForMaterial(material);
+        if (!techniqueSet)
+            return false;
+
+        const auto index = static_cast<size_t>(techniqueType);
+        if (index >= static_cast<size_t>(TECHNIQUE_COUNT))
+            return false;
+
+        return techniqueSet->techniques[index] != nullptr;
+    }
+
+    [[nodiscard]] unsigned char SamplerStateByte(const MaterialTextureDefSamplerState& samplerState)
+    {
+        return static_cast<unsigned char>((samplerState.filter & SAMPLER_FILTER_MASK)
+                                          | ((samplerState.mipMap & SAMPLER_MIPMAP_COUNT) << SAMPLER_MIPMAP_SHIFT)
+                                          | (samplerState.clampU ? SAMPLER_CLAMP_U : 0)
+                                          | (samplerState.clampV ? SAMPLER_CLAMP_V : 0)
+                                          | (samplerState.clampW ? SAMPLER_CLAMP_W : 0));
     }
 
     [[nodiscard]] bool ValidateRecordLump(
@@ -354,6 +390,44 @@ namespace
         return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
     }
 
+    [[nodiscard]] float LengthSquared(const float (&value)[3])
+    {
+        return DotProduct(value, value);
+    }
+
+    void Normalize(float (&value)[3])
+    {
+        const auto lengthSq = LengthSquared(value);
+        if (lengthSq <= 0.0f)
+            return;
+
+        const auto invLength = 1.0f / std::sqrt(lengthSq);
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            value[axis] *= invLength;
+    }
+
+    void PerpendicularVector(const float (&source)[3], float (&destination)[3])
+    {
+        auto bestAxis = 0uz;
+        auto bestAbs = std::fabs(source[0]);
+        for (auto axis = 1uz; axis < 3uz; axis++)
+        {
+            const auto currentAbs = std::fabs(source[axis]);
+            if (currentAbs < bestAbs)
+            {
+                bestAxis = axis;
+                bestAbs = currentAbs;
+            }
+        }
+
+        float temp[3]{};
+        temp[bestAxis] = 1.0f;
+        const auto projection = DotProduct(temp, source);
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            destination[axis] = temp[axis] - projection * source[axis];
+        Normalize(destination);
+    }
+
     [[nodiscard]] uint8_t ClampToByte(const int value)
     {
         return static_cast<uint8_t>(std::clamp(value, 0, 255));
@@ -419,6 +493,11 @@ namespace
     [[nodiscard]] std::string GeneratedImageName(const std::string& assetName, const std::string_view kind, const size_t index)
     {
         return std::format("{}_{}_{}", assetName, kind, index);
+    }
+
+    [[nodiscard]] std::string OutdoorImageName()
+    {
+        return "$outdoor";
     }
 
     [[nodiscard]] GfxImageLoadDef* CreateLoadDef(
@@ -2505,6 +2584,24 @@ namespace
         }
     }
 
+    void ClearBounds(float (&mins)[3], float (&maxs)[3])
+    {
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            mins[axis] = 131072.0f;
+            maxs[axis] = -131072.0f;
+        }
+    }
+
+    void ExpandBounds(const float (&addedMins)[3], const float (&addedMaxs)[3], float (&mins)[3], float (&maxs)[3])
+    {
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            mins[axis] = std::min(mins[axis], addedMins[axis]);
+            maxs[axis] = std::max(maxs[axis], addedMaxs[axis]);
+        }
+    }
+
     [[nodiscard]] bool PopulateWorldIndices(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         const auto* indices = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_INDICES, LUMP_LAYERED_INDICES);
@@ -2712,15 +2809,67 @@ namespace
             PopulateSurfaceBounds(world, surface);
         }
 
-        if (world.surfaceCount > 0)
+        return true;
+    }
+
+    void PopulateWorldMaterialMemory(GfxWorld& world, MemoryManager& memory)
+    {
+        struct MaterialUsage
         {
-            const auto sortedSurfIndexCount = static_cast<size_t>(world.dpvs.staticSurfaceCount + world.dpvs.staticSurfaceCountNoDecal);
-            world.dpvs.sortedSurfIndex = AllocZeroed<uint16_t>(memory, sortedSurfIndexCount);
-            for (auto i = 0uz; i < sortedSurfIndexCount; i++)
-                world.dpvs.sortedSurfIndex[i] = static_cast<uint16_t>(std::min(i % static_cast<size_t>(world.surfaceCount), static_cast<size_t>(UINT16_MAX)));
+            Material* material = nullptr;
+            int memory = 0;
+            std::vector<int> firstVertices;
+        };
+
+        std::array<MaterialUsage, 2048> usages;
+        if (!world.dpvs.surfaces || world.surfaceCount <= 0)
+            return;
+
+        for (auto surfaceIndex = 0; surfaceIndex < world.surfaceCount; surfaceIndex++)
+        {
+            const auto& surface = world.dpvs.surfaces[surfaceIndex];
+            auto* material = surface.material;
+            if (!material || material->info.hashIndex >= usages.size())
+                continue;
+
+            auto& usage = usages[material->info.hashIndex];
+            usage.material = material;
+            // R_MaterialUsage accounts for the surface header, index payload,
+            // and a fixed per-surface cost. Vertex data is charged once for
+            // each unique firstVertex used by that material.
+            usage.memory += static_cast<int>(6u * surface.tris.triCount + 16u + 48u);
+
+            const auto existingVertexRange = std::find(usage.firstVertices.begin(), usage.firstVertices.end(), surface.tris.firstVertex);
+            if (existingVertexRange == usage.firstVertices.end())
+            {
+                usage.firstVertices.emplace_back(surface.tris.firstVertex);
+                usage.memory += 44 * surface.tris.vertexCount;
+            }
         }
 
-        return true;
+        auto materialMemoryCount = 0uz;
+        for (const auto& usage : usages)
+        {
+            if (usage.memory != 0)
+                materialMemoryCount++;
+        }
+
+        if (materialMemoryCount == 0uz)
+            return;
+
+        world.materialMemoryCount = static_cast<int>(materialMemoryCount);
+        world.materialMemory = AllocZeroed<MaterialMemory>(memory, materialMemoryCount);
+
+        auto outIndex = 0uz;
+        for (const auto& usage : usages)
+        {
+            if (usage.memory == 0)
+                continue;
+
+            world.materialMemory[outIndex].material = usage.material;
+            world.materialMemory[outIndex].memory = usage.memory;
+            outIndex++;
+        }
     }
 
     [[nodiscard]] bool PopulateWorldVertexLayerData(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
@@ -3089,6 +3238,84 @@ namespace
         return true;
     }
 
+    [[nodiscard]] std::optional<size_t>
+        FinishWorldAabbTree_r(const GfxWorld& world, GfxAabbTree* trees, const size_t treeIndex, size_t totalTreesUsed, const size_t treeCount, std::string& error)
+    {
+        auto& tree = trees[treeIndex];
+        ClearBounds(tree.mins, tree.maxs);
+
+        if (tree.childCount > 0u)
+        {
+            const auto childStart = totalTreesUsed;
+            const auto childCount = static_cast<size_t>(tree.childCount);
+            if (childStart + childCount > treeCount)
+            {
+                error = std::format("AABB tree {} children extend past tree count", treeIndex);
+                return std::nullopt;
+            }
+
+            // Raw BSP AABB trees are stored as a flat list. The linker turns
+            // each parent into a byte offset to the contiguous child group;
+            // runtime mark/DPVS walks use ((char*)tree + childrenOffset).
+            tree.childrenOffset = static_cast<int>(reinterpret_cast<const char*>(&trees[childStart]) - reinterpret_cast<const char*>(&tree));
+
+            totalTreesUsed += childCount;
+            for (auto childIndex = 0uz; childIndex < childCount; childIndex++)
+            {
+                const auto childTreeIndex = childStart + childIndex;
+                const auto nextTree = FinishWorldAabbTree_r(world, trees, childTreeIndex, totalTreesUsed, treeCount, error);
+                if (!nextTree)
+                    return std::nullopt;
+
+                totalTreesUsed = *nextTree;
+                ExpandBounds(trees[childTreeIndex].mins, trees[childTreeIndex].maxs, tree.mins, tree.maxs);
+            }
+        }
+        else
+        {
+            const auto startSurface = static_cast<size_t>(tree.startSurfIndex);
+            const auto surfaceCount = static_cast<size_t>(tree.surfaceCount);
+            if (startSurface + surfaceCount > static_cast<size_t>(world.surfaceCount))
+            {
+                error = std::format("AABB tree {} surface range is outside world surfaces", treeIndex);
+                return std::nullopt;
+            }
+
+            for (auto surfaceOffset = 0uz; surfaceOffset < surfaceCount; surfaceOffset++)
+                ExpandBounds(world.dpvs.surfaces[startSurface + surfaceOffset].bounds[0],
+                             world.dpvs.surfaces[startSurface + surfaceOffset].bounds[1],
+                             tree.mins,
+                             tree.maxs);
+        }
+
+        return totalTreesUsed;
+    }
+
+    [[nodiscard]] bool FinishWorldAabbTrees(const GfxWorld& world, GfxAabbTree* trees, const size_t treeCount, std::string& error)
+    {
+        auto treeIndex = 0uz;
+        while (treeIndex < treeCount)
+        {
+            const auto nextTree = FinishWorldAabbTree_r(world, trees, treeIndex, treeIndex + 1uz, treeCount, error);
+            if (!nextTree)
+                return false;
+
+            treeIndex = *nextTree;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] size_t AabbTreeSubtreeCount(const GfxAabbTree& tree)
+    {
+        auto count = 1uz;
+        const auto* children = reinterpret_cast<const GfxAabbTree*>(reinterpret_cast<const char*>(&tree) + tree.childrenOffset);
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+            count += AabbTreeSubtreeCount(children[childIndex]);
+
+        return count;
+    }
+
     [[nodiscard]] GfxAabbTree* BuildWorldAabbTrees(const GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, int& treeCount, std::string& error)
     {
         const auto* aabbTrees = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_AABBTREES, LUMP_LAYERED_AABBTREES);
@@ -3118,14 +3345,24 @@ namespace
         {
             const auto* record = aabbTrees->data.data() + treeIndex * RAW_WORLD_AABB_TREE_SIZE;
             auto& tree = result[treeIndex];
-            std::memcpy(tree.mins, world.mins, sizeof(tree.mins));
-            std::memcpy(tree.maxs, world.maxs, sizeof(tree.maxs));
-            tree.startSurfIndex = static_cast<uint16_t>(std::min(ReadU32(record), static_cast<uint32_t>(UINT16_MAX)));
-            tree.surfaceCount = static_cast<uint16_t>(std::min(ReadU32(record, 4uz), static_cast<uint32_t>(UINT16_MAX)));
-            tree.childCount = static_cast<uint16_t>(std::min(ReadU32(record, 8uz), static_cast<uint32_t>(UINT16_MAX)));
+            const auto startSurface = ReadU32(record);
+            const auto surfaceCount = ReadU32(record, 4uz);
+            const auto childCount = ReadU32(record, 8uz);
+            if (startSurface > UINT16_MAX || surfaceCount > UINT16_MAX || childCount > UINT16_MAX)
+            {
+                error = std::format("AABB tree {} value is out of uint16 range", treeIndex);
+                return nullptr;
+            }
+
+            tree.startSurfIndex = static_cast<uint16_t>(startSurface);
+            tree.surfaceCount = static_cast<uint16_t>(surfaceCount);
+            tree.childCount = static_cast<uint16_t>(childCount);
             tree.startSurfIndexNoDecal = tree.startSurfIndex;
             tree.surfaceCountNoDecal = tree.surfaceCount;
         }
+
+        if (!FinishWorldAabbTrees(world, result, static_cast<size_t>(treeCount), error))
+            return nullptr;
 
         return result;
     }
@@ -3166,6 +3403,21 @@ namespace
                 CopyFloat3(record, cell.mins);
                 CopyFloat3(record + 12uz, cell.maxs);
 
+                constexpr auto SIMPLE_AABB_TREE_INDEX_OFFSET = 26uz;
+                const auto aabbTreeIndex = static_cast<size_t>(ReadU16(record, SIMPLE_AABB_TREE_INDEX_OFFSET));
+                if (aabbTreeIndex >= static_cast<size_t>(aabbTreeCount))
+                {
+                    error = std::format("cell {} references invalid AABB tree {}", cellIndex, aabbTreeIndex);
+                    return false;
+                }
+
+                // v22 stores both layered and simple AABB roots in each cell.
+                // The loader currently imports the simple surface/index lumps,
+                // so use the simple root index and serialize the contiguous
+                // subtree rooted there, matching linker_pc's per-cell fixup.
+                cell.aabbTree = &aabbTrees[aabbTreeIndex];
+                cell.aabbTreeCount = static_cast<int>(AabbTreeSubtreeCount(*cell.aabbTree));
+
                 constexpr auto REFLECTION_PROBE_LIST_OFFSET = 44uz;
                 cell.reflectionProbeCount = static_cast<char>(std::to_integer<unsigned char>(record[REFLECTION_PROBE_LIST_OFFSET]));
                 const auto reflectionProbeCount = std::to_integer<unsigned char>(record[REFLECTION_PROBE_LIST_OFFSET]);
@@ -3180,16 +3432,107 @@ namespace
             {
                 std::memcpy(cell.mins, world.mins, sizeof(cell.mins));
                 std::memcpy(cell.maxs, world.maxs, sizeof(cell.maxs));
+                if (aabbTreeCount > 0)
+                {
+                    cell.aabbTree = aabbTrees;
+                    cell.aabbTreeCount = static_cast<int>(AabbTreeSubtreeCount(*cell.aabbTree));
+                }
             }
         }
 
-        // The canonical OAT BSP currently stores AABB surface ranges without a
-        // full per-cell hierarchy. Assign them to the first cell, which mirrors
-        // the single-cell BSPs produced by the dumper.
-        if (cellCount > 0uz)
+        return true;
+    }
+
+    [[nodiscard]] char PortalPlaneSide(const float value, const char positiveValue)
+    {
+        return value > 0.0f ? positiveValue : 0;
+    }
+
+    [[nodiscard]] bool PopulateWorldPortals(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* portals = bsp.GetLump(LUMP_PORTALS);
+        const auto* portalVerts = bsp.GetLump(LUMP_PORTALVERTS);
+        const auto* cells = bsp.GetLump(LUMP_CELLS);
+        if (!portals || !portalVerts || !cells || !world.cells || !world.dpvsPlanes.planes)
+            return true;
+
+        if (portals->data.size() % RAW_WORLD_PORTAL_SIZE != 0uz || portalVerts->data.size() % RAW_VEC3_SIZE != 0uz
+            || cells->data.size() % RAW_WORLD_CELL_SIZE != 0uz)
         {
-            world.cells[0].aabbTreeCount = aabbTreeCount;
-            world.cells[0].aabbTree = aabbTrees;
+            error = "portal, portal-vertex, or cell lump has funny size";
+            return false;
+        }
+
+        const auto portalCount = RecordCount(*portals, RAW_WORLD_PORTAL_SIZE);
+        const auto portalVertCount = RecordCount(*portalVerts, RAW_VEC3_SIZE);
+        const auto cellCount = RecordCount(*cells, RAW_WORLD_CELL_SIZE);
+        if (!FitsInt(portalCount) || cellCount > static_cast<size_t>(std::max(world.dpvsPlanes.cellCount, 0)))
+        {
+            error = "portal or cell count is invalid";
+            return false;
+        }
+
+        auto* vertexData = portalVertCount > 0uz ? AllocZeroed<vec3_t>(memory, portalVertCount) : nullptr;
+        for (auto vertexIndex = 0uz; vertexIndex < portalVertCount; vertexIndex++)
+            std::memcpy(vertexData[vertexIndex].v, portalVerts->data.data() + vertexIndex * RAW_VEC3_SIZE, RAW_VEC3_SIZE);
+
+        auto* portalData = portalCount > 0uz ? AllocZeroed<GfxPortal>(memory, portalCount) : nullptr;
+        for (auto portalIndex = 0uz; portalIndex < portalCount; portalIndex++)
+        {
+            const auto* record = portals->data.data() + portalIndex * RAW_WORLD_PORTAL_SIZE;
+            const auto planeIndex = static_cast<size_t>(ReadU32(record));
+            const auto cellIndex = static_cast<size_t>(ReadU32(record, 4uz));
+            const auto firstVertex = static_cast<size_t>(ReadU32(record, 8uz));
+            const auto vertexCount = std::to_integer<unsigned>(record[12]);
+
+            if (planeIndex >= static_cast<size_t>(world.planeCount))
+            {
+                error = std::format("portal {} references invalid plane {}", portalIndex, planeIndex);
+                return false;
+            }
+
+            if (cellIndex >= static_cast<size_t>(world.dpvsPlanes.cellCount))
+            {
+                error = std::format("portal {} references invalid cell {}", portalIndex, cellIndex);
+                return false;
+            }
+
+            if (firstVertex + vertexCount > portalVertCount)
+            {
+                error = std::format("portal {} vertex range is outside portal vertices", portalIndex);
+                return false;
+            }
+
+            auto& portal = portalData[portalIndex];
+            const auto& plane = world.dpvsPlanes.planes[planeIndex];
+            portal.plane.coeffs[0] = plane.normal[0];
+            portal.plane.coeffs[1] = plane.normal[1];
+            portal.plane.coeffs[2] = plane.normal[2];
+            portal.plane.coeffs[3] = -plane.dist;
+            portal.plane.side[0] = PortalPlaneSide(portal.plane.coeffs[0], 0xC);
+            portal.plane.side[1] = PortalPlaneSide(portal.plane.coeffs[1], 0x10);
+            portal.plane.side[2] = PortalPlaneSide(portal.plane.coeffs[2], 0x14);
+            portal.cell = &world.cells[cellIndex];
+            portal.vertices = vertexData ? &vertexData[firstVertex] : nullptr;
+            portal.vertexCount = static_cast<char>(vertexCount);
+            PerpendicularVector(plane.normal, portal.hullAxis[0]);
+            CrossProduct(plane.normal, portal.hullAxis[0], portal.hullAxis[1]);
+        }
+
+        for (auto cellIndex = 0uz; cellIndex < cellCount; cellIndex++)
+        {
+            const auto* record = cells->data.data() + cellIndex * RAW_WORLD_CELL_SIZE;
+            const auto firstPortal = static_cast<size_t>(ReadU32(record, 28uz));
+            const auto portalCountForCell = ReadU32(record, 32uz);
+            if (firstPortal + portalCountForCell > portalCount)
+            {
+                error = std::format("cell {} portal range is outside portals", cellIndex);
+                return false;
+            }
+
+            auto& cell = world.cells[cellIndex];
+            cell.portalCount = static_cast<int>(portalCountForCell);
+            cell.portals = portalCountForCell > 0u ? &portalData[firstPortal] : nullptr;
         }
 
         return true;
@@ -3239,6 +3582,340 @@ namespace
             world.dpvs.staticSurfaceCountNoDecal = world.models[0].surfaceCountNoDecal;
         }
 
+        return true;
+    }
+
+    [[nodiscard]] uint32_t FloatKeyBits(const float value)
+    {
+        uint32_t result;
+        std::memcpy(&result, &value, sizeof(result));
+        if ((result & 0x7fffffffu) == 0u)
+            return 0u;
+
+        return result;
+    }
+
+    struct TriangleKey
+    {
+        std::array<uint32_t, 9> values{};
+
+        bool operator==(const TriangleKey& other) const
+        {
+            return values == other.values;
+        }
+    };
+
+    struct TriangleKeyHash
+    {
+        std::size_t operator()(const TriangleKey& key) const
+        {
+            auto result = 1469598103934665603ull;
+            for (const auto value : key.values)
+            {
+                result ^= value;
+                result *= 1099511628211ull;
+            }
+
+            return static_cast<std::size_t>(result);
+        }
+    };
+
+    using DecalTriangleMaterialMap = std::unordered_map<TriangleKey, unsigned, TriangleKeyHash>;
+
+    struct DecalTriangleData
+    {
+        unsigned firstSurfaceIndex = 0u;
+        DecalTriangleMaterialMap minMaterialForTriangle;
+        std::vector<std::vector<TriangleKey>> surfaceTriangleKeys;
+    };
+
+    [[nodiscard]] std::optional<TriangleKey> BuildTriangleKey(const GfxWorld& world, const GfxSurface& surface, const int baseIndex)
+    {
+        if (!world.indices || !world.vd.vertices || baseIndex < 0 || baseIndex + 2 >= world.indexCount)
+            return std::nullopt;
+
+        std::array<std::array<uint32_t, 3>, 3> points{};
+        for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+        {
+            const auto vertexIndex = surface.tris.firstVertex + world.indices[baseIndex + static_cast<int>(triVertex)];
+            if (vertexIndex < 0 || static_cast<unsigned>(vertexIndex) >= world.vertexCount)
+                return std::nullopt;
+
+            const auto* xyz = world.vd.vertices[vertexIndex].xyz;
+            for (auto axis = 0uz; axis < 3uz; axis++)
+                points[triVertex][axis] = FloatKeyBits(xyz[axis]);
+        }
+
+        // Stock R_DoWorldTrisCoincide accepts cyclic shifts of the same
+        // winding. Canonicalize only those rotations; reversed winding remains
+        // distinct, as in the linker.
+        TriangleKey best;
+        auto initialized = false;
+        for (auto rotation = 0uz; rotation < 3uz; rotation++)
+        {
+            TriangleKey rotated;
+            for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+            {
+                const auto& point = points[(rotation + triVertex) % 3uz];
+                for (auto axis = 0uz; axis < 3uz; axis++)
+                    rotated.values[triVertex * 3uz + axis] = point[axis];
+            }
+
+            if (!initialized || rotated.values < best.values)
+            {
+                best = rotated;
+                initialized = true;
+            }
+        }
+
+        return best;
+    }
+
+    [[nodiscard]] DecalTriangleData BuildDecalTriangleData(const GfxWorld& world, const unsigned modelSurfIndexBegin, const unsigned modelSurfIndexEnd)
+    {
+        DecalTriangleData result;
+        result.firstSurfaceIndex = modelSurfIndexBegin;
+        result.surfaceTriangleKeys.resize(modelSurfIndexEnd - modelSurfIndexBegin);
+
+        auto totalTriCount = 0uz;
+        for (auto surfIndex = modelSurfIndexBegin; surfIndex < modelSurfIndexEnd; surfIndex++)
+            totalTriCount += world.dpvs.surfaces[surfIndex].tris.triCount;
+
+        result.minMaterialForTriangle.reserve(totalTriCount);
+        for (auto surfIndex = modelSurfIndexBegin; surfIndex < modelSurfIndexEnd; surfIndex++)
+        {
+            const auto& surface = world.dpvs.surfaces[surfIndex];
+            if (!surface.material)
+                continue;
+
+            auto& surfaceKeys = result.surfaceTriangleKeys[surfIndex - modelSurfIndexBegin];
+            surfaceKeys.reserve(surface.tris.triCount);
+            const auto materialSortedIndex = static_cast<unsigned>(surface.material->info.drawSurf.fields.materialSortedIndex);
+            for (auto triIter = 0u; triIter < surface.tris.triCount; triIter++)
+            {
+                const auto triangleKey = BuildTriangleKey(world, surface, surface.tris.baseIndex + static_cast<int>(3u * triIter));
+                if (!triangleKey)
+                    continue;
+
+                surfaceKeys.emplace_back(*triangleKey);
+                auto [entry, inserted] = result.minMaterialForTriangle.emplace(*triangleKey, materialSortedIndex);
+                if (!inserted)
+                    entry->second = std::min(entry->second, materialSortedIndex);
+            }
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] bool IsSurfaceDecalLayer(const GfxWorld& world, const DecalTriangleData& decalTriangleData, const unsigned surfIndex)
+    {
+        const auto& surface = world.dpvs.surfaces[surfIndex];
+        if (!surface.material || surface.tris.triCount == 0u)
+            return false;
+
+        const auto& surfaceKeys = decalTriangleData.surfaceTriangleKeys[surfIndex - decalTriangleData.firstSurfaceIndex];
+        if (surfaceKeys.size() != surface.tris.triCount)
+            return false;
+
+        const auto materialSortedIndex = static_cast<unsigned>(surface.material->info.drawSurf.fields.materialSortedIndex);
+        for (const auto& triangleKey : surfaceKeys)
+        {
+            const auto existingTriangle = decalTriangleData.minMaterialForTriangle.find(triangleKey);
+            if (existingTriangle == decalTriangleData.minMaterialForTriangle.end() || materialSortedIndex <= existingTriangle->second)
+                return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool CompareWorldSurfaces(const GfxSurface& left, const GfxSurface& right)
+    {
+        const auto leftHasLit = MaterialHasTechnique(left.material, TECHNIQUE_LIT_BEGIN);
+        const auto rightHasLit = MaterialHasTechnique(right.material, TECHNIQUE_LIT_BEGIN);
+        if (leftHasLit != rightHasLit)
+            return leftHasLit > rightHasLit;
+
+        if (!leftHasLit)
+        {
+            const auto leftHasEmissive = MaterialHasTechnique(left.material, TECHNIQUE_EMISSIVE);
+            const auto rightHasEmissive = MaterialHasTechnique(right.material, TECHNIQUE_EMISSIVE);
+            if (leftHasEmissive != rightHasEmissive)
+                return leftHasEmissive > rightHasEmissive;
+        }
+
+        const auto leftPrimarySortKey = left.material ? left.material->info.drawSurf.fields.primarySortKey : 0u;
+        const auto rightPrimarySortKey = right.material ? right.material->info.drawSurf.fields.primarySortKey : 0u;
+        if (leftPrimarySortKey != rightPrimarySortKey)
+            return leftPrimarySortKey < rightPrimarySortKey;
+
+        if (U8(left.primaryLightIndex) != U8(right.primaryLightIndex))
+            return U8(left.primaryLightIndex) < U8(right.primaryLightIndex);
+
+        const auto leftMaterialSortedIndex = left.material ? left.material->info.drawSurf.fields.materialSortedIndex : 0u;
+        const auto rightMaterialSortedIndex = right.material ? right.material->info.drawSurf.fields.materialSortedIndex : 0u;
+        if (leftMaterialSortedIndex != rightMaterialSortedIndex)
+            return leftMaterialSortedIndex < rightMaterialSortedIndex;
+
+        if (U8(left.reflectionProbeIndex) != U8(right.reflectionProbeIndex))
+            return U8(left.reflectionProbeIndex) < U8(right.reflectionProbeIndex);
+
+        if (U8(left.lightmapIndex) != U8(right.lightmapIndex))
+            return U8(left.lightmapIndex) < U8(right.lightmapIndex);
+
+        if (left.tris.firstVertex != right.tris.firstVertex)
+            return left.tris.firstVertex < right.tris.firstVertex;
+
+        return left.tris.vertexCount < right.tris.vertexCount;
+    }
+
+    void ClassifySortedSurfaceRanges(GfxWorld& world, const unsigned surfaceCount)
+    {
+        auto surfIndex = 0u;
+        world.dpvs.litSurfsBegin = 0u;
+        while (surfIndex < surfaceCount)
+        {
+            const auto* material = world.dpvs.surfaces[surfIndex].material;
+            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_LIT_BEGIN) || material->info.sortKey >= 0x18u)
+                break;
+
+            surfIndex++;
+        }
+
+        world.dpvs.litSurfsEnd = surfIndex;
+        world.dpvs.decalSurfsBegin = surfIndex;
+        while (surfIndex < surfaceCount)
+        {
+            const auto* material = world.dpvs.surfaces[surfIndex].material;
+            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_LIT_BEGIN))
+                break;
+
+            surfIndex++;
+        }
+
+        world.dpvs.decalSurfsEnd = surfIndex;
+        world.dpvs.emissiveSurfsBegin = surfIndex;
+        while (surfIndex < surfaceCount)
+        {
+            const auto* material = world.dpvs.surfaces[surfIndex].material;
+            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_EMISSIVE))
+                break;
+
+            surfIndex++;
+        }
+
+        world.dpvs.emissiveSurfsEnd = surfIndex;
+    }
+
+    [[nodiscard]] bool BuildNoDecalSubModels(GfxWorld& world, std::vector<uint16_t>& sortedSurfIndex, unsigned& noDecalSurfaceCount, std::string& error)
+    {
+        if (!world.models || world.modelCount <= 0)
+            return true;
+
+        for (auto modelIndex = 0; modelIndex < world.modelCount; modelIndex++)
+        {
+            auto& model = world.models[modelIndex];
+            model.surfaceCountNoDecal = 0;
+            if (model.surfaceCount == 0u)
+                continue;
+
+            const auto begin = static_cast<unsigned>(model.startSurfIndex);
+            const auto end = begin + static_cast<unsigned>(model.surfaceCount);
+            if (end > static_cast<unsigned>(world.surfaceCount))
+            {
+                error = std::format("world model {} surface range is out of bounds", modelIndex);
+                return false;
+            }
+
+            const auto decalTriangleData = BuildDecalTriangleData(world, begin, end);
+            for (auto surfIndex = begin; surfIndex < end; surfIndex++)
+            {
+                auto& surface = world.dpvs.surfaces[surfIndex];
+                surface.flags = static_cast<char>(U8(surface.flags) & ~2u);
+                if (IsSurfaceDecalLayer(world, decalTriangleData, surfIndex))
+                    surface.flags = static_cast<char>(U8(surface.flags) | 2u);
+                else
+                    model.surfaceCountNoDecal++;
+            }
+        }
+
+        const auto& rootModel = world.models[0];
+        const auto rootSurfaceCount = static_cast<unsigned>(rootModel.surfaceCount);
+        auto writeIndex = rootSurfaceCount;
+        for (auto originalSurfIndex = 0u; originalSurfIndex < rootSurfaceCount; originalSurfIndex++)
+        {
+            const auto sortedIndex = sortedSurfIndex[originalSurfIndex];
+            if ((U8(world.dpvs.surfaces[sortedIndex].flags) & 2u) == 0u)
+                sortedSurfIndex[writeIndex++] = sortedIndex;
+        }
+
+        noDecalSurfaceCount = writeIndex - rootSurfaceCount;
+        if (noDecalSurfaceCount != rootModel.surfaceCountNoDecal)
+        {
+            error = std::format("no-decal surface compaction mismatch: {} vs {}", noDecalSurfaceCount, rootModel.surfaceCountNoDecal);
+            return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldSurfaceOrganization(GfxWorld& world, MemoryManager& memory, std::string& error)
+    {
+        if (!world.models || world.modelCount <= 0 || !world.dpvs.surfaces)
+            return true;
+
+        auto& rootModel = world.models[0];
+        if (rootModel.surfaceCount == 0u)
+            return true;
+
+        if (rootModel.startSurfIndex != 0u)
+        {
+            error = "root world model does not start at surface 0";
+            return false;
+        }
+
+        const auto surfaceCount = static_cast<unsigned>(rootModel.surfaceCount);
+        if (surfaceCount > static_cast<unsigned>(world.surfaceCount) || !FitsUint16(surfaceCount * 2uz))
+        {
+            error = "root world model surface count is invalid";
+            return false;
+        }
+
+        std::vector<uint16_t> sortedSurfIndex(static_cast<size_t>(surfaceCount) * 2uz);
+        for (auto surfIndex = 0u; surfIndex < surfaceCount; surfIndex++)
+        {
+            auto& surface = world.dpvs.surfaces[surfIndex];
+            sortedSurfIndex[surfIndex] = surface.tris.vertexCount;
+            surface.tris.vertexCount = static_cast<uint16_t>(surfIndex);
+        }
+
+        std::sort(&world.dpvs.surfaces[0], &world.dpvs.surfaces[surfaceCount], CompareWorldSurfaces);
+
+        for (auto surfIndex = 0u; surfIndex < surfaceCount; surfIndex++)
+        {
+            auto& surface = world.dpvs.surfaces[surfIndex];
+            const auto originalSurfIndex = static_cast<unsigned>(surface.tris.vertexCount);
+            if (originalSurfIndex >= surfaceCount)
+            {
+                error = "surface sort produced an invalid original surface index";
+                return false;
+            }
+
+            surface.tris.vertexCount = sortedSurfIndex[originalSurfIndex];
+            sortedSurfIndex[originalSurfIndex] = static_cast<uint16_t>(surfIndex);
+        }
+
+        ClassifySortedSurfaceRanges(world, surfaceCount);
+
+        unsigned noDecalSurfaceCount = 0u;
+        if (!BuildNoDecalSubModels(world, sortedSurfIndex, noDecalSurfaceCount, error))
+            return false;
+
+        const auto finalSortedCount = static_cast<size_t>(surfaceCount) + noDecalSurfaceCount;
+        world.dpvs.sortedSurfIndex = AllocZeroed<uint16_t>(memory, finalSortedCount);
+        std::memcpy(world.dpvs.sortedSurfIndex, sortedSurfIndex.data(), finalSortedCount * sizeof(uint16_t));
+        world.dpvs.staticSurfaceCount = surfaceCount;
+        world.dpvs.staticSurfaceCountNoDecal = noDecalSurfaceCount;
+        rootModel.surfaceCountNoDecal = static_cast<uint16_t>(noDecalSurfaceCount);
         return true;
     }
 
@@ -3655,7 +4332,7 @@ namespace
         }
 
         const auto sortedSurfIndexCount = static_cast<size_t>(world.dpvs.staticSurfaceCount + world.dpvs.staticSurfaceCountNoDecal);
-        if (sortedSurfIndexCount > 0uz)
+        if (sortedSurfIndexCount > 0uz && !world.dpvs.sortedSurfIndex)
         {
             world.dpvs.sortedSurfIndex = AllocZeroed<uint16_t>(memory, sortedSurfIndexCount);
             for (auto i = 0uz; i < sortedSurfIndexCount; i++)
@@ -4169,24 +4846,74 @@ namespace
         ISearchPath& m_search_path;
     };
 
-    void PopulateWorldSkySurfaces(GfxWorld& world, MemoryManager& memory)
+    [[nodiscard]] bool PopulateWorldSkySurfaces(
+        GfxWorld& world, AssetCreationContext& context, AssetRegistration<AssetGfxWorld>& registration, MemoryManager& memory, std::string& error)
     {
         if (!world.dpvs.surfaces || world.surfaceCount <= 0)
-            return;
+            return true;
 
         std::vector<int> skySurfaces;
+        const Material* skyMaterial = nullptr;
         for (auto surfaceIndex = 0; surfaceIndex < world.surfaceCount; surfaceIndex++)
         {
-            if (static_cast<unsigned char>(world.dpvs.surfaces[surfaceIndex].lightmapIndex) == SKY_LIGHTMAP_INDEX)
-                skySurfaces.emplace_back(surfaceIndex);
+            const auto& surface = world.dpvs.surfaces[surfaceIndex];
+            if (!surface.material || (surface.material->info.gameFlags & 8u) == 0u)
+                continue;
+
+            // linker_pc identifies sky surfaces from the material game flag,
+            // not from the raw sky lightmap index. It also supports exactly
+            // one sky material and uses that material's colorMap cubemap as
+            // GfxWorld::skyImage.
+            if (skyMaterial && skyMaterial != surface.material)
+            {
+                error = std::format("map has at least two different skies: {} and {}", surface.material->info.name, skyMaterial->info.name);
+                return false;
+            }
+
+            skyMaterial = surface.material;
+            skySurfaces.emplace_back(surfaceIndex);
         }
 
         if (skySurfaces.empty())
-            return;
+            return true;
+
+        constexpr auto colorMapHash = Common::R_HashString("colorMap");
+        for (auto textureIndex = 0uz; textureIndex < skyMaterial->textureCount; textureIndex++)
+        {
+            const auto& texture = skyMaterial->textureTable[textureIndex];
+            if (texture.nameHash != colorMapHash)
+                continue;
+
+            const auto* image = texture.u.image;
+            if (!image || texture.semantic == TS_WATER_MAP || image->mapType != MAPTYPE_CUBE)
+            {
+                error = std::format("colorMap for sky material \"{}\" is not a cubemap", skyMaterial->info.name);
+                return false;
+            }
+
+            auto* imageDependency = context.LoadDependency<AssetImage>(image->name);
+            if (!imageDependency)
+            {
+                error = std::format("missing sky image \"{}\"", image->name);
+                return false;
+            }
+
+            registration.AddDependency(imageDependency);
+            world.skyImage = imageDependency->Asset();
+            world.skySamplerState = static_cast<char>(SamplerStateByte(texture.samplerState));
+            break;
+        }
+
+        if (!world.skyImage)
+        {
+            error = std::format("sky material \"{}\" has no colorMap", skyMaterial->info.name);
+            return false;
+        }
 
         world.skySurfCount = static_cast<int>(skySurfaces.size());
         world.skyStartSurfs = AllocZeroed<int>(memory, skySurfaces.size());
         std::memcpy(world.skyStartSurfs, skySurfaces.data(), skySurfaces.size() * sizeof(int));
+        return true;
     }
 
     void SetOutdoorLookupIdentity(GfxWorld& world)
@@ -4196,6 +4923,112 @@ namespace
             for (auto column = 0uz; column < 4uz; column++)
                 world.outdoorLookupMatrix[row][column] = row == column ? 1.0f : 0.0f;
         }
+    }
+
+    [[nodiscard]] bool PopulateWorldOutdoorData(
+        GfxWorld& world,
+        const IW3::d3dbsp::File& bsp,
+        AssetCreationContext& context,
+        AssetRegistration<AssetGfxWorld>& registration,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        const auto* materials = bsp.GetLump(LUMP_MATERIALS);
+        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        if (!materials || !surfaces || world.modelCount <= 0 || !world.models || !world.dpvs.surfaces)
+            return true;
+
+        if (materials->data.size() % RAW_MATERIAL_SIZE != 0uz || surfaces->data.size() % RAW_WORLD_SURFACE_SIZE != 0uz)
+        {
+            error = "could not calculate outdoor bounds from funny-sized material or surface lump";
+            return false;
+        }
+
+        const auto rawMaterialCount = RecordCount(*materials, RAW_MATERIAL_SIZE);
+        const auto rawSurfaceCount = RecordCount(*surfaces, RAW_WORLD_SURFACE_SIZE);
+        const auto& rootModel = world.models[0];
+        const auto rootStartSurface = static_cast<size_t>(rootModel.startSurfIndex);
+        const auto rootSurfaceCount = static_cast<size_t>(rootModel.surfaceCount);
+        if (rootStartSurface + rootSurfaceCount > rawSurfaceCount || rootStartSurface + rootSurfaceCount > static_cast<size_t>(world.surfaceCount))
+        {
+            error = "root model surface range is outside the world surface lump";
+            return false;
+        }
+
+        float outdoorMins[3]{131072.0f, 131072.0f, 131072.0f};
+        float outdoorMaxs[3]{-131072.0f, -131072.0f, -131072.0f};
+        for (auto surfaceIndex = rootStartSurface; surfaceIndex < rootStartSurface + rootSurfaceCount; surfaceIndex++)
+        {
+            const auto* rawSurface = surfaces->data.data() + surfaceIndex * RAW_WORLD_SURFACE_SIZE;
+            const auto rawMaterialIndex = static_cast<size_t>(ReadU16(rawSurface));
+            if (rawMaterialIndex >= rawMaterialCount)
+            {
+                error = std::format("world surface {} references invalid material index {}", surfaceIndex, rawMaterialIndex);
+                return false;
+            }
+
+            const auto& surface = world.dpvs.surfaces[surfaceIndex];
+            const auto rawContentFlags = ReadI32(materials->data.data() + rawMaterialIndex * RAW_MATERIAL_SIZE, 68uz);
+            // R_CalculateOutdoorBounds includes only non-sky root-model
+            // surfaces whose raw BSP material contents carry outdoor-relevant
+            // solid/detail bits. The generated matrix is consumed by outdoor
+            // shader code through TEXTURE_SRC_CODE_OUTDOOR.
+            if (surface.material && (surface.material->info.gameFlags & 8u) == 0u && (rawContentFlags & 0x2001) != 0)
+                ExpandBounds(surface.bounds[0], surface.bounds[1], outdoorMins, outdoorMaxs);
+        }
+
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            if (outdoorMins[axis] == 131072.0f)
+            {
+                outdoorMins[axis] = 0.0f;
+                outdoorMaxs[axis] = 0.0f;
+            }
+
+            if (outdoorMaxs[axis] - outdoorMins[axis] < 1.0f)
+            {
+                outdoorMins[axis] -= 0.5f;
+                outdoorMaxs[axis] += 0.5f;
+            }
+        }
+
+        SetOutdoorLookupIdentity(world);
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            const auto scale = LinkerFloat(1.0 / static_cast<double>(outdoorMaxs[axis] - outdoorMins[axis]));
+            world.outdoorLookupMatrix[axis][axis] = scale;
+            world.outdoorLookupMatrix[3][axis] = LinkerFloat(-static_cast<double>(outdoorMins[axis]) * scale);
+        }
+
+        constexpr auto OUTDOOR_IMAGE_SIZE = 512u;
+        constexpr auto OUTDOOR_IMAGE_DATA_SIZE = static_cast<size_t>(OUTDOOR_IMAGE_SIZE) * OUTDOOR_IMAGE_SIZE;
+        std::vector<std::byte> pixels(OUTDOOR_IMAGE_DATA_SIZE);
+
+        // linker_pc generates this image by tracing height through the loaded
+        // clipmap. Keep the serialized image shape/name identical for now; the
+        // exact texel-generation pass can be added once the collision trace
+        // path is complete.
+        auto* image = CreateGeneratedImage(memory,
+                                           OutdoorImageName(),
+                                           MAPTYPE_2D,
+                                           TS_FUNCTION,
+                                           IMG_CATEGORY_AUTO_GENERATED,
+                                           OUTDOOR_IMAGE_SIZE,
+                                           OUTDOOR_IMAGE_SIZE,
+                                           1u,
+                                           oat::D3DFMT_L8,
+                                           static_cast<char>(image::iwi6::IMG_FLAG_NOMIPMAPS),
+                                           pixels.data(),
+                                           pixels.size());
+        auto* imageInfo = AddGeneratedImage(context, registration, OutdoorImageName(), image);
+        if (!imageInfo)
+        {
+            error = "could not register generated outdoor image";
+            return false;
+        }
+
+        world.outdoorImage = imageInfo->Asset();
+        return true;
     }
 
     class GfxWorldLoader final : public AssetCreator<AssetGfxWorld>
@@ -4275,10 +5108,19 @@ namespace
 
             const auto* clipMap = clipMapDependency->Asset();
             if (!PopulateWorldIndices(*world, *bsp, m_memory, error) || !PopulateWorldVertices(*world, *bsp, m_memory, error)
-                || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error)
-                || !PopulateWorldVertexLayerData(*world, *bsp, m_memory, error)
-                || !PopulateWorldModels(*world, *bsp, m_memory, error) || !PopulateWorldCells(*world, *bsp, m_memory, error)
+                || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
+            PopulateWorldMaterialMemory(*world, m_memory);
+
+            if (!PopulateWorldVertexLayerData(*world, *bsp, m_memory, error) || !PopulateWorldModels(*world, *bsp, m_memory, error)
+                || !PopulateWorldCells(*world, *bsp, m_memory, error)
+                || !PopulateWorldSurfaceOrganization(*world, m_memory, error)
                 || !PopulateWorldDpvsPlanes(*world, clipMap, *bsp, m_memory, error)
+                || !PopulateWorldPortals(*world, *bsp, m_memory, error)
                 || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldShadowGeometry(*world, m_memory)
                 || !PopulateWorldLightGrid(*world, *bsp, m_memory, error) || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
@@ -4291,7 +5133,17 @@ namespace
             }
 
             PopulateWorldRuntimeData(*world, m_memory);
-            PopulateWorldSkySurfaces(*world, m_memory);
+            if (!PopulateWorldSkySurfaces(*world, context, registration, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldOutdoorData(*world, *bsp, context, registration, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
 
