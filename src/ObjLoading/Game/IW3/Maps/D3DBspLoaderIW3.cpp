@@ -82,6 +82,8 @@ namespace
     constexpr auto REFLECTION_PROBE_NAME_SIZE = 64uz;
     constexpr auto REFLECTION_PROBE_RAW_DATA_SIZE = 0x1FFF8uz;
     constexpr auto REFLECTION_PROBE_RECORD_SIZE = sizeof(float) * 3uz + REFLECTION_PROBE_NAME_SIZE + REFLECTION_PROBE_RAW_DATA_SIZE;
+    constexpr auto MATERIAL_USAGE_HASH_SIZE = 0x800uz;
+    constexpr auto MATERIAL_HASH_SEARCH_SIZE = 0x7FFuz;
     constexpr auto DEFAULT_MATERIAL_NAME = "$default";
     constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
     constexpr auto SKY_LIGHTMAP_INDEX = 31u;
@@ -144,6 +146,47 @@ namespace
         // Make linker-style float spill points explicit. This keeps generated
         // quaternions closer to the 32-bit stock tool than pure float math.
         return static_cast<float>(value);
+    }
+
+    [[nodiscard]] unsigned HashAssetName(const char* name)
+    {
+        auto hash = 0u;
+        if (!name)
+            return hash;
+
+        for (auto* pos = name; *pos; pos++)
+            hash = static_cast<unsigned char>(*pos) ^ (33u * hash);
+
+        return hash;
+    }
+
+    [[nodiscard]] std::optional<size_t> MaterialHashIndex(std::array<Material*, MATERIAL_USAGE_HASH_SIZE>& materialHashTable, Material* material)
+    {
+        if (!material || !material->info.name)
+            return std::nullopt;
+
+        // linker_pc resolves material usage through Material_GetHashIndex:
+        // R_HashAssetName(name) % 0x7ff, then linear probe. Raw-loaded material
+        // structs may have info.hashIndex == 0, so recompute the table here.
+        const auto* name = material->info.name;
+        auto hashIndex = static_cast<size_t>(HashAssetName(name)) % MATERIAL_HASH_SEARCH_SIZE;
+        const auto beginHashIndex = hashIndex;
+        do
+        {
+            auto* existingMaterial = materialHashTable[hashIndex];
+            if (!existingMaterial)
+            {
+                materialHashTable[hashIndex] = material;
+                return hashIndex;
+            }
+
+            if (existingMaterial == material || (existingMaterial->info.name && std::strcmp(existingMaterial->info.name, name) == 0))
+                return hashIndex;
+
+            hashIndex = (hashIndex + 1uz) % MATERIAL_HASH_SEARCH_SIZE;
+        } while (hashIndex != beginHashIndex);
+
+        return std::nullopt;
     }
 
     [[nodiscard]] float LinkerQuatSizeSq(const float (&candidate)[4], const size_t candidateIndex)
@@ -2143,6 +2186,12 @@ namespace
         return SelectWorldLump(bsp, simple, layered);
     }
 
+    [[nodiscard]] bool UsesSimpleWorldGeometry(const IW3::d3dbsp::File& bsp)
+    {
+        const auto* simpleSurfaces = bsp.GetLump(LUMP_SIMPLE_TRI_SOUPS);
+        return simpleSurfaces && !simpleSurfaces->data.empty();
+    }
+
     struct LightmapAtlasGroup
     {
         unsigned wideCount = 1u;
@@ -2821,7 +2870,8 @@ namespace
             std::vector<int> firstVertices;
         };
 
-        std::array<MaterialUsage, 2048> usages;
+        std::array<MaterialUsage, MATERIAL_USAGE_HASH_SIZE> usages;
+        std::array<Material*, MATERIAL_USAGE_HASH_SIZE> materialHashTable{};
         if (!world.dpvs.surfaces || world.surfaceCount <= 0)
             return;
 
@@ -2829,10 +2879,11 @@ namespace
         {
             const auto& surface = world.dpvs.surfaces[surfaceIndex];
             auto* material = surface.material;
-            if (!material || material->info.hashIndex >= usages.size())
+            const auto materialHashIndex = MaterialHashIndex(materialHashTable, material);
+            if (!materialHashIndex)
                 continue;
 
-            auto& usage = usages[material->info.hashIndex];
+            auto& usage = usages[*materialHashIndex];
             usage.material = material;
             // R_MaterialUsage accounts for the surface header, index payload,
             // and a fixed per-surface cost. Vertex data is charged once for
@@ -2875,8 +2926,15 @@ namespace
     [[nodiscard]] bool PopulateWorldVertexLayerData(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         const auto* vertexLayerData = bsp.GetLump(LUMP_VERTEX_LAYER_DATA);
-        if (!vertexLayerData)
+        if (UsesSimpleWorldGeometry(bsp) || !vertexLayerData || vertexLayerData->data.empty())
+        {
+            // linker_pc only copies LUMP_VERTEX_LAYER_DATA for the layered
+            // geometry path. Simple/unlayered BSP geometry uses a 4-byte dummy
+            // layer buffer even when the raw file still contains lump 42.
+            world.vertexLayerDataSize = 4u;
+            world.vld.data = AllocZeroed<char>(memory, world.vertexLayerDataSize);
             return true;
+        }
 
         if (!FitsUnsigned(vertexLayerData->data.size()))
         {
@@ -3816,18 +3874,15 @@ namespace
             return false;
 
         const auto& surfaceKeys = decalTriangleData.surfaceTriangleKeys[surfIndex - decalTriangleData.firstSurfaceIndex];
-        if (surfaceKeys.size() != surface.tris.triCount)
+        if (surfaceKeys.empty())
             return false;
 
+        // linker_pc's R_IsSurfaceDecalLayer loops over triCount, but passes
+        // surf->tris.baseIndex to R_DoesTriCoverAnyOtherTri each time. That
+        // makes the first triangle decide the whole surface's decal flag.
         const auto materialSortedIndex = static_cast<unsigned>(surface.material->info.drawSurf.fields.materialSortedIndex);
-        for (const auto& triangleKey : surfaceKeys)
-        {
-            const auto existingTriangle = decalTriangleData.minMaterialForTriangle.find(triangleKey);
-            if (existingTriangle == decalTriangleData.minMaterialForTriangle.end() || materialSortedIndex <= existingTriangle->second)
-                return false;
-        }
-
-        return true;
+        const auto existingTriangle = decalTriangleData.minMaterialForTriangle.find(surfaceKeys[0]);
+        return existingTriangle != decalTriangleData.minMaterialForTriangle.end() && materialSortedIndex > existingTriangle->second;
     }
 
     [[nodiscard]] bool CompareWorldSurfaces(const GfxSurface& left, const GfxSurface& right)
@@ -3908,6 +3963,68 @@ namespace
         world.dpvs.emissiveSurfsEnd = surfIndex;
     }
 
+    [[nodiscard]] bool AppendNoDecalAabbTreeSurfaces(
+        const GfxWorld& world, GfxAabbTree& tree, std::vector<uint16_t>& sortedSurfIndex, const unsigned sourceSurfaceCount, unsigned& writeIndex, std::string& error)
+    {
+        if (writeIndex > UINT16_MAX)
+        {
+            error = "no-decal AABB tree start surface index is out of uint16 range";
+            return false;
+        }
+
+        tree.startSurfIndexNoDecal = static_cast<uint16_t>(writeIndex);
+        if (tree.childCount > 0u)
+        {
+            auto* children = reinterpret_cast<GfxAabbTree*>(reinterpret_cast<char*>(&tree) + tree.childrenOffset);
+            for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+            {
+                if (!AppendNoDecalAabbTreeSurfaces(world, children[childIndex], sortedSurfIndex, sourceSurfaceCount, writeIndex, error))
+                    return false;
+            }
+        }
+        else
+        {
+            const auto firstSurfaceIndex = static_cast<unsigned>(tree.startSurfIndex);
+            const auto surfaceCount = static_cast<unsigned>(tree.surfaceCount);
+            if (firstSurfaceIndex > sourceSurfaceCount || surfaceCount > sourceSurfaceCount - firstSurfaceIndex)
+            {
+                error = "AABB tree no-decal source surface range is out of bounds";
+                return false;
+            }
+
+            for (auto surfaceOffset = 0u; surfaceOffset < surfaceCount; surfaceOffset++)
+            {
+                const auto surfaceIndex = sortedSurfIndex[firstSurfaceIndex + surfaceOffset];
+                if (surfaceIndex >= world.dpvs.staticSurfaceCount)
+                {
+                    error = "AABB tree no-decal source references invalid surface";
+                    return false;
+                }
+
+                if ((U8(world.dpvs.surfaces[surfaceIndex].flags) & 2u) != 0u)
+                    continue;
+
+                if (writeIndex >= sortedSurfIndex.size())
+                {
+                    error = "too many no-decal AABB tree surfaces";
+                    return false;
+                }
+
+                sortedSurfIndex[writeIndex++] = surfaceIndex;
+            }
+        }
+
+        const auto surfaceCountNoDecal = writeIndex - static_cast<unsigned>(tree.startSurfIndexNoDecal);
+        if (surfaceCountNoDecal > UINT16_MAX)
+        {
+            error = "no-decal AABB tree surface count is out of uint16 range";
+            return false;
+        }
+
+        tree.surfaceCountNoDecal = static_cast<uint16_t>(surfaceCountNoDecal);
+        return true;
+    }
+
     [[nodiscard]] bool BuildNoDecalSubModels(GfxWorld& world, std::vector<uint16_t>& sortedSurfIndex, unsigned& noDecalSurfaceCount, std::string& error)
     {
         if (!world.models || world.modelCount <= 0)
@@ -3943,20 +4060,33 @@ namespace
         const auto& rootModel = world.models[0];
         const auto rootSurfaceCount = static_cast<unsigned>(rootModel.surfaceCount);
         auto writeIndex = rootSurfaceCount;
-        for (auto originalSurfIndex = 0u; originalSurfIndex < rootSurfaceCount; originalSurfIndex++)
+        if (world.dpvsPlanes.cellCount > 0 && world.cells)
         {
-            const auto sortedIndex = sortedSurfIndex[originalSurfIndex];
-            if ((U8(world.dpvs.surfaces[sortedIndex].flags) & 2u) == 0u)
-                sortedSurfIndex[writeIndex++] = sortedIndex;
+            // linker_pc appends the no-decal duplicate surface range by walking
+            // each cell's AABB tree, not by scanning model0 linearly. The same
+            // pass also rewrites startSurfIndexNoDecal/surfaceCountNoDecal on
+            // every tree node for runtime DPVS traversal.
+            for (auto cellIndex = 0; cellIndex < world.dpvsPlanes.cellCount; cellIndex++)
+            {
+                auto& cell = world.cells[cellIndex];
+                if (!cell.aabbTree)
+                    continue;
+
+                if (!AppendNoDecalAabbTreeSurfaces(world, *cell.aabbTree, sortedSurfIndex, rootSurfaceCount, writeIndex, error))
+                    return false;
+            }
+        }
+        else
+        {
+            for (auto originalSurfIndex = 0u; originalSurfIndex < rootSurfaceCount; originalSurfIndex++)
+            {
+                const auto sortedIndex = sortedSurfIndex[originalSurfIndex];
+                if ((U8(world.dpvs.surfaces[sortedIndex].flags) & 2u) == 0u)
+                    sortedSurfIndex[writeIndex++] = sortedIndex;
+            }
         }
 
         noDecalSurfaceCount = writeIndex - rootSurfaceCount;
-        if (noDecalSurfaceCount != rootModel.surfaceCountNoDecal)
-        {
-            error = std::format("no-decal surface compaction mismatch: {} vs {}", noDecalSurfaceCount, rootModel.surfaceCountNoDecal);
-            return false;
-        }
-
         return true;
     }
 
