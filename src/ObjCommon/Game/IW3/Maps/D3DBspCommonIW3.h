@@ -8,6 +8,8 @@ namespace IW3::d3dbsp
 {
     inline constexpr std::array<char, 4> BSP_MAGIC{'I', 'B', 'S', 'P'};
     inline constexpr uint32_t BSP_VERSION = 22u;
+    inline constexpr uint32_t RUNTIME_MATERIAL_CONTENT_MASK = 0xdffffffbu;
+    inline constexpr uint32_t RAW_BSP_BRUSH_CONTENT_MARKER = 0x20000000u;
 
     // IW3 v22 stores primary lights as DiskPrimaryLight records. The linker
     // converts these to runtime ComPrimaryLight records and derives

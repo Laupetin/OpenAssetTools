@@ -156,6 +156,53 @@ namespace
         out.insert(out.end(), bytes, bytes + size);
     }
 
+    void MarkMaterialUsedByBrush(std::vector<uint8_t>& usedMaterials, const unsigned materialIndex)
+    {
+        if (materialIndex < usedMaterials.size())
+            usedMaterials[materialIndex] = 1u;
+    }
+
+    void MarkMaterialUsedByBrush(std::vector<uint8_t>& usedMaterials, const int materialIndex)
+    {
+        if (materialIndex >= 0)
+            MarkMaterialUsedByBrush(usedMaterials, static_cast<unsigned>(materialIndex));
+    }
+
+    [[nodiscard]] std::vector<uint8_t> BuildBrushMaterialUsage(const clipMap_t& clipMap)
+    {
+        std::vector<uint8_t> usedMaterials(PositiveCount(clipMap.numMaterials), 0u);
+
+        for (auto brushIndex = 0uz; brushIndex < clipMap.numBrushes; brushIndex++)
+        {
+            const auto& brush = clipMap.brushes[brushIndex];
+
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                for (auto side = 0uz; side < 2uz; side++)
+                    MarkMaterialUsedByBrush(usedMaterials, brush.axialMaterialNum[side][axis]);
+            }
+
+            for (auto sideIndex = 0uz; sideIndex < brush.numsides; sideIndex++)
+                MarkMaterialUsedByBrush(usedMaterials, brush.sides[sideIndex].materialNum);
+        }
+
+        return usedMaterials;
+    }
+
+    [[nodiscard]] int ReconstructRawMaterialContents(const int contents, const bool usedByBrush)
+    {
+        if (!usedByBrush || contents == 0)
+            return contents;
+
+        // linker_pc loads BSP material contents as rawContents & 0xdffffffb.
+        // That also strips a raw decal bit (0x4), but the important collision
+        // bit here is the raw-only 0x20000000 brush marker. If we write the
+        // already-masked runtime value back out, relinking the dumped BSP loses
+        // solid/clip contents because brush contents are recomputed from this
+        // material table.
+        return static_cast<int>(static_cast<unsigned>(contents) | IW3::d3dbsp::RAW_BSP_BRUSH_CONTENT_MARKER);
+    }
+
     [[nodiscard]] const GfxImageLoadDef* LoadDefForTexture(const GfxTexture* textures, const size_t index)
     {
         return textures ? textures[index].loadDef : nullptr;
@@ -236,17 +283,93 @@ namespace
         return leafBrushCount;
     }
 
+    struct LeafBrushRange
+    {
+        size_t first = std::numeric_limits<size_t>::max();
+        size_t end = 0uz;
+        bool valid = false;
+    };
+
+    void IncludeLeafBrushRange(LeafBrushRange& range, const size_t first, const size_t count)
+    {
+        if (count == 0uz)
+            return;
+
+        range.first = std::min(range.first, first);
+        range.end = std::max(range.end, first + count);
+        range.valid = true;
+    }
+
+    [[nodiscard]] bool CollectLeafBrushRange_r(const clipMap_t& clipMap, const size_t nodeIndex, LeafBrushRange& range, const size_t depth = 0uz)
+    {
+        if (!clipMap.leafbrushNodes || nodeIndex >= clipMap.leafbrushNodesCount || depth > clipMap.leafbrushNodesCount)
+            return false;
+
+        const auto& node = clipMap.leafbrushNodes[nodeIndex];
+        if (node.leafBrushCount > 0)
+        {
+            auto brushesIndex = 0uz;
+            if (!TryPointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, node.data.leaf.brushes, brushesIndex))
+                return false;
+
+            IncludeLeafBrushRange(range, brushesIndex, static_cast<size_t>(node.leafBrushCount));
+            return true;
+        }
+
+        if (node.leafBrushCount < 0 && !CollectLeafBrushRange_r(clipMap, nodeIndex + 1uz, range, depth + 1uz))
+            return false;
+
+        for (auto side = 0uz; side < 2uz; side++)
+        {
+            const auto childOffset = node.data.children.childOffset[side];
+            if (childOffset == 0u || !CollectLeafBrushRange_r(clipMap, nodeIndex + childOffset, range, depth + 1uz))
+                return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool CollectLeafBrushes_r(const clipMap_t& clipMap, const size_t nodeIndex, std::vector<LeafBrush>& brushes, const size_t depth = 0uz)
+    {
+        if (!clipMap.leafbrushNodes || nodeIndex >= clipMap.leafbrushNodesCount || depth > clipMap.leafbrushNodesCount)
+            return false;
+
+        const auto& node = clipMap.leafbrushNodes[nodeIndex];
+        if (node.leafBrushCount > 0)
+        {
+            if (!node.data.leaf.brushes)
+                return false;
+
+            brushes.insert(brushes.end(), node.data.leaf.brushes, node.data.leaf.brushes + node.leafBrushCount);
+            return true;
+        }
+
+        if (node.leafBrushCount < 0 && !CollectLeafBrushes_r(clipMap, nodeIndex + 1uz, brushes, depth + 1uz))
+            return false;
+
+        for (auto side = 0uz; side < 2uz; side++)
+        {
+            const auto childOffset = node.data.children.childOffset[side];
+            if (childOffset == 0u || !CollectLeafBrushes_r(clipMap, nodeIndex + childOffset, brushes, depth + 1uz))
+                return false;
+        }
+
+        return true;
+    }
+
     [[nodiscard]] std::vector<std::byte> BuildMaterials(const clipMap_t& clipMap)
     {
         std::vector<std::byte> out;
         out.reserve(static_cast<size_t>(clipMap.numMaterials) * 72uz);
+        const auto brushMaterialUsage = BuildBrushMaterialUsage(clipMap);
 
         for (auto i = 0uz; i < clipMap.numMaterials; i++)
         {
             const auto& material = clipMap.materials[i];
+            const auto contentFlags = ReconstructRawMaterialContents(material.contentFlags, brushMaterialUsage[i] != 0u);
             AppendBytes(out, material.material, sizeof(material.material));
             Append(out, material.surfaceFlags);
-            Append(out, material.contentFlags);
+            Append(out, contentFlags);
         }
 
         return out;
@@ -360,31 +483,40 @@ namespace
             const auto* leafBrushNode = leaf.leafBrushNode >= 0 && static_cast<unsigned>(leaf.leafBrushNode) < clipMap.leafbrushNodesCount
                                             ? &clipMap.leafbrushNodes[leaf.leafBrushNode]
                                             : nullptr;
-            const auto leafBrushCount = leafBrushNode && leafBrushNode->leafBrushCount > 0 ? static_cast<int32_t>(leafBrushNode->leafBrushCount) : 0;
+            auto leafBrushCount = 0;
             auto firstLeafBrush = runningFirstLeafBrush;
-            if (leafBrushCount > 0)
+            if (leafBrushNode)
             {
-                auto brushesIndex = 0uz;
+                auto recoveredRange = LeafBrushRange{};
 
-                // Official linker-built assets keep leaf nodes pointing into
-                // clipMap.leafbrushes. OAT-built fastfiles can contain copied
-                // per-node brush arrays instead, so recover the raw leaf range
-                // from the monotonically packed leafbrush cursor in that case.
-                if (TryPointerIndex(clipMap.leafbrushes, clipMap.numLeafBrushes, leafBrushNode->data.leaf.brushes, brushesIndex))
+                // linker_pc partitions each raw leaf brush range into a small
+                // runtime tree. The raw BSP still wants the original contiguous
+                // range, so flatten terminal leaf nodes back to their min/max
+                // span inside clipMap.leafbrushes.
+                if (CollectLeafBrushRange_r(clipMap, static_cast<size_t>(leaf.leafBrushNode), recoveredRange) && recoveredRange.valid)
                 {
-                    firstLeafBrush = static_cast<int32_t>(brushesIndex);
+                    firstLeafBrush = static_cast<int32_t>(recoveredRange.first);
+                    leafBrushCount = static_cast<int32_t>(recoveredRange.end - recoveredRange.first);
                 }
                 else
                 {
-                    brushesIndex = FindLeafBrushRange(clipMap.leafbrushes,
-                        clipMap.numLeafBrushes,
-                        leafBrushNode->data.leaf.brushes,
-                        static_cast<size_t>(leafBrushCount),
-                        static_cast<size_t>(runningFirstLeafBrush));
+                    std::vector<LeafBrush> recoveredBrushes;
+                    if (CollectLeafBrushes_r(clipMap, static_cast<size_t>(leaf.leafBrushNode), recoveredBrushes) && !recoveredBrushes.empty())
+                    {
+                        const auto brushesIndex = FindLeafBrushRange(clipMap.leafbrushes,
+                            clipMap.numLeafBrushes,
+                            recoveredBrushes.data(),
+                            recoveredBrushes.size(),
+                            static_cast<size_t>(runningFirstLeafBrush));
 
-                    if (brushesIndex < clipMap.numLeafBrushes)
-                        firstLeafBrush = static_cast<int32_t>(brushesIndex);
+                        if (brushesIndex < clipMap.numLeafBrushes)
+                        {
+                            firstLeafBrush = static_cast<int32_t>(brushesIndex);
+                            leafBrushCount = static_cast<int32_t>(recoveredBrushes.size());
+                        }
+                    }
                 }
+
             }
 
             // The raw leaf record carries the cluster/cell assignment even for
@@ -1263,9 +1395,30 @@ namespace
             const auto startSurfIndex = static_cast<uint16_t>(model.startSurfIndex);
             const auto surfaceCount = model.surfaceCount;
             const auto surfaceCountNoDecal = model.surfaceCountNoDecal;
-            const uint16_t zeroShort = 0u;
             const uint32_t zero = 0u;
-            const auto brushCount = modelIndex == 0uz && clipMap ? static_cast<uint32_t>(clipMap->numBrushes) : 0u;
+            auto firstCollAabbIndex = 0u;
+            auto collAabbCount = 0u;
+            auto firstBrush = 0u;
+            auto brushCount = modelIndex == 0uz && clipMap ? static_cast<uint32_t>(clipMap->numBrushes) : 0u;
+
+            if (clipMap && modelIndex > 0uz && modelIndex < clipMap->numSubModels)
+            {
+                const auto& cmodel = clipMap->cmodels[modelIndex];
+                firstCollAabbIndex = static_cast<uint16_t>(cmodel.leaf.firstCollAabbIndex);
+                collAabbCount = static_cast<uint16_t>(cmodel.leaf.collAabbCount);
+
+                // linker_pc derives submodel collision leaves from these raw
+                // brush ranges. Runtime clipMap only keeps the partitioned
+                // leafbrush tree, so flatten it back to a contiguous range.
+                std::vector<LeafBrush> modelBrushes;
+                if (cmodel.leaf.leafBrushNode > 0 && CollectLeafBrushes_r(*clipMap, static_cast<size_t>(cmodel.leaf.leafBrushNode), modelBrushes)
+                    && !modelBrushes.empty())
+                {
+                    const auto [minBrush, maxBrush] = std::minmax_element(modelBrushes.begin(), modelBrushes.end());
+                    firstBrush = *minBrush;
+                    brushCount = static_cast<uint32_t>(*maxBrush - *minBrush + 1u);
+                }
+            }
 
             AppendBytes(out, model.bounds[0], sizeof(model.bounds[0]));
             AppendBytes(out, model.bounds[1], sizeof(model.bounds[1]));
@@ -1275,10 +1428,10 @@ namespace
             Append(out, startSurfIndex);
             Append(out, surfaceCountNoDecal);
             Append(out, surfaceCount);
-            Append(out, zeroShort);
-            Append(out, zeroShort);
+            Append(out, static_cast<uint16_t>(firstCollAabbIndex));
+            Append(out, static_cast<uint16_t>(collAabbCount));
             Append(out, zero);
-            Append(out, zero);
+            Append(out, firstBrush);
             Append(out, brushCount);
         }
 

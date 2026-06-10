@@ -215,6 +215,12 @@ namespace
         return result;
     }
 
+    template<typename T> void FillArray(T* data, const size_t count, const unsigned char value)
+    {
+        if (data && count > 0uz)
+            std::memset(data, value, sizeof(T) * count);
+    }
+
     template<typename T> void CopyUnaligned(const std::byte* source, T& destination)
     {
         std::memcpy(&destination, source, sizeof(T));
@@ -318,6 +324,18 @@ namespace
     [[nodiscard]] bool HasPathSeparator(const std::string_view value)
     {
         return value.find('/') != std::string_view::npos || value.find('\\') != std::string_view::npos;
+    }
+
+    [[nodiscard]] std::string BspBaseName(std::string_view assetName)
+    {
+        const auto lastSlash = assetName.find_last_of("/\\");
+        auto baseName = lastSlash == std::string_view::npos ? assetName : assetName.substr(lastSlash + 1uz);
+
+        constexpr std::string_view BSP_EXTENSION = ".d3dbsp";
+        if (baseName.size() >= BSP_EXTENSION.size() && baseName.substr(baseName.size() - BSP_EXTENSION.size()) == BSP_EXTENSION)
+            baseName.remove_suffix(BSP_EXTENSION.size());
+
+        return std::string(baseName);
     }
 
     void CrossProduct(const float (&left)[3], const float (&right)[3], float (&out)[3])
@@ -1088,27 +1106,21 @@ namespace
         return std::sqrt(radiusSquared);
     }
 
-    void SetLeafBoundsFromCollisionAabbs(const clipMap_t& clipMap, cLeaf_t& leaf)
+    [[nodiscard]] int LeafTerrainContents(const clipMap_t& clipMap, const cLeaf_t& leaf)
     {
-        if (!clipMap.aabbTrees || leaf.collAabbCount == 0u || leaf.firstCollAabbIndex >= clipMap.aabbTreeCount)
-            return;
-
-        for (auto axis = 0uz; axis < 3uz; axis++)
-        {
-            leaf.mins[axis] = std::numeric_limits<float>::max();
-            leaf.maxs[axis] = std::numeric_limits<float>::lowest();
-        }
+        auto contents = 0;
+        if (!clipMap.aabbTrees || !clipMap.materials)
+            return contents;
 
         const auto endIndex = std::min<unsigned>(clipMap.aabbTreeCount, static_cast<unsigned>(leaf.firstCollAabbIndex) + leaf.collAabbCount);
         for (auto aabbIndex = static_cast<unsigned>(leaf.firstCollAabbIndex); aabbIndex < endIndex; aabbIndex++)
         {
-            const auto& aabb = clipMap.aabbTrees[aabbIndex];
-            for (auto axis = 0uz; axis < 3uz; axis++)
-            {
-                leaf.mins[axis] = std::min(leaf.mins[axis], aabb.origin[axis] - aabb.halfSize[axis]);
-                leaf.maxs[axis] = std::max(leaf.maxs[axis], aabb.origin[axis] + aabb.halfSize[axis]);
-            }
+            const auto materialIndex = clipMap.aabbTrees[aabbIndex].materialIndex;
+            if (materialIndex < clipMap.numMaterials)
+                contents |= clipMap.materials[materialIndex].contentFlags;
         }
+
+        return contents;
     }
 
     [[nodiscard]] int BrushContents(const clipMap_t& clipMap, const cbrush_t& brush)
@@ -1134,6 +1146,280 @@ namespace
         return contents;
     }
 
+    void InitLeafBrushNode(cLeafBrushNode_s& node)
+    {
+        node.axis = 0;
+        node.leafBrushCount = 0;
+        node.contents = 0;
+        node.data.leaf.brushes = nullptr;
+        node.data.children.dist = -std::numeric_limits<float>::max();
+        node.data.children.range = 0.0f;
+        node.data.children.childOffset[0] = 0u;
+        node.data.children.childOffset[1] = 0u;
+    }
+
+    [[nodiscard]] size_t AllocLeafBrushNode(std::vector<cLeafBrushNode_s>& nodes)
+    {
+        const auto index = nodes.size();
+        auto& node = nodes.emplace_back();
+        node = {};
+        InitLeafBrushNode(node);
+        return index;
+    }
+
+    [[nodiscard]] float LeafBrushPartitionScore(
+        const clipMap_t& clipMap,
+        const LeafBrush* leafBrushes,
+        const int leafBrushCount,
+        const int axis,
+        const float (&mins)[3],
+        const float (&maxs)[3],
+        float& dist)
+    {
+        auto rightBrushCount = -1;
+        auto leftBrushCount = -1;
+        auto min = -std::numeric_limits<float>::max();
+        auto max = std::numeric_limits<float>::max();
+
+        for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
+        {
+            const auto brushIndex = leafBrushes[brushOffset];
+            const auto& brush = clipMap.brushes[brushIndex];
+            if (dist > brush.mins[axis])
+            {
+                if (dist >= brush.maxs[axis])
+                {
+                    leftBrushCount++;
+                    min = std::max(min, brush.maxs[axis]);
+                }
+            }
+            else
+            {
+                rightBrushCount++;
+                max = std::min(max, brush.mins[axis]);
+            }
+        }
+
+        const auto scoreBrushCount = std::min(rightBrushCount, leftBrushCount);
+        dist = (min + max) * 0.5f;
+        if (scoreBrushCount <= 0)
+            return 0.0f;
+
+        return static_cast<float>(scoreBrushCount) * std::min(max - mins[axis], maxs[axis] - min);
+    }
+
+    [[nodiscard]] std::optional<size_t> PartitionLeafBrushes_r(
+        const clipMap_t& clipMap,
+        std::vector<cLeafBrushNode_s>& nodes,
+        LeafBrush* leafBrushes,
+        const int leafBrushCount,
+        const float (&mins)[3],
+        const float (&maxs)[3],
+        std::string& error)
+    {
+        if (leafBrushCount <= 0)
+        {
+            error = "cannot partition an empty leafbrush range";
+            return std::nullopt;
+        }
+
+        const auto nodeIndex = AllocLeafBrushNode(nodes);
+        auto bestScore = 0.0f;
+        auto axis = -1;
+        auto dist = 0.0f;
+
+        for (auto testAxis = 0; testAxis < 3; testAxis++)
+        {
+            for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
+            {
+                const auto brushIndex = leafBrushes[brushOffset];
+                const auto& brush = clipMap.brushes[brushIndex];
+
+                auto testDist = brush.mins[testAxis];
+                auto score = LeafBrushPartitionScore(clipMap, leafBrushes, leafBrushCount, testAxis, mins, maxs, testDist);
+                if (bestScore < score)
+                {
+                    bestScore = score;
+                    axis = testAxis;
+                    dist = testDist;
+                }
+
+                testDist = brush.maxs[testAxis];
+                score = LeafBrushPartitionScore(clipMap, leafBrushes, leafBrushCount, testAxis, mins, maxs, testDist);
+                if (bestScore < score)
+                {
+                    bestScore = score;
+                    axis = testAxis;
+                    dist = testDist;
+                }
+            }
+        }
+
+        if (axis >= 0)
+        {
+            std::vector<LeafBrush> leafBrushesCopy(leafBrushes, leafBrushes + leafBrushCount);
+            auto* childLeafBrushes = leafBrushes;
+            auto centerBrushCount = 0;
+            for (const auto brushIndex : leafBrushesCopy)
+            {
+                const auto& brush = clipMap.brushes[brushIndex];
+                if (dist > brush.mins[axis] && dist < brush.maxs[axis])
+                    childLeafBrushes[centerBrushCount++] = brushIndex;
+            }
+
+            if (centerBrushCount > 0)
+            {
+                const auto childNodeIndex = PartitionLeafBrushes_r(clipMap, nodes, childLeafBrushes, centerBrushCount, mins, maxs, error);
+                if (!childNodeIndex)
+                    return std::nullopt;
+
+                nodes[nodeIndex].leafBrushCount = -1;
+                nodes[nodeIndex].contents = nodes[*childNodeIndex].contents;
+                childLeafBrushes += centerBrushCount;
+            }
+
+            auto range = std::numeric_limits<float>::max();
+            nodes[nodeIndex].axis = static_cast<char>(axis);
+            nodes[nodeIndex].data.children.dist = dist;
+
+            for (auto side = 0; side < 2; side++)
+            {
+                auto childBrushCount = 0;
+                for (const auto brushIndex : leafBrushesCopy)
+                {
+                    const auto& brush = clipMap.brushes[brushIndex];
+                    if (side != 0)
+                    {
+                        if (dist < brush.maxs[axis])
+                            continue;
+
+                        range = std::min(range, dist - brush.maxs[axis]);
+                    }
+                    else
+                    {
+                        if (dist > brush.mins[axis])
+                            continue;
+
+                        range = std::min(range, brush.mins[axis] - dist);
+                    }
+
+                    childLeafBrushes[childBrushCount++] = brushIndex;
+                }
+
+                if (childBrushCount <= 0)
+                {
+                    error = "leafbrush partition produced an empty child";
+                    return std::nullopt;
+                }
+
+                float childMins[3]{mins[0], mins[1], mins[2]};
+                float childMaxs[3]{maxs[0], maxs[1], maxs[2]};
+                if (side != 0)
+                    childMaxs[axis] = dist - range;
+                else
+                    childMins[axis] = dist + range;
+
+                const auto childNodeIndex = PartitionLeafBrushes_r(clipMap, nodes, childLeafBrushes, childBrushCount, childMins, childMaxs, error);
+                if (!childNodeIndex)
+                    return std::nullopt;
+
+                const auto childOffset = *childNodeIndex - nodeIndex;
+                if (childOffset > std::numeric_limits<uint16_t>::max())
+                {
+                    error = "leafbrush partition child offset exceeded uint16 range";
+                    return std::nullopt;
+                }
+
+                nodes[nodeIndex].data.children.childOffset[side] = static_cast<uint16_t>(childOffset);
+                nodes[nodeIndex].contents |= nodes[*childNodeIndex].contents;
+                childLeafBrushes += childBrushCount;
+            }
+
+            nodes[nodeIndex].data.children.range = range;
+            return nodeIndex;
+        }
+
+        if (leafBrushCount > std::numeric_limits<int16_t>::max())
+        {
+            error = "leafbrush partition leaf count exceeded int16 range";
+            return std::nullopt;
+        }
+
+        nodes[nodeIndex].leafBrushCount = static_cast<int16_t>(leafBrushCount);
+        for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
+        {
+            const auto brushIndex = leafBrushes[brushOffset];
+            nodes[nodeIndex].contents |= clipMap.brushes[brushIndex].contents;
+        }
+
+        if (nodes[nodeIndex].contents == 0)
+        {
+            error = "leafbrush partition produced a leaf with no contents";
+            return std::nullopt;
+        }
+
+        nodes[nodeIndex].data.leaf.brushes = leafBrushes;
+        return nodeIndex;
+    }
+
+    [[nodiscard]] bool PartitionLeafBrushes(
+        const clipMap_t& clipMap,
+        std::vector<cLeafBrushNode_s>& nodes,
+        LeafBrush* leafBrushes,
+        const int leafBrushCount,
+        cLeaf_t& leaf,
+        std::string& error)
+    {
+        leaf.brushContents = 0;
+        leaf.terrainContents = LeafTerrainContents(clipMap, leaf);
+        leaf.leafBrushNode = 0;
+
+        if (leafBrushCount <= 0)
+            return true;
+
+        float mins[3]{
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+        };
+        float maxs[3]{
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max(),
+        };
+
+        for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
+        {
+            const auto brushIndex = leafBrushes[brushOffset];
+            if (brushIndex >= clipMap.numBrushes)
+            {
+                error = "leafbrush references invalid brush";
+                return false;
+            }
+
+            const auto& brush = clipMap.brushes[brushIndex];
+            leaf.brushContents |= brush.contents;
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                mins[axis] = std::min(mins[axis], brush.mins[axis]);
+                maxs[axis] = std::max(maxs[axis], brush.maxs[axis]);
+            }
+        }
+
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            leaf.mins[axis] = mins[axis] - 0.125f;
+            leaf.maxs[axis] = maxs[axis] + 0.125f;
+        }
+
+        const auto nodeIndex = PartitionLeafBrushes_r(clipMap, nodes, leafBrushes, leafBrushCount, mins, maxs, error);
+        if (!nodeIndex)
+            return false;
+
+        leaf.leafBrushNode = static_cast<int>(*nodeIndex);
+        return true;
+    }
+
     [[nodiscard]] bool PopulateClipMapMaterials(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         const auto* materials = bsp.GetLump(LUMP_MATERIALS);
@@ -1155,7 +1441,12 @@ namespace
             const auto* record = materials->data.data() + i * RAW_MATERIAL_SIZE;
             std::memcpy(clipMap.materials[i].material, record, sizeof(clipMap.materials[i].material));
             clipMap.materials[i].surfaceFlags = ReadI32(record, 64uz);
-            clipMap.materials[i].contentFlags = ReadI32(record, 68uz);
+            // linker_pc strips raw-only BSP content bits before storing the
+            // runtime clipMap material table. Brush contents are derived from
+            // this masked value, while the dumper reconstructs the raw marker
+            // where needed when writing a .d3dbsp back out.
+            clipMap.materials[i].contentFlags =
+                static_cast<int>(static_cast<unsigned>(ReadI32(record, 68uz)) & IW3::d3dbsp::RUNTIME_MATERIAL_CONTENT_MASK);
         }
 
         return true;
@@ -1235,7 +1526,10 @@ namespace
         }
 
         clipMap.numBrushes = static_cast<uint16_t>(brushCount);
-        clipMap.brushes = AllocZeroed<cbrush_t>(memory, brushCount);
+        // The stock linker allocates one extra brush after the raw brush array
+        // for the runtime box hull used by CM_InitThreadData/trace code. Keep
+        // numBrushes as the raw count; box_brush points at the extra slot.
+        clipMap.brushes = AllocZeroed<cbrush_t>(memory, brushCount + 1uz);
         clipMap.numBrushSides = static_cast<unsigned>(nonAxialSideCount);
         clipMap.brushsides = nonAxialSideCount > 0uz ? AllocZeroed<cbrushside_t>(memory, nonAxialSideCount) : nullptr;
         clipMap.numBrushEdges = brushEdges ? static_cast<unsigned>(brushEdges->data.size()) : 0u;
@@ -1353,7 +1647,11 @@ namespace
     {
         const auto* leafBrushes = bsp.GetLump(LUMP_LEAFBRUSHES);
         if (!leafBrushes)
+        {
+            clipMap.numLeafBrushes = 0u;
+            clipMap.leafbrushes = AllocZeroed<LeafBrush>(memory, 1uz);
             return true;
+        }
 
         if (leafBrushes->data.size() % RAW_LEAF_BRUSH_SIZE != 0uz)
         {
@@ -1369,7 +1667,10 @@ namespace
         }
 
         clipMap.numLeafBrushes = static_cast<unsigned>(leafBrushCount);
-        clipMap.leafbrushes = AllocZeroed<LeafBrush>(memory, leafBrushCount);
+        // CM_InitBoxHull writes one extra entry at leafbrushes[numLeafBrushes]
+        // without increasing numLeafBrushes. Allocate that spare slot so the
+        // serialized box leaf node can reference it safely.
+        clipMap.leafbrushes = AllocZeroed<LeafBrush>(memory, leafBrushCount + 1uz);
 
         for (auto i = 0uz; i < leafBrushCount; i++)
         {
@@ -1443,12 +1744,13 @@ namespace
             const auto partitionCount = RecordCount(*partitions, RAW_COLLISION_PARTITION_SIZE);
             clipMap.partitionCount = static_cast<int>(partitionCount);
             clipMap.partitions = AllocZeroed<CollisionPartition>(memory, partitionCount);
+            const auto runtimeBorderCount = static_cast<uint32_t>(std::max(clipMap.borderCount, 0));
             for (auto i = 0uz; i < partitionCount; i++)
             {
                 const auto* record = partitions->data.data() + i * RAW_COLLISION_PARTITION_SIZE;
                 const auto borderIndex = ReadU32(record, 8uz);
                 const auto borderCount = static_cast<unsigned char>(std::to_integer<unsigned char>(record[3]));
-                if (borderCount > 0u && borderIndex + borderCount > static_cast<unsigned>(std::max(clipMap.borderCount, 0)))
+                if (borderCount > 0u && (borderIndex > runtimeBorderCount || borderCount > runtimeBorderCount - borderIndex))
                 {
                     error = "collision partition references invalid border";
                     return false;
@@ -1457,7 +1759,11 @@ namespace
                 clipMap.partitions[i].triCount = static_cast<unsigned char>(std::to_integer<unsigned char>(record[2]));
                 clipMap.partitions[i].borderCount = borderCount;
                 clipMap.partitions[i].firstTri = ReadI32(record, 4uz);
-                clipMap.partitions[i].borders = clipMap.borders && borderCount > 0u ? &clipMap.borders[borderIndex] : nullptr;
+                // Raw partitions can retain an in-range border index even when
+                // borderCount is zero. Runtime traces ignore it in that case,
+                // but preserving the pointer lets the dumper reproduce the raw
+                // index after an OAT link/unlink round trip.
+                clipMap.partitions[i].borders = clipMap.borders && borderIndex < runtimeBorderCount ? &clipMap.borders[borderIndex] : nullptr;
             }
         }
 
@@ -1490,20 +1796,9 @@ namespace
         }
 
         const auto leafCount = RecordCount(*leafs, RAW_LEAF_SIZE);
-        auto leafBrushNodeCount = 0uz;
-        for (auto leafIndex = 0uz; leafIndex < leafCount; leafIndex++)
-        {
-            const auto* record = leafs->data.data() + leafIndex * RAW_LEAF_SIZE;
-            if (ReadI32(record, 16uz) > 0)
-                leafBrushNodeCount++;
-        }
-
         clipMap.numLeafs = static_cast<unsigned>(leafCount);
         clipMap.leafs = AllocZeroed<cLeaf_t>(memory, leafCount);
-        clipMap.leafbrushNodesCount = static_cast<unsigned>(leafBrushNodeCount);
-        clipMap.leafbrushNodes = leafBrushNodeCount > 0uz ? AllocZeroed<cLeafBrushNode_s>(memory, leafBrushNodeCount) : nullptr;
 
-        auto nextLeafBrushNode = 0uz;
         auto maxCluster = -1;
         for (auto leafIndex = 0uz; leafIndex < leafCount; leafIndex++)
         {
@@ -1512,10 +1807,8 @@ namespace
             const auto cluster = ReadI32(record);
             const auto firstCollAabbIndex = ReadI32(record, 4uz);
             const auto collAabbCount = ReadI32(record, 8uz);
-            const auto firstLeafBrush = ReadI32(record, 12uz);
-            const auto leafBrushCount = ReadI32(record, 16uz);
 
-            if (firstCollAabbIndex < 0 || collAabbCount < 0 || firstLeafBrush < 0 || leafBrushCount < 0)
+            if (firstCollAabbIndex < 0 || collAabbCount < 0)
             {
                 error = "leaf contains negative runtime count/index";
                 return false;
@@ -1525,38 +1818,116 @@ namespace
             leaf.collAabbCount = static_cast<uint16_t>(std::min(collAabbCount, static_cast<int>(std::numeric_limits<uint16_t>::max())));
             leaf.cluster = static_cast<int16_t>(
                 std::clamp(cluster, static_cast<int>(std::numeric_limits<int16_t>::min()), static_cast<int>(std::numeric_limits<int16_t>::max())));
-            leaf.leafBrushNode = -1;
-            SetLeafBoundsFromCollisionAabbs(clipMap, leaf);
+            leaf.leafBrushNode = 0;
 
             if (cluster >= 0)
                 maxCluster = std::max(maxCluster, cluster);
-
-            if (leafBrushCount > 0)
-            {
-                if (static_cast<size_t>(firstLeafBrush + leafBrushCount) > clipMap.numLeafBrushes || nextLeafBrushNode >= leafBrushNodeCount)
-                {
-                    error = "leaf references invalid leafbrush range";
-                    return false;
-                }
-
-                auto& node = clipMap.leafbrushNodes[nextLeafBrushNode];
-                node.axis = -1;
-                node.leafBrushCount = static_cast<int16_t>(std::min(leafBrushCount, static_cast<int>(std::numeric_limits<int16_t>::max())));
-                node.data.leaf.brushes = &clipMap.leafbrushes[firstLeafBrush];
-                for (auto brushOffset = 0; brushOffset < leafBrushCount; brushOffset++)
-                {
-                    const auto brushIndex = clipMap.leafbrushes[firstLeafBrush + brushOffset];
-                    if (brushIndex < clipMap.numBrushes)
-                        node.contents |= clipMap.brushes[brushIndex].contents;
-                }
-
-                leaf.brushContents = node.contents;
-                leaf.leafBrushNode = static_cast<int>(nextLeafBrushNode);
-                nextLeafBrushNode++;
-            }
         }
 
         clipMap.numClusters = maxCluster + 1;
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateClipMapLeafBrushNodes(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
+    {
+        const auto* leafs = bsp.GetLump(LUMP_LEAFS);
+        if (!leafs || !clipMap.leafs)
+            return true;
+
+        if (leafs->data.size() % RAW_LEAF_SIZE != 0uz || RecordCount(*leafs, RAW_LEAF_SIZE) != clipMap.numLeafs)
+        {
+            error = "leaf lump changed before leafbrush node build";
+            return false;
+        }
+
+        // Stock cm_load_obj builds this array in temp memory with index 0 left
+        // as an unused sentinel. Leaf traces assert leafBrushNode is non-zero,
+        // so real nodes start at index 1.
+        std::vector<cLeafBrushNode_s> nodes;
+        nodes.reserve(static_cast<size_t>(clipMap.numLeafBrushes) + static_cast<size_t>(clipMap.numBrushes) + 2uz);
+        nodes.emplace_back();
+        nodes[0] = {};
+
+        for (auto leafIndex = 0uz; leafIndex < clipMap.numLeafs; leafIndex++)
+        {
+            const auto* record = leafs->data.data() + leafIndex * RAW_LEAF_SIZE;
+            const auto firstLeafBrush = ReadI32(record, 12uz);
+            const auto leafBrushCount = ReadI32(record, 16uz);
+            if (firstLeafBrush < 0 || leafBrushCount < 0)
+            {
+                error = "leaf contains negative leafbrush range";
+                return false;
+            }
+
+            if (static_cast<size_t>(firstLeafBrush + leafBrushCount) > clipMap.numLeafBrushes)
+            {
+                error = "leaf references invalid leafbrush range";
+                return false;
+            }
+
+            if (!PartitionLeafBrushes(clipMap, nodes, &clipMap.leafbrushes[firstLeafBrush], leafBrushCount, clipMap.leafs[leafIndex], error))
+                return false;
+        }
+
+        const auto* models = bsp.GetLump(LUMP_MODELS);
+        if (models && clipMap.cmodels)
+        {
+            if (models->data.size() % RAW_MODEL_SIZE != 0uz || RecordCount(*models, RAW_MODEL_SIZE) != clipMap.numSubModels)
+            {
+                error = "model lump changed before leafbrush node build";
+                return false;
+            }
+
+            for (auto modelIndex = 1uz; modelIndex < clipMap.numSubModels; modelIndex++)
+            {
+                const auto* record = models->data.data() + modelIndex * RAW_MODEL_SIZE;
+                const auto firstBrush = ReadU32(record, 40uz);
+                const auto brushCount = ReadU32(record, 44uz);
+                if (brushCount == 0u)
+                    continue;
+
+                if (firstBrush + brushCount > clipMap.numBrushes)
+                {
+                    error = "model references invalid brush range";
+                    return false;
+                }
+
+                auto* modelLeafBrushes = AllocZeroed<LeafBrush>(memory, brushCount);
+                for (auto brushOffset = 0u; brushOffset < brushCount; brushOffset++)
+                    modelLeafBrushes[brushOffset] = static_cast<LeafBrush>(firstBrush + brushOffset);
+
+                if (!PartitionLeafBrushes(clipMap, nodes, modelLeafBrushes, static_cast<int>(brushCount), clipMap.cmodels[modelIndex].leaf, error))
+                    return false;
+            }
+        }
+
+        clipMap.box_brush = &clipMap.brushes[clipMap.numBrushes];
+        clipMap.box_brush->contents = -1;
+        clipMap.box_brush->sides = nullptr;
+        clipMap.box_brush->baseAdjacentSide = nullptr;
+        for (auto side = 0uz; side < 2uz; side++)
+        {
+            for (auto axis = 0uz; axis < 3uz; axis++)
+                clipMap.box_brush->axialMaterialNum[side][axis] = -1;
+        }
+
+        clipMap.box_model.leaf.brushContents = -1;
+        clipMap.box_model.leaf.terrainContents = 0;
+        clipMap.box_model.leaf.leafBrushNode = static_cast<int>(AllocLeafBrushNode(nodes));
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            clipMap.box_model.leaf.mins[axis] = std::numeric_limits<float>::max();
+            clipMap.box_model.leaf.maxs[axis] = -std::numeric_limits<float>::max();
+        }
+
+        auto& boxLeafBrushNode = nodes[clipMap.box_model.leaf.leafBrushNode];
+        boxLeafBrushNode.leafBrushCount = 1;
+        boxLeafBrushNode.data.leaf.brushes = &clipMap.leafbrushes[clipMap.numLeafBrushes];
+        clipMap.leafbrushes[clipMap.numLeafBrushes] = clipMap.numBrushes;
+
+        clipMap.leafbrushNodesCount = static_cast<unsigned>(nodes.size());
+        clipMap.leafbrushNodes = AllocZeroed<cLeafBrushNode_s>(memory, nodes.size());
+        std::copy(nodes.begin(), nodes.end(), clipMap.leafbrushNodes);
         return true;
     }
 
@@ -1580,40 +1951,73 @@ namespace
         {
             const auto* record = models->data.data() + modelIndex * RAW_MODEL_SIZE;
             auto& model = clipMap.cmodels[modelIndex];
-            CopyFloat3(record, model.mins);
-            CopyFloat3(record + 12uz, model.maxs);
+            for (auto axis = 0uz; axis < 3uz; axis++)
+            {
+                model.mins[axis] = ReadFloat(record, axis * sizeof(float)) - 1.0f;
+                model.maxs[axis] = ReadFloat(record, 12uz + axis * sizeof(float)) + 1.0f;
+            }
             model.radius = RadiusFromBounds(model.mins, model.maxs);
-            if (clipMap.numLeafs > 0u && clipMap.leafs)
-                model.leaf = clipMap.leafs[0];
+
+            if (modelIndex > 0uz)
+            {
+                const auto firstCollAabbIndex = ReadU32(record, 32uz);
+                const auto collAabbCount = ReadU32(record, 36uz);
+                if (firstCollAabbIndex > std::numeric_limits<uint16_t>::max() || collAabbCount > std::numeric_limits<uint16_t>::max())
+                {
+                    error = "model collision AABB range exceeded uint16";
+                    return false;
+                }
+
+                model.leaf.firstCollAabbIndex = static_cast<uint16_t>(firstCollAabbIndex);
+                model.leaf.collAabbCount = static_cast<uint16_t>(collAabbCount);
+            }
         }
 
-        return true;
+        return PopulateClipMapLeafBrushNodes(clipMap, bsp, memory, error);
     }
 
     [[nodiscard]] bool PopulateClipMapVisibility(clipMap_t& clipMap, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
         const auto* visibility = bsp.GetLump(LUMP_VISIBILITY);
         if (!visibility || visibility->data.empty())
+        {
+            // CMod_LoadVisibility synthesizes an all-visible table when the BSP
+            // has no visibility lump. It sizes clusterBytes from the leaf
+            // cluster count collected earlier, then collapses numClusters to 1.
+            clipMap.clusterBytes = ((clipMap.numClusters + 63) & ~63) >> 3;
+            clipMap.numClusters = 1;
+            clipMap.visibility = AllocZeroed<char>(memory, static_cast<size_t>(std::max(clipMap.clusterBytes, 0)));
+            FillArray(clipMap.visibility, static_cast<size_t>(std::max(clipMap.clusterBytes, 0)), 0xffu);
             return true;
+        }
 
-        clipMap.visibility = AllocCopy<char>(memory, visibility->data);
+        if (visibility->data.size() < 8uz)
+        {
+            error = "visibility lump has a truncated header";
+            return false;
+        }
+
+        const auto numClusters = ReadI32(visibility->data.data());
+        const auto clusterBytes = ReadI32(visibility->data.data(), 4uz);
+        if (numClusters < 0 || clusterBytes < 0)
+        {
+            error = "visibility lump has negative dimensions";
+            return false;
+        }
+
+        const auto expectedSize = 8uz + static_cast<size_t>(numClusters) * static_cast<size_t>(clusterBytes);
+        if (visibility->data.size() != expectedSize)
+        {
+            error = "visibility lump size does not match its header";
+            return false;
+        }
+
+        clipMap.numClusters = numClusters;
+        clipMap.clusterBytes = clusterBytes;
+        clipMap.visibility = AllocZeroed<char>(memory, visibility->data.size() - 8uz);
+        if (clipMap.visibility)
+            std::memcpy(clipMap.visibility, visibility->data.data() + 8uz, visibility->data.size() - 8uz);
         clipMap.vised = 1;
-
-        if (clipMap.numClusters > 0)
-        {
-            if (visibility->data.size() % static_cast<size_t>(clipMap.numClusters) != 0uz)
-            {
-                error = "visibility lump does not divide by cluster count";
-                return false;
-            }
-
-            clipMap.clusterBytes = static_cast<int>(visibility->data.size() / static_cast<size_t>(clipMap.numClusters));
-        }
-        else
-        {
-            clipMap.clusterBytes = static_cast<int>(visibility->data.size());
-        }
-
         return true;
     }
 
@@ -2285,7 +2689,9 @@ namespace
         }
 
         world.dpvsPlanes.cellCount = static_cast<int>(cellCount);
-        world.cellBitsCount = static_cast<int>((cellCount + 31uz) / 32uz);
+        // Stock R_LoadBsp computes this as a byte count for stack/local cell
+        // masks, not as a count of 32-bit words.
+        world.cellBitsCount = static_cast<int>(16uz * ((cellCount + 127uz) >> 7uz));
         world.cells = AllocZeroed<GfxCell>(memory, cellCount);
 
         for (auto cellIndex = 0uz; cellIndex < cellCount; cellIndex++)
@@ -2702,6 +3108,80 @@ namespace
         return true;
     }
 
+    void PopulateWorldRuntimeData(GfxWorld& world, MemoryManager& memory)
+    {
+        const auto cellCount = static_cast<size_t>(std::max(world.dpvsPlanes.cellCount, 0));
+        const auto cellWordCount = (cellCount + 31uz) >> 5uz;
+
+        // R_LoadWorldRuntime derives these runtime DPVS buffers after raw BSP
+        // loading. They are serialized into fastfiles by linker_pc, but they do
+        // not have dedicated d3dbsp lumps.
+        world.cellBitsCount = static_cast<int>(16uz * ((cellCount + 127uz) >> 7uz));
+        if (cellCount > 0uz)
+        {
+            if (!world.cellCasterBits)
+                world.cellCasterBits = AllocZeroed<unsigned int>(memory, cellCount * cellWordCount);
+            if (!world.dpvsPlanes.sceneEntCellBits)
+                world.dpvsPlanes.sceneEntCellBits = AllocZeroed<unsigned int>(memory, cellCount * 0x100uz);
+        }
+
+        if (world.modelCount > 0 && world.models)
+        {
+            world.dpvs.staticSurfaceCount = world.models[0].surfaceCount;
+            world.dpvs.staticSurfaceCountNoDecal = world.models[0].surfaceCountNoDecal;
+        }
+
+        if (world.dpvs.staticSurfaceCount > 0u)
+        {
+            world.dpvs.litSurfsBegin = 0u;
+            if (world.dpvs.litSurfsEnd == 0u || world.dpvs.litSurfsEnd > world.dpvs.staticSurfaceCount)
+                world.dpvs.litSurfsEnd = world.dpvs.staticSurfaceCount;
+            if (world.dpvs.decalSurfsBegin == 0u && world.dpvs.decalSurfsEnd == 0u)
+            {
+                world.dpvs.decalSurfsBegin = world.dpvs.staticSurfaceCount;
+                world.dpvs.decalSurfsEnd = world.dpvs.staticSurfaceCount;
+            }
+            if (world.dpvs.emissiveSurfsBegin == 0u && world.dpvs.emissiveSurfsEnd == 0u)
+            {
+                world.dpvs.emissiveSurfsBegin = world.dpvs.staticSurfaceCount;
+                world.dpvs.emissiveSurfsEnd = world.dpvs.staticSurfaceCount;
+            }
+        }
+
+        world.dpvs.smodelVisDataCount = 4u * ((world.dpvs.smodelCount + 127u) >> 7u);
+        world.dpvs.surfaceVisDataCount = 4u * ((world.dpvs.staticSurfaceCount + 127u) >> 7u);
+
+        for (auto viewIndex = 0uz; viewIndex < 3uz; viewIndex++)
+        {
+            if (world.dpvs.smodelCount > 0u && !world.dpvs.smodelVisData[viewIndex])
+                world.dpvs.smodelVisData[viewIndex] = AllocZeroed<char>(memory, world.dpvs.smodelCount);
+            if (world.dpvs.staticSurfaceCount > 0u && !world.dpvs.surfaceVisData[viewIndex])
+                world.dpvs.surfaceVisData[viewIndex] = AllocZeroed<char>(memory, world.dpvs.staticSurfaceCount);
+        }
+
+        if (world.dpvs.smodelCount > 0u && !world.dpvs.lodData)
+            world.dpvs.lodData = AllocZeroed<raw_uint128>(memory, 2uz * world.dpvs.smodelVisDataCount);
+
+        if (world.dpvs.staticSurfaceCount > 0u)
+        {
+            if (!world.dpvs.surfaceMaterials)
+                world.dpvs.surfaceMaterials = AllocZeroed<GfxDrawSurf>(memory, world.dpvs.staticSurfaceCount);
+            if (!world.dpvs.surfaceCastsSunShadow)
+                world.dpvs.surfaceCastsSunShadow = AllocZeroed<raw_uint128>(memory, world.dpvs.surfaceVisDataCount);
+        }
+
+        const auto sortedSurfIndexCount = static_cast<size_t>(world.dpvs.staticSurfaceCount + world.dpvs.staticSurfaceCountNoDecal);
+        if (sortedSurfIndexCount > 0uz)
+        {
+            world.dpvs.sortedSurfIndex = AllocZeroed<uint16_t>(memory, sortedSurfIndexCount);
+            for (auto i = 0uz; i < sortedSurfIndexCount; i++)
+            {
+                const auto sourceIndex = world.surfaceCount > 0 ? i % static_cast<size_t>(world.surfaceCount) : 0uz;
+                world.dpvs.sortedSurfIndex[i] = static_cast<uint16_t>(std::min(sourceIndex, static_cast<size_t>(UINT16_MAX)));
+            }
+        }
+    }
+
     [[nodiscard]] bool PopulateWorldDpvsPlanes(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
     {
         if (!clipMap)
@@ -3094,7 +3574,8 @@ namespace
 
             auto* world = AllocZeroed<GfxWorld>(m_memory);
             world->name = m_memory.Dup(assetName.c_str());
-            world->baseName = world->name;
+            const auto baseName = BspBaseName(assetName);
+            world->baseName = m_memory.Dup(baseName.c_str());
             SetOutdoorLookupIdentity(*world);
 
             AssetRegistration<AssetGfxWorld> registration(assetName, world);
@@ -3128,6 +3609,7 @@ namespace
                 return AssetCreationResult::Failure();
             }
 
+            PopulateWorldRuntimeData(*world, m_memory);
             PopulateWorldSkySurfaces(*world, m_memory);
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
