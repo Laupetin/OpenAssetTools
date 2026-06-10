@@ -3343,6 +3343,40 @@ namespace
         }
     }
 
+    [[nodiscard]] bool IsUniformReflectionProbePixels(const std::byte* source, const uint8_t b, const uint8_t g, const uint8_t r, const uint8_t a)
+    {
+        const auto pixelCount = REFLECTION_PROBE_RAW_DATA_SIZE / sizeof(uint32_t);
+        for (auto pixelIndex = 0uz; pixelIndex < pixelCount; pixelIndex++)
+        {
+            const auto* pixel = source + pixelIndex * sizeof(uint32_t);
+            if (std::to_integer<uint8_t>(pixel[0]) != b || std::to_integer<uint8_t>(pixel[1]) != g || std::to_integer<uint8_t>(pixel[2]) != r
+                || std::to_integer<uint8_t>(pixel[3]) != a)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool IsPlaceholderReflectionProbePixels(const std::byte* source)
+    {
+        return IsUniformReflectionProbePixels(source, 0u, 0u, 0u, 0u) || IsUniformReflectionProbePixels(source, 0x48u, 0x48u, 0x48u, 0u);
+    }
+
+    void FillDefaultAuthoredReflectionProbePixels(char* out)
+    {
+        const auto pixelCount = REFLECTION_PROBE_RAW_DATA_SIZE / sizeof(uint32_t);
+        for (auto pixelIndex = 0uz; pixelIndex < pixelCount; pixelIndex++)
+        {
+            auto* pixel = out + pixelIndex * sizeof(uint32_t);
+            pixel[0] = 0;
+            pixel[1] = 0;
+            pixel[2] = static_cast<char>(0xFF);
+            pixel[3] = static_cast<char>(0xFF);
+        }
+    }
+
     [[nodiscard]] std::optional<std::pair<std::vector<std::byte>, std::vector<std::byte>>> BuildLightmapAtlasImages(
         const IW3::d3dbsp::Lump& lightmaps,
         const LightmapAtlasGroup& group,
@@ -3463,6 +3497,16 @@ namespace
 
     void CopyTransformedReflectionProbePixels(char* out, const std::byte* source)
     {
+        // cod4map can emit placeholder probe pixels when reflections were not
+        // generated. linker_pc normalizes those authored probes to an opaque
+        // blue fallback image; preserving/color-correcting the placeholder would
+        // produce black probes and a non-canonical d3dbsp after dumping.
+        if (IsPlaceholderReflectionProbePixels(source))
+        {
+            FillDefaultAuthoredReflectionProbePixels(out);
+            return;
+        }
+
         const auto pixelCount = REFLECTION_PROBE_RAW_DATA_SIZE / sizeof(uint32_t);
         for (auto pixelIndex = 0uz; pixelIndex < pixelCount; pixelIndex++)
         {
