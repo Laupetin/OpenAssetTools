@@ -1395,7 +1395,6 @@ namespace
             const auto startSurfIndex = static_cast<uint16_t>(model.startSurfIndex);
             const auto surfaceCount = model.surfaceCount;
             const auto surfaceCountNoDecal = model.surfaceCountNoDecal;
-            const uint32_t zero = 0u;
             auto firstCollAabbIndex = 0u;
             auto collAabbCount = 0u;
             auto firstBrush = 0u;
@@ -1428,9 +1427,10 @@ namespace
             Append(out, startSurfIndex);
             Append(out, surfaceCountNoDecal);
             Append(out, surfaceCount);
-            Append(out, static_cast<uint16_t>(firstCollAabbIndex));
-            Append(out, static_cast<uint16_t>(collAabbCount));
-            Append(out, zero);
+            // The render fields above are 16-bit, but the following collision
+            // and brush ranges are 32-bit in the raw model record.
+            Append(out, firstCollAabbIndex);
+            Append(out, collAabbCount);
             Append(out, firstBrush);
             Append(out, brushCount);
         }
