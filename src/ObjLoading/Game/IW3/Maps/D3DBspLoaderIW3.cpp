@@ -5,7 +5,10 @@
 #include "Game/IW3/CommonIW3.h"
 #include "Game/IW3/Maps/D3DBspCommonIW3.h"
 #include "Image/D3DFormat.h"
+#include "Image/ImageCommon.h"
+#include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/Texture.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
@@ -596,6 +599,14 @@ namespace
         std::unordered_map<std::string, std::string> fields;
     };
 
+    struct RawLightPixel
+    {
+        uint8_t r = 0u;
+        uint8_t g = 0u;
+        uint8_t b = 0u;
+        uint8_t a = 255u;
+    };
+
     [[nodiscard]] float CosOfSumOfArcCos(const float cos0, const float cos1)
     {
         return cos0 * cos1 - std::sqrt((1.0f - cos0 * cos0) * (1.0f - cos1 * cos1));
@@ -641,6 +652,172 @@ namespace
             light.defName = nullptr;
             light.cosHalfFovExpanded = light.cosHalfFovOuter;
         }
+    }
+
+    [[nodiscard]] std::string LowercaseAscii(std::string value)
+    {
+        for (auto& c : value)
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+        return value;
+    }
+
+    [[nodiscard]] std::string AssetNameWithoutReferencePrefix(const std::string_view assetName)
+    {
+        if (!assetName.empty() && assetName.front() == ',')
+            return std::string(assetName.substr(1));
+
+        return std::string(assetName);
+    }
+
+    [[nodiscard]] uint8_t ReadUnsignedChannel(const uint64_t pixel, const unsigned offset, const unsigned size, const uint8_t fallback)
+    {
+        if (size == 0u)
+            return fallback;
+
+        const auto maxValue = (1ull << size) - 1ull;
+        const auto value = (pixel >> offset) & maxValue;
+        if (size == 8u)
+            return static_cast<uint8_t>(value);
+
+        return static_cast<uint8_t>((value * 255ull + maxValue / 2ull) / maxValue);
+    }
+
+    [[nodiscard]] RawLightPixel ReadRawLightPixel(const uint8_t* buffer, const image::ImageFormatUnsigned& format, const size_t pixelIndex)
+    {
+        const auto bytesPerPixel = format.m_bits_per_pixel / 8u;
+
+        uint64_t pixel = 0u;
+        for (auto byteIndex = 0u; byteIndex < bytesPerPixel; byteIndex++)
+            pixel |= static_cast<uint64_t>(buffer[pixelIndex * bytesPerPixel + byteIndex]) << (byteIndex * 8u);
+
+        RawLightPixel result{};
+        result.r = ReadUnsignedChannel(pixel, format.m_r_offset, format.m_r_size, 0u);
+        result.g = format.HasG() ? ReadUnsignedChannel(pixel, format.m_g_offset, format.m_g_size, 0u) : result.r;
+        result.b = format.HasB() ? ReadUnsignedChannel(pixel, format.m_b_offset, format.m_b_size, 0u) : result.r;
+        result.a = ReadUnsignedChannel(pixel, format.m_a_offset, format.m_a_size, 255u);
+        return result;
+    }
+
+    [[nodiscard]] bool LoadStockLightDefAttenuationPixels(const std::string& imageName, std::vector<RawLightPixel>& pixels)
+    {
+        if (LowercaseAscii(imageName) != "falloff_linear")
+            return false;
+
+        // Stock CoD4 light_point_linear references falloff_linear. Some build
+        // setups resolve the lightdef as a referenced asset without exposing the
+        // IWI to OAT's search path, so keep the exact stock 32x1 L8 top mip here
+        // as a narrow fallback. linker_pc samples this and writes the falloff
+        // strip into the generated secondary lightmap atlas.
+        constexpr std::array<uint8_t, 32> FALLBACK_FALLOFF_LINEAR{
+            255u, 255u, 255u, 254u, 250u, 244u, 235u, 225u, 215u, 205u, 195u, 186u, 175u, 167u, 155u, 146u,
+            136u, 126u, 117u, 108u, 98u,  87u,  78u,  66u,  58u,  49u,  39u,  28u,  19u,  10u,  4u,   0u,
+        };
+
+        pixels.clear();
+        pixels.reserve(FALLBACK_FALLOFF_LINEAR.size());
+        for (const auto value : FALLBACK_FALLOFF_LINEAR)
+        {
+            pixels.emplace_back(RawLightPixel{
+                .r = value,
+                .g = value,
+                .b = value,
+                .a = 255u,
+            });
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool LoadLightDefAttenuationPixels(const GfxLightDef& lightDef, ISearchPath& searchPath, std::vector<RawLightPixel>& pixels, std::string& error)
+    {
+        const auto* image = lightDef.attenuation.image;
+        if (!image || !image->name)
+        {
+            error = std::format("light def \"{}\" has no attenuation image", lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        const auto imageName = AssetNameWithoutReferencePrefix(image->name);
+        const auto file = searchPath.Open(image::GetFileNameForAsset(imageName, ".iwi"));
+        if (!file.IsOpen())
+        {
+            if (LoadStockLightDefAttenuationPixels(imageName, pixels))
+                return true;
+
+            error = std::format("missing attenuation image \"{}\" for light def \"{}\"", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        auto loadResult = image::LoadIwi(*file.m_stream);
+        if (!loadResult || !loadResult->m_texture)
+        {
+            error = std::format("could not load attenuation image \"{}\" for light def \"{}\"", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        const auto& texture = *loadResult->m_texture;
+        if (texture.GetTextureType() != image::TextureType::T_2D)
+        {
+            error = std::format("attenuation image \"{}\" for light def \"{}\" is not a 2D image", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        const auto* format = texture.GetFormat();
+        if (!format || format->GetType() != image::ImageFormatType::UNSIGNED)
+        {
+            error = std::format("attenuation image \"{}\" for light def \"{}\" has unsupported format", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        const auto* unsignedFormat = dynamic_cast<const image::ImageFormatUnsigned*>(format);
+        if (!unsignedFormat || unsignedFormat->m_bits_per_pixel == 0u || unsignedFormat->m_bits_per_pixel % 8u != 0u
+            || unsignedFormat->m_bits_per_pixel > 64u)
+        {
+            error = std::format("attenuation image \"{}\" for light def \"{}\" has unsupported pixel size", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        const auto* buffer = texture.GetBufferForMipLevel(0);
+        if (!buffer)
+        {
+            error = std::format("attenuation image \"{}\" for light def \"{}\" has no pixels", imageName, lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        pixels.clear();
+        pixels.reserve(texture.GetWidth());
+        for (auto x = 0u; x < texture.GetWidth(); x++)
+            pixels.emplace_back(ReadRawLightPixel(buffer, *unsignedFormat, x));
+
+        return true;
+    }
+
+    void WriteSecondaryLightmapPixel(std::vector<std::byte>& out, const size_t pixelOffset, const RawLightPixel& pixel)
+    {
+        const auto byteOffset = pixelOffset * LIGHTMAP_SECONDARY_PIXEL_SIZE;
+        out[byteOffset + 0uz] = static_cast<std::byte>(pixel.b);
+        out[byteOffset + 1uz] = static_cast<std::byte>(pixel.g);
+        out[byteOffset + 2uz] = static_cast<std::byte>(pixel.r);
+        out[byteOffset + 3uz] = static_cast<std::byte>(pixel.a);
+    }
+
+    [[nodiscard]] RawLightPixel LerpLightPixel(const RawLightPixel& current, const RawLightPixel& next, const unsigned zoom, const unsigned lerp)
+    {
+        const auto scale = 2u * zoom;
+        const auto currentScale = scale - lerp;
+
+        const auto lerpChannel = [zoom, lerp, currentScale, scale](const uint8_t currentChannel, const uint8_t nextChannel)
+        {
+            return static_cast<uint8_t>((zoom + lerp * static_cast<unsigned>(nextChannel) + currentScale * static_cast<unsigned>(currentChannel)) / scale);
+        };
+
+        return RawLightPixel{
+            .r = lerpChannel(current.r, next.r),
+            .g = lerpChannel(current.g, next.g),
+            .b = lerpChannel(current.b, next.b),
+            .a = lerpChannel(current.a, next.a),
+        };
     }
 
     [[nodiscard]] std::vector<std::string> QuotedEntityTokens(const std::string& block)
@@ -2208,6 +2385,166 @@ namespace
         std::vector<unsigned> packedSlotForRawPage;
     };
 
+    [[nodiscard]] bool CopyLightDefAttenuationImage(
+        std::vector<std::byte>& secondary,
+        const LightmapAtlasGroup& group,
+        const GfxLightDef& lightDef,
+        ISearchPath& searchPath,
+        std::string& error)
+    {
+        if (lightDef.lmapLookupStart <= 0)
+        {
+            error = std::format("light def \"{}\" has invalid lightmap lookup start", lightDef.name ? lightDef.name : "");
+            return false;
+        }
+
+        std::vector<RawLightPixel> pixels;
+        if (!LoadLightDefAttenuationPixels(lightDef, searchPath, pixels, error))
+            return false;
+
+        if (pixels.empty())
+            return true;
+
+        const auto zoom = group.wideCount;
+        const auto firstPixelOffset = static_cast<size_t>(zoom) * static_cast<size_t>(lightDef.lmapLookupStart - 1);
+        size_t pixelOffset = firstPixelOffset;
+
+        const auto writePixel = [&](const RawLightPixel& pixel)
+        {
+            if ((pixelOffset + 1uz) * LIGHTMAP_SECONDARY_PIXEL_SIZE > secondary.size())
+                return false;
+
+            WriteSecondaryLightmapPixel(secondary, pixelOffset, pixel);
+            pixelOffset++;
+            return true;
+        };
+
+        if (zoom == 1u)
+        {
+            if (!writePixel(pixels.front()))
+                return false;
+
+            for (const auto& pixel : pixels)
+            {
+                if (!writePixel(pixel))
+                    return false;
+            }
+
+            if (!writePixel(pixels.back()))
+                return false;
+        }
+        else
+        {
+            if ((zoom & (zoom - 1u)) != 0u)
+            {
+                error = "lightmap atlas zoom is not a power of two";
+                return false;
+            }
+
+            const auto endCount = zoom + (zoom >> 1u);
+            for (auto i = 0u; i < endCount; i++)
+            {
+                if (!writePixel(pixels.front()))
+                    return false;
+            }
+
+            for (auto pixelIndex = 0uz; pixelIndex + 1uz < pixels.size(); pixelIndex++)
+            {
+                for (auto lerp = 1u; lerp <= 2u * zoom; lerp += 2u)
+                {
+                    if (!writePixel(LerpLightPixel(pixels[pixelIndex], pixels[pixelIndex + 1uz], zoom, lerp)))
+                        return false;
+                }
+            }
+
+            for (auto i = 0u; i < endCount; i++)
+            {
+                if (!writePixel(pixels.back()))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool ApplyLightDefAttenuationImages(
+        std::vector<std::byte>& secondary,
+        const LightmapAtlasGroup& group,
+        const std::vector<GfxLightDef*>& lightDefs,
+        ISearchPath& searchPath,
+        std::string& error)
+    {
+        // linker_pc overlays loaded lightdef falloff images into each generated
+        // secondary lightmap atlas. These bytes are not authored in the raw BSP
+        // LIGHTMAPS lump, but they are present after link -> unlink canonicalizes it.
+        for (const auto* lightDef : lightDefs)
+        {
+            if (!lightDef)
+                continue;
+
+            if (!CopyLightDefAttenuationImage(secondary, group, *lightDef, searchPath, error))
+            {
+                if (error.empty())
+                    error = std::format("light def \"{}\" attenuation image overflowed the secondary lightmap atlas", lightDef->name ? lightDef->name : "");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] std::vector<GfxLightDef*> LoadPrimaryLightDefDependencies(
+        const IW3::d3dbsp::File& bsp,
+        AssetCreationContext& context,
+        AssetRegistration<AssetGfxWorld>& registration,
+        std::string& error)
+    {
+        std::vector<GfxLightDef*> lightDefs;
+        const auto* primaryLights = bsp.GetLump(LUMP_PRIMARY_LIGHTS);
+        if (!primaryLights || primaryLights->data.empty())
+            return lightDefs;
+
+        if (primaryLights->data.size() % IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE != 0uz)
+        {
+            error = "primary-light lump has funny size";
+            return lightDefs;
+        }
+
+        std::unordered_map<std::string, bool> loadedLightDefs;
+        const auto primaryLightCount = RecordCount(*primaryLights, IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE);
+        for (auto lightIndex = 0uz; lightIndex < primaryLightCount; lightIndex++)
+        {
+            const auto* record = primaryLights->data.data() + lightIndex * IW3::d3dbsp::RAW_PRIMARY_LIGHT_SIZE;
+            const auto defName = RawString(record + RAW_LIGHT_DEF_NAME_OFFSET, RAW_LIGHT_DEF_NAME_SIZE);
+            if (defName.empty())
+                continue;
+
+            const auto lookupName = LowercaseAscii(defName);
+            if (loadedLightDefs.find(lookupName) != loadedLightDefs.end())
+                continue;
+
+            loadedLightDefs.emplace(lookupName, true);
+            auto* dependency = context.LoadDependency<AssetLightDef>(defName);
+            if (!dependency)
+            {
+                error = std::format("missing light def \"{}\"", defName);
+                return lightDefs;
+            }
+
+            auto* lightDef = dependency->Asset();
+            if (!lightDef || !lightDef->attenuation.image)
+            {
+                error = std::format("light def \"{}\" has no attenuation image", defName);
+                return lightDefs;
+            }
+
+            registration.AddDependency(dependency);
+            lightDefs.emplace_back(lightDef);
+        }
+
+        return lightDefs;
+    }
+
     [[nodiscard]] int SaturatingAdd(const int left, const int right)
     {
         if (right > 0 && left > std::numeric_limits<int>::max() - right)
@@ -3006,8 +3343,12 @@ namespace
         }
     }
 
-    [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
-        BuildLightmapAtlasImages(const IW3::d3dbsp::Lump& lightmaps, const LightmapAtlasGroup& group)
+    [[nodiscard]] std::optional<std::pair<std::vector<std::byte>, std::vector<std::byte>>> BuildLightmapAtlasImages(
+        const IW3::d3dbsp::Lump& lightmaps,
+        const LightmapAtlasGroup& group,
+        const std::vector<GfxLightDef*>& lightDefs,
+        ISearchPath& searchPath,
+        std::string& error)
     {
         const auto primaryAtlasSize =
             static_cast<size_t>(group.wideCount) * LIGHTMAP_PRIMARY_RAW_WIDTH * static_cast<size_t>(group.highCount) * LIGHTMAP_PRIMARY_RAW_HEIGHT;
@@ -3025,6 +3366,9 @@ namespace
             CopyPrimaryLightmapRawPageToAtlas(primary, page, group, static_cast<unsigned>(packedSlot));
         }
 
+        if (!ApplyLightDefAttenuationImages(secondary, group, lightDefs, searchPath, error))
+            return std::nullopt;
+
         return std::make_pair(std::move(primary), std::move(secondary));
     }
 
@@ -3032,6 +3376,8 @@ namespace
         GfxWorld& world,
         const IW3::d3dbsp::File& bsp,
         const LightmapAtlasLayout& lightmapLayout,
+        const std::vector<GfxLightDef*>& lightDefs,
+        ISearchPath& searchPath,
         AssetCreationContext& context,
         AssetRegistration<AssetGfxWorld>& registration,
         MemoryManager& memory,
@@ -3065,7 +3411,12 @@ namespace
         for (auto lightmapIndex = 0uz; lightmapIndex < lightmapLayout.groups.size(); lightmapIndex++)
         {
             const auto& group = lightmapLayout.groups[lightmapIndex];
-            const auto [primaryPixels, secondaryPixels] = BuildLightmapAtlasImages(*lightmaps, group);
+            auto atlasImages = BuildLightmapAtlasImages(*lightmaps, group, lightDefs, searchPath, error);
+            if (!atlasImages)
+                return false;
+
+            const auto& primaryPixels = atlasImages->first;
+            const auto& secondaryPixels = atlasImages->second;
             const auto primaryName = LightmapImageName(static_cast<unsigned>(lightmapIndex), "primary");
             const auto secondaryName = LightmapImageName(static_cast<unsigned>(lightmapIndex), "secondary");
             constexpr auto lightmapFlags = static_cast<char>(image::iwi6::IMG_FLAG_NOMIPMAPS);
@@ -5903,6 +6254,13 @@ namespace
                     registration.AddDependency(dependency);
             }
 
+            auto lightDefDependencies = LoadPrimaryLightDefDependencies(*bsp, context, registration, error);
+            if (!error.empty())
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
             const auto* clipMap = clipMapDependency->Asset();
             if (!PopulateWorldIndices(*world, *bsp, m_memory, error) || !PopulateWorldVertices(*world, *bsp, m_memory, error)
                 || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error))
@@ -5931,7 +6289,7 @@ namespace
 
             if (!PopulateWorldStaticModelAabbTrees(*world, m_memory, error)
                 || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
-                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error))
+                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, lightDefDependencies, m_search_path, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
