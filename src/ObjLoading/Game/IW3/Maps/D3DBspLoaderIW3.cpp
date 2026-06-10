@@ -4168,10 +4168,9 @@ namespace
             drawInst.placement.scale = scale;
             std::copy(origin.begin(), origin.end(), drawInst.placement.origin);
             std::memcpy(drawInst.placement.axis, axis, sizeof(drawInst.placement.axis));
-            drawInst.smodelCacheIndex[0] = std::numeric_limits<uint16_t>::max();
-            drawInst.smodelCacheIndex[1] = std::numeric_limits<uint16_t>::max();
-            drawInst.smodelCacheIndex[2] = std::numeric_limits<uint16_t>::max();
-            drawInst.smodelCacheIndex[3] = std::numeric_limits<uint16_t>::max();
+            // Static model cache slots are runtime state. Zero means uncached;
+            // R_CacheStaticModelSurface allocates a cache entry on demand.
+            // 0xffff is SMODEL_INDEX_NONE for cache leaves, not for draw insts.
 
             if ((ParseInt(EntityField(*block, "spawnflags")) & 2) != 0)
                 drawInst.flags = 1;
@@ -4213,6 +4212,303 @@ namespace
         }
 
         return true;
+    }
+
+    [[nodiscard]] bool BoundsContain(const float (&outerMins)[3], const float (&outerMaxs)[3], const float (&innerMins)[3], const float (&innerMaxs)[3])
+    {
+        return outerMins[0] <= innerMins[0] && outerMins[1] <= innerMins[1] && outerMins[2] <= innerMins[2] && outerMaxs[0] >= innerMaxs[0]
+               && outerMaxs[1] >= innerMaxs[1] && outerMaxs[2] >= innerMaxs[2];
+    }
+
+    [[nodiscard]] bool BoundsOverlap(const float (&leftMins)[3], const float (&leftMaxs)[3], const float (&rightMins)[3], const float (&rightMaxs)[3])
+    {
+        return leftMins[0] <= rightMaxs[0] && leftMaxs[0] >= rightMins[0] && leftMins[1] <= rightMaxs[1] && leftMaxs[1] >= rightMins[1]
+               && leftMins[2] <= rightMaxs[2] && leftMaxs[2] >= rightMins[2];
+    }
+
+    [[nodiscard]] float BoundsVolume(const float (&mins)[3], const float (&maxs)[3])
+    {
+        return std::max(maxs[0] - mins[0], 0.0f) * std::max(maxs[1] - mins[1], 0.0f) * std::max(maxs[2] - mins[2], 0.0f);
+    }
+
+    [[nodiscard]] float BoundsExpansionVolumeDelta(
+        const float (&outerMins)[3], const float (&outerMaxs)[3], const float (&addedMins)[3], const float (&addedMaxs)[3])
+    {
+        float expandedMins[3]{outerMins[0], outerMins[1], outerMins[2]};
+        float expandedMaxs[3]{outerMaxs[0], outerMaxs[1], outerMaxs[2]};
+        ExpandBounds(addedMins, addedMaxs, expandedMins, expandedMaxs);
+        return BoundsVolume(expandedMins, expandedMaxs) - BoundsVolume(outerMins, outerMaxs);
+    }
+
+    [[nodiscard]] int BoxOnPlaneSide(const float (&mins)[3], const float (&maxs)[3], const cplane_s& plane)
+    {
+        const auto dist = plane.dist;
+        const auto planeType = static_cast<unsigned char>(plane.type);
+        if (planeType < 3u)
+        {
+            if (mins[planeType] >= dist)
+                return 1;
+            if (maxs[planeType] <= dist)
+                return 2;
+
+            return 3;
+        }
+
+        auto minDist = 0.0f;
+        auto maxDist = 0.0f;
+        for (auto axis = 0uz; axis < 3uz; axis++)
+        {
+            const auto normal = plane.normal[axis];
+            if (normal >= 0.0f)
+            {
+                minDist += normal * mins[axis];
+                maxDist += normal * maxs[axis];
+            }
+            else
+            {
+                minDist += normal * maxs[axis];
+                maxDist += normal * mins[axis];
+            }
+        }
+
+        if (minDist >= dist)
+            return 1;
+        if (maxDist <= dist)
+            return 2;
+
+        return 3;
+    }
+
+    using StaticModelIndexLists = std::unordered_map<GfxAabbTree*, std::vector<uint16_t>>;
+
+    void AddStaticModelToTreeList(StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& tree, const uint16_t staticModelIndex)
+    {
+        auto& indexes = staticModelIndexesByTree[&tree];
+        if (indexes.empty() || indexes.back() != staticModelIndex)
+            indexes.emplace_back(staticModelIndex);
+    }
+
+    void AddStaticModelToAabbTree_r(const GfxWorld& world, StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& tree, const uint16_t staticModelIndex)
+    {
+        AddStaticModelToTreeList(staticModelIndexesByTree, tree, staticModelIndex);
+
+        if (tree.childCount == 0u || tree.childrenOffset == 0)
+            return;
+
+        const auto& smodelInst = world.dpvs.smodelInsts[staticModelIndex];
+        auto* children = reinterpret_cast<GfxAabbTree*>(reinterpret_cast<char*>(&tree) + tree.childrenOffset);
+
+        // linker_pc first descends into an existing child that fully contains
+        // the static model bounds. If no child contains it, linker_pc may add a
+        // static-model-only child. We avoid mutating the BSP tree shape here and
+        // instead fall back to overlapping existing children so DPVS traversal
+        // still reaches the model in partially visible cells.
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+        {
+            auto& child = children[childIndex];
+            if (BoundsContain(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs))
+            {
+                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
+                return;
+            }
+        }
+
+        auto addedToChild = false;
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+        {
+            auto& child = children[childIndex];
+            if (BoundsOverlap(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs))
+            {
+                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
+                addedToChild = true;
+            }
+        }
+
+        if (addedToChild)
+            return;
+
+        // Degenerate fallback for imported trees with stale bounds. Expanding
+        // the first non-surface child mimics the linker path that reuses an
+        // existing static-model-only child before allocating a new one.
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+        {
+            auto& child = children[childIndex];
+            if (child.surfaceCount == 0u)
+            {
+                ExpandBounds(smodelInst.mins, smodelInst.maxs, child.mins, child.maxs);
+                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
+                return;
+            }
+        }
+
+        auto bestChildIndex = 0u;
+        auto bestExpansionDelta = std::numeric_limits<float>::max();
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+        {
+            const auto& child = children[childIndex];
+            const auto expansionDelta = BoundsExpansionVolumeDelta(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs);
+            if (expansionDelta < bestExpansionDelta)
+            {
+                bestExpansionDelta = expansionDelta;
+                bestChildIndex = childIndex;
+            }
+        }
+
+        auto& bestChild = children[bestChildIndex];
+        ExpandBounds(smodelInst.mins, smodelInst.maxs, bestChild.mins, bestChild.maxs);
+        AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, bestChild, staticModelIndex);
+    }
+
+    [[nodiscard]] bool AddStaticModelToCell(
+        const GfxWorld& world, StaticModelIndexLists& staticModelIndexesByTree, const uint16_t staticModelIndex, const int cellIndex, std::string& error)
+    {
+        if (cellIndex < 0 || cellIndex >= world.dpvsPlanes.cellCount || !world.cells)
+        {
+            error = "static model references invalid cell";
+            return false;
+        }
+
+        auto& cell = world.cells[cellIndex];
+        if (!cell.aabbTree)
+            return true;
+
+        const auto existing = staticModelIndexesByTree.find(cell.aabbTree);
+        if (existing != staticModelIndexesByTree.end() && !existing->second.empty() && existing->second.back() == staticModelIndex)
+            return true;
+
+        AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, *cell.aabbTree, staticModelIndex);
+        return true;
+    }
+
+    [[nodiscard]] bool FilterStaticModelIntoCells_r(
+        const GfxWorld& world,
+        StaticModelIndexLists& staticModelIndexesByTree,
+        const uint16_t staticModelIndex,
+        const uint16_t* node,
+        const float (&mins)[3],
+        const float (&maxs)[3],
+        std::string& error)
+    {
+        while (true)
+        {
+            if (!node)
+            {
+                error = "world node stream is missing";
+                return false;
+            }
+
+            const auto cellValue = static_cast<int>(node[0]);
+            const auto planeIndex = cellValue - world.dpvsPlanes.cellCount - 1;
+            if (planeIndex < 0)
+                return cellValue != 0 ? AddStaticModelToCell(world, staticModelIndexesByTree, staticModelIndex, cellValue - 1, error) : true;
+
+            if (planeIndex >= world.planeCount || !world.dpvsPlanes.planes)
+            {
+                error = "world node stream references invalid plane";
+                return false;
+            }
+
+            const auto& plane = world.dpvsPlanes.planes[planeIndex];
+            const auto boxSide = BoxOnPlaneSide(mins, maxs, plane);
+            if (boxSide == 3)
+            {
+                const auto* rightNode = node + node[1];
+                const auto planeType = static_cast<unsigned char>(plane.type);
+                if (planeType >= 3u)
+                {
+                    if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, mins, maxs, error))
+                        return false;
+                }
+                else
+                {
+                    float frontMins[3]{mins[0], mins[1], mins[2]};
+                    float backMaxs[3]{maxs[0], maxs[1], maxs[2]};
+                    frontMins[planeType] = plane.dist;
+                    backMaxs[planeType] = plane.dist;
+
+                    if (maxs[planeType] > plane.dist
+                        && !FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, frontMins, maxs, error))
+                    {
+                        return false;
+                    }
+
+                    return FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, rightNode, mins, backMaxs, error);
+                }
+
+                node = rightNode;
+                continue;
+            }
+
+            if (boxSide == 1)
+            {
+                node += 2;
+                continue;
+            }
+
+            if (boxSide == 2)
+            {
+                node += node[1];
+                continue;
+            }
+
+            error = "world node plane-side classification failed";
+            return false;
+        }
+    }
+
+    [[nodiscard]] bool CommitStaticModelAabbTreeIndexes(StaticModelIndexLists& staticModelIndexesByTree, MemoryManager& memory, std::string& error)
+    {
+        for (auto& [tree, indexes] : staticModelIndexesByTree)
+        {
+            std::sort(indexes.begin(), indexes.end());
+            indexes.erase(std::unique(indexes.begin(), indexes.end()), indexes.end());
+
+            if (!FitsUint16(indexes.size()))
+            {
+                error = "too many static model indexes in world AABB tree";
+                return false;
+            }
+
+            tree->smodelIndexCount = static_cast<uint16_t>(indexes.size());
+            if (!indexes.empty())
+            {
+                tree->smodelIndexes = AllocZeroed<uint16_t>(memory, indexes.size());
+                std::copy(indexes.begin(), indexes.end(), tree->smodelIndexes);
+            }
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] bool PopulateWorldStaticModelAabbTrees(GfxWorld& world, MemoryManager& memory, std::string& error)
+    {
+        if (world.dpvs.smodelCount == 0u || !world.dpvs.smodelInsts || !world.cells || world.dpvsPlanes.cellCount <= 0)
+            return true;
+
+        if (world.dpvs.smodelCount > std::numeric_limits<uint16_t>::max())
+        {
+            error = "too many static models for AABB tree indexes";
+            return false;
+        }
+
+        StaticModelIndexLists staticModelIndexesByTree;
+        for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
+        {
+            const auto packedIndex = static_cast<uint16_t>(smodelIndex);
+            const auto& smodelInst = world.dpvs.smodelInsts[smodelIndex];
+
+            if (world.dpvsPlanes.nodes)
+            {
+                if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, packedIndex, world.dpvsPlanes.nodes, smodelInst.mins, smodelInst.maxs, error))
+                    return false;
+            }
+            else if (!AddStaticModelToCell(world, staticModelIndexesByTree, packedIndex, 0, error))
+            {
+                return false;
+            }
+        }
+
+        return CommitStaticModelAabbTreeIndexes(staticModelIndexesByTree, memory, error);
     }
 
     [[nodiscard]] bool PopulateWorldDynamicEntities(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
@@ -5124,6 +5420,7 @@ namespace
                 || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldShadowGeometry(*world, m_memory)
                 || !PopulateWorldLightGrid(*world, *bsp, m_memory, error) || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
+                || !PopulateWorldStaticModelAabbTrees(*world, m_memory, error)
                 || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
                 || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error)
                 || !PopulateWorldReflectionProbes(*world, *bsp, context, registration, m_memory, error))
