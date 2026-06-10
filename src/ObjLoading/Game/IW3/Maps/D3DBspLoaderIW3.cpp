@@ -3368,13 +3368,21 @@ namespace
         if (!b || !g || !r || !a || !primaryLightIndex)
             return;
 
+        drawInst.primaryLightIndex = static_cast<char>(*primaryLightIndex);
+
+        // linker_pc only preserves the parsed misc_model ground-light color
+        // when the model has XModel::flags bit 0 set and the color is non-zero.
+        // In the drop path it recomputes primaryLightIndex from the model
+        // bounds/light regions; keep the parsed index until that lookup exists.
+        if (!drawInst.model || (static_cast<unsigned char>(drawInst.model->flags) & 1u) == 0u || (*r == 0u && *g == 0u && *b == 0u && *a == 0u))
+            return;
+
         // The linker parses gndLt as B,G,R,A,primaryLightIndex. Runtime
         // GfxColor is stored in R,G,B,A byte order.
         inst.groundLighting.array[0] = static_cast<char>(*r);
         inst.groundLighting.array[1] = static_cast<char>(*g);
         inst.groundLighting.array[2] = static_cast<char>(*b);
         inst.groundLighting.array[3] = static_cast<char>(*a);
-        drawInst.primaryLightIndex = static_cast<char>(*primaryLightIndex);
     }
 
     [[nodiscard]] bool PopulateWorldStaticModels(
