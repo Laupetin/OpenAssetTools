@@ -17,6 +17,7 @@
 #include <cstring>
 #include <cmath>
 #include <format>
+#include <iterator>
 #include <limits>
 #include <optional>
 #include <string>
@@ -3476,6 +3477,30 @@ namespace
         return count;
     }
 
+    [[nodiscard]] GfxAabbTree* AabbTreeChildren(GfxAabbTree& tree)
+    {
+        return reinterpret_cast<GfxAabbTree*>(reinterpret_cast<char*>(&tree) + tree.childrenOffset);
+    }
+
+    [[nodiscard]] const GfxAabbTree* AabbTreeChildren(const GfxAabbTree& tree)
+    {
+        return reinterpret_cast<const GfxAabbTree*>(reinterpret_cast<const char*>(&tree) + tree.childrenOffset);
+    }
+
+    [[nodiscard]] bool SetAabbTreeChildrenOffset(GfxAabbTree& tree, const GfxAabbTree* children, std::string& error)
+    {
+        const auto offset = reinterpret_cast<const char*>(children) - reinterpret_cast<const char*>(&tree);
+        if (offset < static_cast<std::ptrdiff_t>(std::numeric_limits<int>::min())
+            || offset > static_cast<std::ptrdiff_t>(std::numeric_limits<int>::max()))
+        {
+            error = "AABB tree children offset is outside int range";
+            return false;
+        }
+
+        tree.childrenOffset = static_cast<int>(offset);
+        return true;
+    }
+
     [[nodiscard]] GfxAabbTree* BuildWorldAabbTrees(const GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, int& treeCount, std::string& error)
     {
         const auto* aabbTrees = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_AABBTREES, LUMP_LAYERED_AABBTREES);
@@ -4452,26 +4477,6 @@ namespace
                && outerMaxs[1] >= innerMaxs[1] && outerMaxs[2] >= innerMaxs[2];
     }
 
-    [[nodiscard]] bool BoundsOverlap(const float (&leftMins)[3], const float (&leftMaxs)[3], const float (&rightMins)[3], const float (&rightMaxs)[3])
-    {
-        return leftMins[0] <= rightMaxs[0] && leftMaxs[0] >= rightMins[0] && leftMins[1] <= rightMaxs[1] && leftMaxs[1] >= rightMins[1]
-               && leftMins[2] <= rightMaxs[2] && leftMaxs[2] >= rightMins[2];
-    }
-
-    [[nodiscard]] float BoundsVolume(const float (&mins)[3], const float (&maxs)[3])
-    {
-        return std::max(maxs[0] - mins[0], 0.0f) * std::max(maxs[1] - mins[1], 0.0f) * std::max(maxs[2] - mins[2], 0.0f);
-    }
-
-    [[nodiscard]] float BoundsExpansionVolumeDelta(
-        const float (&outerMins)[3], const float (&outerMaxs)[3], const float (&addedMins)[3], const float (&addedMaxs)[3])
-    {
-        float expandedMins[3]{outerMins[0], outerMins[1], outerMins[2]};
-        float expandedMaxs[3]{outerMaxs[0], outerMaxs[1], outerMaxs[2]};
-        ExpandBounds(addedMins, addedMaxs, expandedMins, expandedMaxs);
-        return BoundsVolume(expandedMins, expandedMaxs) - BoundsVolume(outerMins, outerMaxs);
-    }
-
     [[nodiscard]] int BoxOnPlaneSide(const float (&mins)[3], const float (&maxs)[3], const cplane_s& plane)
     {
         const auto dist = plane.dist;
@@ -4520,79 +4525,113 @@ namespace
             indexes.emplace_back(staticModelIndex);
     }
 
-    void AddStaticModelToAabbTree_r(const GfxWorld& world, StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& tree, const uint16_t staticModelIndex)
+    void MoveStaticModelTreeList(StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& oldTree, GfxAabbTree& newTree)
+    {
+        auto existing = staticModelIndexesByTree.find(&oldTree);
+        if (existing == staticModelIndexesByTree.end())
+            return;
+
+        auto indexes = std::move(existing->second);
+        staticModelIndexesByTree.erase(existing);
+        auto& targetIndexes = staticModelIndexesByTree[&newTree];
+        targetIndexes.insert(targetIndexes.end(), std::make_move_iterator(indexes.begin()), std::make_move_iterator(indexes.end()));
+    }
+
+    [[nodiscard]] bool CopyAabbTreeToNewAddress(
+        StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& oldTree, GfxAabbTree& newTree, std::string& error)
+    {
+        newTree = oldTree;
+        MoveStaticModelTreeList(staticModelIndexesByTree, oldTree, newTree);
+
+        if (oldTree.childCount > 0u)
+            return SetAabbTreeChildrenOffset(newTree, AabbTreeChildren(oldTree), error);
+
+        newTree.childrenOffset = 0;
+        return true;
+    }
+
+    [[nodiscard]] bool AppendStaticModelOnlyChild(
+        StaticModelIndexLists& staticModelIndexesByTree, GfxAabbTree& tree, const GfxStaticModelInst& smodelInst, MemoryManager& memory, std::string& error)
+    {
+        if (tree.childCount == std::numeric_limits<uint16_t>::max())
+        {
+            error = "too many AABB tree children";
+            return false;
+        }
+
+        const auto oldChildCount = tree.childCount;
+        auto* oldChildren = AabbTreeChildren(tree);
+        auto* newChildren = AllocZeroed<GfxAabbTree>(memory, static_cast<size_t>(oldChildCount) + 1uz);
+        for (auto childIndex = 0u; childIndex < oldChildCount; childIndex++)
+        {
+            if (!CopyAabbTreeToNewAddress(staticModelIndexesByTree, oldChildren[childIndex], newChildren[childIndex], error))
+                return false;
+        }
+
+        if (!SetAabbTreeChildrenOffset(tree, newChildren, error))
+            return false;
+
+        auto& newChild = newChildren[oldChildCount];
+        std::memcpy(newChild.mins, smodelInst.mins, sizeof(newChild.mins));
+        std::memcpy(newChild.maxs, smodelInst.maxs, sizeof(newChild.maxs));
+        tree.childCount = static_cast<uint16_t>(oldChildCount + 1u);
+        return true;
+    }
+
+    [[nodiscard]] bool AddStaticModelToAabbTree_r(
+        const GfxWorld& world,
+        StaticModelIndexLists& staticModelIndexesByTree,
+        GfxAabbTree& tree,
+        const uint16_t staticModelIndex,
+        MemoryManager& memory,
+        std::string& error)
     {
         AddStaticModelToTreeList(staticModelIndexesByTree, tree, staticModelIndex);
 
         if (tree.childCount == 0u || tree.childrenOffset == 0)
-            return;
+            return true;
 
         const auto& smodelInst = world.dpvs.smodelInsts[staticModelIndex];
-        auto* children = reinterpret_cast<GfxAabbTree*>(reinterpret_cast<char*>(&tree) + tree.childrenOffset);
+        auto* children = AabbTreeChildren(tree);
 
-        // linker_pc first descends into an existing child that fully contains
-        // the static model bounds. If no child contains it, linker_pc may add a
-        // static-model-only child. We avoid mutating the BSP tree shape here and
-        // instead fall back to overlapping existing children so DPVS traversal
-        // still reaches the model in partially visible cells.
+        // linker_pc descends through the one child that fully contains the
+        // static model bounds. If none contains it, it reuses an existing
+        // static-model-only child or appends a new one; it does not fan out to
+        // all overlapping children. This tree mutation is required for the
+        // SIMPLE_AABBTREES lump to reach the same fixed point as linker_pc.
         for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
         {
             auto& child = children[childIndex];
             if (BoundsContain(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs))
             {
-                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
-                return;
+                return AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex, memory, error);
             }
         }
 
-        auto addedToChild = false;
-        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
-        {
-            auto& child = children[childIndex];
-            if (BoundsOverlap(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs))
-            {
-                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
-                addedToChild = true;
-            }
-        }
-
-        if (addedToChild)
-            return;
-
-        // Degenerate fallback for imported trees with stale bounds. Expanding
-        // the first non-surface child mimics the linker path that reuses an
-        // existing static-model-only child before allocating a new one.
         for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
         {
             auto& child = children[childIndex];
             if (child.surfaceCount == 0u)
             {
                 ExpandBounds(smodelInst.mins, smodelInst.maxs, child.mins, child.maxs);
-                AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex);
-                return;
+                return AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, child, staticModelIndex, memory, error);
             }
         }
 
-        auto bestChildIndex = 0u;
-        auto bestExpansionDelta = std::numeric_limits<float>::max();
-        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
-        {
-            const auto& child = children[childIndex];
-            const auto expansionDelta = BoundsExpansionVolumeDelta(child.mins, child.maxs, smodelInst.mins, smodelInst.maxs);
-            if (expansionDelta < bestExpansionDelta)
-            {
-                bestExpansionDelta = expansionDelta;
-                bestChildIndex = childIndex;
-            }
-        }
+        if (!AppendStaticModelOnlyChild(staticModelIndexesByTree, tree, smodelInst, memory, error))
+            return false;
 
-        auto& bestChild = children[bestChildIndex];
-        ExpandBounds(smodelInst.mins, smodelInst.maxs, bestChild.mins, bestChild.maxs);
-        AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, bestChild, staticModelIndex);
+        children = AabbTreeChildren(tree);
+        return AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, children[tree.childCount - 1u], staticModelIndex, memory, error);
     }
 
     [[nodiscard]] bool AddStaticModelToCell(
-        const GfxWorld& world, StaticModelIndexLists& staticModelIndexesByTree, const uint16_t staticModelIndex, const int cellIndex, std::string& error)
+        const GfxWorld& world,
+        StaticModelIndexLists& staticModelIndexesByTree,
+        const uint16_t staticModelIndex,
+        const int cellIndex,
+        MemoryManager& memory,
+        std::string& error)
     {
         if (cellIndex < 0 || cellIndex >= world.dpvsPlanes.cellCount || !world.cells)
         {
@@ -4608,8 +4647,7 @@ namespace
         if (existing != staticModelIndexesByTree.end() && !existing->second.empty() && existing->second.back() == staticModelIndex)
             return true;
 
-        AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, *cell.aabbTree, staticModelIndex);
-        return true;
+        return AddStaticModelToAabbTree_r(world, staticModelIndexesByTree, *cell.aabbTree, staticModelIndex, memory, error);
     }
 
     [[nodiscard]] bool FilterStaticModelIntoCells_r(
@@ -4619,6 +4657,7 @@ namespace
         const uint16_t* node,
         const float (&mins)[3],
         const float (&maxs)[3],
+        MemoryManager& memory,
         std::string& error)
     {
         while (true)
@@ -4632,7 +4671,7 @@ namespace
             const auto cellValue = static_cast<int>(node[0]);
             const auto planeIndex = cellValue - world.dpvsPlanes.cellCount - 1;
             if (planeIndex < 0)
-                return cellValue != 0 ? AddStaticModelToCell(world, staticModelIndexesByTree, staticModelIndex, cellValue - 1, error) : true;
+                return cellValue != 0 ? AddStaticModelToCell(world, staticModelIndexesByTree, staticModelIndex, cellValue - 1, memory, error) : true;
 
             if (planeIndex >= world.planeCount || !world.dpvsPlanes.planes)
             {
@@ -4648,7 +4687,7 @@ namespace
                 const auto planeType = static_cast<unsigned char>(plane.type);
                 if (planeType >= 3u)
                 {
-                    if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, mins, maxs, error))
+                    if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, mins, maxs, memory, error))
                         return false;
                 }
                 else
@@ -4659,12 +4698,12 @@ namespace
                     backMaxs[planeType] = plane.dist;
 
                     if (maxs[planeType] > plane.dist
-                        && !FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, frontMins, maxs, error))
+                        && !FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, node + 2, frontMins, maxs, memory, error))
                     {
                         return false;
                     }
 
-                    return FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, rightNode, mins, backMaxs, error);
+                    return FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, staticModelIndex, rightNode, mins, backMaxs, memory, error);
                 }
 
                 node = rightNode;
@@ -4693,7 +4732,6 @@ namespace
         for (auto& [tree, indexes] : staticModelIndexesByTree)
         {
             std::sort(indexes.begin(), indexes.end());
-            indexes.erase(std::unique(indexes.begin(), indexes.end()), indexes.end());
 
             if (!FitsUint16(indexes.size()))
             {
@@ -4709,6 +4747,217 @@ namespace
             }
         }
 
+        return true;
+    }
+
+    [[nodiscard]] unsigned SortGfxAabbTreeChildren(
+        const GfxWorld& world, const float (&mins)[3], const float (&maxs)[3], uint16_t* staticModels, const unsigned staticModelCount)
+    {
+        auto childCount = 0u;
+        for (auto staticModelOffset = 0u; staticModelOffset < staticModelCount; staticModelOffset++)
+        {
+            const auto staticModelIndex = staticModels[staticModelOffset];
+            const auto& smodelInst = world.dpvs.smodelInsts[staticModelIndex];
+            if (!BoundsContain(mins, maxs, smodelInst.mins, smodelInst.maxs))
+                continue;
+
+            std::swap(staticModels[childCount], staticModels[staticModelOffset]);
+            childCount++;
+        }
+
+        return childCount < 2u ? 0u : childCount;
+    }
+
+    [[nodiscard]] bool AddSortedStaticModelChild(
+        GfxAabbTree& tree, uint16_t*& smodelIndexes, unsigned& remainingModelCount, const unsigned childModelCount, std::string& error)
+    {
+        if (childModelCount == 0u)
+            return true;
+
+        if (tree.childCount == std::numeric_limits<uint16_t>::max())
+        {
+            error = "too many sorted AABB tree children";
+            return false;
+        }
+
+        auto* children = AabbTreeChildren(tree);
+        auto& childTree = children[tree.childCount++];
+        childTree.smodelIndexCount = static_cast<uint16_t>(childModelCount);
+        childTree.smodelIndexes = smodelIndexes;
+        smodelIndexes += childModelCount;
+        remainingModelCount -= childModelCount;
+        return true;
+    }
+
+    [[nodiscard]] bool SortGfxAabbTree(const GfxWorld& world, GfxAabbTree& tree, MemoryManager& memory, std::string& error)
+    {
+        if (tree.smodelIndexCount > 1u)
+            std::sort(tree.smodelIndexes, tree.smodelIndexes + tree.smodelIndexCount);
+
+        if (tree.childCount > 0u)
+        {
+            auto* children = AabbTreeChildren(tree);
+            for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+            {
+                if (!SortGfxAabbTree(world, children[childIndex], memory, error))
+                    return false;
+            }
+
+            return true;
+        }
+
+        if (tree.smodelIndexCount == 0u)
+            return true;
+
+        float mins[3]{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        float maxs[3]{-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()};
+        for (auto smodelOffset = 0u; smodelOffset < tree.smodelIndexCount; smodelOffset++)
+        {
+            const auto& smodelInst = world.dpvs.smodelInsts[tree.smodelIndexes[smodelOffset]];
+            ExpandBounds(smodelInst.mins, smodelInst.maxs, mins, maxs);
+        }
+
+        if (tree.surfaceCount == 0u)
+        {
+            std::memcpy(tree.mins, mins, sizeof(tree.mins));
+            std::memcpy(tree.maxs, maxs, sizeof(tree.maxs));
+        }
+
+        if (tree.smodelIndexCount < 8u)
+            return true;
+
+        const float middle[3]{(mins[0] + maxs[0]) * 0.5f, (mins[1] + maxs[1]) * 0.5f, (mins[2] + maxs[2]) * 0.5f};
+        auto* smodelIndexes = tree.smodelIndexes;
+        auto remainingModelCount = static_cast<unsigned>(tree.smodelIndexCount);
+        unsigned childModelCounts[4]{};
+
+        float childMins[3]{mins[0], mins[1], mins[2]};
+        float childMaxs[3]{middle[0], maxs[1], maxs[2]};
+        childModelCounts[0] = SortGfxAabbTreeChildren(world, childMins, childMaxs, smodelIndexes, remainingModelCount);
+        smodelIndexes += childModelCounts[0];
+        remainingModelCount -= childModelCounts[0];
+
+        childMins[0] = middle[0];
+        childMins[1] = mins[1];
+        childMins[2] = mins[2];
+        childMaxs[0] = maxs[0];
+        childMaxs[1] = maxs[1];
+        childMaxs[2] = maxs[2];
+        childModelCounts[1] = SortGfxAabbTreeChildren(world, childMins, childMaxs, smodelIndexes, remainingModelCount);
+        smodelIndexes += childModelCounts[1];
+        remainingModelCount -= childModelCounts[1];
+
+        childMins[0] = mins[0];
+        childMins[1] = mins[1];
+        childMins[2] = mins[2];
+        childMaxs[0] = maxs[0];
+        childMaxs[1] = middle[1];
+        childMaxs[2] = maxs[2];
+        childModelCounts[2] = SortGfxAabbTreeChildren(world, childMins, childMaxs, smodelIndexes, remainingModelCount);
+        smodelIndexes += childModelCounts[2];
+        remainingModelCount -= childModelCounts[2];
+
+        childMins[0] = mins[0];
+        childMins[1] = middle[1];
+        childMins[2] = mins[2];
+        childMaxs[0] = maxs[0];
+        childMaxs[1] = maxs[1];
+        childMaxs[2] = maxs[2];
+        childModelCounts[3] = SortGfxAabbTreeChildren(world, childMins, childMaxs, smodelIndexes, remainingModelCount);
+        smodelIndexes += childModelCounts[3];
+        remainingModelCount -= childModelCounts[3];
+
+        auto childCount = 0u;
+        for (const auto childModelCount : childModelCounts)
+            childCount += childModelCount != 0u ? 1u : 0u;
+
+        if (childCount == 0u)
+            return true;
+
+        if (tree.surfaceCount > 0u)
+            childCount++;
+        if (remainingModelCount > 0u)
+            childCount++;
+
+        auto* children = AllocZeroed<GfxAabbTree>(memory, childCount);
+        if (!SetAabbTreeChildrenOffset(tree, children, error))
+            return false;
+
+        tree.childCount = 0u;
+        if (tree.surfaceCount > 0u)
+        {
+            auto& childTree = children[tree.childCount++];
+            std::memcpy(childTree.mins, tree.mins, sizeof(childTree.mins));
+            std::memcpy(childTree.maxs, tree.maxs, sizeof(childTree.maxs));
+            childTree.startSurfIndex = tree.startSurfIndex;
+            childTree.surfaceCount = tree.surfaceCount;
+            childTree.startSurfIndexNoDecal = tree.startSurfIndexNoDecal;
+            childTree.surfaceCountNoDecal = tree.surfaceCountNoDecal;
+        }
+
+        smodelIndexes = tree.smodelIndexes;
+        remainingModelCount = tree.smodelIndexCount;
+        for (const auto childModelCount : childModelCounts)
+        {
+            if (!AddSortedStaticModelChild(tree, smodelIndexes, remainingModelCount, childModelCount, error))
+                return false;
+
+            if (childModelCount > 0u && !SortGfxAabbTree(world, children[tree.childCount - 1u], memory, error))
+                return false;
+        }
+
+        if (remainingModelCount > 0u)
+        {
+            if (!AddSortedStaticModelChild(tree, smodelIndexes, remainingModelCount, remainingModelCount, error))
+                return false;
+
+            if (!SortGfxAabbTree(world, children[tree.childCount - 1u], memory, error))
+                return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] GfxAabbTree* MoveAabbTree_r(GfxAabbTree& tree, GfxAabbTree& newTree, GfxAabbTree* nextChild)
+    {
+        newTree = tree;
+        if (tree.childCount == 0u)
+        {
+            newTree.childrenOffset = 0;
+            return nextChild;
+        }
+
+        auto* children = AabbTreeChildren(tree);
+        newTree.childrenOffset = static_cast<int>(reinterpret_cast<char*>(nextChild) - reinterpret_cast<char*>(&newTree));
+        auto* nextFreeTree = nextChild + tree.childCount;
+        for (auto childIndex = 0u; childIndex < tree.childCount; childIndex++)
+            nextFreeTree = MoveAabbTree_r(children[childIndex], nextChild[childIndex], nextFreeTree);
+
+        return nextFreeTree;
+    }
+
+    [[nodiscard]] bool FixupGfxAabbTrees(GfxCell& cell, MemoryManager& memory, std::string& error)
+    {
+        if (!cell.aabbTree)
+            return true;
+
+        const auto treeCount = AabbTreeSubtreeCount(*cell.aabbTree);
+        if (!FitsInt(treeCount))
+        {
+            error = "too many AABB tree nodes after static model sort";
+            return false;
+        }
+
+        auto* newTree = AllocZeroed<GfxAabbTree>(memory, treeCount);
+        const auto* nextTree = MoveAabbTree_r(*cell.aabbTree, *newTree, newTree + 1);
+        if (nextTree != newTree + treeCount)
+        {
+            error = "AABB tree fixup produced an unexpected node count";
+            return false;
+        }
+
+        cell.aabbTree = newTree;
+        cell.aabbTreeCount = static_cast<int>(treeCount);
         return true;
     }
 
@@ -4731,16 +4980,36 @@ namespace
 
             if (world.dpvsPlanes.nodes)
             {
-                if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, packedIndex, world.dpvsPlanes.nodes, smodelInst.mins, smodelInst.maxs, error))
+                if (!FilterStaticModelIntoCells_r(world, staticModelIndexesByTree, packedIndex, world.dpvsPlanes.nodes, smodelInst.mins, smodelInst.maxs, memory, error))
                     return false;
             }
-            else if (!AddStaticModelToCell(world, staticModelIndexesByTree, packedIndex, 0, error))
+            else if (!AddStaticModelToCell(world, staticModelIndexesByTree, packedIndex, 0, memory, error))
             {
                 return false;
             }
         }
 
-        return CommitStaticModelAabbTreeIndexes(staticModelIndexesByTree, memory, error);
+        if (!CommitStaticModelAabbTreeIndexes(staticModelIndexesByTree, memory, error))
+            return false;
+
+        // After static models are assigned, linker_pc recursively sorts each
+        // tree, splits heavy static-model leaves into smaller buckets, then
+        // flattens every cell tree into a contiguous array. The raw
+        // SIMPLE_AABBTREES lump is derived from these fixed-up runtime trees.
+        for (auto cellIndex = 0; cellIndex < world.dpvsPlanes.cellCount; cellIndex++)
+        {
+            auto& cell = world.cells[cellIndex];
+            if (cell.aabbTree && !SortGfxAabbTree(world, *cell.aabbTree, memory, error))
+                return false;
+        }
+
+        for (auto cellIndex = 0; cellIndex < world.dpvsPlanes.cellCount; cellIndex++)
+        {
+            if (!FixupGfxAabbTrees(world.cells[cellIndex], memory, error))
+                return false;
+        }
+
+        return true;
     }
 
     [[nodiscard]] bool PopulateWorldDynamicEntities(GfxWorld& world, const clipMap_t* clipMap, MemoryManager& memory, std::string& error)
@@ -5652,9 +5921,6 @@ namespace
                 || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldShadowGeometry(*world, m_memory)
                 || !PopulateWorldLightGrid(*world, *bsp, m_memory, error) || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
                 || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
-                || !PopulateWorldStaticModelAabbTrees(*world, m_memory, error)
-                || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
-                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error)
                 || !PopulateWorldReflectionProbes(*world, *bsp, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
@@ -5662,6 +5928,15 @@ namespace
             }
 
             PopulateWorldStaticModelReflectionProbes(*world);
+
+            if (!PopulateWorldStaticModelAabbTrees(*world, m_memory, error)
+                || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
+                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, context, registration, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+
             PopulateWorldRuntimeData(*world, m_memory);
             if (!PopulateWorldSkySurfaces(*world, context, registration, m_memory, error))
             {
