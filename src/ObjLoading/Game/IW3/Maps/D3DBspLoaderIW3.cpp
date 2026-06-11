@@ -34,6 +34,7 @@ using namespace IW3;
 namespace
 {
     using enum IW3::d3dbsp::LumpType;
+    using enum IW3::d3dbsp::TrisType;
 
     constexpr auto RAW_LIGHT_TYPE_OFFSET = 0uz;
     constexpr auto RAW_LIGHT_CAN_USE_SHADOW_MAP_OFFSET = 1uz;
@@ -2360,32 +2361,26 @@ namespace
         return true;
     }
 
-    [[nodiscard]] const IW3::d3dbsp::Lump*
-        SelectWorldLump(const IW3::d3dbsp::File& bsp, const IW3::d3dbsp::LumpType preferred, const IW3::d3dbsp::LumpType fallback)
+    [[nodiscard]] IW3::d3dbsp::TrisType ChooseTrisContextType(const IW3::d3dbsp::File& bsp)
     {
-        const auto* preferredLump = bsp.GetLump(preferred);
-        if (preferredLump && !preferredLump->data.empty())
-            return preferredLump;
-
-        return bsp.GetLump(fallback);
+        // Stock R_ChooseTrisContextType selects the unlayered path when that
+        // geometry exists and layered materials are disabled. OAT currently
+        // mirrors that linker_pc-compatible path.
+        const auto* unlayeredSurfaces = bsp.GetLump(LUMP_SIMPLE_TRI_SOUPS);
+        return unlayeredSurfaces && !unlayeredSurfaces->data.empty() ? TRIS_TYPE_SIMPLE : TRIS_TYPE_LAYERED;
     }
 
-    [[nodiscard]] const IW3::d3dbsp::Lump*
-        SelectSimpleWorldLump(const IW3::d3dbsp::File& bsp, const IW3::d3dbsp::LumpType simple, const IW3::d3dbsp::LumpType layered)
+    [[nodiscard]] const IW3::d3dbsp::Lump* SelectWorldLumpForTrisType(
+        const IW3::d3dbsp::File& bsp,
+        const IW3::d3dbsp::LumpType layered,
+        const IW3::d3dbsp::LumpType unlayered)
     {
-        // IW3 v22 BSPs can contain both simple and layered render geometry. The
-        // layered surface records reference generated material names such as
-        // "*1n_2n"; linker_pc parses those names and synthesizes layered
-        // materials from their source material indices. Until this loader
-        // implements that synthesis, prefer the simple representation because it
-        // references regular world materials directly.
-        return SelectWorldLump(bsp, simple, layered);
+        return bsp.GetLump(ChooseTrisContextType(bsp) == TRIS_TYPE_SIMPLE ? unlayered : layered);
     }
 
     [[nodiscard]] bool UsesSimpleWorldGeometry(const IW3::d3dbsp::File& bsp)
     {
-        const auto* simpleSurfaces = bsp.GetLump(LUMP_SIMPLE_TRI_SOUPS);
-        return simpleSurfaces && !simpleSurfaces->data.empty();
+        return ChooseTrisContextType(bsp) == TRIS_TYPE_SIMPLE;
     }
 
     struct LightmapAtlasGroup
@@ -2577,7 +2572,7 @@ namespace
         std::array<int, MAX_LIGHTMAP_PAGE_COUNT * MAX_LIGHTMAP_PAGE_COUNT>& coupling,
         std::string& error)
     {
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         if (!surfaces)
             return true;
 
@@ -2639,7 +2634,7 @@ namespace
     [[nodiscard]] bool ReferencedLightmapPageCount(const IW3::d3dbsp::File& bsp, unsigned& pageCount, std::string& error)
     {
         pageCount = 0u;
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         if (!surfaces)
             return true;
 
@@ -2873,7 +2868,7 @@ namespace
     [[nodiscard]] std::vector<bool> WorldSurfaceMaterialUsage(const IW3::d3dbsp::File& bsp, const size_t materialCount, std::string& error)
     {
         std::vector<bool> result(materialCount);
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         if (!surfaces)
             return result;
 
@@ -2967,6 +2962,25 @@ namespace
         return result;
     }
 
+    [[nodiscard]] std::vector<std::string> RawWorldMaterialNames(const IW3::d3dbsp::File& bsp, std::string& error)
+    {
+        const auto* materials = bsp.GetLump(LUMP_MATERIALS);
+        if (!ValidateRecordLump(bsp, materials, LUMP_MATERIALS, RAW_MATERIAL_SIZE, error))
+            return {};
+
+        std::vector<std::string> result;
+        const auto materialCount = RecordCount(*materials, RAW_MATERIAL_SIZE);
+        result.reserve(materialCount);
+
+        for (auto materialIndex = 0uz; materialIndex < materialCount; materialIndex++)
+        {
+            const auto* record = materials->data.data() + materialIndex * RAW_MATERIAL_SIZE;
+            result.emplace_back(LowercaseAscii(RawMaterialName(record)));
+        }
+
+        return result;
+    }
+
     void SetWorldBoundsFromVertices(GfxWorld& world)
     {
         if (!world.vd.vertices || world.vertexCount == 0u)
@@ -3009,7 +3023,7 @@ namespace
 
     [[nodiscard]] bool PopulateWorldIndices(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
-        const auto* indices = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_INDICES, LUMP_LAYERED_INDICES);
+        const auto* indices = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_INDICES, LUMP_SIMPLE_INDICES);
         if (!indices)
             return true;
 
@@ -3026,7 +3040,7 @@ namespace
 
     [[nodiscard]] bool PopulateWorldVertices(GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, std::string& error)
     {
-        const auto* verts = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_VERTS, LUMP_LAYERED_VERTS);
+        const auto* verts = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_VERTS, LUMP_SIMPLE_VERTS);
         if (!verts)
             return true;
 
@@ -3147,6 +3161,128 @@ namespace
         }
     }
 
+    struct RawWorldSurfaceIndexInfo
+    {
+        uint16_t materialIndex = 0u;
+        uint8_t lightmapIndex = 0u;
+        uint8_t reflectionProbeIndex = 0u;
+        int firstIndex = 0;
+        uint16_t indexCount = 0u;
+    };
+
+    [[nodiscard]] bool RawSurfaceMaterialsMatch(
+        const RawWorldSurfaceIndexInfo& left,
+        const RawWorldSurfaceIndexInfo& right,
+        const size_t firstSurfaceIndex,
+        const std::vector<std::string>& rawMaterialNames)
+    {
+        if (left.materialIndex == right.materialIndex)
+            return true;
+
+        if (left.materialIndex >= rawMaterialNames.size() || firstSurfaceIndex >= rawMaterialNames.size())
+            return false;
+
+        // linker_pc's R_LoadSurfaces fallback compares the candidate material
+        // name to materialTable[firstSurfaceIndex], not to
+        // materialTable[firstSurface.materialIndex]. This odd-looking offset is
+        // visible in the decomp and is required to reproduce the canonical
+        // runtime index-buffer order.
+        return rawMaterialNames[left.materialIndex] == rawMaterialNames[firstSurfaceIndex];
+    }
+
+    [[nodiscard]] bool RawSurfaceIndexGroupsMatch(
+        const RawWorldSurfaceIndexInfo& left,
+        const RawWorldSurfaceIndexInfo& right,
+        const size_t firstSurfaceIndex,
+        const std::vector<std::string>& rawMaterialNames)
+    {
+        return RawSurfaceMaterialsMatch(left, right, firstSurfaceIndex, rawMaterialNames)
+               && left.reflectionProbeIndex == right.reflectionProbeIndex
+               && left.lightmapIndex == right.lightmapIndex;
+    }
+
+    [[nodiscard]] bool RewriteWorldIndicesLikeLinker(
+        GfxWorld& world,
+        const std::vector<RawWorldSurfaceIndexInfo>& rawSurfaces,
+        const std::vector<std::string>& rawMaterialNames,
+        MemoryManager& memory,
+        std::string& error)
+    {
+        if (rawSurfaces.empty())
+            return true;
+
+        if (!world.indices)
+        {
+            error = "world surfaces require an index lump";
+            return false;
+        }
+
+        auto rewrittenIndexCount = 0uz;
+        for (const auto& surface : rawSurfaces)
+            rewrittenIndexCount += surface.indexCount;
+
+        if (!FitsInt(rewrittenIndexCount))
+        {
+            error = "world index count is too large";
+            return false;
+        }
+
+        std::vector<uint16_t> rewrittenIndices(rewrittenIndexCount);
+        std::vector<bool> assigned(rawSurfaces.size());
+        auto writeIndex = 0uz;
+
+        // linker_pc does not keep the raw draw-index lump as-is. During
+        // R_LoadSurfaces it walks raw surfaces in order, groups still-unwritten
+        // surfaces by raw material name, raw reflection probe, and raw lightmap
+        // page, and appends each raw index span into a canonical runtime index
+        // buffer. The surface baseIndex values then point into this rewritten
+        // buffer before R_SortSurfaces moves the surface records.
+        for (auto firstSurface = 0uz; firstSurface < rawSurfaces.size(); firstSurface++)
+        {
+            if (assigned[firstSurface])
+                continue;
+
+            const auto& first = rawSurfaces[firstSurface];
+            for (auto surfaceIndex = firstSurface; surfaceIndex < rawSurfaces.size(); surfaceIndex++)
+            {
+                if (assigned[surfaceIndex] || !RawSurfaceIndexGroupsMatch(rawSurfaces[surfaceIndex], first, firstSurface, rawMaterialNames))
+                    continue;
+
+                const auto& rawSurface = rawSurfaces[surfaceIndex];
+                if (rawSurface.firstIndex < 0 || static_cast<size_t>(rawSurface.firstIndex) > static_cast<size_t>(world.indexCount)
+                    || static_cast<size_t>(rawSurface.indexCount) > static_cast<size_t>(world.indexCount) - static_cast<size_t>(rawSurface.firstIndex))
+                {
+                    error = std::format("world surface {} index range is out of bounds", surfaceIndex);
+                    return false;
+                }
+
+                if (writeIndex + rawSurface.indexCount > rewrittenIndices.size())
+                {
+                    error = "world index rewrite exceeded output size";
+                    return false;
+                }
+
+                std::memcpy(&rewrittenIndices[writeIndex], &world.indices[rawSurface.firstIndex], static_cast<size_t>(rawSurface.indexCount) * sizeof(uint16_t));
+                world.dpvs.surfaces[surfaceIndex].tris.baseIndex = static_cast<int>(writeIndex);
+                assigned[surfaceIndex] = true;
+                writeIndex += rawSurface.indexCount;
+            }
+        }
+
+        if (writeIndex != rewrittenIndices.size())
+        {
+            error = "world index rewrite did not write every index";
+            return false;
+        }
+
+        world.indexCount = static_cast<int>(rewrittenIndices.size());
+        world.indices = memory.Alloc<uint16_t>(rewrittenIndices.size());
+        if (world.indices && !rewrittenIndices.empty())
+            std::memcpy(world.indices, rewrittenIndices.data(), rewrittenIndices.size() * sizeof(uint16_t));
+
+        return true;
+    }
+
     [[nodiscard]] bool PopulateWorldSurfaces(
         GfxWorld& world,
         const IW3::d3dbsp::File& bsp,
@@ -3155,7 +3291,7 @@ namespace
         MemoryManager& memory,
         std::string& error)
     {
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         if (!surfaces)
             return true;
 
@@ -3172,6 +3308,10 @@ namespace
         world.dpvs.litSurfsEnd = static_cast<unsigned>(world.surfaceCount);
         world.dpvs.surfaces = AllocZeroed<GfxSurface>(memory, world.surfaceCount);
         std::vector<int> vertexLightmapRemaps(world.vertexCount, -1);
+        std::vector<RawWorldSurfaceIndexInfo> rawSurfaceIndexInfo(static_cast<size_t>(world.surfaceCount));
+        auto rawMaterialNames = RawWorldMaterialNames(bsp, error);
+        if (!error.empty())
+            return false;
 
         for (auto surfaceIndex = 0uz; surfaceIndex < static_cast<size_t>(world.surfaceCount); surfaceIndex++)
         {
@@ -3195,8 +3335,22 @@ namespace
             surface.tris.firstVertex = ReadI32(record, 12uz);
             surface.tris.vertexCount = ReadU16(record, 16uz);
             surface.tris.triCount = static_cast<uint16_t>(ReadU16(record, 18uz) / 3u);
-            surface.tris.baseIndex = ReadI32(record, 20uz);
+            surface.tris.baseIndex = -1;
 
+            rawSurfaceIndexInfo[surfaceIndex].materialIndex = materialIndex;
+            rawSurfaceIndexInfo[surfaceIndex].lightmapIndex = static_cast<uint8_t>(rawLightmapIndex);
+            rawSurfaceIndexInfo[surfaceIndex].reflectionProbeIndex = U8(surface.reflectionProbeIndex);
+            rawSurfaceIndexInfo[surfaceIndex].firstIndex = ReadI32(record, 20uz);
+            rawSurfaceIndexInfo[surfaceIndex].indexCount = ReadU16(record, 18uz);
+        }
+
+        if (!RewriteWorldIndicesLikeLinker(world, rawSurfaceIndexInfo, rawMaterialNames, memory, error))
+            return false;
+
+        for (auto surfaceIndex = 0uz; surfaceIndex < static_cast<size_t>(world.surfaceCount); surfaceIndex++)
+        {
+            auto& surface = world.dpvs.surfaces[surfaceIndex];
+            const auto rawLightmapIndex = rawSurfaceIndexInfo[surfaceIndex].lightmapIndex;
             if (rawLightmapIndex != SKY_LIGHTMAP_INDEX && rawLightmapIndex < lightmapLayout.atlasIndexForRawPage.size())
             {
                 const auto atlasIndex = lightmapLayout.atlasIndexForRawPage[rawLightmapIndex];
@@ -3916,7 +4070,7 @@ namespace
 
     [[nodiscard]] GfxAabbTree* BuildWorldAabbTrees(const GfxWorld& world, const IW3::d3dbsp::File& bsp, MemoryManager& memory, int& treeCount, std::string& error)
     {
-        const auto* aabbTrees = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_AABBTREES, LUMP_LAYERED_AABBTREES);
+        const auto* aabbTrees = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_AABBTREES, LUMP_SIMPLE_AABBTREES);
         if (!aabbTrees || aabbTrees->data.empty())
         {
             treeCount = world.surfaceCount > 0 ? 1 : 0;
@@ -4622,7 +4776,7 @@ namespace
             return true;
         }
 
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         auto maxPrimaryLightIndex = 0u;
         auto foundSurface = false;
 
@@ -6144,7 +6298,7 @@ namespace
         std::string& error)
     {
         const auto* materials = bsp.GetLump(LUMP_MATERIALS);
-        const auto* surfaces = SelectSimpleWorldLump(bsp, LUMP_SIMPLE_TRI_SOUPS, LUMP_LAYERED_TRI_SOUPS);
+        const auto* surfaces = SelectWorldLumpForTrisType(bsp, LUMP_LAYERED_TRI_SOUPS, LUMP_SIMPLE_TRI_SOUPS);
         if (!materials || !surfaces || world.modelCount <= 0 || !world.models || !world.dpvs.surfaces)
             return true;
 
