@@ -43,7 +43,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | ------------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset                | ✅              | ✅              |                                                                              |
 | PhysCollmap               | ❌              | ❌              |                                                                              |
-| XAnimParts                | ❌              | ❌              |                                                                              |
+| XAnimParts                | ✅              | ✅              |                                                                              |
 | XModel                    | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material                  | ✅              | ✅              |                                                                              |
 | MaterialPixelShader       | ✅              | ✅              | Only dumps/loads shader bytecode.                                            |
@@ -83,7 +83,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
 | PhysPreset                | ✅              | ✅              |                                                                                                               |
 | PhysCollmap               | ❌              | ❌              |                                                                                                               |
-| XAnimParts                | ❌              | ❌              |                                                                                                               |
+| XAnimParts                | ✅              | ✅              |                                                                                                               |
 | XModelSurfs               | ❌              | ❌              |                                                                                                               |
 | XModel                    | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`.                                  |
 | Material                  | ✅              | ✅              |                                                                                                               |
@@ -162,7 +162,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ❌              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
-| XAnimParts           | ❌              | ❌              |                                                                              |
+| XAnimParts           | ✅              | ✅              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
 | MaterialTechniqueSet | ✅              | ❌              | For shaders: only dumps/loads shader bytecode.                               |
@@ -199,7 +199,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysPreset             | ✅              | ✅              |                                                                                                                                                                |
 | PhysConstraints        | ✅              | ✅              |                                                                                                                                                                |
 | DestructibleDef        | ❌              | ❌              |                                                                                                                                                                |
-| XAnimParts             | ❌              | ❌              |                                                                                                                                                                |
+| XAnimParts             | ✅              | ✅              |                                                                                                                                                                |
 | XModel                 | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`.                                                                                   |
 | Material               | ✅              | ✅              | Dumping/Loading is currently possible for materials in their compiled form. There is currently no material pipeline.                                           |
 | MaterialTechniqueSet   | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                                                                                                                 |
