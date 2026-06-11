@@ -89,6 +89,7 @@ namespace
     constexpr auto REFLECTION_PROBE_RECORD_SIZE = sizeof(float) * 3uz + REFLECTION_PROBE_NAME_SIZE + REFLECTION_PROBE_RAW_DATA_SIZE;
     constexpr auto MATERIAL_USAGE_HASH_SIZE = 0x800uz;
     constexpr auto MATERIAL_HASH_SEARCH_SIZE = 0x7FFuz;
+    constexpr auto MATERIAL_GAME_FLAG_MAGIC_PORTAL = 0x20u;
     constexpr auto DEFAULT_MATERIAL_NAME = "$default";
     constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
     constexpr auto SKY_LIGHTMAP_INDEX = 31u;
@@ -3161,6 +3162,114 @@ namespace
         }
     }
 
+    [[nodiscard]] bool ApplyMagicPortalVertexCoords(GfxWorld& world, const GfxSurface& surface, std::string& error)
+    {
+        if (!surface.material || (surface.material->info.gameFlags & MATERIAL_GAME_FLAG_MAGIC_PORTAL) == 0u)
+            return true;
+
+        const auto triCount = static_cast<size_t>(surface.tris.triCount);
+        const auto indexCount = triCount * 3uz;
+        if (triCount == 0uz)
+            return true;
+
+        if (!world.indices || !world.vd.vertices || surface.tris.baseIndex < 0 || static_cast<size_t>(surface.tris.baseIndex) > static_cast<size_t>(world.indexCount)
+            || indexCount > static_cast<size_t>(world.indexCount) - static_cast<size_t>(surface.tris.baseIndex))
+        {
+            error = "magic portal surface index range is out of bounds";
+            return false;
+        }
+
+        std::vector<size_t> fillId(triCount);
+        std::vector<std::array<float, 3>> centerAccum(triCount);
+        std::vector<float> centerWeight(triCount);
+        for (auto triIndex = 0uz; triIndex < triCount; triIndex++)
+            fillId[triIndex] = triIndex;
+
+        // Stock R_SurfCalculateMagicPortalVerts groups connected triangles by
+        // shared vertex, averages each connected component's xyz center, then
+        // stores that center as texCoord.xy/lmapCoord.x with lmapCoord.y = 1.
+        // These portal materials do not preserve authored UVs in the runtime
+        // world and must be normalized this way to dump back to linker_pc form.
+        auto changed = true;
+        while (changed)
+        {
+            changed = false;
+            for (auto leftTri = 0uz; leftTri < triCount; leftTri++)
+            {
+                std::array<int, 3> leftVerts{};
+                for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+                    leftVerts[triVertex] = surface.tris.firstVertex + world.indices[surface.tris.baseIndex + static_cast<int>(leftTri * 3uz + triVertex)];
+
+                for (auto rightTri = 0uz; rightTri < triCount; rightTri++)
+                {
+                    std::array<int, 3> rightVerts{};
+                    for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+                        rightVerts[triVertex] = surface.tris.firstVertex + world.indices[surface.tris.baseIndex + static_cast<int>(rightTri * 3uz + triVertex)];
+
+                    for (const auto leftVertex : leftVerts)
+                    {
+                        for (const auto rightVertex : rightVerts)
+                        {
+                            if (leftVertex != rightVertex || fillId[leftTri] == fillId[rightTri])
+                                continue;
+
+                            if (fillId[leftTri] >= fillId[rightTri])
+                                fillId[leftTri] = fillId[rightTri];
+                            else
+                                fillId[rightTri] = fillId[leftTri];
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (auto triIndex = 0uz; triIndex < triCount; triIndex++)
+        {
+            const auto targetFill = fillId[triIndex];
+            for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+            {
+                const auto vertexIndex = surface.tris.firstVertex + world.indices[surface.tris.baseIndex + static_cast<int>(triIndex * 3uz + triVertex)];
+                if (vertexIndex < 0 || static_cast<unsigned>(vertexIndex) >= world.vertexCount)
+                {
+                    error = "magic portal surface references invalid vertex";
+                    return false;
+                }
+
+                const auto& vertex = world.vd.vertices[vertexIndex];
+                for (auto axis = 0uz; axis < 3uz; axis++)
+                    centerAccum[targetFill][axis] = LinkerFloat(static_cast<double>(centerAccum[targetFill][axis]) + vertex.xyz[axis]);
+                centerWeight[targetFill] = LinkerFloat(static_cast<double>(centerWeight[targetFill]) + 1.0);
+            }
+        }
+
+        for (auto triIndex = 0uz; triIndex < triCount; triIndex++)
+        {
+            if (centerWeight[triIndex] <= 0.0f)
+                continue;
+
+            const auto scale = LinkerFloat(1.0 / static_cast<double>(centerWeight[triIndex]));
+            for (auto axis = 0uz; axis < 3uz; axis++)
+                centerAccum[triIndex][axis] = LinkerFloat(static_cast<double>(centerAccum[triIndex][axis]) * scale);
+        }
+
+        for (auto triIndex = 0uz; triIndex < triCount; triIndex++)
+        {
+            const auto sourceFill = fillId[triIndex];
+            for (auto triVertex = 0uz; triVertex < 3uz; triVertex++)
+            {
+                const auto vertexIndex = surface.tris.firstVertex + world.indices[surface.tris.baseIndex + static_cast<int>(triIndex * 3uz + triVertex)];
+                auto& vertex = world.vd.vertices[vertexIndex];
+                vertex.texCoord[0] = centerAccum[sourceFill][0];
+                vertex.texCoord[1] = centerAccum[sourceFill][1];
+                vertex.lmapCoord[0] = centerAccum[sourceFill][2];
+                vertex.lmapCoord[1] = 1.0f;
+            }
+        }
+
+        return true;
+    }
+
     struct RawWorldSurfaceIndexInfo
     {
         uint16_t materialIndex = 0u;
@@ -3364,6 +3473,9 @@ namespace
                     ApplySurfaceLightmapRemap(world, surface, lightmapLayout.groups[atlasIndex], packedSlot, vertexLightmapRemaps);
                 }
             }
+
+            if (!ApplyMagicPortalVertexCoords(world, surface, error))
+                return false;
 
             PopulateSurfaceBounds(world, surface);
         }
