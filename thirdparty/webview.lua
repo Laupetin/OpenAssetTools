@@ -3,7 +3,7 @@ webview = {}
 function webview:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
-			path.join(ThirdPartyFolder(), "webview/core/include"),
+			path.join(ThirdPartyFolder(), "webview/include"),
 			path.join(self:msWebviewDir(), "build/native/include")
 		}
 	end
@@ -49,9 +49,7 @@ function webview:project()
 		language "C++"
 		
 		files { 
-			path.join(folder, "webview/core/include/**.h"),
-			path.join(folder, "webview/core/include/**.hh"),
-			path.join(folder, "webview/core/src/**.cc")
+			path.join(folder, "webview/include/**.hpp"),
 		}
 		
 		defines {

@@ -9,7 +9,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#include <webview/webview.h>
+#include <webview/webview.hpp>
 
 #ifdef _MSC_VER
 #pragma warning(pop)
