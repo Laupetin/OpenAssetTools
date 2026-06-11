@@ -9,5 +9,5 @@ namespace ui
     void NotifyZoneLoaded(const LoadedZone& loadedZone);
     void NotifyZoneUnloaded(std::string zoneName);
 
-    void RegisterZoneBinds(webview::webview& wv);
+    void RegisterZoneBinds(webview::commands_builder& commands);
 } // namespace ui

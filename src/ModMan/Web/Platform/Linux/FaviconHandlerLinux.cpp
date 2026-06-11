@@ -11,7 +11,7 @@
 
 namespace ui
 {
-    void InstallFaviconHandler(webview::webview& wv)
+    void InstallFaviconHandler(webview::window& wv)
     {
         // The icon system on Linux works a bit different than on Windows
         // and doesn't really support this kind of dynamic icon setting

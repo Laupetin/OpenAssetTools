@@ -3,15 +3,12 @@
 
 #ifdef PLATFORM_WINDOWS
 
-#include "PlatformUtilsWindows.h"
 #include "Web/UiAssets.h"
 
 #include <Windows.h>
 #include <format>
 #include <gdiplus.h>
 #include <iostream>
-#include <sstream>
-#include <webview/detail/backends/win32_edge.hh>
 #include <wrl/event.h>
 
 namespace
@@ -65,7 +62,7 @@ namespace
     {
         LPWSTR url;
 
-        if (!SUCCEEDED(core15->get_FaviconUri(&url)))
+        if (FAILED(core15->get_FaviconUri(&url)))
         {
             std::cerr << "Failed to get favicon uri\n";
             return S_FALSE;
@@ -81,26 +78,26 @@ namespace
         }
         else
         {
-            if (!SUCCEEDED(core15->GetFavicon(COREWEBVIEW2_FAVICON_IMAGE_FORMAT_PNG,
-                                              Microsoft::WRL::Callback<ICoreWebView2GetFaviconCompletedHandler>(
-                                                  [window](HRESULT errorCode, IStream* iconStream) -> HRESULT
+            if (FAILED(core15->GetFavicon(COREWEBVIEW2_FAVICON_IMAGE_FORMAT_PNG,
+                                          Microsoft::WRL::Callback<ICoreWebView2GetFaviconCompletedHandler>(
+                                              [window](HRESULT errorCode, IStream* iconStream) -> HRESULT
+                                              {
+                                                  Gdiplus::Bitmap iconBitmap(iconStream);
+                                                  UniqueHIcon icon;
+                                                  if (iconBitmap.GetHICON(&icon.get()) == Gdiplus::Status::Ok)
                                                   {
-                                                      Gdiplus::Bitmap iconBitmap(iconStream);
-                                                      UniqueHIcon icon;
-                                                      if (iconBitmap.GetHICON(&icon.get()) == Gdiplus::Status::Ok)
-                                                      {
-                                                          SendMessage(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon.get()));
-                                                          icons.emplace(window, std::move(icon)).first->second.get();
-                                                      }
-                                                      else
-                                                      {
-                                                          icons.erase(icons.find(window));
-                                                          SendMessage(window, WM_SETICON, ICON_SMALL, NULL);
-                                                      }
+                                                      SendMessage(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon.get()));
+                                                      icons.emplace(window, std::move(icon)).first->second.get();
+                                                  }
+                                                  else
+                                                  {
+                                                      icons.erase(icons.find(window));
+                                                      SendMessage(window, WM_SETICON, ICON_SMALL, NULL);
+                                                  }
 
-                                                      return S_OK;
-                                                  })
-                                                  .Get())))
+                                                  return S_OK;
+                                              })
+                                              .Get())))
             {
                 std::cerr << "Failed to get favicon\n";
                 return S_FALSE;
@@ -108,42 +105,55 @@ namespace
         }
         return S_OK;
     }
+
+    class FaviconPlugin : public webview::plugin
+    {
+    public:
+        std::expected<void, std::string> on_setup_window(webview::window& window, const webview::plugin_window_context& context) override
+        {
+            const auto maybeBrowserController = context.browser_controller();
+            if (!maybeBrowserController.has_value())
+                return std::unexpected("Failed to get browser controller");
+            const auto controller = static_cast<ICoreWebView2Controller*>(maybeBrowserController.value());
+
+            const auto maybeWindow = context.window();
+            if (!maybeWindow.has_value())
+                return std::unexpected("Failed to get window");
+            auto windowHwnd = static_cast<HWND>(maybeWindow.value());
+
+            Microsoft::WRL::ComPtr<ICoreWebView2> core;
+            if (FAILED(controller->get_CoreWebView2(&core)))
+                return std::unexpected("Failed to get webview");
+
+            Microsoft::WRL::ComPtr<ICoreWebView2_15> core15;
+            if (FAILED(core->QueryInterface(IID_PPV_ARGS(&core15))))
+                return std::unexpected("Failed to get core15");
+
+            const Gdiplus::GdiplusStartupInput gdiPlusStartupInput;
+            ULONG_PTR gdiPlusToken;
+            Gdiplus::GdiplusStartup(&gdiPlusToken, &gdiPlusStartupInput, nullptr);
+            EventRegistrationToken token;
+            if (FAILED(core15->add_FaviconChanged(Microsoft::WRL::Callback<ICoreWebView2FaviconChangedEventHandler>(
+                                                      [core15, windowHwnd](ICoreWebView2* sender, IUnknown* args) -> HRESULT
+                                                      {
+                                                          return HandleFaviconChanged(core15.Get(), windowHwnd);
+                                                      })
+                                                      .Get(),
+                                                  &token)))
+            {
+                return std::unexpected("Failed to add favicon handler");
+            }
+
+            return {};
+        }
+    };
 } // namespace
 
 namespace ui
 {
-    void InstallFaviconHandler(webview::webview& wv)
+    std::shared_ptr<webview::plugin> CreateFaviconPlugin()
     {
-        const auto controller = static_cast<ICoreWebView2Controller*>(wv.browser_controller().value());
-        auto window = static_cast<HWND>(wv.window().value());
-        Microsoft::WRL::ComPtr<ICoreWebView2> core;
-        if (!SUCCEEDED(controller->get_CoreWebView2(&core)))
-        {
-            std::cerr << "Failed to get webview\n";
-            return;
-        }
-
-        Microsoft::WRL::ComPtr<ICoreWebView2_15> core15;
-        if (!SUCCEEDED(core->QueryInterface(IID_PPV_ARGS(&core15))))
-        {
-            std::cerr << "Failed to get core15\n";
-            return;
-        }
-
-        const Gdiplus::GdiplusStartupInput gdiPlusStartupInput;
-        ULONG_PTR gdiPlusToken;
-        Gdiplus::GdiplusStartup(&gdiPlusToken, &gdiPlusStartupInput, nullptr);
-        EventRegistrationToken token;
-        if (!SUCCEEDED(core15->add_FaviconChanged(Microsoft::WRL::Callback<ICoreWebView2FaviconChangedEventHandler>(
-                                                      [core15, window](ICoreWebView2* sender, IUnknown* args) -> HRESULT
-                                                      {
-                                                          return HandleFaviconChanged(core15.Get(), window);
-                                                      })
-                                                      .Get(),
-                                                  &token)))
-        {
-            std::cerr << "Failed to add favicon handler\n";
-        }
+        return std::make_shared<FaviconPlugin>();
     }
 } // namespace ui
 

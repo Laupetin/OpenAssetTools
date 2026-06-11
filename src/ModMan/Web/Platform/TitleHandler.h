@@ -2,9 +2,7 @@
 
 #include "Web/WebViewLib.h"
 
-#include <webview/macros.h>
-
 namespace ui
 {
-    void InstallTitleHandler(webview::webview& wv);
+    std::shared_ptr<webview::plugin> CreateTitleHandlerPlugin();
 } // namespace ui

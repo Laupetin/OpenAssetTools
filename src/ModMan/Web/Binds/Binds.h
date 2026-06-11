@@ -4,5 +4,5 @@
 
 namespace ui
 {
-    void RegisterAllBinds(webview::webview& wv);
+    void RegisterAllBinds(webview::commands_builder& commands);
 }

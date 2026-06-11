@@ -78,22 +78,24 @@ namespace
         return {};
     }
 
-    void UnlinkZone(webview::webview& wv, std::string id, std::string zoneName) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
+    void UnlinkZone(webview::detail::window_base& calling_window,
+                    std::string id,
+                    std::string zoneName) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
     {
         ModManContext::Get().m_db_thread.Dispatch(
-            [&wv, id, zoneName]
+            [&calling_window, id, zoneName]
             {
                 auto result = UnlinkZoneInDbThread(zoneName);
 
                 if (result)
                 {
                     con::debug("Unlinked zone \"{}\"", zoneName);
-                    ui::PromiseResolve(wv, id, true);
+                    ui::PromiseResolve(calling_window, id, true);
                 }
                 else
                 {
                     con::warn("Failed to unlink zone \"{}\": {}", zoneName, result.error());
-                    ui::PromiseReject(wv, id, std::move(result).error());
+                    ui::PromiseReject(calling_window, id, std::move(result).error());
                 }
             });
     }
@@ -110,13 +112,13 @@ namespace ui
         Notify(*ModManContext::Get().m_main_webview, "zoneUnlinkProgress", dto);
     }
 
-    void RegisterUnlinkingBinds(webview::webview& wv)
+    void RegisterUnlinkingBinds(webview::commands_builder& commands)
     {
-        BindAsync<std::string>(wv,
+        BindAsync<std::string>(commands,
                                "unlinkZone",
-                               [&wv](const std::string& id, std::string zoneName)
+                               [](const std::string& id, webview::detail::window_base& calling_window, std::string zoneName)
                                {
-                                   UnlinkZone(wv, id, std::move(zoneName));
+                                   UnlinkZone(calling_window, id, std::move(zoneName));
                                });
     }
 } // namespace ui

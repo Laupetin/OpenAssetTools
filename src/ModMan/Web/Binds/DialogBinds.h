@@ -4,5 +4,5 @@
 
 namespace ui
 {
-    void RegisterDialogHandlerBinds(webview::webview& wv);
+    void RegisterDialogHandlerBinds(webview::commands_builder& commands);
 }

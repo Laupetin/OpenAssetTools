@@ -11,7 +11,7 @@
 
 namespace ui
 {
-    void InstallTitleHandler(webview::webview& wv)
+    void InstallTitleHandler(webview::window& wv)
     {
         const auto webViewWidget = static_cast<GtkWidget*>(wv.browser_controller().value());
         const auto webView = WEBKIT_WEB_VIEW(webViewWidget);

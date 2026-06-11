@@ -2,9 +2,7 @@
 
 #include "Web/WebViewLib.h"
 
-#include <webview/macros.h>
-
 namespace ui
 {
-    void InstallFaviconHandler(webview::webview& wv);
+    std::shared_ptr<webview::plugin> CreateFaviconPlugin();
 } // namespace ui

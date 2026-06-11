@@ -6,5 +6,5 @@ namespace ui
 {
     void NotifyZoneUnlinkProgress(std::string zoneName, double percentage);
 
-    void RegisterUnlinkingBinds(webview::webview& wv);
+    void RegisterUnlinkingBinds(webview::commands_builder& commands);
 } // namespace ui

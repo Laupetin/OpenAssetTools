@@ -14,8 +14,8 @@ public:
     void Startup();
     void Destroy();
 
-    std::unique_ptr<webview::webview> m_main_webview;
-    std::unique_ptr<webview::webview> m_dev_tools_webview;
+    std::shared_ptr<webview::window> m_main_webview;
+    std::shared_ptr<webview::window> m_dev_tools_webview;
     FastFileContext m_fast_file;
 
     DispatchableThread m_db_thread;

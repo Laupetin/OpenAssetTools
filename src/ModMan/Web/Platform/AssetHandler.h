@@ -3,8 +3,6 @@
 #include "Web/Platform/Platform.h"
 #include "Web/WebViewLib.h"
 
-#include <webview/macros.h>
-
 namespace ui
 {
 #if defined(PLATFORM_WINDOWS)
@@ -13,5 +11,5 @@ namespace ui
     constexpr auto URL_PREFIX = "modman://localhost/";
 #endif
 
-    void InstallAssetHandler(webview::webview& wv);
+    std::shared_ptr<webview::plugin> CreateAssetHandlerPlugin();
 } // namespace ui

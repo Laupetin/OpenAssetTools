@@ -38,7 +38,7 @@ namespace
 
 namespace ui
 {
-    void InstallAssetHandler(webview::webview& wv)
+    void InstallAssetHandler(webview::window& wv)
     {
         const auto widget = static_cast<GtkWidget*>(wv.browser_controller().value());
         const auto webView = WEBKIT_WEB_VIEW(widget);
