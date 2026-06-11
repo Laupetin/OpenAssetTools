@@ -1446,13 +1446,6 @@ namespace
 
         if (world.dpvs.staticSurfaceCount != world.dpvs.staticSurfaceCountNoDecal)
         {
-            auto totalAabbTreeCount = 0uz;
-            if (world.dpvsPlanes.cellCount > 0 && world.cells)
-            {
-                for (auto cellIndex = 0; cellIndex < world.dpvsPlanes.cellCount; cellIndex++)
-                    totalAabbTreeCount += static_cast<size_t>(std::max(world.cells[cellIndex].aabbTreeCount, 0));
-            }
-
             const uint32_t startSurfIndex = 0u;
             const auto surfaceCount =
                 world.modelCount > 0 && world.models ? static_cast<uint32_t>(world.models[0].surfaceCount) : static_cast<uint32_t>(world.surfaceCount);
@@ -1464,14 +1457,9 @@ namespace
             // The loader does not yet reconstruct the original per-cell AABB
             // hierarchy. For decal-split maps, emit one root leaf covering
             // model0 so Radiant's no-decal compaction sees the full surface set.
-            // Keep the original lump footprint where possible; some Radiant
-            // paths are sensitive to later lump positions.
-            for (auto treeIndex = 1uz; treeIndex < totalAabbTreeCount; treeIndex++)
-            {
-                Append(out, 0u);
-                Append(out, 0u);
-                Append(out, 0u);
-            }
+            // Runtime cell tree counts include static-model tree fixups and are
+            // not stable between linker_pc-origin and OAT-origin fastfiles, so
+            // do not preserve their zero-padding footprint in the raw lump.
 
             return out;
         }

@@ -5376,28 +5376,290 @@ namespace
         return true;
     }
 
-    void PopulateStaticModelGroundLighting(const EntityBlock& block, GfxStaticModelInst& inst, GfxStaticModelDrawInst& drawInst)
+    [[nodiscard]] float Dot3(const float (&left)[3], const float (&right)[3])
+    {
+        return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
+    }
+
+    [[nodiscard]] float LengthSquared3(const float (&value)[3])
+    {
+        return Dot3(value, value);
+    }
+
+    [[nodiscard]] bool CullBoxFromSphere(const float (&sphereOrigin)[3], const float radius, const float (&boxCenter)[3], const float (&boxHalfSize)[3])
+    {
+        float distFromBoxToMid[3]{};
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            distFromBoxToMid[axis] = std::max(0.0f, std::fabs(sphereOrigin[axis] - boxCenter[axis]) - boxHalfSize[axis]);
+
+        return radius * radius < LengthSquared3(distFromBoxToMid);
+    }
+
+    [[nodiscard]] bool CullBoxFromConicSectionOfSphere(
+        const float (&coneOrigin)[3],
+        const float (&coneDir)[3],
+        const float cosHalfFov,
+        const float radius,
+        const float (&boxCenter)[3],
+        const float (&boxHalfSize)[3])
+    {
+        float deltaMid[3]{boxCenter[0] - coneOrigin[0], boxCenter[1] - coneOrigin[1], boxCenter[2] - coneOrigin[2]};
+        float distFromBoxToMid[3]{};
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            distFromBoxToMid[axis] = std::max(0.0f, std::fabs(deltaMid[axis]) - boxHalfSize[axis]);
+
+        if (radius * radius < LengthSquared3(distFromBoxToMid))
+            return true;
+
+        float farCorner[3]{};
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            farCorner[axis] = deltaMid[axis] - boxHalfSize[axis] * (coneDir[axis] < 0.0f ? -1.0f : 1.0f);
+
+        const auto dist = Dot3(farCorner, coneDir);
+        if (dist >= 0.0f)
+            return true;
+
+        float perpendicular[3]{
+            farCorner[0] + (-dist) * coneDir[0],
+            farCorner[1] + (-dist) * coneDir[1],
+            farCorner[2] + (-dist) * coneDir[2],
+        };
+
+        const auto perpLenSq = LengthSquared3(perpendicular);
+        const auto cosHalfFovSq = cosHalfFov * cosHalfFov;
+        const auto sinHalfFovSq = 1.0f - cosHalfFovSq;
+        if (dist * dist * sinHalfFovSq >= perpLenSq * cosHalfFovSq)
+            return false;
+
+        const auto scale = cosHalfFov / std::sqrt(perpLenSq * sinHalfFovSq);
+        float scaledSepAxis[3]{
+            coneDir[0] + scale * perpendicular[0],
+            coneDir[1] + scale * perpendicular[1],
+            coneDir[2] + scale * perpendicular[2],
+        };
+        auto scaledSepDist = Dot3(scaledSepAxis, deltaMid);
+        for (auto axis = 0uz; axis < 3uz; axis++)
+            scaledSepDist -= std::fabs(scaledSepAxis[axis] * boxHalfSize[axis]);
+
+        return scaledSepDist >= 0.0f;
+    }
+
+    [[nodiscard]] bool CullBoxFromPrimaryLight(const ComPrimaryLight& light, const float (&boxCenter)[3], const float (&boxHalfSize)[3])
+    {
+        if (U8(light.type) == 2u && light.cosHalfFovExpanded >= 0.0f)
+            return CullBoxFromConicSectionOfSphere(light.origin, light.dir, light.cosHalfFovExpanded, light.radius, boxCenter, boxHalfSize);
+
+        return CullBoxFromSphere(light.origin, light.radius, boxCenter, boxHalfSize);
+    }
+
+    void TransformPlacementPoint(const GfxPackedPlacement& placement, const vec3_t& local, float (&out)[3])
+    {
+        for (auto component = 0uz; component < 3uz; component++)
+        {
+            out[component] = placement.origin[component]
+                           + placement.scale
+                                 * (placement.axis[0][component] * local.v[0] + placement.axis[1][component] * local.v[1]
+                                    + placement.axis[2][component] * local.v[2]);
+        }
+    }
+
+    [[nodiscard]] bool GetModelSurfaces(const XModel& model, const unsigned lod, const XSurface*& surfaces, unsigned& surfaceCount)
+    {
+        constexpr auto XMODEL_LOD_COUNT = 4u;
+        // Referenced or placeholder models can have incomplete render data.
+        // Treat that as "no vertex vote"; linker_pc leaves the model with no primary light in that case.
+        if (!model.surfs || model.numLods == 0u || lod >= model.numLods || lod >= XMODEL_LOD_COUNT || model.numsurfs == 0u)
+            return false;
+
+        const auto& lodInfo = model.lodInfo[lod];
+        const auto firstSurface = static_cast<unsigned>(lodInfo.surfIndex);
+        const auto surfacesInLod = static_cast<unsigned>(lodInfo.numsurfs);
+        if (surfacesInLod == 0u || firstSurface >= model.numsurfs || firstSurface + surfacesInLod > model.numsurfs)
+            return false;
+
+        surfaces = &model.surfs[firstSurface];
+        surfaceCount = surfacesInLod;
+        return true;
+    }
+
+    [[nodiscard]] bool PointInLightRegionHull(const GfxLightRegionHull& hull, const float (&relativePoint)[3])
+    {
+        const float points[9]{
+            relativePoint[0],
+            relativePoint[1],
+            relativePoint[2],
+            relativePoint[0] + relativePoint[1],
+            relativePoint[0] - relativePoint[1],
+            relativePoint[0] + relativePoint[2],
+            relativePoint[0] - relativePoint[2],
+            relativePoint[1] + relativePoint[2],
+            relativePoint[1] - relativePoint[2],
+        };
+
+        for (auto axis = 0uz; axis < 9uz; axis++)
+        {
+            if (hull.kdopHalfSize[axis] <= std::fabs(points[axis] - hull.kdopMidPoint[axis]))
+                return false;
+        }
+
+        if (hull.axisCount > 0u && !hull.axis)
+            return false;
+
+        for (auto axisIndex = 0u; axisIndex < hull.axisCount; axisIndex++)
+        {
+            const auto& axis = hull.axis[axisIndex];
+            const auto midpointAlongDir = Dot3(relativePoint, axis.dir);
+            if (axis.halfSize <= std::fabs(midpointAlongDir - axis.midPoint))
+                return false;
+        }
+
+        return true;
+    }
+
+    [[nodiscard]] unsigned PrimaryLightForModelVertex(
+        const GfxWorld& world, const ComWorld& comWorld, const std::vector<bool>& checkLight, const float (&point)[3])
+    {
+        for (auto primaryLightIndex = 0u; primaryLightIndex < world.primaryLightCount && primaryLightIndex < comWorld.primaryLightCount; primaryLightIndex++)
+        {
+            if (!checkLight[primaryLightIndex])
+                continue;
+
+            const auto& light = comWorld.primaryLights[primaryLightIndex];
+            float relativePoint[3]{point[0] - light.origin[0], point[1] - light.origin[1], point[2] - light.origin[2]};
+            const auto lenSq = LengthSquared3(relativePoint);
+            if (lenSq > light.radius * light.radius)
+                continue;
+
+            if (U8(light.type) == 2u)
+            {
+                const auto cosHalfFov = light.cosHalfFovExpanded;
+                const auto dot = Dot3(relativePoint, light.dir);
+                if (cosHalfFov >= 0.0f)
+                {
+                    if (dot > 0.0f || cosHalfFov * cosHalfFov * lenSq > dot * dot)
+                        continue;
+                }
+                else if (dot > 0.0f && cosHalfFov * cosHalfFov * lenSq < dot * dot)
+                {
+                    continue;
+                }
+            }
+
+            if (!world.lightRegion || world.lightRegion[primaryLightIndex].hullCount == 0u)
+                return primaryLightIndex;
+
+            const auto& region = world.lightRegion[primaryLightIndex];
+            if (!region.hulls)
+                continue;
+
+            for (auto hullIndex = 0u; hullIndex < region.hullCount; hullIndex++)
+            {
+                if (PointInLightRegionHull(region.hulls[hullIndex], relativePoint))
+                    return primaryLightIndex;
+            }
+        }
+
+        return 0u;
+    }
+
+    [[nodiscard]] unsigned GetPrimaryLightForModel(
+        const GfxWorld& world, const ComWorld& comWorld, const GfxStaticModelDrawInst& drawInst, const float (&mins)[3], const float (&maxs)[3])
+    {
+        if (!drawInst.model || !comWorld.primaryLights)
+            return 0u;
+
+        const float boxCenter[3]{
+            (mins[0] + maxs[0]) * 0.5f,
+            (mins[1] + maxs[1]) * 0.5f,
+            (mins[2] + maxs[2]) * 0.5f,
+        };
+        const float boxHalfSize[3]{boxCenter[0] - mins[0], boxCenter[1] - mins[1], boxCenter[2] - mins[2]};
+
+        std::vector<bool> checkLight(std::min(world.primaryLightCount, comWorld.primaryLightCount));
+        auto checkCount = 0u;
+        for (auto primaryLightIndex = 0u; primaryLightIndex < world.primaryLightCount && primaryLightIndex < comWorld.primaryLightCount; primaryLightIndex++)
+        {
+            const auto& light = comWorld.primaryLights[primaryLightIndex];
+            const auto lightType = U8(light.type);
+            if (lightType != 0u && lightType != 1u && !CullBoxFromPrimaryLight(light, boxCenter, boxHalfSize))
+            {
+                checkLight[primaryLightIndex] = true;
+                checkCount++;
+            }
+        }
+
+        if (checkCount == 0u)
+            return 0u;
+
+        const auto lod = drawInst.model->numLods > 0u ? static_cast<unsigned>(drawInst.model->numLods - 1u) : 0u;
+        const XSurface* surfaces = nullptr;
+        unsigned surfaceCount = 0u;
+        if (!GetModelSurfaces(*drawInst.model, lod, surfaces, surfaceCount))
+            return 0u;
+
+        std::vector<unsigned> votes(checkLight.size());
+        auto mostVotes = 0u;
+        auto bestLight = 0u;
+        for (auto surfaceIndex = 0u; surfaceIndex < surfaceCount; surfaceIndex++)
+        {
+            const auto& surface = surfaces[surfaceIndex];
+            if (!surface.verts0)
+                continue;
+
+            for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
+            {
+                float point[3]{};
+                TransformPlacementPoint(drawInst.placement, surface.verts0[vertexIndex].xyz, point);
+                const auto chosenLight = PrimaryLightForModelVertex(world, comWorld, checkLight, point);
+                if (chosenLight >= votes.size())
+                    continue;
+
+                votes[chosenLight]++;
+                if (chosenLight && votes[chosenLight] > mostVotes)
+                {
+                    mostVotes = votes[chosenLight];
+                    bestLight = chosenLight;
+                    if (checkCount == 1u)
+                        break;
+                }
+            }
+        }
+
+        return bestLight;
+    }
+
+    [[nodiscard]] unsigned RecomputeStaticModelPrimaryLight(
+        const GfxWorld& world, const ComWorld& comWorld, const GfxStaticModelDrawInst& drawInst, const float (&mins)[3], const float (&maxs)[3])
+    {
+        const auto primaryLightIndex = GetPrimaryLightForModel(world, comWorld, drawInst, mins, maxs);
+        return primaryLightIndex < world.primaryLightCount ? primaryLightIndex : 0u;
+    }
+
+    void PopulateStaticModelGroundLighting(
+        const GfxWorld& world, const ComWorld& comWorld, const EntityBlock& block, GfxStaticModelInst& inst, GfxStaticModelDrawInst& drawInst)
     {
         const auto gndLt = EntityField(block, "gndLt");
-        if (gndLt.size() < 10uz)
-            return;
+        auto groundLightContainsValidData = gndLt.size() >= 10uz;
 
-        const auto b = ParseHexByte(gndLt, 0uz);
-        const auto g = ParseHexByte(gndLt, 2uz);
-        const auto r = ParseHexByte(gndLt, 4uz);
-        const auto a = ParseHexByte(gndLt, 6uz);
-        const auto primaryLightIndex = ParseHexByte(gndLt, 8uz);
+        auto b = groundLightContainsValidData ? ParseHexByte(gndLt, 0uz) : std::optional<uint8_t>{static_cast<uint8_t>(0xffu)};
+        auto g = groundLightContainsValidData ? ParseHexByte(gndLt, 2uz) : std::optional<uint8_t>{static_cast<uint8_t>(0u)};
+        auto r = groundLightContainsValidData ? ParseHexByte(gndLt, 4uz) : std::optional<uint8_t>{static_cast<uint8_t>(0u)};
+        auto a = groundLightContainsValidData ? ParseHexByte(gndLt, 6uz) : std::optional<uint8_t>{static_cast<uint8_t>(0u)};
+        auto primaryLightIndex = groundLightContainsValidData ? ParseHexByte(gndLt, 8uz) : std::optional<uint8_t>{static_cast<uint8_t>(0u)};
         if (!b || !g || !r || !a || !primaryLightIndex)
-            return;
+            groundLightContainsValidData = false;
 
-        drawInst.primaryLightIndex = static_cast<char>(*primaryLightIndex);
+        drawInst.primaryLightIndex = static_cast<char>(primaryLightIndex.value_or(0u));
 
         // linker_pc only preserves the parsed misc_model ground-light color
         // when the model has XModel::flags bit 0 set and the color is non-zero.
-        // In the drop path it recomputes primaryLightIndex from the model
-        // bounds/light regions; keep the parsed index until that lookup exists.
-        if (!drawInst.model || (static_cast<unsigned char>(drawInst.model->flags) & 1u) == 0u || (*r == 0u && *g == 0u && *b == 0u && *a == 0u))
+        if (!drawInst.model || (static_cast<unsigned char>(drawInst.model->flags) & 1u) == 0u || !groundLightContainsValidData
+            || (r.value_or(0u) == 0u && g.value_or(0u) == 0u && b.value_or(0u) == 0u && a.value_or(0u) == 0u))
+        {
+            inst.groundLighting.packed = 0;
+            drawInst.primaryLightIndex = static_cast<char>(RecomputeStaticModelPrimaryLight(world, comWorld, drawInst, inst.mins, inst.maxs));
             return;
+        }
 
         // The linker parses gndLt as B,G,R,A,primaryLightIndex. Runtime
         // GfxColor is stored in R,G,B,A byte order.
@@ -5409,6 +5671,7 @@ namespace
 
     [[nodiscard]] bool PopulateWorldStaticModels(
         GfxWorld& world,
+        const ComWorld& comWorld,
         const clipMap_t* clipMap,
         const std::vector<const EntityBlock*>& staticModelBlocks,
         const std::vector<XAssetInfo<XModel>*>& staticModelDependencies,
@@ -5493,10 +5756,91 @@ namespace
                 std::memcpy(inst.maxs, maxs, sizeof(inst.maxs));
             }
 
-            PopulateStaticModelGroundLighting(*block, inst, drawInst);
+            PopulateStaticModelGroundLighting(world, comWorld, *block, inst, drawInst);
         }
 
         return true;
+    }
+
+    using StaticModelSortOrder = std::unordered_map<const XModel*, size_t>;
+
+    struct StaticModelCombinedInst
+    {
+        GfxStaticModelDrawInst drawInst;
+        GfxStaticModelInst inst;
+    };
+
+    [[nodiscard]] StaticModelSortOrder BuildStaticModelSortOrder(const GfxWorld& world)
+    {
+        StaticModelSortOrder result;
+        if (!world.dpvs.smodelDrawInsts)
+            return result;
+
+        for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
+        {
+            const auto* model = world.dpvs.smodelDrawInsts[smodelIndex].model;
+            if (model && !result.contains(model))
+                result.emplace(model, result.size());
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] unsigned StaticModelPrimaryLightType(const ComWorld& comWorld, const GfxStaticModelDrawInst& drawInst)
+    {
+        const auto primaryLightIndex = static_cast<unsigned char>(drawInst.primaryLightIndex);
+        if (!comWorld.primaryLights || primaryLightIndex >= comWorld.primaryLightCount)
+            return 0u;
+
+        return static_cast<unsigned char>(comWorld.primaryLights[primaryLightIndex].type);
+    }
+
+    [[nodiscard]] size_t StaticModelOrder(const StaticModelSortOrder& modelOrder, const XModel* model)
+    {
+        const auto existing = modelOrder.find(model);
+        return existing != modelOrder.end() ? existing->second : std::numeric_limits<size_t>::max();
+    }
+
+    void SortWorldStaticModels(GfxWorld& world, const ComWorld& comWorld)
+    {
+        if (world.dpvs.smodelCount == 0u || !world.dpvs.smodelDrawInsts || !world.dpvs.smodelInsts)
+            return;
+
+        const auto modelOrder = BuildStaticModelSortOrder(world);
+        std::vector<StaticModelCombinedInst> combined;
+        combined.reserve(world.dpvs.smodelCount);
+        for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
+            combined.push_back({world.dpvs.smodelDrawInsts[smodelIndex], world.dpvs.smodelInsts[smodelIndex]});
+
+        // linker_pc sorts combined draw/inst records before it filters static
+        // models into world cells. The stock tie-breaker compares XModel
+        // pointers; first-seen model order gives us the same deterministic
+        // ordering without depending on OAT allocator addresses.
+        std::sort(combined.begin(), combined.end(), [&comWorld, &modelOrder](const StaticModelCombinedInst& lhs, const StaticModelCombinedInst& rhs)
+        {
+            const auto lhsLightType = StaticModelPrimaryLightType(comWorld, lhs.drawInst);
+            const auto rhsLightType = StaticModelPrimaryLightType(comWorld, rhs.drawInst);
+            if (lhsLightType != rhsLightType)
+                return lhsLightType < rhsLightType;
+
+            const auto lhsPrimaryLightIndex = static_cast<unsigned char>(lhs.drawInst.primaryLightIndex);
+            const auto rhsPrimaryLightIndex = static_cast<unsigned char>(rhs.drawInst.primaryLightIndex);
+            if (lhsPrimaryLightIndex != rhsPrimaryLightIndex)
+                return lhsPrimaryLightIndex < rhsPrimaryLightIndex;
+
+            const auto lhsModelOrder = StaticModelOrder(modelOrder, lhs.drawInst.model);
+            const auto rhsModelOrder = StaticModelOrder(modelOrder, rhs.drawInst.model);
+            if (lhsModelOrder != rhsModelOrder)
+                return lhsModelOrder < rhsModelOrder;
+
+            return static_cast<unsigned char>(lhs.drawInst.reflectionProbeIndex) < static_cast<unsigned char>(rhs.drawInst.reflectionProbeIndex);
+        });
+
+        for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
+        {
+            world.dpvs.smodelDrawInsts[smodelIndex] = combined[smodelIndex].drawInst;
+            world.dpvs.smodelInsts[smodelIndex] = combined[smodelIndex].inst;
+        }
     }
 
     [[nodiscard]] bool BoundsContain(const float (&outerMins)[3], const float (&outerMaxs)[3], const float (&innerMins)[3], const float (&innerMaxs)[3])
@@ -5989,7 +6333,7 @@ namespace
         return true;
     }
 
-    [[nodiscard]] bool PopulateWorldStaticModelAabbTrees(GfxWorld& world, MemoryManager& memory, std::string& error)
+    [[nodiscard]] bool PopulateWorldStaticModelAabbTrees(GfxWorld& world, const ComWorld& comWorld, MemoryManager& memory, std::string& error)
     {
         if (world.dpvs.smodelCount == 0u || !world.dpvs.smodelInsts || !world.cells || world.dpvsPlanes.cellCount <= 0)
             return true;
@@ -5999,6 +6343,8 @@ namespace
             error = "too many static models for AABB tree indexes";
             return false;
         }
+
+        SortWorldStaticModels(world, comWorld);
 
         StaticModelIndexLists staticModelIndexesByTree;
         for (auto smodelIndex = 0u; smodelIndex < world.dpvs.smodelCount; smodelIndex++)
@@ -6940,8 +7286,17 @@ namespace
             }
 
             const auto* clipMap = clipMapDependency->Asset();
-            if (!PopulateWorldIndices(*world, *bsp, m_memory, error) || !PopulateWorldVertices(*world, *bsp, m_memory, error)
-                || !PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error))
+            if (!PopulateWorldIndices(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldVertices(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldSurfaces(*world, *bsp, lightmapLayout, materialDependencies, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
@@ -6949,15 +7304,62 @@ namespace
 
             PopulateWorldMaterialMemory(*world, m_memory);
 
-            if (!PopulateWorldVertexLayerData(*world, *bsp, m_memory, error) || !PopulateWorldModels(*world, *bsp, m_memory, error)
-                || !PopulateWorldCells(*world, *bsp, m_memory, error)
-                || !PopulateWorldSurfaceOrganization(*world, m_memory, error)
-                || !PopulateWorldDpvsPlanes(*world, clipMap, *bsp, m_memory, error)
-                || !PopulateWorldPortals(*world, *bsp, m_memory, error)
-                || !PopulateWorldPrimaryLights(*world, *bsp, m_memory, error) || !PopulateWorldShadowGeometry(*world, m_memory)
-                || !PopulateWorldLightGrid(*world, *bsp, m_memory, error) || !PopulateWorldLightRegions(*world, *bsp, m_memory, error)
-                || !PopulateWorldStaticModels(*world, clipMap, staticModelBlocks, staticModelDependencies, m_memory, error)
-                || !PopulateWorldReflectionProbes(*world, *bsp, context, registration, m_memory, error))
+            if (!PopulateWorldVertexLayerData(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldModels(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldCells(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldSurfaceOrganization(*world, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldDpvsPlanes(*world, clipMap, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldPortals(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldPrimaryLights(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldShadowGeometry(*world, m_memory))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldLightGrid(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldLightRegions(*world, *bsp, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldStaticModels(*world, *comWorldDependency->Asset(), clipMap, staticModelBlocks, staticModelDependencies, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldReflectionProbes(*world, *bsp, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
@@ -6965,9 +7367,17 @@ namespace
 
             PopulateWorldStaticModelReflectionProbes(*world);
 
-            if (!PopulateWorldStaticModelAabbTrees(*world, m_memory, error)
-                || !PopulateWorldDynamicEntities(*world, clipMap, m_memory, error)
-                || !PopulateWorldLightmaps(*world, *bsp, lightmapLayout, lightDefDependencies, m_search_path, context, registration, m_memory, error))
+            if (!PopulateWorldStaticModelAabbTrees(*world, *comWorldDependency->Asset(), m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldDynamicEntities(*world, clipMap, m_memory, error))
+            {
+                con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
+                return AssetCreationResult::Failure();
+            }
+            if (!PopulateWorldLightmaps(*world, *bsp, lightmapLayout, lightDefDependencies, m_search_path, context, registration, m_memory, error))
             {
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
