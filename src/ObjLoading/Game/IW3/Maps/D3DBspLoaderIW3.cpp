@@ -16,6 +16,7 @@
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
@@ -717,6 +718,19 @@ namespace
         return result;
     }
 
+    [[nodiscard]] std::optional<std::array<float, 3>> ParseLinkerFloat3(std::string_view value)
+    {
+        if (value.empty())
+            return std::nullopt;
+
+        std::array<float, 3> result{};
+        std::string temp(value);
+        if (std::sscanf(temp.c_str(), "%f %f %f", &result[0], &result[1], &result[2]) != 3)
+            return std::nullopt;
+
+        return result;
+    }
+
     [[nodiscard]] std::string RawString(const std::byte* data, const size_t maxLength)
     {
         auto length = 0uz;
@@ -1196,10 +1210,32 @@ namespace
     [[nodiscard]] std::string_view EntityField(const EntityBlock& block, const std::string& key)
     {
         const auto existingField = block.fields.find(key);
-        if (existingField == block.fields.end())
-            return {};
+        if (existingField != block.fields.end())
+            return existingField->second;
 
-        return existingField->second;
+        // linker_pc treats entity keys case-insensitively. Preserve the
+        // original field map so duplicate-key behavior is unchanged, but allow
+        // stock mixed-case keys such as "modelSCALE" to satisfy normal lookups.
+        for (const auto& [fieldKey, fieldValue] : block.fields)
+        {
+            if (fieldKey.size() != key.size())
+                continue;
+
+            auto matches = true;
+            for (auto i = 0uz; i < key.size(); i++)
+            {
+                if (std::tolower(static_cast<unsigned char>(fieldKey[i])) != std::tolower(static_cast<unsigned char>(key[i])))
+                {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches)
+                return fieldValue;
+        }
+
+        return {};
     }
 
     [[nodiscard]] bool ParseEntityBlocks(const std::vector<std::byte>& lump, std::vector<EntityBlock>& blocks, std::string& error)
@@ -1348,11 +1384,17 @@ namespace
 
     [[nodiscard]] float StaticModelScale(const EntityBlock& block)
     {
-        const auto parsedScale = ParseFloat(EntityField(block, "modelscale"));
-        if (!parsedScale || *parsedScale <= std::numeric_limits<float>::epsilon())
+        const auto scaleValue = EntityField(block, "modelscale");
+        if (scaleValue.empty())
             return 1.0f;
 
-        return *parsedScale;
+        // linker_pc parses misc_model modelscale with atof, not sscanf/strtof.
+        const std::string temp(scaleValue);
+        const auto parsedScale = static_cast<float>(std::atof(temp.c_str()));
+        if (parsedScale <= std::numeric_limits<float>::epsilon())
+            return 1.0f;
+
+        return parsedScale;
     }
 
     void AnglesToAxis(const std::array<float, 3>& angles, float (&axis)[3][3])
@@ -1372,12 +1414,15 @@ namespace
         axis[0][1] = LinkerFloat(static_cast<double>(cp) * sy);
         axis[0][2] = -sp;
 
-        const auto srSp = LinkerFloat(static_cast<double>(sr) * sp);
+        // linker_pc keeps these products as FPU intermediates until the final
+        // matrix store; rounding them early changes a few static-model scales
+        // when the raw entity text is reconstructed from clipMap.staticModelList.
+        const auto srSp = static_cast<double>(sr) * sp;
         axis[1][0] = LinkerFloat(static_cast<double>(cy) * srSp - static_cast<double>(cr) * sy);
         axis[1][1] = LinkerFloat(static_cast<double>(srSp) * sy + static_cast<double>(cr) * cy);
         axis[1][2] = LinkerFloat(static_cast<double>(sr) * cp);
 
-        const auto crSp = LinkerFloat(static_cast<double>(cr) * sp);
+        const auto crSp = static_cast<double>(cr) * sp;
         axis[2][0] = LinkerFloat(static_cast<double>(cy) * crSp + static_cast<double>(sy) * sr);
         axis[2][1] = LinkerFloat(static_cast<double>(sy) * crSp - static_cast<double>(cy) * sr);
         axis[2][2] = LinkerFloat(static_cast<double>(cr) * cp);
@@ -1587,8 +1632,8 @@ namespace
         {
             const auto& [block, model] = validStaticModels[modelIndex];
             auto& staticModel = clipMap.staticModelList[modelIndex];
-            const auto origin = ParseFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
-            const auto angles = ParseFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
+            const auto origin = ParseLinkerFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
+            const auto angles = ParseLinkerFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
             const auto scale = StaticModelScale(*block);
             float axis[3][3]{};
 
@@ -1601,10 +1646,11 @@ namespace
             // Runtime cStaticModel_s stores the transpose of the model axis divided
             // by scale. The raw BSP stores editor angles/modelscale, so this is the
             // inverse of D3DBspDumperIW3::StaticModelAxis/StaticModelScale.
+            const auto invScale = LinkerFloat(1.0 / scale);
             for (auto row = 0uz; row < 3uz; row++)
             {
                 for (auto column = 0uz; column < 3uz; column++)
-                    staticModel.invScaledAxis[column][row] = axis[row][column] / scale;
+                    staticModel.invScaledAxis[column][row] = LinkerFloat(static_cast<double>(axis[row][column]) * invScale);
             }
 
             BuildStaticModelBounds(*model, axis, origin, scale, staticModel);
@@ -5395,8 +5441,8 @@ namespace
             const auto& [block, model] = validStaticModels[modelIndex];
             auto& drawInst = world.dpvs.smodelDrawInsts[modelIndex];
             auto& inst = world.dpvs.smodelInsts[modelIndex];
-            const auto origin = ParseFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
-            const auto angles = ParseFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
+            const auto origin = ParseLinkerFloat3(EntityField(*block, "origin")).value_or(std::array<float, 3>{});
+            const auto angles = ParseLinkerFloat3(EntityField(*block, "angles")).value_or(std::array<float, 3>{});
             const auto scale = StaticModelScale(*block);
 
             float axis[3][3]{};
