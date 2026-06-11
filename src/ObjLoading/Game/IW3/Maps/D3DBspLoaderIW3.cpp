@@ -230,6 +230,24 @@ namespace
         return static_cast<unsigned char>(value);
     }
 
+    [[nodiscard]] PackedUnitVec PackRawBspUnitVec(const float (&value)[3])
+    {
+        const auto packComponent = [](const float component)
+        {
+            const auto packed = static_cast<int>(static_cast<double>(component) * 127.0 + 127.5);
+            return static_cast<uint8_t>(std::clamp(packed, 0, 255));
+        };
+
+        // Raw BSP vertex normals/tangents use the stock linker packer:
+        // byte = int(component * 127.0 + 127.5), scale byte = 63.
+        // Do not use the generic best-fit PackedUnitVec encoder here; it can
+        // choose a different scale byte and will not dump back to linker_pc's
+        // canonical world-vertex floats.
+        return PackedUnitVec{static_cast<uint32_t>(packComponent(value[0]))
+                             | (static_cast<uint32_t>(packComponent(value[1])) << 8u)
+                             | (static_cast<uint32_t>(packComponent(value[2])) << 16u) | (63u << 24u)};
+    }
+
     [[nodiscard]] const MaterialTechniqueSet* TechniqueSetForMaterial(const Material* material)
     {
         if (!material || !material->techniqueSet)
@@ -3040,8 +3058,8 @@ namespace
 
             CrossProduct(normal, tangent, expectedBinormal);
             vertex.binormalSign = DotProduct(expectedBinormal, binormal) < 0.0f ? -1.0f : 1.0f;
-            vertex.normal = Common::Vec3PackUnitVec(normal);
-            vertex.tangent = Common::Vec3PackUnitVec(tangent);
+            vertex.normal = PackRawBspUnitVec(normal);
+            vertex.tangent = PackRawBspUnitVec(tangent);
         }
 
         SetWorldBoundsFromVertices(world);
