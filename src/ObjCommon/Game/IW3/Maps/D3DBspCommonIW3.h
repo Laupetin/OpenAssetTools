@@ -85,6 +85,16 @@ namespace IW3::d3dbsp
         LUMP_LIGHT_REGION_AXES = 54,
     };
 
+    // Matches the stock raw BSP loader's TrisType enum. IW3 v22 can contain
+    // both layered and unlayered render geometry; linker_pc/Radiant select one
+    // path before loading surfaces, verts, indices, cull groups, and AABB trees.
+    enum class TrisType : uint32_t
+    {
+        TRIS_TYPE_LAYERED = 0,
+        TRIS_TYPE_SIMPLE = 1,
+        TRIS_TYPE_COUNT = 2,
+    };
+
     // IW3 v22 d3dbsp files use this order in the stock tools output.
     inline constexpr std::array LUMP_WRITE_ORDER{
         LumpType::LUMP_MATERIALS,
