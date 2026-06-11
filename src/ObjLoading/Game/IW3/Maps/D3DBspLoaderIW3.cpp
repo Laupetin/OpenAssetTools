@@ -26,6 +26,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -269,6 +270,308 @@ namespace
             return false;
 
         return techniqueSet->techniques[index] != nullptr;
+    }
+
+    [[nodiscard]] bool MaterialHasWorldLitTechnique(const Material* material)
+    {
+        // Some linked/OAT material techsets can be referenced or minimally populated
+        // even though the material still carries the stock camera region. World decals
+        // are still sorted as lit surfaces; sortKey separates them into the decal range.
+        return MaterialHasTechnique(material, TECHNIQUE_LIT_BEGIN)
+               || (material && (material->cameraRegion == CAMERA_REGION_LIT || material->cameraRegion == CAMERA_REGION_DECAL));
+    }
+
+    [[nodiscard]] bool MaterialHasWorldEmissiveTechnique(const Material* material)
+    {
+        return MaterialHasTechnique(material, TECHNIQUE_EMISSIVE) || (material && material->cameraRegion == CAMERA_REGION_EMISSIVE);
+    }
+
+    [[nodiscard]] const MaterialTechnique* MaterialTechniqueForType(const Material* material, const MaterialTechniqueType techniqueType)
+    {
+        const auto* techniqueSet = TechniqueSetForMaterial(material);
+        if (!techniqueSet)
+            return nullptr;
+
+        const auto index = static_cast<size_t>(techniqueType);
+        if (index >= static_cast<size_t>(TECHNIQUE_COUNT))
+            return nullptr;
+
+        return techniqueSet->techniques[index];
+    }
+
+    [[nodiscard]] unsigned MaterialPrimarySortKey(const Material* material)
+    {
+        return material ? static_cast<unsigned>(material->info.sortKey) : 0u;
+    }
+
+    [[nodiscard]] unsigned MaterialStandardPrepassSortKey(const Material* material)
+    {
+        if (!material || !material->techniqueSet)
+            return 3u;
+
+        const auto* prepassTechnique = material->techniqueSet->techniques[TECHNIQUE_DEPTH_PREPASS];
+        if (prepassTechnique)
+            return (material->stateFlags & STATE_FLAG_DECAL) ? 3u : ((prepassTechnique->flags & MTL_TECHFLAG_ZPREPASS) == 0u ? 1u : 0u);
+
+        return material->techniqueSet->techniques[TECHNIQUE_BUILD_FLOAT_Z] ? 2u : 3u;
+    }
+
+    [[nodiscard]] const char* TechniquePixelShaderName(const MaterialTechnique* technique)
+    {
+        if (!technique || !technique->passArray[0].pixelShader || !technique->passArray[0].pixelShader->name)
+            return "";
+
+        return technique->passArray[0].pixelShader->name;
+    }
+
+    [[nodiscard]] const char* TechniqueVertexShaderName(const MaterialTechnique* technique)
+    {
+        if (!technique || !technique->passArray[0].vertexShader || !technique->passArray[0].vertexShader->name)
+            return "";
+
+        return technique->passArray[0].vertexShader->name;
+    }
+
+    [[nodiscard]] int CompareCString(const char* left, const char* right)
+    {
+        return std::strcmp(left ? left : "", right ? right : "");
+    }
+
+    struct PixelLiteralConst
+    {
+        uint16_t dest;
+        float value[4];
+    };
+
+    struct PixelConstData
+    {
+        std::vector<uint16_t> codeConsts;
+        std::vector<PixelLiteralConst> literalConsts;
+    };
+
+    void InsertPixelLiteralConst(std::vector<PixelLiteralConst>& literalConsts, const uint16_t dest, const float* value)
+    {
+        if (!value)
+            return;
+
+        PixelLiteralConst entry{dest, {value[0], value[1], value[2], value[3]}};
+        auto insertPosition = literalConsts.begin();
+        while (insertPosition != literalConsts.end() && insertPosition->dest <= dest)
+            ++insertPosition;
+
+        literalConsts.insert(insertPosition, entry);
+    }
+
+    [[nodiscard]] const MaterialConstantDef* FindMaterialConstantByHash(const Material& material, const unsigned nameHash)
+    {
+        for (auto constantIndex = 0u; constantIndex < material.constantCount; constantIndex++)
+        {
+            const auto& constant = material.constantTable[constantIndex];
+            if (constant.nameHash == nameHash)
+                return &constant;
+        }
+
+        return nullptr;
+    }
+
+    [[nodiscard]] PixelConstData PixelConstDataForTechnique(const Material& material, const MaterialTechnique& technique)
+    {
+        PixelConstData result;
+        const auto& pass = technique.passArray[0];
+        auto argIndex = static_cast<unsigned>(U8(pass.perPrimArgCount)) + static_cast<unsigned>(U8(pass.perObjArgCount));
+        auto remainingArgs = static_cast<unsigned>(U8(pass.stableArgCount));
+
+        while (remainingArgs > 0u && pass.args[argIndex].type < MTL_ARG_CODE_PIXEL_CONST)
+        {
+            argIndex++;
+            remainingArgs--;
+        }
+
+        while (remainingArgs > 0u && pass.args[argIndex].type == MTL_ARG_CODE_PIXEL_CONST)
+        {
+            result.codeConsts.emplace_back(pass.args[argIndex].u.codeConst.index);
+            argIndex++;
+            remainingArgs--;
+        }
+
+        while (remainingArgs > 0u && pass.args[argIndex].type < MTL_ARG_MATERIAL_PIXEL_CONST)
+        {
+            argIndex++;
+            remainingArgs--;
+        }
+
+        while (remainingArgs > 0u && pass.args[argIndex].type == MTL_ARG_MATERIAL_PIXEL_CONST)
+        {
+            const auto* constant = FindMaterialConstantByHash(material, pass.args[argIndex].u.nameHash);
+            if (constant)
+                InsertPixelLiteralConst(result.literalConsts, pass.args[argIndex].dest, constant->literal.v);
+
+            argIndex++;
+            remainingArgs--;
+        }
+
+        while (remainingArgs > 0u && pass.args[argIndex].type == MTL_ARG_LITERAL_PIXEL_CONST)
+        {
+            if (pass.args[argIndex].u.literalConst)
+                InsertPixelLiteralConst(result.literalConsts, pass.args[argIndex].dest, *pass.args[argIndex].u.literalConst);
+
+            argIndex++;
+            remainingArgs--;
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] int ComparePixelConsts(const Material& left, const MaterialTechnique& leftTechnique, const Material& right, const MaterialTechnique& rightTechnique)
+    {
+        // linker_pc uses pixel constant ordering as a material sort tie-breaker.
+        // This affects world surface order for materials that otherwise share the
+        // same sort key, prepass, shaders, and techset.
+        const auto leftConsts = PixelConstDataForTechnique(left, leftTechnique);
+        const auto rightConsts = PixelConstDataForTechnique(right, rightTechnique);
+
+        if (leftConsts.codeConsts.size() != rightConsts.codeConsts.size())
+            return static_cast<int>(leftConsts.codeConsts.size()) - static_cast<int>(rightConsts.codeConsts.size());
+
+        for (auto constIndex = 0uz; constIndex < leftConsts.codeConsts.size(); constIndex++)
+        {
+            if (leftConsts.codeConsts[constIndex] != rightConsts.codeConsts[constIndex])
+                return static_cast<int>(leftConsts.codeConsts[constIndex]) - static_cast<int>(rightConsts.codeConsts[constIndex]);
+        }
+
+        if (leftConsts.literalConsts.size() != rightConsts.literalConsts.size())
+            return static_cast<int>(leftConsts.literalConsts.size()) - static_cast<int>(rightConsts.literalConsts.size());
+
+        for (auto constIndex = 0uz; constIndex < leftConsts.literalConsts.size(); constIndex++)
+        {
+            const auto& leftConst = leftConsts.literalConsts[constIndex];
+            const auto& rightConst = rightConsts.literalConsts[constIndex];
+            if (leftConst.dest != rightConst.dest)
+                return static_cast<int>(leftConst.dest) - static_cast<int>(rightConst.dest);
+
+            for (auto componentIndex = 0uz; componentIndex < 4uz; componentIndex++)
+            {
+                if (rightConst.value[componentIndex] > leftConst.value[componentIndex])
+                    return -1;
+                if (rightConst.value[componentIndex] < leftConst.value[componentIndex])
+                    return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    [[nodiscard]] int CompareWorldMaterialsForSort(const Material* left, const Material* right)
+    {
+        if (left == right)
+            return 0;
+        if (!left)
+            return 1;
+        if (!right)
+            return -1;
+
+        const auto* leftLit = MaterialTechniqueForType(left, TECHNIQUE_LIT_BEGIN);
+        const auto* rightLit = MaterialTechniqueForType(right, TECHNIQUE_LIT_BEGIN);
+        const auto leftHasLit = MaterialHasWorldLitTechnique(left);
+        const auto rightHasLit = MaterialHasWorldLitTechnique(right);
+        if (leftHasLit != rightHasLit)
+            return rightHasLit - leftHasLit;
+
+        const auto leftHasLightmap = (left->info.gameFlags & MTL_GAMEFLAG_2) != 0u;
+        const auto rightHasLightmap = (right->info.gameFlags & MTL_GAMEFLAG_2) != 0u;
+        const auto* leftEmissive = MaterialTechniqueForType(left, TECHNIQUE_EMISSIVE);
+        const auto* rightEmissive = MaterialTechniqueForType(right, TECHNIQUE_EMISSIVE);
+        const auto leftHasEmissive = MaterialHasWorldEmissiveTechnique(left);
+        const auto rightHasEmissive = MaterialHasWorldEmissiveTechnique(right);
+
+        if (leftHasLit)
+        {
+            if (left->info.sortKey != right->info.sortKey)
+                return static_cast<int>(left->info.sortKey) - static_cast<int>(right->info.sortKey);
+            if (leftHasLightmap != rightHasLightmap)
+                return rightHasLightmap - leftHasLightmap;
+        }
+        else
+        {
+            if (leftHasEmissive != rightHasEmissive)
+                return rightHasEmissive - leftHasEmissive;
+            if (left->info.sortKey != right->info.sortKey)
+                return static_cast<int>(left->info.sortKey) - static_cast<int>(right->info.sortKey);
+        }
+
+        const auto leftPrepass = MaterialStandardPrepassSortKey(left);
+        const auto rightPrepass = MaterialStandardPrepassSortKey(right);
+        if (leftPrepass != rightPrepass)
+            return static_cast<int>(leftPrepass) - static_cast<int>(rightPrepass);
+
+        const auto leftWritesDepth = (left->stateFlags & STATE_FLAG_WRITES_DEPTH) != 0u;
+        const auto rightWritesDepth = (right->stateFlags & STATE_FLAG_WRITES_DEPTH) != 0u;
+        if (leftWritesDepth != rightWritesDepth)
+            return rightWritesDepth - leftWritesDepth;
+
+        if (leftHasLit && leftLit && rightLit)
+        {
+            if (const auto shaderComparison = CompareCString(TechniquePixelShaderName(leftLit), TechniquePixelShaderName(rightLit)))
+                return shaderComparison;
+            if (leftWritesDepth)
+            {
+                if (const auto constComparison = ComparePixelConsts(*left, *leftLit, *right, *rightLit))
+                    return constComparison;
+            }
+            if (const auto shaderComparison = CompareCString(TechniqueVertexShaderName(leftLit), TechniqueVertexShaderName(rightLit)))
+                return shaderComparison;
+        }
+        else if (leftHasEmissive && leftEmissive && rightEmissive)
+        {
+            if (const auto shaderComparison = CompareCString(TechniquePixelShaderName(leftEmissive), TechniquePixelShaderName(rightEmissive)))
+                return shaderComparison;
+            if (const auto constComparison = ComparePixelConsts(*left, *leftEmissive, *right, *rightEmissive))
+                return constComparison;
+            if (const auto shaderComparison = CompareCString(TechniqueVertexShaderName(leftEmissive), TechniqueVertexShaderName(rightEmissive)))
+                return shaderComparison;
+        }
+
+        const auto* leftTechniqueSet = TechniqueSetForMaterial(left);
+        const auto* rightTechniqueSet = TechniqueSetForMaterial(right);
+        if (const auto techniqueSetComparison = CompareCString(leftTechniqueSet ? leftTechniqueSet->name : nullptr, rightTechniqueSet ? rightTechniqueSet->name : nullptr))
+            return techniqueSetComparison;
+
+        return CompareCString(left->info.name, right->info.name);
+    }
+
+    void AssignWorldMaterialDrawSurfSortKeys(const std::vector<XAssetInfo<Material>*>& materialDependencies)
+    {
+        // The stock linker runs Material_SortInternal before sorting BSP surfaces.
+        // Recompute the drawSurf keys for the world materials locally so the raw
+        // triangle lumps dump in linker_pc's canonical order.
+        std::vector<Material*> materials;
+        std::unordered_set<Material*> seenMaterials;
+        materials.reserve(materialDependencies.size());
+
+        for (auto* dependency : materialDependencies)
+        {
+            auto* material = dependency ? dependency->Asset() : nullptr;
+            if (!material || seenMaterials.contains(material))
+                continue;
+
+            seenMaterials.emplace(material);
+            materials.emplace_back(material);
+        }
+
+        std::sort(materials.begin(), materials.end(), [](const Material* left, const Material* right)
+        {
+            return CompareWorldMaterialsForSort(left, right) < 0;
+        });
+
+        for (auto sortedIndex = 0uz; sortedIndex < materials.size(); sortedIndex++)
+        {
+            auto* material = materials[sortedIndex];
+            material->info.drawSurf.packed = 0u;
+            material->info.drawSurf.fields.primarySortKey = MaterialPrimarySortKey(material);
+            material->info.drawSurf.fields.prepass = MaterialStandardPrepassSortKey(material);
+            material->info.drawSurf.fields.customIndex = (material->info.gameFlags & MTL_GAMEFLAG_CASTS_SHADOW) != 0u;
+            material->info.drawSurf.fields.materialSortedIndex = sortedIndex;
+        }
     }
 
     [[nodiscard]] unsigned char SamplerStateByte(const MaterialTextureDefSamplerState& samplerState)
@@ -2829,6 +3132,16 @@ namespace
         if (rawMaterialName.empty())
             return result;
 
+        if (rawMaterialName == DEFAULT_MATERIAL_NAME)
+        {
+            result.emplace_back("wc/$default3d");
+            result.emplace_back("wc/$default2d");
+            result.emplace_back("$default3d");
+            result.emplace_back("$default2d");
+            result.emplace_back(DEFAULT_MATERIAL_NAME);
+            return result;
+        }
+
         // Raw v22 BSP world material names are stored as editor basenames
         // ("me_wire_black"), while the stock linker loads the Material asset
         // under the runtime name ("wc/me_wire_black"). Prefer the world
@@ -2838,12 +3151,6 @@ namespace
             result.emplace_back(std::format("wc/{}", rawMaterialName));
 
         result.emplace_back(rawMaterialName);
-
-        if (rawMaterialName == "$default")
-        {
-            result.emplace_back("$default3d");
-            result.emplace_back("$default2d");
-        }
 
         return result;
     }
@@ -2937,19 +3244,15 @@ namespace
             }
 
             XAssetInfo<Material>* dependency = nullptr;
-            if (materialName == DEFAULT_MATERIAL_NAME)
+            for (const auto& candidateName : WorldMaterialNameCandidates(materialName))
             {
+                dependency = TryLoadWorldMaterialDependency(context, candidateName);
+                if (dependency)
+                    break;
+            }
+
+            if (!dependency && materialName == DEFAULT_MATERIAL_NAME)
                 dependency = GetOrCreateDefaultMaterialReference(context, memory);
-            }
-            else
-            {
-                for (const auto& candidateName : WorldMaterialNameCandidates(materialName))
-                {
-                    dependency = TryLoadWorldMaterialDependency(context, candidateName);
-                    if (dependency)
-                        break;
-                }
-            }
 
             if (!dependency)
             {
@@ -4591,15 +4894,15 @@ namespace
 
     [[nodiscard]] bool CompareWorldSurfaces(const GfxSurface& left, const GfxSurface& right)
     {
-        const auto leftHasLit = MaterialHasTechnique(left.material, TECHNIQUE_LIT_BEGIN);
-        const auto rightHasLit = MaterialHasTechnique(right.material, TECHNIQUE_LIT_BEGIN);
+        const auto leftHasLit = MaterialHasWorldLitTechnique(left.material);
+        const auto rightHasLit = MaterialHasWorldLitTechnique(right.material);
         if (leftHasLit != rightHasLit)
             return leftHasLit > rightHasLit;
 
         if (!leftHasLit)
         {
-            const auto leftHasEmissive = MaterialHasTechnique(left.material, TECHNIQUE_EMISSIVE);
-            const auto rightHasEmissive = MaterialHasTechnique(right.material, TECHNIQUE_EMISSIVE);
+            const auto leftHasEmissive = MaterialHasWorldEmissiveTechnique(left.material);
+            const auto rightHasEmissive = MaterialHasWorldEmissiveTechnique(right.material);
             if (leftHasEmissive != rightHasEmissive)
                 return leftHasEmissive > rightHasEmissive;
         }
@@ -4636,7 +4939,7 @@ namespace
         while (surfIndex < surfaceCount)
         {
             const auto* material = world.dpvs.surfaces[surfIndex].material;
-            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_LIT_BEGIN) || material->info.sortKey >= 0x18u)
+            if (!material || !material->techniqueSet || !MaterialHasWorldLitTechnique(material) || material->info.sortKey >= 0x18u)
                 break;
 
             surfIndex++;
@@ -4647,7 +4950,7 @@ namespace
         while (surfIndex < surfaceCount)
         {
             const auto* material = world.dpvs.surfaces[surfIndex].material;
-            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_LIT_BEGIN))
+            if (!material || !material->techniqueSet || !MaterialHasWorldLitTechnique(material))
                 break;
 
             surfIndex++;
@@ -4658,7 +4961,7 @@ namespace
         while (surfIndex < surfaceCount)
         {
             const auto* material = world.dpvs.surfaces[surfIndex].material;
-            if (!material || !material->techniqueSet || !MaterialHasTechnique(material, TECHNIQUE_EMISSIVE))
+            if (!material || !material->techniqueSet || !MaterialHasWorldEmissiveTechnique(material))
                 break;
 
             surfIndex++;
@@ -6550,6 +6853,7 @@ namespace
                 con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, error);
                 return AssetCreationResult::Failure();
             }
+            AssignWorldMaterialDrawSurfSortKeys(materialDependencies);
 
             const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
             const auto staticModelDependencies = LoadStaticModelDependencies(staticModelBlocks, context);
