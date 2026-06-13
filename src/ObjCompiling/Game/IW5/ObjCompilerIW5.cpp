@@ -1,9 +1,11 @@
 #include "ObjCompilerIW5.h"
 
 #include "Game/IW5/IW5.h"
+#include "Game/IW5/Techset/PixelShaderCompilerIW5.h"
 #include "Game/IW5/Techset/TechniqueCompilerIW5.h"
 #include "Game/IW5/Techset/TechsetCompilerIW5.h"
 #include "Game/IW5/Techset/VertexDeclCompilerIW5.h"
+#include "Game/IW5/Techset/VertexShaderCompilerIW5.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -17,6 +19,8 @@ namespace
         auto& memory = zone.Memory();
 
         collection.AddAssetCreator(techset::CreateVertexDeclCompilerIW5(memory));
+        collection.AddAssetCreator(techset::CreateVertexShaderCompilerIW5(memory, searchPath));
+        collection.AddAssetCreator(techset::CreatePixelShaderCompilerIW5(memory, searchPath));
         collection.AddAssetCreator(techset::CreateTechsetCompilerIW5(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW5(memory, zone, searchPath));

@@ -1,9 +1,11 @@
 #include "ObjCompilerT5.h"
 
 #include "Game/T5/T5.h"
+#include "Game/T5/Techset/PixelShaderCompilerT5.h"
 #include "Game/T5/Techset/TechniqueCompilerT5.h"
 #include "Game/T5/Techset/TechsetCompilerT5.h"
 #include "Game/T5/Techset/VertexDeclCompilerT5.h"
+#include "Game/T5/Techset/VertexShaderCompilerT5.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -20,6 +22,8 @@ namespace
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT5(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT5(memory));
+        collection.AddSubAssetCreator(techset::CreateVertexShaderCompilerT5(memory, searchPath));
+        collection.AddSubAssetCreator(techset::CreatePixelShaderCompilerT5(memory, searchPath));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
