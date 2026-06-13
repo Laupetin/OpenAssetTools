@@ -18,6 +18,8 @@
 #include "PhysPreset/RawLoaderPhysPresetT5.h"
 #include "RawFile/LoaderRawFileT5.h"
 #include "StringTable/LoaderStringTableT5.h"
+#include "Weapon/WeaponGdtLoaderT5.h"
+#include "Weapon/WeaponRawLoaderT5.h"
 
 #include <memory>
 
@@ -132,7 +134,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderT5(memory, searchPath, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
+        collection.AddAssetCreator(weapon::CreateRawLoaderT5(memory, searchPath, zone));
+        collection.AddAssetCreator(weapon::CreateGdtLoaderT5(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
