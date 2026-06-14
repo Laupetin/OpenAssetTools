@@ -11,6 +11,9 @@
 
 #include <webview/webview.hpp>
 
+// Plugins
+#include <webview/plugin/title_handler.hpp>
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #else

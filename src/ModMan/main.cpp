@@ -4,7 +4,6 @@
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
 #include "Web/Platform/FaviconHandler.h"
-#include "Web/Platform/TitleHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
@@ -78,7 +77,7 @@ namespace
 
         webview::app app;
         app.register_plugin(ui::CreateFaviconPlugin());
-        app.register_plugin(ui::CreateTitleHandlerPlugin());
+        app.register_plugin(std::make_shared<webview::title_handler_plugin>());
 
         (void)app.run(context.m_main_webview);
 
