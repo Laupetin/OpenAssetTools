@@ -3,7 +3,6 @@
 #include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
 #include "Web/Platform/AssetHandler.h"
-#include "Web/Platform/FaviconHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
@@ -76,7 +75,7 @@ namespace
 #endif
 
         webview::app app;
-        app.register_plugin(ui::CreateFaviconPlugin());
+        app.register_plugin(std::make_shared<webview::favicon_handler_plugin>());
         app.register_plugin(std::make_shared<webview::title_handler_plugin>());
 
         (void)app.run(context.m_main_webview);
