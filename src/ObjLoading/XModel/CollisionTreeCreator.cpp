@@ -304,9 +304,9 @@ namespace
                     }
                 }
 
-                std::sort(&m_sorted_mins[0], &m_sorted_mins[minMaxCount], std::greater());
-                std::sort(&m_sorted_maxs[0], &m_sorted_maxs[minMaxCount], std::greater());
-                std::sort(&m_sorted_coplanar[0], &m_sorted_coplanar[coplanarCount], std::greater());
+                std::sort(m_sorted_mins.data(), m_sorted_mins.data() + minMaxCount, std::greater());
+                std::sort(m_sorted_maxs.data(), m_sorted_maxs.data() + minMaxCount, std::greater());
+                std::sort(m_sorted_coplanar.data(), m_sorted_coplanar.data() + coplanarCount, std::greater());
 
                 int sideFrontCount = 0;
                 int sideBackCount = static_cast<int>(count);
