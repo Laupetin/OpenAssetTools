@@ -12,9 +12,6 @@ end
 function webview:link(links)
 
 	if os.host() == "windows" then
-		links:add("WebView2LoaderStatic")
-		links:add("gdiplus.lib")
-		
 		filter "platforms:x86"
 			libdirs {
 				path.join(self:msWebviewDir(), "build/native/x86")
@@ -45,15 +42,11 @@ function webview:project()
 	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
-		kind "StaticLib"
+		kind "Utility"
 		language "C++"
 		
 		files { 
-			path.join(folder, "webview/include/**.hpp"),
-		}
-		
-		defines {
-			"WEBVIEW_STATIC"
+			path.join(folder, "webview/include/**.hpp")
 		}
 
 		if os.host() == "windows" then
