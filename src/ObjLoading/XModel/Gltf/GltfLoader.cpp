@@ -302,6 +302,8 @@ namespace
             VerifyAccessorVertexCount("WEIGHTS_0", weightsAccessor, vertexCount);
             // clang-format on
 
+            const auto colorUsesVec3 = colorAccessor->GetType().has_value() && colorAccessor->GetType().value() == JsonAccessorType::VEC3;
+
             const auto vertexOffset = static_cast<unsigned>(common.m_vertices.size());
             common.m_vertices.reserve(vertexOffset + vertexCount);
             common.m_vertex_bone_weights.reserve(vertexOffset + vertexCount);
@@ -312,11 +314,31 @@ namespace
                 unsigned joints[4];
                 float weights[4];
 
-                if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, vertex.normal)
-                    || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !uvAccessor->GetFloatVec2(vertexIndex, vertex.uv)
-                    || !jointsAccessor->GetUnsignedVec4(vertexIndex, joints) || !weightsAccessor->GetFloatVec4(vertexIndex, weights))
+                if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.coordinates))
+                    throw GltfLoadException("Failed to load vertex position data from accessors");
+                if (!normalAccessor->GetFloatVec3(vertexIndex, vertex.normal))
+                    throw GltfLoadException("Failed to load vertex normal data from accessors");
+                if (!uvAccessor->GetFloatVec2(vertexIndex, vertex.uv))
+                    throw GltfLoadException("Failed to load vertex uv data from accessors");
+                if (!jointsAccessor->GetUnsignedVec4(vertexIndex, joints))
+                    throw GltfLoadException("Failed to load vertex joints data from accessors");
+                if (!weightsAccessor->GetFloatVec4(vertexIndex, weights))
+                    throw GltfLoadException("Failed to load vertex weights data from accessors");
+
+                if (colorUsesVec3)
                 {
-                    throw GltfLoadException("Failed to load vertex data from accessors");
+                    float colorVec3[3];
+                    if (!colorAccessor->GetFloatVec3(vertexIndex, colorVec3))
+                        throw GltfLoadException("Failed to load vertex color data from accessors");
+                    vertex.color[0] = colorVec3[0];
+                    vertex.color[1] = colorVec3[1];
+                    vertex.color[2] = colorVec3[2];
+                    vertex.color[3] = 1.0;
+                }
+                else
+                {
+                    if (!colorAccessor->GetFloatVec4(vertexIndex, vertex.color))
+                        throw GltfLoadException("Failed to load vertex color data from accessors");
                 }
 
                 RhcToLhcCoordinates(vertex.coordinates);
