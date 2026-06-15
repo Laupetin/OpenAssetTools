@@ -12,6 +12,7 @@
 #include <webview/webview.hpp>
 
 // Plugins
+#include <webview/plugin/asset_handler.hpp>
 #include <webview/plugin/favicon_handler.hpp>
 #include <webview/plugin/title_handler.hpp>
 

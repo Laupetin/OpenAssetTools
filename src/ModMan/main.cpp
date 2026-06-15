@@ -2,7 +2,6 @@
 #include "GitVersion.h"
 #include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
-#include "Web/Platform/AssetHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
 #include "Web/WebViewLib.h"
@@ -10,7 +9,6 @@
 #include <format>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -53,15 +51,17 @@ namespace
         // newWindow.set_window_min(640, 480);
         newWindow.set_window_size(1280, 640);
 
-        newWindow.register_plugin(ui::CreateAssetHandlerPlugin());
+        const auto assetHandlerPlugin = std::make_shared<webview::asset_handler_plugin>(VITE_ASSETS, std::extent_v<decltype(VITE_ASSETS)>);
+        assetHandlerPlugin->set_protocol_name("modman");
+        newWindow.register_plugin(assetHandlerPlugin);
 
         webview::commands_builder commands;
         ui::RegisterAllBinds(commands);
         newWindow.set_commands(commands.build());
 
 #ifdef _DEBUG
-        (void)newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", ui::URL_PREFIX));
-
+        auto result = newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT)
+                                                         : assetHandlerPlugin->get_url_for_asset("index.html"));
         if (VITE_DEV_SERVER)
         {
             newWindow.dispatch(
@@ -71,7 +71,7 @@ namespace
                 });
         }
 #else
-        (void)newWindow.navigate(std::format("{}index.html", ui::URL_PREFIX));
+        auto result = newWindow.navigate(assetHandlerPlugin->get_url_for_asset("index.html"));
 #endif
 
         webview::app app;
