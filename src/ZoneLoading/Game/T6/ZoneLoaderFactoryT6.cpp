@@ -155,6 +155,44 @@ namespace
                 };
             }
         }
+        else if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PS3)
+        {
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::PS3,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = false,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+        }
+        else if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_WIIU)
+        {
+            if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
+            {
+                return ZoneLoaderInspectionResultT6{
+                    .m_generic_result =
+                        ZoneLoaderInspectionResult{
+                                                   .m_game_id = GameId::T6,
+                                                   .m_endianness = GameEndianness::LE,
+                                                   .m_word_size = GameWordSize::ARCH_32,
+                                                   .m_platform = GamePlatform::WIIU,
+                                                   .m_is_official = true,
+                                                   .m_is_signed = false,
+                                                   .m_is_encrypted = false,
+                                                   },
+                    .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
+                };
+            }
+        }
 
         return std::nullopt;
     }

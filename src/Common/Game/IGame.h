@@ -42,7 +42,8 @@ enum class GamePlatform : std::uint8_t
 {
     PC,
     XBOX,
-    PS3
+    PS3,
+    WIIU
 };
 
 static constexpr const char* GameId_Names[]{

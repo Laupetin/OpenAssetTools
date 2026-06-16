@@ -24,7 +24,9 @@ namespace T6
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED) == sizeof(ZoneHeader::m_magic));
         static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED_SERVER) == sizeof(ZoneHeader::m_magic));
 
+        static constexpr unsigned ZONE_VERSION_WIIU = 148;
         static constexpr unsigned ZONE_VERSION_PC = 147;
+        static constexpr unsigned ZONE_VERSION_PS3 = 146;
         static constexpr unsigned ZONE_VERSION_XENON = 146;
 
         static constexpr unsigned STREAM_COUNT = 4;
