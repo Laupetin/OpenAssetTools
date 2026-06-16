@@ -7,20 +7,22 @@ export type NativeMethods = AssetBinds & DialogBinds & UnlinkingBinds & ZoneBind
 
 type NativeEventMap = UnlinkingEventMap & ZoneEventMap;
 
-type WebViewExtensions = {
-  webviewBinds: NativeMethods;
-  webviewAddEventListener<K extends keyof NativeEventMap>(
+type WebWindowedExtensions = {
+  webwindowedBinds: NativeMethods;
+  webwindowedAddEventListener<K extends keyof NativeEventMap>(
     eventKey: K,
     callback: (payload: NativeEventMap[K]) => void,
   ): void;
-  webviewRemoveEventListener<K extends keyof NativeEventMap>(
+  webwindowedRemoveEventListener<K extends keyof NativeEventMap>(
     eventKey: K,
     callback: (payload: NativeEventMap[K]) => void,
   ): boolean;
 };
 
-const windowWithWebViewExtensions = window as typeof window & WebViewExtensions;
+const windowWithWebWindowedExtensions = window as typeof window & WebWindowedExtensions;
 
-export const webviewBinds = windowWithWebViewExtensions.webviewBinds;
-export const webviewAddEventListener = windowWithWebViewExtensions.webviewAddEventListener;
-export const webviewRemoveEventListener = windowWithWebViewExtensions.webviewRemoveEventListener;
+export const webwindowedBinds = windowWithWebWindowedExtensions.webwindowedBinds;
+export const webwindowedAddEventListener =
+  windowWithWebWindowedExtensions.webwindowedAddEventListener;
+export const webwindowedRemoveEventListener =
+  windowWithWebWindowedExtensions.webwindowedRemoveEventListener;

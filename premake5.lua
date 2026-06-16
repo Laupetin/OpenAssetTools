@@ -100,7 +100,7 @@ include "thirdparty/json.lua"
 include "thirdparty/minilzo.lua"
 include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
-include "thirdparty/webview.lua"
+include "thirdparty/webwindowed.lua"
 include "thirdparty/zlib.lua"
 
 -- ThirdParty group: All projects that are external dependencies
@@ -118,7 +118,7 @@ group "ThirdParty"
     zlib:project()
     
     if _OPTIONS["modman"] then
-        webview:project()
+        webwindowed:project()
     end
 group ""
 

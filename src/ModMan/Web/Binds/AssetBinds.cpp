@@ -162,11 +162,11 @@ namespace
 
 namespace ui
 {
-    void RegisterAssetBinds(webview::webview& wv)
+    void RegisterAssetBinds(webwindowed::commands_builder& commands)
     {
-        Bind<std::string, std::optional<ZoneAssetsDto>>(wv,
+        Bind<std::string, std::optional<ZoneAssetsDto>>(commands,
                                                         "getAssetsForZone",
-                                                        [](const std::string& zoneName)
+                                                        [](webwindowed::detail::window_base& calling_window, const std::string& zoneName)
                                                         {
                                                             return GetZonesForZone(zoneName);
                                                         });

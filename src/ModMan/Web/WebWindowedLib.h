@@ -9,7 +9,12 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#include <webview/webview.h>
+#include <webwindowed/webwindowed.hpp>
+
+// Plugins
+#include <webwindowed/plugin/asset_handler.hpp>
+#include <webwindowed/plugin/favicon_handler.hpp>
+#include <webwindowed/plugin/title_handler.hpp>
 
 #ifdef _MSC_VER
 #pragma warning(pop)

@@ -22,6 +22,7 @@
     "vue-router": "5.1.0"
   },
   "devDependencies": {
+    "@laupetin/vite-plugin-cpp-header": "1.1.0",
     "@tsconfig/node24": "24.0.4",
     "@types/jsdom": "28.0.3",
     "@types/node": "25.9.2",

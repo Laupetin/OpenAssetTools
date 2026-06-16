@@ -2,17 +2,13 @@
 #include "GitVersion.h"
 #include "ModManArgs.h"
 #include "Web/Binds/Binds.h"
-#include "Web/Platform/AssetHandler.h"
-#include "Web/Platform/FaviconHandler.h"
-#include "Web/Platform/TitleHandler.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 #include <format>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -29,22 +25,13 @@ namespace
 
         auto& context = ModManContext::Get();
 
-        try
-        {
-            context.m_dev_tools_webview = std::make_unique<webview::webview>(false, nullptr);
-            auto& newWindow = *context.m_dev_tools_webview;
-            ui::InstallFaviconHandler(newWindow);
-            ui::InstallTitleHandler(newWindow);
+        context.m_dev_tools_window = std::make_shared<webwindowed::window>();
+        auto& newWindow = *context.m_dev_tools_window;
 
-            newWindow.set_title("Devtools");
-            newWindow.set_size(640, 480, WEBVIEW_HINT_NONE);
-            newWindow.set_size(480, 320, WEBVIEW_HINT_MIN);
-            newWindow.navigate(std::format("http://localhost:{}/__devtools__/", VITE_DEV_SERVER_PORT));
-        }
-        catch (const webview::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
+        newWindow.set_title("Devtools");
+        newWindow.set_window_size(640, 480);
+        newWindow.set_window_min(480, 320);
+        (void)newWindow.navigate(std::format("http://localhost:{}/__devtools__/", VITE_DEV_SERVER_PORT));
     }
 #endif
 
@@ -53,47 +40,45 @@ namespace
         con::debug("Creating main window");
 
         auto& context = ModManContext::Get();
-        try
-        {
-            context.m_main_webview = std::make_unique<webview::webview>(
-#ifdef _DEBUG
-                true,
-#else
-                false,
-#endif
-                nullptr);
-            auto& newWindow = *context.m_main_webview;
-
-            newWindow.set_title("OpenAssetTools ModMan");
-            newWindow.set_size(1280, 640, WEBVIEW_HINT_NONE);
-            newWindow.set_size(640, 480, WEBVIEW_HINT_MIN);
-
-            ui::InstallAssetHandler(newWindow);
-            ui::InstallFaviconHandler(newWindow);
-            ui::InstallTitleHandler(newWindow);
-            ui::RegisterAllBinds(newWindow);
+        context.m_main_window = std::make_shared<webwindowed::window>();
+        auto& newWindow = *context.m_main_window;
 
 #ifdef _DEBUG
-            newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT) : std::format("{}index.html", ui::URL_PREFIX));
-
-            if (VITE_DEV_SERVER)
-            {
-                newWindow.dispatch(
-                    []
-                    {
-                        SpawnDevToolsWindow();
-                    });
-            }
-#else
-            newWindow.navigate(std::format("{}index.html", ui::URL_PREFIX));
+        newWindow.set_debug(true);
 #endif
-            newWindow.run();
-        }
-        catch (const webview::exception& e)
+
+        newWindow.set_title("OpenAssetTools ModMan");
+        // newWindow.set_window_min(640, 480);
+        newWindow.set_window_size(1280, 640);
+
+        const auto assetHandlerPlugin = std::make_shared<webwindowed::asset_handler_plugin>(VITE_ASSETS, std::extent_v<decltype(VITE_ASSETS)>);
+        assetHandlerPlugin->set_protocol_name("modman");
+        newWindow.register_plugin(assetHandlerPlugin);
+
+        webwindowed::commands_builder commands;
+        ui::RegisterAllBinds(commands);
+        newWindow.set_commands(commands.build());
+
+#ifdef _DEBUG
+        auto result = newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT)
+                                                         : assetHandlerPlugin->get_url_for_asset("index.html"));
+        if (VITE_DEV_SERVER)
         {
-            std::cerr << e.what() << '\n';
-            return 1;
+            newWindow.dispatch(
+                []
+                {
+                    SpawnDevToolsWindow();
+                });
         }
+#else
+        auto result = newWindow.navigate(assetHandlerPlugin->get_url_for_asset("index.html"));
+#endif
+
+        webwindowed::app app;
+        app.register_plugin(std::make_shared<webwindowed::favicon_handler_plugin>());
+        app.register_plugin(std::make_shared<webwindowed::title_handler_plugin>());
+
+        (void)app.run(context.m_main_window);
 
         return 0;
     }

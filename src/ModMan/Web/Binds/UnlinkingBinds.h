@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
+
+#include <string>
 
 namespace ui
 {
     void NotifyZoneUnlinkProgress(std::string zoneName, double percentage);
 
-    void RegisterUnlinkingBinds(webview::webview& wv);
+    void RegisterUnlinkingBinds(webwindowed::commands_builder& commands);
 } // namespace ui

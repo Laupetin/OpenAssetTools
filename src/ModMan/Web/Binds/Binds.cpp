@@ -7,11 +7,11 @@
 
 namespace ui
 {
-    void RegisterAllBinds(webview::webview& wv)
+    void RegisterAllBinds(webwindowed::commands_builder& commands)
     {
-        RegisterAssetBinds(wv);
-        RegisterDialogHandlerBinds(wv);
-        RegisterUnlinkingBinds(wv);
-        RegisterZoneBinds(wv);
+        RegisterAssetBinds(commands);
+        RegisterDialogHandlerBinds(commands);
+        RegisterUnlinkingBinds(commands);
+        RegisterZoneBinds(commands);
     }
 } // namespace ui

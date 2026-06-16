@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 namespace ui
 {
-    void RegisterDialogHandlerBinds(webview::webview& wv);
+    void RegisterDialogHandlerBinds(webwindowed::commands_builder& commands);
 }

@@ -3,13 +3,13 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
-import headerTransformationPlugin from "./build/HeaderTransformationPlugin";
+import PluginCppHeader from "@laupetin/vite-plugin-cpp-header";
 
 // https://vite.dev/config/
 export default defineConfig({
   build: {
     emptyOutDir: true,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         assetFileNames: "[name][extname]",
         entryFileNames: "[name].js",
@@ -21,7 +21,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    headerTransformationPlugin({
+    PluginCppHeader({
       outputPath: fileURLToPath(
         new URL("../../build/src/ModMan/Web/ViteAssets.h", import.meta.url),
       ),
