@@ -78,7 +78,7 @@ namespace
         return {};
     }
 
-    void UnlinkZone(webview::detail::window_base& calling_window,
+    void UnlinkZone(webwindowed::detail::window_base& calling_window,
                     std::string id,
                     std::string zoneName) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
     {
@@ -109,14 +109,14 @@ namespace ui
             .zoneName = std::move(zoneName),
             .percentage = percentage,
         };
-        Notify(*ModManContext::Get().m_main_webview, "zoneUnlinkProgress", dto);
+        Notify(*ModManContext::Get().m_main_window, "zoneUnlinkProgress", dto);
     }
 
-    void RegisterUnlinkingBinds(webview::commands_builder& commands)
+    void RegisterUnlinkingBinds(webwindowed::commands_builder& commands)
     {
         BindAsync<std::string>(commands,
                                "unlinkZone",
-                               [](const std::string& id, webview::detail::window_base& calling_window, std::string zoneName)
+                               [](const std::string& id, webwindowed::detail::window_base& calling_window, std::string zoneName)
                                {
                                    UnlinkZone(calling_window, id, std::move(zoneName));
                                });

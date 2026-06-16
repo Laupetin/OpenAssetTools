@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Context/FastFileContext.h"
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 namespace ui
 {
@@ -9,5 +9,5 @@ namespace ui
     void NotifyZoneLoaded(const LoadedZone& loadedZone);
     void NotifyZoneUnloaded(std::string zoneName);
 
-    void RegisterZoneBinds(webview::commands_builder& commands);
+    void RegisterZoneBinds(webwindowed::commands_builder& commands);
 } // namespace ui

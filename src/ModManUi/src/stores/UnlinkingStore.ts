@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { webviewAddEventListener, webviewBinds } from "@/native";
+import { webwindowedAddEventListener, webwindowedBinds } from "@/native";
 
 export const useUnlinkingStore = defineStore("unlinking", () => {
   const isUnlinking = ref(false);
@@ -11,7 +11,7 @@ export const useUnlinkingStore = defineStore("unlinking", () => {
     isUnlinking.value = true;
     lastPercentage.value = 0;
     failureMessage.value = null;
-    return webviewBinds
+    return webwindowedBinds
       .unlinkZone(zoneName)
       .catch((e: string) => {
         console.error("Failed to unlink fastfile:", e);
@@ -23,7 +23,7 @@ export const useUnlinkingStore = defineStore("unlinking", () => {
       });
   }
 
-  webviewAddEventListener("zoneUnlinkProgress", (dto) => {
+  webwindowedAddEventListener("zoneUnlinkProgress", (dto) => {
     lastPercentage.value = dto.percentage;
   });
 

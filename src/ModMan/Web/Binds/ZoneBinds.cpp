@@ -89,7 +89,7 @@ namespace
         return result;
     }
 
-    void LoadFastFile(webview::detail::window_base& calling_window,
+    void LoadFastFile(webwindowed::detail::window_base& calling_window,
                       std::string id,
                       std::string path) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
     {
@@ -115,7 +115,7 @@ namespace
             });
     }
 
-    void UnloadZone(webview::detail::window_base& calling_window,
+    void UnloadZone(webwindowed::detail::window_base& calling_window,
                     std::string id,
                     std::string zoneName) // NOLINT(performance-unnecessary-value-param) Copy is made for thread safety
     {
@@ -145,7 +145,7 @@ namespace ui
             .zoneName = std::move(zoneName),
             .percentage = percentage,
         };
-        Notify(*ModManContext::Get().m_main_webview, "zoneLoadProgress", dto);
+        Notify(*ModManContext::Get().m_main_window, "zoneLoadProgress", dto);
     }
 
     void NotifyZoneLoaded(const LoadedZone& loadedZone)
@@ -153,7 +153,7 @@ namespace ui
         const ZoneLoadedDto dto{
             .zone = CreateZoneDto(loadedZone),
         };
-        Notify(*ModManContext::Get().m_main_webview, "zoneLoaded", dto);
+        Notify(*ModManContext::Get().m_main_window, "zoneLoaded", dto);
     }
 
     void NotifyZoneUnloaded(std::string zoneName)
@@ -161,28 +161,28 @@ namespace ui
         const ZoneUnloadedDto dto{
             .zoneName = std::move(zoneName),
         };
-        Notify(*ModManContext::Get().m_main_webview, "zoneUnloaded", dto);
+        Notify(*ModManContext::Get().m_main_window, "zoneUnloaded", dto);
     }
 
-    void RegisterZoneBinds(webview::commands_builder& commands)
+    void RegisterZoneBinds(webwindowed::commands_builder& commands)
     {
         BindRetOnly<std::vector<ZoneDto>>(commands,
                                           "getZones",
-                                          [](webview::detail::window_base& calling_window)
+                                          [](webwindowed::detail::window_base& calling_window)
                                           {
                                               return GetLoadedZones();
                                           });
 
         BindAsync<std::string>(commands,
                                "loadFastFile",
-                               [](const std::string& id, webview::detail::window_base& calling_window, std::string path)
+                               [](const std::string& id, webwindowed::detail::window_base& calling_window, std::string path)
                                {
                                    LoadFastFile(calling_window, id, std::move(path));
                                });
 
         BindAsync<std::string>(commands,
                                "unloadZone",
-                               [](const std::string& id, webview::detail::window_base& calling_window, std::string zoneName)
+                               [](const std::string& id, webwindowed::detail::window_base& calling_window, std::string zoneName)
                                {
                                    UnloadZone(calling_window, id, std::move(zoneName));
                                });

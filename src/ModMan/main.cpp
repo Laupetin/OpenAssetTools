@@ -4,7 +4,7 @@
 #include "Web/Binds/Binds.h"
 #include "Web/UiCommunication.h"
 #include "Web/ViteAssets.h"
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 #include <format>
 #include <iostream>
@@ -25,8 +25,8 @@ namespace
 
         auto& context = ModManContext::Get();
 
-        context.m_dev_tools_webview = std::make_shared<webview::window>();
-        auto& newWindow = *context.m_dev_tools_webview;
+        context.m_dev_tools_window = std::make_shared<webwindowed::window>();
+        auto& newWindow = *context.m_dev_tools_window;
 
         newWindow.set_title("Devtools");
         newWindow.set_window_size(640, 480);
@@ -40,8 +40,8 @@ namespace
         con::debug("Creating main window");
 
         auto& context = ModManContext::Get();
-        context.m_main_webview = std::make_shared<webview::window>();
-        auto& newWindow = *context.m_main_webview;
+        context.m_main_window = std::make_shared<webwindowed::window>();
+        auto& newWindow = *context.m_main_window;
 
 #ifdef _DEBUG
         newWindow.set_debug(true);
@@ -51,11 +51,11 @@ namespace
         // newWindow.set_window_min(640, 480);
         newWindow.set_window_size(1280, 640);
 
-        const auto assetHandlerPlugin = std::make_shared<webview::asset_handler_plugin>(VITE_ASSETS, std::extent_v<decltype(VITE_ASSETS)>);
+        const auto assetHandlerPlugin = std::make_shared<webwindowed::asset_handler_plugin>(VITE_ASSETS, std::extent_v<decltype(VITE_ASSETS)>);
         assetHandlerPlugin->set_protocol_name("modman");
         newWindow.register_plugin(assetHandlerPlugin);
 
-        webview::commands_builder commands;
+        webwindowed::commands_builder commands;
         ui::RegisterAllBinds(commands);
         newWindow.set_commands(commands.build());
 
@@ -74,11 +74,11 @@ namespace
         auto result = newWindow.navigate(assetHandlerPlugin->get_url_for_asset("index.html"));
 #endif
 
-        webview::app app;
-        app.register_plugin(std::make_shared<webview::favicon_handler_plugin>());
-        app.register_plugin(std::make_shared<webview::title_handler_plugin>());
+        webwindowed::app app;
+        app.register_plugin(std::make_shared<webwindowed::favicon_handler_plugin>());
+        app.register_plugin(std::make_shared<webwindowed::title_handler_plugin>());
 
-        (void)app.run(context.m_main_webview);
+        (void)app.run(context.m_main_window);
 
         return 0;
     }

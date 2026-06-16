@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Utils/Logging/Log.h"
-#include "WebViewLib.h"
+#include "WebWindowedLib.h"
 
 #pragma warning(push, 0)
 #include <nlohmann/json.hpp>
@@ -9,10 +9,10 @@
 
 namespace ui
 {
-    inline void Bind(webview::commands_builder& commands, const std::string& name, std::function<void(webview::detail::window_base& calling_window)> fn)
+    inline void Bind(webwindowed::commands_builder& commands, const std::string& name, std::function<void(webwindowed::detail::window_base& calling_window)> fn)
     {
         commands.add_command_void(name,
-                                  [fn2 = std::move(fn)](webview::detail::window_base& calling_window, std::string message_json_str) -> std::string
+                                  [fn2 = std::move(fn)](webwindowed::detail::window_base& calling_window, std::string message_json_str) -> std::string
                                   {
                                       fn2(calling_window);
                                       return "";
@@ -20,10 +20,11 @@ namespace ui
     }
 
     template<typename TInput>
-    void Bind(webview::commands_builder& commands, const std::string& name, std::function<void(webview::detail::window_base& calling_window, TInput)> fn)
+    void
+        Bind(webwindowed::commands_builder& commands, const std::string& name, std::function<void(webwindowed::detail::window_base& calling_window, TInput)> fn)
     {
         commands.add_command_void(name,
-                                  [fn2 = std::move(fn)](webview::detail::window_base& calling_window, std::string message_json_str) -> std::string
+                                  [fn2 = std::move(fn)](webwindowed::detail::window_base& calling_window, std::string message_json_str) -> std::string
                                   {
                                       TInput param;
                                       try
@@ -31,7 +32,7 @@ namespace ui
                                           const auto json = nlohmann::json::parse(message_json_str);
                                           if (!json.is_array())
                                           {
-                                              con::error("Webview params are not an array: {}", message_json_str);
+                                              con::error("Webwindowed params are not an array: {}", message_json_str);
                                               return "";
                                           }
 
@@ -42,7 +43,7 @@ namespace ui
                                       }
                                       catch (const nlohmann::json::exception& e)
                                       {
-                                          con::error("Failed to parse json of webview call: {}", e.what());
+                                          con::error("Failed to parse json of webwindowed call: {}", e.what());
                                           return "";
                                       }
 
@@ -52,10 +53,12 @@ namespace ui
     }
 
     template<typename TReturn>
-    void BindRetOnly(webview::commands_builder& commands, const std::string& name, std::function<TReturn(webview::detail::window_base& calling_window)> fn)
+    void BindRetOnly(webwindowed::commands_builder& commands,
+                     const std::string& name,
+                     std::function<TReturn(webwindowed::detail::window_base& calling_window)> fn)
     {
         commands.add_command_sync(name,
-                                  [fn2 = std::move(fn)](webview::detail::window_base& calling_window, std::string message_json_str) -> std::string
+                                  [fn2 = std::move(fn)](webwindowed::detail::window_base& calling_window, std::string message_json_str) -> std::string
                                   {
                                       auto result = fn2(calling_window);
 
@@ -64,10 +67,12 @@ namespace ui
     }
 
     template<typename TInput, typename TReturn>
-    void Bind(webview::commands_builder& commands, const std::string& name, std::function<TReturn(webview::detail::window_base& calling_window, TInput)> fn)
+    void Bind(webwindowed::commands_builder& commands,
+              const std::string& name,
+              std::function<TReturn(webwindowed::detail::window_base& calling_window, TInput)> fn)
     {
         commands.add_command_sync(name,
-                                  [fn2 = std::move(fn)](webview::detail::window_base& calling_window, std::string message_json_str) -> std::string
+                                  [fn2 = std::move(fn)](webwindowed::detail::window_base& calling_window, std::string message_json_str) -> std::string
                                   {
                                       TInput param;
                                       try
@@ -75,7 +80,7 @@ namespace ui
                                           const auto json = nlohmann::json::parse(message_json_str);
                                           if (!json.is_array())
                                           {
-                                              con::error("Webview params are not an array: {}", message_json_str);
+                                              con::error("Webwindowed params are not an array: {}", message_json_str);
                                               return "";
                                           }
 
@@ -86,7 +91,7 @@ namespace ui
                                       }
                                       catch (const nlohmann::json::exception& e)
                                       {
-                                          con::error("Failed to parse json of webview call: {}", e.what());
+                                          con::error("Failed to parse json of webwindowed call: {}", e.what());
                                           return "";
                                       }
 
@@ -95,24 +100,24 @@ namespace ui
                                   });
     }
 
-    inline void BindAsync(webview::commands_builder& commands,
+    inline void BindAsync(webwindowed::commands_builder& commands,
                           const std::string& name,
-                          std::function<void(const std::string& id, webview::detail::window_base& calling_window)> fn)
+                          std::function<void(const std::string& id, webwindowed::detail::window_base& calling_window)> fn)
     {
         commands.add_command_async(name,
-                                   [fn2 = std::move(fn)](std::string promise_id, webview::detail::window_base& calling_window, std::string message_json_str)
+                                   [fn2 = std::move(fn)](std::string promise_id, webwindowed::detail::window_base& calling_window, std::string message_json_str)
                                    {
                                        fn2(promise_id, calling_window);
                                    });
     }
 
     template<typename TInput>
-    void BindAsync(webview::commands_builder& commands,
+    void BindAsync(webwindowed::commands_builder& commands,
                    const std::string& name,
-                   std::function<void(const std::string& id, webview::detail::window_base& calling_window, TInput)> fn)
+                   std::function<void(const std::string& id, webwindowed::detail::window_base& calling_window, TInput)> fn)
     {
         commands.add_command_async(name,
-                                   [fn2 = std::move(fn)](std::string promise_id, webview::detail::window_base& calling_window, std::string message_json_str)
+                                   [fn2 = std::move(fn)](std::string promise_id, webwindowed::detail::window_base& calling_window, std::string message_json_str)
                                    {
                                        TInput param;
                                        try
@@ -120,7 +125,7 @@ namespace ui
                                            const auto json = nlohmann::json::parse(message_json_str);
                                            if (!json.is_array())
                                            {
-                                               con::error("Webview params are not an array: {}", message_json_str);
+                                               con::error("Webwindowed params are not an array: {}", message_json_str);
                                                return "";
                                            }
 
@@ -131,7 +136,7 @@ namespace ui
                                        }
                                        catch (const nlohmann::json::exception& e)
                                        {
-                                           con::error("Failed to parse json of webview call: {}", e.what());
+                                           con::error("Failed to parse json of webwindowed call: {}", e.what());
                                            return "";
                                        }
 
@@ -140,17 +145,17 @@ namespace ui
                                    });
     }
 
-    template<typename TPayload> void PromiseResolve(webview::detail::window_base& window, const std::string& id, const TPayload& payload)
+    template<typename TPayload> void PromiseResolve(webwindowed::detail::window_base& window, const std::string& id, const TPayload& payload)
     {
         window.promise_resolve(id, nlohmann::json(payload).dump());
     }
 
-    template<typename TPayload> void PromiseReject(webview::detail::window_base& window, const std::string& id, const TPayload& payload)
+    template<typename TPayload> void PromiseReject(webwindowed::detail::window_base& window, const std::string& id, const TPayload& payload)
     {
         window.promise_reject(id, nlohmann::json(payload).dump());
     }
 
-    template<typename TPayload> void Notify(webview::detail::window_base& window, const std::string& eventKey, const TPayload& payload)
+    template<typename TPayload> void Notify(webwindowed::detail::window_base& window, const std::string& eventKey, const TPayload& payload)
     {
         window.notify(eventKey, nlohmann::json(payload).dump());
     }

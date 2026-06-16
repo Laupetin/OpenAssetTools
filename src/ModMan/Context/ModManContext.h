@@ -2,7 +2,7 @@
 
 #include "FastFileContext.h"
 #include "Utils/DispatchableThread.h"
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 #include <memory>
 
@@ -14,8 +14,8 @@ public:
     void Startup();
     void Destroy();
 
-    std::shared_ptr<webview::window> m_main_webview;
-    std::shared_ptr<webview::window> m_dev_tools_webview;
+    std::shared_ptr<webwindowed::window> m_main_window;
+    std::shared_ptr<webwindowed::window> m_dev_tools_window;
     FastFileContext m_fast_file;
 
     DispatchableThread m_db_thread;

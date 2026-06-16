@@ -7,7 +7,7 @@
 
 namespace ui
 {
-    void RegisterAllBinds(webview::commands_builder& commands)
+    void RegisterAllBinds(webwindowed::commands_builder& commands)
     {
         RegisterAssetBinds(commands);
         RegisterDialogHandlerBinds(commands);

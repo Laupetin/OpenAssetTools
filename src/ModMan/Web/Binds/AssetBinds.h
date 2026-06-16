@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Web/WebViewLib.h"
+#include "Web/WebWindowedLib.h"
 
 namespace ui
 {
-    void RegisterAssetBinds(webview::commands_builder& commands);
+    void RegisterAssetBinds(webwindowed::commands_builder& commands);
 } // namespace ui

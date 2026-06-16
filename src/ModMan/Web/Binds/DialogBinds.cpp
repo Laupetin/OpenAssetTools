@@ -32,7 +32,7 @@ namespace
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(SaveFileDialogDto, filters);
 
-    void ReplyWithDialogResult(webview::detail::window_base& calling_window,
+    void ReplyWithDialogResult(webwindowed::detail::window_base& calling_window,
                                const std::string& id,
                                const ui::DialogCallbackResultType resultType,
                                const std::optional<std::string>& result)
@@ -43,7 +43,7 @@ namespace
             ui::PromiseResolve(calling_window, id, result);
     }
 
-    void OpenFileDialogBind(webview::detail::window_base& calling_window, const std::string& id, const std::optional<OpenFileDialogDto>& dto)
+    void OpenFileDialogBind(webwindowed::detail::window_base& calling_window, const std::string& id, const std::optional<OpenFileDialogDto>& dto)
     {
         ui::OpenFileDialog dialog;
         dialog.SetCallback(
@@ -63,7 +63,7 @@ namespace
         dialog.OpenAsync();
     }
 
-    void SaveFileDialogBind(webview::detail::window_base& calling_window, const std::string& id, const std::optional<SaveFileDialogDto>& dto)
+    void SaveFileDialogBind(webwindowed::detail::window_base& calling_window, const std::string& id, const std::optional<SaveFileDialogDto>& dto)
     {
         ui::SaveFileDialog dialog;
         dialog.SetCallback(
@@ -83,7 +83,7 @@ namespace
         dialog.OpenAsync();
     }
 
-    void FolderSelectDialogBind(webview::detail::window_base& calling_window, const std::string& id)
+    void FolderSelectDialogBind(webwindowed::detail::window_base& calling_window, const std::string& id)
     {
         ui::FolderSelectDialog dialog;
         dialog.SetCallback(
@@ -98,12 +98,12 @@ namespace
 
 namespace ui
 {
-    void RegisterDialogHandlerBinds(webview::commands_builder& commands)
+    void RegisterDialogHandlerBinds(webwindowed::commands_builder& commands)
     {
         BindAsync<std::optional<OpenFileDialogDto>>(
             commands,
             "openFileDialog",
-            [](const std::string& id, webview::detail::window_base& calling_window, const std::optional<OpenFileDialogDto>& dto)
+            [](const std::string& id, webwindowed::detail::window_base& calling_window, const std::optional<OpenFileDialogDto>& dto)
             {
                 OpenFileDialogBind(calling_window, id, dto);
             });
@@ -111,14 +111,14 @@ namespace ui
         BindAsync<std::optional<SaveFileDialogDto>>(
             commands,
             "saveFileDialog",
-            [](const std::string& id, webview::detail::window_base& calling_window, const std::optional<SaveFileDialogDto>& dto)
+            [](const std::string& id, webwindowed::detail::window_base& calling_window, const std::optional<SaveFileDialogDto>& dto)
             {
                 SaveFileDialogBind(calling_window, id, dto);
             });
 
         BindAsync(commands,
                   "folderSelectDialog",
-                  [](const std::string& id, webview::detail::window_base& calling_window)
+                  [](const std::string& id, webwindowed::detail::window_base& calling_window)
                   {
                       FolderSelectDialogBind(calling_window, id);
                   });
