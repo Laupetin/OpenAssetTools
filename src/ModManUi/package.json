@@ -31,7 +31,7 @@
     "@vue/eslint-config-typescript": "14.8.0",
     "@vue/test-utils": "2.4.11",
     "@vue/tsconfig": "0.9.1",
-    "@webwindowed/vite-plugin-cpp-header": "1.0.0",
+    "@webwindowed/vite-plugin-cpp-header": "1.1.0",
     "@webwindowed/web-api": "1.0.0",
     "eslint": "10.4.1",
     "eslint-plugin-vue": "10.9.2",

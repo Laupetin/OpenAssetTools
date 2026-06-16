@@ -48,11 +48,15 @@ namespace
 #endif
 
         newWindow.set_title("OpenAssetTools ModMan");
-        // newWindow.set_window_min(640, 480);
+        newWindow.set_window_min(640, 480);
         newWindow.set_window_size(1280, 640);
 
-        const auto assetHandlerPlugin = std::make_shared<webwindowed::asset_handler_plugin>(VITE_ASSETS, std::extent_v<decltype(VITE_ASSETS)>);
+        const auto assetHandlerPlugin = std::make_shared<webwindowed::asset_handler_plugin>();
         assetHandlerPlugin->set_protocol_name("modman");
+
+        for (const auto& asset : VITE_ASSETS)
+            assetHandlerPlugin->add_static_asset(webwindowed::static_asset(asset.filename, asset.data, asset.dataSize));
+
         newWindow.register_plugin(assetHandlerPlugin);
 
         webwindowed::commands_builder commands;
