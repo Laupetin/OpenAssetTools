@@ -1,3 +1,5 @@
+import { getBinds } from "@webwindowed/web-api";
+
 export interface ZoneUnlinkProgressDto {
   zoneName: string;
   /**
@@ -6,10 +8,12 @@ export interface ZoneUnlinkProgressDto {
   percentage: number;
 }
 
-export interface UnlinkingBinds {
+type UnlinkingBinds = {
   unlinkZone(zoneName: string): Promise<void>;
-}
+};
 
-export interface UnlinkingEventMap {
+export type UnlinkingEventMap = {
   zoneUnlinkProgress: ZoneUnlinkProgressDto;
-}
+};
+
+export const { unlinkZone } = getBinds<UnlinkingBinds>();

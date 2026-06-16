@@ -1,3 +1,5 @@
+import { getBinds } from "@webwindowed/web-api";
+
 export enum GameId {
   IW3 = "IW3",
   IW4 = "IW4",
@@ -36,14 +38,16 @@ export interface ZoneUnloadedDto {
   zoneName: string;
 }
 
-export interface ZoneBinds {
+type ZoneBinds = {
   getZones(): Promise<ZoneDto[]>;
   loadFastFile(path: string): Promise<ZoneLoadedDto>;
   unloadZone(zoneName: string): Promise<void>;
-}
+};
 
-export interface ZoneEventMap {
+export type ZoneEventMap = {
   zoneLoadProgress: ZoneLoadProgressDto;
   zoneLoaded: ZoneLoadedDto;
   zoneUnloaded: ZoneUnloadedDto;
-}
+};
+
+export const { getZones, loadFastFile, unloadZone } = getBinds<ZoneBinds>();

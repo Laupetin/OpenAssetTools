@@ -1,3 +1,5 @@
+import { getBinds } from "@webwindowed/web-api";
+
 export enum CommonAssetType {
   PHYS_PRESET = "PHYS_PRESET",
   XANIM = "XANIM",
@@ -84,6 +86,8 @@ export interface ZoneAssetsDto {
   references: AssetDto[];
 }
 
-export interface AssetBinds {
+type AssetBinds = {
   getAssetsForZone(zoneName: string): Promise<ZoneAssetsDto | null>;
-}
+};
+
+export const { getAssetsForZone } = getBinds<AssetBinds>();

@@ -4,7 +4,8 @@ import ProgressBar from "primevue/progressbar";
 import Listbox from "primevue/listbox";
 import { computed } from "vue";
 import { useZoneStore } from "@/stores/ZoneStore";
-import { webwindowedBinds } from "@/native";
+import { openFileDialog } from "@/native/DialogBinds.ts";
+import { unloadZone } from "@/native/ZoneBinds.ts";
 
 interface SelectableZone {
   isLoading: boolean;
@@ -15,7 +16,7 @@ const zoneStore = useZoneStore();
 const selectedZone = defineModel<string | null>("selectedZone");
 
 async function openFastFileSelect() {
-  return await webwindowedBinds.openFileDialog({
+  return await openFileDialog({
     filters: [{ name: "Fastfiles", filter: "*.ff" }],
   });
 }
@@ -53,7 +54,7 @@ const availableZones = computed<SelectableZone[]>(() => {
 function onUnloadClicked() {
   if (!selectedZone.value) return;
 
-  webwindowedBinds.unloadZone(selectedZone.value).catch((e: string) => {
+  unloadZone(selectedZone.value).catch((e: string) => {
     console.error("Failed to unload zone:", e);
   });
 }

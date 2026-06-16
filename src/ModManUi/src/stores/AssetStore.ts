@@ -1,7 +1,6 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import type { ZoneAssetsDto } from "@/native/AssetBinds";
-import { webwindowedBinds } from "@/native";
+import { getAssetsForZone, type ZoneAssetsDto } from "@/native/AssetBinds";
 
 export const useAssetStore = defineStore("asset", () => {
   const zoneName = ref<string | null>(null);
@@ -21,7 +20,7 @@ export const useAssetStore = defineStore("asset", () => {
 
     // Only load assets when there is a new zone name specified
     if (!newZoneName) return;
-    webwindowedBinds.getAssetsForZone(newZoneName).then((res) => {
+    getAssetsForZone(newZoneName).then((res) => {
       if (zoneName.value === newZoneName) {
         assetsOfZone.value = res;
       }
