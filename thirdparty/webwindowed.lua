@@ -1,15 +1,15 @@
-webview = {}
+webwindowed = {}
 
-function webview:include(includes)
+function webwindowed:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
-			path.join(ThirdPartyFolder(), "webview/include"),
+			path.join(ThirdPartyFolder(), "webwindowed/include"),
 			path.join(self:msWebviewDir(), "build/native/include")
 		}
 	end
 end
 
-function webview:link(links)
+function webwindowed:link(links)
 
 	if os.host() == "windows" then
 		filter "platforms:x86"
@@ -27,15 +27,15 @@ function webview:link(links)
 	links:add(self:name())
 end
 
-function webview:use()
+function webwindowed:use()
 	
 end
 
-function webview:name()
-	return "webview"
+function webwindowed:name()
+	return "webwindowed"
 end
 
-function webview:project()
+function webwindowed:project()
 	local folder = ThirdPartyFolder()
 	local includes = Includes:create()
 
@@ -46,7 +46,7 @@ function webview:project()
 		language "C++"
 		
 		files { 
-			path.join(folder, "webview/include/**.hpp")
+			path.join(folder, "webwindowed/include/**.hpp")
 		}
 
 		if os.host() == "windows" then
@@ -64,11 +64,11 @@ function webview:project()
 		warnings "off"
 end
 
-function webview:msWebviewDir()
+function webwindowed:msWebviewDir()
 	return path.join(BuildFolder(), "thirdparty/ms-webview2")
 end
 
-function webview:installWebview2()
+function webwindowed:installWebview2()
 	local version = "1.0.3485.44"
 	local webviewDir = self:msWebviewDir()
 	local versionFile = path.join(webviewDir, "ms-webview2.txt")

@@ -19,6 +19,6 @@
 [submodule "thirdparty/lz4"]
 	path = thirdparty/lz4
 	url = https://github.com/lz4/lz4.git
-[submodule "thirdparty/webview"]
-	path = thirdparty/webview
-	url = https://github.com/Laupetin/webview.git
+[submodule "thirdparty/webwindowed"]
+	path = thirdparty/webwindowed
+	url = https://github.com/Laupetin/webwindowed.git
