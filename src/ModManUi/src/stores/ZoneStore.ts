@@ -1,7 +1,12 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { webwindowedAddEventListener, webwindowedBinds } from "@/native";
-import type { ZoneDto, ZoneLoadedDto } from "@/native/ZoneBinds";
+import {
+  getZones,
+  loadFastFile as nativeLoadFastFile,
+  type ZoneDto,
+  type ZoneLoadedDto,
+} from "@/native/ZoneBinds";
+import { addEventListener } from "@/native/Events.ts";
 
 export const useZoneStore = defineStore("zone", () => {
   const loadedZones = ref<ZoneDto[]>([]);
@@ -21,8 +26,7 @@ export const useZoneStore = defineStore("zone", () => {
     zonesCurrentlyBeingLoaded.value.push(expectedZoneName);
     lastPercentageByZoneName.value[expectedZoneName] = 0;
 
-    return webwindowedBinds
-      .loadFastFile(fastFilePath)
+    return nativeLoadFastFile(fastFilePath)
       .catch((e: string) => {
         console.error("Failed to load fastfile:", e);
       })
@@ -44,21 +48,21 @@ export const useZoneStore = defineStore("zone", () => {
   }
 
   // Initially get all loaded zones
-  webwindowedBinds.getZones().then((allZones) => {
+  getZones().then((allZones) => {
     loadedZones.value = allZones;
   });
 
-  webwindowedAddEventListener("zoneLoadProgress", (dto) => {
+  addEventListener("zoneLoadProgress", (dto) => {
     if (lastPercentageByZoneName.value[dto.zoneName] !== undefined) {
       lastPercentageByZoneName.value[dto.zoneName] = dto.percentage;
     }
   });
 
-  webwindowedAddEventListener("zoneLoaded", (dto) => {
+  addEventListener("zoneLoaded", (dto) => {
     loadedZones.value.push(dto.zone);
   });
 
-  webwindowedAddEventListener("zoneUnloaded", (dto) => {
+  addEventListener("zoneUnloaded", (dto) => {
     const index = loadedZones.value.findIndex((zone) => zone.name === dto.zoneName);
     if (index >= 0) {
       loadedZones.value.splice(index, 1);
