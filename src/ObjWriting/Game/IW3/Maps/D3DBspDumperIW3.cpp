@@ -166,6 +166,21 @@ namespace
         return out;
     }
 
+    void WriteBytesAt(std::vector<std::byte>& out, const size_t offset, const void* data, const size_t size)
+    {
+        if (!data || size == 0)
+            return;
+
+        assert(offset + size <= out.size());
+        const auto* bytes = static_cast<const std::byte*>(data);
+        std::copy_n(bytes, size, out.data() + offset);
+    }
+
+    template<typename T> void WriteAt(std::vector<std::byte>& out, const size_t offset, const T& value)
+    {
+        WriteBytesAt(out, offset, &value, sizeof(T));
+    }
+
     void MarkMaterialUsedByBrush(std::vector<uint8_t>& usedMaterials, const unsigned materialIndex)
     {
         if (materialIndex < usedMaterials.size())
@@ -1751,23 +1766,20 @@ namespace
         // The v22 BSP stores DiskPrimaryLight, not the runtime ComPrimaryLight
         // layout. cosHalfFovExpanded is derived by the linker from outer FOV and
         // rotationLimit, while exponent is stored as a 32-bit disk field.
-        std::copy_n(reinterpret_cast<const std::byte*>(light.color), sizeof(light.color), out.data() + baseOffset + COLOR_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(light.dir), sizeof(light.dir), out.data() + baseOffset + DIR_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(light.origin), sizeof(light.origin), out.data() + baseOffset + ORIGIN_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(&light.radius), sizeof(light.radius), out.data() + baseOffset + RADIUS_OFFSET);
-        std::copy_n(
-            reinterpret_cast<const std::byte*>(&light.cosHalfFovOuter), sizeof(light.cosHalfFovOuter), out.data() + baseOffset + COS_HALF_FOV_OUTER_OFFSET);
-        std::copy_n(
-            reinterpret_cast<const std::byte*>(&light.cosHalfFovInner), sizeof(light.cosHalfFovInner), out.data() + baseOffset + COS_HALF_FOV_INNER_OFFSET);
+        WriteBytesAt(out, baseOffset + COLOR_OFFSET, light.color, sizeof(light.color));
+        WriteBytesAt(out, baseOffset + DIR_OFFSET, light.dir, sizeof(light.dir));
+        WriteBytesAt(out, baseOffset + ORIGIN_OFFSET, light.origin, sizeof(light.origin));
+        WriteAt(out, baseOffset + RADIUS_OFFSET, light.radius);
+        WriteAt(out, baseOffset + COS_HALF_FOV_OUTER_OFFSET, light.cosHalfFovOuter);
+        WriteAt(out, baseOffset + COS_HALF_FOV_INNER_OFFSET, light.cosHalfFovInner);
         const auto exponent = static_cast<int32_t>(static_cast<unsigned char>(light.exponent));
-        std::copy_n(reinterpret_cast<const std::byte*>(&exponent), sizeof(exponent), out.data() + baseOffset + EXPONENT_OFFSET);
-        std::copy_n(reinterpret_cast<const std::byte*>(&light.rotationLimit), sizeof(light.rotationLimit), out.data() + baseOffset + ROTATION_LIMIT_OFFSET);
-        std::copy_n(
-            reinterpret_cast<const std::byte*>(&light.translationLimit), sizeof(light.translationLimit), out.data() + baseOffset + TRANSLATION_LIMIT_OFFSET);
+        WriteAt(out, baseOffset + EXPONENT_OFFSET, exponent);
+        WriteAt(out, baseOffset + ROTATION_LIMIT_OFFSET, light.rotationLimit);
+        WriteAt(out, baseOffset + TRANSLATION_LIMIT_OFFSET, light.translationLimit);
         if (light.defName)
         {
             const auto defNameLength = std::min(std::strlen(light.defName), DEF_NAME_SIZE - 1uz);
-            std::copy_n(reinterpret_cast<const std::byte*>(light.defName), defNameLength, out.data() + baseOffset + DEF_NAME_OFFSET);
+            WriteBytesAt(out, baseOffset + DEF_NAME_OFFSET, light.defName, defNameLength);
         }
     }
 
