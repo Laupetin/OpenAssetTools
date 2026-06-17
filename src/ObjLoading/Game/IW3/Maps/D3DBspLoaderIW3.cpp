@@ -4572,16 +4572,28 @@ namespace
 
     struct TriangleKeyHash
     {
+        static uint64_t Mix(uint64_t value)
+        {
+            value ^= value >> 30u;
+            value *= 0xbf58476d1ce4e5b9ull;
+            value ^= value >> 27u;
+            value *= 0x94d049bb133111ebull;
+            value ^= value >> 31u;
+            return value;
+        }
+
         std::size_t operator()(const TriangleKey& key) const
         {
-            auto result = 1469598103934665603ull;
+            // MSVC's 32-bit unordered_map only sees the low bits of size_t.
+            // Final avalanche mixing keeps coincident-triangle lookups from
+            // collapsing into large buckets on dense map geometry.
+            auto result = 0x9e3779b97f4a7c15ull;
             for (const auto value : key.values)
             {
-                result ^= value;
-                result *= 1099511628211ull;
+                result ^= Mix(static_cast<uint64_t>(value) + 0x9e3779b97f4a7c15ull + (result << 6u) + (result >> 2u));
             }
 
-            return static_cast<std::size_t>(result);
+            return static_cast<std::size_t>(Mix(result));
         }
     };
 
@@ -4591,7 +4603,7 @@ namespace
     {
         unsigned firstSurfaceIndex = 0u;
         DecalTriangleMaterialMap minMaterialForTriangle;
-        std::vector<std::vector<TriangleKey>> surfaceTriangleKeys;
+        std::vector<std::optional<TriangleKey>> firstSurfaceTriangleKey;
     };
 
     [[nodiscard]] std::optional<TriangleKey> BuildTriangleKey(const GfxWorld& world, const GfxSurface& surface, const int baseIndex)
@@ -4640,7 +4652,7 @@ namespace
     {
         DecalTriangleData result;
         result.firstSurfaceIndex = modelSurfIndexBegin;
-        result.surfaceTriangleKeys.resize(modelSurfIndexEnd - modelSurfIndexBegin);
+        result.firstSurfaceTriangleKey.resize(modelSurfIndexEnd - modelSurfIndexBegin);
 
         auto totalTriCount = 0uz;
         for (auto surfIndex = modelSurfIndexBegin; surfIndex < modelSurfIndexEnd; surfIndex++)
@@ -4653,8 +4665,7 @@ namespace
             if (!surface.material)
                 continue;
 
-            auto& surfaceKeys = result.surfaceTriangleKeys[surfIndex - modelSurfIndexBegin];
-            surfaceKeys.reserve(surface.tris.triCount);
+            auto& firstSurfaceTriangleKey = result.firstSurfaceTriangleKey[surfIndex - modelSurfIndexBegin];
             const auto materialSortedIndex = static_cast<unsigned>(surface.material->info.drawSurf.fields.materialSortedIndex);
             for (auto triIter = 0u; triIter < surface.tris.triCount; triIter++)
             {
@@ -4662,7 +4673,9 @@ namespace
                 if (!triangleKey)
                     continue;
 
-                surfaceKeys.emplace_back(*triangleKey);
+                if (!firstSurfaceTriangleKey)
+                    firstSurfaceTriangleKey = *triangleKey;
+
                 auto [entry, inserted] = result.minMaterialForTriangle.emplace(*triangleKey, materialSortedIndex);
                 if (!inserted)
                     entry->second = std::min(entry->second, materialSortedIndex);
@@ -4678,15 +4691,15 @@ namespace
         if (!surface.material || surface.tris.triCount == 0u)
             return false;
 
-        const auto& surfaceKeys = decalTriangleData.surfaceTriangleKeys[surfIndex - decalTriangleData.firstSurfaceIndex];
-        if (surfaceKeys.empty())
+        const auto& firstSurfaceTriangleKey = decalTriangleData.firstSurfaceTriangleKey[surfIndex - decalTriangleData.firstSurfaceIndex];
+        if (!firstSurfaceTriangleKey)
             return false;
 
         // linker_pc's R_IsSurfaceDecalLayer loops over triCount, but passes
         // surf->tris.baseIndex to R_DoesTriCoverAnyOtherTri each time. That
         // makes the first triangle decide the whole surface's decal flag.
         const auto materialSortedIndex = static_cast<unsigned>(surface.material->info.drawSurf.fields.materialSortedIndex);
-        const auto existingTriangle = decalTriangleData.minMaterialForTriangle.find(surfaceKeys[0]);
+        const auto existingTriangle = decalTriangleData.minMaterialForTriangle.find(*firstSurfaceTriangleKey);
         return existingTriangle != decalTriangleData.minMaterialForTriangle.end() && materialSortedIndex > existingTriangle->second;
     }
 
