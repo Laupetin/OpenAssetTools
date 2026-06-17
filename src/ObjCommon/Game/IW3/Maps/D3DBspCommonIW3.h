@@ -63,9 +63,9 @@ namespace IW3::d3dbsp
         LUMP_COLLISIONPARTITIONS = 35,
         LUMP_COLLISIONAABBS = 36,
         LUMP_MODELS = 37,
-        LUMP_VISIBILITY = 38,       // Optional PVS data; loaders can fall back when it is absent.
-        LUMP_ENTITIES = 39,         // Raw entity text consumed by linker and MapEnts.
-        LUMP_PATHCONNECTIONS = 40,  // SP path data; absent for MP maps.
+        LUMP_VISIBILITY = 38,      // Optional PVS data; loaders can fall back when it is absent.
+        LUMP_ENTITIES = 39,        // Raw entity text consumed by linker and MapEnts.
+        LUMP_PATHCONNECTIONS = 40, // SP path data; absent for MP maps.
         LUMP_REFLECTION_PROBES = 41,
         LUMP_VERTEX_LAYER_DATA = 42,
         LUMP_PRIMARY_LIGHTS = 43,
