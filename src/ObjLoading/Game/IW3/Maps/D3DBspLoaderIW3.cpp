@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <expected>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -1238,13 +1239,14 @@ namespace
         return {};
     }
 
-    [[nodiscard]] bool ParseEntityBlocks(const std::vector<std::byte>& lump, std::vector<EntityBlock>& blocks, std::string& error)
+    [[nodiscard]] std::expected<std::vector<EntityBlock>, std::string> ParseEntityBlocks(const std::vector<std::byte>& lump)
     {
         auto textLen = lump.size();
         while (textLen > 0uz && lump[textLen - 1uz] == std::byte{})
             textLen--;
 
         const std::string text(reinterpret_cast<const char*>(lump.data()), textLen);
+        std::vector<EntityBlock> blocks;
         auto offset = 0uz;
 
         while (offset < text.size())
@@ -1252,10 +1254,7 @@ namespace
             while (offset < text.size() && text[offset] != '{')
             {
                 if (!std::isspace(static_cast<unsigned char>(text[offset])))
-                {
-                    error = "unexpected non-whitespace before entity block";
-                    return false;
-                }
+                    return std::unexpected("unexpected non-whitespace before entity block");
                 offset++;
             }
 
@@ -1308,13 +1307,10 @@ namespace
             }
 
             if (depth != 0)
-            {
-                error = "unterminated entity block";
-                return false;
-            }
+                return std::unexpected("unterminated entity block");
         }
 
-        return true;
+        return blocks;
     }
 
     [[nodiscard]] bool IsLinkerConsumedMapEntity(const EntityBlock& block)
@@ -6758,12 +6754,13 @@ namespace
             const auto* entityLump = bsp->GetLump(LUMP_ENTITIES);
             if (entityLump)
             {
-                std::string parseError;
-                if (!ParseEntityBlocks(entityLump->data, entityBlocks, parseError))
+                auto parsedEntityBlocks = ParseEntityBlocks(entityLump->data);
+                if (!parsedEntityBlocks)
                 {
-                    con::error("Could not create clipmap \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                    con::error("Could not create clipmap \"{}\" from {}: {}", assetName, bsp->m_file_name, parsedEntityBlocks.error());
                     return AssetCreationResult::Failure();
                 }
+                entityBlocks = std::move(*parsedEntityBlocks);
             }
 
             const auto staticModelBlocks = StaticModelEntityBlocks(entityBlocks);
@@ -6823,15 +6820,14 @@ namespace
                 return AssetCreationResult::Failure();
             }
 
-            std::vector<EntityBlock> entityBlocks;
-            std::string parseError;
-            if (!ParseEntityBlocks(entities->data, entityBlocks, parseError))
+            auto entityBlocks = ParseEntityBlocks(entities->data);
+            if (!entityBlocks)
             {
-                con::error("Could not create MapEnts \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                con::error("Could not create MapEnts \"{}\" from {}: {}", assetName, bsp->m_file_name, entityBlocks.error());
                 return AssetCreationResult::Failure();
             }
 
-            const auto compiledEntityString = CompileMapEntsEntityString(entityBlocks);
+            const auto compiledEntityString = CompileMapEntsEntityString(*entityBlocks);
             const auto entityCharCount = compiledEntityString.size();
             if (!FitsInt(entityCharCount))
             {
@@ -7230,12 +7226,13 @@ namespace
             const auto* entityLump = bsp->GetLump(LUMP_ENTITIES);
             if (entityLump)
             {
-                std::string parseError;
-                if (!ParseEntityBlocks(entityLump->data, entityBlocks, parseError))
+                auto parsedEntityBlocks = ParseEntityBlocks(entityLump->data);
+                if (!parsedEntityBlocks)
                 {
-                    con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, parseError);
+                    con::error("Could not create GfxWorld \"{}\" from {}: {}", assetName, bsp->m_file_name, parsedEntityBlocks.error());
                     return AssetCreationResult::Failure();
                 }
+                entityBlocks = std::move(*parsedEntityBlocks);
             }
 
             std::string error;
