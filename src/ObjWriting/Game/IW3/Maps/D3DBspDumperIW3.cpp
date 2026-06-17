@@ -275,11 +275,7 @@ namespace
     }
 
     [[nodiscard]] size_t FindLeafBrushRange(
-        const LeafBrush* leafBrushes,
-        const size_t leafBrushCount,
-        const LeafBrush* nodeBrushes,
-        const size_t nodeBrushCount,
-        const size_t searchStart)
+        const LeafBrush* leafBrushes, const size_t leafBrushCount, const LeafBrush* nodeBrushes, const size_t nodeBrushCount, const size_t searchStart)
     {
         if (!leafBrushes || !nodeBrushes || nodeBrushCount == 0 || nodeBrushCount > leafBrushCount)
             return leafBrushCount;
@@ -527,10 +523,10 @@ namespace
                     if (CollectLeafBrushes_r(clipMap, static_cast<size_t>(leaf.leafBrushNode), recoveredBrushes) && !recoveredBrushes.empty())
                     {
                         const auto brushesIndex = FindLeafBrushRange(clipMap.leafbrushes,
-                            clipMap.numLeafBrushes,
-                            recoveredBrushes.data(),
-                            recoveredBrushes.size(),
-                            static_cast<size_t>(runningFirstLeafBrush));
+                                                                     clipMap.numLeafBrushes,
+                                                                     recoveredBrushes.data(),
+                                                                     recoveredBrushes.size(),
+                                                                     static_cast<size_t>(runningFirstLeafBrush));
 
                         if (brushesIndex < clipMap.numLeafBrushes)
                         {
@@ -539,7 +535,6 @@ namespace
                         }
                     }
                 }
-
             }
 
             // The raw leaf record carries the cluster/cell assignment even for
@@ -1625,7 +1620,8 @@ namespace
 
     void AppendStaticModelSpawnFlags(std::string& out, const GfxWorld* world, const size_t staticModelIndex)
     {
-        if (!world || staticModelIndex == INVALID_STATIC_MODEL_INDEX || !world->dpvs.smodelDrawInsts || staticModelIndex >= PositiveCount(world->dpvs.smodelCount))
+        if (!world || staticModelIndex == INVALID_STATIC_MODEL_INDEX || !world->dpvs.smodelDrawInsts
+            || staticModelIndex >= PositiveCount(world->dpvs.smodelCount))
             return;
 
         // The linker only reads misc_model spawnflags bit 2 for this field:
@@ -1714,8 +1710,7 @@ namespace
     {
         std::vector<std::byte> out;
         const uint32_t version = 8u;
-        const auto nodeCount =
-            static_cast<uint16_t>(std::min(gameWorld.path.nodeCount, static_cast<unsigned>(std::numeric_limits<uint16_t>::max())));
+        const auto nodeCount = static_cast<uint16_t>(std::min(gameWorld.path.nodeCount, static_cast<unsigned>(std::numeric_limits<uint16_t>::max())));
 
         Append(out, version);
         Append(out, nodeCount);
