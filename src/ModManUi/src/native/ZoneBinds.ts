@@ -1,19 +1,8 @@
 import { getBinds } from "@webwindowed/web-api";
 
-export enum GameId {
-  IW3 = "IW3",
-  IW4 = "IW4",
-  IW5 = "IW5",
-  T4 = "T4",
-  T5 = "T5",
-  T6 = "T6",
-}
+export type GameId = "iw3" | "iw4" | "iw5" | "t4" | "t5" | "t6";
 
-export enum GamePlatform {
-  PC = "PC",
-  XBOX = "XBOX",
-  PS3 = "PS3",
-}
+export type GamePlatform = "pc" | "xbox" | "ps3";
 
 export interface ZoneDto {
   name: string;

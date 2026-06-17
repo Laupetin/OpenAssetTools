@@ -7,19 +7,19 @@
 
 NLOHMANN_JSON_SERIALIZE_ENUM(GameId,
                              {
-                                 {GameId::IW3, "IW3"},
-                                 {GameId::IW4, "IW4"},
-                                 {GameId::IW5, "IW5"},
-                                 {GameId::T4,  "T4" },
-                                 {GameId::T5,  "T5" },
-                                 {GameId::T6,  "T6" },
+                                 {GameId::IW3, "iw3"},
+                                 {GameId::IW4, "iw4"},
+                                 {GameId::IW5, "iw5"},
+                                 {GameId::T4,  "t4" },
+                                 {GameId::T5,  "t5" },
+                                 {GameId::T6,  "t6" },
 });
 
 NLOHMANN_JSON_SERIALIZE_ENUM(GamePlatform,
                              {
-                                 {GamePlatform::PC,   "PC"  },
-                                 {GamePlatform::XBOX, "XBOX"},
-                                 {GamePlatform::PS3,  "PS3" },
+                                 {GamePlatform::PC,   "pc"  },
+                                 {GamePlatform::XBOX, "xbox"},
+                                 {GamePlatform::PS3,  "ps3" },
 });
 
 namespace
