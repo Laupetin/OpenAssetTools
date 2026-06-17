@@ -99,6 +99,7 @@ namespace
     constexpr auto MATERIAL_GAME_FLAG_MAGIC_PORTAL = 0x20u;
     constexpr auto DEFAULT_MATERIAL_NAME = "$default";
     constexpr auto DEFAULT_MATERIAL_REFERENCE_NAME = ",$default";
+    constexpr auto OUTDOOR_IMAGE_NAME = "$outdoor";
     constexpr auto SKY_LIGHTMAP_INDEX = 31u;
     constexpr auto MAX_LIGHTMAP_PAGE_COUNT = 31uz;
     constexpr auto PATHCONNECTIONS_VERSION = 8u;
@@ -886,11 +887,6 @@ namespace
     [[nodiscard]] std::string GeneratedImageName(const std::string& assetName, const std::string_view kind, const size_t index)
     {
         return std::format("{}_{}_{}", assetName, kind, index);
-    }
-
-    [[nodiscard]] std::string OutdoorImageName()
-    {
-        return "$outdoor";
     }
 
     [[nodiscard]] GfxImageLoadDef* CreateLoadDef(
@@ -6817,7 +6813,7 @@ namespace
         // exact texel-generation pass can be added once the collision trace
         // path is complete.
         auto* image = CreateGeneratedImage(memory,
-                                           OutdoorImageName(),
+                                           OUTDOOR_IMAGE_NAME,
                                            MAPTYPE_2D,
                                            TS_FUNCTION,
                                            IMG_CATEGORY_AUTO_GENERATED,
@@ -6828,7 +6824,7 @@ namespace
                                            static_cast<char>(image::iwi6::IMG_FLAG_NOMIPMAPS),
                                            pixels.data(),
                                            pixels.size());
-        auto* imageInfo = AddGeneratedImage(context, registration, OutdoorImageName(), image);
+        auto* imageInfo = AddGeneratedImage(context, registration, OUTDOOR_IMAGE_NAME, image);
         if (!imageInfo)
             return std::unexpected("could not register generated outdoor image");
 
