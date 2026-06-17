@@ -1,0 +1,25 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XModel/XModelToCommonConverter" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See XModelToCommonConverter.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "XModel/XModelToCommonConverter.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "ToCommonConverter" + GAME
+
+namespace xmodel
+{
+    class CLASS_NAME final : public ToCommonConverter
+    {
+    public:
+        std::optional<XModelCommon> Convert(const XAssetInfoGeneric& assetInfo, unsigned lod) override;
+    };
+} // namespace xmodel

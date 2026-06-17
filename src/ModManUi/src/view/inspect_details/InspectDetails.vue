@@ -30,7 +30,7 @@ watch(
 <template>
   <div class="inspect-details">
     <template v-if="assetsOfZone">
-      <InspectPreview :asset="selectedAsset" class="inspect-area-preview" />
+      <InspectPreview :asset="selectedAsset" :zone-name class="inspect-area-preview" />
       <InspectAssetDetails :selected-asset="selectedAsset" class="inspect-area-details" />
       <InspectZoneAssets
         v-model:selected-asset="selectedAsset"

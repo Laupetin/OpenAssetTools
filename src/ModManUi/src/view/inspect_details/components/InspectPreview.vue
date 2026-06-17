@@ -4,12 +4,13 @@ import type { AssetDto } from "@/native/AssetBinds.ts";
 
 defineProps<{
   asset?: AssetDto;
+  zoneName: string;
 }>();
 </script>
 
 <template>
   <div class="preview">
-    <XModelPreview v-if="asset?.type === 'xmodel'" :asset />
+    <XModelPreview v-if="asset?.type === 'xmodel'" :asset :zone-name />
     <span v-else>No preview available</span>
   </div>
 </template>

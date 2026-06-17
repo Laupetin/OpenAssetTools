@@ -6,6 +6,9 @@
 #include "Web/ViteAssets.h"
 #include "Web/WebWindowedLib.h"
 
+// Assets
+#include "Asset/XModel/DynamicAssetsXModel.h"
+
 #include <format>
 #include <iostream>
 #include <string>
@@ -37,6 +40,11 @@ namespace
     }
 #endif
 
+    void RegisterDynamicAssets(webwindowed::asset_handler_plugin& assetHandler)
+    {
+        xmodel::RegisterDynamicAssets(assetHandler);
+    }
+
     int RunModManApp()
     {
         con::debug("Creating main window");
@@ -63,6 +71,8 @@ namespace
 
         for (const auto& asset : VITE_ASSETS)
             assetHandlerPlugin->add_static_asset(webwindowed::static_asset(asset.filename, asset.data, asset.dataSize));
+
+        RegisterDynamicAssets(*assetHandlerPlugin);
 
         webwindowed::commands_builder commands;
         ui::RegisterAllBinds(commands);

@@ -3,30 +3,27 @@ import {
   Scene,
   PerspectiveCamera,
   WebGLRenderer,
-  BoxGeometry,
-  Mesh,
-  MeshPhongMaterial,
   AmbientLight,
   HemisphereLight,
-  DoubleSide,
+  Object3D,
+  Box3,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import type { AssetDto } from "@/native/AssetBinds.ts";
-import { onMounted, useTemplateRef } from "vue";
+import { computed, onMounted, ref, toRaw, useTemplateRef, watch } from "vue";
+import { useResizeObserver } from "@vueuse/core";
 
-defineProps<{
+const props = defineProps<{
   asset: AssetDto;
+  zoneName: string;
 }>();
 
+const canvasWrapperRef = useTemplateRef<HTMLDivElement>("canvas-wrapper");
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 
 const scene = new Scene();
 const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-const geometry = new BoxGeometry(1, 1, 1);
-const material = new MeshPhongMaterial({ color: 0x00ff00, side: DoubleSide });
-const cube = new Mesh(geometry, material);
-scene.add(cube);
 
 const color = 0xffffff;
 const intensity = 1;
@@ -40,29 +37,102 @@ scene.add(hemisphereLight);
 
 camera.position.z = 3;
 
+const gltfLoader = new GLTFLoader();
+const modelUri = computed<string>(
+  () =>
+    `modman://localhost/xmodel/glb?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(props.asset.name)}`,
+);
+const model = ref<Object3D | undefined>(undefined);
+const modelBounds = computed<Box3 | undefined>(() => {
+  const modelValue = model.value;
+  if (!modelValue) return undefined;
+
+  const box = new Box3();
+  box.expandByObject(modelValue);
+  return box;
+});
+
+watch(
+  modelUri,
+  (uri) => {
+    gltfLoader.load(uri, (gltf) => {
+      model.value = gltf.scene;
+    });
+  },
+  { immediate: true },
+);
+
+let renderer: WebGLRenderer | undefined = undefined;
+let controls: OrbitControls | undefined;
+
+function resetCameraPositionForObject() {
+  const boundsValue = modelBounds.value;
+  if (!boundsValue) return;
+
+  const sizeX = boundsValue.max.x - boundsValue.min.x;
+  const sizeY = boundsValue.max.y - boundsValue.min.y;
+  const sizeZ = boundsValue.max.z - boundsValue.min.z;
+  const middleX = boundsValue.min.x + sizeX / 2;
+  const middleY = boundsValue.min.y + sizeY / 2;
+  const middleZ = boundsValue.min.z + sizeZ / 2;
+
+  const cameraX = Math.max(sizeY, sizeZ) / 2 + boundsValue.max.x;
+  camera.position.set(cameraX, middleY, middleZ);
+  camera.lookAt(middleX, middleY, middleZ);
+
+  camera.far = Math.max(cameraX + sizeX, sizeY, sizeZ, 1000) * 2;
+  camera.updateProjectionMatrix();
+
+  if (controls) {
+    controls.target.set(middleX, middleY, middleZ);
+    controls.update();
+  }
+}
+
+watch(model, (newVal, oldVal) => {
+  if (oldVal) {
+    scene.remove(toRaw(oldVal));
+  }
+  if (newVal) {
+    scene.add(toRaw(newVal));
+    resetCameraPositionForObject();
+  }
+});
+
 onMounted(() => {
-  const renderer = new WebGLRenderer({ canvas: canvasRef.value! });
-  const canvasBounds = canvasRef.value!.getBoundingClientRect();
-  renderer.setSize(canvasBounds.width, canvasBounds.height);
+  renderer = new WebGLRenderer({ canvas: canvasRef.value! });
+  const canvasWrapperBounds = canvasWrapperRef.value!.getBoundingClientRect();
+  renderer.setSize(canvasWrapperBounds.width, canvasWrapperBounds.height);
 
   function animate(time: number) {
-    renderer.render(scene, camera);
+    renderer!.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);
 
-  const controls = new OrbitControls(camera, canvasRef.value!);
+  controls = new OrbitControls(camera, canvasRef.value!);
   controls.target.set(0, 0, 0);
   controls.update();
+});
+
+useResizeObserver(canvasWrapperRef, () => {
+  const canvasWrapperBounds = canvasWrapperRef.value!.getBoundingClientRect();
+  renderer?.setSize(canvasWrapperBounds.width, canvasWrapperBounds.height);
 });
 </script>
 
 <template>
-  <canvas class="preview" ref="canvas" />
+  <div class="preview-wrapper" ref="canvas-wrapper">
+    <canvas class="preview" ref="canvas" />
+  </div>
 </template>
 
 <style scoped lang="scss">
-.preview {
+.preview-wrapper {
+  display: flex;
   width: 100%;
   height: 100%;
+}
+
+.preview {
 }
 </style>

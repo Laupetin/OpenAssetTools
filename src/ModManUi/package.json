@@ -16,6 +16,7 @@
   "dependencies": {
     "@fontsource/inter": "5.2.8",
     "@primeuix/themes": "2.0.3",
+    "@vueuse/core": "14.3.0",
     "pinia": "3.0.4",
     "primevue": "4.5.5",
     "three": "0.184.0",
