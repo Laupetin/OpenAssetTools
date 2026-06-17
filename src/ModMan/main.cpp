@@ -56,6 +56,11 @@ namespace
         const auto assetHandlerPlugin = std::make_shared<webwindowed::asset_handler_plugin>();
         assetHandlerPlugin->set_protocol_name("modman");
 
+#ifdef _DEBUG
+        // Allow assets from dev server to access dynamic assets
+        assetHandlerPlugin->set_allow_all_origins(true);
+#endif
+
         for (const auto& asset : VITE_ASSETS)
             assetHandlerPlugin->add_static_asset(webwindowed::static_asset(asset.filename, asset.data, asset.dataSize));
 
