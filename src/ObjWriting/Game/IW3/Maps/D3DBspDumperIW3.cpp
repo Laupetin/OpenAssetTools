@@ -156,6 +156,16 @@ namespace
         out.insert(out.end(), bytes, bytes + size);
     }
 
+    [[nodiscard]] std::vector<std::byte> RawBytes(const void* data, const size_t size)
+    {
+        std::vector<std::byte> out;
+        if (data && size > 0)
+            out.reserve(size);
+
+        AppendBytes(out, data, size);
+        return out;
+    }
+
     void MarkMaterialUsedByBrush(std::vector<uint8_t>& usedMaterials, const unsigned materialIndex)
     {
         if (materialIndex < usedMaterials.size())
@@ -448,9 +458,7 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildBrushEdges(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, clipMap.brushEdges, static_cast<size_t>(clipMap.numBrushEdges) * sizeof(cbrushedge_t));
-        return out;
+        return RawBytes(clipMap.brushEdges, static_cast<size_t>(clipMap.numBrushEdges) * sizeof(cbrushedge_t));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildBrushHeaders(const clipMap_t& clipMap)
@@ -656,31 +664,23 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionVerts(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, clipMap.verts, static_cast<size_t>(clipMap.vertCount) * sizeof(vec3_t));
-        return out;
+        return RawBytes(clipMap.verts, static_cast<size_t>(clipMap.vertCount) * sizeof(vec3_t));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionTriIndices(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, clipMap.triIndices, PositiveCount(clipMap.triCount) * 3uz * sizeof(uint16_t));
-        return out;
+        return RawBytes(clipMap.triIndices, PositiveCount(clipMap.triCount) * 3uz * sizeof(uint16_t));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionTriEdgeIsWalkable(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
         const auto size = ((PositiveCount(clipMap.triCount) * 3uz + 31uz) / 32uz) * sizeof(uint32_t);
-        AppendBytes(out, clipMap.triEdgeIsWalkable, size);
-        return out;
+        return RawBytes(clipMap.triEdgeIsWalkable, size);
     }
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionBorders(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, clipMap.borders, PositiveCount(clipMap.borderCount) * sizeof(CollisionBorder));
-        return out;
+        return RawBytes(clipMap.borders, PositiveCount(clipMap.borderCount) * sizeof(CollisionBorder));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionPartitions(const clipMap_t& clipMap)
@@ -707,9 +707,7 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildCollisionAabbTrees(const clipMap_t& clipMap)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, clipMap.aabbTrees, PositiveCount(clipMap.aabbTreeCount) * sizeof(CollisionAabbTree));
-        return out;
+        return RawBytes(clipMap.aabbTrees, PositiveCount(clipMap.aabbTreeCount) * sizeof(CollisionAabbTree));
     }
 
     [[nodiscard]] size_t LightGridRowCount(const GfxLightGrid& lightGrid)
@@ -736,9 +734,7 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildLightGridEntries(const GfxWorld& world)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, world.lightGrid.entries, static_cast<size_t>(world.lightGrid.entryCount) * sizeof(GfxLightGridEntry));
-        return out;
+        return RawBytes(world.lightGrid.entries, static_cast<size_t>(world.lightGrid.entryCount) * sizeof(GfxLightGridEntry));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildLightGridColors(const GfxWorld& world)
@@ -756,9 +752,7 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildLightGridRawRows(const GfxWorld& world)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, world.lightGrid.rawRowData, world.lightGrid.rawRowDataSize);
-        return out;
+        return RawBytes(world.lightGrid.rawRowData, world.lightGrid.rawRowDataSize);
     }
 
     [[nodiscard]] uint16_t SurfaceMaterialIndex(const clipMap_t* clipMap, const GfxSurface& surface)
@@ -1157,9 +1151,7 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildIndices(const GfxWorld& world)
     {
-        std::vector<std::byte> out;
-        AppendBytes(out, world.indices, PositiveCount(world.indexCount) * sizeof(uint16_t));
-        return out;
+        return RawBytes(world.indices, PositiveCount(world.indexCount) * sizeof(uint16_t));
     }
 
     [[nodiscard]] std::vector<std::byte> BuildLightmapImages(const GfxWorld& world, const LightmapPageLayout& layout)
