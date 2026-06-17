@@ -19,7 +19,7 @@ using namespace std::string_literals;
 namespace
 {
 #ifdef _DEBUG
-    void SpawnDevToolsWindow()
+    void CreateDevToolsWindow()
     {
         con::debug("Creating dev tools window");
 
@@ -31,11 +31,13 @@ namespace
         newWindow.set_title("Devtools");
         newWindow.set_window_size(640, 480);
         newWindow.set_window_min(480, 320);
-        (void)newWindow.navigate(std::format("http://localhost:{}/__devtools__/", VITE_DEV_SERVER_PORT));
+        const auto result = newWindow.navigate(std::format("http://localhost:{}/__devtools__/", VITE_DEV_SERVER_PORT));
+        if (!result.has_value())
+            con::error("Dev tools window navigation failed: {}", result.error().message());
     }
 #endif
 
-    int SpawnMainWindow()
+    int RunModManApp()
     {
         con::debug("Creating main window");
 
@@ -57,8 +59,6 @@ namespace
         for (const auto& asset : VITE_ASSETS)
             assetHandlerPlugin->add_static_asset(webwindowed::static_asset(asset.filename, asset.data, asset.dataSize));
 
-        newWindow.register_plugin(assetHandlerPlugin);
-
         webwindowed::commands_builder commands;
         ui::RegisterAllBinds(commands);
         newWindow.set_commands(commands.build());
@@ -66,23 +66,30 @@ namespace
 #ifdef _DEBUG
         auto result = newWindow.navigate(VITE_DEV_SERVER ? std::format("http://localhost:{}", VITE_DEV_SERVER_PORT)
                                                          : assetHandlerPlugin->get_url_for_asset("index.html"));
-        if (VITE_DEV_SERVER)
-        {
-            newWindow.dispatch(
-                []
-                {
-                    SpawnDevToolsWindow();
-                });
-        }
 #else
         auto result = newWindow.navigate(assetHandlerPlugin->get_url_for_asset("index.html"));
 #endif
+        if (!result.has_value())
+            con::error("Main window navigation failed: {}", result.error().message());
 
         webwindowed::app app;
+        app.register_plugin(assetHandlerPlugin);
         app.register_plugin(std::make_shared<webwindowed::favicon_handler_plugin>());
         app.register_plugin(std::make_shared<webwindowed::title_handler_plugin>());
 
-        (void)app.run(context.m_main_window);
+#ifdef _DEBUG
+        if (VITE_DEV_SERVER)
+        {
+            CreateDevToolsWindow();
+            result = app.open_window(context.m_dev_tools_window);
+            if (!result.has_value())
+                con::error("Failed to open dev tools window: {}", result.error().message());
+        }
+#endif
+
+        result = app.run(context.m_main_window);
+        if (!result.has_value())
+            con::error("Error while running app: {}", result.error().message());
 
         return 0;
     }
@@ -132,7 +139,7 @@ int main(int argc, const char** argv)
 
     ModManContext::Get().Startup();
 
-    const auto result = SpawnMainWindow();
+    const auto result = RunModManApp();
 
     ModManContext::Get().Destroy();
 
