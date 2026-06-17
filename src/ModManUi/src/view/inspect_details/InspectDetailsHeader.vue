@@ -3,6 +3,7 @@ import { computed } from "vue";
 import type { ZoneDto } from "@/native/ZoneBinds.ts";
 import { useZoneStore } from "@/stores/ZoneStore.ts";
 import Tag from "primevue/tag";
+import { localizeGame, localizePlatform } from "@/i18n/i18n.ts";
 
 const zoneStore = useZoneStore();
 const props = defineProps<{
@@ -18,8 +19,12 @@ const zoneDetails = computed<ZoneDto | null>(() =>
   <span>
     <span>Inspect zone: {{ zoneName }}</span>
     <template v-if="zoneDetails">
-      <Tag class="zone-header-tag" :value="zoneDetails.game" severity="secondary" />
-      <Tag class="zone-header-tag" :value="zoneDetails.platform" severity="secondary" />
+      <Tag class="zone-header-tag" :value="localizeGame(zoneDetails.game)" severity="secondary" />
+      <Tag
+        class="zone-header-tag"
+        :value="localizePlatform(zoneDetails.platform)"
+        severity="secondary"
+      />
     </template>
   </span>
 </template>

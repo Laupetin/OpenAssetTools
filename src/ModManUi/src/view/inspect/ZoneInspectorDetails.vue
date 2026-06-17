@@ -8,11 +8,11 @@ import type { ZoneDto } from "@/native/ZoneBinds";
 import { useZoneStore } from "@/stores/ZoneStore";
 import { computed, watch } from "vue";
 import type { CommonAssetType } from "@/native/AssetBinds";
-import { getAssetTypeNameCapitalized } from "@/utils/AssetTypeName";
 import { useRouter } from "vue-router";
 import { PAGE } from "@/router/Page";
 import { useAssetStore } from "@/stores/AssetStore";
 import { storeToRefs } from "pinia";
+import { localizeAssetType, localizeGame, localizePlatform } from "@/i18n/i18n.ts";
 
 const assetStore = useAssetStore();
 const zoneStore = useZoneStore();
@@ -52,7 +52,7 @@ const meterItems = computed<MeterItem[]>(() => {
     .filter((entry) => entry[1] > minItemCountForDisplay)
     .sort((e0, e1) => e1[1] - e0[1])
     .map((entry) => ({
-      label: getAssetTypeNameCapitalized(entry[0] as CommonAssetType),
+      label: localizeAssetType(entry[0] as CommonAssetType),
       value: Math.round((entry[1] / assetCount.value) * 100),
     }));
 
@@ -105,8 +105,8 @@ watch(
     <h2>{{ selectedZone ?? "No zone selected" }}</h2>
     <Button label="Show assets" :disabled="!selectedZone" @click="onClickShowAssets" />
     <div v-if="selectedZoneDetails" class="zone-tags">
-      <Tag :value="selectedZoneDetails.game" />
-      <Tag :value="selectedZoneDetails.platform" />
+      <Tag :value="localizeGame(selectedZoneDetails.game)" />
+      <Tag :value="localizePlatform(selectedZoneDetails.platform)" />
     </div>
     <div class="zone-assets">
       <template v-if="assetsOfZone">

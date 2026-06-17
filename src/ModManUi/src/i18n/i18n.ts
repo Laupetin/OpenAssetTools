@@ -1,6 +1,21 @@
-import type { CommonAssetType } from "@/native/AssetBinds";
+import type { GameId, GamePlatform } from "@/native/ZoneBinds.ts";
+import type { CommonAssetType } from "@/native/AssetBinds.ts";
 
-const LOOKUP_CAPITALIZED: Record<CommonAssetType, string> = {
+export function localizeGame(game: GameId) {
+  return game.toUpperCase();
+}
+
+const GAME_PLATFORM_LOOKUP: Record<GamePlatform, string> = {
+  pc: "PC",
+  ps3: "PS3",
+  xbox: "Xbox",
+  wiiu: "WiiU",
+};
+export function localizePlatform(platform: GamePlatform) {
+  return GAME_PLATFORM_LOOKUP[platform];
+}
+
+const ASSET_TYPE_LOOKUP: Record<CommonAssetType, string> = {
   phys_preset: "Phys preset",
   xanim: "XAnim",
   xmodel: "XModel",
@@ -76,10 +91,6 @@ const LOOKUP_CAPITALIZED: Record<CommonAssetType, string> = {
   zbarrier: "ZBarrier",
 };
 
-export function getAssetTypeNameCapitalized(assetType: CommonAssetType): string {
-  return LOOKUP_CAPITALIZED[assetType];
-}
-
-export function getAssetTypeNameLower(assetType: CommonAssetType): string {
-  return getAssetTypeNameCapitalized(assetType).toLocaleLowerCase();
+export function localizeAssetType(assetType: CommonAssetType): string {
+  return ASSET_TYPE_LOOKUP[assetType];
 }
