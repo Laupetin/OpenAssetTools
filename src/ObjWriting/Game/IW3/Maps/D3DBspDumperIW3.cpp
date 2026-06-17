@@ -859,6 +859,12 @@ namespace
         out.resize(out.size() + size, std::byte{});
     }
 
+    void PadToSize(std::vector<std::byte>& out, const size_t size)
+    {
+        if (out.size() < size)
+            AppendZeros(out, size - out.size());
+    }
+
     void AppendPrimaryLightmapRawPage(
         std::vector<std::byte>& out, const GfxImageLoadDef& primary, const unsigned wideCount, const unsigned highCount, const unsigned packedSlot)
     {
@@ -1364,23 +1370,30 @@ namespace
 
     [[nodiscard]] std::vector<std::byte> BuildCellHeader(const GfxWorld& world)
     {
-        std::vector<std::byte> out(112uz);
+        constexpr auto CELL_HEADER_SIZE = 112uz;
+        constexpr auto REFLECTION_PROBE_LIST_OFFSET = 44uz;
+        constexpr auto REFLECTION_PROBE_LIST_CAPACITY = CELL_HEADER_SIZE - REFLECTION_PROBE_LIST_OFFSET - 1uz;
+
+        std::vector<std::byte> out;
+        out.reserve(CELL_HEADER_SIZE);
 
         if (world.dpvsPlanes.cellCount <= 0 || !world.cells)
+        {
+            out.resize(CELL_HEADER_SIZE, std::byte{});
             return out;
+        }
 
         const auto& cell = world.cells[0];
-        auto offset = 0uz;
-        std::copy_n(reinterpret_cast<const std::byte*>(cell.mins), sizeof(cell.mins), out.data() + offset);
-        offset += sizeof(cell.mins);
-        std::copy_n(reinterpret_cast<const std::byte*>(cell.maxs), sizeof(cell.maxs), out.data() + offset);
+        AppendBytes(out, cell.mins, sizeof(cell.mins));
+        AppendBytes(out, cell.maxs, sizeof(cell.maxs));
 
         // The fixed-size cell header stores the cell's reflection probe list at byte 44.
-        constexpr auto REFLECTION_PROBE_LIST_OFFSET = 44uz;
-        out[REFLECTION_PROBE_LIST_OFFSET] = static_cast<std::byte>(cell.reflectionProbeCount);
-        for (auto i = 0uz; i < static_cast<unsigned char>(cell.reflectionProbeCount) && i < 67uz; i++)
-            out[REFLECTION_PROBE_LIST_OFFSET + 1uz + i] = static_cast<std::byte>(cell.reflectionProbes[i]);
+        PadToSize(out, REFLECTION_PROBE_LIST_OFFSET);
+        out.emplace_back(static_cast<std::byte>(cell.reflectionProbeCount));
+        for (auto i = 0uz; i < static_cast<unsigned char>(cell.reflectionProbeCount) && i < REFLECTION_PROBE_LIST_CAPACITY; i++)
+            out.emplace_back(static_cast<std::byte>(cell.reflectionProbes[i]));
 
+        PadToSize(out, CELL_HEADER_SIZE);
         return out;
     }
 
@@ -1694,7 +1707,8 @@ namespace
     {
         std::vector<std::byte> out;
         const uint32_t version = 8u;
-        const auto nodeCount = static_cast<uint16_t>(std::min(gameWorld.path.nodeCount, static_cast<unsigned>(UINT16_MAX)));
+        const auto nodeCount =
+            static_cast<uint16_t>(std::min(gameWorld.path.nodeCount, static_cast<unsigned>(std::numeric_limits<uint16_t>::max())));
 
         Append(out, version);
         Append(out, nodeCount);
