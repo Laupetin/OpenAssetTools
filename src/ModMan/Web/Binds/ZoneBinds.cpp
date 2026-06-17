@@ -20,6 +20,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(GamePlatform,
                                  {GamePlatform::PC,   "pc"  },
                                  {GamePlatform::XBOX, "xbox"},
                                  {GamePlatform::PS3,  "ps3" },
+                                 {GamePlatform::WIIU, "wiiu"},
 });
 
 namespace

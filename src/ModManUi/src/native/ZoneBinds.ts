@@ -2,7 +2,7 @@ import { getBinds } from "@webwindowed/web-api";
 
 export type GameId = "iw3" | "iw4" | "iw5" | "t4" | "t5" | "t6";
 
-export type GamePlatform = "pc" | "xbox" | "ps3";
+export type GamePlatform = "pc" | "xbox" | "ps3" | "wiiu";
 
 export interface ZoneDto {
   name: string;
