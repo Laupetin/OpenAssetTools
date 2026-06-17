@@ -5,7 +5,7 @@ import { computed } from "vue";
 import { localizeAssetType } from "@/i18n/i18n.ts";
 
 const props = defineProps<{
-  selectedAsset: AssetDto | null;
+  selectedAsset?: AssetDto;
 }>();
 
 const assetTypeName = computed(() =>

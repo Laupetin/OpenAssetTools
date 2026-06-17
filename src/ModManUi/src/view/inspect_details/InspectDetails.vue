@@ -16,7 +16,7 @@ const props = defineProps<{
   zoneName: string;
 }>();
 
-const selectedAsset = ref<AssetDto | null>(null);
+const selectedAsset = ref<AssetDto | undefined>(undefined);
 
 watch(
   () => props.zoneName,
@@ -30,7 +30,7 @@ watch(
 <template>
   <div class="inspect-details">
     <template v-if="assetsOfZone">
-      <InspectPreview class="inspect-area-preview" />
+      <InspectPreview :asset="selectedAsset" class="inspect-area-preview" />
       <InspectAssetDetails :selected-asset="selectedAsset" class="inspect-area-details" />
       <InspectZoneAssets
         v-model:selected-asset="selectedAsset"

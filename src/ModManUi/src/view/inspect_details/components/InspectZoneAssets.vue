@@ -3,7 +3,7 @@ import Listbox from "primevue/listbox";
 import type { AssetDto } from "@/native/AssetBinds.ts";
 import AssetListOption from "@/view/inspect_details/components/AssetListOption.vue";
 
-const selectedAsset = defineModel<AssetDto | null>("selectedAsset");
+const selectedAsset = defineModel<AssetDto | undefined>("selectedAsset", { required: true });
 defineProps<{
   assets: AssetDto[];
 }>();
