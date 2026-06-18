@@ -18,6 +18,11 @@ const std::vector<std::string>& AutoSearchPathsIW4::RecognizedZoneDirs() const
         "zone/thai",
         "zone/leet",
         "zone/czech",
+
+        // Iw4x specific
+        "zone/patch",
+        "zone/dlc",
+        "zone/zonebuilder",
     };
     return recognizedZoneDirs;
 }
@@ -26,6 +31,7 @@ const std::vector<std::string>& AutoSearchPathsIW4::AdditionalSearchPaths() cons
 {
     static std::vector<std::string> additionalSearchPaths = {
         "main",
+        "iw4x",
     };
     return additionalSearchPaths;
 }
