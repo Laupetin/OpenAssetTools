@@ -13,8 +13,18 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { DDSLoader } from "three/examples/jsm/loaders/DDSLoader.js";
 import type { AssetDto } from "@/native/AssetBinds.ts";
-import { computed, onMounted, ref, shallowRef, toRaw, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  toRaw,
+  useTemplateRef,
+  watch,
+} from "vue";
 import { useResizeObserver } from "@vueuse/core";
+import { ThreeResourceTracker } from "@/components/assets/xmodel/ThreeResourceTracker.ts";
 
 const props = defineProps<{
   asset: AssetDto;
@@ -87,6 +97,7 @@ const modelUri = computed<string>(
 );
 const model = shallowRef<GLTF | undefined>(undefined);
 const isLoading = ref(false);
+const resourceTracker = new ThreeResourceTracker();
 const modelBounds = computed<Box3 | undefined>(() => {
   const modelValue = model.value;
   if (!modelValue) return undefined;
@@ -136,13 +147,21 @@ function resetCameraPositionForObject() {
 }
 
 watch(model, (newVal, oldVal) => {
-  if (oldVal) {
-    const rawOldVal = toRaw(oldVal);
-    scene.remove(rawOldVal.scene);
+  if (newVal) {
+    resourceTracker.refObject(newVal.scene);
   }
+
+  if (oldVal) {
+    scene.remove(toRaw(oldVal).scene);
+  }
+
   if (newVal) {
     scene.add(toRaw(newVal.scene));
     resetCameraPositionForObject();
+  }
+
+  if (oldVal) {
+    resourceTracker.unrefObject(toRaw(oldVal).scene);
   }
 });
 
@@ -159,6 +178,12 @@ onMounted(() => {
   controls = new OrbitControls(camera, canvasRef.value!);
   controls.target.set(0, 0, 0);
   controls.update();
+});
+
+onUnmounted(() => {
+  if (model.value) {
+    resourceTracker.unrefObject(toRaw(model.value).scene);
+  }
 });
 
 useResizeObserver(canvasWrapperRef, () => {
