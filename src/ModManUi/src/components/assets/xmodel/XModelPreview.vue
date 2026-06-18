@@ -5,16 +5,15 @@ import {
   WebGLRenderer,
   AmbientLight,
   HemisphereLight,
-  Object3D,
   Box3,
   LoadingManager,
   Loader,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { DDSLoader } from "three/examples/jsm/loaders/DDSLoader.js";
 import type { AssetDto } from "@/native/AssetBinds.ts";
-import { computed, onMounted, ref, toRaw, useTemplateRef, watch } from "vue";
+import { computed, onMounted, ref, shallowRef, toRaw, useTemplateRef, watch } from "vue";
 import { useResizeObserver } from "@vueuse/core";
 
 const props = defineProps<{
@@ -86,20 +85,25 @@ const modelUri = computed<string>(
   () =>
     `modman://localhost/xmodel/glb?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(props.asset.name)}`,
 );
-const model = ref<Object3D | undefined>(undefined);
+const model = shallowRef<GLTF | undefined>(undefined);
+const isLoading = ref(false);
 const modelBounds = computed<Box3 | undefined>(() => {
   const modelValue = model.value;
   if (!modelValue) return undefined;
 
   const box = new Box3();
-  box.expandByObject(modelValue);
+  box.expandByObject(modelValue.scene);
   return box;
 });
 
 watch(
   modelUri,
   (uri) => {
-    gltfLoader.loadAsync(uri).then((gltf) => (model.value = gltf.scene));
+    isLoading.value = true;
+    gltfLoader
+      .loadAsync(uri)
+      .then((gltf) => (model.value = gltf))
+      .finally(() => (isLoading.value = false));
   },
   { immediate: true },
 );
@@ -133,10 +137,11 @@ function resetCameraPositionForObject() {
 
 watch(model, (newVal, oldVal) => {
   if (oldVal) {
-    scene.remove(toRaw(oldVal));
+    const rawOldVal = toRaw(oldVal);
+    scene.remove(rawOldVal.scene);
   }
   if (newVal) {
-    scene.add(toRaw(newVal));
+    scene.add(toRaw(newVal.scene));
     resetCameraPositionForObject();
   }
 });
@@ -165,16 +170,35 @@ useResizeObserver(canvasWrapperRef, () => {
 <template>
   <div class="preview-wrapper" ref="canvas-wrapper">
     <canvas class="preview" ref="canvas" />
+    <div v-if="isLoading" class="loading-overlay">
+      <span>Loading</span>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .preview-wrapper {
   display: flex;
+  position: relative;
   width: 100%;
   height: 100%;
 }
 
-.preview {
+@starting-style {
+  .loading-overlay {
+    opacity: 0;
+  }
+}
+
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  inset: 0;
+
+  background-color: rgba(0, 0, 0, 0.5);
+
+  transition: opacity ease-in-out 500ms;
 }
 </style>
