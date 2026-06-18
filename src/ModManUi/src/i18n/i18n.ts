@@ -1,0 +1,96 @@
+import type { GameId, GamePlatform } from "@/native/ZoneBinds.ts";
+import type { CommonAssetType } from "@/native/AssetBinds.ts";
+
+export function localizeGame(game: GameId) {
+  return game.toUpperCase();
+}
+
+const GAME_PLATFORM_LOOKUP: Record<GamePlatform, string> = {
+  pc: "PC",
+  ps3: "PS3",
+  xbox: "Xbox",
+  wiiu: "WiiU",
+};
+export function localizePlatform(platform: GamePlatform) {
+  return GAME_PLATFORM_LOOKUP[platform];
+}
+
+const ASSET_TYPE_LOOKUP: Record<CommonAssetType, string> = {
+  phys_preset: "Phys preset",
+  xanim: "XAnim",
+  xmodel: "XModel",
+  material: "Material",
+  technique_set: "Technique set",
+  image: "Image",
+  sound: "Sound",
+  sound_curve: "Sound curve",
+  loaded_sound: "Loaded sound",
+  clip_map: "Clip map",
+  com_world: "Com world",
+  game_world_sp: "Game world SP",
+  game_world_mp: "Game world MP",
+  map_ents: "Map ents",
+  gfx_world: "Gfx world",
+  light_def: "Light def",
+  ui_map: "UI map",
+  font: "Font",
+  menu_list: "Menu list",
+  menu: "Menu",
+  localize_entry: "Localize entry",
+  weapon: "Weapon",
+  sound_driver_globals: "Sound driver globals",
+  fx: "FX",
+  impact_fx: "Impact FX",
+  ai_type: "AI type",
+  mp_type: "MP type",
+  character: "Character",
+  xmodel_alias: "XModel alias",
+  raw_file: "Raw file",
+  string_table: "String table",
+  xmodel_pieces: "XModel pieces",
+  phys_coll_map: "Phys coll map",
+  xmodel_surfs: "XModel surfs",
+  pixel_shader: "Pixel shader",
+  vertex_shader: "Vertex shader",
+  vertex_decl: "Vertex decl",
+  fx_world: "FX world",
+  leaderboard: "Leaderboard",
+  structured_data_def: "Structured data def",
+  tracer: "Tracer",
+  vehicle: "Vehicle",
+  addon_map_ents: "Addon map ents",
+  glass_world: "Glass world",
+  path_data: "Path data",
+  vehicle_track: "Vehicle track",
+  attachment: "Attachment",
+  surface_fx: "Surface FX",
+  script: "Script",
+  phys_constraints: "Phys constraints",
+  destructible_def: "Destructible def",
+  sound_patch: "Sound patch",
+  weapon_def: "Weapon def",
+  weapon_variant: "Weapon variant",
+  mp_body: "MP body",
+  mp_head: "MP head",
+  pack_index: "Pack index",
+  xglobals: "XGlobals",
+  ddl: "DDL",
+  glasses: "Glasses",
+  emblem_set: "Emblem set",
+  font_icon: "Font icon",
+  weapon_full: "Weapon full",
+  attachment_unique: "Attachment unique",
+  weapon_camo: "Weapon camo",
+  key_value_pairs: "Key value pairs",
+  memory_block: "Memory block",
+  skinned_verts: "Skinned verts",
+  qdb: "Qdb",
+  slug: "Slug",
+  footstep_table: "Footstep table",
+  footstep_fx_table: "Footstep FX table",
+  zbarrier: "ZBarrier",
+};
+
+export function localizeAssetType(assetType: CommonAssetType): string {
+  return ASSET_TYPE_LOOKUP[assetType];
+}

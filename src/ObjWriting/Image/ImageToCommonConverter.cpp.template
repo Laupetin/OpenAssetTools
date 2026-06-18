@@ -1,0 +1,164 @@
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageToCommonConverter" + GAME + ".cpp"
+
+#set CONVERTER_HEADER "\"ImageToCommonConverter" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define DX9
+#define IWI6
+#elif GAME == "T4"
+#define FEATURE_T4
+#define DX9
+#define IWI6
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define DX9
+#define IWI8
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define DX9
+#define IWI8
+#elif GAME == "T5"
+#define FEATURE_T5
+#define DX9
+#define IWI13
+#elif GAME == "T6"
+#define FEATURE_T6
+#define DX11
+#define IWI27
+#endif
+
+// This file was templated.
+// See ImageToCommonConverter.cpp.template.
+// Do not modify, changes will be lost.
+
+#include CONVERTER_HEADER
+
+#ifdef DX9
+#include "Image/Dx9TextureLoader.h"
+#else
+#include "Image/Dx12TextureLoader.h"
+#endif
+
+#ifdef FEATURE_T6
+#include "ObjContainer/IPak/IPak.h"
+#endif
+
+#if defined(IWI6)
+#include "Image/IwiWriter6.h"
+#define IWI_NS iwi6
+#elif defined(IWI8)
+#include "Image/IwiWriter8.h"
+#define IWI_NS iwi8
+#elif defined(IWI13)
+#include "Image/IwiWriter13.h"
+#define IWI_NS iwi13
+#elif defined(IWI27)
+#include "Image/IwiWriter27.h"
+#define IWI_NS iwi27
+#endif
+
+#include "Image/ImageCommon.h"
+#include "Image/IwiLoader.h"
+#include "ObjWriting.h"
+#include "Utils/Logging/Log.h"
+
+#include <algorithm>
+#include <format>
+
+using namespace GAME;
+using namespace image;
+
+namespace
+{
+    std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage& image)
+    {
+#ifdef DX9
+        Dx9TextureLoader textureLoader;
+#else
+        Dx12TextureLoader textureLoader;
+#endif
+
+        const auto& loadDef = *image.texture.loadDef;
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+        textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
+#else
+        textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
+#endif
+
+#if defined(IWI8)
+        if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_3D)
+            textureLoader.Type(TextureType::T_3D);
+        else if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_CUBE)
+            textureLoader.Type(TextureType::T_CUBE);
+        else
+            textureLoader.Type(TextureType::T_2D);
+#else
+        if (loadDef.flags & image::IWI_NS::IMG_FLAG_VOLMAP)
+            textureLoader.Type(TextureType::T_3D);
+        else if (loadDef.flags & image::IWI_NS::IMG_FLAG_CUBEMAP)
+            textureLoader.Type(TextureType::T_CUBE);
+        else
+            textureLoader.Type(TextureType::T_2D);
+#endif
+
+#ifdef DX9
+        textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
+#else
+        textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef.format));
+#endif
+        textureLoader.HasMipMaps(!(loadDef.flags & image::IWI_NS::IMG_FLAG_NOMIPMAPS));
+
+        return textureLoader.LoadTexture(loadDef.data);
+    }
+
+    std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)
+    {
+#ifdef FEATURE_T6
+        if (image.streamedPartCount > 0)
+        {
+            for (auto* ipak : IIPak::Repository)
+            {
+                auto ipakStream = ipak->GetEntryStream(image.hash, image.streamedParts[0].hash);
+
+                if (ipakStream)
+                {
+                    auto loadResult = image::LoadIwi(*ipakStream);
+                    ipakStream->close();
+
+                    if (loadResult)
+                        return std::move(loadResult->m_texture);
+                }
+            }
+        }
+#endif
+
+        const auto imageFileName = image::GetFileNameForAsset(image.name, ".iwi");
+        const auto filePathImage = searchPath.Open(imageFileName);
+        if (!filePathImage.IsOpen())
+        {
+            con::error("Could not find data for image \"{}\"", image.name);
+            return nullptr;
+        }
+
+        auto loadResult = image::LoadIwi(*filePathImage.m_stream);
+        return loadResult ? std::move(loadResult->m_texture) : nullptr;
+    }
+} // namespace
+
+#set CLASS_NAME "ToCommonConverter" + GAME
+
+namespace image
+{
+    std::unique_ptr<Texture> CLASS_NAME::Convert(const XAssetInfoGeneric& assetInfo, ISearchPath& searchPath)
+    {
+        const auto& image = *reinterpret_cast<const XAssetInfo<AssetImage::Type>*>(&assetInfo)->Asset();
+        
+        if (image.texture.loadDef && image.texture.loadDef->resourceSize > 0)
+            return LoadImageFromLoadDef(image);
+
+        return LoadImageFromIwi(image, searchPath);
+    }
+}

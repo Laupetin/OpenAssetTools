@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { AssetDto } from "@/native/AssetBinds.ts";
 import Tag from "primevue/tag";
-import { getAssetTypeNameCapitalized } from "@/utils/AssetTypeName.ts";
 import { computed } from "vue";
+import { localizeAssetType } from "@/i18n/i18n.ts";
 
 const props = defineProps<{
-  selectedAsset: AssetDto | null;
+  selectedAsset?: AssetDto;
 }>();
 
 const assetTypeName = computed(() =>
-  props.selectedAsset ? getAssetTypeNameCapitalized(props.selectedAsset.type) : "",
+  props.selectedAsset ? localizeAssetType(props.selectedAsset.type) : "",
 );
 </script>
 

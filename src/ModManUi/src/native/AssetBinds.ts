@@ -1,80 +1,79 @@
 import { getBinds } from "@webwindowed/web-api";
 
-export enum CommonAssetType {
-  PHYS_PRESET = "PHYS_PRESET",
-  XANIM = "XANIM",
-  XMODEL = "XMODEL",
-  MATERIAL = "MATERIAL",
-  TECHNIQUE_SET = "TECHNIQUE_SET",
-  IMAGE = "IMAGE",
-  SOUND = "SOUND",
-  SOUND_CURVE = "SOUND_CURVE",
-  LOADED_SOUND = "LOADED_SOUND",
-  CLIP_MAP = "CLIP_MAP",
-  COM_WORLD = "COM_WORLD",
-  GAME_WORLD_SP = "GAME_WORLD_SP",
-  GAME_WORLD_MP = "GAME_WORLD_MP",
-  MAP_ENTS = "MAP_ENTS",
-  GFX_WORLD = "GFX_WORLD",
-  LIGHT_DEF = "LIGHT_DEF",
-  UI_MAP = "UI_MAP",
-  FONT = "FONT",
-  MENU_LIST = "MENU_LIST",
-  MENU = "MENU",
-  LOCALIZE_ENTRY = "LOCALIZE_ENTRY",
-  WEAPON = "WEAPON",
-  SOUND_DRIVER_GLOBALS = "SOUND_DRIVER_GLOBALS",
-  FX = "FX",
-  IMPACT_FX = "IMPACT_FX",
-  AI_TYPE = "AI_TYPE",
-  MP_TYPE = "MP_TYPE",
-  CHARACTER = "CHARACTER",
-  XMODEL_ALIAS = "XMODEL_ALIAS",
-  RAW_FILE = "RAW_FILE",
-  STRING_TABLE = "STRING_TABLE",
-  XMODEL_PIECES = "XMODEL_PIECES",
-  PHYS_COLL_MAP = "PHYS_COLL_MAP",
-  XMODEL_SURFS = "XMODEL_SURFS",
-  PIXEL_SHADER = "PIXEL_SHADER",
-  VERTEX_SHADER = "VERTEX_SHADER",
-  VERTEX_DECL = "VERTEX_DECL",
-  FX_WORLD = "FX_WORLD",
-  LEADERBOARD = "LEADERBOARD",
-  STRUCTURED_DATA_DEF = "STRUCTURED_DATA_DEF",
-  TRACER = "TRACER",
-  VEHICLE = "VEHICLE",
-  ADDON_MAP_ENTS = "ADDON_MAP_ENTS",
-  GLASS_WORLD = "GLASS_WORLD",
-  PATH_DATA = "PATH_DATA",
-  VEHICLE_TRACK = "VEHICLE_TRACK",
-  ATTACHMENT = "ATTACHMENT",
-  SURFACE_FX = "SURFACE_FX",
-  SCRIPT = "SCRIPT",
-  PHYS_CONSTRAINTS = "PHYS_CONSTRAINTS",
-  DESTRUCTIBLE_DEF = "DESTRUCTIBLE_DEF",
-  SOUND_PATCH = "SOUND_PATCH",
-  WEAPON_DEF = "WEAPON_DEF",
-  WEAPON_VARIANT = "WEAPON_VARIANT",
-  MP_BODY = "MP_BODY",
-  MP_HEAD = "MP_HEAD",
-  PACK_INDEX = "PACK_INDEX",
-  XGLOBALS = "XGLOBALS",
-  DDL = "DDL",
-  GLASSES = "GLASSES",
-  EMBLEM_SET = "EMBLEM_SET",
-  FONT_ICON = "FONT_ICON",
-  WEAPON_FULL = "WEAPON_FULL",
-  ATTACHMENT_UNIQUE = "ATTACHMENT_UNIQUE",
-  WEAPON_CAMO = "WEAPON_CAMO",
-  KEY_VALUE_PAIRS = "KEY_VALUE_PAIRS",
-  MEMORY_BLOCK = "MEMORY_BLOCK",
-  SKINNED_VERTS = "SKINNED_VERTS",
-  QDB = "QDB",
-  SLUG = "SLUG",
-  FOOTSTEP_TABLE = "FOOTSTEP_TABLE",
-  FOOTSTEP_FX_TABLE = "FOOTSTEP_FX_TABLE",
-  ZBARRIER = "ZBARRIER",
-}
+export type CommonAssetType =
+  | "phys_preset"
+  | "xanim"
+  | "xmodel"
+  | "material"
+  | "technique_set"
+  | "image"
+  | "sound"
+  | "sound_curve"
+  | "loaded_sound"
+  | "clip_map"
+  | "com_world"
+  | "game_world_sp"
+  | "game_world_mp"
+  | "map_ents"
+  | "gfx_world"
+  | "light_def"
+  | "ui_map"
+  | "font"
+  | "menu_list"
+  | "menu"
+  | "localize_entry"
+  | "weapon"
+  | "sound_driver_globals"
+  | "fx"
+  | "impact_fx"
+  | "ai_type"
+  | "mp_type"
+  | "character"
+  | "xmodel_alias"
+  | "raw_file"
+  | "string_table"
+  | "xmodel_pieces"
+  | "phys_coll_map"
+  | "xmodel_surfs"
+  | "pixel_shader"
+  | "vertex_shader"
+  | "vertex_decl"
+  | "fx_world"
+  | "leaderboard"
+  | "structured_data_def"
+  | "tracer"
+  | "vehicle"
+  | "addon_map_ents"
+  | "glass_world"
+  | "path_data"
+  | "vehicle_track"
+  | "attachment"
+  | "surface_fx"
+  | "script"
+  | "phys_constraints"
+  | "destructible_def"
+  | "sound_patch"
+  | "weapon_def"
+  | "weapon_variant"
+  | "mp_body"
+  | "mp_head"
+  | "pack_index"
+  | "xglobals"
+  | "ddl"
+  | "glasses"
+  | "emblem_set"
+  | "font_icon"
+  | "weapon_full"
+  | "attachment_unique"
+  | "weapon_camo"
+  | "key_value_pairs"
+  | "memory_block"
+  | "skinned_verts"
+  | "qdb"
+  | "slug"
+  | "footstep_table"
+  | "footstep_fx_table"
+  | "zbarrier";
 
 export interface AssetDto {
   type: CommonAssetType;

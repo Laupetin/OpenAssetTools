@@ -1,8 +1,17 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import XModelPreview from "@/components/assets/xmodel/XModelPreview.vue";
+import type { AssetDto } from "@/native/AssetBinds.ts";
+
+defineProps<{
+  asset?: AssetDto;
+  zoneName: string;
+}>();
+</script>
 
 <template>
   <div class="preview">
-    <span>No preview available</span>
+    <XModelPreview v-if="asset?.type === 'xmodel'" :asset :zone-name />
+    <span v-else>No preview available</span>
   </div>
 </template>
 

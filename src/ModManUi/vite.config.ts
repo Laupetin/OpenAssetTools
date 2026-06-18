@@ -17,6 +17,9 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    cors: false,
+  },
   publicDir: fileURLToPath(new URL("./public", import.meta.url)),
   plugins: [
     vue(),
