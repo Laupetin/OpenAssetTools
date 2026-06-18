@@ -7,6 +7,7 @@
 #include "Web/WebWindowedLib.h"
 
 // Assets
+#include "Asset/Image/DynamicAssetsImage.h"
 #include "Asset/XModel/DynamicAssetsXModel.h"
 
 #include <format>
@@ -42,6 +43,7 @@ namespace
 
     void RegisterDynamicAssets(webwindowed::asset_handler_plugin& assetHandler)
     {
+        image::RegisterDynamicAssets(assetHandler);
         xmodel::RegisterDynamicAssets(assetHandler);
     }
 

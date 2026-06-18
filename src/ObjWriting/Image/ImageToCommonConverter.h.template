@@ -1,0 +1,25 @@
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Image/ImageToCommonConverter" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+// This file was templated.
+// See ImageToCommonConverter.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Image/ImageToCommonConverter.h"
+#include GAME_HEADER
+
+#set CLASS_NAME "ToCommonConverter" + GAME
+
+namespace image
+{
+    class CLASS_NAME final : public ToCommonConverter
+    {
+    public:
+        std::unique_ptr<Texture> Convert(const XAssetInfoGeneric& assetInfo, ISearchPath& searchPath) override;
+    };
+} // namespace xmodel

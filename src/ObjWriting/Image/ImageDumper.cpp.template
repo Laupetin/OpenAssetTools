@@ -4,6 +4,8 @@
 
 #set DUMPER_HEADER "\"ImageDumper" + GAME + ".h\""
 
+#set CONVERTER_HEADER "\"ImageToCommonConverter" + GAME + ".h\""
+
 #if GAME == "IW3"
 #define FEATURE_IW3
 #define DX9
@@ -60,103 +62,17 @@
 #define IWI_NS iwi27
 #endif
 
+#include CONVERTER_HEADER
 #include "Image/DdsWriter.h"
 #include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
 #include "ObjWriting.h"
 #include "Utils/Logging/Log.h"
 
-#include <algorithm>
 #include <cassert>
-#include <format>
 
 using namespace GAME;
 using namespace image;
-
-namespace
-{
-    std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage& image)
-    {
-#ifdef DX9
-        Dx9TextureLoader textureLoader;
-#else
-        Dx12TextureLoader textureLoader;
-#endif
-
-        const auto& loadDef = *image.texture.loadDef;
-#if defined(FEATURE_IW3) || defined(FEATURE_T4)
-        textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
-#else
-        textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
-#endif
-
-#if defined(IWI8)
-        if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_3D)
-            textureLoader.Type(TextureType::T_3D);
-        else if ((loadDef.flags & image::IWI_NS::IMG_FLAG_MAPTYPE_MASK) == image::IWI_NS::IMG_FLAG_MAPTYPE_CUBE)
-            textureLoader.Type(TextureType::T_CUBE);
-        else
-            textureLoader.Type(TextureType::T_2D);
-#else
-        if (loadDef.flags & image::IWI_NS::IMG_FLAG_VOLMAP)
-            textureLoader.Type(TextureType::T_3D);
-        else if (loadDef.flags & image::IWI_NS::IMG_FLAG_CUBEMAP)
-            textureLoader.Type(TextureType::T_CUBE);
-        else
-            textureLoader.Type(TextureType::T_2D);
-#endif
-
-#ifdef DX9
-        textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
-#else
-        textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef.format));
-#endif
-        textureLoader.HasMipMaps(!(loadDef.flags & image::IWI_NS::IMG_FLAG_NOMIPMAPS));
-
-        return textureLoader.LoadTexture(loadDef.data);
-    }
-
-    std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)
-    {
-#ifdef FEATURE_T6
-        if (image.streamedPartCount > 0)
-        {
-            for (auto* ipak : IIPak::Repository)
-            {
-                auto ipakStream = ipak->GetEntryStream(image.hash, image.streamedParts[0].hash);
-
-                if (ipakStream)
-                {
-                    auto loadResult = image::LoadIwi(*ipakStream);
-                    ipakStream->close();
-
-                    if (loadResult)
-                        return std::move(loadResult->m_texture);
-                }
-            }
-        }
-#endif
-
-        const auto imageFileName = image::GetFileNameForAsset(image.name, ".iwi");
-        const auto filePathImage = searchPath.Open(imageFileName);
-        if (!filePathImage.IsOpen())
-        {
-            con::error("Could not find data for image \"{}\"", image.name);
-            return nullptr;
-        }
-
-        auto loadResult = image::LoadIwi(*filePathImage.m_stream);
-        return loadResult ? std::move(loadResult->m_texture) : nullptr;
-    }
-
-    std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)
-    {
-        if (image.texture.loadDef && image.texture.loadDef->resourceSize > 0)
-            return LoadImageFromLoadDef(image);
-
-        return LoadImageFromIwi(image, searchPath);
-    }
-} // namespace
 
 #set CLASS_NAME "Dumper" + GAME
 
@@ -179,10 +95,12 @@ namespace image
         }
     }
 
+#set CONVERTER_NAME "ToCommonConverter" + GAME
+
     void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
         const auto* image = asset.Asset();
-        const auto texture = LoadImageData(context.m_obj_search_path, *image);
+        const auto texture = CONVERTER_NAME().Convert(asset, context.m_obj_search_path);
         if (!texture)
             return;
 

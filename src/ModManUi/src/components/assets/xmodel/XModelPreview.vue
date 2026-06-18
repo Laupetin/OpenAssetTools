@@ -7,9 +7,12 @@ import {
   HemisphereLight,
   Object3D,
   Box3,
+  LoadingManager,
+  Loader,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DDSLoader } from "three/examples/jsm/loaders/DDSLoader.js";
 import type { AssetDto } from "@/native/AssetBinds.ts";
 import { computed, onMounted, ref, toRaw, useTemplateRef, watch } from "vue";
 import { useResizeObserver } from "@vueuse/core";
@@ -37,7 +40,48 @@ scene.add(hemisphereLight);
 
 camera.position.z = 3;
 
-const gltfLoader = new GLTFLoader();
+const IMAGE_REGEX = /\.\.[\\/]images[\\/](.+)\.(.+)$/m;
+class ProxyImageLoader extends Loader {
+  private ddsLoader: DDSLoader;
+  constructor() {
+    super();
+    this.ddsLoader = new DDSLoader();
+  }
+  load(
+    url: string,
+    onLoad: (data: unknown) => void,
+    onProgress?: (event: ProgressEvent) => void,
+    onError?: (err: unknown) => void,
+  ) {
+    const match = IMAGE_REGEX.exec(url);
+    if (!match) {
+      onError?.("invalid url");
+      return;
+    }
+
+    this.ddsLoader.load(
+      `modman://localhost/image/dds?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(match[1])}`,
+      onLoad,
+      onProgress,
+      onError,
+    );
+  }
+  loadAsync(url: string, onProgress?: (event: ProgressEvent) => void): Promise<unknown> {
+    const match = IMAGE_REGEX.exec(url);
+    if (!match) {
+      return Promise.reject("invalid url");
+    }
+
+    return this.ddsLoader.loadAsync(
+      `modman://localhost/image/dds?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(match[1])}`,
+      onProgress,
+    );
+  }
+}
+const manager = new LoadingManager();
+manager.addHandler(IMAGE_REGEX, new ProxyImageLoader());
+
+const gltfLoader = new GLTFLoader(manager);
 const modelUri = computed<string>(
   () =>
     `modman://localhost/xmodel/glb?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(props.asset.name)}`,
@@ -55,9 +99,7 @@ const modelBounds = computed<Box3 | undefined>(() => {
 watch(
   modelUri,
   (uri) => {
-    gltfLoader.load(uri, (gltf) => {
-      model.value = gltf.scene;
-    });
+    gltfLoader.loadAsync(uri).then((gltf) => (model.value = gltf.scene));
   },
   { immediate: true },
 );
