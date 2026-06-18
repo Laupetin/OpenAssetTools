@@ -8,6 +8,10 @@ import {
   Box3,
   LoadingManager,
   Loader,
+  TextureLoader,
+  EquirectangularReflectionMapping,
+  SRGBColorSpace,
+  type Texture,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
@@ -107,6 +111,15 @@ const modelBounds = computed<Box3 | undefined>(() => {
   return box;
 });
 
+const loader = new TextureLoader();
+let skybox: Texture | undefined = undefined;
+loader.loadAsync("/skybox/citrus_orchard_puresky.jpg").then((res) => {
+  skybox = res;
+  skybox.mapping = EquirectangularReflectionMapping;
+  skybox.colorSpace = SRGBColorSpace;
+  scene.background = skybox;
+});
+
 watch(
   modelUri,
   (uri) => {
@@ -183,6 +196,9 @@ onMounted(() => {
 onUnmounted(() => {
   if (model.value) {
     resourceTracker.unrefObject(toRaw(model.value).scene);
+  }
+  if (skybox) {
+    skybox.dispose();
   }
 });
 
