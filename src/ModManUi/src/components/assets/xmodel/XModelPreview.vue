@@ -225,6 +225,10 @@ useResizeObserver(canvasWrapperRef, () => {
   height: 100%;
 }
 
+.preview {
+  border-radius: 0.25rem;
+}
+
 @starting-style {
   .loading-overlay {
     opacity: 0;
