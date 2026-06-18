@@ -183,7 +183,7 @@ onMounted(() => {
   const canvasWrapperBounds = canvasWrapperRef.value!.getBoundingClientRect();
   renderer.setSize(canvasWrapperBounds.width, canvasWrapperBounds.height);
 
-  function animate(time: number) {
+  function animate() {
     renderer!.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);

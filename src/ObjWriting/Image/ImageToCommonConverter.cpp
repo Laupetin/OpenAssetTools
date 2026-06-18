@@ -26,4 +26,4 @@ namespace image
 
         return toCommonConverters[std::to_underlying(gameId)];
     }
-} // namespace xmodel
+} // namespace image
