@@ -16,10 +16,11 @@ namespace
 {
     bool FindXModel(const std::string& zoneName, const std::string& assetName, XAssetInfoGeneric*& outAssetInfo, Zone*& outZone)
     {
-        const auto& context = ModManContext::Get().m_fast_file;
-        for (const auto& loadedZone : context.m_loaded_zones)
+        auto& context = ModManContext::Get().m_fast_file;
+        const auto loadedZones = context.GetLoadedZones();
+        for (const auto& loadedZone : loadedZones.Data())
         {
-            const auto& zone = *loadedZone->m_zone;
+            const auto& zone = loadedZone->GetZone();
             if (zone.m_name != zoneName)
                 continue;
 
@@ -31,7 +32,7 @@ namespace
             outAssetInfo = zone.m_pools.GetAsset(*gameAssetType, assetName);
             if (outAssetInfo)
             {
-                outZone = loadedZone->m_zone.get();
+                outZone = &loadedZone->GetZone();
                 return true;
             }
         }

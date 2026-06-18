@@ -146,11 +146,11 @@ namespace
         ZoneAssetsDto result;
 
         {
-            std::shared_lock lock(context.m_zone_lock);
+            const auto loadedZones = context.GetLoadedZones();
 
-            for (const auto& loadedZone : context.m_loaded_zones)
+            for (const auto& loadedZone : loadedZones.Data())
             {
-                const auto& zone = *loadedZone->m_zone;
+                const auto& zone = loadedZone->GetZone();
                 if (zone.m_name == zoneName)
                     return CreateZoneAssetsDto(zone);
             }

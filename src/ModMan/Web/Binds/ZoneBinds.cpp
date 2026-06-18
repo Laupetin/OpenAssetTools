@@ -64,10 +64,10 @@ namespace
     ZoneDto CreateZoneDto(const LoadedZone& loadedZone)
     {
         return ZoneDto{
-            .name = loadedZone.m_zone->m_name,
-            .filePath = loadedZone.m_file_path,
-            .game = loadedZone.m_zone->m_game_id,
-            .platform = loadedZone.m_zone->m_platform,
+            .name = loadedZone.GetZone().m_name,
+            .filePath = loadedZone.GetFilePath(),
+            .game = loadedZone.GetZone().m_game_id,
+            .platform = loadedZone.GetZone().m_platform,
         };
     }
 
@@ -78,10 +78,10 @@ namespace
         std::vector<ZoneDto> result;
 
         {
-            std::shared_lock lock(context.m_zone_lock);
-            result.reserve(context.m_loaded_zones.size());
+            const auto loadedZones = context.GetLoadedZones();
+            result.reserve(loadedZones.Data().size());
 
-            for (const auto& loadedZone : context.m_loaded_zones)
+            for (const auto& loadedZone : loadedZones.Data())
             {
                 result.emplace_back(CreateZoneDto(*loadedZone));
             }
@@ -106,7 +106,7 @@ namespace
                                        ZoneLoadedDto{
                                            .zone = CreateZoneDto(*maybeZone.value()),
                                        });
-                    con::debug("Loaded zone \"{}\"", maybeZone.value()->m_zone->m_name);
+                    con::debug("Loaded zone \"{}\"", maybeZone.value()->GetZone().m_name);
                 }
                 else
                 {

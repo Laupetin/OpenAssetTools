@@ -52,19 +52,23 @@ namespace
 
     std::expected<void, std::string> UnlinkZoneInDbThread(const std::string& zoneName)
     {
-        const auto& context = ModManContext::Get().m_fast_file;
-        const auto existingZone = std::ranges::find_if(context.m_loaded_zones,
-                                                       [&zoneName](const std::unique_ptr<LoadedZone>& loadedZone)
-                                                       {
-                                                           return loadedZone->m_zone->m_name == zoneName;
-                                                       });
+        Zone* zone;
+        {
+            auto& context = ModManContext::Get().m_fast_file;
+            const auto loadedZones = context.GetLoadedZones();
+            const auto existingZone = std::ranges::find_if(loadedZones.Data(),
+                                                           [&zoneName](const std::unique_ptr<LoadedZone>& loadedZone)
+                                                           {
+                                                               return loadedZone->GetZone().m_name == zoneName;
+                                                           });
 
-        if (existingZone == context.m_loaded_zones.end())
-            return std::unexpected(std::format("No zone with name {} loaded", zoneName));
+            if (existingZone == loadedZones.Data().end())
+                return std::unexpected(std::format("No zone with name {} loaded", zoneName));
 
-        const auto& loadedZone = *existingZone->get();
+            zone = &existingZone->get()->GetZone();
+        }
 
-        auto* objWriter = IObjWriter::GetObjWriterForGame(loadedZone.m_zone->m_game_id);
+        auto* objWriter = IObjWriter::GetObjWriterForGame(zone->m_game_id);
 
         const auto outputFolderPath = fs::path(utils::GetExecutablePath()).parent_path() / "zone_dump" / zoneName;
         const auto outputFolderPathStr = outputFolderPath.string();
@@ -72,7 +76,7 @@ namespace
         OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
         SearchPaths searchPaths;
         AssetDumpingContext dumpingContext(
-            *loadedZone.m_zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
+            *zone, outputFolderPathStr, outputFolderOutputPath, searchPaths, std::make_unique<UnlinkingEventProgressReporter>(zoneName));
         objWriter->DumpZone(dumpingContext);
 
         return {};

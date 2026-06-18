@@ -5,8 +5,6 @@
 #include "Image/DdsWriter.h"
 #include "Image/ImageToCommonConverter.h"
 #include "Pool/XAssetInfo.h"
-#include "SearchPath/IWD.h"
-#include "SearchPath/SearchPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
@@ -21,10 +19,11 @@ namespace
 {
     bool FindImage(const std::string& zoneName, const std::string& assetName, XAssetInfoGeneric*& outAssetInfo, Zone*& outZone)
     {
-        const auto& context = ModManContext::Get().m_fast_file;
-        for (const auto& loadedZone : context.m_loaded_zones)
+        auto& context = ModManContext::Get().m_fast_file;
+        const auto loadedZones = context.GetLoadedZones();
+        for (const auto& loadedZone : loadedZones.Data())
         {
-            const auto& zone = *loadedZone->m_zone;
+            const auto& zone = loadedZone->GetZone();
             if (zone.m_name != zoneName)
                 continue;
 
@@ -36,7 +35,7 @@ namespace
             outAssetInfo = zone.m_pools.GetAsset(*gameAssetType, assetName);
             if (outAssetInfo)
             {
-                outZone = loadedZone->m_zone.get();
+                outZone = &loadedZone->GetZone();
                 return true;
             }
         }
@@ -76,19 +75,21 @@ namespace
             return;
         }
 
-        SearchPaths searchPaths;
-
-        const auto maybeCommon = converter->Convert(*image, searchPaths);
-        if (!maybeCommon)
+        std::unique_ptr<Texture> texture;
         {
-            con::warn("Failed to convert image {} of zone {}", *imageName, *zoneName);
-            response.send_response(500);
-            return;
+            const auto searchPaths = ModManContext::Get().m_fast_file.GetSearchPaths();
+            texture = converter->Convert(*image, searchPaths.Data());
+            if (!texture)
+            {
+                con::warn("Failed to convert image {} of zone {}", *imageName, *zoneName);
+                response.send_response(500);
+                return;
+            }
         }
 
         std::ostringstream ss;
         DdsWriter output;
-        output.DumpImage(ss, maybeCommon.get());
+        output.DumpImage(ss, texture.get());
 
         const auto data = ss.str();
         response.set_content_type("image/x-direct-draw-surface");
