@@ -11,6 +11,7 @@
 
 #include <filesystem>
 #include <sstream>
+#include <utility>
 
 using namespace image;
 namespace fs = std::filesystem;

@@ -8,9 +8,11 @@
 #include "T6/AutoSearchPathsT6.h"
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <optional>
+#include <utility>
 
 namespace fs = std::filesystem;
 
