@@ -1,6 +1,7 @@
 #include "FastFileContext.h"
 
 #include "Game/AutoSearchPaths.h"
+#include "IObjLoader.h"
 #include "SearchPath/IWD.h"
 #include "SearchPath/SearchPathFilesystem.h"
 #include "Utils/StringUtils.h"
@@ -149,15 +150,20 @@ std::expected<LoadedZone*, std::string> FastFileContext::LoadFastFile(const std:
 
     auto loadedZone = std::make_unique<LoadedZone>(std::move(*zone), path, std::move(searchPathsForZone));
 
-    LoadedZone* result;
+    LoadedZone* loadedZonePtr;
     {
         std::lock_guard lock(m_zone_lock);
-        result = m_loaded_zones.emplace_back(std::move(loadedZone)).get();
+        loadedZonePtr = m_loaded_zones.emplace_back(std::move(loadedZone)).get();
     }
 
-    ui::NotifyZoneLoaded(*result);
+    {
+        std::shared_lock lock(m_search_path_lock);
+        IObjLoader::GetObjLoaderForGame(loadedZonePtr->GetZone().m_game_id)->LoadReferencedContainersForZone(m_search_paths, loadedZonePtr->GetZone());
+    }
 
-    return result;
+    ui::NotifyZoneLoaded(*loadedZonePtr);
+
+    return loadedZonePtr;
 }
 
 std::expected<void, std::string> FastFileContext::UnloadZone(const std::string& zoneName)
@@ -182,6 +188,11 @@ std::expected<void, std::string> FastFileContext::UnloadZone(const std::string& 
     }
 
     assert(removedLoadedZone);
+
+    {
+        std::shared_lock lock(m_search_path_lock);
+        IObjLoader::GetObjLoaderForGame(removedLoadedZone->GetZone().m_game_id)->UnloadContainersOfZone(removedLoadedZone->GetZone());
+    }
 
     {
         std::lock_guard lock(m_search_path_lock);
