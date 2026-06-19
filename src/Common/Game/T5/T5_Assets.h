@@ -3778,7 +3778,7 @@ namespace T5
         WEAPON_ICON_RATIO_1TO1 = 0x0,
         WEAPON_ICON_RATIO_2TO1 = 0x1,
         WEAPON_ICON_RATIO_4TO1 = 0x2,
-        
+
         WEAPON_ICON_RATIO_NUM,
     };
 
@@ -3792,7 +3792,7 @@ namespace T5
         WEAPTYPE_BOMB = 0x5,
         WEAPTYPE_MINE = 0x6,
         WEAPTYPE_MELEE = 0x7,
-        
+
         WEAPTYPE_NUM,
     };
 
@@ -3811,7 +3811,7 @@ namespace T5
         WEAPCLASS_ITEM = 0xA,
         WEAPCLASS_MELEE = 0xB,
         WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON = 0xC,
-        
+
         WEAPCLASS_NUM,
     };
 
@@ -3821,7 +3821,7 @@ namespace T5
         PENETRATE_TYPE_SMALL = 0x1,
         PENETRATE_TYPE_MEDIUM = 0x2,
         PENETRATE_TYPE_LARGE = 0x3,
-        
+
         PENETRATE_TYPE_NUM,
     };
 
@@ -3843,7 +3843,7 @@ namespace T5
         IMPACT_TYPE_TANK_SHELL = 0xD,
         IMPACT_TYPE_BOLT = 0xE,
         IMPACT_TYPE_BLADE = 0xF,
-        
+
         IMPACT_TYPE_NUM,
     };
 
@@ -3854,7 +3854,7 @@ namespace T5
         WEAPINVENTORY_ITEM = 0x2,
         WEAPINVENTORY_ALTMODE = 0x3,
         WEAPINVENTORY_MELEE = 0x4,
-        
+
         WEAPINVENTORY_NUM,
     };
 
@@ -3867,7 +3867,7 @@ namespace T5
         WEAPON_FIRETYPE_BURSTFIRE4 = 0x4,
         WEAPON_FIRETYPE_STACKED = 0x5,
         WEAPON_FIRETYPE_MINIGUN = 0x6,
-        
+
         WEAPON_FIRETYPE_NUM,
     };
 
@@ -3879,7 +3879,7 @@ namespace T5
         WEAPON_CLIPTYPE_DP28 = 0x3,
         WEAPON_CLIPTYPE_PTRS = 0x4,
         WEAPON_CLIPTYPE_LMG = 0x5,
-        
+
         WEAPON_CLIPTYPE_NUM,
     };
 
@@ -3890,7 +3890,7 @@ namespace T5
         OFFHAND_CLASS_SMOKE_GRENADE = 0x2,
         OFFHAND_CLASS_FLASH_GRENADE = 0x3,
         OFFHAND_CLASS_GEAR = 0x4,
-        
+
         OFFHAND_CLASS_NUM,
     };
 
@@ -3901,7 +3901,7 @@ namespace T5
         OFFHAND_SLOT_TACTICAL_GRENADE = 0x2,
         OFFHAND_SLOT_EQUIPMENT = 0x3,
         OFFHAND_SLOT_SPECIFIC_USE = 0x4,
-        
+
         OFFHAND_SLOT_NUM,
     };
 
@@ -3910,7 +3910,7 @@ namespace T5
         WEAPSTANCE_STAND = 0x0,
         WEAPSTANCE_DUCK = 0x1,
         WEAPSTANCE_PRONE = 0x2,
-        
+
         WEAPSTANCE_NUM,
     };
 
@@ -3919,7 +3919,7 @@ namespace T5
         VEH_ACTIVE_RETICLE_NONE = 0x0,
         VEH_ACTIVE_RETICLE_PIP_ON_A_STICK = 0x1,
         VEH_ACTIVE_RETICLE_BOUNCING_DIAMOND = 0x2,
-        
+
         VEH_ACTIVE_RETICLE_NUM,
     };
 
@@ -3932,7 +3932,7 @@ namespace T5
         AMMO_COUNTER_CLIP_ROCKET = 0x4,
         AMMO_COUNTER_CLIP_BELTFED = 0x5,
         AMMO_COUNTER_CLIP_ALTWEAPON = 0x6,
-        
+
         AMMO_COUNTER_CLIP_NUM,
     };
 
@@ -3940,7 +3940,7 @@ namespace T5
     {
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
-        
+
         WEAPOVERLAYRETICLE_NUM,
     };
 
@@ -3949,7 +3949,7 @@ namespace T5
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
         WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
-        
+
         WEAPOVERLAYINTERFACE_NUM,
     };
 
@@ -3965,7 +3965,7 @@ namespace T5
         WEAPPROJEXP_FIRE = 0x7,
         WEAPPROJEXP_NAPALMBLOB = 0x8,
         WEAPPROJEXP_BOLT = 0x9,
-        
+
         WEAPPROJEXP_NUM,
     };
 
@@ -3977,7 +3977,7 @@ namespace T5
         WEAPSTICKINESS_GROUND = 0x3,
         WEAPSTICKINESS_GROUND_WITH_YAW = 0x4,
         WEAPSTICKINESS_FLESH = 0x5,
-        
+
         WEAPSTICKINESS_NUM,
     };
 
@@ -3986,7 +3986,7 @@ namespace T5
         WEAPROTATE_GRENADE_ROTATE = 0x0,
         WEAPROTATE_BLADE_ROTATE = 0x1,
         WEAPROTATE_CYLINDER_ROTATE = 0x2,
-        
+
         WEAPROTATE_NUM,
     };
 
@@ -3999,7 +3999,7 @@ namespace T5
         MISSILE_GUIDANCE_BALLISTIC = 0x4,
         MISSILE_GUIDANCE_WIREGUIDED = 0x5,
         MISSILE_GUIDANCE_TVGUIDED = 0x6,
-        
+
         MISSILE_GUIDANCE_NUM,
     };
 
