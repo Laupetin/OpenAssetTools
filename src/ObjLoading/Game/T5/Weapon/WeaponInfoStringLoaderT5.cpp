@@ -211,25 +211,6 @@ namespace
             return true;
         }
 
-        [[nodiscard]] static bool HasMoreThanOneAttachmentSetInMask(const int mask)
-        {
-            // Check if int has more than 1 bit set
-            return (mask & (mask - 1)) != 0;
-        }
-
-        bool ConvertAnimName(const cspField_t& field, const std::string& value)
-        {
-            if (ConvertString(value, field.iOffset))
-            {
-                if (!value.empty())
-                    m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetXAnim>(value));
-
-                return true;
-            }
-
-            return false;
-        }
-
     public:
         InfoStringToWeaponConverter(const InfoString& infoString,
                                     WeaponFullDef& weaponFullDef,
@@ -321,28 +302,6 @@ namespace
             weapon.weapVariantDef.fOOPosAnimLength[1] = 0.0020000001f;
         else
             weapon.weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.weapVariantDef.iAdsTransOutTime);
-    }
-
-    bool IsStringOverride(const char* baseString, const char* overrideString)
-    {
-        if (overrideString == nullptr || overrideString[0] == '\0')
-            return false;
-
-        if (baseString == nullptr || baseString[0] == '\0')
-            return true;
-
-        return strcmp(baseString, overrideString) != 0;
-    }
-
-    bool IsFxOverride(const FxEffectDef* baseEffect, const FxEffectDef* overrideEffect)
-    {
-        if (overrideEffect == nullptr)
-            return false;
-
-        if (baseEffect == nullptr)
-            return true;
-
-        return strcmp(baseEffect->name, overrideEffect->name) != 0;
     }
 } // namespace
 
