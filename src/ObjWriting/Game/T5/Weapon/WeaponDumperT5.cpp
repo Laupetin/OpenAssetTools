@@ -31,6 +31,7 @@ namespace
             case WFT_WEAPONCLASS:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
                 break;
+                
             case WFT_OVERLAYRETICLE:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
                 break;

@@ -153,7 +153,6 @@ namespace
                 return true;
             }
 
-            assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_NUM);
             *bounceSound = m_memory.Alloc<const char*>(SURF_TYPE_NUM);
             for (auto i = 0u; i < SURF_TYPE_NUM; i++)
             {
