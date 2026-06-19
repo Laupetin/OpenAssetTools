@@ -1,7 +1,9 @@
 #include "WeaponDumperT5.h"
 
+#include "Dumping/SubAssetDeduplicationDumperState.h"
 #include "Game/T5/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T5/ObjConstantsT5.h"
+#include "Game/T5/Weapon/FlameTableFields.h"
 #include "Game/T5/Weapon/WeaponFields.h"
 #include "Game/T5/Weapon/WeaponStrings.h"
 #include "InfoString/InfoString.h"
@@ -31,7 +33,7 @@ namespace
             case WFT_WEAPONCLASS:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
                 break;
-                
+
             case WFT_OVERLAYRETICLE:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
                 break;
@@ -205,6 +207,24 @@ namespace
         }
     };
 
+    class InfoStringFromFlameTableConverter final : public InfoStringFromStructConverter
+    {
+    protected:
+        void FillFromExtensionField(const cspField_t& field) override
+        {
+            assert(false);
+        }
+
+    public:
+        InfoStringFromFlameTableConverter(const FlameTable* structure,
+                                          const cspField_t* fields,
+                                          const size_t fieldCount,
+                                          std::function<std::string(scr_string_t)> scriptStringValueCallback)
+            : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
+        {
+        }
+    };
+
     GenericGraph2D ConvertAccuracyGraph(const char* graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
     {
         GenericGraph2D graph;
@@ -348,6 +368,47 @@ namespace
                                                                           weapDef->originalAiVsPlayerAccuracyGraphKnotCount));
         }
     }
+
+    void DumpFlameTable(const AssetDumpingContext& context,
+                        SubAssetDeduplicationDumperState<FlameTable>& deduplicator,
+                        const char* flameTableName,
+                        const FlameTable* flameTable)
+    {
+        if (!flameTable || !flameTableName || flameTableName[0] == '\0')
+            return;
+
+        if (!deduplicator.ShouldDumpSubAsset(flameTable))
+            return;
+
+        const auto assetFile = context.OpenAssetFile(weapon::GetFileNameForFlameTable(flameTableName));
+
+        if (!assetFile)
+            return;
+
+        auto& stream = *assetFile;
+        InfoStringFromFlameTableConverter converter(flameTable,
+                                                    flameTableFields,
+                                                    std::extent_v<decltype(flameTableFields)>,
+                                                    [](const scr_string_t scrStr) -> std::string
+                                                    {
+                                                        assert(false);
+                                                        return "";
+                                                    });
+
+        const auto infoString = converter.Convert();
+
+        const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_FLAME_TABLE);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
+
+    void DumpFlameTables(AssetDumpingContext& context, const XAssetInfo<WeaponVariantDef>& asset)
+    {
+        auto* deduplicator = context.GetZoneAssetDumperState<SubAssetDeduplicationDumperState<FlameTable>>();
+        const auto weapon = asset.Asset();
+
+        DumpFlameTable(context, *deduplicator, weapon->weapDef->flameTableFirstPerson, weapon->weapDef->flameTableFirstPersonPtr);
+        DumpFlameTable(context, *deduplicator, weapon->weapDef->flameTableThirdPerson, weapon->weapDef->flameTableThirdPersonPtr);
+    }
 } // namespace
 
 namespace weapon
@@ -376,5 +437,6 @@ namespace weapon
         }
 
         DumpAccuracyGraphs(context, asset);
+        DumpFlameTables(context, asset);
     }
 } // namespace weapon
