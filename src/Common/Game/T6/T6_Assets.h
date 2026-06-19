@@ -88,7 +88,7 @@ namespace T6
     struct XRigidVertList;
     struct XSurface;
     struct XModel;
-    struct flameTable;
+    struct FlameTable;
     struct cStaticModel_s;
     struct FxElemVelStateSample;
     struct FxElemVisStateSample;
@@ -4944,8 +4944,8 @@ namespace T6
         int scanPauseTime;
         const char* flameTableFirstPerson;
         const char* flameTableThirdPerson;
-        flameTable* flameTableFirstPersonPtr;
-        flameTable* flameTableThirdPersonPtr;
+        FlameTable* flameTableFirstPersonPtr;
+        FlameTable* flameTableThirdPersonPtr;
         FxEffectDef* tagFx_preparationEffect;
         FxEffectDef* tagFlash_preparationEffect;
         bool doGibbing;
@@ -6681,7 +6681,7 @@ namespace T6
         int animDuration;
     };
 
-    struct flameTable
+    struct FlameTable
     {
         float flameVar_streamChunkGravityStart;
         float flameVar_streamChunkGravityEnd;

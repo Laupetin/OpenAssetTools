@@ -59,6 +59,6 @@ set condition sound never;
 // snd_alias_list_name
 set string snd_alias_list_name::soundName;
 
-// flameTable
-use flameTable;
+// FlameTable
+use FlameTable;
 set string name;

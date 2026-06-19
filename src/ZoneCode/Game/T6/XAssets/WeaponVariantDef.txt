@@ -185,8 +185,8 @@ reorder:
 killIcon
 indicatorIcon;
 
-// flameTable
-use flameTable;
+// FlameTable
+use FlameTable;
 set string name;
 set string flameOffLoopSound;
 set string flameIgniteSound;

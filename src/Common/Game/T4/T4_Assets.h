@@ -3242,7 +3242,7 @@ namespace T4
         int clientOnly;
     };
 
-    struct flameTable
+    struct FlameTable
     {
         float flameVar_streamChunkGravityStart;
         float flameVar_streamChunkGravityEnd;
@@ -3788,8 +3788,8 @@ namespace T4
         float hipDofEnd;
         const char* flameTableFirstPerson;
         const char* flameTableThirdPerson;
-        flameTable* flameTableFirstPersonPtr;
-        flameTable* flameTableThirdPersonPtr;
+        FlameTable* flameTableFirstPersonPtr;
+        FlameTable* flameTableThirdPersonPtr;
         FxEffectDef* tagFx_preparationEffect;
         FxEffectDef* tagFlash_preparationEffect;
     };
