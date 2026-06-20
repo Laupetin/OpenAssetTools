@@ -3,6 +3,7 @@
 #include "SearchPaths.h"
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 class SharedSearchPathEntry

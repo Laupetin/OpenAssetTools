@@ -1,6 +1,6 @@
 #include "SharedSearchPaths.h"
 
-#include "../../ObjLoading/SearchPath/IWD.h"
+#include "SearchPath/IWD.h"
 #include "SearchPathFilesystem.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
