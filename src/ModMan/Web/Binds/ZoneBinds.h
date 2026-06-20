@@ -6,7 +6,7 @@
 namespace ui
 {
     void NotifyZoneLoadProgress(std::string zoneName, double percentage);
-    void NotifyZoneLoaded(const LoadedZone& loadedZone);
+    void NotifyZoneLoaded(const LoadedZoneInformation& loadedZone);
     void NotifyZoneUnloaded(std::string zoneName);
 
     void RegisterZoneBinds(webwindowed::commands_builder& commands);

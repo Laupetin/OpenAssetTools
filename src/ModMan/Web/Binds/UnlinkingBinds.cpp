@@ -57,7 +57,7 @@ namespace
             auto& context = ModManContext::Get().m_fast_file;
             const auto loadedZones = context.GetLoadedZones();
             const auto existingZone = std::ranges::find_if(loadedZones.Data(),
-                                                           [&zoneName](const std::unique_ptr<LoadedZone>& loadedZone)
+                                                           [&zoneName](const std::unique_ptr<LoadedZoneInformation>& loadedZone)
                                                            {
                                                                return loadedZone->GetZone().m_name == zoneName;
                                                            });

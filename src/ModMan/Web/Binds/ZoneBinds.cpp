@@ -61,7 +61,7 @@ namespace
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(ZoneUnloadedDto, zoneName);
 
-    ZoneDto CreateZoneDto(const LoadedZone& loadedZone)
+    ZoneDto CreateZoneDto(const LoadedZoneInformation& loadedZone)
     {
         return ZoneDto{
             .name = loadedZone.GetZone().m_name,
@@ -149,7 +149,7 @@ namespace ui
         Notify(*ModManContext::Get().m_main_window, "zoneLoadProgress", dto);
     }
 
-    void NotifyZoneLoaded(const LoadedZone& loadedZone)
+    void NotifyZoneLoaded(const LoadedZoneInformation& loadedZone)
     {
         const ZoneLoadedDto dto{
             .zone = CreateZoneDto(loadedZone),
