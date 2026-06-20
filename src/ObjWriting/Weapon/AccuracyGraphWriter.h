@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Dumping/AssetDumpingContext.h"
 #include "Dumping/IZoneAssetDumperState.h"
 #include "Parsing/GenericGraph2D.h"
@@ -9,13 +10,10 @@
 class AccuracyGraphWriter final : public IZoneAssetDumperState
 {
 public:
-    bool ShouldDumpAiVsAiGraph(const std::string& graphName);
-    bool ShouldDumpAiVsPlayerGraph(const std::string& graphName);
+    bool ShouldDumpGraph(const std::string& graphName);
 
-    static void DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsAiGraph);
-    static void DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsPlayerGraph);
+    static void DumpGraph(const AssetDumpingContext& context, const GenericGraph2D& graph);
 
 private:
-    std::unordered_set<std::string> m_dumped_ai_vs_ai_graphs;
-    std::unordered_set<std::string> m_dumped_ai_vs_player_graphs;
+    std::unordered_set<std::string> m_dumped_graphs;
 };

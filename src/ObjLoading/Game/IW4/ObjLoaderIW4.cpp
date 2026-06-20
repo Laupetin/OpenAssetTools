@@ -8,6 +8,7 @@
 #include "Game/IW4/Image/ImageLoaderExternalIW4.h"
 #include "Game/IW4/Techset/PixelShaderLoaderIW4.h"
 #include "Game/IW4/Techset/VertexShaderLoaderIW4.h"
+#include "Game/IW4/Weapon/AccuracyGraphLoaderIW4.h"
 #include "Game/IW4/XAnim/XAnimLoaderIW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
@@ -160,6 +161,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
+
+        collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW4(memory, searchPath));
     }
 } // namespace
 

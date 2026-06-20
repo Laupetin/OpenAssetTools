@@ -66,6 +66,7 @@ namespace IW5
     enum SubAssetType
     {
         SUB_ASSET_TYPE_TECHNIQUE,
+        SUB_ASSET_TYPE_ACCURACY_GRAPH,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -204,6 +205,12 @@ namespace IW5
         PPFT_NUM_FIELD_TYPES,
     };
 
+    struct AccuracyGraph
+    {
+        vec2_t* graphKnots;
+        int graphKnotCount;
+    };
+
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysCollMap = Asset<ASSET_TYPE_PHYSCOLLMAP, PhysCollmap>;
     using AssetXAnim = Asset<ASSET_TYPE_XANIMPARTS, XAnimParts>;
@@ -246,6 +253,7 @@ namespace IW5
     using AssetAddonMapEnts = Asset<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
+    using SubAssetAccuracyGraph = SubAsset<SUB_ASSET_TYPE_ACCURACY_GRAPH, AccuracyGraph>;
 } // namespace IW5
 
 DEFINE_ASSET_NAME_ACCESSOR(IW5::AssetPhysPreset, name);

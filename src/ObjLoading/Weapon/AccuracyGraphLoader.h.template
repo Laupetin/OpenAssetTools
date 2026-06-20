@@ -1,0 +1,21 @@
+#options GAME (IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Weapon/AccuracyGraphLoader" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+#set CREATE_LOADER_METHOD "CreateAccuracyGraphLoader" + GAME
+
+namespace weapon
+{
+    std::unique_ptr<SubAssetCreator<GAME::SubAssetAccuracyGraph>> CREATE_LOADER_METHOD (MemoryManager& memory, ISearchPath& searchPath);
+} // namespace GAME

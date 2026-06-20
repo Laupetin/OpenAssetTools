@@ -11,6 +11,7 @@
 #include "Game/T6/T6.h"
 #include "Game/T6/Techset/PixelShaderLoaderT6.h"
 #include "Game/T6/Techset/VertexShaderLoaderT6.h"
+#include "Game/T6/Weapon/AccuracyGraphLoaderT6.h"
 #include "Game/T6/XAnim/XAnimLoaderT6.h"
 #include "Game/T6/XModel/LoaderXModelT6.h"
 #include "Image/Dx12TextureLoader.h"
@@ -442,6 +443,7 @@ namespace T6
 
             collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
             collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
+            collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderT6(memory, searchPath));
             collection.AddSubAssetCreator(weapon::CreateFlameTableLoaderT6(memory, searchPath, zone));
         }
     } // namespace

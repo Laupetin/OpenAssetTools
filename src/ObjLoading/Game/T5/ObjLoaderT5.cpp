@@ -8,6 +8,7 @@
 #include "Game/T5/T5.h"
 #include "Game/T5/Techset/PixelShaderLoaderT5.h"
 #include "Game/T5/Techset/VertexShaderLoaderT5.h"
+#include "Game/T5/Weapon/AccuracyGraphLoaderT5.h"
 #include "Game/T5/XAnim/XAnimLoaderT5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "LightDef/LightDefLoaderT5.h"
@@ -150,6 +151,7 @@ namespace
 
         collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT5(memory, searchPath));
         collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT5(memory, searchPath));
+        collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderT5(memory, searchPath));
         collection.AddSubAssetCreator(weapon::CreateFlameTableLoaderT5(memory, searchPath, zone));
     }
 } // namespace

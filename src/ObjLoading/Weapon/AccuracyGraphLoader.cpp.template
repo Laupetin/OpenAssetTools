@@ -1,0 +1,71 @@
+#options GAME(IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Weapon/AccuracyGraphLoader" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"AccuracyGraphLoader" + GAME + ".h\""
+
+#include LOADER_HEADER
+
+#include "Parsing/Graph2D/Graph2DReader.h"
+#include "Utils/Logging/Log.h"
+#include "Weapon/WeaponCommon.h"
+
+#include <format>
+#include <iostream>
+
+using namespace GAME;
+
+namespace
+{
+    class AccuracyGraphLoader final : public SubAssetCreator<SubAssetAccuracyGraph>
+    {
+    public:
+        AccuracyGraphLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateSubAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = weapon::GetFileNameForAccuracyGraph(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            auto* accuracyGraph = m_memory.Alloc<AccuracyGraph>();
+            const auto commonAccuracyGraph = graph2d::Read("accuracy graph", "WEAPONACCUFILE", *file.m_stream, fileName, assetName);
+            if (!commonAccuracyGraph)
+            {
+                con::error("Failed to load accuracy graph \"{}\"", assetName);
+                return AssetCreationResult::Failure();
+            }
+            
+            accuracyGraph->graphKnotCount = static_cast<int>(commonAccuracyGraph->knots.size());
+            accuracyGraph->graphKnots = m_memory.Alloc<vec2_t>(accuracyGraph->graphKnotCount);
+    
+            for (auto i = 0; i < accuracyGraph->graphKnotCount; i++)
+            {
+                const auto& commonKnot = commonAccuracyGraph->knots[i];
+                accuracyGraph->graphKnots[i].x = static_cast<float>(commonKnot.x);
+                accuracyGraph->graphKnots[i].y = static_cast<float>(commonKnot.y);
+            }
+
+            return AssetCreationResult::Success(context.AddSubAsset<SubAssetAccuracyGraph>(assetName, accuracyGraph));
+        }
+        
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+#set CREATE_LOADER_METHOD "CreateAccuracyGraphLoader" + GAME
+
+namespace weapon
+{
+    std::unique_ptr<SubAssetCreator<SubAssetAccuracyGraph>> CREATE_LOADER_METHOD (MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<AccuracyGraphLoader>(memory, searchPath);
+    }
+}

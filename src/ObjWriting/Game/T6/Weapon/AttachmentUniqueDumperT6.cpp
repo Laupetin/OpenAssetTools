@@ -65,8 +65,13 @@ namespace
                 break;
             }
 
+            case AUFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
+                break;
+
+            case AUFT_ANIM_NAME:
+                FillFromString(std::string(field.szName), field.iOffset);
                 break;
             }
         }
