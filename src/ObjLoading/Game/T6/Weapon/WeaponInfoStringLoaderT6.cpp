@@ -6,6 +6,7 @@
 #include "Game/T6/Weapon/WeaponFields.h"
 #include "Game/T6/Weapon/WeaponStrings.h"
 #include "Utils/Logging/Log.h"
+#include "Utils/StringUtils.h"
 #include "Weapon/AccuracyGraphLoader.h"
 
 #include <cassert>
@@ -488,25 +489,109 @@ namespace
         weapon.weapDef.locationDamageMultipliers = weapon.locationDamageMultipliers;
     }
 
-    void CalculateWeaponFields(WeaponFullDef& weapon)
+    bool IsDefaultWeapon(const WeaponFullDef& weapon)
     {
-        // iAttachments
+        return strcmp(weapon.weapVariantDef.szInternalName, "defaultweapon") == 0 || strcmp(weapon.weapVariantDef.szInternalName, "defaultweapon_mp") == 0;
+    }
+
+    void SetWeaponDefaults(WeaponFullDef& weapon)
+    {
+        if (IsDefaultWeapon(weapon))
+            return;
+
+        if (!weapon.weapDef.viewLastShotEjectEffect)
+            weapon.weapDef.viewLastShotEjectEffect = weapon.weapDef.viewShellEjectEffect;
+        if (!weapon.weapDef.worldLastShotEjectEffect)
+            weapon.weapDef.worldLastShotEjectEffect = weapon.weapDef.worldShellEjectEffect;
+        if (!weapon.weapDef.raiseSound)
+            weapon.weapDef.raiseSound = "wpn_default_raise";
+        if (!weapon.weapDef.putawaySound)
+            weapon.weapDef.putawaySound = "wpn_default_putaway";
+        if (!weapon.weapDef.pickupSound)
+            weapon.weapDef.pickupSound = "wpn_default_pickup";
+        if (!weapon.weapDef.ammoPickupSound)
+            weapon.weapDef.ammoPickupSound = "wpn_default_ammo_pickup";
+        if (!weapon.weapDef.emptyFireSound)
+            weapon.weapDef.emptyFireSound = "wpn_default_no_ammo";
+    }
+
+    void SetupTransitionTimes(WeaponFullDef& weapon)
+    {
+        if (weapon.weapVariantDef.iAdsTransInTime <= 0)
+            weapon.weapVariantDef.fOOPosAnimLength[0] = 1.0f / 300.0f; // 0.0033333334f;
+        else
+            weapon.weapVariantDef.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon.weapVariantDef.iAdsTransInTime);
+
+        if (weapon.weapVariantDef.iAdsTransOutTime <= 0)
+            weapon.weapVariantDef.fOOPosAnimLength[1] = 1.0f / 500.0f; // 0.0020000001f
+        else
+            weapon.weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.weapVariantDef.iAdsTransOutTime);
+    }
+
+    void CheckWeaponDamageRanges(WeaponFullDef& weapon)
+    {
+        if (strcmp(weapon.weapVariantDef.szInternalName, "none") == 0)
+            return;
+
+        if (weapon.weapDef.damageRange[0] <= 0.0)
+            weapon.weapDef.damageRange[0] = 999999.0f;
+        if (weapon.weapDef.damageRange[5] <= 0.0)
+            weapon.weapDef.damageRange[5] = 999999.12f; // oddly specific number, no clue
+    }
+
+    void CheckCrosshairValues(WeaponFullDef& weapon)
+    {
+        if (weapon.weapDef.enemyCrosshairRange > 15000.0f)
+            con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.weapVariantDef.szInternalName);
+    }
+
+    void CheckProjectileValues(WeaponFullDef& weapon)
+    {
+        if (weapon.weapDef.weapType != WEAPTYPE_PROJECTILE)
+            return;
+
+        if (weapon.weapDef.iProjectileSpeed <= 0)
+            con::warn("Weapon {}: Projectile speed must be greater than 0.0", weapon.weapVariantDef.szDisplayName);
+
+        if (weapon.weapDef.destabilizationCurvatureMax >= 1000000000.0f || weapon.weapDef.destabilizationCurvatureMax < 0.0f)
+            con::warn("Weapon {}: Destabilization angle must be between 0 and 45 degrees", weapon.weapVariantDef.szDisplayName);
+
+        if (weapon.weapDef.destabilizationRateTime < 0.0f)
+            con::warn("Weapon {}: Destabilization rate time must be non-negative", weapon.weapVariantDef.szDisplayName);
+    }
+
+    void CheckSharedAmmoValues(const WeaponFullDef& weapon)
+    {
+        if (weapon.weapVariantDef.szAmmoName)
+            utils::MakeStringLowerCase(const_cast<char*>(weapon.weapVariantDef.szAmmoName));
+
+        if (weapon.weapVariantDef.szClipName)
+            utils::MakeStringLowerCase(const_cast<char*>(weapon.weapVariantDef.szClipName));
+    }
+
+    void CheckAttachModelTags(const WeaponFullDef& weapon)
+    {
+        for (auto* tag : weapon.attachViewModelTag)
+        {
+            if (tag)
+                utils::MakeStringLowerCase(const_cast<char*>(tag));
+        }
+
+        for (auto* tag : weapon.attachWorldModelTag)
+        {
+            if (tag)
+                utils::MakeStringLowerCase(const_cast<char*>(tag));
+        }
+    }
+
+    void SetupAttachmentField(WeaponFullDef& weapon)
+    {
         weapon.weapVariantDef.iAttachments = 0;
         for (auto i = 1u; i < sizeof(WeaponVariantDef::iAttachments) * 8; i++) // Bit for default attachment always 0
         {
             if (weapon.attachments[i])
                 weapon.weapVariantDef.iAttachments |= 1 << i;
         }
-
-        if (weapon.weapVariantDef.iAdsTransInTime <= 0)
-            weapon.weapVariantDef.fOOPosAnimLength[0] = 0.0033333334f;
-        else
-            weapon.weapVariantDef.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon.weapVariantDef.iAdsTransInTime);
-
-        if (weapon.weapVariantDef.iAdsTransOutTime <= 0)
-            weapon.weapVariantDef.fOOPosAnimLength[1] = 0.0020000001f;
-        else
-            weapon.weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.weapVariantDef.iAdsTransOutTime);
     }
 
     bool IsStringOverride(const char* baseString, const char* overrideString)
@@ -663,8 +748,15 @@ namespace weapon
             return AssetCreationResult::Failure();
         }
 
-        CalculateWeaponFields(*weaponFullDef);
+        SetWeaponDefaults(*weaponFullDef);
+        SetupTransitionTimes(*weaponFullDef);
+        CheckWeaponDamageRanges(*weaponFullDef);
+        SetupAttachmentField(*weaponFullDef);
         CalculateAttachmentFields(*weaponFullDef);
+        CheckCrosshairValues(*weaponFullDef);
+        CheckProjectileValues(*weaponFullDef);
+        CheckSharedAmmoValues(*weaponFullDef);
+        CheckAttachModelTags(*weaponFullDef);
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
