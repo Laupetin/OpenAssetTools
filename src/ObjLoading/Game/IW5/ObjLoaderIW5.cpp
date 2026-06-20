@@ -8,6 +8,7 @@
 #include "Game/IW5/Image/ImageLoaderExternalIW5.h"
 #include "Game/IW5/Techset/PixelShaderLoaderIW5.h"
 #include "Game/IW5/Techset/VertexShaderLoaderIW5.h"
+#include "Game/IW5/Weapon/AccuracyGraphLoaderIW5.h"
 #include "Game/IW5/XAnim/XAnimLoaderIW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"
 #include "Leaderboard/LoaderLeaderboardIW5.h"
@@ -171,6 +172,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
+
+        collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW5(memory, searchPath));
     }
 } // namespace
 

@@ -4,7 +4,7 @@
 #include "Game/IW5/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW5/Weapon/WeaponFields.h"
 #include "Utils/Logging/Log.h"
-#include "Weapon/AccuracyGraphLoader.h"
+#include "Weapon/WeaponCommon.h"
 
 #include <cassert>
 #include <cstring>
@@ -797,57 +797,58 @@ namespace
         }
     }
 
-    void ConvertAccuracyGraph(const GenericGraph2D& graph,
-                              vec2_t*& originalGraphKnots,
-                              uint16_t& originalGraphKnotCount,
-                              vec2_t*& graphKnots,
-                              uint16_t& graphKnotCount,
-                              MemoryManager& memory)
+    bool LoadAccuracyGraph(const std::string& graphName,
+                           vec2_t*& originalGraphKnots,
+                           uint16_t& originalGraphKnotCount,
+                           vec2_t*& graphKnots,
+                           uint16_t& graphKnotCount,
+                           AssetCreationContext& context)
     {
-        originalGraphKnotCount = static_cast<uint16_t>(graph.knots.size());
-        originalGraphKnots = memory.Alloc<vec2_t>(originalGraphKnotCount);
+        auto* accuracyGraphAsset = context.LoadSubAsset<SubAssetAccuracyGraph>(graphName);
+        if (!accuracyGraphAsset)
+            return false;
 
-        for (auto i = 0u; i < originalGraphKnotCount; i++)
-        {
-            const auto& commonKnot = graph.knots[i];
-            originalGraphKnots[i].x = static_cast<float>(commonKnot.x);
-            originalGraphKnots[i].y = static_cast<float>(commonKnot.y);
-        }
+        const auto* accuracyGraph = accuracyGraphAsset->Asset();
 
-        graphKnots = originalGraphKnots;
-        graphKnotCount = originalGraphKnotCount;
+        assert(accuracyGraphAsset->m_dependencies.empty());
+        assert(accuracyGraphAsset->m_used_script_strings.empty());
+        assert(accuracyGraphAsset->m_indirect_asset_references.empty());
+
+        originalGraphKnots = accuracyGraph->graphKnots;
+        originalGraphKnotCount = static_cast<uint16_t>(accuracyGraph->graphKnotCount);
+
+        graphKnots = accuracyGraph->graphKnots;
+        graphKnotCount = static_cast<uint16_t>(accuracyGraph->graphKnotCount);
+
+        return true;
     }
 
     bool LoadAccuracyGraphs(WeaponFullDef& weaponFullDef, MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
     {
-        auto& accuracyGraphLoader = context.GetZoneAssetCreationState<AccuracyGraphLoader>();
-
         if (weaponFullDef.weapDef.aiVsAiAccuracyGraphName && weaponFullDef.weapDef.aiVsAiAccuracyGraphName[0])
         {
-            const auto* graph = accuracyGraphLoader.LoadAiVsAiGraph(searchPath, weaponFullDef.weapDef.aiVsAiAccuracyGraphName);
-            if (!graph)
+            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsAiAccuracyGraph(weaponFullDef.weapDef.aiVsAiAccuracyGraphName),
+                                   weaponFullDef.weapDef.originalAiVsAiAccuracyGraphKnots,
+                                   weaponFullDef.weapDef.originalAiVsAiAccuracyGraphKnotCount,
+                                   weaponFullDef.weapCompleteDef.aiVsAiAccuracyGraphKnots,
+                                   weaponFullDef.weapCompleteDef.aiVsAiAccuracyGraphKnotCount,
+                                   context))
+            {
                 return false;
-
-            ConvertAccuracyGraph(*graph,
-                                 weaponFullDef.weapDef.originalAiVsAiAccuracyGraphKnots,
-                                 weaponFullDef.weapDef.originalAiVsAiAccuracyGraphKnotCount,
-                                 weaponFullDef.weapCompleteDef.aiVsAiAccuracyGraphKnots,
-                                 weaponFullDef.weapCompleteDef.aiVsAiAccuracyGraphKnotCount,
-                                 memory);
+            }
         }
 
         if (weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName && weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName[0])
         {
-            const auto* graph = accuracyGraphLoader.LoadAiVsPlayerGraph(searchPath, weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName);
-            if (!graph)
+            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsPlayerAccuracyGraph(weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName),
+                                   weaponFullDef.weapDef.originalAiVsPlayerAccuracyGraphKnots,
+                                   weaponFullDef.weapDef.originalAiVsPlayerAccuracyGraphKnotCount,
+                                   weaponFullDef.weapCompleteDef.aiVsPlayerAccuracyGraphKnots,
+                                   weaponFullDef.weapCompleteDef.aiVsPlayerAccuracyGraphKnotCount,
+                                   context))
+            {
                 return false;
-
-            ConvertAccuracyGraph(*graph,
-                                 weaponFullDef.weapDef.originalAiVsPlayerAccuracyGraphKnots,
-                                 weaponFullDef.weapDef.originalAiVsPlayerAccuracyGraphKnotCount,
-                                 weaponFullDef.weapCompleteDef.aiVsPlayerAccuracyGraphKnots,
-                                 weaponFullDef.weapCompleteDef.aiVsPlayerAccuracyGraphKnotCount,
-                                 memory);
+            }
         }
 
         return true;

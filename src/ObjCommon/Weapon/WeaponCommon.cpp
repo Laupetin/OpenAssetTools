@@ -9,6 +9,16 @@ namespace weapon
         return std::format("weapons/{}", assetName);
     }
 
+    std::string GetAssetNameForAiVsAiAccuracyGraph(const std::string& graphName)
+    {
+        return std::format("aivsai/{}", graphName);
+    }
+
+    std::string GetAssetNameForAiVsPlayerAccuracyGraph(const std::string& graphName)
+    {
+        return std::format("aivsplayer/{}", graphName);
+    }
+
     std::string GetFileNameForFlameTable(const std::string& flameTableName)
     {
         return std::format("weapons/{}", flameTableName);

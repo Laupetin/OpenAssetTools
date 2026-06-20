@@ -63,6 +63,7 @@ namespace IW4
     enum SubAssetType
     {
         SUB_ASSET_TYPE_TECHNIQUE,
+        SUB_ASSET_TYPE_ACCURACY_GRAPH,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -186,6 +187,13 @@ namespace IW4
         VFT_NUM,
     };
 
+    struct AccuracyGraph
+    {
+        const char* name;
+        vec2_t* graphKnots;
+        int graphKnotCount;
+    };
+
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysCollMap = Asset<ASSET_TYPE_PHYSCOLLMAP, PhysCollmap>;
     using AssetXAnim = Asset<ASSET_TYPE_XANIMPARTS, XAnimParts>;
@@ -225,6 +233,7 @@ namespace IW4
     using AssetAddonMapEnts = Asset<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>;
 
     using SubAssetTechnique = SubAsset<SUB_ASSET_TYPE_TECHNIQUE, MaterialTechnique>;
+    using SubAssetAccuracyGraph = SubAsset<SUB_ASSET_TYPE_ACCURACY_GRAPH, AccuracyGraph>;
 } // namespace IW4
 
 DEFINE_ASSET_NAME_ACCESSOR(IW4::AssetPhysPreset, name);
