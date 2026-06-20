@@ -15,7 +15,7 @@ namespace
     std::unique_ptr<ISearchPath> CreateSearchPath(const std::string& searchPathStr)
     {
         auto searchPath = std::make_unique<SearchPathFilesystem>(searchPathStr);
-        con::debug("Loaded search path \"{}\"", searchPathStr);
+        con::info("Loaded search path \"{}\"", searchPathStr);
 
         SearchPaths searchPaths;
         bool hasIwds = false;
@@ -42,7 +42,6 @@ namespace
                     }
 
                     searchPaths.CommitSearchPath(std::move(iwd));
-                    con::debug("Loaded search path \"{}\"", iwdPath);
                 }
             }
         }
@@ -61,6 +60,22 @@ SharedSearchPathEntry::SharedSearchPathEntry(std::unique_ptr<ISearchPath> search
 }
 
 SharedSearchPaths::SharedSearchPaths() = default;
+
+SharedSearchPaths::~SharedSearchPaths()
+{
+    Clear();
+}
+
+void SharedSearchPaths::Clear()
+{
+    for (auto& entry : m_search_path_entries)
+    {
+        entry.second.reset();
+        con::info("Unloaded search path \"{}\"", entry.first);
+    }
+    m_search_path_entries.clear();
+    m_search_paths = SearchPaths();
+}
 
 ISearchPath& SharedSearchPaths::GetSearchPath()
 {
@@ -94,7 +109,7 @@ void SharedSearchPaths::UnrefSearchPath(const std::string& searchPathStr)
         {
             m_search_paths.RemoveSearchPath(existingSearchPath->second->m_search_path.get());
             m_search_path_entries.erase(existingSearchPath);
-            con::debug("Unloaded search path \"{}\"", searchPathStr);
+            con::info("Unloaded search path \"{}\"", searchPathStr);
         }
     }
 }

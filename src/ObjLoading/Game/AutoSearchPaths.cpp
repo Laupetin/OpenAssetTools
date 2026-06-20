@@ -2,6 +2,7 @@
 
 #include "IW3/AutoSearchPathsIW3.h"
 #include "IW4/AutoSearchPathsIW4.h"
+#include "IW4/InfoString/InfoStringToStructConverter.h"
 #include "IW5/AutoSearchPathsIW5.h"
 #include "T4/AutoSearchPathsT4.h"
 #include "T5/AutoSearchPathsT5.h"
@@ -44,6 +45,8 @@ std::vector<std::string> AutoSearchPaths::GetSearchPathsForZonePath(const std::s
     const auto maybeGameRootFolder = FindGameRootFolder(folderName, RecognizedZoneDirs());
     if (!maybeGameRootFolder)
         return {folderName};
+
+    con::debug("Detected game directory: {}", *maybeGameRootFolder);
 
     std::vector<std::string> result;
     const fs::path gameRootFolderPath(*maybeGameRootFolder);

@@ -18,6 +18,14 @@ class SharedSearchPaths
 {
 public:
     SharedSearchPaths();
+    ~SharedSearchPaths();
+
+    SharedSearchPaths(const SharedSearchPaths& other) = delete;
+    SharedSearchPaths(SharedSearchPaths&& other) noexcept = default;
+    SharedSearchPaths& operator=(const SharedSearchPaths& other) = delete;
+    SharedSearchPaths& operator=(SharedSearchPaths&& other) noexcept = default;
+
+    void Clear();
 
     [[nodiscard]] ISearchPath& GetSearchPath();
 
