@@ -1,6 +1,8 @@
 #include "AccuracyGraphWriter.h"
 
+#include "Game/IW4/Weapon/WeaponDumperIW4.h"
 #include "Utils/Logging/Log.h"
+#include "Weapon/WeaponCommon.h"
 
 #include <format>
 
@@ -23,7 +25,7 @@ namespace
 
     void DumpAccuracyGraph(const AssetDumpingContext& context, const GenericGraph2D& graph)
     {
-        const auto file = context.OpenAssetFile(std::format("accuracy/{}", graph.name));
+        const auto file = context.OpenAssetFile(weapon::GetFileNameForAccuracyGraph(graph.name));
         if (!file)
         {
             con::error("Failed to open file for accuracy graph: {}", graph.name);

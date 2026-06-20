@@ -8,6 +8,7 @@
 
 #include "Parsing/Graph2D/Graph2DReader.h"
 #include "Utils/Logging/Log.h"
+#include "Weapon/WeaponCommon.h"
 
 #include <format>
 #include <iostream>
@@ -27,7 +28,7 @@ namespace
 
         AssetCreationResult CreateSubAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("accuracy/{}", assetName);
+            const auto fileName = weapon::GetFileNameForAccuracyGraph(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();

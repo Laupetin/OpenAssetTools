@@ -9,6 +9,11 @@ namespace weapon
         return std::format("weapons/{}", assetName);
     }
 
+    std::string GetFileNameForAccuracyGraph(const std::string& assetName)
+    {
+        return std::format("accuracy/{}", assetName);
+    }
+
     std::string GetAssetNameForAiVsAiAccuracyGraph(const std::string& graphName)
     {
         return std::format("aivsai/{}", graphName);
