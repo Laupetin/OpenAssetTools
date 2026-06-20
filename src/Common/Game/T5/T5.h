@@ -148,6 +148,7 @@ namespace T5
         WFT_HIDETAGS,
         WFT_EXPLOSION_TAG,
         WFT_NOTETRACKSOUNDMAP,
+        WFT_ANIM_NAME,
 
         WFT_NUM_FIELD_TYPES
     };

@@ -101,6 +101,9 @@ namespace
             case WFT_NOTETRACKSOUNDMAP:
                 return ConvertNotetrackSoundMap(field, value);
 
+            case WFT_ANIM_NAME:
+                return ConvertAnimName(field, value);
+
             default:
                 assert(false);
                 return false;
@@ -210,6 +213,19 @@ namespace
             }
 
             return true;
+        }
+
+        bool ConvertAnimName(const cspField_t& field, const std::string& value)
+        {
+            if (ConvertString(value, field.iOffset))
+            {
+                if (!value.empty())
+                    m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetXAnim>(value));
+
+                return true;
+            }
+
+            return false;
         }
 
     public:
