@@ -318,25 +318,30 @@ namespace
         weapon.weapDef.locationDamageMultipliers = weapon.locationDamageMultipliers;
     }
 
+    bool IsDefaultWeapon(const WeaponFullDef& weapon)
+    {
+        return strcmp(weapon.weapVariantDef.szInternalName, "defaultweapon") == 0 || strcmp(weapon.weapVariantDef.szInternalName, "defaultweapon_mp") == 0;
+    }
+
     void SetWeaponDefaults(WeaponFullDef& weapon)
     {
-        if (strcmp(weapon.weapVariantDef.szInternalName, "defaultweapon_mp") != 0)
-        {
-            if (!weapon.weapDef.viewLastShotEjectEffect)
-                weapon.weapDef.viewLastShotEjectEffect = weapon.weapDef.viewShellEjectEffect;
-            if (!weapon.weapDef.worldLastShotEjectEffect)
-                weapon.weapDef.worldLastShotEjectEffect = weapon.weapDef.worldShellEjectEffect;
-            if (!weapon.weapDef.raiseSound)
-                weapon.weapDef.raiseSound = "wpn_default_raise";
-            if (!weapon.weapDef.putawaySound)
-                weapon.weapDef.putawaySound = "wpn_default_putaway";
-            if (!weapon.weapDef.pickupSound)
-                weapon.weapDef.pickupSound = "wpn_default_pickup";
-            if (!weapon.weapDef.ammoPickupSound)
-                weapon.weapDef.ammoPickupSound = "wpn_default_ammo_pickup";
-            if (!weapon.weapDef.emptyFireSound)
-                weapon.weapDef.emptyFireSound = "wpn_default_no_ammo";
-        }
+        if (IsDefaultWeapon(weapon))
+            return;
+
+        if (!weapon.weapDef.viewLastShotEjectEffect)
+            weapon.weapDef.viewLastShotEjectEffect = weapon.weapDef.viewShellEjectEffect;
+        if (!weapon.weapDef.worldLastShotEjectEffect)
+            weapon.weapDef.worldLastShotEjectEffect = weapon.weapDef.worldShellEjectEffect;
+        if (!weapon.weapDef.raiseSound)
+            weapon.weapDef.raiseSound = "wpn_default_raise";
+        if (!weapon.weapDef.putawaySound)
+            weapon.weapDef.putawaySound = "wpn_default_putaway";
+        if (!weapon.weapDef.pickupSound)
+            weapon.weapDef.pickupSound = "wpn_default_pickup";
+        if (!weapon.weapDef.ammoPickupSound)
+            weapon.weapDef.ammoPickupSound = "wpn_default_ammo_pickup";
+        if (!weapon.weapDef.emptyFireSound)
+            weapon.weapDef.emptyFireSound = "wpn_default_no_ammo";
     }
 
     void SetupTransitionTimes(WeaponFullDef& weapon)
@@ -354,6 +359,9 @@ namespace
 
     void CheckWeaponDamageRanges(WeaponFullDef& weapon)
     {
+        if (strcmp(weapon.weapVariantDef.szInternalName, "none") == 0)
+            return;
+
         if (weapon.weapDef.fMaxDamageRange <= 0.0)
             weapon.weapDef.fMaxDamageRange = 999999.0f;
         if (weapon.weapDef.fMinDamageRange <= 0.0)
