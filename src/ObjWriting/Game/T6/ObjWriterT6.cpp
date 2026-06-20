@@ -9,6 +9,7 @@
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "LightDef/LightDefDumperT6.h"
 #include "Localize/LocalizeDumperT6.h"
+#include "Maps/AddonMapEntsDumperT6.h"
 #include "Maps/MapEntsDumperT6.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT6.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT6.h"
@@ -77,7 +78,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperKeyValuePairs, m_key_value_pairs)
     RegisterAssetDumper(std::make_unique<vehicle::DumperT6>());
     // REGISTER_DUMPER(AssetDumperMemoryBlock, m_memory_block)
-    // REGISTER_DUMPER(AssetDumperAddonMapEnts, m_addon_map_ents)
+    RegisterAssetDumper(std::make_unique<addon_map_ents::DumperT6>());
     RegisterAssetDumper(std::make_unique<tracer::DumperT6>());
     // REGISTER_DUMPER(AssetDumperSkinnedVertsDef, m_skinned_verts)
     RegisterAssetDumper(std::make_unique<qdb::DumperT6>());
