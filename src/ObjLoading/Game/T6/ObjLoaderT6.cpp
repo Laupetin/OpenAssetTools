@@ -43,6 +43,7 @@
 #include "Weapon/AttachmentUniqueGdtLoaderT6.h"
 #include "Weapon/AttachmentUniqueRawLoaderT6.h"
 #include "Weapon/CamoJsonLoaderT6.h"
+#include "Weapon/FlameTableLoaderT6.h"
 #include "Weapon/WeaponGdtLoaderT6.h"
 #include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
@@ -441,6 +442,7 @@ namespace T6
 
             collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT6(memory, searchPath));
             collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT6(memory, searchPath));
+            collection.AddSubAssetCreator(weapon::CreateFlameTableLoaderT6(memory, searchPath, zone));
         }
     } // namespace
 

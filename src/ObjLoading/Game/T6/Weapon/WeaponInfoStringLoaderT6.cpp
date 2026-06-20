@@ -442,6 +442,32 @@ namespace
         return true;
     }
 
+    bool LoadFlameTable(const char* flameTableName, FlameTable*& flameTablePtr, AssetRegistration<AssetWeapon>& registration, AssetCreationContext& context)
+    {
+        if (flameTableName && flameTableName[0] != '\0')
+        {
+            auto* flameTableAsset = context.LoadSubAsset<SubAssetFlameTable>(flameTableName);
+            if (!flameTableAsset)
+                return false;
+
+            for (auto* dependency : flameTableAsset->m_dependencies)
+                registration.AddDependency(dependency);
+
+            assert(flameTableAsset->m_used_script_strings.empty());
+            assert(flameTableAsset->m_indirect_asset_references.empty());
+
+            flameTablePtr = flameTableAsset->Asset();
+        }
+
+        return true;
+    }
+
+    bool LoadFlameTables(WeaponFullDef& weaponFullDef, AssetRegistration<AssetWeapon>& registration, AssetCreationContext& context)
+    {
+        return LoadFlameTable(weaponFullDef.weapDef.flameTableFirstPerson, weaponFullDef.weapDef.flameTableFirstPersonPtr, registration, context)
+               && LoadFlameTable(weaponFullDef.weapDef.flameTableThirdPerson, weaponFullDef.weapDef.flameTableThirdPersonPtr, registration, context);
+    }
+
     void LinkWeaponFullDefSubStructs(WeaponFullDef& weapon)
     {
         weapon.weapVariantDef.weapDef = &weapon.weapDef;
@@ -625,10 +651,20 @@ namespace weapon
             return AssetCreationResult::Failure();
         }
 
+        if (!LoadAccuracyGraphs(*weaponFullDef, m_memory, m_search_path, context))
+        {
+            con::error("Failed to load accuracy tables of weapon: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        if (!LoadFlameTables(*weaponFullDef, registration, context))
+        {
+            con::error("Failed to load flame tables of weapon: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
         CalculateWeaponFields(*weaponFullDef);
         CalculateAttachmentFields(*weaponFullDef);
-
-        LoadAccuracyGraphs(*weaponFullDef, m_memory, m_search_path, context);
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
