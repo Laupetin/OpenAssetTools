@@ -21,12 +21,12 @@ namespace
         return false;
     }
 
-    void DumpAccuracyGraph(const AssetDumpingContext& context, const GenericGraph2D& graph, const std::string& subFolder)
+    void DumpAccuracyGraph(const AssetDumpingContext& context, const GenericGraph2D& graph)
     {
-        const auto file = context.OpenAssetFile(std::format("accuracy/{}/{}", subFolder, graph.name));
+        const auto file = context.OpenAssetFile(std::format("accuracy/{}", graph.name));
         if (!file)
         {
-            con::error("Failed to open file for accuracy graph: {}/{}", subFolder, graph.name);
+            con::error("Failed to open file for accuracy graph: {}", graph.name);
             return;
         }
 
@@ -38,22 +38,12 @@ namespace
     }
 } // namespace
 
-bool AccuracyGraphWriter::ShouldDumpAiVsAiGraph(const std::string& graphName)
+bool AccuracyGraphWriter::ShouldDumpGraph(const std::string& graphName)
 {
-    return ShouldDumpAccuracyGraph(m_dumped_ai_vs_ai_graphs, graphName);
+    return ShouldDumpAccuracyGraph(m_dumped_graphs, graphName);
 }
 
-bool AccuracyGraphWriter::ShouldDumpAiVsPlayerGraph(const std::string& graphName)
+void AccuracyGraphWriter::DumpGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsAiGraph)
 {
-    return ShouldDumpAccuracyGraph(m_dumped_ai_vs_player_graphs, graphName);
-}
-
-void AccuracyGraphWriter::DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsAiGraph)
-{
-    DumpAccuracyGraph(context, aiVsAiGraph, "aivsai");
-}
-
-void AccuracyGraphWriter::DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsPlayerGraph)
-{
-    DumpAccuracyGraph(context, aiVsPlayerGraph, "aivsplayer");
+    DumpAccuracyGraph(context, aiVsAiGraph);
 }

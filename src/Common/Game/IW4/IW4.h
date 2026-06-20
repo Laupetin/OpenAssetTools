@@ -189,7 +189,6 @@ namespace IW4
 
     struct AccuracyGraph
     {
-        const char* name;
         vec2_t* graphKnots;
         int graphKnotCount;
     };

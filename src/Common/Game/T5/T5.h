@@ -179,7 +179,6 @@ namespace T5
 
     struct AccuracyGraph
     {
-        const char* name;
         vec2_t* graphKnots;
         int graphKnotCount;
     };

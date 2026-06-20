@@ -229,23 +229,6 @@ namespace
         }
     };
 
-    GenericGraph2D ConvertAccuracyGraph(const char* graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
-    {
-        GenericGraph2D graph;
-
-        graph.name = graphName;
-        graph.knots.resize(originalKnotCount);
-
-        for (auto i = 0u; i < originalKnotCount; i++)
-        {
-            auto& knot = graph.knots[i];
-            knot.x = originalKnots[i].x;
-            knot.y = originalKnots[i].y;
-        }
-
-        return graph;
-    }
-
     void CopyToFullDef(const WeaponVariantDef* weapon, WeaponFullDef* fullDef)
     {
         fullDef->weapVariantDef = *weapon;
@@ -345,6 +328,23 @@ namespace
         return converter.Convert();
     }
 
+    GenericGraph2D ConvertAccuracyGraph(std::string graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
+    {
+        GenericGraph2D graph;
+
+        graph.name = std::move(graphName);
+        graph.knots.resize(originalKnotCount);
+
+        for (auto i = 0u; i < originalKnotCount; i++)
+        {
+            auto& knot = graph.knots[i];
+            knot.x = originalKnots[i].x;
+            knot.y = originalKnots[i].y;
+        }
+
+        return graph;
+    }
+
     void DumpAccuracyGraphs(AssetDumpingContext& context, const XAssetInfo<WeaponVariantDef>& asset)
     {
         auto* accuracyGraphWriter = context.GetZoneAssetDumperState<AccuracyGraphWriter>();
@@ -354,22 +354,26 @@ namespace
         if (!weapDef)
             return;
 
-        if (weapDef->aiVsAiAccuracyGraphName && weapDef->originalAiVsAiAccuracyGraphKnots
-            && accuracyGraphWriter->ShouldDumpAiVsAiGraph(weapDef->aiVsAiAccuracyGraphName))
+        if (weapDef->aiVsAiAccuracyGraphName && weapDef->originalAiVsAiAccuracyGraphKnots)
         {
-            AccuracyGraphWriter::DumpAiVsAiGraph(context,
-                                                 ConvertAccuracyGraph(weapDef->aiVsAiAccuracyGraphName,
-                                                                      weapDef->originalAiVsAiAccuracyGraphKnots,
-                                                                      weapDef->originalAiVsAiAccuracyGraphKnotCount));
+            auto graphName = weapon::GetAssetNameForAiVsAiAccuracyGraph(weapDef->aiVsAiAccuracyGraphName);
+            if (accuracyGraphWriter->ShouldDumpGraph(graphName))
+            {
+                const auto graph =
+                    ConvertAccuracyGraph(std::move(graphName), weapDef->originalAiVsAiAccuracyGraphKnots, weapDef->originalAiVsAiAccuracyGraphKnotCount);
+                AccuracyGraphWriter::DumpGraph(context, graph);
+            }
         }
 
-        if (weapDef->aiVsPlayerAccuracyGraphName && weapDef->originalAiVsPlayerAccuracyGraphKnots
-            && accuracyGraphWriter->ShouldDumpAiVsPlayerGraph(weapDef->aiVsPlayerAccuracyGraphName))
+        if (weapDef->aiVsPlayerAccuracyGraphName && weapDef->originalAiVsPlayerAccuracyGraphKnots)
         {
-            AccuracyGraphWriter::DumpAiVsPlayerGraph(context,
-                                                     ConvertAccuracyGraph(weapDef->aiVsPlayerAccuracyGraphName,
-                                                                          weapDef->originalAiVsPlayerAccuracyGraphKnots,
-                                                                          weapDef->originalAiVsPlayerAccuracyGraphKnotCount));
+            auto graphName = weapon::GetAssetNameForAiVsPlayerAccuracyGraph(weapDef->aiVsPlayerAccuracyGraphName);
+            if (accuracyGraphWriter->ShouldDumpGraph(graphName))
+            {
+                const auto graph = ConvertAccuracyGraph(
+                    std::move(graphName), weapDef->originalAiVsPlayerAccuracyGraphKnots, weapDef->originalAiVsPlayerAccuracyGraphKnotCount);
+                AccuracyGraphWriter::DumpGraph(context, graph);
+            }
         }
     }
 
