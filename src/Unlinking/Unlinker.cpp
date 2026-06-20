@@ -1,26 +1,86 @@
 #include "Unlinker.h"
 
 #include "ContentLister/ContentPrinter.h"
+#include "Game/AutoSearchPaths.h"
 #include "IObjLoader.h"
 #include "ObjWriter.h"
 #include "ObjWriting.h"
-#include "SearchPath/IWD.h"
 #include "SearchPath/OutputPathFilesystem.h"
+#include "SearchPath/SharedSearchPaths.h"
 #include "UnlinkerArgs.h"
-#include "UnlinkerPaths.h"
 #include "Utils/Logging/Log.h"
 #include "Zone/Definition/ZoneDefWriter.h"
+#include "Zone/LoadedZoneInformation.h"
 #include "ZoneLoading.h"
 
-#include <cassert>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <ranges>
 
 namespace fs = std::filesystem;
 
 namespace
 {
+    class ReferencedSearchPaths
+    {
+    public:
+        ReferencedSearchPaths()
+            : m_shared_search_paths(nullptr)
+        {
+        }
+
+        ReferencedSearchPaths(SharedSearchPaths& sharedSearchPaths, std::vector<std::string> searchPaths)
+            : m_shared_search_paths(&sharedSearchPaths),
+              m_search_paths(std::move(searchPaths))
+        {
+        }
+
+        ~ReferencedSearchPaths()
+        {
+            Clear();
+        }
+
+        ReferencedSearchPaths(const ReferencedSearchPaths& other) = delete;
+
+        ReferencedSearchPaths(ReferencedSearchPaths&& other) noexcept
+            : m_shared_search_paths(other.m_shared_search_paths),
+              m_search_paths(std::move(other.m_search_paths))
+        {
+            other.m_shared_search_paths = nullptr;
+        }
+
+        ReferencedSearchPaths& operator=(const ReferencedSearchPaths& other) = delete;
+
+        ReferencedSearchPaths& operator=(ReferencedSearchPaths&& other) noexcept
+        {
+            m_shared_search_paths = other.m_shared_search_paths;
+            other.m_shared_search_paths = nullptr;
+            m_search_paths = std::move(other.m_search_paths);
+
+            return *this;
+        }
+
+        void Clear()
+        {
+            if (m_shared_search_paths)
+            {
+                for (const auto& searchPath : m_search_paths)
+                    m_shared_search_paths->UnrefSearchPath(searchPath);
+            }
+            m_shared_search_paths = nullptr;
+        }
+
+    private:
+        SharedSearchPaths* m_shared_search_paths;
+        std::vector<std::string> m_search_paths;
+    };
+
+    [[nodiscard]] std::vector<std::string> GetSearchPathsForZone(const std::string& zonePath, const GameId gameId)
+    {
+        return AutoSearchPaths::GetForGame(gameId)->GetSearchPathsForZonePath(zonePath);
+    }
+
     class UnlinkerImpl : public Unlinker
     {
     public:
@@ -31,16 +91,18 @@ namespace
 
         bool Start() override
         {
-            UnlinkerPaths paths;
-            if (!paths.LoadUserPaths(m_args))
-                return false;
+            SharedSearchPaths paths;
+            for (const auto& userPath : m_args.m_user_search_paths)
+                paths.RefSearchPath(userPath);
 
             if (!LoadZones(paths))
                 return false;
 
             const auto result = UnlinkZones(paths);
 
-            UnloadZones();
+            UnloadZones(paths);
+
+            paths.Clear();
 
             Summarize(result);
 
@@ -203,7 +265,7 @@ namespace
             return true;
         }
 
-        bool LoadZones(UnlinkerPaths& paths)
+        bool LoadZones(SharedSearchPaths& paths)
         {
             for (const auto& zonePath : m_args.m_zones_to_load)
             {
@@ -215,7 +277,6 @@ namespace
 
                 auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
-                auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
                 auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
                 if (!maybeZone)
                 {
@@ -225,44 +286,53 @@ namespace
 
                 auto zone = std::move(*maybeZone);
 
-                con::debug("Loaded zone \"{}\"", zone->m_name);
+                con::info("Loaded zone \"{}\"", zone->m_name);
+
+                auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
+                for (const auto& searchPath : searchPathsForZone)
+                    paths.RefSearchPath(searchPath);
 
                 if (ShouldLoadObj())
                 {
                     const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
-                    objLoader->LoadReferencedContainersForZone(*searchPathsForZone, *zone);
+                    objLoader->LoadReferencedContainersForZone(paths.GetSearchPath(), *zone);
                 }
 
-                m_loaded_zones.emplace_back(std::move(zone));
+                m_loaded_zones.emplace_back(
+                    std::make_unique<LoadedZoneInformation>(std::move(zone), std::move(absoluteZoneDirectory), std::move(searchPathsForZone)));
             }
 
             return true;
         }
 
-        void UnloadZones()
+        void UnloadZones(SharedSearchPaths& paths)
         {
-            for (auto i = m_loaded_zones.rbegin(); i != m_loaded_zones.rend(); ++i)
+            for (auto& loadedZone : std::ranges::reverse_view(m_loaded_zones))
             {
-                auto& loadedZone = *i;
-
                 // Copy zone name since we deallocate before logging
-                const auto zoneName = loadedZone->m_name;
+                const auto zoneName = loadedZone->GetZone().m_name;
 
                 if (ShouldLoadObj())
                 {
-                    const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->m_game_id);
-                    objLoader->UnloadContainersOfZone(*loadedZone);
+                    const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->GetZone().m_game_id);
+                    objLoader->UnloadContainersOfZone(loadedZone->GetZone());
                 }
+
+                for (const auto& searchPath : loadedZone->GetSearchPaths())
+                    paths.UnrefSearchPath(searchPath);
 
                 loadedZone.reset();
 
-                con::debug("Unloaded zone \"{}\"", zoneName);
+                con::info("Unloaded zone \"{}\"", zoneName);
             }
+
             m_loaded_zones.clear();
         }
 
-        bool UnlinkZones(UnlinkerPaths& paths) const
+        bool UnlinkZones(SharedSearchPaths& paths) const
         {
+            ReferencedSearchPaths previousSearchPaths;
+
             for (const auto& zonePath : m_args.m_zones_to_unlink)
             {
                 if (!fs::is_regular_file(zonePath))
@@ -276,8 +346,6 @@ namespace
                     zoneDirectory = fs::current_path();
                 auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
-                auto searchPathsForZone = paths.GetSearchPathsForZone(absoluteZoneDirectory);
-
                 auto maybeZone = ZoneLoading::LoadZone(zonePath, std::nullopt);
                 if (!maybeZone)
                 {
@@ -287,13 +355,20 @@ namespace
 
                 auto zone = std::move(*maybeZone);
 
-                con::debug("Loaded zone \"{}\"", zone->m_name);
+                con::info("Loaded zone \"{}\"", zone->m_name);
+
+                auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
+                for (const auto& searchPath : searchPathsForZone)
+                    paths.RefSearchPath(searchPath);
+
+                previousSearchPaths.Clear();
+                previousSearchPaths = ReferencedSearchPaths(paths, std::move(searchPathsForZone));
 
                 const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game_id);
                 if (ShouldLoadObj())
-                    objLoader->LoadReferencedContainersForZone(*searchPathsForZone, *zone);
+                    objLoader->LoadReferencedContainersForZone(paths.GetSearchPath(), *zone);
 
-                if (!HandleZone(*searchPathsForZone, *zone))
+                if (!HandleZone(paths.GetSearchPath(), *zone))
                     return false;
 
                 if (ShouldLoadObj())
@@ -302,8 +377,10 @@ namespace
                 // Copy zone name for using it after freeing the zone
                 std::string zoneName = zone->m_name;
                 zone.reset();
-                con::debug("Unloaded zone \"{}\"", zoneName);
+                con::info("Unloaded zone \"{}\"", zoneName);
             }
+
+            previousSearchPaths.Clear();
 
             return true;
         }
@@ -315,7 +392,7 @@ namespace
         }
 
         UnlinkerArgs m_args;
-        std::vector<std::unique_ptr<Zone>> m_loaded_zones;
+        std::vector<std::unique_ptr<LoadedZoneInformation>> m_loaded_zones;
     };
 } // namespace
 

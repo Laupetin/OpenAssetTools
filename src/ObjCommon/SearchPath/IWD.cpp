@@ -1,6 +1,5 @@
 #include "IWD.h"
 
-#include "ObjLoading.h"
 #include "Utils/FileToZlibWrapper.h"
 #include "Utils/Logging/Log.h"
 
