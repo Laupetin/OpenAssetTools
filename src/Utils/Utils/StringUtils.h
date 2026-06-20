@@ -13,7 +13,9 @@ namespace utils
     std::string UnescapeStringFromQuotationMarks(const std::string_view& str);
     void UnescapeStringFromQuotationMarks(std::ostream& stream, const std::string_view& str);
 
+    void MakeStringLowerCase(char* str);
     void MakeStringLowerCase(std::string& str);
+    void MakeStringUpperCase(char* str);
     void MakeStringUpperCase(std::string& str);
 
     void StringTrimL(std::string& str);

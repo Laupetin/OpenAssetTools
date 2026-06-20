@@ -8,4 +8,9 @@ namespace weapon
     {
         return std::format("weapons/{}", assetName);
     }
+
+    std::string GetFileNameForFlameTable(const std::string& flameTableName)
+    {
+        return std::format("weapons/{}", flameTableName);
+    }
 } // namespace weapon

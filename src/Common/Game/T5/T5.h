@@ -66,6 +66,7 @@ namespace T5
         SUB_ASSET_TYPE_VERTEX_DECL,
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
+        SUB_ASSET_TYPE_FLAME_TABLE,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -212,6 +213,7 @@ namespace T5
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
+    using SubAssetFlameTable = SubAsset<SUB_ASSET_TYPE_FLAME_TABLE, FlameTable>;
 } // namespace T5
 
 DEFINE_ASSET_NAME_ACCESSOR(T5::AssetPhysPreset, name);
