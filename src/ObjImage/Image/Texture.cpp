@@ -10,36 +10,46 @@ namespace image
     // ================= Texture ====================
     // ==============================================
     Texture::Texture(const ImageFormat* format, const bool mipMaps)
+        : m_format(format),
+          m_has_mip_maps(mipMaps)
     {
-        m_format = format;
-        m_has_mip_maps = mipMaps;
-        m_data = nullptr;
     }
 
     Texture::Texture(Texture&& other) noexcept
+        : m_format(other.m_format),
+          m_has_mip_maps(other.m_has_mip_maps),
+          m_data(std::move(other.m_data))
     {
-        m_format = other.m_format;
-        m_has_mip_maps = other.m_has_mip_maps;
-        m_data = other.m_data;
-
-        other.m_data = nullptr;
     }
 
     Texture& Texture::operator=(Texture&& other) noexcept
     {
         m_format = other.m_format;
         m_has_mip_maps = other.m_has_mip_maps;
-        m_data = other.m_data;
+        m_data = std::move(other.m_data);
 
         other.m_data = nullptr;
 
         return *this;
     }
 
-    Texture::~Texture()
+    Texture::~Texture() = default;
+
+    std::unique_ptr<Texture> Texture::CreateForType(
+        const TextureType type, const ImageFormat* format, const unsigned width, const unsigned height, const unsigned depth, const bool mipMaps)
     {
-        delete[] m_data;
-        m_data = nullptr;
+        switch (type)
+        {
+        case TextureType::T_2D:
+            return std::make_unique<Texture2D>(format, width, height, mipMaps);
+        case TextureType::T_3D:
+            return std::make_unique<Texture3D>(format, width, height, depth, mipMaps);
+        case TextureType::T_CUBE:
+            return std::make_unique<TextureCube>(format, width, height, mipMaps);
+        }
+
+        assert(false);
+        return nullptr;
     }
 
     const ImageFormat* Texture::GetFormat() const
@@ -59,8 +69,8 @@ namespace image
 
         if (storageRequirement > 0)
         {
-            m_data = new uint8_t[storageRequirement];
-            memset(m_data, 0, storageRequirement);
+            m_data = std::make_unique<uint8_t[]>(storageRequirement);
+            memset(m_data.get(), 0, storageRequirement);
         }
     }
 
@@ -218,7 +228,7 @@ namespace image
     // ==============================================
     // =============== TextureCube ==================
     // ==============================================
-    const int TextureCube::FACE_COUNT = 6;
+    static constexpr int FACE_COUNT = 6;
 
     TextureCube::TextureCube(const ImageFormat* format, const unsigned width, const unsigned height)
         : Texture2D(format, width, height)
@@ -381,7 +391,7 @@ namespace image
 
     int Texture3D::GetMipMapCount() const
     {
-        unsigned maxDimension = std::max(std::max(m_width, m_height), m_depth);
+        unsigned maxDimension = std::max({m_width, m_height, m_depth});
 
         int mipMapCount = 0;
 

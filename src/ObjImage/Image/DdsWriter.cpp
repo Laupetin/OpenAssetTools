@@ -4,15 +4,15 @@
 #include "Image/TextureConverter.h"
 
 #include <cassert>
-#include <map>
 #include <memory>
+#include <unordered_map>
 
 using namespace image;
 
 namespace
 {
-    const std::map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE{
-        {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
+    const std::unordered_map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE{
+        // {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
     };
 
     class DdsWriterInternal

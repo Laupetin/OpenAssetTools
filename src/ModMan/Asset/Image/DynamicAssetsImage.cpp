@@ -2,10 +2,11 @@
 
 #include "Context/ModManContext.h"
 #include "Game/CommonAsset.h"
+#include "Image/Compression/ImageDecompressor.h"
 #include "Image/DdsWriter.h"
 #include "Image/ImageToCommonConverter.h"
+#include "Image/TextureConverter.h"
 #include "Pool/XAssetInfo.h"
-#include "SearchPath/SearchPaths.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
@@ -44,6 +45,26 @@ namespace
         return false;
     }
 
+    bool IsWebGlUnsupportedCompression(const ImageFormatId imageFormatId)
+    {
+        // TODO: Add BC4
+        return imageFormatId == ImageFormatId::BC5;
+    }
+
+    std::optional<ImageFormatId> UnsupportedUncompressedFormatConversionTarget(const ImageFormatId imageFormatId)
+    {
+        static std::unordered_map<ImageFormatId, ImageFormatId> unsupportedFormatMap{
+            {ImageFormatId::B8_G8_R8_X8, ImageFormatId::R8_G8_B8_A8},
+            {ImageFormatId::R8_G8_B8,    ImageFormatId::B8_G8_R8   },
+        };
+
+        const auto entry = unsupportedFormatMap.find(imageFormatId);
+        if (entry != unsupportedFormatMap.end())
+            return entry->second;
+
+        return std::nullopt;
+    }
+
     void ImageDds(const webwindowed::dynamic_asset_request& request, webwindowed::dynamic_asset_response& response)
     {
         const auto imageName = request.get_query("name");
@@ -68,8 +89,8 @@ namespace
         assert(zone);
 
         const auto gameName = GameId_Names[std::to_underlying(zone->m_game_id)];
-        const auto converter = ToCommonConverter::GetForGame(zone->m_game_id);
-        if (!converter)
+        const auto toCommonConverter = ToCommonConverter::GetForGame(zone->m_game_id);
+        if (!toCommonConverter)
         {
             con::error("No image converter for game {}", gameName);
             response.send_response(500);
@@ -79,13 +100,30 @@ namespace
         std::unique_ptr<Texture> texture;
         {
             const auto searchPaths = ModManContext::Get().m_fast_file.GetSearchPaths();
-            texture = converter->Convert(*image, searchPaths.Data());
+            texture = toCommonConverter->Convert(*image, searchPaths.Data());
             if (!texture)
             {
                 con::warn("Failed to convert image {} of zone {}", *imageName, *zoneName);
                 response.send_response(500);
                 return;
             }
+        }
+
+        const auto originalTextureFormatId = texture->GetFormat()->GetId();
+        if (IsWebGlUnsupportedCompression(originalTextureFormatId))
+        {
+            auto* textureDecompressor = ImageDecompressor::GetDecompressorForFormat(originalTextureFormatId);
+
+            if (textureDecompressor)
+                texture = textureDecompressor->Decompress(*texture);
+        }
+
+        const auto uncompressedConversionTarget = UnsupportedUncompressedFormatConversionTarget(texture->GetFormat()->GetId());
+        if (uncompressedConversionTarget)
+        {
+            TextureConverter converter(texture.get(), ImageFormat::ALL_FORMATS[std::to_underlying(*uncompressedConversionTarget)]);
+            auto newTexture = converter.Convert();
+            texture = std::move(newTexture);
         }
 
         std::ostringstream ss;

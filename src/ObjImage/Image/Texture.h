@@ -1,7 +1,9 @@
 #pragma once
+
 #include "ImageFormat.h"
 
 #include <cstdint>
+#include <memory>
 
 namespace image
 {
@@ -14,19 +16,12 @@ namespace image
 
     class Texture
     {
-    protected:
-        const ImageFormat* m_format;
-        bool m_has_mip_maps;
-        uint8_t* m_data;
-
-        Texture(const ImageFormat* format, bool mipMaps);
-        Texture(Texture&& other) noexcept;
-
-        Texture& operator=(Texture&& other) noexcept;
-
     public:
         Texture(const Texture& other) = delete;
         virtual ~Texture();
+
+        static std::unique_ptr<Texture>
+            CreateForType(TextureType type, const ImageFormat* format, unsigned width, unsigned height, unsigned depth, bool mipMaps);
 
         Texture& operator=(const Texture& other) = delete;
 
@@ -49,14 +44,20 @@ namespace image
 
         [[nodiscard]] bool HasMipMaps() const;
         [[nodiscard]] virtual int GetMipMapCount() const = 0;
+
+    protected:
+        const ImageFormat* m_format;
+        bool m_has_mip_maps;
+        std::unique_ptr<uint8_t[]> m_data;
+
+        Texture(const ImageFormat* format, bool mipMaps);
+        Texture(Texture&& other) noexcept;
+
+        Texture& operator=(Texture&& other) noexcept;
     };
 
     class Texture2D : public Texture
     {
-    protected:
-        unsigned m_width;
-        unsigned m_height;
-
     public:
         Texture2D(const ImageFormat* format, unsigned width, unsigned height);
         Texture2D(const ImageFormat* format, unsigned width, unsigned height, bool mipMaps);
@@ -79,12 +80,14 @@ namespace image
         [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const override;
 
         [[nodiscard]] int GetMipMapCount() const override;
+
+    protected:
+        unsigned m_width;
+        unsigned m_height;
     };
 
     class TextureCube final : public Texture2D
     {
-        static const int FACE_COUNT;
-
     public:
         TextureCube(const ImageFormat* format, unsigned width, unsigned height);
         TextureCube(const ImageFormat* format, unsigned width, unsigned height, bool mipMaps);
@@ -105,10 +108,6 @@ namespace image
 
     class Texture3D final : public Texture
     {
-        unsigned m_width;
-        unsigned m_height;
-        unsigned m_depth;
-
     public:
         Texture3D(const ImageFormat* format, unsigned width, unsigned height, unsigned depth);
         Texture3D(const ImageFormat* format, unsigned width, unsigned height, unsigned depth, bool mipMaps);
@@ -131,5 +130,10 @@ namespace image
         [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const override;
 
         [[nodiscard]] int GetMipMapCount() const override;
+
+    private:
+        unsigned m_width;
+        unsigned m_height;
+        unsigned m_depth;
     };
 } // namespace image

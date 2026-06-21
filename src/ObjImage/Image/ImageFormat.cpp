@@ -6,6 +6,7 @@ namespace
 {
     const char* IMAGE_FORMAT_NAMES[]{
         "R8_G8_B8",
+        "B8_G8_R8",
         "B8_G8_R8_X8",
         "R8_G8_B8_A8",
         "B8_G8_R8_A8",
@@ -173,6 +174,7 @@ namespace image
     }
 
     const ImageFormatUnsigned ImageFormat::FORMAT_R8_G8_B8(ImageFormatId::R8_G8_B8, oat::D3DFMT_R8G8B8, oat::DXGI_FORMAT_UNKNOWN, 24, 0, 8, 8, 8, 16, 8, 0, 0);
+    const ImageFormatUnsigned ImageFormat::FORMAT_B8_G8_R8(ImageFormatId::B8_G8_R8, oat::D3DFMT_UNKNOWN, oat::DXGI_FORMAT_UNKNOWN, 24, 16, 8, 8, 8, 0, 8, 0, 0);
     const ImageFormatUnsigned
         ImageFormat::FORMAT_B8_G8_R8_X8(ImageFormatId::B8_G8_R8_X8, oat::D3DFMT_X8R8G8B8, oat::DXGI_FORMAT_B8G8R8X8_UNORM, 32, 16, 8, 8, 8, 0, 8, 0, 0);
     const ImageFormatUnsigned
@@ -192,6 +194,7 @@ namespace image
 
     const ImageFormat* const ImageFormat::ALL_FORMATS[static_cast<unsigned>(ImageFormatId::MAX)]{
         &FORMAT_R8_G8_B8,
+        &FORMAT_B8_G8_R8,
         &FORMAT_B8_G8_R8_X8,
         &FORMAT_R8_G8_B8_A8,
         &FORMAT_B8_G8_R8_A8,

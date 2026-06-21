@@ -11,6 +11,7 @@ namespace image
     enum class ImageFormatId : std::uint8_t
     {
         R8_G8_B8,
+        B8_G8_R8,
         B8_G8_R8_X8,
         R8_G8_B8_A8,
         B8_G8_R8_A8,
@@ -61,6 +62,7 @@ namespace image
         [[nodiscard]] virtual size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const = 0;
 
         static const ImageFormatUnsigned FORMAT_R8_G8_B8;
+        static const ImageFormatUnsigned FORMAT_B8_G8_R8;
         static const ImageFormatUnsigned FORMAT_B8_G8_R8_X8;
         static const ImageFormatUnsigned FORMAT_R8_G8_B8_A8;
         static const ImageFormatUnsigned FORMAT_B8_G8_R8_A8;
