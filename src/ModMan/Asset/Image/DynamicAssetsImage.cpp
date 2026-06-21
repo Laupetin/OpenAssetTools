@@ -121,7 +121,7 @@ namespace
         const auto uncompressedConversionTarget = UnsupportedUncompressedFormatConversionTarget(texture->GetFormat()->GetId());
         if (uncompressedConversionTarget)
         {
-            TextureConverter converter(texture.get(), ImageFormat::ALL_FORMATS[std::to_underlying(*uncompressedConversionTarget)]);
+            TextureConverter converter(texture.get(), ImageFormat::GetImageFormatById(*uncompressedConversionTarget));
             auto newTexture = converter.Convert();
             texture = std::move(newTexture);
         }

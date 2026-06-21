@@ -109,7 +109,7 @@ namespace image
             con::warn("Not dumping image {} as {} does not support the image format {}",
                       image->name,
                       GetImageOutputFormatName(ObjWriting::Configuration.ImageOutputFormat),
-                      GetImageFormatName(texture->GetFormat()->GetId()));
+                      texture->GetFormat()->GetName());
             return;
         }
 

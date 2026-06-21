@@ -252,7 +252,7 @@ namespace image
         const auto height = input.GetHeight();
         const auto depth = input.GetDepth();
 
-        auto result = Texture::CreateForType(input.GetTextureType(), &ImageFormat::FORMAT_R8_G8_B8, width, height, depth, input.HasMipMaps());
+        auto result = Texture::CreateForType(input.GetTextureType(), &format::R8_G8_B8, width, height, depth, input.HasMipMaps());
         result->Allocate();
 
         const auto faceCount = result->GetFaceCount();

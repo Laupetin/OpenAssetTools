@@ -87,7 +87,7 @@ namespace
                 return false;
             }
 
-            for (const auto* imageFormat : ImageFormat::ALL_FORMATS)
+            for (const auto* imageFormat : format::ALL)
             {
                 if (imageFormat->GetDxgiFormat() == headerDx10.dxgiFormat)
                 {
@@ -105,25 +105,25 @@ namespace
             switch (pf.dwFourCC)
             {
             case utils::MakeMagic32('D', 'X', 'T', '1'):
-                m_format = &ImageFormat::FORMAT_BC1;
+                m_format = &format::BC1;
                 return true;
 
             case utils::MakeMagic32('D', 'X', 'T', '3'):
-                m_format = &ImageFormat::FORMAT_BC2;
+                m_format = &format::BC2;
                 return true;
 
             case utils::MakeMagic32('D', 'X', 'T', '5'):
-                m_format = &ImageFormat::FORMAT_BC3;
+                m_format = &format::BC3;
                 return true;
 
             case utils::MakeMagic32('A', 'T', 'I', '1'):
             case utils::MakeMagic32('B', 'C', '4', 'U'):
-                m_format = &ImageFormat::FORMAT_BC4;
+                m_format = &format::BC4;
                 return true;
 
             case utils::MakeMagic32('A', 'T', 'I', '2'):
             case utils::MakeMagic32('B', 'C', '5', 'U'):
-                m_format = &ImageFormat::FORMAT_BC5;
+                m_format = &format::BC5;
                 return true;
 
             case utils::MakeMagic32('D', 'X', '1', '0'):
@@ -165,7 +165,7 @@ namespace
             ExtractSizeAndOffsetFromMask(pf.dwBBitMask, bOffset, bSize);
             ExtractSizeAndOffsetFromMask(pf.dwABitMask, aOffset, aSize);
 
-            for (const auto* imageFormat : ImageFormat::ALL_FORMATS)
+            for (const auto* imageFormat : format::ALL)
             {
                 if (imageFormat->GetType() != ImageFormatType::UNSIGNED)
                     continue;

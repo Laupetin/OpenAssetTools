@@ -213,7 +213,7 @@ namespace
 
             if (entry != DDS_CONVERSION_TABLE.end())
             {
-                TextureConverter converter(m_texture, ImageFormat::ALL_FORMATS[static_cast<unsigned>(entry->second)]);
+                TextureConverter converter(m_texture, ImageFormat::GetImageFormatById(entry->second));
                 m_converted_texture = converter.Convert();
                 m_texture = m_converted_texture.get();
             }

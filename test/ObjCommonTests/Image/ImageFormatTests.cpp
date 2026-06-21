@@ -8,12 +8,12 @@ namespace image::image_format
 {
     TEST_CASE("ImageFormat: EnsureAllFormatsArrayIndicesAreIds", "[image]")
     {
-        REQUIRE(static_cast<unsigned int>(ImageFormatId::MAX) == std::extent_v<decltype(ImageFormat::ALL_FORMATS)>);
+        REQUIRE(static_cast<unsigned int>(ImageFormatId::MAX) == std::extent_v<decltype(format::ALL)>);
 
-        for (unsigned i = 0; i < std::extent_v<decltype(ImageFormat::ALL_FORMATS)>; i++)
+        for (unsigned i = 0; i < std::extent_v<decltype(format::ALL)>; i++)
         {
-            REQUIRE(ImageFormat::ALL_FORMATS[i] != nullptr);
-            REQUIRE(i == static_cast<unsigned>(ImageFormat::ALL_FORMATS[i]->GetId()));
+            REQUIRE(format::ALL[i] != nullptr);
+            REQUIRE(i == static_cast<unsigned>(format::ALL[i]->GetId()));
         }
     }
 } // namespace image::image_format

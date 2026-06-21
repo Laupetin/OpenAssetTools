@@ -5,7 +5,6 @@
 
 #include <cassert>
 #include <format>
-#include <iostream>
 #include <type_traits>
 
 using namespace image;
@@ -17,23 +16,23 @@ namespace
         switch (static_cast<iwi6::IwiFormat>(format))
         {
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &ImageFormat::FORMAT_R8_G8_B8_A8;
+            return &format::R8_G8_B8_A8;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &ImageFormat::FORMAT_R8_G8_B8;
+            return &format::R8_G8_B8;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
-            return &ImageFormat::FORMAT_A8;
+            return &format::A8;
         case iwi6::IwiFormat::IMG_FORMAT_DXT1:
-            return &ImageFormat::FORMAT_BC1;
+            return &format::BC1;
         case iwi6::IwiFormat::IMG_FORMAT_DXT3:
-            return &ImageFormat::FORMAT_BC2;
+            return &format::BC2;
         case iwi6::IwiFormat::IMG_FORMAT_DXT5:
-            return &ImageFormat::FORMAT_BC3;
+            return &format::BC3;
         case iwi6::IwiFormat::IMG_FORMAT_DXN:
-            return &ImageFormat::FORMAT_BC5;
+            return &format::BC5;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
-            return &ImageFormat::FORMAT_R8_A8;
+            return &format::R8_A8;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
-            return &ImageFormat::FORMAT_R8;
+            return &format::R8;
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
         case iwi6::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
@@ -122,23 +121,23 @@ namespace
         switch (static_cast<iwi8::IwiFormat>(format))
         {
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &ImageFormat::FORMAT_R8_G8_B8_A8;
+            return &format::R8_G8_B8_A8;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &ImageFormat::FORMAT_R8_G8_B8;
+            return &format::R8_G8_B8;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
-            return &ImageFormat::FORMAT_A8;
+            return &format::A8;
         case iwi8::IwiFormat::IMG_FORMAT_DXT1:
-            return &ImageFormat::FORMAT_BC1;
+            return &format::BC1;
         case iwi8::IwiFormat::IMG_FORMAT_DXT3:
-            return &ImageFormat::FORMAT_BC2;
+            return &format::BC2;
         case iwi8::IwiFormat::IMG_FORMAT_DXT5:
-            return &ImageFormat::FORMAT_BC3;
+            return &format::BC3;
         case iwi8::IwiFormat::IMG_FORMAT_DXN:
-            return &ImageFormat::FORMAT_BC5;
+            return &format::BC5;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
-            return &ImageFormat::FORMAT_R8_A8;
+            return &format::R8_A8;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
-            return &ImageFormat::FORMAT_R8;
+            return &format::R8;
         case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
         case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
         case iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
@@ -251,23 +250,23 @@ namespace
         switch (static_cast<iwi13::IwiFormat>(format))
         {
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &ImageFormat::FORMAT_R8_G8_B8_A8;
+            return &format::R8_G8_B8_A8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &ImageFormat::FORMAT_R8_G8_B8;
+            return &format::R8_G8_B8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
-            return &ImageFormat::FORMAT_A8;
+            return &format::A8;
         case iwi13::IwiFormat::IMG_FORMAT_DXT1:
-            return &ImageFormat::FORMAT_BC1;
+            return &format::BC1;
         case iwi13::IwiFormat::IMG_FORMAT_DXT3:
-            return &ImageFormat::FORMAT_BC2;
+            return &format::BC2;
         case iwi13::IwiFormat::IMG_FORMAT_DXT5:
-            return &ImageFormat::FORMAT_BC3;
+            return &format::BC3;
         case iwi13::IwiFormat::IMG_FORMAT_DXN:
-            return &ImageFormat::FORMAT_BC5;
+            return &format::BC5;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
-            return &ImageFormat::FORMAT_R8_A8;
+            return &format::R8_A8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
-            return &ImageFormat::FORMAT_R8;
+            return &format::R8;
         case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
         case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
         case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
@@ -299,7 +298,7 @@ namespace
             return std::nullopt;
         }
 
-        const auto* format = GetFormat6(header.format);
+        const auto* format = GetFormat13(header.format);
         if (format == nullptr)
             return std::nullopt;
 
@@ -362,26 +361,26 @@ namespace
         switch (static_cast<iwi27::IwiFormat>(format))
         {
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &ImageFormat::FORMAT_R8_G8_B8_A8;
+            return &format::R8_G8_B8_A8;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
-            return &ImageFormat::FORMAT_A8;
+            return &format::A8;
         case iwi27::IwiFormat::IMG_FORMAT_DXT1:
-            return &ImageFormat::FORMAT_BC1;
+            return &format::BC1;
         case iwi27::IwiFormat::IMG_FORMAT_DXT3:
-            return &ImageFormat::FORMAT_BC2;
+            return &format::BC2;
         case iwi27::IwiFormat::IMG_FORMAT_DXT5:
-            return &ImageFormat::FORMAT_BC3;
+            return &format::BC3;
         case iwi27::IwiFormat::IMG_FORMAT_DXN:
-            return &ImageFormat::FORMAT_BC5;
+            return &format::BC5;
         case iwi27::IwiFormat::IMG_FORMAT_A16B16G16R16F:
             assert(false); // Unsupported yet
-            return &ImageFormat::FORMAT_R16_G16_B16_A16_FLOAT;
+            return &format::R16_G16_B16_A16_FLOAT;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &ImageFormat::FORMAT_R8_G8_B8;
+            return &format::R8_G8_B8;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
-            return &ImageFormat::FORMAT_R8_A8;
+            return &format::R8_A8;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
-            return &ImageFormat::FORMAT_R8;
+            return &format::R8;
         case iwi27::IwiFormat::IMG_FORMAT_WAVELET_RGBA:
         case iwi27::IwiFormat::IMG_FORMAT_WAVELET_RGB:
         case iwi27::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
