@@ -100,9 +100,13 @@ namespace image
     void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
         const auto* image = asset.Asset();
-        const auto texture = CONVERTER_NAME().Convert(asset, context.m_obj_search_path);
+        auto texture = CONVERTER_NAME().Convert(asset, context.m_obj_search_path);
         if (!texture)
             return;
+        
+        auto convertedTexture = ConvertTextureForDdsFileOutputIfNecessary(texture.get());
+        if (convertedTexture)
+            texture = std::move(convertedTexture);
 
         if (!m_writer->SupportsImageFormat(texture->GetFormat()))
         {

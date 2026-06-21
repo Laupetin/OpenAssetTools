@@ -4,30 +4,14 @@
 #include "Image/TextureConverter.h"
 
 #include <cassert>
-#include <memory>
-#include <unordered_map>
 
 using namespace image;
 
 namespace
 {
-    const std::unordered_map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE{
-        // {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
-    };
-
     class DdsWriterInternal
     {
     public:
-        static bool SupportsImageFormat(const ImageFormat* imageFormat)
-        {
-            return true;
-        }
-
-        static std::string GetFileExtension()
-        {
-            return ".dds";
-        }
-
         DdsWriterInternal(std::ostream& stream, const Texture* texture)
             : m_stream(stream),
               m_texture(texture),
@@ -37,8 +21,6 @@ namespace
 
         void DumpImage()
         {
-            ConvertTextureIfNecessary();
-
             DDS_HEADER header{};
             PopulateDdsHeader(header);
 
@@ -207,37 +189,39 @@ namespace
             }
         }
 
-        void ConvertTextureIfNecessary()
-        {
-            const auto entry = DDS_CONVERSION_TABLE.find(m_texture->GetFormat()->GetId());
-
-            if (entry != DDS_CONVERSION_TABLE.end())
-            {
-                TextureConverter converter(m_texture, ImageFormat::GetImageFormatById(entry->second));
-                m_converted_texture = converter.Convert();
-                m_texture = m_converted_texture.get();
-            }
-        }
-
         std::ostream& m_stream;
         const Texture* m_texture;
-        std::unique_ptr<Texture> m_converted_texture;
         bool m_use_dx10_extension;
     };
 } // namespace
 
 namespace image
 {
-    DdsWriter::~DdsWriter() = default;
+    std::unique_ptr<Texture> ConvertTextureForDdsFileOutputIfNecessary(const Texture* texture)
+    {
+        static const std::unordered_map<ImageFormatId, ImageFormatId> ddsConversionTable{
+            {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
+        };
+
+        const auto entry = ddsConversionTable.find(texture->GetFormat()->GetId());
+
+        if (entry != ddsConversionTable.end())
+        {
+            TextureConverter converter(texture, ImageFormat::GetImageFormatById(entry->second));
+            return converter.Convert();
+        }
+
+        return nullptr;
+    }
 
     bool DdsWriter::SupportsImageFormat(const ImageFormat* imageFormat)
     {
-        return DdsWriterInternal::SupportsImageFormat(imageFormat);
+        return true;
     }
 
     std::string DdsWriter::GetFileExtension()
     {
-        return DdsWriterInternal::GetFileExtension();
+        return ".dds";
     }
 
     void DdsWriter::DumpImage(std::ostream& stream, const Texture* texture)
