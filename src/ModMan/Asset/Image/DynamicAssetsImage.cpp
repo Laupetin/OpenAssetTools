@@ -45,17 +45,17 @@ namespace
         return false;
     }
 
-    bool IsWebGlUnsupportedCompression(const ImageFormatId imageFormatId)
-    {
-        // TODO: Add BC4
-        return imageFormatId == ImageFormatId::BC5;
-    }
-
-    std::optional<ImageFormatId> UnsupportedUncompressedFormatConversionTarget(const ImageFormatId imageFormatId)
+    std::optional<ImageFormatId> NeedsConversionToWebGlSupportedFormat(const ImageFormatId imageFormatId)
     {
         static std::unordered_map<ImageFormatId, ImageFormatId> unsupportedFormatMap{
-            {ImageFormatId::B8_G8_R8_X8, ImageFormatId::R8_G8_B8_A8},
+            {ImageFormatId::BC4,         ImageFormatId::B8_G8_R8   },
+            {ImageFormatId::BC5,         ImageFormatId::B8_G8_R8   },
+            {ImageFormatId::B8_G8_R8_X8, ImageFormatId::B8_G8_R8   },
             {ImageFormatId::R8_G8_B8,    ImageFormatId::B8_G8_R8   },
+            {ImageFormatId::R8_G8_B8_A8, ImageFormatId::B8_G8_R8_A8},
+            {ImageFormatId::A8,          ImageFormatId::B8_G8_R8   },
+            {ImageFormatId::R8,          ImageFormatId::B8_G8_R8   },
+            {ImageFormatId::R8_A8,       ImageFormatId::B8_G8_R8   },
         };
 
         const auto entry = unsupportedFormatMap.find(imageFormatId);
@@ -109,21 +109,29 @@ namespace
             }
         }
 
-        const auto originalTextureFormatId = texture->GetFormat()->GetId();
-        if (IsWebGlUnsupportedCompression(originalTextureFormatId))
+        const auto* originalTextureFormat = texture->GetFormat();
+        const auto originalTextureFormatId = originalTextureFormat->GetId();
+        const auto targetFormatId = NeedsConversionToWebGlSupportedFormat(originalTextureFormatId);
+        if (targetFormatId)
         {
-            auto* textureDecompressor = ImageDecompressor::GetDecompressorForFormat(originalTextureFormatId);
+            const auto* targetFormat = ImageFormat::GetImageFormatById(*targetFormatId);
+            if (originalTextureFormat->GetType() == ImageFormatType::BLOCK_COMPRESSED)
+            {
+                auto* textureDecompressor = ImageDecompressor::GetDecompressorForFormat(originalTextureFormatId);
+                assert(textureDecompressor);
 
-            if (textureDecompressor)
-                texture = textureDecompressor->Decompress(*texture);
-        }
+                if (textureDecompressor)
+                    texture = textureDecompressor->Decompress(*texture, targetFormat);
+            }
+            else
+            {
+                TextureConverter converter(texture.get(), targetFormat);
+                auto newTexture = converter.Convert();
+                assert(newTexture);
 
-        const auto uncompressedConversionTarget = UnsupportedUncompressedFormatConversionTarget(texture->GetFormat()->GetId());
-        if (uncompressedConversionTarget)
-        {
-            TextureConverter converter(texture.get(), ImageFormat::GetImageFormatById(*uncompressedConversionTarget));
-            auto newTexture = converter.Convert();
-            texture = std::move(newTexture);
+                if (newTexture)
+                    texture = std::move(newTexture);
+            }
         }
 
         std::ostringstream ss;

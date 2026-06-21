@@ -15,7 +15,6 @@ namespace image
         std::unique_ptr<Texture> Convert();
 
     private:
-        static constexpr uint64_t Mask1(unsigned length);
         void SetPixelFunctions(unsigned inBitCount, unsigned outBitCount);
 
         void CreateOutputTexture();

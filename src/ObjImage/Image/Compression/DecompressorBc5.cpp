@@ -4,59 +4,11 @@
 
 #include <cassert>
 
-// uint8_t pixelsRed[16]{
-//     static_cast<uint8_t>(in[2] & 0x7),
-//     static_cast<uint8_t>((in[2] & 0x38) >> 3),
-//     static_cast<uint8_t>(((in[2] & 0xC0) >> 6) | ((in[3] & 0x1) << 2)),
-//     static_cast<uint8_t>((in[3] & 0xE) >> 1),
-//     static_cast<uint8_t>((in[3] & 0x70) >> 4),
-//     static_cast<uint8_t>(((in[3] & 0x80) >> 7) | ((in[4] & 0x3) << 1)),
-//     static_cast<uint8_t>((in[4] & 0x1C) >> 2),
-//     static_cast<uint8_t>((in[4] & 0xE0) >> 5),
-//     static_cast<uint8_t>(in[5] & 0x7),
-//     static_cast<uint8_t>((in[5] & 0x38) >> 3),
-//     static_cast<uint8_t>(((in[5] & 0xC0) >> 6) | ((in[6] & 0x1) << 2)),
-//     static_cast<uint8_t>((in[6] & 0xE) >> 1),
-//     static_cast<uint8_t>((in[6] & 0x70) >> 4),
-//     static_cast<uint8_t>(((in[6] & 0x80) >> 7) | ((in[7] & 0x3) << 1)),
-//     static_cast<uint8_t>((in[7] & 0x1C) >> 2),
-//     static_cast<uint8_t>((in[7] & 0xE0) >> 5),
-// };
-// uint8_t pixelsGreen[16]{
-//     static_cast<uint8_t>(in[BC5_CHANNEL_SIZE + 2] & 0x7),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 2] & 0x38) >> 3),
-//     static_cast<uint8_t>(((in[BC5_CHANNEL_SIZE + 2] & 0xC0) >> 6) | ((in[BC5_CHANNEL_SIZE + 3] & 0x1) << 2)),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 3] & 0xE) >> 1),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 3] & 0x70) >> 4),
-//     static_cast<uint8_t>(((in[BC5_CHANNEL_SIZE + 3] & 0x80) >> 7) | ((in[BC5_CHANNEL_SIZE + 4] & 0x3) << 1)),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 4] & 0x1C) >> 2),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 4] & 0xE0) >> 5),
-//     static_cast<uint8_t>(in[BC5_CHANNEL_SIZE + 5] & 0x7),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 5] & 0x38) >> 3),
-//     static_cast<uint8_t>(((in[BC5_CHANNEL_SIZE + 5] & 0xC0) >> 6) | ((in[BC5_CHANNEL_SIZE + 6] & 0x1) << 2)),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 6] & 0xE) >> 1),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 6] & 0x70) >> 4),
-//     static_cast<uint8_t>(((in[BC5_CHANNEL_SIZE + 6] & 0x80) >> 7) | ((in[BC5_CHANNEL_SIZE + 7] & 0x3) << 1)),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 7] & 0x1C) >> 2),
-//     static_cast<uint8_t>((in[BC5_CHANNEL_SIZE + 7] & 0xE0) >> 5),
-// };
-// in[2] & 0x7
-// (in[2] & 0x38) >> 3
-// ((in[2] & 0xC0) >> 6) | ((in[3] & 0x1) << 2)
-// (in[3] & 0xE) >> 1
-// (in[3] & 0x70) >> 4
-// ((in[3] & 0x80) >> 7) | ((in[4] & 0x3) << 1)
-// (in[4] & 0x1C) >> 2
-// (in[4] & 0xE0) >> 5
-
 namespace
 {
     constexpr auto BC5_BLOCK_PIXELS = 4u;
     constexpr auto BC5_CHANNEL_SIZE = 8u;
     constexpr auto BC5_BLOCK_SIZE = BC5_CHANNEL_SIZE * 2u;
-    constexpr auto OUT_PIXEL_SIZE = 3u;
-    constexpr auto OUT_OFFSET_R = 0u;
-    constexpr auto OUT_OFFSET_G = 1u;
 
     void SetupColorTables(const uint8_t* in, uint8_t (&colorTableRed)[8], uint8_t (&colorTableGreen)[8])
     {
@@ -116,7 +68,8 @@ namespace
 #undef INTERPOLATE_BC5
     }
 
-    void DecompressBlock(const uint8_t* in, uint8_t* out, const unsigned outPitch)
+    void DecompressBlock(
+        const uint8_t* in, uint8_t* out, const unsigned outPitch, const unsigned outPixelSize, const unsigned outOffsetR, const unsigned outOffsetG)
     {
         uint8_t colorTableRed[8];
         uint8_t colorTableGreen[8];
@@ -128,56 +81,63 @@ namespace
         const uint32_t dataGreen1 =
             in[BC5_CHANNEL_SIZE + 5] | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 6] << 8) | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 7] << 16);
 
-        out[0 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 21) >> 21];
-        out[0 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 21) >> 21];
+        out[0 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 21) >> 21];
+        out[0 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 21) >> 21];
 
-        out[0 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 18) >> 18];
-        out[0 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 18) >> 18];
+        out[0 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 18) >> 18];
+        out[0 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 18) >> 18];
 
-        out[0 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 15) >> 15];
-        out[0 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 15) >> 15];
+        out[0 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 15) >> 15];
+        out[0 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 15) >> 15];
 
-        out[0 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 12) >> 12];
-        out[0 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 12) >> 12];
+        out[0 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 12) >> 12];
+        out[0 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 12) >> 12];
 
-        out[1 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 9) >> 9];
-        out[1 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 9) >> 9];
+        out[1 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 9) >> 9];
+        out[1 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 9) >> 9];
 
-        out[1 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 6) >> 6];
-        out[1 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 6) >> 6];
+        out[1 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 6) >> 6];
+        out[1 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 6) >> 6];
 
-        out[1 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 3) >> 3];
-        out[1 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 3) >> 3];
+        out[1 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 3) >> 3];
+        out[1 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 3) >> 3];
 
-        out[1 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed0 & (0x7 << 0) >> 0];
-        out[1 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen0 & (0x7 << 0) >> 0];
+        out[1 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 0) >> 0];
+        out[1 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 0) >> 0];
 
-        out[2 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 21) >> 21];
-        out[2 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 21) >> 21];
+        out[2 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 21) >> 21];
+        out[2 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 21) >> 21];
 
-        out[2 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 18) >> 18];
-        out[2 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 18) >> 18];
+        out[2 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 18) >> 18];
+        out[2 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 18) >> 18];
 
-        out[2 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 15) >> 15];
-        out[2 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 15) >> 15];
+        out[2 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 15) >> 15];
+        out[2 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 15) >> 15];
 
-        out[2 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 12) >> 12];
-        out[2 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 12) >> 12];
+        out[2 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 12) >> 12];
+        out[2 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 12) >> 12];
 
-        out[3 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 9) >> 9];
-        out[3 * outPitch + 0 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 9) >> 9];
+        out[3 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 9) >> 9];
+        out[3 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 9) >> 9];
 
-        out[3 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 6) >> 6];
-        out[3 * outPitch + 1 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 6) >> 6];
+        out[3 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 6) >> 6];
+        out[3 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 6) >> 6];
 
-        out[3 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 3) >> 3];
-        out[3 * outPitch + 2 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 3) >> 3];
+        out[3 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 3) >> 3];
+        out[3 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 3) >> 3];
 
-        out[3 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_R] = colorTableRed[dataRed1 & (0x7 << 0) >> 0];
-        out[3 * outPitch + 3 * OUT_PIXEL_SIZE + OUT_OFFSET_G] = colorTableGreen[dataGreen1 & (0x7 << 0) >> 0];
+        out[3 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 0) >> 0];
+        out[3 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 0) >> 0];
     }
 
-    void DecompressBlockEdge(const uint8_t* in, uint8_t* out, const unsigned outPitch, const unsigned width, const unsigned height)
+    void DecompressBlockEdge(const uint8_t* in,
+                             uint8_t* out,
+                             const unsigned width,
+                             const unsigned height,
+                             const unsigned outPitch,
+                             const unsigned outPixelSize,
+                             const unsigned outOffsetR,
+                             const unsigned outOffsetG)
     {
         assert(width <= BC5_BLOCK_PIXELS);
         assert(height <= BC5_BLOCK_PIXELS);
@@ -237,8 +197,8 @@ namespace
         {
             for (auto curWidth = 0u; curWidth < width; curWidth++)
             {
-                out[curHeight * outPitch + curWidth * OUT_PIXEL_SIZE + OUT_OFFSET_R] = pixelsRed[curHeight * BC5_BLOCK_PIXELS + curWidth];
-                out[curHeight * outPitch + curWidth * OUT_PIXEL_SIZE + OUT_OFFSET_G] = pixelsGreen[curHeight * BC5_BLOCK_PIXELS + curWidth];
+                out[curHeight * outPitch + curWidth * outPixelSize + outOffsetR] = pixelsRed[curHeight * BC5_BLOCK_PIXELS + curWidth];
+                out[curHeight * outPitch + curWidth * outPixelSize + outOffsetG] = pixelsGreen[curHeight * BC5_BLOCK_PIXELS + curWidth];
             }
         }
     }
@@ -246,13 +206,32 @@ namespace
 
 namespace image
 {
-    std::unique_ptr<Texture> DecompressorBc5::Decompress(const Texture& input)
+    std::unique_ptr<Texture> DecompressorBc5::Decompress(const Texture& input, const ImageFormat* targetFormat)
     {
+        assert(targetFormat->GetType() == ImageFormatType::UNSIGNED);
+        if (targetFormat->GetType() != ImageFormatType::UNSIGNED)
+            return nullptr;
+
+        const auto* unsignedTargetFormat = dynamic_cast<const ImageFormatUnsigned*>(targetFormat);
+
+        const auto outPixelSize = unsignedTargetFormat->m_bits_per_pixel / 8u;
+
+        // Only support formats with byte aligned channels
+        const auto redByteAligned = unsignedTargetFormat->m_r_size == 8 && (unsignedTargetFormat->m_r_offset % 8) == 0;
+        const auto greenByteAligned = unsignedTargetFormat->m_g_size == 8 && (unsignedTargetFormat->m_g_offset % 8) == 0;
+        assert(redByteAligned);
+        assert(greenByteAligned);
+        if (!redByteAligned || !greenByteAligned)
+            return nullptr;
+
+        const auto outOffsetR = unsignedTargetFormat->m_r_offset / 8;
+        const auto outOffsetG = unsignedTargetFormat->m_g_offset / 8;
+
         const auto width = input.GetWidth();
         const auto height = input.GetHeight();
         const auto depth = input.GetDepth();
 
-        auto result = Texture::CreateForType(input.GetTextureType(), &format::R8_G8_B8, width, height, depth, input.HasMipMaps());
+        auto result = Texture::CreateForType(input.GetTextureType(), targetFormat, width, height, depth, input.HasMipMaps());
         result->Allocate();
 
         const auto faceCount = result->GetFaceCount();
@@ -261,10 +240,10 @@ namespace image
 
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
-            const unsigned mipWidth = width >> mipLevel;
-            const unsigned mipHeight = height >> mipLevel;
-            const unsigned mipDepth = depth >> mipLevel;
-            const unsigned mipPitch = OUT_PIXEL_SIZE * mipWidth;
+            const auto mipWidth = std::max<unsigned>(width >> mipLevel, 1u);
+            const auto mipHeight = std::max<unsigned>(height >> mipLevel, 1u);
+            const auto mipDepth = std::max<unsigned>(depth >> mipLevel, 1u);
+            const unsigned mipPitch = outPixelSize * mipWidth;
             assert(mipPitch == result->GetFormat()->GetPitch(mipLevel, width));
 
             for (auto face = 0; face < faceCount; face++)
@@ -281,17 +260,17 @@ namespace image
                     {
                         for (auto curWidth = 0u; curWidth < fullBlocksWidth; curWidth += BC5_BLOCK_PIXELS)
                         {
-                            DecompressBlock(bufferIn, bufferOut, mipPitch);
+                            DecompressBlock(bufferIn, bufferOut, mipPitch, outPixelSize, outOffsetR, outOffsetG);
                             bufferIn += BC5_BLOCK_SIZE;
-                            bufferOut += OUT_PIXEL_SIZE * BC5_BLOCK_PIXELS;
+                            bufferOut += outPixelSize * BC5_BLOCK_PIXELS;
                         }
 
                         if (fullBlocksWidth < mipWidth)
                         {
                             const auto edgeBlockWidth = mipWidth - fullBlocksWidth;
-                            DecompressBlockEdge(bufferIn, bufferOut, mipPitch, edgeBlockWidth, BC5_BLOCK_PIXELS);
+                            DecompressBlockEdge(bufferIn, bufferOut, edgeBlockWidth, BC5_BLOCK_PIXELS, mipPitch, outPixelSize, outOffsetR, outOffsetG);
                             bufferIn += BC5_BLOCK_SIZE;
-                            bufferOut += OUT_PIXEL_SIZE * edgeBlockWidth;
+                            bufferOut += outPixelSize * edgeBlockWidth;
                         }
                     }
 
@@ -300,17 +279,17 @@ namespace image
                         const auto edgeBlockHeight = mipHeight - fullBlocksHeight;
                         for (auto curWidth = 0u; curWidth < fullBlocksWidth; curWidth += BC5_BLOCK_PIXELS)
                         {
-                            DecompressBlockEdge(bufferIn, bufferOut, mipPitch, BC5_BLOCK_PIXELS, edgeBlockHeight);
+                            DecompressBlockEdge(bufferIn, bufferOut, BC5_BLOCK_PIXELS, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG);
                             bufferIn += BC5_BLOCK_SIZE;
-                            bufferOut += OUT_PIXEL_SIZE * BC5_BLOCK_PIXELS;
+                            bufferOut += outPixelSize * BC5_BLOCK_PIXELS;
                         }
 
                         if (fullBlocksWidth < mipWidth)
                         {
                             const auto edgeBlockWidth = mipWidth - fullBlocksWidth;
-                            DecompressBlockEdge(bufferIn, bufferOut, mipPitch, edgeBlockWidth, edgeBlockHeight);
+                            DecompressBlockEdge(bufferIn, bufferOut, edgeBlockWidth, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG);
                             bufferIn += BC5_BLOCK_SIZE;
-                            bufferOut += OUT_PIXEL_SIZE * edgeBlockWidth;
+                            bufferOut += outPixelSize * edgeBlockWidth;
                         }
                     }
                 }

@@ -2,6 +2,7 @@
 
 #include "Image/Texture.h"
 
+#include <limits>
 #include <memory>
 
 namespace image
@@ -16,8 +17,17 @@ namespace image
         ImageDecompressor& operator=(const ImageDecompressor& other) = default;
         ImageDecompressor& operator=(ImageDecompressor&& other) noexcept = default;
 
-        virtual std::unique_ptr<Texture> Decompress(const Texture& input) = 0;
+        virtual std::unique_ptr<Texture> Decompress(const Texture& input, const ImageFormat* targetFormat) = 0;
 
         static ImageDecompressor* GetDecompressorForFormat(ImageFormatId formatId);
+
+    protected:
+        static constexpr uint64_t Mask1(const unsigned length)
+        {
+            if (length >= sizeof(uint64_t) * 8)
+                return std::numeric_limits<uint64_t>::max();
+
+            return std::numeric_limits<uint64_t>::max() >> (sizeof(uint64_t) * 8 - length);
+        }
     };
 } // namespace image

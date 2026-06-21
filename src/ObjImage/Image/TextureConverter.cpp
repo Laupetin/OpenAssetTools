@@ -4,12 +4,12 @@
 
 namespace image
 {
-    constexpr uint64_t TextureConverter::Mask1(const unsigned length)
+    constexpr uint64_t Mask1(const unsigned length)
     {
         if (length >= sizeof(uint64_t) * 8)
-            return UINT64_MAX;
+            return std::numeric_limits<uint64_t>::max();
 
-        return UINT64_MAX >> (sizeof(uint64_t) * 8 - length);
+        return std::numeric_limits<uint64_t>::max() >> (sizeof(uint64_t) * 8 - length);
     }
 
     void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsigned outBitCount)
