@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace image
+namespace
 {
     constexpr uint64_t Mask1(const unsigned length)
     {
@@ -12,6 +12,14 @@ namespace image
         return std::numeric_limits<uint64_t>::max() >> (sizeof(uint64_t) * 8 - length);
     }
 
+    bool CanReorder(const unsigned inputSize, const unsigned outputSize)
+    {
+        return inputSize == 0 || outputSize == 0 || inputSize == outputSize;
+    }
+} // namespace
+
+namespace image
+{
     void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsigned outBitCount)
     {
         switch (inBitCount)
@@ -150,10 +158,13 @@ namespace image
         const auto gInputMask = inputFormat->HasG() ? Mask1(inputFormat->m_g_size) << inputFormat->m_g_offset : 0;
         const auto bInputMask = inputFormat->HasB() ? Mask1(inputFormat->m_b_size) << inputFormat->m_b_offset : 0;
         const auto aInputMask = inputFormat->HasA() ? Mask1(inputFormat->m_a_size) << inputFormat->m_a_offset : 0;
+        const auto aOutputMask = outputFormat->HasA() ? Mask1(outputFormat->m_a_size) << outputFormat->m_a_offset : 0;
         const bool rConvert = rInputMask != 0 && outputFormat->m_r_size > 0;
         const bool gConvert = gInputMask != 0 && outputFormat->m_g_size > 0;
         const bool bConvert = bInputMask != 0 && outputFormat->m_b_size > 0;
-        const bool aConvert = aInputMask != 0 && outputFormat->m_a_size > 0;
+
+        // alpha has a default of 1 so we need to convert even input has no alpha
+        const bool aConvert = outputFormat->m_a_size > 0;
 
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
@@ -176,8 +187,13 @@ namespace image
                     outPixel |= (inPixel & gInputMask) >> inputFormat->m_g_offset << outputFormat->m_g_offset;
                 if (bConvert)
                     outPixel |= (inPixel & bInputMask) >> inputFormat->m_b_offset << outputFormat->m_b_offset;
+
                 if (aConvert)
-                    outPixel |= (inPixel & aInputMask) >> inputFormat->m_a_offset << outputFormat->m_a_offset;
+                {
+                    const auto value = aInputMask != 0 ? (inPixel & aInputMask) >> inputFormat->m_a_offset << outputFormat->m_a_offset
+                                                       : std::numeric_limits<uint64_t>::max() & aOutputMask;
+                    outPixel |= value;
+                }
 
                 m_write_pixel_func(&outputBuffer[outputOffset], outPixel, outputFormat->m_bits_per_pixel);
             }
@@ -194,8 +210,8 @@ namespace image
 
         SetPixelFunctions(inputFormat->m_bits_per_pixel, outputFormat->m_bits_per_pixel);
 
-        if (inputFormat->m_r_size == outputFormat->m_r_size && inputFormat->m_g_size == outputFormat->m_g_size
-            && inputFormat->m_b_size == outputFormat->m_b_size && inputFormat->m_a_size == outputFormat->m_a_size)
+        if (CanReorder(inputFormat->m_r_size, outputFormat->m_r_size) && CanReorder(inputFormat->m_g_size, outputFormat->m_g_size)
+            && CanReorder(inputFormat->m_b_size, outputFormat->m_b_size) && CanReorder(inputFormat->m_a_size, outputFormat->m_a_size))
         {
             ReorderUnsignedToUnsigned();
         }

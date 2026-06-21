@@ -3,6 +3,7 @@
 #include "Utils/Alignment.h"
 
 #include <cassert>
+#include <limits>
 
 namespace
 {
@@ -12,10 +13,10 @@ namespace
 
     void SetupColorTables(const uint8_t* in, uint8_t (&colorTableRed)[8], uint8_t (&colorTableGreen)[8])
     {
-#define INTERPOLATE_BC5(colorTable, val0, val1, divide)                                                                                                        \
-    static_cast<uint8_t>(static_cast<float>(static_cast<uint16_t>(val0) * static_cast<uint16_t>((colorTable)[0])                                               \
-                                            + static_cast<uint16_t>(val1) * static_cast<uint16_t>((colorTable)[1]))                                            \
-                         / (divide))
+#define INTERPOLATE_BC5(colorTable, val0, val1)                                                                                                                \
+    static_cast<uint8_t>(                                                                                                                                      \
+        (static_cast<uint16_t>(val0) * static_cast<uint16_t>((colorTable)[0]) + static_cast<uint16_t>(val1) * static_cast<uint16_t>((colorTable)[1]))          \
+        / ((val0) + (val1)))
 
         colorTableRed[0] = in[0];
         colorTableRed[1] = in[1];
@@ -23,20 +24,20 @@ namespace
         if (colorTableRed[0] > colorTableRed[1])
         {
             // 6 interpolated color values
-            colorTableRed[2] = INTERPOLATE_BC5(colorTableRed, 6, 1, 7.0f);
-            colorTableRed[3] = INTERPOLATE_BC5(colorTableRed, 5, 2, 7.0f);
-            colorTableRed[4] = INTERPOLATE_BC5(colorTableRed, 4, 3, 7.0f);
-            colorTableRed[5] = INTERPOLATE_BC5(colorTableRed, 3, 4, 7.0f);
-            colorTableRed[6] = INTERPOLATE_BC5(colorTableRed, 2, 5, 7.0f);
-            colorTableRed[7] = INTERPOLATE_BC5(colorTableRed, 1, 6, 7.0f);
+            colorTableRed[2] = INTERPOLATE_BC5(colorTableRed, 6, 1);
+            colorTableRed[3] = INTERPOLATE_BC5(colorTableRed, 5, 2);
+            colorTableRed[4] = INTERPOLATE_BC5(colorTableRed, 4, 3);
+            colorTableRed[5] = INTERPOLATE_BC5(colorTableRed, 3, 4);
+            colorTableRed[6] = INTERPOLATE_BC5(colorTableRed, 2, 5);
+            colorTableRed[7] = INTERPOLATE_BC5(colorTableRed, 1, 6);
         }
         else
         {
             // 4 interpolated color values
-            colorTableRed[2] = INTERPOLATE_BC5(colorTableRed, 4, 1, 5.0f);
-            colorTableRed[3] = INTERPOLATE_BC5(colorTableRed, 3, 2, 5.0f);
-            colorTableRed[4] = INTERPOLATE_BC5(colorTableRed, 2, 3, 5.0f);
-            colorTableRed[5] = INTERPOLATE_BC5(colorTableRed, 1, 4, 5.0f);
+            colorTableRed[2] = INTERPOLATE_BC5(colorTableRed, 4, 1);
+            colorTableRed[3] = INTERPOLATE_BC5(colorTableRed, 3, 2);
+            colorTableRed[4] = INTERPOLATE_BC5(colorTableRed, 2, 3);
+            colorTableRed[5] = INTERPOLATE_BC5(colorTableRed, 1, 4);
             colorTableRed[6] = std::numeric_limits<uint8_t>::min();
             colorTableRed[7] = std::numeric_limits<uint8_t>::max();
         }
@@ -47,20 +48,20 @@ namespace
         if (colorTableGreen[0] > colorTableGreen[1])
         {
             // 6 interpolated color values
-            colorTableGreen[2] = INTERPOLATE_BC5(colorTableGreen, 6, 1, 7.0f);
-            colorTableGreen[3] = INTERPOLATE_BC5(colorTableGreen, 5, 2, 7.0f);
-            colorTableGreen[4] = INTERPOLATE_BC5(colorTableGreen, 4, 3, 7.0f);
-            colorTableGreen[5] = INTERPOLATE_BC5(colorTableGreen, 3, 4, 7.0f);
-            colorTableGreen[6] = INTERPOLATE_BC5(colorTableGreen, 2, 5, 7.0f);
-            colorTableGreen[7] = INTERPOLATE_BC5(colorTableGreen, 1, 6, 7.0f);
+            colorTableGreen[2] = INTERPOLATE_BC5(colorTableGreen, 6, 1);
+            colorTableGreen[3] = INTERPOLATE_BC5(colorTableGreen, 5, 2);
+            colorTableGreen[4] = INTERPOLATE_BC5(colorTableGreen, 4, 3);
+            colorTableGreen[5] = INTERPOLATE_BC5(colorTableGreen, 3, 4);
+            colorTableGreen[6] = INTERPOLATE_BC5(colorTableGreen, 2, 5);
+            colorTableGreen[7] = INTERPOLATE_BC5(colorTableGreen, 1, 6);
         }
         else
         {
             // 4 interpolated color values
-            colorTableGreen[2] = INTERPOLATE_BC5(colorTableGreen, 4, 1, 5.0f);
-            colorTableGreen[3] = INTERPOLATE_BC5(colorTableGreen, 3, 2, 5.0f);
-            colorTableGreen[4] = INTERPOLATE_BC5(colorTableGreen, 2, 3, 5.0f);
-            colorTableGreen[5] = INTERPOLATE_BC5(colorTableGreen, 1, 4, 5.0f);
+            colorTableGreen[2] = INTERPOLATE_BC5(colorTableGreen, 4, 1);
+            colorTableGreen[3] = INTERPOLATE_BC5(colorTableGreen, 3, 2);
+            colorTableGreen[4] = INTERPOLATE_BC5(colorTableGreen, 2, 3);
+            colorTableGreen[5] = INTERPOLATE_BC5(colorTableGreen, 1, 4);
             colorTableGreen[6] = std::numeric_limits<uint8_t>::min();
             colorTableGreen[7] = std::numeric_limits<uint8_t>::max();
         }
@@ -81,53 +82,53 @@ namespace
         const uint32_t dataGreen1 =
             in[BC5_CHANNEL_SIZE + 5] | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 6] << 8) | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 7] << 16);
 
-        out[0 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 21) >> 21];
-        out[0 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 21) >> 21];
+        out[0 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 0)) >> 0];
+        out[0 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 0)) >> 0];
 
-        out[0 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 18) >> 18];
-        out[0 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 18) >> 18];
+        out[0 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 3)) >> 3];
+        out[0 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 3)) >> 3];
 
-        out[0 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 15) >> 15];
-        out[0 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 15) >> 15];
+        out[0 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 6)) >> 6];
+        out[0 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 6)) >> 6];
 
-        out[0 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 12) >> 12];
-        out[0 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 12) >> 12];
+        out[0 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 9)) >> 9];
+        out[0 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 9)) >> 9];
 
-        out[1 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 9) >> 9];
-        out[1 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 9) >> 9];
+        out[1 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 12)) >> 12];
+        out[1 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 12)) >> 12];
 
-        out[1 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 6) >> 6];
-        out[1 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 6) >> 6];
+        out[1 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 15)) >> 15];
+        out[1 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 15)) >> 15];
 
-        out[1 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 3) >> 3];
-        out[1 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 3) >> 3];
+        out[1 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 18)) >> 18];
+        out[1 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 18)) >> 18];
 
-        out[1 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed0 & (0x7 << 0) >> 0];
-        out[1 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen0 & (0x7 << 0) >> 0];
+        out[1 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[(dataRed0 & (0x7 << 21)) >> 21];
+        out[1 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen0 & (0x7 << 21)) >> 21];
 
-        out[2 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 21) >> 21];
-        out[2 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 21) >> 21];
+        out[2 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 0)) >> 0];
+        out[2 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 0)) >> 0];
 
-        out[2 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 18) >> 18];
-        out[2 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 18) >> 18];
+        out[2 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 3)) >> 3];
+        out[2 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 3)) >> 3];
 
-        out[2 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 15) >> 15];
-        out[2 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 15) >> 15];
+        out[2 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 6)) >> 6];
+        out[2 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 6)) >> 6];
 
-        out[2 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 12) >> 12];
-        out[2 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 12) >> 12];
+        out[2 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 9)) >> 9];
+        out[2 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 9)) >> 9];
 
-        out[3 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 9) >> 9];
-        out[3 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 9) >> 9];
+        out[3 * outPitch + 0 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 12)) >> 12];
+        out[3 * outPitch + 0 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 12)) >> 12];
 
-        out[3 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 6) >> 6];
-        out[3 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 6) >> 6];
+        out[3 * outPitch + 1 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 15)) >> 15];
+        out[3 * outPitch + 1 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 15)) >> 15];
 
-        out[3 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 3) >> 3];
-        out[3 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 3) >> 3];
+        out[3 * outPitch + 2 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 18)) >> 18];
+        out[3 * outPitch + 2 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 18)) >> 18];
 
-        out[3 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[dataRed1 & (0x7 << 0) >> 0];
-        out[3 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[dataGreen1 & (0x7 << 0) >> 0];
+        out[3 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 21)) >> 21];
+        out[3 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 21)) >> 21];
     }
 
     void DecompressBlockEdge(const uint8_t* in,
@@ -154,42 +155,42 @@ namespace
             in[BC5_CHANNEL_SIZE + 5] | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 6] << 8) | static_cast<uint32_t>(in[BC5_CHANNEL_SIZE + 7] << 16);
 
         const uint8_t pixelsRed[]{
-            colorTableRed[dataRed0 & (0x7 << 21) >> 21],
-            colorTableRed[dataRed0 & (0x7 << 18) >> 18],
-            colorTableRed[dataRed0 & (0x7 << 15) >> 15],
-            colorTableRed[dataRed0 & (0x7 << 12) >> 12],
-            colorTableRed[dataRed0 & (0x7 << 9) >> 9],
-            colorTableRed[dataRed0 & (0x7 << 6) >> 6],
-            colorTableRed[dataRed0 & (0x7 << 3) >> 3],
-            colorTableRed[dataRed0 & (0x7 << 0) >> 0],
-            colorTableRed[dataRed1 & (0x7 << 21) >> 21],
-            colorTableRed[dataRed1 & (0x7 << 18) >> 18],
-            colorTableRed[dataRed1 & (0x7 << 15) >> 15],
-            colorTableRed[dataRed1 & (0x7 << 12) >> 12],
-            colorTableRed[dataRed1 & (0x7 << 9) >> 9],
-            colorTableRed[dataRed1 & (0x7 << 6) >> 6],
-            colorTableRed[dataRed1 & (0x7 << 3) >> 3],
-            colorTableRed[dataRed1 & (0x7 << 0) >> 0],
+            colorTableRed[(dataRed0 & (0x7 << 0)) >> 0],
+            colorTableRed[(dataRed0 & (0x7 << 3)) >> 3],
+            colorTableRed[(dataRed0 & (0x7 << 6)) >> 6],
+            colorTableRed[(dataRed0 & (0x7 << 9)) >> 9],
+            colorTableRed[(dataRed0 & (0x7 << 12)) >> 12],
+            colorTableRed[(dataRed0 & (0x7 << 15)) >> 15],
+            colorTableRed[(dataRed0 & (0x7 << 18)) >> 18],
+            colorTableRed[(dataRed0 & (0x7 << 21)) >> 21],
+            colorTableRed[(dataRed1 & (0x7 << 0)) >> 0],
+            colorTableRed[(dataRed1 & (0x7 << 3)) >> 3],
+            colorTableRed[(dataRed1 & (0x7 << 6)) >> 6],
+            colorTableRed[(dataRed1 & (0x7 << 9)) >> 9],
+            colorTableRed[(dataRed1 & (0x7 << 12)) >> 12],
+            colorTableRed[(dataRed1 & (0x7 << 15)) >> 15],
+            colorTableRed[(dataRed1 & (0x7 << 18)) >> 18],
+            colorTableRed[(dataRed1 & (0x7 << 21)) >> 21],
         };
         static_assert(std::extent_v<decltype(pixelsRed)> == BC5_BLOCK_PIXELS * BC5_BLOCK_PIXELS);
 
         const uint8_t pixelsGreen[]{
-            colorTableGreen[dataGreen0 & (0x7 << 21) >> 21],
-            colorTableGreen[dataGreen0 & (0x7 << 18) >> 18],
-            colorTableGreen[dataGreen0 & (0x7 << 15) >> 15],
-            colorTableGreen[dataGreen0 & (0x7 << 12) >> 12],
-            colorTableGreen[dataGreen0 & (0x7 << 9) >> 9],
-            colorTableGreen[dataGreen0 & (0x7 << 6) >> 6],
-            colorTableGreen[dataGreen0 & (0x7 << 3) >> 3],
-            colorTableGreen[dataGreen0 & (0x7 << 0) >> 0],
-            colorTableGreen[dataGreen1 & (0x7 << 21) >> 21],
-            colorTableGreen[dataGreen1 & (0x7 << 18) >> 18],
-            colorTableGreen[dataGreen1 & (0x7 << 15) >> 15],
-            colorTableGreen[dataGreen1 & (0x7 << 12) >> 12],
-            colorTableGreen[dataGreen1 & (0x7 << 9) >> 9],
-            colorTableGreen[dataGreen1 & (0x7 << 6) >> 6],
-            colorTableGreen[dataGreen1 & (0x7 << 3) >> 3],
-            colorTableGreen[dataGreen1 & (0x7 << 0) >> 0],
+            colorTableGreen[(dataGreen0 & (0x7 << 0)) >> 0],
+            colorTableGreen[(dataGreen0 & (0x7 << 3)) >> 3],
+            colorTableGreen[(dataGreen0 & (0x7 << 6)) >> 6],
+            colorTableGreen[(dataGreen0 & (0x7 << 9)) >> 9],
+            colorTableGreen[(dataGreen0 & (0x7 << 12)) >> 12],
+            colorTableGreen[(dataGreen0 & (0x7 << 15)) >> 15],
+            colorTableGreen[(dataGreen0 & (0x7 << 18)) >> 18],
+            colorTableGreen[(dataGreen0 & (0x7 << 21)) >> 21],
+            colorTableGreen[(dataGreen1 & (0x7 << 0)) >> 0],
+            colorTableGreen[(dataGreen1 & (0x7 << 3)) >> 3],
+            colorTableGreen[(dataGreen1 & (0x7 << 6)) >> 6],
+            colorTableGreen[(dataGreen1 & (0x7 << 9)) >> 9],
+            colorTableGreen[(dataGreen1 & (0x7 << 12)) >> 12],
+            colorTableGreen[(dataGreen1 & (0x7 << 15)) >> 15],
+            colorTableGreen[(dataGreen1 & (0x7 << 18)) >> 18],
+            colorTableGreen[(dataGreen1 & (0x7 << 21)) >> 21],
         };
         static_assert(std::extent_v<decltype(pixelsGreen)> == BC5_BLOCK_PIXELS * BC5_BLOCK_PIXELS);
 
@@ -235,8 +236,8 @@ namespace image
         result->Allocate();
 
         const auto faceCount = result->GetFaceCount();
-        const auto mipCount = result->GetMipMapCount();
-        assert(mipCount == input.GetMipMapCount());
+        const auto mipCount = result->HasMipMaps() ? result->GetMipMapCount() : 1;
+        assert(mipCount == input.HasMipMaps() ? input.GetMipMapCount() : 1);
 
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
@@ -272,6 +273,8 @@ namespace image
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * edgeBlockWidth;
                         }
+
+                        bufferOut += mipPitch * (BC5_BLOCK_PIXELS - 1);
                     }
 
                     if (fullBlocksHeight < mipHeight)
@@ -291,6 +294,8 @@ namespace image
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * edgeBlockWidth;
                         }
+
+                        bufferOut += mipPitch * (BC5_BLOCK_PIXELS - 1);
                     }
                 }
             }
