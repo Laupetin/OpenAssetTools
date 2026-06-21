@@ -69,8 +69,14 @@ namespace
 #undef INTERPOLATE_BC5
     }
 
-    void DecompressBlock(
-        const uint8_t* in, uint8_t* out, const unsigned outPitch, const unsigned outPixelSize, const unsigned outOffsetR, const unsigned outOffsetG)
+    void DecompressBlock(const uint8_t* in,
+                         uint8_t* out,
+                         const unsigned outPitch,
+                         const unsigned outPixelSize,
+                         const unsigned outOffsetR,
+                         const unsigned outOffsetG,
+                         const unsigned outOffsetA,
+                         const bool hasAlpha)
     {
         uint8_t colorTableRed[8];
         uint8_t colorTableGreen[8];
@@ -129,6 +135,17 @@ namespace
 
         out[3 * outPitch + 3 * outPixelSize + outOffsetR] = colorTableRed[(dataRed1 & (0x7 << 21)) >> 21];
         out[3 * outPitch + 3 * outPixelSize + outOffsetG] = colorTableGreen[(dataGreen1 & (0x7 << 21)) >> 21];
+
+        if (hasAlpha)
+        {
+            for (auto curHeight = 0u; curHeight < BC5_BLOCK_PIXELS; curHeight++)
+            {
+                for (auto curWidth = 0u; curWidth < BC5_BLOCK_PIXELS; curWidth++)
+                {
+                    out[curHeight * outPitch + curWidth * outPixelSize + outOffsetA] = std::numeric_limits<uint8_t>::max();
+                }
+            }
+        }
     }
 
     void DecompressBlockEdge(const uint8_t* in,
@@ -138,7 +155,9 @@ namespace
                              const unsigned outPitch,
                              const unsigned outPixelSize,
                              const unsigned outOffsetR,
-                             const unsigned outOffsetG)
+                             const unsigned outOffsetG,
+                             const unsigned outOffsetA,
+                             const bool hasAlpha)
     {
         assert(width <= BC5_BLOCK_PIXELS);
         assert(height <= BC5_BLOCK_PIXELS);
@@ -202,6 +221,17 @@ namespace
                 out[curHeight * outPitch + curWidth * outPixelSize + outOffsetG] = pixelsGreen[curHeight * BC5_BLOCK_PIXELS + curWidth];
             }
         }
+
+        if (hasAlpha)
+        {
+            for (auto curHeight = 0u; curHeight < height; curHeight++)
+            {
+                for (auto curWidth = 0u; curWidth < width; curWidth++)
+                {
+                    out[curHeight * outPitch + curWidth * outPixelSize + outOffsetA] = std::numeric_limits<uint8_t>::max();
+                }
+            }
+        }
     }
 } // namespace
 
@@ -220,13 +250,17 @@ namespace image
         // Only support formats with byte aligned channels
         const auto redByteAligned = unsignedTargetFormat->m_r_size == 8 && (unsignedTargetFormat->m_r_offset % 8) == 0;
         const auto greenByteAligned = unsignedTargetFormat->m_g_size == 8 && (unsignedTargetFormat->m_g_offset % 8) == 0;
+        const auto hasAlpha = unsignedTargetFormat->m_a_size > 0;
+        const auto alphaByteAligned = unsignedTargetFormat->m_a_size == 8 && (unsignedTargetFormat->m_a_offset % 8) == 0;
         assert(redByteAligned);
         assert(greenByteAligned);
-        if (!redByteAligned || !greenByteAligned)
+        assert(!hasAlpha || alphaByteAligned);
+        if (!redByteAligned || !greenByteAligned || (hasAlpha && !alphaByteAligned))
             return nullptr;
 
         const auto outOffsetR = unsignedTargetFormat->m_r_offset / 8;
         const auto outOffsetG = unsignedTargetFormat->m_g_offset / 8;
+        const auto outOffsetA = unsignedTargetFormat->m_a_offset / 8;
 
         const auto width = input.GetWidth();
         const auto height = input.GetHeight();
@@ -261,7 +295,7 @@ namespace image
                     {
                         for (auto curWidth = 0u; curWidth < fullBlocksWidth; curWidth += BC5_BLOCK_PIXELS)
                         {
-                            DecompressBlock(bufferIn, bufferOut, mipPitch, outPixelSize, outOffsetR, outOffsetG);
+                            DecompressBlock(bufferIn, bufferOut, mipPitch, outPixelSize, outOffsetR, outOffsetG, outOffsetA, hasAlpha);
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * BC5_BLOCK_PIXELS;
                         }
@@ -269,7 +303,8 @@ namespace image
                         if (fullBlocksWidth < mipWidth)
                         {
                             const auto edgeBlockWidth = mipWidth - fullBlocksWidth;
-                            DecompressBlockEdge(bufferIn, bufferOut, edgeBlockWidth, BC5_BLOCK_PIXELS, mipPitch, outPixelSize, outOffsetR, outOffsetG);
+                            DecompressBlockEdge(
+                                bufferIn, bufferOut, edgeBlockWidth, BC5_BLOCK_PIXELS, mipPitch, outPixelSize, outOffsetR, outOffsetG, outOffsetA, hasAlpha);
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * edgeBlockWidth;
                         }
@@ -282,7 +317,8 @@ namespace image
                         const auto edgeBlockHeight = mipHeight - fullBlocksHeight;
                         for (auto curWidth = 0u; curWidth < fullBlocksWidth; curWidth += BC5_BLOCK_PIXELS)
                         {
-                            DecompressBlockEdge(bufferIn, bufferOut, BC5_BLOCK_PIXELS, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG);
+                            DecompressBlockEdge(
+                                bufferIn, bufferOut, BC5_BLOCK_PIXELS, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG, outOffsetA, hasAlpha);
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * BC5_BLOCK_PIXELS;
                         }
@@ -290,7 +326,8 @@ namespace image
                         if (fullBlocksWidth < mipWidth)
                         {
                             const auto edgeBlockWidth = mipWidth - fullBlocksWidth;
-                            DecompressBlockEdge(bufferIn, bufferOut, edgeBlockWidth, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG);
+                            DecompressBlockEdge(
+                                bufferIn, bufferOut, edgeBlockWidth, edgeBlockHeight, mipPitch, outPixelSize, outOffsetR, outOffsetG, outOffsetA, hasAlpha);
                             bufferIn += BC5_BLOCK_SIZE;
                             bufferOut += outPixelSize * edgeBlockWidth;
                         }
