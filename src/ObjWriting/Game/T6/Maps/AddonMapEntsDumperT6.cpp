@@ -1,4 +1,3 @@
-#define NOMINMAX
 #include "AddonMapEntsDumperT6.h"
 
 #include <algorithm>
