@@ -16,7 +16,7 @@ namespace image
 
     const ImageFormat* Dx9TextureLoader::GetFormatForDx9Format() const
     {
-        for (const auto* i : ImageFormat::ALL_FORMATS)
+        for (const auto* i : format::ALL)
         {
             if (i->GetD3DFormat() == m_format)
                 return i;

@@ -16,7 +16,7 @@ namespace image
 
     const ImageFormat* Dx12TextureLoader::GetFormatForDx12Format() const
     {
-        for (const auto* i : ImageFormat::ALL_FORMATS)
+        for (const auto* i : format::ALL)
         {
             if (i->GetDxgiFormat() == m_format)
                 return i;
