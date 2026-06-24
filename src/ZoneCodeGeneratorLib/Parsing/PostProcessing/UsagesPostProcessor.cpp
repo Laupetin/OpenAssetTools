@@ -32,8 +32,15 @@ namespace
                 if (computations.ShouldIgnore())
                     continue;
 
-                if (member->m_is_reusable && member->m_type_info)
-                    member->m_type_info->m_reusable_reference_exists = true;
+                if (member->m_is_reusable)
+                {
+                    if (member->m_type_info)
+                        member->m_type_info->m_reusable_reference_exists = true;
+
+                    // Incase of typedefs -> also mark resolved final type as reusable
+                    if (member->m_type && member->m_type->m_type_info)
+                        member->m_type->m_type_info->m_reusable_reference_exists = true;
+                }
 
                 if (member->m_type)
                 {
@@ -55,8 +62,8 @@ namespace
                     if (computations.IsNotInDefaultNormalBlock())
                         member->m_type->m_reference_from_non_default_normal_block_exists = true;
 
-                    member->m_type->m_usages.push_back(currentStructure);
-                    processingQueue.push(member->m_type);
+                    member->m_type->m_usages.emplace_back(currentStructure);
+                    processingQueue.emplace(member->m_type);
                 }
             }
         }
