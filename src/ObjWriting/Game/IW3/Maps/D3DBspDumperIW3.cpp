@@ -248,6 +248,14 @@ namespace
         return value->name[0] == ',' ? &value->name[1] : value->name;
     }
 
+    [[nodiscard]] const char* NameOf(const PhysPreset* value)
+    {
+        if (!value || !value->name)
+            return nullptr;
+
+        return value->name[0] == ',' ? &value->name[1] : value->name;
+    }
+
     template<typename T> [[nodiscard]] bool TryPointerIndex(const T* base, const size_t count, const T* value, size_t& index)
     {
         if (!base || !value || count == 0)
@@ -1541,15 +1549,84 @@ namespace
         }
     }
 
+    [[nodiscard]] std::array<float, 3> AxisToAngles(const float (&axis)[3][3])
+    {
+        const auto forwardLength = std::sqrt(axis[0][0] * axis[0][0] + axis[0][1] * axis[0][1]);
+        return {static_cast<float>(std::atan2(-axis[0][2], forwardLength) * 180.0 / PI),
+                static_cast<float>(std::atan2(axis[0][1], axis[0][0]) * 180.0 / PI),
+                static_cast<float>(std::atan2(axis[1][2], axis[2][2]) * 180.0 / PI)};
+    }
+
     [[nodiscard]] std::array<float, 3> StaticModelAngles(const cStaticModel_s& staticModel)
     {
         float axis[3][3]{};
         StaticModelAxis(staticModel, axis);
 
-        const auto forwardLength = std::sqrt(axis[0][0] * axis[0][0] + axis[0][1] * axis[0][1]);
-        return {static_cast<float>(std::atan2(-axis[0][2], forwardLength) * 180.0 / PI),
-                static_cast<float>(std::atan2(axis[0][1], axis[0][0]) * 180.0 / PI),
-                static_cast<float>(std::atan2(axis[1][2], axis[2][2]) * 180.0 / PI)};
+        return AxisToAngles(axis);
+    }
+
+    void QuatToAxis(const float (&quat)[4], float (&axis)[3][3])
+    {
+        const auto x = quat[0];
+        const auto y = quat[1];
+        const auto z = quat[2];
+        const auto w = quat[3];
+        const auto x2 = x + x;
+        const auto y2 = y + y;
+        const auto z2 = z + z;
+        const auto xx = x * x2;
+        const auto xy = x * y2;
+        const auto xz = x * z2;
+        const auto yy = y * y2;
+        const auto yz = y * z2;
+        const auto zz = z * z2;
+        const auto wx = w * x2;
+        const auto wy = w * y2;
+        const auto wz = w * z2;
+
+        // dyn_model entities are loaded as angles -> AnglesToAxis -> MatrixToQuat.
+        // Rebuild that IW3 axis convention from the runtime quat before writing angles.
+        axis[0][0] = 1.0f - yy - zz;
+        axis[0][1] = xy + wz;
+        axis[0][2] = xz - wy;
+        axis[1][0] = xy - wz;
+        axis[1][1] = 1.0f - xx - zz;
+        axis[1][2] = yz + wx;
+        axis[2][0] = xz + wy;
+        axis[2][1] = yz - wx;
+        axis[2][2] = 1.0f - xx - yy;
+    }
+
+    [[nodiscard]] std::array<float, 3> DynEntityAngles(const DynEntityDef& dynEnt)
+    {
+        float axis[3][3]{};
+        QuatToAxis(dynEnt.pose.quat, axis);
+        return AxisToAngles(axis);
+    }
+
+    [[nodiscard]] std::string_view DynEntityTypeName(const DynEntityType type)
+    {
+        switch (type)
+        {
+        case DYNENT_TYPE_CLUTTER:
+            return "clutter";
+
+        case DYNENT_TYPE_DESTRUCT:
+            return "destruct";
+
+        default:
+            return {};
+        }
+    }
+
+    [[nodiscard]] bool HasNonZeroVector(const float (&value)[3])
+    {
+        return value[0] != 0.0f || value[1] != 0.0f || value[2] != 0.0f;
+    }
+
+    void AppendFloat3Field(std::string& out, const std::string_view fieldName, const float (&value)[3])
+    {
+        out += std::format("\"{}\" \"{} {} {}\"\n", fieldName, FormatFloat(value[0]), FormatFloat(value[1]), FormatFloat(value[2]));
     }
 
     [[nodiscard]] bool AlmostEqual(const float a, const float b)
@@ -1673,6 +1750,64 @@ namespace
         }
     }
 
+    void AppendDynEntityMassFields(std::string& out, const DynEntityDef& dynEnt)
+    {
+        if (HasNonZeroVector(dynEnt.mass.centerOfMass))
+            AppendFloat3Field(out, "centerofmass", dynEnt.mass.centerOfMass);
+
+        if (HasNonZeroVector(dynEnt.mass.momentsOfInertia))
+            AppendFloat3Field(out, "momofinertia", dynEnt.mass.momentsOfInertia);
+
+        if (HasNonZeroVector(dynEnt.mass.productsOfInertia))
+            AppendFloat3Field(out, "prodofinertia", dynEnt.mass.productsOfInertia);
+    }
+
+    void AppendDynModelPhysPreset(std::string& out, const DynEntityDef& dynEnt)
+    {
+        if (!dynEnt.physPreset || (dynEnt.xModel && dynEnt.xModel->physPreset == dynEnt.physPreset))
+            return;
+
+        const auto* physPresetName = NameOf(dynEnt.physPreset);
+        if (physPresetName && *physPresetName)
+            out += std::format("\"physPreset\" \"{}\"\n", physPresetName);
+    }
+
+    void AppendDynModelEntity(std::string& out, const DynEntityDef& dynEnt)
+    {
+        const auto* modelName = NameOf(dynEnt.xModel);
+        const auto typeName = DynEntityTypeName(dynEnt.type);
+        if (!modelName || !*modelName || typeName.empty())
+            return;
+
+        const auto angles = DynEntityAngles(dynEnt);
+        out += "{\n";
+        AppendDynModelPhysPreset(out, dynEnt);
+        AppendFloat3Field(out, "origin", dynEnt.pose.origin);
+        out += std::format("\"type\" \"{}\"\n", typeName);
+        out += std::format("\"angles\" \"{} {} {}\"\n", FormatFloat(angles[0]), FormatFloat(angles[1]), FormatFloat(angles[2]));
+        if (dynEnt.health != 0)
+            out += std::format("\"health\" \"{}\"\n", dynEnt.health);
+        AppendDynEntityMassFields(out, dynEnt);
+        out += std::format("\"model\" \"{}\"\n", modelName);
+        out += "\"classname\" \"dyn_model\"\n";
+        out += "}\n";
+    }
+
+    void AppendDynModelEntities(std::string& out, const clipMap_t* clipMap)
+    {
+        if (!clipMap || !clipMap->dynEntDefList[0])
+            return;
+
+        if (!out.empty() && out.back() != '\n')
+            out += '\n';
+
+        // dyn_model source entities are consumed into clipMap dynEnt arrays by
+        // linker_pc. Reconstruct the source-side entity blocks from the runtime
+        // model dynents so dumped BSPs remain useful in Radiant and relinking.
+        for (auto dynEntIndex = 0uz; dynEntIndex < clipMap->dynEntCount[0]; dynEntIndex++)
+            AppendDynModelEntity(out, clipMap->dynEntDefList[0][dynEntIndex]);
+    }
+
     [[nodiscard]] std::vector<std::byte> BuildEntities(const MapEnts& mapEnts, const clipMap_t* clipMap, const GfxWorld* world)
     {
         auto entityCharCount = PositiveCount(mapEnts.numEntityChars);
@@ -1684,6 +1819,7 @@ namespace
             entities.assign(mapEnts.entityString, entityCharCount);
 
         AppendStaticModelEntities(entities, clipMap, world);
+        AppendDynModelEntities(entities, clipMap);
         if (!entities.empty() && entities.back() != '\n')
             entities += '\n';
 
