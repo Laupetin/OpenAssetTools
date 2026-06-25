@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelToCommonConverter" + GAME + ".cpp"
 
@@ -11,6 +11,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -54,7 +56,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -178,7 +180,7 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
-#ifdef FEATURE_IW3
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             // IW3 has some models that are missing 1 (a single) tri in its first lod.
             // It is not contained in any vert list or blend
             // I think this is a bug (?), so omit anyway.
@@ -403,7 +405,7 @@ namespace
 
             if (surface.vertList)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4)
                 assert(!surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) == 0);
@@ -428,7 +430,7 @@ namespace
             auto vertsBlendOffset = 0u;
             if (surface.vertInfo.vertsBlend)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4)
                 assert(surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) > 0);
@@ -530,14 +532,24 @@ namespace
             auto& object = out.m_objects[surfIndex];
             object.m_faces.reserve(surface.triCount);
 
+#ifdef FEATURE_T4
+            // T4 tri indices are local to the surface, while baseVertIndex does not match
+            // the flattened common vertex buffer we build here.
+            auto surfaceVertexOffset = 0u;
+            for (auto previousSurfIndex = 0u; previousSurfIndex < surfIndex; previousSurfIndex++)
+                surfaceVertexOffset += surfs[previousSurfIndex].vertCount;
+#else
+            const auto surfaceVertexOffset = surface.baseVertIndex;
+#endif
+
             for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
             {
                 const auto& tri = surface.triIndices[triIndex];
 
                 XModelFace face{};
-                face.vertexIndex[0] = tri.i[0] + surface.baseVertIndex;
-                face.vertexIndex[1] = tri.i[1] + surface.baseVertIndex;
-                face.vertexIndex[2] = tri.i[2] + surface.baseVertIndex;
+                face.vertexIndex[0] = tri.i[0] + surfaceVertexOffset;
+                face.vertexIndex[1] = tri.i[1] + surfaceVertexOffset;
+                face.vertexIndex[2] = tri.i[2] + surfaceVertexOffset;
                 object.m_faces.emplace_back(face);
             }
         }
