@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimDumper" + GAME + ".cpp"
 
@@ -12,6 +12,8 @@
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #define HAS_DELTA_QUAT_3D
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -346,7 +348,7 @@ namespace xanim
         WriteCompiledXAnim(
             *assetFile,
             commonParts,
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             CompiledXAnimVersion::VERSION_17
 #elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
             // Make sure we dump as many anims as possible in an IW3 modtools compatible way
