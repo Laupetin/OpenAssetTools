@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h"
 
@@ -10,6 +10,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -61,7 +63,7 @@ namespace GAME
         std::optional<std::string> physPreset;
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         std::optional<std::string> physCollmap;
-#elif defined(FEATURE_T5) || defined(FEATURE_T6)
+#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         std::optional<std::string> physConstraints;
 #endif
 #if defined(FEATURE_T6)
@@ -80,7 +82,7 @@ namespace GAME
         physPreset,
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         physCollmap,
-#elif defined(FEATURE_T5) || defined(FEATURE_T6)
+#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         physConstraints,
 #endif
 #if defined(FEATURE_T6)
