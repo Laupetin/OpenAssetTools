@@ -137,7 +137,7 @@ using `Linker`):
 | GfxImage             | ✅               | ❌               | A few special image encodings are not yet supported.                         |
 | snd_alias_list_t     | ❌               | ❌               |                                                                              |
 | SndDriverGlobals     | ❌               | ❌               |                                                                              |
-| LoadedSound          | ❌               | ❌               |                                                                              |
+| LoadedSound          | ✅               | ❌               |                                                                              |
 | clipMap_t            | ❌               | ❌               |                                                                              |
 | ComWorld             | ❌               | ❌               |                                                                              |
 | GameWorldSp          | ❌               | ❌               |                                                                              |
