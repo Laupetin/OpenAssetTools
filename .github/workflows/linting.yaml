@@ -21,7 +21,7 @@ jobs:
           apt-get install -y wget tar git make curl
 
       - name: Checkout repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
 
       - name: Configure clang
         uses: ./.github/actions/configure-clang
@@ -41,7 +41,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
 
       - name: Install node
         uses: actions/setup-node@v6.4.0

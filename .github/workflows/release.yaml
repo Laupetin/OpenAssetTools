@@ -22,7 +22,7 @@ jobs:
           apt-get install -y wget tar git make curl
 
       - name: Checkout repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
         with:
           submodules: recursive
 
@@ -57,7 +57,7 @@ jobs:
     runs-on: windows-2025-vs2026
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
         with:
           submodules: recursive
 
