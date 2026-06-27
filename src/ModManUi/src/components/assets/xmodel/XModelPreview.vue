@@ -10,14 +10,17 @@ import {
   type Texture,
 } from "three";
 import type { AssetDto } from "@/native/AssetBinds.ts";
-import { computed, onUnmounted, ref, shallowRef, toRaw, useTemplateRef, watch } from "vue";
-import { ThreeResourceTracker } from "@/components/three/ThreeResourceTracker.js";
-import { provideThreeScene } from "@/components/three/useThreeScene.ts";
+import { computed, ref, useTemplateRef, watch } from "vue";
+import {
+  createResourceTrackedObject,
+  createSceneObject,
+  provideThreeScene,
+} from "@/components/three/useThreeScene.ts";
 import { useThreeRenderer } from "@/components/three/useThreeRenderer.ts";
 import { useOrbitControls } from "@/components/three/useOrbitControls.ts";
 import ThreeScene from "@/components/three/ThreeScene.vue";
 import { getModManUrl } from "@/meta/ModManUrl.ts";
-import { useGltfLoader, type GLTF } from "@/components/assets/xmodel/GltfLoader.ts";
+import { useGltfLoader } from "@/components/assets/xmodel/GltfLoader.ts";
 
 const props = defineProps<{
   asset: AssetDto;
@@ -39,32 +42,29 @@ const groundColor = 0xb97a20; // brownish orange
 const hemisphereLight = new HemisphereLight(skyColor, groundColor, intensity);
 scene.add(hemisphereLight);
 
-camera.value.position.z = 3;
-
 const modelUri = computed<string>(() =>
   getModManUrl(
     `/xmodel/glb?zone=${encodeURIComponent(props.zoneName)}&name=${encodeURIComponent(props.asset.name)}`,
   ),
 );
-const model = shallowRef<GLTF | undefined>(undefined);
+const model = createSceneObject();
 const isLoading = ref(false);
-const resourceTracker = new ThreeResourceTracker();
 const modelBounds = computed<Box3 | undefined>(() => {
   const modelValue = model.value;
   if (!modelValue) return undefined;
 
   const box = new Box3();
-  box.expandByObject(modelValue.scene);
+  box.expandByObject(modelValue);
   return box;
 });
 
 const loader = new TextureLoader();
-let skybox: Texture | undefined = undefined;
+const skybox = createResourceTrackedObject<Texture>();
 loader.loadAsync("/skybox/citrus_orchard_puresky.jpg").then((res) => {
-  skybox = res;
-  skybox.mapping = EquirectangularReflectionMapping;
-  skybox.colorSpace = SRGBColorSpace;
-  scene.background = skybox;
+  skybox.value = res;
+  skybox.value.mapping = EquirectangularReflectionMapping;
+  skybox.value.colorSpace = SRGBColorSpace;
+  scene.background = skybox.value;
 });
 
 const gltfLoader = useGltfLoader(() => props.zoneName);
@@ -75,7 +75,7 @@ watch(
     isLoading.value = true;
     gltfLoader.value
       .loadAsync(uri)
-      .then((gltf) => (model.value = gltf))
+      .then((gltf) => (model.value = gltf.scene))
       .finally(() => (isLoading.value = false));
   },
   { immediate: true },
@@ -108,31 +108,9 @@ function resetCameraPositionForObject() {
   }
 }
 
-watch(model, (newVal, oldVal) => {
+watch(model, (newVal) => {
   if (newVal) {
-    resourceTracker.refObject(newVal.scene);
-  }
-
-  if (oldVal) {
-    scene.remove(toRaw(oldVal).scene);
-  }
-
-  if (newVal) {
-    scene.add(toRaw(newVal.scene));
     resetCameraPositionForObject();
-  }
-
-  if (oldVal) {
-    resourceTracker.unrefObject(toRaw(oldVal).scene);
-  }
-});
-
-onUnmounted(() => {
-  if (model.value) {
-    resourceTracker.unrefObject(toRaw(model.value).scene);
-  }
-  if (skybox) {
-    skybox.dispose();
   }
 });
 </script>

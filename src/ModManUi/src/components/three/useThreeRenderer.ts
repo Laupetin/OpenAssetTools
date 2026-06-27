@@ -2,6 +2,7 @@ import {
   type ComponentInstance,
   computed,
   type MaybeRefOrGetter,
+  ref,
   shallowRef,
   toValue,
   watch,
@@ -15,8 +16,9 @@ export type CameraType = PerspectiveCamera | OrthographicCamera;
 export interface UseThreeRendererOptions {
   cameraType?: "perspective" | "orthographic";
   fov?: MaybeRefOrGetter<number>;
-  orthoHorizontal?: MaybeRefOrGetter<number>;
-  orthoVertical?: MaybeRefOrGetter<number>;
+  orthoAdjustForAspect?: boolean;
+  orthoWidth?: MaybeRefOrGetter<number>;
+  orthoHeight?: MaybeRefOrGetter<number>;
   zNear?: MaybeRefOrGetter<number>;
   zFar?: MaybeRefOrGetter<number>;
 }
@@ -29,8 +31,8 @@ export function useThreeRenderer(
   const fov = options?.fov ?? 75;
   const zNear = options?.zNear ?? 0.1;
   const zFar = options?.zFar ?? 1000;
-  const orthoHorizontal = options?.orthoHorizontal ?? 1;
-  const orthoVertical = options?.orthoVertical ?? 1;
+  const orthoWidth = options?.orthoWidth ?? 1;
+  const orthoHeight = options?.orthoHeight ?? 1;
 
   const { scene } = useThreeSceneOrThrow();
   const canvas = computed(() => toValue(sceneComponent)?.canvasRef ?? null);
@@ -48,19 +50,20 @@ export function useThreeRenderer(
       return new PerspectiveCamera(toValue(fov), aspect, toValue(zNear), toValue(zFar));
     }
 
-    const orthoHorizontalValue = toValue(orthoHorizontal);
-    const orthoVerticalValue = toValue(orthoVertical);
+    const orthoWidthValue = toValue(orthoWidth);
+    const orthoHeightValue = toValue(orthoHeight);
     return new OrthographicCamera(
-      -orthoHorizontalValue,
-      orthoHorizontalValue,
-      orthoVerticalValue,
-      -orthoVerticalValue,
+      orthoWidthValue / -2,
+      orthoWidthValue / 2,
+      orthoHeightValue / 2,
+      orthoHeightValue / -2,
       toValue(zNear),
       toValue(zFar),
     );
   }
 
   const camera = shallowRef<CameraType>(createNewCamera());
+  const aspect = ref(1);
   let renderer: WebGLRenderer | undefined = undefined;
 
   watch(
@@ -68,12 +71,13 @@ export function useThreeRenderer(
     ([canvasValue, canvasWrapperValue]) => {
       if (!canvasValue || !canvasWrapperValue) return;
 
-      renderer = new WebGLRenderer({ canvas: canvasValue });
+      renderer = new WebGLRenderer({ canvas: canvasValue, alpha: true });
       const canvasWrapperBounds = canvasWrapperValue.getBoundingClientRect();
       renderer.setSize(canvasWrapperBounds.width, canvasWrapperBounds.height);
+      aspect.value = canvasWrapperBounds.width / canvasWrapperBounds.height;
 
       if (camera.value instanceof PerspectiveCamera) {
-        camera.value.aspect = canvasWrapperBounds.width / canvasWrapperBounds.height;
+        camera.value.aspect = aspect.value;
       }
 
       function animate() {
@@ -87,9 +91,12 @@ export function useThreeRenderer(
   useResizeObserver(canvasWrapper, () => {
     const canvasWrapperBounds = canvasWrapper.value!.getBoundingClientRect();
     renderer?.setSize(canvasWrapperBounds.width, canvasWrapperBounds.height);
+    aspect.value = canvasWrapperBounds.width / canvasWrapperBounds.height;
+  });
 
+  watch(aspect, (newValue) => {
     if (camera.value instanceof PerspectiveCamera) {
-      camera.value.aspect = canvasWrapperBounds.width / canvasWrapperBounds.height;
+      camera.value.aspect = newValue;
       camera.value.updateProjectionMatrix();
     }
   });
@@ -100,31 +107,47 @@ export function useThreeRenderer(
       const cameraValue = camera.value;
       if (cameraValue instanceof PerspectiveCamera) {
         cameraValue.fov = fovValue;
+        cameraValue.updateProjectionMatrix();
       }
     },
   );
 
-  watch(
-    () => toValue(orthoHorizontal),
-    (orthoHorizontalValue) => {
-      const cameraValue = camera.value;
-      if (cameraValue instanceof OrthographicCamera) {
-        cameraValue.left = -orthoHorizontalValue;
-        cameraValue.right = orthoHorizontalValue;
-      }
-    },
-  );
+  if (options?.orthoAdjustForAspect === true) {
+    watch(
+      () => [toValue(orthoWidth), toValue(orthoHeight), aspect.value],
+      ([orthoWidthValue, orthoHeightValue, aspect]) => {
+        const cameraValue = camera.value;
 
-  watch(
-    () => toValue(orthoVertical),
-    (orthoVerticalValue) => {
-      const cameraValue = camera.value;
-      if (cameraValue instanceof OrthographicCamera) {
-        cameraValue.top = orthoVerticalValue;
-        cameraValue.bottom = -orthoVerticalValue;
-      }
-    },
-  );
+        if (orthoWidthValue > orthoHeightValue) {
+          orthoHeightValue = orthoWidthValue / aspect;
+        } else {
+          orthoWidthValue = orthoHeightValue * aspect;
+        }
+
+        if (cameraValue instanceof OrthographicCamera) {
+          cameraValue.left = -orthoWidthValue;
+          cameraValue.right = orthoWidthValue;
+          cameraValue.top = orthoHeightValue;
+          cameraValue.bottom = -orthoHeightValue;
+          cameraValue.updateProjectionMatrix();
+        }
+      },
+    );
+  } else {
+    watch(
+      () => [toValue(orthoWidth), toValue(orthoHeight)],
+      ([orthoWidthValue, orthoHeightValue]) => {
+        const cameraValue = camera.value;
+        if (cameraValue instanceof OrthographicCamera) {
+          cameraValue.left = -orthoWidthValue;
+          cameraValue.right = orthoWidthValue;
+          cameraValue.top = orthoHeightValue;
+          cameraValue.bottom = -orthoHeightValue;
+          cameraValue.updateProjectionMatrix();
+        }
+      },
+    );
+  }
 
   watch(
     () => toValue(zNear),

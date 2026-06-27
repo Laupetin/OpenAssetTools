@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import XModelPreview from "@/components/assets/xmodel/XModelPreview.vue";
 import type { AssetDto } from "@/native/AssetBinds.ts";
+import ImagePreview from "@/components/assets/image/ImagePreview.vue";
 
 defineProps<{
   asset?: AssetDto;
@@ -10,7 +11,8 @@ defineProps<{
 
 <template>
   <div class="preview">
-    <XModelPreview v-if="asset?.type === 'xmodel'" :asset :zone-name />
+    <ImagePreview v-if="asset?.type === 'image'" :asset :zone-name />
+    <XModelPreview v-else-if="asset?.type === 'xmodel'" :asset :zone-name />
     <span v-else>No preview available</span>
   </div>
 </template>
