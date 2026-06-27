@@ -35,6 +35,7 @@ watch(
       <InspectZoneAssets
         v-model:selected-asset="selectedAsset"
         :assets="assetsOfZone.assets"
+        :zone-name="zoneName"
         class="inspect-area-assets"
       />
     </template>
