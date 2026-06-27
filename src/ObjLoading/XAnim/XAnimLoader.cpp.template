@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XAnim/XAnimLoader" + GAME + ".cpp"
 
@@ -12,6 +12,8 @@
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #define HAS_DELTA_QUAT_3D
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"

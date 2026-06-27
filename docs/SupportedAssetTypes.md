@@ -129,7 +129,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysPreset           | ❌              | ❌              |                                                      |
 | PhysConstraints      | ❌              | ❌              |                                                      |
 | DestructibleDef      | ❌              | ❌              |                                                      |
-| XAnimParts           | ❌              | ❌              |                                                      |
+| XAnimParts           | ✅              | ✅              |                                                      |
 | XModel               | ✅              | ❌              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ❌              | ❌              |                                                      |
 | MaterialTechniqueSet | ❌              | ❌              |                                                      |
