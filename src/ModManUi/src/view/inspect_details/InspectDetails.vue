@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
 import Skeleton from "primevue/skeleton";
 import { useAssetStore } from "@/stores/AssetStore";
 import { storeToRefs } from "pinia";
@@ -29,27 +31,35 @@ watch(
 
 <template>
   <div class="inspect-details">
-    <template v-if="assetsOfZone">
-      <InspectPreview :asset="selectedAsset" :zone-name class="inspect-area-preview" />
-      <InspectAssetDetails :selected-asset="selectedAsset" class="inspect-area-details" />
-      <InspectZoneAssets
-        v-model:selected-asset="selectedAsset"
-        :assets="assetsOfZone.assets"
-        :zone-name="zoneName"
-        class="inspect-area-assets"
-      />
-    </template>
-    <template v-else>
-      <div class="skeleton-wrapper">
-        <Skeleton class="count-skeleton" width="100%" height="100%" />
-      </div>
-      <div class="skeleton-wrapper">
-        <Skeleton class="count-skeleton" width="100%" height="100%" />
-      </div>
-      <div class="skeleton-wrapper list">
-        <Skeleton v-for="i in 3" :key="i" class="count-skeleton" width="80%" height="1em" />
-      </div>
-    </template>
+    <Splitter class="splitter-full-size" :gutter-size="2">
+      <SplitterPanel class="splitter-panel" :size="30" :min-size="15">
+        <Splitter class="splitter-full-size" layout="vertical" :gutter-size="2">
+          <SplitterPanel class="splitter-panel" :size="30">
+            <InspectPreview v-if="assetsOfZone" :asset="selectedAsset" :zone-name />
+            <div v-else class="skeleton-wrapper">
+              <Skeleton class="count-skeleton" width="100%" height="100%" />
+            </div>
+          </SplitterPanel>
+          <SplitterPanel class="splitter-panel" :size="70">
+            <InspectZoneAssets
+              v-if="assetsOfZone"
+              v-model:selected-asset="selectedAsset"
+              :assets="assetsOfZone.assets"
+              :zone-name="zoneName"
+            />
+            <div v-else class="skeleton-wrapper list">
+              <Skeleton v-for="i in 3" :key="i" class="count-skeleton" width="80%" height="1em" />
+            </div>
+          </SplitterPanel>
+        </Splitter>
+      </SplitterPanel>
+      <SplitterPanel class="splitter-panel" :size="70">
+        <InspectAssetDetails v-if="assetsOfZone" :selected-asset="selectedAsset" />
+        <div v-else class="skeleton-wrapper">
+          <Skeleton class="count-skeleton" width="100%" height="100%" />
+        </div>
+      </SplitterPanel>
+    </Splitter>
   </div>
 </template>
 
@@ -57,27 +67,15 @@ watch(
 .inspect-details {
   width: 100%;
   height: 100%;
-
-  display: grid;
-  grid-template-columns: 30% 1fr;
-  grid-template-rows: 30% 1fr;
-  grid-template-areas:
-    "preview details"
-    "assets details";
-  gap: 0.5rem;
-  padding: 0.5rem;
 }
 
-.inspect-area-preview {
-  grid-area: preview;
+.splitter-full-size {
+  width: 100%;
+  height: 100%;
 }
 
-.inspect-area-details {
-  grid-area: details;
-}
-
-.inspect-area-assets {
-  grid-area: assets;
+.splitter-panel {
+  padding: 0.25rem;
 }
 
 .skeleton-wrapper {
