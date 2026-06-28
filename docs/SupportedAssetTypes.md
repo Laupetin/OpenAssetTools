@@ -142,7 +142,7 @@ using `Linker`):
 | ComWorld             | ❌               | ❌               |                                                                              |
 | GameWorldSp          | ❌               | ❌               |                                                                              |
 | GameWorldMp          | ❌               | ❌               |                                                                              |
-| MapEnts              | ❌               | ❌               |                                                                              |
+| MapEnts              | ✅               | ❌               |                                                                              |
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ❌               | ❌               |                                                                              |
 | Font_s               | ❌               | ❌               |                                                                              |
