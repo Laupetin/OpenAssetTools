@@ -11,7 +11,6 @@ namespace image
 {
     enum class ImageFormatId : std::uint8_t
     {
-        R8_G8_B8,
         B8_G8_R8,
         B8_G8_R8_X8,
         R8_G8_B8_A8,
@@ -139,7 +138,6 @@ namespace image
 
     namespace format
     {
-        extern const ImageFormatUnsigned R8_G8_B8;
         extern const ImageFormatUnsigned B8_G8_R8;
         extern const ImageFormatUnsigned B8_G8_R8_X8;
         extern const ImageFormatUnsigned R8_G8_B8_A8;

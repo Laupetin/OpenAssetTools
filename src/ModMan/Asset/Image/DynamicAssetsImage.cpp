@@ -51,7 +51,6 @@ namespace
             {ImageFormatId::BC4,         ImageFormatId::B8_G8_R8   },
             {ImageFormatId::BC5,         ImageFormatId::B8_G8_R8   },
             {ImageFormatId::B8_G8_R8_X8, ImageFormatId::B8_G8_R8   },
-            {ImageFormatId::R8_G8_B8,    ImageFormatId::B8_G8_R8   },
             {ImageFormatId::R8_G8_B8_A8, ImageFormatId::B8_G8_R8_A8},
             {ImageFormatId::A8,          ImageFormatId::B8_G8_R8   },
             {ImageFormatId::R8,          ImageFormatId::B8_G8_R8   },

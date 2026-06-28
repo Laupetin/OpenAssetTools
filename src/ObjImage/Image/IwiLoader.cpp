@@ -16,9 +16,9 @@ namespace
         switch (static_cast<iwi6::IwiFormat>(format))
         {
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &format::R8_G8_B8_A8;
+            return &format::B8_G8_R8_A8;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &format::R8_G8_B8;
+            return &format::B8_G8_R8;
         case iwi6::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
             return &format::A8;
         case iwi6::IwiFormat::IMG_FORMAT_DXT1:
@@ -121,9 +121,9 @@ namespace
         switch (static_cast<iwi8::IwiFormat>(format))
         {
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &format::R8_G8_B8_A8;
+            return &format::B8_G8_R8_A8;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &format::R8_G8_B8;
+            return &format::B8_G8_R8;
         case iwi8::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
             return &format::A8;
         case iwi8::IwiFormat::IMG_FORMAT_DXT1:
@@ -250,9 +250,9 @@ namespace
         switch (static_cast<iwi13::IwiFormat>(format))
         {
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-            return &format::R8_G8_B8_A8;
+            return &format::B8_G8_R8_A8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &format::R8_G8_B8;
+            return &format::B8_G8_R8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
             return &format::A8;
         case iwi13::IwiFormat::IMG_FORMAT_DXT1:
@@ -376,7 +376,7 @@ namespace
             assert(false); // Unsupported yet
             return &format::R16_G16_B16_A16_FLOAT;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGB:
-            return &format::R8_G8_B8;
+            return &format::B8_G8_R8; // This is a guess, idk the byte order as PC does not support this
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
             return &format::R8_A8;
         case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:

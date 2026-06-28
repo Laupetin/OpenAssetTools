@@ -200,7 +200,7 @@ namespace image
     std::unique_ptr<Texture> ConvertTextureForDdsFileOutputIfNecessary(const Texture* texture)
     {
         static const std::unordered_map<ImageFormatId, ImageFormatId> ddsConversionTable{
-            {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
+            {ImageFormatId::B8_G8_R8, ImageFormatId::B8_G8_R8_X8},
         };
 
         const auto entry = ddsConversionTable.find(texture->GetFormat()->GetId());
