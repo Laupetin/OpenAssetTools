@@ -1,12 +1,12 @@
-#include "AddonMapEntsDumperIW5.h"
+#include "AddonMapEntsDumperT6.h"
 
 #include <algorithm>
 
-using namespace IW5;
+using namespace T6;
 
 namespace addon_map_ents
 {
-    void DumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAddonMapEnts::Type>& asset)
+    void DumperT6::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetAddonMapEnts::Type>& asset)
     {
         const auto* addonMapEnts = asset.Asset();
         const auto assetFile = context.OpenAssetFile(asset.m_name);
