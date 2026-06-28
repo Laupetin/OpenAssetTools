@@ -13,7 +13,7 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
 {
     switch (imageFormat->GetId())
     {
-    case ImageFormatId::R8_G8_B8:
+    case ImageFormatId::B8_G8_R8: // This is a guess, idk the byte order as PC does not support this
         return IwiFormat::IMG_FORMAT_BITMAP_RGB;
 
     case ImageFormatId::R8_G8_B8_A8:
