@@ -10,6 +10,7 @@ function getMaterialsOfObject(object: Object3D) {
   return [];
 }
 
+export type ResourceTrackedType = Texture | Material | Object3D | BufferGeometry;
 export class ThreeResourceTracker {
   private readonly textures: Record<number, number>;
   private readonly materials: Record<string, number>;
@@ -21,6 +22,30 @@ export class ThreeResourceTracker {
     this.materials = {};
     this.geometries = {};
     this.objects = {};
+  }
+
+  ref(value: ResourceTrackedType) {
+    if (value instanceof Texture) {
+      this.refTexture(value);
+    } else if (value instanceof Material) {
+      this.refMaterial(value);
+    } else if (value instanceof BufferGeometry) {
+      this.refGeometry(value);
+    } else if (value instanceof Object3D) {
+      this.refObject(value);
+    }
+  }
+
+  unref(value: ResourceTrackedType) {
+    if (value instanceof Texture) {
+      this.unrefTexture(value);
+    } else if (value instanceof Material) {
+      this.unrefMaterial(value);
+    } else if (value instanceof BufferGeometry) {
+      this.unrefGeometry(value);
+    } else if (value instanceof Object3D) {
+      this.unrefObject(value);
+    }
   }
 
   refTexture(texture: Texture) {

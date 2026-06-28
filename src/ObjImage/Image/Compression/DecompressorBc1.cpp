@@ -349,7 +349,7 @@ namespace image
 
         const auto faceCount = result->GetFaceCount();
         const auto mipCount = result->HasMipMaps() ? result->GetMipMapCount() : 1;
-        assert(mipCount == input.HasMipMaps() ? input.GetMipMapCount() : 1);
+        assert(mipCount == (input.HasMipMaps() ? input.GetMipMapCount() : 1));
 
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
