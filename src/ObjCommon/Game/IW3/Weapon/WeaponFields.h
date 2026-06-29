@@ -241,7 +241,7 @@ namespace IW3
         {"nightVisionRemoveTimePowerDown",   offsetof(WeaponDef, nightVisionRemoveTimePowerDown),               CSPFT_MILLISECONDS       },
         {"nightVisionRemoveTimeFadeInStart", offsetof(WeaponDef, nightVisionRemoveTimeFadeInStart),             CSPFT_MILLISECONDS       },
         {"fuseTime",                         offsetof(WeaponDef, fuseTime),                                     CSPFT_MILLISECONDS       },
-        {"aiFuseTime",                       offsetof(WeaponDef, aiFuseTime),                                   CSPFT_MILLISECONDS       },
+        {"aifuseTime",                       offsetof(WeaponDef, aiFuseTime),                                   CSPFT_MILLISECONDS       },
         {"requireLockonToFire",              offsetof(WeaponDef, requireLockonToFire),                          CSPFT_QBOOLEAN           },
         {"noAdsWhenMagEmpty",                offsetof(WeaponDef, noAdsWhenMagEmpty),                            CSPFT_QBOOLEAN           },
         {"avoidDropCleanup",                 offsetof(WeaponDef, avoidDropCleanup),                             CSPFT_QBOOLEAN           },
@@ -511,8 +511,7 @@ namespace IW3
 
     // Accept source-side aliases without emitting them in dumps.
     inline cspField_t weapon_fields_load_aliases[]{
-        {"shellEjectEffect",    offsetof(WeaponDef, viewShellEjectEffect),    CSPFT_FX          },
-        {"lastShotEjectEffect", offsetof(WeaponDef, viewLastShotEjectEffect), CSPFT_FX          },
-        {"aifuseTime",          offsetof(WeaponDef, aiFuseTime),              CSPFT_MILLISECONDS},
+        {"shellEjectEffect",    offsetof(WeaponDef, viewShellEjectEffect),    CSPFT_FX},
+        {"lastShotEjectEffect", offsetof(WeaponDef, viewLastShotEjectEffect), CSPFT_FX},
     };
 } // namespace IW3
