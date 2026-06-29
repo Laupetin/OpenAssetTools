@@ -1,10 +1,10 @@
 #include "WeaponDumperIW3.h"
 
 #include "Game/IW3/CommonIW3.h"
-#include "Game/IW3/InfoString/EnumStrings.h"
 #include "Game/IW3/InfoString/InfoStringFromStructConverter.h"
 #include "Game/IW3/ObjConstantsIW3.h"
 #include "Game/IW3/Weapon/WeaponFields.h"
+#include "Game/IW3/Weapon/WeaponStrings.h"
 #include "Weapon/AccuracyGraphWriter.h"
 #include "Weapon/WeaponCommon.h"
 

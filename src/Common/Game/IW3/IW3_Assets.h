@@ -2731,7 +2731,8 @@ namespace IW3
         WEAPTYPE_GRENADE = 0x1,
         WEAPTYPE_PROJECTILE = 0x2,
         WEAPTYPE_BINOCULARS = 0x3,
-        WEAPTYPE_NUM = 0x4,
+
+        WEAPTYPE_NUM,
     };
 
     enum weapClass_t
@@ -2746,7 +2747,8 @@ namespace IW3
         WEAPCLASS_TURRET = 0x7,
         WEAPCLASS_NON_PLAYER = 0x8,
         WEAPCLASS_ITEM = 0x9,
-        WEAPCLASS_NUM = 0xA,
+
+        WEAPCLASS_NUM,
     };
 
     enum PenetrateType
@@ -2755,7 +2757,8 @@ namespace IW3
         PENETRATE_TYPE_SMALL = 0x1,
         PENETRATE_TYPE_MEDIUM = 0x2,
         PENETRATE_TYPE_LARGE = 0x3,
-        PENETRATE_TYPE_COUNT = 0x4,
+
+        PENETRATE_TYPE_NUM,
     };
 
     enum ImpactType
@@ -2769,7 +2772,8 @@ namespace IW3
         IMPACT_TYPE_GRENADE_EXPLODE = 0x6,
         IMPACT_TYPE_ROCKET_EXPLODE = 0x7,
         IMPACT_TYPE_PROJECTILE_DUD = 0x8,
-        IMPACT_TYPE_COUNT = 0x9,
+
+        IMPACT_TYPE_NUM,
     };
 
     enum weapInventoryType_t
@@ -2778,7 +2782,8 @@ namespace IW3
         WEAPINVENTORY_OFFHAND = 0x1,
         WEAPINVENTORY_ITEM = 0x2,
         WEAPINVENTORY_ALTMODE = 0x3,
-        WEAPINVENTORYCOUNT = 0x4,
+
+        WEAPINVENTORY_NUM,
     };
 
     enum weapFireType_t
@@ -2788,7 +2793,8 @@ namespace IW3
         WEAPON_FIRETYPE_BURSTFIRE2 = 0x2,
         WEAPON_FIRETYPE_BURSTFIRE3 = 0x3,
         WEAPON_FIRETYPE_BURSTFIRE4 = 0x4,
-        WEAPON_FIRETYPECOUNT = 0x5,
+
+        WEAPON_FIRETYPE_NUM,
     };
 
     enum OffhandClass
@@ -2797,7 +2803,8 @@ namespace IW3
         OFFHAND_CLASS_FRAG_GRENADE = 0x1,
         OFFHAND_CLASS_SMOKE_GRENADE = 0x2,
         OFFHAND_CLASS_FLASH_GRENADE = 0x3,
-        OFFHAND_CLASS_COUNT = 0x4,
+
+        OFFHAND_CLASS_NUM,
     };
 
     enum weapStance_t
@@ -2805,7 +2812,8 @@ namespace IW3
         WEAPSTANCE_STAND = 0x0,
         WEAPSTANCE_DUCK = 0x1,
         WEAPSTANCE_PRONE = 0x2,
-        WEAPSTANCE_NUM = 0x3,
+
+        WEAPSTANCE_NUM,
     };
 
     enum activeReticleType_t
@@ -2813,7 +2821,8 @@ namespace IW3
         VEH_ACTIVE_RETICLE_NONE = 0x0,
         VEH_ACTIVE_RETICLE_PIP_ON_A_STICK = 0x1,
         VEH_ACTIVE_RETICLE_BOUNCING_DIAMOND = 0x2,
-        VEH_ACTIVE_RETICLE_COUNT = 0x3,
+
+        VEH_ACTIVE_RETICLE_NUM,
     };
 
     enum weaponIconRatioType_t
@@ -2821,7 +2830,8 @@ namespace IW3
         WEAPON_ICON_RATIO_1TO1 = 0x0,
         WEAPON_ICON_RATIO_2TO1 = 0x1,
         WEAPON_ICON_RATIO_4TO1 = 0x2,
-        WEAPON_ICON_RATIO_COUNT = 0x3,
+
+        WEAPON_ICON_RATIO_NUM,
     };
 
     enum ammoCounterClipType_t
@@ -2833,14 +2843,16 @@ namespace IW3
         AMMO_COUNTER_CLIP_ROCKET = 0x4,
         AMMO_COUNTER_CLIP_BELTFED = 0x5,
         AMMO_COUNTER_CLIP_ALTWEAPON = 0x6,
-        AMMO_COUNTER_CLIP_COUNT = 0x7,
+
+        AMMO_COUNTER_CLIP_NUM,
     };
 
     enum weapOverlayReticle_t
     {
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
-        WEAPOVERLAYRETICLE_NUM = 0x2,
+
+        WEAPOVERLAYRETICLE_NUM,
     };
 
     enum WeapOverlayInteface_t
@@ -2848,7 +2860,8 @@ namespace IW3
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
         WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
-        WEAPOVERLAYINTERFACECOUNT = 0x3,
+
+        WEAPOVERLAYINTERFACE_NUM,
     };
 
     enum weapProjExposion_t
@@ -2860,7 +2873,8 @@ namespace IW3
         WEAPPROJEXP_DUD = 0x4,
         WEAPPROJEXP_SMOKE = 0x5,
         WEAPPROJEXP_HEAVY = 0x6,
-        WEAPPROJEXP_NUM = 0x7,
+
+        WEAPPROJEXP_NUM,
     };
 
     enum WeapStickinessType
@@ -2869,7 +2883,8 @@ namespace IW3
         WEAPSTICKINESS_ALL = 0x1,
         WEAPSTICKINESS_GROUND = 0x2,
         WEAPSTICKINESS_GROUND_WITH_YAW = 0x3,
-        WEAPSTICKINESS_COUNT = 0x4,
+
+        WEAPSTICKINESS_NUM,
     };
 
     enum guidedMissileType_t
@@ -2878,7 +2893,47 @@ namespace IW3
         MISSILE_GUIDANCE_SIDEWINDER = 0x1,
         MISSILE_GUIDANCE_HELLFIRE = 0x2,
         MISSILE_GUIDANCE_JAVELIN = 0x3,
-        MISSILE_GUIDANCE_COUNT = 0x4,
+
+        MISSILE_GUIDANCE_NUM,
+    };
+
+    enum WeaponAnimSlot
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE = 0x3,
+        WEAP_ANIM_HOLD_FIRE = 0x4,
+        WEAP_ANIM_LASTSHOT = 0x5,
+        WEAP_ANIM_RECHAMBER = 0x6,
+        WEAP_ANIM_MELEE = 0x7,
+        WEAP_ANIM_MELEE_CHARGE = 0x8,
+        WEAP_ANIM_RELOAD = 0x9,
+        WEAP_ANIM_RELOAD_EMPTY = 0xA,
+        WEAP_ANIM_RELOAD_START = 0xB,
+        WEAP_ANIM_RELOAD_END = 0xC,
+        WEAP_ANIM_RAISE = 0xD,
+        WEAP_ANIM_FIRST_RAISE = 0xE,
+        WEAP_ANIM_DROP = 0xF,
+        WEAP_ANIM_ALT_RAISE = 0x10,
+        WEAP_ANIM_ALT_DROP = 0x11,
+        WEAP_ANIM_QUICK_RAISE = 0x12,
+        WEAP_ANIM_QUICK_DROP = 0x13,
+        WEAP_ANIM_EMPTY_RAISE = 0x14,
+        WEAP_ANIM_EMPTY_DROP = 0x15,
+        WEAP_ANIM_SPRINT_IN = 0x16,
+        WEAP_ANIM_SPRINT_LOOP = 0x17,
+        WEAP_ANIM_SPRINT_OUT = 0x18,
+        WEAP_ANIM_DETONATE = 0x19,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x1A,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x1B,
+        WEAP_ANIM_ADS_FIRE = 0x1C,
+        WEAP_ANIM_ADS_LASTSHOT = 0x1D,
+        WEAP_ANIM_ADS_RECHAMBER = 0x1E,
+        WEAP_ANIM_ADS_UP = 0x1F,
+        WEAP_ANIM_ADS_DOWN = 0x20,
+
+        NUM_WEAP_ANIMS,
     };
 
     enum hitLocation_t

@@ -1,9 +1,9 @@
 #include "InfoStringLoaderWeaponIW3.h"
 
 #include "Game/IW3/IW3.h"
-#include "Game/IW3/InfoString/EnumStrings.h"
 #include "Game/IW3/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW3/Weapon/WeaponFields.h"
+#include "Game/IW3/Weapon/WeaponStrings.h"
 #include "Utils/Logging/Log.h"
 #include "Weapon/WeaponCommon.h"
 
