@@ -56,6 +56,7 @@ namespace IW3
         SUB_ASSET_TYPE_VERTEX_DECL,
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
+        SUB_ASSET_TYPE_ACCURACY_GRAPH,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -156,7 +157,16 @@ namespace IW3
         WFT_HIDETAGS,
         WFT_NOTETRACKSOUNDMAP,
 
+        // Custom
+        WFT_ANIM_NAME,
+
         WFT_NUM_FIELD_TYPES
+    };
+
+    struct AccuracyGraph
+    {
+        vec2_t* graphKnots;
+        int graphKnotCount;
     };
 
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
@@ -191,6 +201,7 @@ namespace IW3
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
+    using SubAssetAccuracyGraph = SubAsset<SUB_ASSET_TYPE_ACCURACY_GRAPH, AccuracyGraph>;
 } // namespace IW3
 
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetPhysPreset, name);

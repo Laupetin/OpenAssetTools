@@ -13,6 +13,7 @@
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "Sound/SndCurveDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
+#include "Weapon/WeaponDumperIW3.h"
 
 using namespace IW3;
 
@@ -44,7 +45,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
-    // REGISTER_DUMPER(AssetDumperWeapon)
+    RegisterAssetDumper(std::make_unique<weapon::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals)
     // REGISTER_DUMPER(AssetDumperFxEffectDef)
     // REGISTER_DUMPER(AssetDumperFxImpactTable)
