@@ -142,17 +142,17 @@ using `Linker`):
 | ComWorld             | ❌               | ❌               |                                                                              |
 | GameWorldSp          | ❌               | ❌               |                                                                              |
 | GameWorldMp          | ❌               | ❌               |                                                                              |
-| MapEnts              | ✅               | ❌               |                                                                              |
+| MapEnts              | ✅               | ✅               |                                                                              |
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ❌               | ❌               |                                                                              |
 | Font_s               | ❌               | ❌               |                                                                              |
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
-| LocalizeEntry        | ✅               | ❌               |                                                                              |
+| LocalizeEntry        | ✅               | ✅               |                                                                              |
 | WeaponDef            | ❌               | ❌               |                                                                              |
 | FxEffectDef          | ❌               | ❌               |                                                                              |
 | FxImpactTable        | ❌               | ❌               |                                                                              |
-| RawFile              | ✅               | ❌               |                                                                              |
+| RawFile              | ✅               | ✅               |                                                                              |
 | StringTable          | ✅               | ❌               |                                                                              |
 | PackIndex            | ❌               | ❌               |                                                                              |
 
