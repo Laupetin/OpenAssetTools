@@ -52,6 +52,8 @@ namespace
         "vertexdecl",
         "vertexshader",
         "pixelshader",
+        "accuracygraph",
+        "flametable",
     };
     static_assert(std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)> == SUB_ASSET_TYPE_COUNT);
 } // namespace

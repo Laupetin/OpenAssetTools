@@ -3,10 +3,13 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T4/AssetMarkerT4.h"
 #include "Game/T4/T4.h"
+#include "Game/T4/Weapon/AccuracyGraphLoaderT4.h"
 #include "Game/T4/XAnim/XAnimLoaderT4.h"
 #include "Localize/AssetLoaderLocalizeT4.h"
 #include "Maps/MapEntsLoaderT4.h"
 #include "RawFile/AssetLoaderRawFileT4.h"
+#include "Weapon/FlameTableLoaderT4.h"
+#include "Weapon/RawLoaderWeaponT4.h"
 
 using namespace T4;
 
@@ -92,6 +95,10 @@ namespace
         collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(map_ents::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(raw_file::CreateLoaderT4(memory, searchPath));
+        collection.AddAssetCreator(weapon::CreateRawLoaderT4(memory, searchPath, zone));
+
+        collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderT4(memory, searchPath));
+        collection.AddSubAssetCreator(weapon::CreateFlameTableLoaderT4(memory, searchPath, zone));
     }
 } // namespace
 

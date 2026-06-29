@@ -1013,6 +1013,8 @@ namespace T4
         SURF_TYPE_CUSHION,
         SURF_TYPE_FRUIT,
         SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_PLAYER,
+        SURF_TYPE_TALL_GRASS,
 
         SURF_TYPE_NUM
     };
@@ -2999,7 +3001,10 @@ namespace T4
         WEAPTYPE_GRENADE = 0x1,
         WEAPTYPE_PROJECTILE = 0x2,
         WEAPTYPE_BINOCULARS = 0x3,
-        WEAPTYPE_NUM = 0x4,
+        WEAPTYPE_GAS = 0x4,
+        WEAPTYPE_BOMB = 0x5,
+        WEAPTYPE_MINE = 0x6,
+        WEAPTYPE_NUM = 0x7,
     };
 
     enum weapClass_t
@@ -3013,8 +3018,9 @@ namespace T4
         WEAPCLASS_ROCKETLAUNCHER = 0x6,
         WEAPCLASS_TURRET = 0x7,
         WEAPCLASS_NON_PLAYER = 0x8,
-        WEAPCLASS_ITEM = 0x9,
-        WEAPCLASS_NUM = 0xA,
+        WEAPCLASS_GAS = 0x9,
+        WEAPCLASS_ITEM = 0xA,
+        WEAPCLASS_NUM = 0xB,
     };
 
     enum PenetrateType
@@ -3035,9 +3041,12 @@ namespace T4
         IMPACT_TYPE_SHOTGUN = 0x4,
         IMPACT_TYPE_GRENADE_BOUNCE = 0x5,
         IMPACT_TYPE_GRENADE_EXPLODE = 0x6,
-        IMPACT_TYPE_ROCKET_EXPLODE = 0x7,
-        IMPACT_TYPE_PROJECTILE_DUD = 0x8,
-        IMPACT_TYPE_COUNT = 0x9,
+        IMPACT_TYPE_RIFLE_GRENADE = 0x7,
+        IMPACT_TYPE_ROCKET_EXPLODE = 0x8,
+        IMPACT_TYPE_PROJECTILE_DUD = 0x9,
+        IMPACT_TYPE_MORTAR_SHELL = 0xA,
+        IMPACT_TYPE_TANK_SHELL = 0xB,
+        IMPACT_TYPE_COUNT = 0xC,
     };
 
     enum weapInventoryType_t
@@ -3139,7 +3148,9 @@ namespace T4
         WEAPPROJEXP_DUD = 0x4,
         WEAPPROJEXP_SMOKE = 0x5,
         WEAPPROJEXP_HEAVY = 0x6,
-        WEAPPROJEXP_NUM = 0x7,
+        WEAPPROJEXP_FIRE = 0x7,
+        WEAPPROJEXP_NAPALMBLOB = 0x8,
+        WEAPPROJEXP_NUM = 0x9,
     };
 
     enum WeapStickinessType
