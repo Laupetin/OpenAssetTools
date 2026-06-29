@@ -1,0 +1,51 @@
+#options GAME (IW3, IW4, IW5, T4, T5)
+
+#filename "Game/" + GAME + "/Font/JsonFont" + GAME + ".h"
+
+// This file was templated.
+// See JsonFont.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+#include "Json/JsonExtension.h"
+
+#include <nlohmann/json.hpp>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace GAME
+{
+    class JsonGlyph
+    {
+    public:
+        int letter;
+        int x0;
+        int y0;
+        int dx;
+        int pixelWidth;
+        int pixelHeight;
+        float s0;
+        float t0;
+        float s1;
+        float t1;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonGlyph, letter, x0, y0, dx, pixelWidth, pixelHeight, s0, t0, s1, t1);
+
+    class JsonFont
+    {
+    public:
+        int pixelHeight;
+        int glyphCount;
+        std::optional<std::string> material;
+        std::optional<std::string> glowMaterial;
+        std::vector<JsonGlyph> glyphs;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonFont, pixelHeight, glyphCount, material, glowMaterial, glyphs);
+} // namespace GAME

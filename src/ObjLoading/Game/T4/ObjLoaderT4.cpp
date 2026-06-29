@@ -2,6 +2,7 @@
 
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T4/AssetMarkerT4.h"
+#include "Game/T4/Font/FontLoaderT4.h"
 #include "Game/T4/T4.h"
 #include "Game/T4/XAnim/XAnimLoaderT4.h"
 #include "Localize/AssetLoaderLocalizeT4.h"
@@ -87,6 +88,7 @@ namespace
         auto& memory = zone.Memory();
 
         collection.AddAssetCreator(xanim::CreateLoaderT4(memory, searchPath, zone));
+        collection.AddAssetCreator(font::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
     }
 } // namespace

@@ -2,6 +2,7 @@
 
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/IW4/AssetMarkerIW4.h"
+#include "Game/IW4/Font/FontLoaderIW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/Image/ImageLoaderEmbeddedIW4.h"
@@ -146,7 +147,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         collection.AddAssetCreator(light_def::CreateLoaderIW4(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(menu::CreateMenuListLoaderIW4(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW4(memory, searchPath, zone));

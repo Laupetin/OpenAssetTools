@@ -1,5 +1,6 @@
 #include "ObjWriterT5.h"
 
+#include "Game/T5/Font/FontDumperT5.h"
 #include "Game/T5/Image/ImageDumperT5.h"
 #include "Game/T5/Material/MaterialJsonDumperT5.h"
 #include "Game/T5/Techset/TechsetDumperT5.h"
@@ -39,7 +40,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperMapEnts, m_map_ents)
     // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
     RegisterAssetDumper(std::make_unique<light_def::DumperT5>());
-    // REGISTER_DUMPER(AssetDumperFont, m_font)
+    RegisterAssetDumper(std::make_unique<font::JsonDumperT5>());
     // REGISTER_DUMPER(AssetDumperMenuList, m_menu_list)
     // REGISTER_DUMPER(AssetDumperMenuDef, m_menu_def)
     RegisterAssetDumper(std::make_unique<localize::DumperT5>());

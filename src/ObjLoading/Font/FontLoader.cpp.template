@@ -1,0 +1,212 @@
+#options GAME (IW3, IW4, IW5, T4, T5)
+
+#filename "Game/" + GAME + "/Font/FontLoader" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
+#define GAME_LOWER "iw5"
+#elif GAME == "T4"
+#define GAME_LOWER "t4"
+#elif GAME == "T5"
+#define GAME_LOWER "t5"
+#endif
+
+// This file was templated.
+// See FontLoader.cpp.template.
+// Do not modify, changes will be lost.
+
+#set LOADER_HEADER "\"FontLoader" + GAME + ".h\""
+#include LOADER_HEADER
+
+#include "Font/FontCommon.h"
+#set JSON_HEADER "\"Game/" + GAME + "/Font/JsonFont" + GAME + ".h\""
+#include JSON_HEADER
+#include "Utils/Logging/Log.h"
+
+#include <format>
+#include <limits>
+#include <nlohmann/json.hpp>
+
+using namespace nlohmann;
+using namespace GAME;
+
+namespace
+{
+    class FontLoader final : public AssetCreator<AssetFont>
+    {
+    public:
+        FontLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto file = m_search_path.Open(font::GetJsonFileNameForAssetName(assetName));
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            auto* font = m_memory.Alloc<Font_s>();
+            font->fontName = m_memory.Dup(assetName.c_str());
+            AssetRegistration<AssetFont> registration(assetName, font);
+
+            try
+            {
+                const auto jRoot = json::parse(*file.m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "font" || version != 1u)
+                {
+                    con::error("Tried to load font \"{}\" but did not find expected type font of version 1", assetName);
+                    return AssetCreationResult::Failure();
+                }
+
+                std::string game;
+                jRoot.at("_game").get_to(game);
+                if (game != GAME_LOWER)
+                {
+                    con::error("Tried to load font \"{}\" but \"_game\" did not have expected value {}", assetName, GAME_LOWER);
+                    return AssetCreationResult::Failure();
+                }
+
+                const auto jFont = jRoot.get<JsonFont>();
+                if (CreateFontFromJson(jFont, *font, registration, context))
+                    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+            }
+            catch (const json::exception& e)
+            {
+                con::error("Failed to parse json of font: {}", e.what());
+            }
+
+            return AssetCreationResult::Failure();
+        }
+
+    private:
+        static void PrintError(const Font_s& font, const std::string& message)
+        {
+            con::error("Cannot load font \"{}\": {}", font.fontName, message);
+        }
+
+        template<typename FieldType>
+        static bool AssignIntegerField(FieldType& field, const int value, const Font_s& font, const char* fieldName)
+        {
+            const auto minValue = static_cast<int>(std::numeric_limits<FieldType>::min());
+            const auto maxValue = static_cast<int>(std::numeric_limits<FieldType>::max());
+
+            if (value < minValue || value > maxValue)
+            {
+                PrintError(font, std::format("{} value {} is outside allowed range {}..{}", fieldName, value, minValue, maxValue));
+                return false;
+            }
+
+            field = static_cast<FieldType>(value);
+            return true;
+        }
+
+        bool CreateMaterialDependency(const std::optional<std::string>& materialName,
+                                      Material*& material,
+                                      AssetRegistration<AssetFont>& registration,
+                                      AssetCreationContext& context,
+                                      const Font_s& font,
+                                      const char* fieldName) const
+        {
+            if (!materialName)
+            {
+                material = nullptr;
+                return true;
+            }
+
+            auto* materialDependency = context.LoadDependency<AssetMaterial>(*materialName);
+            if (!materialDependency)
+            {
+                PrintError(font, std::format("Could not find {} material \"{}\"", fieldName, *materialName));
+                return false;
+            }
+
+            registration.AddDependency(materialDependency);
+            material = materialDependency->Asset();
+            return true;
+        }
+
+        static bool CreateGlyphFromJson(const JsonGlyph& jGlyph, Glyph& glyph, const Font_s& font)
+        {
+            if (!AssignIntegerField(glyph.letter, jGlyph.letter, font, "glyph.letter"))
+                return false;
+            if (!AssignIntegerField(glyph.x0, jGlyph.x0, font, "glyph.x0"))
+                return false;
+            if (!AssignIntegerField(glyph.y0, jGlyph.y0, font, "glyph.y0"))
+                return false;
+            if (!AssignIntegerField(glyph.dx, jGlyph.dx, font, "glyph.dx"))
+                return false;
+            if (!AssignIntegerField(glyph.pixelWidth, jGlyph.pixelWidth, font, "glyph.pixelWidth"))
+                return false;
+            if (!AssignIntegerField(glyph.pixelHeight, jGlyph.pixelHeight, font, "glyph.pixelHeight"))
+                return false;
+
+            glyph.s0 = jGlyph.s0;
+            glyph.t0 = jGlyph.t0;
+            glyph.s1 = jGlyph.s1;
+            glyph.t1 = jGlyph.t1;
+            return true;
+        }
+
+        bool CreateFontFromJson(const JsonFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
+        {
+            font.pixelHeight = jFont.pixelHeight;
+
+            if (!CreateMaterialDependency(jFont.material, font.material, registration, context, font, "font"))
+                return false;
+            if (!CreateMaterialDependency(jFont.glowMaterial, font.glowMaterial, registration, context, font, "glow"))
+                return false;
+
+            if (jFont.glyphs.size() > static_cast<size_t>(std::numeric_limits<int>::max()))
+            {
+                PrintError(font, std::format("glyph count {} exceeds maximum {}", jFont.glyphs.size(), std::numeric_limits<int>::max()));
+                return false;
+            }
+
+            const auto glyphCount = static_cast<int>(jFont.glyphs.size());
+            if (jFont.glyphCount != glyphCount)
+            {
+                PrintError(font, std::format("glyphCount {} does not match glyph array size {}", jFont.glyphCount, glyphCount));
+                return false;
+            }
+
+            font.glyphCount = glyphCount;
+            if (font.glyphCount <= 0)
+            {
+                font.glyphs = nullptr;
+                return true;
+            }
+
+            font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
+            for (auto i = 0; i < font.glyphCount; i++)
+            {
+                if (!CreateGlyphFromJson(jFont.glyphs[i], font.glyphs[i], font))
+                    return false;
+            }
+
+            return true;
+        }
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace font
+{
+#set CREATE_LOADER_METHOD "CreateLoader" + GAME
+    std::unique_ptr<AssetCreator<AssetFont>> CREATE_LOADER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<FontLoader>(memory, searchPath);
+    }
+} // namespace font

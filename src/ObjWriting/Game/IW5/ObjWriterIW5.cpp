@@ -1,6 +1,7 @@
 #include "ObjWriterIW5.h"
 
 #include "Game/IW4/XAnim/XAnimDumperIW4.h"
+#include "Game/IW5/Font/FontDumperIW5.h"
 #include "Game/IW5/Image/ImageDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
@@ -53,7 +54,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW5>());
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::JsonDumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuDumperIW5>());
     RegisterAssetDumper(std::make_unique<localize::DumperIW5>());
