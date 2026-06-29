@@ -357,20 +357,6 @@ namespace weapon
 
         AssetRegistration<AssetWeapon> registration(assetName, weaponDef);
 
-        InfoStringToWeaponConverter aliasConverter(infoString,
-                                                   *weaponDef,
-                                                   m_zone.m_script_strings,
-                                                   m_memory,
-                                                   context,
-                                                   registration,
-                                                   weapon_fields_load_aliases,
-                                                   std::extent_v<decltype(weapon_fields_load_aliases)>);
-        if (!aliasConverter.Convert())
-        {
-            con::error("Failed to parse weapon aliases: \"{}\"", assetName);
-            return AssetCreationResult::Failure();
-        }
-
         InfoStringToWeaponConverter converter(
             infoString, *weaponDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
         if (!converter.Convert())

@@ -508,10 +508,4 @@ namespace IW3
         {"adsDofStart",                      offsetof(WeaponDef, adsDofStart),                                  CSPFT_FLOAT              },
         {"adsDofEnd",                        offsetof(WeaponDef, adsDofEnd),                                    CSPFT_FLOAT              },
     };
-
-    // Accept source-side aliases without emitting them in dumps.
-    inline cspField_t weapon_fields_load_aliases[]{
-        {"shellEjectEffect",    offsetof(WeaponDef, viewShellEjectEffect),    CSPFT_FX},
-        {"lastShotEjectEffect", offsetof(WeaponDef, viewLastShotEjectEffect), CSPFT_FX},
-    };
 } // namespace IW3
