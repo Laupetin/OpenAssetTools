@@ -1,12 +1,12 @@
-#include "MapEntsDumperIW3.h"
+#include "MapEntsDumperT4.h"
 
 #include "Maps/MapEntsCommon.h"
 
-using namespace IW3;
+using namespace T4;
 
 namespace map_ents
 {
-    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
+    void DumperT4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
     {
         const auto* mapEnts = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetEntsFileNameForAssetName(asset.m_name));
