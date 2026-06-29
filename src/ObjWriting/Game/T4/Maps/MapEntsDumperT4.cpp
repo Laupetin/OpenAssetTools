@@ -15,6 +15,6 @@ namespace map_ents
             return;
 
         auto& stream = *assetFile;
-        stream.write(mapEnts->entityString, mapEnts->numEntityChars);
+        stream.write(mapEnts->entityString, std::max(mapEnts->numEntityChars - 1, 0));
     }
 } // namespace map_ents
