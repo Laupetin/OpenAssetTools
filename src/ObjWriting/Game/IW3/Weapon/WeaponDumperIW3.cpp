@@ -260,15 +260,26 @@ namespace weapon
 {
     void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetWeapon::Type>& asset)
     {
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
+        // Only dump raw when no gdt available
+        if (context.m_gdt)
+        {
+            const auto infoString = CreateInfoString(asset);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_WEAPON);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_WEAPON, gdtEntry);
+            context.m_gdt->WriteEntry(gdtEntry);
+        }
+        else
+        {
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
 
-        if (!assetFile)
-            return;
+            if (!assetFile)
+                return;
 
-        auto& stream = *assetFile;
-        const auto infoString = CreateInfoString(asset);
-        const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_WEAPON);
-        stream.write(stringValue.c_str(), stringValue.size());
+            auto& stream = *assetFile;
+            const auto infoString = CreateInfoString(asset);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_WEAPON);
+            stream.write(stringValue.c_str(), stringValue.size());
+        }
 
         DumpAccuracyGraphs(context, asset);
     }
