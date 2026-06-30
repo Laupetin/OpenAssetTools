@@ -241,45 +241,6 @@ namespace
         weapon.szXAnims[WEAP_ANIM_ROOT] = "";
     }
 
-    void CheckProjectileValues(const WeaponDef& weaponDef)
-    {
-        if (weaponDef.iProjectileSpeed <= 0)
-            con::error("Projectile speed for WeapType {} must be greater than 0.0", weaponDef.szDisplayName);
-        if (weaponDef.destabilizationCurvatureMax >= 1000000000.0f || weaponDef.destabilizationCurvatureMax < 0.0f)
-            con::error("Destabilization angle for for WeapType {} must be between 0 and 45 degrees", weaponDef.szDisplayName);
-        if (weaponDef.destabilizationRateTime < 0.0f)
-            con::error("Destabilization rate time for for WeapType {} must be non-negative", weaponDef.szDisplayName);
-    }
-
-    void CalculateWeaponFields(WeaponDef& weapon)
-    {
-        if (!weapon.viewLastShotEjectEffect)
-            weapon.viewLastShotEjectEffect = weapon.viewShellEjectEffect;
-        if (!weapon.worldLastShotEjectEffect)
-            weapon.worldLastShotEjectEffect = weapon.worldShellEjectEffect;
-
-        if (weapon.iAdsTransInTime <= 0)
-            weapon.fOOPosAnimLength[0] = 0.0033333334f;
-        else
-            weapon.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon.iAdsTransInTime);
-
-        if (weapon.iAdsTransOutTime <= 0)
-            weapon.fOOPosAnimLength[1] = 0.0020000001f;
-        else
-            weapon.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.iAdsTransOutTime);
-
-        if (weapon.fMaxDamageRange <= 0.0f)
-            weapon.fMaxDamageRange = 999999.0f;
-        if (weapon.fMinDamageRange <= 0.0f)
-            weapon.fMinDamageRange = 999999.12f;
-
-        if (weapon.enemyCrosshairRange > 15000.0f)
-            con::error("Enemy crosshair ranges should be less than {}", 15000.0f);
-
-        if (weapon.weapType == WEAPTYPE_PROJECTILE)
-            CheckProjectileValues(weapon);
-    }
-
     bool LoadAccuracyGraph(const std::string& graphName,
                            vec2_t*& originalGraphKnots,
                            int& originalGraphKnotCount,
@@ -336,6 +297,94 @@ namespace
 
         return true;
     }
+
+    bool IsDefaultWeapon(const WeaponDef& weapon)
+    {
+        return strcmp(weapon.szInternalName, "defaultweapon") == 0 || strcmp(weapon.szInternalName, "defaultweapon_mp") == 0;
+    }
+
+    snd_alias_list_name* SetDefaultSound(const char* name, MemoryManager& memory)
+    {
+        auto* aliasListName = memory.Alloc<snd_alias_list_name>();
+        aliasListName->soundName = name;
+
+        return aliasListName;
+    }
+
+    void SetWeaponDefaults(WeaponDef& weapon, MemoryManager& memory)
+    {
+        if (IsDefaultWeapon(weapon))
+            return;
+
+        if (!weapon.viewLastShotEjectEffect)
+            weapon.viewLastShotEjectEffect = weapon.viewShellEjectEffect;
+        if (!weapon.worldLastShotEjectEffect)
+            weapon.worldLastShotEjectEffect = weapon.worldShellEjectEffect;
+        if (!weapon.raiseSound.name)
+            SetDefaultSound("weap_raise", memory);
+        if (!weapon.putawaySound.name)
+            SetDefaultSound("weap_putaway", memory);
+        if (!weapon.pickupSound.name)
+            SetDefaultSound("weap_pickup", memory);
+        if (!weapon.ammoPickupSound.name)
+            SetDefaultSound("weap_ammo_pickup", memory);
+        if (!weapon.emptyFireSound.name)
+            SetDefaultSound("weap_dryfire_smg_npc", memory);
+    }
+
+    void SetupTransitionTimes(WeaponDef& weapon)
+    {
+        if (weapon.iAdsTransInTime <= 0)
+            weapon.fOOPosAnimLength[0] = 1.0f / 300.0f; // 0.0033333334f;
+        else
+            weapon.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon.iAdsTransInTime);
+
+        if (weapon.iAdsTransOutTime <= 0)
+            weapon.fOOPosAnimLength[1] = 1.0f / 500.0f; // 0.0020000001f
+        else
+            weapon.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.iAdsTransOutTime);
+    }
+
+    void CheckWeaponDamageRanges(WeaponDef& weapon)
+    {
+        if (strcmp(weapon.szInternalName, "none") == 0)
+            return;
+
+        if (weapon.fMaxDamageRange <= 0.0)
+            weapon.fMaxDamageRange = 999999.0f;
+        if (weapon.fMinDamageRange <= 0.0)
+            weapon.fMinDamageRange = 999999.12f; // oddly specific number, no clue
+    }
+
+    void CheckCrosshairValues(WeaponDef& weapon)
+    {
+        if (weapon.enemyCrosshairRange > 15000.0f)
+            con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.szInternalName);
+    }
+
+    void CheckProjectileValues(WeaponDef& weapon)
+    {
+        if (weapon.weapType != WEAPTYPE_PROJECTILE)
+            return;
+
+        if (weapon.iProjectileSpeed <= 0)
+            con::warn("Weapon {}: Projectile speed must be greater than 0.0", weapon.szDisplayName);
+
+        if (weapon.destabilizationCurvatureMax >= 1000000000.0f || weapon.destabilizationCurvatureMax < 0.0f)
+            con::warn("Weapon {}: Destabilization angle must be between 0 and 45 degrees", weapon.szDisplayName);
+
+        if (weapon.destabilizationRateTime < 0.0f)
+            con::warn("Weapon {}: Destabilization rate time must be non-negative", weapon.szDisplayName);
+    }
+
+    void CheckSharedAmmoValues(const WeaponDef& weapon)
+    {
+        if (weapon.szAmmoName)
+            utils::MakeStringLowerCase(const_cast<char*>(weapon.szAmmoName));
+
+        if (weapon.szClipName)
+            utils::MakeStringLowerCase(const_cast<char*>(weapon.szClipName));
+    }
 } // namespace
 
 namespace weapon
@@ -347,7 +396,7 @@ namespace weapon
     {
     }
 
-    AssetCreationResult InfoStringLoaderIW3::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderIW3::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponDef = m_memory.Alloc<WeaponDef>();
         memset(weaponDef, 0, sizeof(WeaponDef));
@@ -365,8 +414,18 @@ namespace weapon
             return AssetCreationResult::Failure();
         }
 
-        CalculateWeaponFields(*weaponDef);
-        LoadAccuracyGraphs(*weaponDef, context);
+        if (!LoadAccuracyGraphs(*weaponDef, context))
+        {
+            con::error("Failed to load accuracy tables of weapon: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        SetWeaponDefaults(*weaponDef, m_memory);
+        SetupTransitionTimes(*weaponDef);
+        CheckWeaponDamageRanges(*weaponDef);
+        CheckCrosshairValues(*weaponDef);
+        CheckProjectileValues(*weaponDef);
+        CheckSharedAmmoValues(*weaponDef);
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }
