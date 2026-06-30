@@ -21,6 +21,7 @@
 #include "Sound/LoaderSoundCurveIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
 #include "Weapon/RawLoaderWeaponIW3.h"
+#include "Weapon/WeaponGdtLoaderIW3.h"
 
 #include <memory>
 
@@ -123,6 +124,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateRawLoaderIW3(memory, searchPath, zone));
+        collection.AddAssetCreator(weapon::CreateGdtLoaderIW3(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
