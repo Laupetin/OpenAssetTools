@@ -1,24 +1,29 @@
 #include "InfoString.h"
 
 #include "Utils/Logging/Log.h"
+#include "Utils/StringUtils.h"
 
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <stack>
 
-const std::string InfoString::EMPTY_VALUE;
+namespace
+{
+    constexpr const char* GDT_PREFIX_FIELD = "configstringFileType";
+    const std::string EMPTY_VALUE;
+} // namespace
 
 bool InfoString::HasKey(const std::string& key) const
 {
-    return m_values.find(key) != m_values.end();
+    return m_value_lookup.contains(key);
 }
 
 const std::string& InfoString::GetValueForKey(const std::string& key) const
 {
-    const auto& value = m_values.find(key);
+    const auto& value = m_value_lookup.find(key);
 
-    if (value == m_values.end())
+    if (value == m_value_lookup.end())
         return EMPTY_VALUE;
 
     return value->second;
@@ -26,9 +31,9 @@ const std::string& InfoString::GetValueForKey(const std::string& key) const
 
 const std::string& InfoString::GetValueForKey(const std::string& key, bool* foundValue) const
 {
-    const auto& value = m_values.find(key);
+    const auto& value = m_value_lookup.find(key);
 
-    if (value == m_values.end())
+    if (value == m_value_lookup.end())
     {
         if (foundValue)
             *foundValue = false;
@@ -43,17 +48,23 @@ const std::string& InfoString::GetValueForKey(const std::string& key, bool* foun
 void InfoString::SetValueForKey(const std::string& key, std::string value)
 {
     if (!HasKey(key))
-        m_keys_by_insertion.push_back(key);
+        m_keys_by_insertion.emplace_back(key);
 
-    m_values[key] = std::move(value);
+    m_value_lookup[key] = std::move(value);
 }
 
 void InfoString::RemoveKey(const std::string& key)
 {
-    const auto& value = m_values.find(key);
+    const auto& value = m_value_lookup.find(key);
 
-    if (value != m_values.end())
-        m_values.erase(value);
+    if (value != m_value_lookup.end())
+        m_value_lookup.erase(value);
+
+    const auto insertion = std::ranges::find_if(m_keys_by_insertion,
+                                                [&key](const std::string& keyByInsertion)
+                                                {
+                                                    return utils::StringEqualsIgnoreCase(key, keyByInsertion);
+                                                });
 }
 
 std::string InfoString::ToString() const
@@ -63,7 +74,7 @@ std::string InfoString::ToString() const
 
     for (const auto& key : m_keys_by_insertion)
     {
-        const auto value = m_values.find(key);
+        const auto value = m_value_lookup.find(key);
         if (!first)
             ss << '\\';
         else
@@ -82,7 +93,7 @@ std::string InfoString::ToString(const std::string& prefix) const
 
     for (const auto& key : m_keys_by_insertion)
     {
-        const auto value = m_values.find(key);
+        const auto value = m_value_lookup.find(key);
         ss << '\\' << key << '\\' << value->second;
     }
 
@@ -93,7 +104,7 @@ void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) 
 {
     for (const auto& key : m_keys_by_insertion)
     {
-        const auto value = m_values.find(key);
+        const auto value = m_value_lookup.find(key);
         gdtEntry.m_properties[key] = value->second;
     }
 
@@ -102,9 +113,6 @@ void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) 
 
 class InfoStringInputStream
 {
-    std::istream& m_stream;
-    int m_last_separator;
-
 public:
     explicit InfoStringInputStream(std::istream& stream)
         : m_stream(stream),
@@ -139,6 +147,10 @@ public:
         value = str.str();
         return true;
     }
+
+private:
+    std::istream& m_stream;
+    int m_last_separator;
 };
 
 bool InfoString::FromStream(std::istream& stream)
@@ -152,11 +164,11 @@ bool InfoString::FromStream(std::istream& stream)
         if (!infoStream.NextField(value))
             return false;
 
-        const auto existingEntry = m_values.find(key);
-        if (existingEntry == m_values.end())
+        const auto existingEntry = m_value_lookup.find(key);
+        if (existingEntry == m_value_lookup.end())
         {
             m_keys_by_insertion.push_back(key);
-            m_values.emplace(std::make_pair(key, value));
+            m_value_lookup.emplace(std::make_pair(key, value));
         }
         else
         {
@@ -180,7 +192,7 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
 
     if (prefix != readPrefix)
     {
-        con::error("Invalid info string: Prefix \"{}\" did not match expected prefix \"{}\"", readPrefix, prefix);
+        con::error(R"(Invalid info string: Prefix "{}" did not match expected prefix "{}")", readPrefix, prefix);
         return false;
     }
 
@@ -204,11 +216,11 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
             return false;
         }
 
-        const auto existingEntry = m_values.find(key);
-        if (existingEntry == m_values.end())
+        const auto existingEntry = m_value_lookup.find(key);
+        if (existingEntry == m_value_lookup.end())
         {
             m_keys_by_insertion.push_back(key);
-            m_values.emplace(std::make_pair(key, value));
+            m_value_lookup.emplace(std::make_pair(key, value));
         }
         else
         {
@@ -239,11 +251,11 @@ bool InfoString::FromGdtProperties(const GdtEntry& gdtEntry)
 
         for (const auto& [key, value] : currentEntry->m_properties)
         {
-            auto existingEntry = m_values.find(key);
-            if (existingEntry == m_values.end())
+            auto existingEntry = m_value_lookup.find(key);
+            if (existingEntry == m_value_lookup.end())
             {
                 m_keys_by_insertion.push_back(key);
-                m_values.emplace(std::make_pair(key, value));
+                m_value_lookup.emplace(std::make_pair(key, value));
             }
             else
             {
