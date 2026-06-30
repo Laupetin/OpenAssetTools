@@ -1,4 +1,4 @@
-#include "InfoStringLoaderWeaponIW3.h"
+#include "WeaponInfoStringLoaderIW3.h"
 
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/InfoString/InfoStringToStructConverter.h"

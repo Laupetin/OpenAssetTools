@@ -1,11 +1,11 @@
-#include "RawLoaderWeaponIW3.h"
+#include "WeaponRawLoaderIW3.h"
 
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/ObjConstantsIW3.h"
 #include "InfoString/InfoString.h"
-#include "InfoStringLoaderWeaponIW3.h"
 #include "Utils/Logging/Log.h"
 #include "Weapon/WeaponCommon.h"
+#include "WeaponInfoStringLoaderIW3.h"
 
 using namespace IW3;
 

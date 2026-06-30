@@ -20,8 +20,8 @@
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
-#include "Weapon/RawLoaderWeaponIW3.h"
 #include "Weapon/WeaponGdtLoaderIW3.h"
+#include "Weapon/WeaponRawLoaderIW3.h"
 
 #include <memory>
 
