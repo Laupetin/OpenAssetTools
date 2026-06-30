@@ -268,7 +268,7 @@ namespace
         return true;
     }
 
-    bool LoadAccuracyGraphs(WeaponFullDef& weaponFullDef, MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
+    bool LoadAccuracyGraphs(WeaponFullDef& weaponFullDef, AssetCreationContext& context)
     {
         if (weaponFullDef.weapDef.aiVsAiAccuracyGraphName && weaponFullDef.weapDef.aiVsAiAccuracyGraphName[0])
         {
@@ -437,7 +437,7 @@ namespace weapon
     {
     }
 
-    AssetCreationResult InfoStringLoaderT5::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT5::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
         weaponFullDef->weapVariantDef.szInternalName = m_memory.Dup(assetName.c_str());
@@ -454,7 +454,7 @@ namespace weapon
             return AssetCreationResult::Failure();
         }
 
-        if (!LoadAccuracyGraphs(*weaponFullDef, m_memory, m_search_path, context))
+        if (!LoadAccuracyGraphs(*weaponFullDef, context))
         {
             con::error("Failed to load accuracy tables of weapon: \"{}\"", assetName);
             return AssetCreationResult::Failure();
