@@ -1,4 +1,4 @@
-#include "InfoStringLoaderWeaponT4.h"
+#include "WeaponInfoStringLoaderT4.h"
 
 #include "Game/T4/InfoString/InfoStringToStructConverter.h"
 #include "Game/T4/T4.h"

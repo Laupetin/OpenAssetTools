@@ -1,11 +1,11 @@
-#include "RawLoaderWeaponT4.h"
+#include "WeaponRawLoaderT4.h"
 
 #include "Game/T4/ObjConstantsT4.h"
 #include "Game/T4/T4.h"
 #include "InfoString/InfoString.h"
-#include "InfoStringLoaderWeaponT4.h"
 #include "Utils/Logging/Log.h"
 #include "Weapon/WeaponCommon.h"
+#include "WeaponInfoStringLoaderT4.h"
 
 using namespace T4;
 

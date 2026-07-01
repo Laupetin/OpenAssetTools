@@ -9,7 +9,7 @@
 #include "Maps/MapEntsLoaderT4.h"
 #include "RawFile/AssetLoaderRawFileT4.h"
 #include "Weapon/FlameTableLoaderT4.h"
-#include "Weapon/RawLoaderWeaponT4.h"
+#include "Weapon/WeaponRawLoaderT4.h"
 
 using namespace T4;
 
