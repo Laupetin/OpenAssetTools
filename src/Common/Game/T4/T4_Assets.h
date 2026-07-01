@@ -3144,7 +3144,7 @@ namespace T4
         WEAPOVERLAYRETICLE_NUM,
     };
 
-    enum WeapOverlayInteface_t
+    enum WeapOverlayInterface_t
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,

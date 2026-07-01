@@ -4295,7 +4295,7 @@ namespace T6
         AMMO_COUNTER_CLIP_COUNT = 0x7,
     };
 
-    enum WeapOverlayInteface_t
+    enum WeapOverlayInterface_t
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
@@ -4671,7 +4671,7 @@ namespace T6
         float adsMoveSpeedScale;
         float sprintDurationScale;
         weapOverlayReticle_t overlayReticle;
-        WeapOverlayInteface_t overlayInterface;
+        WeapOverlayInterface_t overlayInterface;
         float overlayWidth;
         float overlayHeight;
         float fAdsBobFactor;
