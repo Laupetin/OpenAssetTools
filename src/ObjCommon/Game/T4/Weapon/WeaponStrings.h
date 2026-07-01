@@ -44,7 +44,7 @@ namespace T4
         "medium",
         "large",
     };
-    static_assert(std::extent_v<decltype(penetrateTypeNames)> == PENETRATE_TYPE_COUNT);
+    static_assert(std::extent_v<decltype(penetrateTypeNames)> == PENETRATE_TYPE_NUM);
 
     inline const char* impactTypeNames[]{
         "none",
@@ -60,7 +60,7 @@ namespace T4
         "mortar_shell",
         "tank_shell",
     };
-    static_assert(std::extent_v<decltype(impactTypeNames)> == IMPACT_TYPE_COUNT);
+    static_assert(std::extent_v<decltype(impactTypeNames)> == IMPACT_TYPE_NUM);
 
     inline const char* szWeapStanceNames[]{
         "stand",
@@ -88,7 +88,7 @@ namespace T4
         "Smoke Grenade",
         "Flash Grenade",
     };
-    static_assert(std::extent_v<decltype(offhandClassNames)> == OFFHAND_CLASS_COUNT);
+    static_assert(std::extent_v<decltype(offhandClassNames)> == OFFHAND_CLASS_NUM);
 
     // mp/playeranimtypes.txt
     inline const char* playerAnimTypeNames[]{
@@ -101,7 +101,7 @@ namespace T4
         "Pip-On-A-Stick",
         "Bouncing diamond",
     };
-    static_assert(std::extent_v<decltype(activeReticleNames)> == VEH_ACTIVE_RETICLE_COUNT);
+    static_assert(std::extent_v<decltype(activeReticleNames)> == VEH_ACTIVE_RETICLE_NUM);
 
     inline const char* guidedMissileNames[]{
         "None",
@@ -110,7 +110,7 @@ namespace T4
         "Javelin",
         "Ballistic",
     };
-    static_assert(std::extent_v<decltype(guidedMissileNames)> == MISSILE_GUIDANCE_COUNT);
+    static_assert(std::extent_v<decltype(guidedMissileNames)> == MISSILE_GUIDANCE_NUM);
 
     inline const char* stickinessNames[]{
         "Don't stick",
@@ -118,14 +118,14 @@ namespace T4
         "Stick to ground",
         "Stick to ground, maintain yaw",
     };
-    static_assert(std::extent_v<decltype(stickinessNames)> == WEAPSTICKINESS_COUNT);
+    static_assert(std::extent_v<decltype(stickinessNames)> == WEAPSTICKINESS_NUM);
 
     inline const char* overlayInterfaceNames[]{
         "None",
         "Javelin",
         "Turret Scope",
     };
-    static_assert(std::extent_v<decltype(overlayInterfaceNames)> == WEAPOVERLAYINTERFACECOUNT);
+    static_assert(std::extent_v<decltype(overlayInterfaceNames)> == WEAPOVERLAYINTERFACE_NUM);
 
     inline const char* szWeapInventoryTypeNames[]{
         "primary",
@@ -133,7 +133,7 @@ namespace T4
         "item",
         "altmode",
     };
-    static_assert(std::extent_v<decltype(szWeapInventoryTypeNames)> == WEAPINVENTORYCOUNT);
+    static_assert(std::extent_v<decltype(szWeapInventoryTypeNames)> == WEAPINVENTORY_NUM);
 
     inline const char* szWeapFireTypeNames[]{
         "Full Auto",
@@ -142,7 +142,7 @@ namespace T4
         "3-Round Burst",
         "4-Round Burst",
     };
-    static_assert(std::extent_v<decltype(szWeapFireTypeNames)> == WEAPON_FIRETYPECOUNT);
+    static_assert(std::extent_v<decltype(szWeapFireTypeNames)> == WEAPON_FIRETYPE_NUM);
 
     inline const char* szWeapClipTypeNames[]{
         "bottom",
@@ -152,7 +152,7 @@ namespace T4
         "ptrs",
         "lmg",
     };
-    static_assert(std::extent_v<decltype(szWeapClipTypeNames)> == WEAPON_CLIPTYPECOUNT);
+    static_assert(std::extent_v<decltype(szWeapClipTypeNames)> == WEAPON_CLIPTYPE_NUM);
 
     inline const char* ammoCounterClipNames[]{
         "None",
@@ -163,14 +163,14 @@ namespace T4
         "Beltfed",
         "AltWeapon",
     };
-    static_assert(std::extent_v<decltype(ammoCounterClipNames)> == AMMO_COUNTER_CLIP_COUNT);
+    static_assert(std::extent_v<decltype(ammoCounterClipNames)> == AMMO_COUNTER_CLIP_NUM);
 
     inline const char* weapIconRatioNames[]{
         "1:1",
         "2:1",
         "4:1",
     };
-    static_assert(std::extent_v<decltype(weapIconRatioNames)> == WEAPON_ICON_RATIO_COUNT);
+    static_assert(std::extent_v<decltype(weapIconRatioNames)> == WEAPON_ICON_RATIO_NUM);
 
     inline const char* bounceSoundSuffixes[]{
         "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",         "_flesh",  "_foliage",   "_glass", "_grass",

@@ -6,47 +6,6 @@
 
 namespace T4
 {
-    enum WeaponAnimSlot
-    {
-        WEAP_ANIM_ROOT = 0,
-        WEAP_ANIM_IDLE = 1,
-        WEAP_ANIM_EMPTY_IDLE = 2,
-        WEAP_ANIM_FIRE = 3,
-        WEAP_ANIM_HOLD_FIRE = 4,
-        WEAP_ANIM_LASTSHOT = 5,
-        WEAP_ANIM_RECHAMBER = 6,
-        WEAP_ANIM_MELEE = 7,
-        WEAP_ANIM_MELEE_CHARGE = 8,
-        WEAP_ANIM_RELOAD = 9,
-        WEAP_ANIM_RELOAD_EMPTY = 10,
-        WEAP_ANIM_RELOAD_START = 11,
-        WEAP_ANIM_RELOAD_END = 12,
-        WEAP_ANIM_RAISE = 13,
-        WEAP_ANIM_FIRST_RAISE = 14,
-        WEAP_ANIM_DROP = 15,
-        WEAP_ANIM_ALT_RAISE = 16,
-        WEAP_ANIM_ALT_DROP = 17,
-        WEAP_ANIM_QUICK_RAISE = 18,
-        WEAP_ANIM_QUICK_DROP = 19,
-        WEAP_ANIM_EMPTY_RAISE = 20,
-        WEAP_ANIM_EMPTY_DROP = 21,
-        WEAP_ANIM_SPRINT_IN = 22,
-        WEAP_ANIM_SPRINT_LOOP = 23,
-        WEAP_ANIM_SPRINT_OUT = 24,
-        WEAP_ANIM_DEPLOY = 25,
-        WEAP_ANIM_BREAKDOWN = 26,
-        WEAP_ANIM_DETONATE = 27,
-        WEAP_ANIM_NIGHTVISION_WEAR = 28,
-        WEAP_ANIM_NIGHTVISION_REMOVE = 29,
-        WEAP_ANIM_ADS_FIRE = 30,
-        WEAP_ANIM_ADS_LASTSHOT = 31,
-        WEAP_ANIM_ADS_RECHAMBER = 32,
-        WEAP_ANIM_ADS_UP = 33,
-        WEAP_ANIM_ADS_DOWN = 34,
-
-        NUM_WEAP_ANIMS = 35,
-    };
-
     inline cspField_t weapon_fields[]{
         {"displayName",                      offsetof(WeaponDef, szDisplayName),                                CSPFT_STRING             },
         {"AIOverlayDescription",             offsetof(WeaponDef, szOverlayName),                                CSPFT_STRING             },
