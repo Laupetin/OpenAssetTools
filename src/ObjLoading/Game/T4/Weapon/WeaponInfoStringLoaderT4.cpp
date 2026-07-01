@@ -357,15 +357,13 @@ namespace
         return strcmp(weapon.szInternalName, "defaultweapon") == 0 || strcmp(weapon.szInternalName, "defaultweapon_mp") == 0;
     }
 
-    void SetSoundAliasIfMissing(
-        SndAliasCustom& sound, const char* aliasName, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetWeapon>& registration)
+    snd_alias_list_name* SetDefaultSound(const char* name, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetWeapon>& registration)
     {
-        if (sound.name)
-            return;
+        auto* aliasListName = memory.Alloc<snd_alias_list_name>();
+        aliasListName->soundName = name;
+        registration.AddIndirectAssetReference(context.LoadIndirectAssetReference<AssetSound>(name));
 
-        sound.name = memory.Alloc<snd_alias_list_name>();
-        sound.name->soundName = memory.Dup(aliasName);
-        registration.AddIndirectAssetReference(context.LoadIndirectAssetReference<AssetSound>(aliasName));
+        return aliasListName;
     }
 
     void SetWeaponDefaults(WeaponDef& weapon, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetWeapon>& registration)
@@ -377,12 +375,16 @@ namespace
             weapon.viewLastShotEjectEffect = weapon.viewShellEjectEffect;
         if (!weapon.worldLastShotEjectEffect)
             weapon.worldLastShotEjectEffect = weapon.worldShellEjectEffect;
-
-        SetSoundAliasIfMissing(weapon.raiseSound, "weap_raise", memory, context, registration);
-        SetSoundAliasIfMissing(weapon.putawaySound, "weap_putaway", memory, context, registration);
-        SetSoundAliasIfMissing(weapon.pickupSound, "weap_pickup", memory, context, registration);
-        SetSoundAliasIfMissing(weapon.ammoPickupSound, "weap_ammo_pickup", memory, context, registration);
-        SetSoundAliasIfMissing(weapon.emptyFireSound, "player_out_of_ammo", memory, context, registration);
+        if (!weapon.raiseSound.name)
+            SetDefaultSound("weap_raise", memory, context, registration);
+        if (!weapon.putawaySound.name)
+            SetDefaultSound("weap_putaway", memory, context, registration);
+        if (!weapon.pickupSound.name)
+            SetDefaultSound("weap_pickup", memory, context, registration);
+        if (!weapon.ammoPickupSound.name)
+            SetDefaultSound("weap_ammo_pickup", memory, context, registration);
+        if (!weapon.emptyFireSound.name)
+            SetDefaultSound("player_out_of_ammo", memory, context, registration);
     }
 
     void SetupTransitionTimes(WeaponDef& weapon)
@@ -400,6 +402,9 @@ namespace
 
     void CheckWeaponDamageRanges(WeaponDef& weapon)
     {
+        if (strcmp(weapon.szInternalName, "none") == 0)
+            return;
+
         if (weapon.fMaxDamageRange <= 0.0f)
             weapon.fMaxDamageRange = 999999.0f;
         if (weapon.fMinDamageRange <= 0.0f)
@@ -409,7 +414,7 @@ namespace
     void CheckCrosshairValues(const WeaponDef& weapon)
     {
         if (weapon.enemyCrosshairRange > 15000.0f)
-            con::error("Enemy crosshair ranges should be less than {}", 15000.0f);
+            con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.szInternalName);
     }
 
     void CheckProjectileValues(const WeaponDef& weapon)
@@ -418,14 +423,16 @@ namespace
             return;
 
         if (weapon.iProjectileSpeed <= 0)
-            con::error("Projectile speed for WeapType {} must be greater than 0.0", weapon.szDisplayName);
+            con::warn("Weapon {}: Projectile speed must be greater than 0.0", weapon.szDisplayName);
+
         if (weapon.destabilizationCurvatureMax >= 1000000000.0f || weapon.destabilizationCurvatureMax < 0.0f)
-            con::error("Destabilization angle for for WeapType {} must be between 0 and 45 degrees", weapon.szDisplayName);
+            con::warn("Weapon {}: Destabilization angle must be between 0 and 45 degrees", weapon.szDisplayName);
+
         if (weapon.destabilizationRateTime < 0.0f)
-            con::error("Destabilization rate time for for WeapType {} must be non-negative", weapon.szDisplayName);
+            con::warn("Weapon {}: Destabilization rate time must be non-negative", weapon.szDisplayName);
     }
 
-    void LowercaseAmmoNames(WeaponDef& weapon)
+    void CheckSharedAmmoValues(const WeaponDef& weapon)
     {
         if (weapon.szAmmoName)
             utils::MakeStringLowerCase(const_cast<char*>(weapon.szAmmoName));
@@ -444,7 +451,7 @@ namespace weapon
     {
     }
 
-    AssetCreationResult InfoStringLoaderT4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    AssetCreationResult InfoStringLoaderT4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponDef = m_memory.Alloc<WeaponDef>();
         InitWeaponDef(*weaponDef);
@@ -477,7 +484,7 @@ namespace weapon
         CheckWeaponDamageRanges(*weaponDef);
         CheckCrosshairValues(*weaponDef);
         CheckProjectileValues(*weaponDef);
-        LowercaseAmmoNames(*weaponDef);
+        CheckSharedAmmoValues(*weaponDef);
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }

@@ -303,15 +303,16 @@ namespace
         return strcmp(weapon.szInternalName, "defaultweapon") == 0 || strcmp(weapon.szInternalName, "defaultweapon_mp") == 0;
     }
 
-    snd_alias_list_name* SetDefaultSound(const char* name, MemoryManager& memory)
+    snd_alias_list_name* SetDefaultSound(const char* name, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetWeapon>& registration)
     {
         auto* aliasListName = memory.Alloc<snd_alias_list_name>();
         aliasListName->soundName = name;
+        registration.AddIndirectAssetReference(context.LoadIndirectAssetReference<AssetSound>(name));
 
         return aliasListName;
     }
 
-    void SetWeaponDefaults(WeaponDef& weapon, MemoryManager& memory)
+    void SetWeaponDefaults(WeaponDef& weapon, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetWeapon>& registration)
     {
         if (IsDefaultWeapon(weapon))
             return;
@@ -321,15 +322,15 @@ namespace
         if (!weapon.worldLastShotEjectEffect)
             weapon.worldLastShotEjectEffect = weapon.worldShellEjectEffect;
         if (!weapon.raiseSound.name)
-            SetDefaultSound("weap_raise", memory);
+            SetDefaultSound("weap_raise", memory, context, registration);
         if (!weapon.putawaySound.name)
-            SetDefaultSound("weap_putaway", memory);
+            SetDefaultSound("weap_putaway", memory, context, registration);
         if (!weapon.pickupSound.name)
-            SetDefaultSound("weap_pickup", memory);
+            SetDefaultSound("weap_pickup", memory, context, registration);
         if (!weapon.ammoPickupSound.name)
-            SetDefaultSound("weap_ammo_pickup", memory);
+            SetDefaultSound("weap_ammo_pickup", memory, context, registration);
         if (!weapon.emptyFireSound.name)
-            SetDefaultSound("weap_dryfire_smg_npc", memory);
+            SetDefaultSound("weap_dryfire_smg_npc", memory, context, registration);
     }
 
     void SetupTransitionTimes(WeaponDef& weapon)
@@ -356,13 +357,13 @@ namespace
             weapon.fMinDamageRange = 999999.12f; // oddly specific number, no clue
     }
 
-    void CheckCrosshairValues(WeaponDef& weapon)
+    void CheckCrosshairValues(const WeaponDef& weapon)
     {
         if (weapon.enemyCrosshairRange > 15000.0f)
             con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.szInternalName);
     }
 
-    void CheckProjectileValues(WeaponDef& weapon)
+    void CheckProjectileValues(const WeaponDef& weapon)
     {
         if (weapon.weapType != WEAPTYPE_PROJECTILE)
             return;
@@ -399,8 +400,6 @@ namespace weapon
     AssetCreationResult InfoStringLoaderIW3::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponDef = m_memory.Alloc<WeaponDef>();
-        memset(weaponDef, 0, sizeof(WeaponDef));
-
         InitWeaponDef(*weaponDef);
         weaponDef->szInternalName = m_memory.Dup(assetName.c_str());
 
@@ -420,7 +419,7 @@ namespace weapon
             return AssetCreationResult::Failure();
         }
 
-        SetWeaponDefaults(*weaponDef, m_memory);
+        SetWeaponDefaults(*weaponDef, m_memory, context, registration);
         SetupTransitionTimes(*weaponDef);
         CheckWeaponDamageRanges(*weaponDef);
         CheckCrosshairValues(*weaponDef);
