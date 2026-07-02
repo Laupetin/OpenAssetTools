@@ -99,6 +99,48 @@ namespace
         
         return true;
     }
+    
+    constexpr auto REQUIRED_GLYPH_START = 0x20;
+    constexpr auto REQUIRED_GLYPH_END_INCLUSIVE = 0x7F;
+    constexpr unsigned REQUIRED_GLYPH_COUNT = REQUIRED_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
+    constexpr bool IsRequiredGlyph(const unsigned letter)
+    {
+        return letter >= REQUIRED_GLYPH_START && letter <= REQUIRED_GLYPH_END_INCLUSIVE;
+    }
+            
+    void SortGlyphs(const Font_s& font)
+    {
+        std::sort(&font.glyphs[0], &font.glyphs[font.glyphCount], [](const Glyph& a, const Glyph& b)
+        {
+            const auto aRequired = IsRequiredGlyph(a.letter); 
+            const auto bRequired = IsRequiredGlyph(b.letter);
+            if (aRequired != bRequired)
+                return aRequired;
+            
+            return a.letter < b.letter;
+        });
+    }
+            
+    bool EnsureFontContainsAllRequiredGlyphs(const Font_s& font)
+    {
+        if (static_cast<unsigned>(font.glyphCount) < REQUIRED_GLYPH_COUNT)
+        {
+            con::error("Font {} must contain all {} required letters", font.fontName, REQUIRED_GLYPH_COUNT);
+            return false;
+        }
+        
+        for (unsigned i = 0; i < REQUIRED_GLYPH_COUNT; i++)
+        {
+            const unsigned requiredGlyphLetter = REQUIRED_GLYPH_START + i;
+            if (font.glyphs[i].letter != requiredGlyphLetter)
+            {
+                con::error("Font {} is missing required letter {} ('{}')", font.fontName, requiredGlyphLetter, static_cast<char>(requiredGlyphLetter));
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
     class FontLoader final : public AssetCreator<AssetFont>
     {
@@ -195,6 +237,11 @@ namespace
                 if (!CreateGlyphFromJson(jFont.glyphs[i], font.glyphs[i], font))
                     return false;
             }
+            
+            SortGlyphs(font);
+            
+            if (!EnsureFontContainsAllRequiredGlyphs(font))
+                return false;
 
             return true;
         }
