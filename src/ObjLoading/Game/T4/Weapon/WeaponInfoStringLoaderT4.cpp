@@ -1,19 +1,20 @@
-#include "WeaponInfoStringLoaderIW3.h"
+#include "WeaponInfoStringLoaderT4.h"
 
-#include "Game/IW3/IW3.h"
-#include "Game/IW3/InfoString/InfoStringToStructConverter.h"
-#include "Game/IW3/Weapon/WeaponFields.h"
-#include "Game/IW3/Weapon/WeaponStrings.h"
+#include "Game/T4/InfoString/InfoStringToStructConverter.h"
+#include "Game/T4/T4.h"
+#include "Game/T4/Weapon/WeaponFields.h"
+#include "Game/T4/Weapon/WeaponStrings.h"
 #include "Utils/Logging/Log.h"
+#include "Utils/StringUtils.h"
 #include "Weapon/WeaponCommon.h"
 
-#include <array>
 #include <cassert>
 #include <cstring>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
-using namespace IW3;
+using namespace T4;
 
 namespace
 {
@@ -21,14 +22,14 @@ namespace
     {
         bool ConvertHideTags(const cspField_t& field, const std::string& value)
         {
-            std::vector<std::string> valueArray;
-            if (!ParseAsArray(value, valueArray))
-            {
-                con::error("Failed to parse hide tags as array");
-                return false;
-            }
+            std::istringstream ss(value);
+            std::vector<std::string> tags;
 
-            if (valueArray.size() > std::extent_v<decltype(WeaponDef::hideTags)>)
+            std::string tag;
+            while (ss >> tag)
+                tags.emplace_back(std::move(tag));
+
+            if (tags.size() > std::extent_v<decltype(WeaponDef::hideTags)>)
             {
                 con::error("Cannot have more than {} hide tags!", std::extent_v<decltype(WeaponDef::hideTags)>);
                 return false;
@@ -36,13 +37,15 @@ namespace
 
             auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
-            if (valueArray.size() < std::extent_v<decltype(WeaponDef::hideTags)>)
+            if (tags.size() < std::extent_v<decltype(WeaponDef::hideTags)>)
                 m_registration.AddScriptString(m_zone_script_strings.AddOrGetScriptString(nullptr));
 
             auto currentHideTag = 0u;
-            for (; currentHideTag < valueArray.size(); currentHideTag++)
+            for (; currentHideTag < tags.size(); currentHideTag++)
             {
-                const auto& currentValue = valueArray[currentHideTag];
+                auto currentValue = tags[currentHideTag];
+                utils::MakeStringLowerCase(currentValue);
+
                 const auto scrString =
                     !currentValue.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue) : m_zone_script_strings.AddOrGetScriptString(nullptr);
                 hideTags[currentHideTag] = scrString;
@@ -64,29 +67,39 @@ namespace
                 return true;
             }
 
-            assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_NUM);
-            *bounceSound = m_memory.Alloc<SndAliasCustom>(SURF_TYPE_NUM);
-            for (auto i = 0u; i < SURF_TYPE_NUM; i++)
+            static_assert(std::extent_v<decltype(bounceSoundSuffixes)> == std::extent_v<decltype(WeaponDef::parallelBounce)>);
+            *bounceSound = m_memory.Alloc<SndAliasCustom>(std::extent_v<decltype(bounceSoundSuffixes)>);
+            for (auto i = 0u; i < std::extent_v<decltype(bounceSoundSuffixes)>; i++)
             {
                 const auto currentBounceSound = value + bounceSoundSuffixes[i];
 
                 (*bounceSound)[i].name = m_memory.Alloc<snd_alias_list_name>();
                 (*bounceSound)[i].name->soundName = m_memory.Dup(currentBounceSound.c_str());
+                m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(currentBounceSound));
             }
 
             return true;
         }
 
-        bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
+        [[nodiscard]] bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
         {
-            std::vector<std::array<std::string, 2>> pairs;
-            if (!ParseAsArray(value, pairs))
+            std::istringstream ss(value);
+            std::vector<std::string> tokens;
+
+            std::string token;
+            while (ss >> token)
+                tokens.emplace_back(std::move(token));
+
+            if (tokens.size() % 2 != 0)
             {
-                con::error("Failed to parse notetracksoundmap as pairs");
-                return false;
+                con::warn("Notetrack-to-Sound: Weapon '{}' has bad entry; notetrack '{}' doesn't have a corresponding sound.",
+                          *reinterpret_cast<const char**>(m_structure),
+                          tokens.back());
+                tokens.pop_back();
             }
 
-            if (pairs.size() > std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>)
+            const auto pairCount = tokens.size() / 2;
+            if (pairCount > std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>)
             {
                 con::error("Cannot have more than {} notetracksoundmap entries!", std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>);
                 return false;
@@ -96,16 +109,27 @@ namespace
             auto* values = &keys[std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>];
             auto currentEntryNum = 0u;
 
-            if (pairs.size() < std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>)
+            if (pairCount < std::extent_v<decltype(WeaponDef::notetrackSoundMapKeys)>)
                 m_registration.AddScriptString(m_zone_script_strings.AddOrGetScriptString(nullptr));
 
-            for (; currentEntryNum < pairs.size(); currentEntryNum++)
+            for (; currentEntryNum < pairCount; currentEntryNum++)
             {
-                const auto& currentValue = pairs[currentEntryNum];
-                const auto keyScriptString = !currentValue[0].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[0])
-                                                                      : m_zone_script_strings.AddOrGetScriptString(nullptr);
-                const auto valueScriptString = !currentValue[1].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[1])
-                                                                        : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                auto key = tokens[currentEntryNum * 2];
+                auto sound = tokens[currentEntryNum * 2 + 1];
+
+                if (key.size() >= 63)
+                {
+                    con::error("Notetrack-to-sound: keyname \"{}\" is too long (length {}/{}).", key, key.size(), 63);
+                    return false;
+                }
+
+                utils::MakeStringLowerCase(key);
+                utils::MakeStringLowerCase(sound);
+
+                const auto keyScriptString =
+                    !key.empty() ? m_zone_script_strings.AddOrGetScriptString(key) : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto valueScriptString =
+                    !sound.empty() ? m_zone_script_strings.AddOrGetScriptString(sound) : m_zone_script_strings.AddOrGetScriptString(nullptr);
 
                 keys[currentEntryNum] = keyScriptString;
                 m_registration.AddScriptString(keyScriptString);
@@ -190,6 +214,9 @@ namespace
             case WFT_FIRETYPE:
                 return ConvertEnumInt(field.szName, value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
 
+            case WFT_CLIPTYPE:
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapClipTypeNames, std::extent_v<decltype(szWeapClipTypeNames)>);
+
             case WFT_AMMOCOUNTER_CLIPTYPE:
                 return ConvertEnumInt(field.szName, value, field.iOffset, ammoCounterClipNames, std::extent_v<decltype(ammoCounterClipNames)>);
 
@@ -267,28 +294,28 @@ namespace
         return true;
     }
 
-    bool LoadAccuracyGraphs(WeaponDef& weaponDef, AssetCreationContext& context)
+    bool LoadAccuracyGraphs(WeaponDef& weapon, AssetCreationContext& context)
     {
-        if (weaponDef.aiVsAiAccuracyGraphName && weaponDef.aiVsAiAccuracyGraphName[0])
+        if (weapon.aiVsAiAccuracyGraphName && weapon.aiVsAiAccuracyGraphName[0])
         {
-            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsAiAccuracyGraph(weaponDef.aiVsAiAccuracyGraphName),
-                                   weaponDef.originalAiVsAiAccuracyGraphKnots,
-                                   weaponDef.originalAiVsAiAccuracyGraphKnotCount,
-                                   weaponDef.aiVsAiAccuracyGraphKnots,
-                                   weaponDef.aiVsAiAccuracyGraphKnotCount,
+            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsAiAccuracyGraph(weapon.aiVsAiAccuracyGraphName),
+                                   weapon.originalAiVsAiAccuracyGraphKnots,
+                                   weapon.originalAiVsAiAccuracyGraphKnotCount,
+                                   weapon.aiVsAiAccuracyGraphKnots,
+                                   weapon.aiVsAiAccuracyGraphKnotCount,
                                    context))
             {
                 return false;
             }
         }
 
-        if (weaponDef.aiVsPlayerAccuracyGraphName && weaponDef.aiVsPlayerAccuracyGraphName[0])
+        if (weapon.aiVsPlayerAccuracyGraphName && weapon.aiVsPlayerAccuracyGraphName[0])
         {
-            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsPlayerAccuracyGraph(weaponDef.aiVsPlayerAccuracyGraphName),
-                                   weaponDef.originalAiVsPlayerAccuracyGraphKnots,
-                                   weaponDef.originalAiVsPlayerAccuracyGraphKnotCount,
-                                   weaponDef.aiVsPlayerAccuracyGraphKnots,
-                                   weaponDef.aiVsPlayerAccuracyGraphKnotCount,
+            if (!LoadAccuracyGraph(weapon::GetAssetNameForAiVsPlayerAccuracyGraph(weapon.aiVsPlayerAccuracyGraphName),
+                                   weapon.originalAiVsPlayerAccuracyGraphKnots,
+                                   weapon.originalAiVsPlayerAccuracyGraphKnotCount,
+                                   weapon.aiVsPlayerAccuracyGraphKnots,
+                                   weapon.aiVsPlayerAccuracyGraphKnotCount,
                                    context))
             {
                 return false;
@@ -296,6 +323,33 @@ namespace
         }
 
         return true;
+    }
+
+    bool LoadFlameTable(const char* flameTableName, FlameTable*& flameTablePtr, AssetRegistration<AssetWeapon>& registration, AssetCreationContext& context)
+    {
+        flameTablePtr = nullptr;
+        if (!flameTableName || flameTableName[0] == '\0')
+            return true;
+
+        auto* flameTableAsset = context.LoadSubAsset<SubAssetFlameTable>(flameTableName);
+        if (!flameTableAsset)
+            return false;
+
+        for (auto* dependency : flameTableAsset->m_dependencies)
+            registration.AddDependency(dependency);
+
+        assert(flameTableAsset->m_used_script_strings.empty());
+        for (const auto& indirectReference : flameTableAsset->m_indirect_asset_references)
+            registration.AddIndirectAssetReference(indirectReference);
+
+        flameTablePtr = flameTableAsset->Asset();
+        return true;
+    }
+
+    bool LoadFlameTables(WeaponDef& weapon, AssetRegistration<AssetWeapon>& registration, AssetCreationContext& context)
+    {
+        return LoadFlameTable(weapon.flameTableFirstPerson, weapon.flameTableFirstPersonPtr, registration, context)
+               && LoadFlameTable(weapon.flameTableThirdPerson, weapon.flameTableThirdPersonPtr, registration, context);
     }
 
     bool IsDefaultWeapon(const WeaponDef& weapon)
@@ -330,18 +384,18 @@ namespace
         if (!weapon.ammoPickupSound.name)
             SetDefaultSound("weap_ammo_pickup", memory, context, registration);
         if (!weapon.emptyFireSound.name)
-            SetDefaultSound("weap_dryfire_smg_npc", memory, context, registration);
+            SetDefaultSound("player_out_of_ammo", memory, context, registration);
     }
 
     void SetupTransitionTimes(WeaponDef& weapon)
     {
         if (weapon.iAdsTransInTime <= 0)
-            weapon.fOOPosAnimLength[0] = 1.0f / 300.0f; // 0.0033333334f;
+            weapon.fOOPosAnimLength[0] = 1.0f / 300.0f;
         else
             weapon.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon.iAdsTransInTime);
 
         if (weapon.iAdsTransOutTime <= 0)
-            weapon.fOOPosAnimLength[1] = 1.0f / 500.0f; // 0.0020000001f
+            weapon.fOOPosAnimLength[1] = 1.0f / 500.0f;
         else
             weapon.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon.iAdsTransOutTime);
     }
@@ -351,10 +405,10 @@ namespace
         if (strcmp(weapon.szInternalName, "none") == 0)
             return;
 
-        if (weapon.fMaxDamageRange <= 0.0)
+        if (weapon.fMaxDamageRange <= 0.0f)
             weapon.fMaxDamageRange = 999999.0f;
-        if (weapon.fMinDamageRange <= 0.0)
-            weapon.fMinDamageRange = 999999.12f; // oddly specific number, no clue
+        if (weapon.fMinDamageRange <= 0.0f)
+            weapon.fMinDamageRange = 999999.12f;
     }
 
     void CheckCrosshairValues(const WeaponDef& weapon)
@@ -390,14 +444,14 @@ namespace
 
 namespace weapon
 {
-    InfoStringLoaderIW3::InfoStringLoaderIW3(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    InfoStringLoaderT4::InfoStringLoaderT4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
         : m_memory(memory),
           m_search_path(searchPath),
           m_zone(zone)
     {
     }
 
-    AssetCreationResult InfoStringLoaderIW3::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
+    AssetCreationResult InfoStringLoaderT4::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
     {
         auto* weaponDef = m_memory.Alloc<WeaponDef>();
         InitWeaponDef(*weaponDef);
@@ -416,6 +470,12 @@ namespace weapon
         if (!LoadAccuracyGraphs(*weaponDef, context))
         {
             con::error("Failed to load accuracy tables of weapon: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        if (!LoadFlameTables(*weaponDef, registration, context))
+        {
+            con::error("Failed to load flame tables of weapon: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 

@@ -3,13 +3,16 @@
 #include "Asset/AssetCreationContext.h"
 #include "Asset/AssetCreationResult.h"
 #include "InfoString/InfoString.h"
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+#include "Zone/Zone.h"
 
 namespace weapon
 {
-    class InfoStringLoaderT6
+    class InfoStringLoaderT4
     {
     public:
-        InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+        InfoStringLoaderT4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const;
 
