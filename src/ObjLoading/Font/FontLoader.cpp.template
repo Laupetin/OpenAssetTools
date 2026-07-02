@@ -111,23 +111,17 @@ namespace
             return true;
         }
 
-        static bool CreateMaterialDependency(const std::optional<std::string>& materialName,
+        static bool CreateMaterialDependency(const std::string& materialName,
                                              Material*& material,
                                              AssetRegistration<AssetFont>& registration,
                                              AssetCreationContext& context,
                                              const Font_s& font,
                                              const char* fieldName)
         {
-            if (!materialName)
-            {
-                material = nullptr;
-                return true;
-            }
-
-            auto* materialDependency = context.LoadDependency<AssetMaterial>(*materialName);
+            auto* materialDependency = context.LoadDependency<AssetMaterial>(materialName);
             if (!materialDependency)
             {
-                PrintError(font, std::format("Could not find {} material \"{}\"", fieldName, *materialName));
+                PrintError(font, std::format("Could not find {} material \"{}\"", fieldName, materialName));
                 return false;
             }
 
@@ -164,8 +158,12 @@ namespace
 
             if (!CreateMaterialDependency(jFont.material, font.material, registration, context, font, "font"))
                 return false;
-            if (!CreateMaterialDependency(jFont.glowMaterial, font.glowMaterial, registration, context, font, "glow"))
-                return false;
+            
+            if (jFont.glowMaterial)
+            {
+                if (!CreateMaterialDependency(*jFont.glowMaterial, font.glowMaterial, registration, context, font, "glow"))
+                    return false;
+            }
 
             constexpr auto MAX_GLYPH_COUNT = std::numeric_limits<decltype(Font_s::glyphCount)>::max();
             if (jFont.glyphs.size() > static_cast<size_t>(MAX_GLYPH_COUNT))

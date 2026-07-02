@@ -42,7 +42,7 @@ namespace GAME
     public:
         unsigned pixelHeight;
         int glyphCount;
-        std::optional<std::string> material;
+        std::string material;
         std::optional<std::string> glowMaterial;
         std::vector<JsonGlyph> glyphs;
     };
