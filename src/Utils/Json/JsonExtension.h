@@ -53,17 +53,21 @@ namespace nlohmann
     }
 } // namespace nlohmann
 
+#define NLOHMANN_TO_JSON_METHOD(Type)                                                                                                                          \
+    template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>                            \
+    inline void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)
+
+#define NLOHMANN_FROM_JSON_METHOD(Type)                                                                                                                        \
+    template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>                            \
+    inline void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)
+
 #define EXTEND_JSON_TO(v1) extended_to_json(#v1, nlohmann_json_j, nlohmann_json_t.v1);
 #define EXTEND_JSON_FROM(v1) extended_from_json(#v1, nlohmann_json_j, nlohmann_json_t.v1);
 
 #define NLOHMANN_DEFINE_TYPE_EXTENSION(Type, ...)                                                                                                              \
-    template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>                            \
-    inline void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)                                                                           \
-    {                                                                                                                                                          \
-        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_TO, __VA_ARGS__))                                                                                 \
-    }                                                                                                                                                          \
-    template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>                            \
-    inline void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)                                                                         \
+    NLOHMANN_TO_JSON_METHOD(Type){NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_TO, __VA_ARGS__))}                                                      \
+                                                                                                                                                               \
+    NLOHMANN_FROM_JSON_METHOD(Type)                                                                                                                            \
     {                                                                                                                                                          \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_FROM, __VA_ARGS__))                                                                               \
     }
