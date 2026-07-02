@@ -26,9 +26,9 @@ namespace GAME
         int letter;
         int x0;
         int y0;
-        int dx;
-        int pixelWidth;
-        int pixelHeight;
+        unsigned dx;
+        unsigned pixelWidth;
+        unsigned pixelHeight;
         float s0;
         float t0;
         float s1;
@@ -40,7 +40,7 @@ namespace GAME
     class JsonFont
     {
     public:
-        int pixelHeight;
+        unsigned pixelHeight;
         int glyphCount;
         std::optional<std::string> material;
         std::optional<std::string> glowMaterial;

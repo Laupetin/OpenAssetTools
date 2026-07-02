@@ -95,11 +95,11 @@ namespace
             con::error("Cannot load font \"{}\": {}", font.fontName, message);
         }
 
-        template<typename FieldType>
-        static bool AssignIntegerField(FieldType& field, const int value, const Font_s& font, const char* fieldName)
+        template<typename FieldType, typename ValueType>
+        static bool AssignIntegerField(FieldType& field, const ValueType value, const Font_s& font, const char* fieldName)
         {
-            const auto minValue = static_cast<int>(std::numeric_limits<FieldType>::min());
-            const auto maxValue = static_cast<int>(std::numeric_limits<FieldType>::max());
+            const auto minValue = static_cast<ValueType>(std::numeric_limits<FieldType>::min());
+            const auto maxValue = static_cast<ValueType>(std::numeric_limits<FieldType>::max());
 
             if (value < minValue || value > maxValue)
             {
@@ -111,12 +111,12 @@ namespace
             return true;
         }
 
-        bool CreateMaterialDependency(const std::optional<std::string>& materialName,
-                                      Material*& material,
-                                      AssetRegistration<AssetFont>& registration,
-                                      AssetCreationContext& context,
-                                      const Font_s& font,
-                                      const char* fieldName) const
+        static bool CreateMaterialDependency(const std::optional<std::string>& materialName,
+                                             Material*& material,
+                                             AssetRegistration<AssetFont>& registration,
+                                             AssetCreationContext& context,
+                                             const Font_s& font,
+                                             const char* fieldName)
         {
             if (!materialName)
             {
@@ -160,20 +160,21 @@ namespace
 
         bool CreateFontFromJson(const JsonFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
         {
-            font.pixelHeight = jFont.pixelHeight;
+            font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(jFont.pixelHeight);
 
             if (!CreateMaterialDependency(jFont.material, font.material, registration, context, font, "font"))
                 return false;
             if (!CreateMaterialDependency(jFont.glowMaterial, font.glowMaterial, registration, context, font, "glow"))
                 return false;
 
-            if (jFont.glyphs.size() > static_cast<size_t>(std::numeric_limits<int>::max()))
+            constexpr auto MAX_GLYPH_COUNT = std::numeric_limits<decltype(Font_s::glyphCount)>::max();
+            if (jFont.glyphs.size() > static_cast<size_t>(MAX_GLYPH_COUNT))
             {
-                PrintError(font, std::format("glyph count {} exceeds maximum {}", jFont.glyphs.size(), std::numeric_limits<int>::max()));
+                PrintError(font, std::format("glyph count {} exceeds maximum {}", jFont.glyphs.size(), MAX_GLYPH_COUNT));
                 return false;
             }
 
-            const auto glyphCount = static_cast<int>(jFont.glyphs.size());
+            const auto glyphCount = static_cast<decltype(Font_s::glyphCount)>(jFont.glyphs.size());
             if (jFont.glyphCount != glyphCount)
             {
                 PrintError(font, std::format("glyphCount {} does not match glyph array size {}", jFont.glyphCount, glyphCount));
