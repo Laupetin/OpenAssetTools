@@ -53,16 +53,8 @@ namespace
             jRoot["_type"] = "font";
             jRoot["_version"] = 1;
             jRoot["_game"] = GAME_LOWER;
-            jRoot["pixelHeight"] = jFont.pixelHeight;
-            jRoot["glyphCount"] = jFont.glyphCount;
-
-            if (jFont.material)
-                jRoot["material"] = *jFont.material;
-
-            if (jFont.glowMaterial)
-                jRoot["glowMaterial"] = *jFont.glowMaterial;
-
-            jRoot["glyphs"] = jFont.glyphs;
+            
+            jRoot.merge_patch(jFont);
 
             m_stream << std::setw(4) << jRoot << "\n";
         }
