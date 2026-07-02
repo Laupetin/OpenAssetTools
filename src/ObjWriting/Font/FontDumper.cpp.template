@@ -60,7 +60,6 @@ namespace
     void CreateJsonFont(JsonFont& jFont, const Font_s& font)
     {
         jFont.pixelHeight = font.pixelHeight;
-        jFont.glyphCount = font.glyphs && font.glyphCount > 0 ? font.glyphCount : 0;
 
         if (font.material && font.material->info.name)
             jFont.material = AssetName(font.material->info.name);

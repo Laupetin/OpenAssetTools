@@ -217,14 +217,7 @@ namespace
                 return false;
             }
 
-            const auto glyphCount = static_cast<decltype(Font_s::glyphCount)>(jFont.glyphs.size());
-            if (jFont.glyphCount != glyphCount)
-            {
-                PrintError(font, std::format("glyphCount {} does not match glyph array size {}", jFont.glyphCount, glyphCount));
-                return false;
-            }
-
-            font.glyphCount = glyphCount;
+            font.glyphCount = static_cast<decltype(Font_s::glyphCount)>(jFont.glyphs.size());;
             if (font.glyphCount <= 0)
             {
                 font.glyphs = nullptr;

@@ -58,11 +58,10 @@ namespace GAME
     {
     public:
         unsigned pixelHeight;
-        int glyphCount;
         std::string material;
         std::optional<std::string> glowMaterial;
         std::vector<JsonGlyph> glyphs;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonFont, pixelHeight, glyphCount, material, glowMaterial, glyphs);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonFont, pixelHeight, material, glowMaterial, glyphs);
 } // namespace GAME
