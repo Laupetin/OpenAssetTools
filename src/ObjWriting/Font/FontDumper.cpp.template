@@ -35,6 +35,47 @@ using namespace GAME;
 
 namespace
 {
+    const char* AssetName(const char* input)
+    {
+        if (input && input[0] == ',')
+            return &input[1];
+
+        return input;
+    }
+
+    void CreateJsonGlyph(JsonGlyph& jGlyph, const Glyph& glyph)
+    {
+        jGlyph.letter = glyph.letter;
+        jGlyph.x0 = glyph.x0;
+        jGlyph.y0 = glyph.y0;
+        jGlyph.dx = glyph.dx;
+        jGlyph.pixelWidth = glyph.pixelWidth;
+        jGlyph.pixelHeight = glyph.pixelHeight;
+        jGlyph.s0 = glyph.s0;
+        jGlyph.t0 = glyph.t0;
+        jGlyph.s1 = glyph.s1;
+        jGlyph.t1 = glyph.t1;
+    }
+
+    void CreateJsonFont(JsonFont& jFont, const Font_s& font)
+    {
+        jFont.pixelHeight = font.pixelHeight;
+        jFont.glyphCount = font.glyphs && font.glyphCount > 0 ? font.glyphCount : 0;
+
+        if (font.material && font.material->info.name)
+            jFont.material = AssetName(font.material->info.name);
+
+        if (font.glowMaterial && font.glowMaterial->info.name)
+            jFont.glowMaterial = AssetName(font.glowMaterial->info.name);
+
+        if (font.glyphs == nullptr || font.glyphCount <= 0)
+            return;
+
+        jFont.glyphs.resize(font.glyphCount);
+        for (auto i = 0; i < font.glyphCount; i++)
+            CreateJsonGlyph(jFont.glyphs[i], font.glyphs[i]);
+    }
+
     class Dumper
     {
     public:
@@ -60,47 +101,6 @@ namespace
         }
 
     private:
-        static const char* AssetName(const char* input)
-        {
-            if (input && input[0] == ',')
-                return &input[1];
-
-            return input;
-        }
-
-        static void CreateJsonGlyph(JsonGlyph& jGlyph, const Glyph& glyph)
-        {
-            jGlyph.letter = glyph.letter;
-            jGlyph.x0 = glyph.x0;
-            jGlyph.y0 = glyph.y0;
-            jGlyph.dx = glyph.dx;
-            jGlyph.pixelWidth = glyph.pixelWidth;
-            jGlyph.pixelHeight = glyph.pixelHeight;
-            jGlyph.s0 = glyph.s0;
-            jGlyph.t0 = glyph.t0;
-            jGlyph.s1 = glyph.s1;
-            jGlyph.t1 = glyph.t1;
-        }
-
-        static void CreateJsonFont(JsonFont& jFont, const Font_s& font)
-        {
-            jFont.pixelHeight = font.pixelHeight;
-            jFont.glyphCount = font.glyphs && font.glyphCount > 0 ? font.glyphCount : 0;
-
-            if (font.material && font.material->info.name)
-                jFont.material = AssetName(font.material->info.name);
-
-            if (font.glowMaterial && font.glowMaterial->info.name)
-                jFont.glowMaterial = AssetName(font.glowMaterial->info.name);
-
-            if (font.glyphs == nullptr || font.glyphCount <= 0)
-                return;
-
-            jFont.glyphs.resize(font.glyphCount);
-            for (auto i = 0; i < font.glyphCount; i++)
-                CreateJsonGlyph(jFont.glyphs[i], font.glyphs[i]);
-        }
-
         std::ostream& m_stream;
     };
 } // namespace

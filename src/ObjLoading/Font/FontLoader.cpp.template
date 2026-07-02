@@ -35,6 +35,71 @@ using namespace GAME;
 
 namespace
 {
+    void PrintError(const Font_s& font, const std::string& message)
+    {
+        con::error("Cannot load font \"{}\": {}", font.fontName, message);
+    }
+    
+    template<typename FieldType, typename ValueType>
+    bool AssignIntegerField(FieldType& field, const ValueType value, const Font_s& font, const char* fieldName)
+    {
+        const auto minValue = static_cast<ValueType>(std::numeric_limits<FieldType>::min());
+        const auto maxValue = static_cast<ValueType>(std::numeric_limits<FieldType>::max());
+
+        if (value < minValue || value > maxValue)
+        {
+            PrintError(font, std::format("{} value {} is outside allowed range {}..{}", fieldName, value, minValue, maxValue));
+            return false;
+        }
+
+        field = static_cast<FieldType>(value);
+        
+        return true;
+    }
+
+    bool CreateMaterialDependency(const std::string& materialName,
+                                  Material*& material,
+                                  AssetRegistration<AssetFont>& registration,
+                                  AssetCreationContext& context,
+                                  const Font_s& font,
+                                  const char* fieldName)
+    {
+        auto* materialDependency = context.LoadDependency<AssetMaterial>(materialName);
+        if (!materialDependency)
+        {
+            PrintError(font, std::format("Could not find {} material \"{}\"", fieldName, materialName));
+            return false;
+        }
+
+        registration.AddDependency(materialDependency);
+        material = materialDependency->Asset();
+        
+        return true;
+    }
+
+    bool CreateGlyphFromJson(const JsonGlyph& jGlyph, Glyph& glyph, const Font_s& font)
+    {
+        if (!AssignIntegerField(glyph.letter, jGlyph.letter, font, "glyph.letter"))
+            return false;
+        if (!AssignIntegerField(glyph.x0, jGlyph.x0, font, "glyph.x0"))
+            return false;
+        if (!AssignIntegerField(glyph.y0, jGlyph.y0, font, "glyph.y0"))
+            return false;
+        if (!AssignIntegerField(glyph.dx, jGlyph.dx, font, "glyph.dx"))
+            return false;
+        if (!AssignIntegerField(glyph.pixelWidth, jGlyph.pixelWidth, font, "glyph.pixelWidth"))
+            return false;
+        if (!AssignIntegerField(glyph.pixelHeight, jGlyph.pixelHeight, font, "glyph.pixelHeight"))
+            return false;
+
+        glyph.s0 = jGlyph.s0;
+        glyph.t0 = jGlyph.t0;
+        glyph.s1 = jGlyph.s1;
+        glyph.t1 = jGlyph.t1;
+        
+        return true;
+    }
+
     class FontLoader final : public AssetCreator<AssetFont>
     {
     public:
@@ -65,7 +130,7 @@ namespace
 
                 if (type != "font" || version != 1u)
                 {
-                    con::error("Tried to load font \"{}\" but did not find expected type font of version 1", assetName);
+                    con::error(R"(Tried to load font "{}" but did not find expected type font of version 1)", assetName);
                     return AssetCreationResult::Failure();
                 }
 
@@ -73,7 +138,7 @@ namespace
                 jRoot.at("_game").get_to(game);
                 if (game != GAME_LOWER)
                 {
-                    con::error("Tried to load font \"{}\" but \"_game\" did not have expected value {}", assetName, GAME_LOWER);
+                    con::error(R"(Tried to load font "{}" but "_game" did not have expected value {})", assetName, GAME_LOWER);
                     return AssetCreationResult::Failure();
                 }
 
@@ -90,68 +155,6 @@ namespace
         }
 
     private:
-        static void PrintError(const Font_s& font, const std::string& message)
-        {
-            con::error("Cannot load font \"{}\": {}", font.fontName, message);
-        }
-
-        template<typename FieldType, typename ValueType>
-        static bool AssignIntegerField(FieldType& field, const ValueType value, const Font_s& font, const char* fieldName)
-        {
-            const auto minValue = static_cast<ValueType>(std::numeric_limits<FieldType>::min());
-            const auto maxValue = static_cast<ValueType>(std::numeric_limits<FieldType>::max());
-
-            if (value < minValue || value > maxValue)
-            {
-                PrintError(font, std::format("{} value {} is outside allowed range {}..{}", fieldName, value, minValue, maxValue));
-                return false;
-            }
-
-            field = static_cast<FieldType>(value);
-            return true;
-        }
-
-        static bool CreateMaterialDependency(const std::string& materialName,
-                                             Material*& material,
-                                             AssetRegistration<AssetFont>& registration,
-                                             AssetCreationContext& context,
-                                             const Font_s& font,
-                                             const char* fieldName)
-        {
-            auto* materialDependency = context.LoadDependency<AssetMaterial>(materialName);
-            if (!materialDependency)
-            {
-                PrintError(font, std::format("Could not find {} material \"{}\"", fieldName, materialName));
-                return false;
-            }
-
-            registration.AddDependency(materialDependency);
-            material = materialDependency->Asset();
-            return true;
-        }
-
-        static bool CreateGlyphFromJson(const JsonGlyph& jGlyph, Glyph& glyph, const Font_s& font)
-        {
-            if (!AssignIntegerField(glyph.letter, jGlyph.letter, font, "glyph.letter"))
-                return false;
-            if (!AssignIntegerField(glyph.x0, jGlyph.x0, font, "glyph.x0"))
-                return false;
-            if (!AssignIntegerField(glyph.y0, jGlyph.y0, font, "glyph.y0"))
-                return false;
-            if (!AssignIntegerField(glyph.dx, jGlyph.dx, font, "glyph.dx"))
-                return false;
-            if (!AssignIntegerField(glyph.pixelWidth, jGlyph.pixelWidth, font, "glyph.pixelWidth"))
-                return false;
-            if (!AssignIntegerField(glyph.pixelHeight, jGlyph.pixelHeight, font, "glyph.pixelHeight"))
-                return false;
-
-            glyph.s0 = jGlyph.s0;
-            glyph.t0 = jGlyph.t0;
-            glyph.s1 = jGlyph.s1;
-            glyph.t1 = jGlyph.t1;
-            return true;
-        }
-
         bool CreateFontFromJson(const JsonFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
         {
             font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(jFont.pixelHeight);
