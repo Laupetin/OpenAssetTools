@@ -71,6 +71,13 @@ const CommandLineOption* const OPTION_GAME_T6 =
     .WithCategory(CATEGORY_GAME)
     .WithDescription("Converts images for T6.")
     .Build();
+
+const CommandLineOption* const OPTION_OUTPUT_LOG = 
+    CommandLineOption::Builder::Create()
+    .WithLongName("output-log")
+    .WithDescription("Output a log file containing messages from the ImageConverter.")
+    .WithParameter("logPath")
+    .Build();
 // clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
@@ -83,6 +90,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_GAME_IW5,
     OPTION_GAME_T5,
     OPTION_GAME_T6,
+    OPTION_OUTPUT_LOG,
 };
 
 ImageConverterArgs::ImageConverterArgs()
@@ -163,6 +171,19 @@ bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shou
         m_game_to_convert_to = GameId::T5;
     else if (m_argument_parser.IsOptionSpecified(OPTION_GAME_T6))
         m_game_to_convert_to = GameId::T6;
+
+    // --output-log
+    if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_LOG))
+    {
+        auto logPath = m_argument_parser.GetValueForOption(OPTION_OUTPUT_LOG);
+        if (logPath.empty())
+            logPath = "ImageConverter.log";
+        else if (!logPath.ends_with(".log"))
+            logPath += ".log";
+
+        con::set_log_file_enabled(true);
+        con::set_log_file(logPath);
+    }
 
     return true;
 }

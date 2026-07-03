@@ -23,6 +23,9 @@ namespace con
     void set_log_level(LogLevel value);
     void set_use_color(bool value);
 
+    void set_log_file(const std::string& path);
+    void set_log_file_enabled(const bool value);
+
     void reset_counts();
     [[nodiscard]] size_t warning_count();
     [[nodiscard]] size_t error_count();

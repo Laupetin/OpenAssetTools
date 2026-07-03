@@ -11,7 +11,7 @@ namespace weapon
     public:
         InfoStringLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
-        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const;
+        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
     private:
         MemoryManager& m_memory;

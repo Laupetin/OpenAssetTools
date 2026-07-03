@@ -1,6 +1,7 @@
 #include "Log.h"
 
 #include <format>
+#include <fstream>
 #include <iostream>
 
 #ifdef _WIN32
@@ -13,6 +14,9 @@ namespace
 
     bool globalUseColor = true;
     bool colorSet = false;
+
+    std::ofstream logFile;
+    bool enableLoggingToFile = false;
 
     bool CanUseColor()
     {
@@ -43,6 +47,13 @@ namespace
 
         return true;
     }
+
+    void writeToFile(const std::string& str)
+    {
+        if (!enableLoggingToFile || !logFile.is_open())
+            return;
+        logFile << str << '\n';
+    }
 } // namespace
 
 namespace con
@@ -72,6 +83,22 @@ namespace con
         globalUseColor = value && CanUseColor();
     }
 
+    void set_log_file(const std::string& path)
+    {
+        if (!enableLoggingToFile)
+            return;
+
+        logFile.open(path, std::ios::out | std::ios::app);
+
+        if (!logFile.is_open())
+            std::cerr << "WARN: Could not open log file: " << path << '\n';
+    }
+
+    void set_log_file_enabled(const bool value)
+    {
+        enableLoggingToFile = value;
+    }
+
     void reset_counts()
     {
         _warningCount = 0;
@@ -94,6 +121,8 @@ namespace con
             std::cout << std::format("\x1B[90m{}\x1B[0m\n", str);
         else
             std::cout << std::format("{}\n", str);
+
+        writeToFile(std::format("{}", str));
     }
 
     void _info_internal(const std::string& str)
@@ -102,6 +131,8 @@ namespace con
             std::cout << std::format("\x1B[37m{}\x1B[0m\n", str);
         else
             std::cout << std::format("{}\n", str);
+
+        writeToFile(std::format("{}", str));
     }
 
     void _warn_internal(const std::string& str)
@@ -110,6 +141,8 @@ namespace con
             std::cout << std::format("\x1B[33mWARN: {}\x1B[0m\n", str);
         else
             std::cout << std::format("WARN: {}\n", str);
+
+        writeToFile(std::format("WARN: {}", str));
     }
 
     void _error_internal(const std::string& str)
@@ -118,5 +151,7 @@ namespace con
             std::cerr << std::format("\x1B[31mERROR: {}\x1B[0m\n", str);
         else
             std::cerr << std::format("ERROR: {}\n", str);
+
+        writeToFile(std::format("ERROR: {}", str));
     }
 } // namespace con

@@ -544,13 +544,13 @@ namespace
             weapon.weapDef.damageRange[5] = 999999.12f; // oddly specific number, no clue
     }
 
-    void CheckCrosshairValues(const WeaponFullDef& weapon)
+    void CheckCrosshairValues(WeaponFullDef& weapon)
     {
         if (weapon.weapDef.enemyCrosshairRange > 15000.0f)
             con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.weapVariantDef.szInternalName);
     }
 
-    void CheckProjectileValues(const WeaponFullDef& weapon)
+    void CheckProjectileValues(WeaponFullDef& weapon)
     {
         if (weapon.weapDef.weapType != WEAPTYPE_PROJECTILE)
             return;
@@ -724,7 +724,7 @@ namespace weapon
     {
     }
 
-    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
+    AssetCreationResult InfoStringLoaderT6::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
         auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
         weaponFullDef->weapVariantDef.szInternalName = m_memory.Dup(assetName.c_str());

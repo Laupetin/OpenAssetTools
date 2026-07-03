@@ -60,8 +60,6 @@ namespace T4
         SUB_ASSET_TYPE_VERTEX_DECL,
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
-        SUB_ASSET_TYPE_ACCURACY_GRAPH,
-        SUB_ASSET_TYPE_FLAME_TABLE,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -83,69 +81,6 @@ namespace T4
         ScriptStringList stringList;
         int assetCount;
         XAsset* assets;
-    };
-
-    struct cspField_t
-    {
-        const char* szName;
-        int iOffset;
-        int iFieldType;
-    };
-
-    enum csParseFieldType_t
-    {
-        CSPFT_STRING,
-        CSPFT_STRING_MAX_STRING_CHARS,
-        CSPFT_STRING_MAX_QPATH,
-        CSPFT_STRING_MAX_OSPATH,
-        CSPFT_INT,
-        CSPFT_BOOL,
-        CSPFT_FLOAT,
-        CSPFT_MILLISECONDS,
-        CSPFT_FX,
-        CSPFT_XMODEL,
-        CSPFT_MATERIAL,
-        CSPFT_SOUND,
-
-        CSPFT_NUM_BASE_FIELD_TYPES
-    };
-
-    enum weapFieldType_t
-    {
-        WFT_WEAPONTYPE = CSPFT_NUM_BASE_FIELD_TYPES,
-        WFT_WEAPONCLASS,
-        WFT_OVERLAYRETICLE,
-        WFT_PENETRATE_TYPE,
-        WFT_IMPACT_TYPE,
-        WFT_STANCE,
-        WFT_PROJ_EXPLOSION,
-        WFT_OFFHAND_CLASS,
-        WFT_ANIMTYPE,
-        WFT_ACTIVE_RETICLE_TYPE,
-        WFT_GUIDED_MISSILE_TYPE,
-        WFT_BOUNCE_SOUND,
-        WFT_STICKINESS,
-        WFT_OVERLAYINTERFACE,
-        WFT_INVENTORYTYPE,
-        WFT_FIRETYPE,
-        WFT_CLIPTYPE,
-        WFT_AMMOCOUNTER_CLIPTYPE,
-        WFT_ICONRATIO_HUD,
-        WFT_ICONRATIO_AMMOCOUNTER,
-        WFT_ICONRATIO_KILL,
-        WFT_ICONRATIO_DPAD,
-        WFT_HIDETAGS,
-        WFT_NOTETRACKSOUNDMAP,
-
-        WFT_ANIM_NAME,
-
-        WFT_NUM_FIELD_TYPES,
-    };
-
-    struct AccuracyGraph
-    {
-        vec2_t* graphKnots;
-        int graphKnotCount;
     };
 
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
@@ -182,8 +117,6 @@ namespace T4
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
-    using SubAssetAccuracyGraph = SubAsset<SUB_ASSET_TYPE_ACCURACY_GRAPH, AccuracyGraph>;
-    using SubAssetFlameTable = SubAsset<SUB_ASSET_TYPE_FLAME_TABLE, FlameTable>;
 } // namespace T4
 
 DEFINE_ASSET_NAME_ACCESSOR(T4::AssetPhysPreset, name);

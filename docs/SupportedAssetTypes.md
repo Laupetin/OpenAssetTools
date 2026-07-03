@@ -149,7 +149,7 @@ using `Linker`):
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |
-| WeaponDef            | ✅               | ✅               |                                                                              |
+| WeaponDef            | ❌               | ❌               |                                                                              |
 | FxEffectDef          | ❌               | ❌               |                                                                              |
 | FxImpactTable        | ❌               | ❌               |                                                                              |
 | RawFile              | ✅               | ✅               |                                                                              |

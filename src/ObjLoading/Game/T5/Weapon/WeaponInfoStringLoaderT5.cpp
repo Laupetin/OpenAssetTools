@@ -395,7 +395,7 @@ namespace
             con::warn("Weapon {}: Enemy crosshair ranges should be less than 15000", weapon.weapVariantDef.szInternalName);
     }
 
-    void CheckProjectileValues(const WeaponFullDef& weapon)
+    void CheckProjectileValues(WeaponFullDef& weapon)
     {
         if (weapon.weapDef.weapType != WEAPTYPE_PROJECTILE)
             return;

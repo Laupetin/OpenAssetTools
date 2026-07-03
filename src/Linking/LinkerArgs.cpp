@@ -116,6 +116,13 @@ const CommandLineOption* const OPTION_MENU_NO_OPTIMIZATION =
                         "information when dumped though.)")
     .Build();
 
+const CommandLineOption* const OPTION_OUTPUT_LOG = 
+    CommandLineOption::Builder::Create()
+    .WithLongName("output-log")
+    .WithDescription("Output a log file containing messages from the Linker.")
+    .WithParameter("logPath")
+    .Build();
+
 // clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
@@ -133,6 +140,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_LOAD,
     OPTION_MENU_PERMISSIVE,
     OPTION_MENU_NO_OPTIMIZATION,
+    OPTION_OUTPUT_LOG,
 };
 
 LinkerArgs::LinkerArgs()
@@ -283,6 +291,19 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     // --menu-no-optimization
     if (m_argument_parser.IsOptionSpecified(OPTION_MENU_NO_OPTIMIZATION))
         ObjLoading::Configuration.MenuNoOptimization = true;
+
+    // --output-log
+    if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_LOG))
+    {
+        auto logPath = m_argument_parser.GetValueForOption(OPTION_OUTPUT_LOG);
+        if (logPath.empty())
+            logPath = "Linker.log";
+        else if (!logPath.ends_with(".log"))
+            logPath += ".log";
+
+        con::set_log_file_enabled(true);
+        con::set_log_file(logPath);
+    }
 
     return true;
 }

@@ -125,6 +125,13 @@ const CommandLineOption* const OPTION_LEGACY_MENUS =
     .WithDescription("Dumps menus with a compatibility mode to work with applications not compatible with the newer dumping mode.")
     .Build();
 
+const CommandLineOption* const OPTION_OUTPUT_LOG = 
+    CommandLineOption::Builder::Create()
+    .WithLongName("output-log")
+    .WithDescription("Output a log file containing messages from the Unlinker.")
+    .WithParameter("logPath")
+    .Build();
+
 // clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
@@ -144,6 +151,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_EXCLUDE_ASSETS,
     OPTION_INCLUDE_ASSETS,
     OPTION_LEGACY_MENUS,
+    OPTION_OUTPUT_LOG,
 };
 
 UnlinkerArgs::UnlinkerArgs()
@@ -384,6 +392,19 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     // --legacy-menus
     if (m_argument_parser.IsOptionSpecified(OPTION_LEGACY_MENUS))
         ObjWriting::Configuration.MenuLegacyMode = true;
+
+    // --output-log
+    if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_LOG))
+    {
+        auto logPath = m_argument_parser.GetValueForOption(OPTION_OUTPUT_LOG);
+        if (logPath.empty())
+            logPath = "Unlinker.log";
+        else if (!logPath.ends_with(".log"))
+            logPath += ".log";
+
+        con::set_log_file_enabled(true);
+        con::set_log_file(logPath);
+    }
 
     return true;
 }
