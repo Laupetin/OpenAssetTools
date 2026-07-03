@@ -1,5 +1,6 @@
 #include "ObjWriterT6.h"
 
+#include "Font/FontDumperT6.h"
 #include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/Image/ImageDumperT6.h"
 #include "Game/T6/Material/MaterialJsonDumperT6.h"
@@ -55,7 +56,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<map_ents::DumperT6>());
     // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
     RegisterAssetDumper(std::make_unique<light_def::DumperT6>());
-    // REGISTER_DUMPER(AssetDumperFont, m_font)
+    RegisterAssetDumper(std::make_unique<font::DumperT6>());
     RegisterAssetDumper(font_icon::CreateDumperT6());
     // REGISTER_DUMPER(AssetDumperMenuList, m_menu_list)
     // REGISTER_DUMPER(AssetDumperMenuDef, m_menu_def)
