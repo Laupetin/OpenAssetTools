@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Font/FontLoader" + GAME + ".cpp"
 
@@ -12,6 +12,9 @@
 #define GAME_LOWER "t4"
 #elif GAME == "T5"
 #define GAME_LOWER "t5"
+#elif GAME == "T6"
+#define GAME_LOWER "t6"
+#define FEATURE_T6
 #endif
 
 // This file was templated.
@@ -142,6 +145,56 @@ namespace
         return true;
     }
 
+#ifdef FEATURE_T6
+    bool CreateKerningPairFromJson(const JsonKerningPair& jKerningPair, KerningPairs& kerningPair, const Font_s& font)
+    {
+        if (!AssignIntegerField(kerningPair.wFirst, jKerningPair.firstLetter, font, "kerningPair.firstLetter"))
+            return false;
+        if (!AssignIntegerField(kerningPair.wSecond, jKerningPair.secondLetter, font, "kerningPair.secondLetter"))
+            return false;
+        if (!AssignIntegerField(kerningPair.iKernAmount, jKerningPair.kernAmount, font, "kerningPair.kernAmount"))
+            return false;
+        
+        return true;
+    }
+            
+    void SortKerningPairs(const Font_s& font)
+    {
+        std::sort(&font.kerningPairs[0], &font.kerningPairs[font.kerningPairsCount], [](const KerningPairs& a, const KerningPairs& b)
+        {
+            if (a.wFirst != b.wFirst)
+                return a.wFirst < b.wFirst;
+            
+            return a.wSecond < b.wSecond;
+        });
+    }
+    
+    bool EnsureFontContainsKerningPairLetter(const Font_s& font, const unsigned letter)
+    {
+        for (auto i = 0; i < font.glyphCount; i++)
+        {
+            const auto& glyph = font.glyphs[i];
+            if (glyph.letter == letter)
+                return true;
+        }
+        
+        con::error("Font {} has kerning pair with letter {} ('{}') but no glyph for it", font.fontName, letter, static_cast<char>(letter));
+        return false;
+    }
+            
+    bool EnsureFontContainsGlyphsOfKerningPairs(const Font_s& font)
+    {
+        for (auto i = 0; i < font.kerningPairsCount; i++)
+        {
+            const auto& kerningPair = font.kerningPairs[i];
+            if (!EnsureFontContainsKerningPairLetter(font, kerningPair.wFirst) || !EnsureFontContainsKerningPairLetter(font, kerningPair.wSecond))
+                return false;
+        }
+        
+        return true;
+    }
+#endif
+
     class FontLoader final : public AssetCreator<AssetFont>
     {
     public:
@@ -200,6 +253,10 @@ namespace
         bool CreateFontFromJson(const JsonFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
         {
             font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(jFont.pixelHeight);
+            
+#ifdef FEATURE_T6
+            font.isScalingAllowed = jFont.isScalingAllowed;
+#endif
 
             if (!CreateMaterialDependency(jFont.material, font.material, registration, context, font, "font"))
                 return false;
@@ -217,24 +274,47 @@ namespace
                 return false;
             }
 
-            font.glyphCount = static_cast<decltype(Font_s::glyphCount)>(jFont.glyphs.size());;
-            if (font.glyphCount <= 0)
+            font.glyphCount = static_cast<decltype(Font_s::glyphCount)>(jFont.glyphs.size());
+            if (font.glyphCount > 0)
+            {
+                font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
+                for (auto i = 0; i < font.glyphCount; i++)
+                {
+                    if (!CreateGlyphFromJson(jFont.glyphs[i], font.glyphs[i], font))
+                        return false;
+                }
+                
+                SortGlyphs(font);
+            }
+            else
             {
                 font.glyphs = nullptr;
-                return true;
             }
-
-            font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
-            for (auto i = 0; i < font.glyphCount; i++)
-            {
-                if (!CreateGlyphFromJson(jFont.glyphs[i], font.glyphs[i], font))
-                    return false;
-            }
-            
-            SortGlyphs(font);
             
             if (!EnsureFontContainsAllRequiredGlyphs(font))
                 return false;
+
+#ifdef FEATURE_T6
+            font.kerningPairsCount = static_cast<decltype(Font_s::kerningPairsCount)>(jFont.kerningPairs.size());
+            if (font.kerningPairsCount > 0)
+            {
+                font.kerningPairs = m_memory.Alloc<KerningPairs>(font.kerningPairsCount);
+                for (auto i = 0; i < font.kerningPairsCount; i++)
+                {
+                    if (!CreateKerningPairFromJson(jFont.kerningPairs[i], font.kerningPairs[i], font))
+                        return false;
+                }
+                
+                SortKerningPairs(font);
+            }
+            else
+            {
+                font.kerningPairs = nullptr;
+            }
+            
+            if (!EnsureFontContainsGlyphsOfKerningPairs(font))
+                return false;
+#endif
 
             return true;
         }

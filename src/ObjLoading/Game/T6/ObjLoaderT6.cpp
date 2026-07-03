@@ -5,6 +5,7 @@
 #include "FontIcon/JsonLoaderFontIconT6.h"
 #include "Game/T6/AssetMarkerT6.h"
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/Font/FontLoaderT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/Image/ImageLoaderEmbeddedT6.h"
 #include "Game/T6/Image/ImageLoaderExternalT6.h"
@@ -404,7 +405,7 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
             collection.AddAssetCreator(light_def::CreateLoaderT6(memory, searchPath));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+            collection.AddAssetCreator(font::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(font_icon::CreateCsvLoaderT6(memory, searchPath));
             collection.AddAssetCreator(font_icon::CreateJsonLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));

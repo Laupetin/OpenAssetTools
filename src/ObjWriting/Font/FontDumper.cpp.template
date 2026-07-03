@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Font/FontDumper" + GAME + ".cpp"
 
@@ -12,6 +12,9 @@
 #define GAME_LOWER "t4"
 #elif GAME == "T5"
 #define GAME_LOWER "t5"
+#elif GAME == "T6"
+#define FEATURE_T6
+#define GAME_LOWER "t6"
 #endif
 
 // This file was templated.
@@ -57,9 +60,22 @@ namespace
         jGlyph.t1 = glyph.t1;
     }
 
+#ifdef FEATURE_T6
+    void CreateJsonKerningPair(JsonKerningPair& jKerningPair, const KerningPairs& kerningPair)
+    {
+        jKerningPair.firstLetter = kerningPair.wFirst;
+        jKerningPair.secondLetter = kerningPair.wSecond;
+        jKerningPair.kernAmount = kerningPair.iKernAmount;
+    }
+#endif
+
     void CreateJsonFont(JsonFont& jFont, const Font_s& font)
     {
         jFont.pixelHeight = font.pixelHeight;
+        
+#ifdef FEATURE_T6
+        jFont.isScalingAllowed = font.isScalingAllowed;
+#endif
 
         if (font.material && font.material->info.name)
             jFont.material = AssetName(font.material->info.name);
@@ -73,6 +89,12 @@ namespace
         jFont.glyphs.resize(font.glyphCount);
         for (auto i = 0; i < font.glyphCount; i++)
             CreateJsonGlyph(jFont.glyphs[i], font.glyphs[i]);
+
+#ifdef FEATURE_T6
+        jFont.kerningPairs.resize(font.kerningPairsCount);
+        for (auto i = 0; i < font.kerningPairsCount; i++)
+            CreateJsonKerningPair(jFont.kerningPairs[i], font.kerningPairs[i]);
+#endif
     }
 
     class Dumper
