@@ -1,6 +1,10 @@
-#options GAME (IW3, IW4, IW5, T4, T5)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Font/JsonFont" + GAME + ".h"
+
+#if GAME == "T6"
+#define FEATURE_T6
+#endif
 
 // This file was templated.
 // See JsonFont.h.template.
@@ -54,14 +58,76 @@ namespace GAME
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_FROM, x0, y0, dx, pixelWidth, pixelHeight, s0, t0, s1, t1))
     }
 
+#ifdef FEATURE_T6
+    class JsonKerningPair
+    {
+    public:
+        unsigned firstLetter;
+        unsigned secondLetter;
+        int kernAmount;
+    };
+
+    NLOHMANN_TO_JSON_METHOD(JsonKerningPair)
+    {
+        if (font::IsPrintableLetter(nlohmann_json_t.firstLetter))
+            extended_to_json("firstLetter", nlohmann_json_j, font::LetterToString(nlohmann_json_t.firstLetter));
+        else
+            extended_to_json("firstLetter", nlohmann_json_j, nlohmann_json_t.firstLetter);
+
+        if (font::IsPrintableLetter(nlohmann_json_t.secondLetter))
+            extended_to_json("secondLetter", nlohmann_json_j, font::LetterToString(nlohmann_json_t.secondLetter));
+        else
+            extended_to_json("secondLetter", nlohmann_json_j, nlohmann_json_t.secondLetter);
+        
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_TO, kernAmount))
+    }
+    
+    NLOHMANN_FROM_JSON_METHOD(JsonKerningPair)
+    {
+        auto jLetter = nlohmann_json_j.at("firstLetter");
+        if (jLetter.type() == BasicJsonType::value_t::string)
+            nlohmann_json_t.firstLetter = font::StringToLetter(jLetter.template get<std::string>());
+        else
+            nlohmann_json_t.firstLetter = jLetter.template get<unsigned>();
+
+        jLetter = nlohmann_json_j.at("secondLetter");
+        if (jLetter.type() == BasicJsonType::value_t::string)
+            nlohmann_json_t.secondLetter = font::StringToLetter(jLetter.template get<std::string>());
+        else
+            nlohmann_json_t.secondLetter = jLetter.template get<unsigned>();
+            
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_FROM, kernAmount))
+    }
+#endif
+
     class JsonFont
     {
     public:
         unsigned pixelHeight;
+#ifdef FEATURE_T6
+        bool isScalingAllowed;
+#endif
         std::string material;
         std::optional<std::string> glowMaterial;
         std::vector<JsonGlyph> glyphs;
+#ifdef FEATURE_T6
+        std::vector<JsonKerningPair> kerningPairs;
+#endif
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonFont, pixelHeight, material, glowMaterial, glyphs);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonFont,
+        pixelHeight,
+#ifdef FEATURE_T6
+        isScalingAllowed,
+#endif
+        material,
+        glowMaterial,
+#ifdef FEATURE_T6
+        glyphs,
+        kerningPairs
+#else
+        glyphs
+#endif
+    );
 } // namespace GAME
