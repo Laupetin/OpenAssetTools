@@ -1,0 +1,67 @@
+#options GAME (IW3, IW4, IW5, T4, T5)
+
+#filename "Game/" + GAME + "/Font/JsonFont" + GAME + ".h"
+
+// This file was templated.
+// See JsonFont.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Json/JsonExtension.h"
+#include "Font/FontCommon.h"
+
+#include <nlohmann/json.hpp>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace GAME
+{
+    class JsonGlyph
+    {
+    public:
+        unsigned letter;
+        int x0;
+        int y0;
+        unsigned dx;
+        unsigned pixelWidth;
+        unsigned pixelHeight;
+        float s0;
+        float t0;
+        float s1;
+        float t1;
+    };
+
+    NLOHMANN_TO_JSON_METHOD(JsonGlyph)
+    {
+        if (font::IsPrintableLetter(nlohmann_json_t.letter))
+            extended_to_json("letter", nlohmann_json_j, font::LetterToString(nlohmann_json_t.letter));
+        else
+            extended_to_json("letter", nlohmann_json_j, nlohmann_json_t.letter);
+        
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_TO, x0, y0, dx, pixelWidth, pixelHeight, s0, t0, s1, t1))
+    }
+    
+    NLOHMANN_FROM_JSON_METHOD(JsonGlyph)
+    {
+        const auto jLetter = nlohmann_json_j.at("letter");
+        if (jLetter.type() == BasicJsonType::value_t::string)
+            nlohmann_json_t.letter = font::StringToLetter(jLetter.template get<std::string>());
+        else
+            nlohmann_json_t.letter = jLetter.template get<unsigned>();
+            
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(EXTEND_JSON_FROM, x0, y0, dx, pixelWidth, pixelHeight, s0, t0, s1, t1))
+    }
+
+    class JsonFont
+    {
+    public:
+        unsigned pixelHeight;
+        std::string material;
+        std::optional<std::string> glowMaterial;
+        std::vector<JsonGlyph> glyphs;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonFont, pixelHeight, material, glowMaterial, glyphs);
+} // namespace GAME

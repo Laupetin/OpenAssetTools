@@ -2713,9 +2713,9 @@ namespace T4
         uint16_t letter;
         char x0;
         char y0;
-        char dx;
-        char pixelWidth;
-        char pixelHeight;
+        unsigned char dx;
+        unsigned char pixelWidth;
+        unsigned char pixelHeight;
         float s0;
         float t0;
         float s1;

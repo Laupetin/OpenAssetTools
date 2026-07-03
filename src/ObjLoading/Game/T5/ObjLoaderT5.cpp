@@ -2,6 +2,7 @@
 
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T5/AssetMarkerT5.h"
+#include "Game/T5/Font/FontLoaderT5.h"
 #include "Game/T5/GameT5.h"
 #include "Game/T5/Image/ImageLoaderEmbeddedT5.h"
 #include "Game/T5/Image/ImageLoaderExternalT5.h"
@@ -132,7 +133,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         collection.AddAssetCreator(light_def::CreateLoaderT5(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderT5(memory, searchPath, zone));

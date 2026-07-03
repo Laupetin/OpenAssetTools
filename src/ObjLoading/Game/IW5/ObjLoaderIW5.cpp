@@ -2,6 +2,7 @@
 
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/IW5/AssetMarkerIW5.h"
+#include "Game/IW5/Font/FontLoaderIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Image/ImageLoaderEmbeddedIW5.h"
@@ -154,7 +155,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFxWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         collection.AddAssetCreator(light_def::CreateLoaderIW5(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+        collection.AddAssetCreator(font::CreateLoaderIW5(memory, searchPath));
         collection.AddAssetCreator(menu::CreateMenuListLoaderIW5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW5(memory, searchPath, zone));

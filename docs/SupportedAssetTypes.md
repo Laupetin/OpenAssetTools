@@ -28,7 +28,7 @@ using `Linker`):
 | MapEnts              | ✅               | ❌               |                                                                              |
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ✅               | ✅               |                                                                              |
-| Font_s               | ❌               | ❌               |                                                                              |
+| Font_s               | ✅               | ✅               |                                                                              |
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |
@@ -63,7 +63,7 @@ using `Linker`):
 | FxWorld                   | ❌               | ❌               |                                                                              |
 | GfxWorld                  | ❌               | ❌               |                                                                              |
 | GfxLightDef               | ✅               | ✅               |                                                                              |
-| Font_s                    | ❌               | ❌               |                                                                              |
+| Font_s                    | ✅               | ✅               |                                                                              |
 | MenuList                  | ✅               | ✅               | The output is decompiled. The result will not be the same as the input.      |
 | menuDef_t                 | ✅               | ✅               | See menulist.                                                                |
 | LocalizeEntry             | ✅               | ✅               |                                                                              |
@@ -105,7 +105,7 @@ using `Linker`):
 | FxWorld                   | ❌               | ❌               |                                                                                                               |
 | GfxWorld                  | ❌               | ❌               |                                                                                                               |
 | GfxLightDef               | ✅               | ✅               |                                                                                                               |
-| Font_s                    | ❌               | ❌               |                                                                                                               |
+| Font_s                    | ✅               | ✅               |                                                                                                               |
 | MenuList                  | ✅               | ✅               | The output is decompiled. The result will not be the same as the input.                                       |
 | menuDef_t                 | ✅               | ✅               | See menulist.                                                                                                 |
 | LocalizeEntry             | ✅               | ✅               |                                                                                                               |
@@ -145,7 +145,7 @@ using `Linker`):
 | MapEnts              | ✅               | ✅               |                                                                              |
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ❌               | ❌               |                                                                              |
-| Font_s               | ❌               | ❌               |                                                                              |
+| Font_s               | ✅               | ✅               |                                                                              |
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |
@@ -177,7 +177,7 @@ using `Linker`):
 | MapEnts              | ❌               | ❌               |                                                                              |
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ✅               | ✅               |                                                                              |
-| Font_s               | ❌               | ❌               |                                                                              |
+| Font_s               | ✅               | ✅               |                                                                              |
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |

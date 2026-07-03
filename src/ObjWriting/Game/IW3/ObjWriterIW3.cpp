@@ -1,5 +1,6 @@
 #include "ObjWriterIW3.h"
 
+#include "Game/IW3/Font/FontDumperIW3.h"
 #include "Game/IW3/Image/ImageDumperIW3.h"
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
 #include "Game/IW3/Techset/TechsetDumperIW3.h"
@@ -41,7 +42,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<map_ents::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW3>());
-    // REGISTER_DUMPER(AssetDumperFont_s)
+    RegisterAssetDumper(std::make_unique<font::JsonDumperIW3>());
     // REGISTER_DUMPER(AssetDumperMenuList)
     // REGISTER_DUMPER(AssetDumpermenuDef_t)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());

@@ -1,0 +1,119 @@
+#options GAME (IW3, IW4, IW5, T4, T5)
+
+#filename "Game/" + GAME + "/Font/FontDumper" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
+#define GAME_LOWER "iw5"
+#elif GAME == "T4"
+#define GAME_LOWER "t4"
+#elif GAME == "T5"
+#define GAME_LOWER "t5"
+#endif
+
+// This file was templated.
+// See FontDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#set DUMPER_HEADER "\"FontDumper" + GAME + ".h\""
+#include DUMPER_HEADER
+
+#include "Font/FontCommon.h"
+#set JSON_HEADER "\"Game/" + GAME + "/Font/JsonFont" + GAME + ".h\""
+#include JSON_HEADER
+
+#include <iomanip>
+#include <nlohmann/json.hpp>
+
+using namespace nlohmann;
+using namespace GAME;
+
+#set CLASS_NAME "JsonDumper" + GAME
+
+namespace
+{
+    const char* AssetName(const char* input)
+    {
+        if (input && input[0] == ',')
+            return &input[1];
+
+        return input;
+    }
+
+    void CreateJsonGlyph(JsonGlyph& jGlyph, const Glyph& glyph)
+    {
+        jGlyph.letter = glyph.letter;
+        jGlyph.x0 = glyph.x0;
+        jGlyph.y0 = glyph.y0;
+        jGlyph.dx = glyph.dx;
+        jGlyph.pixelWidth = glyph.pixelWidth;
+        jGlyph.pixelHeight = glyph.pixelHeight;
+        jGlyph.s0 = glyph.s0;
+        jGlyph.t0 = glyph.t0;
+        jGlyph.s1 = glyph.s1;
+        jGlyph.t1 = glyph.t1;
+    }
+
+    void CreateJsonFont(JsonFont& jFont, const Font_s& font)
+    {
+        jFont.pixelHeight = font.pixelHeight;
+
+        if (font.material && font.material->info.name)
+            jFont.material = AssetName(font.material->info.name);
+
+        if (font.glowMaterial && font.glowMaterial->info.name)
+            jFont.glowMaterial = AssetName(font.glowMaterial->info.name);
+
+        if (font.glyphs == nullptr || font.glyphCount <= 0)
+            return;
+
+        jFont.glyphs.resize(font.glyphCount);
+        for (auto i = 0; i < font.glyphCount; i++)
+            CreateJsonGlyph(jFont.glyphs[i], font.glyphs[i]);
+    }
+
+    class Dumper
+    {
+    public:
+        explicit Dumper(std::ostream& stream)
+            : m_stream(stream)
+        {
+        }
+
+        void Dump(const Font_s& font) const
+        {
+            JsonFont jFont;
+            CreateJsonFont(jFont, font);
+
+            ordered_json jRoot;
+            jRoot["$schema"] = "http://openassettools.dev/schema/font.v1.json";
+            jRoot["_type"] = "font";
+            jRoot["_version"] = 1;
+            jRoot["_game"] = GAME_LOWER;
+            
+            jRoot.merge_patch(jFont);
+
+            m_stream << std::setw(4) << jRoot << "\n";
+        }
+
+    private:
+        std::ostream& m_stream;
+    };
+} // namespace
+
+namespace font
+{
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetFont::Type>& asset)
+    {
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAssetName(asset.m_name));
+
+        if (!assetFile)
+            return;
+
+        Dumper dumper(*assetFile);
+        dumper.Dump(*asset.Asset());
+    }
+} // namespace font

@@ -1,0 +1,25 @@
+#options GAME (IW3, IW4, IW5, T4, T5)
+
+#filename "Game/" + GAME + "/Font/FontDumper" + GAME + ".h"
+
+// This file was templated.
+// See FontDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AssetDumpingContext.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+#set CLASS_NAME "JsonDumper" + GAME
+
+namespace font
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetFont>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetFont::Type>& asset) override;
+    };
+} // namespace font
