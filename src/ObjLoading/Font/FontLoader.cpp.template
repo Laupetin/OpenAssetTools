@@ -238,7 +238,10 @@ namespace
                 }
 
                 const auto jFont = jRoot.get<JsonFont>();
-                if (CreateFontFromJson(jFont, *font, registration, context))
+                if (!std::holds_alternative<JsonCompiledFont>(jFont.font))
+                    return AssetCreationResult::NoAction();
+                
+                if (CreateFontFromJson(std::get<JsonCompiledFont>(jFont.font), *font, registration, context))
                     return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
             }
             catch (const json::exception& e)
@@ -250,7 +253,7 @@ namespace
         }
 
     private:
-        bool CreateFontFromJson(const JsonFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
+        bool CreateFontFromJson(const JsonCompiledFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
         {
             font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(jFont.pixelHeight);
             
