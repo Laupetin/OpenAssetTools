@@ -1,5 +1,6 @@
 #include "ObjCompilerT6.h"
 
+#include "Game/T6/Font/FontCompilerT6.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/Techset/TechniqueCompilerT6.h"
 #include "Game/T6/Techset/TechsetCompilerT6.h"
@@ -24,6 +25,7 @@ namespace
 
         collection.AddAssetCreator(key_value_pairs::CreateCompilerT6(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
         collection.AddAssetCreator(techset::CreateTechsetCompilerT6(memory, searchPath));
+        collection.AddAssetCreator(font::CreateCompilerT6(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT6(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT6(memory));

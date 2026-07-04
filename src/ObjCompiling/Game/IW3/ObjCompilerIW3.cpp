@@ -1,5 +1,6 @@
 #include "ObjCompilerIW3.h"
 
+#include "Game/IW3/Font/FontCompilerIW3.h"
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/Techset/TechniqueCompilerIW3.h"
 #include "Game/IW3/Techset/TechsetCompilerIW3.h"
@@ -17,6 +18,7 @@ namespace
         auto& memory = zone.Memory();
 
         collection.AddAssetCreator(techset::CreateTechsetCompilerIW3(memory, searchPath));
+        collection.AddAssetCreator(font::CreateCompilerIW3(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW3(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerIW3(memory));

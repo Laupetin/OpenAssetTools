@@ -838,7 +838,7 @@ namespace T6
         uint32_t valid : 1;
     };
 
-    enum MapType
+    enum MapType : unsigned char
     {
         MAPTYPE_NONE = 0x0,
         MAPTYPE_INVALID1 = 0x1,
@@ -900,7 +900,7 @@ namespace T6
     struct GfxImage
     {
         GfxTexture texture;
-        char mapType;
+        MapType mapType;
         char semantic;
         char category;
         bool delayLoadPixels;
