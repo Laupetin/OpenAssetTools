@@ -128,7 +128,7 @@ using `Linker`):
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
 | PhysPreset           | ❌               | ❌               |                                                                              |
-| PhysConstraints      | ❌               | ❌               |                                                                              |
+| PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
 | XAnimParts           | ✅               | ✅               |                                                                              |
 | XModel               | ✅               | ❌               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
@@ -161,7 +161,7 @@ using `Linker`):
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
 | PhysPreset           | ✅               | ✅               |                                                                              |
-| PhysConstraints      | ❌               | ❌               |                                                                              |
+| PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
 | XAnimParts           | ✅               | ✅               |                                                                              |
 | XModel               | ✅               | ✅               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |

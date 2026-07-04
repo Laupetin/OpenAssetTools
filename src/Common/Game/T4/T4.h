@@ -142,6 +142,13 @@ namespace T4
         WFT_NUM_FIELD_TYPES,
     };
 
+    enum constraintsFieldType_t
+    {
+        CFT_TYPE = CSPFT_NUM_BASE_FIELD_TYPES,
+
+        CFT_NUM_FIELD_TYPES
+    };
+
     struct AccuracyGraph
     {
         vec2_t* graphKnots;
