@@ -61,6 +61,20 @@ namespace
     }
 
 #ifdef FEATURE_T6
+    bool HasActualKerningPairs(const Font_s& font)
+    {
+        if (font.kerningPairs == nullptr)
+            return false;
+        if (font.kerningPairsCount > 1)
+            return true;
+        if (font.kerningPairsCount == 0)
+            return false;
+        
+        const auto& firstKerningPair = font.kerningPairs[0];
+        
+        return firstKerningPair.wFirst != 0 || firstKerningPair.wSecond != 0 || firstKerningPair.iKernAmount != 0;
+    }
+
     void CreateJsonKerningPair(JsonKerningPair& jKerningPair, const KerningPairs& kerningPair)
     {
         jKerningPair.firstLetter = kerningPair.wFirst;
@@ -91,9 +105,12 @@ namespace
             CreateJsonGlyph(jFont.glyphs[i], font.glyphs[i]);
 
 #ifdef FEATURE_T6
-        jFont.kerningPairs.resize(font.kerningPairsCount);
-        for (auto i = 0; i < font.kerningPairsCount; i++)
-            CreateJsonKerningPair(jFont.kerningPairs[i], font.kerningPairs[i]);
+        if (HasActualKerningPairs(font))
+        {
+            jFont.kerningPairs.resize(font.kerningPairsCount);
+            for (auto i = 0; i < font.kerningPairsCount; i++)
+                CreateJsonKerningPair(jFont.kerningPairs[i], font.kerningPairs[i]);
+        }
 #endif
     }
 
