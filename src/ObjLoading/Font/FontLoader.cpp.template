@@ -306,14 +306,21 @@ namespace
                 }
                 
                 SortKerningPairs(font);
+                
+                if (!EnsureFontContainsGlyphsOfKerningPairs(font))
+                    return false;
             }
             else
             {
-                font.kerningPairs = nullptr;
+                // The game is bugged here and accesses the kerning pairs even when kerningPairsCount is set to 0.
+                // It always checks the first entry so we add a nonsense entry here that never matches
+                // to ensure that no kerning is applied on randomly matching bytes.
+                font.kerningPairsCount = 1;
+                font.kerningPairs = m_memory.Alloc<KerningPairs>(1);
+                font.kerningPairs[0].wFirst = 0;
+                font.kerningPairs[0].wSecond = 0;
+                font.kerningPairs[0].iKernAmount = 0;
             }
-            
-            if (!EnsureFontContainsGlyphsOfKerningPairs(font))
-                return false;
 #endif
 
             return true;
