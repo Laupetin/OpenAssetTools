@@ -50,6 +50,7 @@ namespace
     constexpr unsigned REQUIRED_GLYPH_COUNT = REQUIRED_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
     
     constexpr unsigned DEFAULT_FONT_SIZE = 20;
+    constexpr unsigned DEFAULT_Y_OFFSET = 0;
     constexpr unsigned DEFAULT_TEXTURE_SIZE = 256;
     constexpr unsigned TEXTURE_SIZE_STEP = 16;
     
@@ -267,6 +268,7 @@ namespace
         bool CreateFontFromJson(const JsonFileFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
         {
             const auto fontSize = jFont.fontSize.value_or(DEFAULT_FONT_SIZE);
+            const auto yOffset = jFont.yOffset.value_or(DEFAULT_Y_OFFSET);
             font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(fontSize);
             
 #ifdef FEATURE_T6
@@ -305,7 +307,7 @@ namespace
 
                 glyph.letter = static_cast<decltype(Glyph::letter)>(REQUIRED_GLYPH_START + glyphIndex);
                 glyph.x0 = static_cast<decltype(Glyph::x0)>(bakedCharData.xoff);
-                glyph.y0 = static_cast<decltype(Glyph::y0)>(bakedCharData.yoff);
+                glyph.y0 = static_cast<decltype(Glyph::y0)>(bakedCharData.yoff + yOffset);
                 glyph.dx = static_cast<decltype(Glyph::dx)>(bakedCharData.xadvance);
                 glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(bakedCharData.x1 - bakedCharData.x0);
                 glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(bakedCharData.y1 - bakedCharData.y0);

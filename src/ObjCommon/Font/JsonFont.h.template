@@ -138,6 +138,7 @@ namespace GAME
     public:
         std::string file;
         std::optional<unsigned> fontSize;
+        std::optional<int> yOffset;
 #ifdef FEATURE_T6
         std::optional<bool> isScalingAllowed;
 #endif
@@ -149,6 +150,7 @@ namespace GAME
         JsonFileFont,
         file,
         fontSize,
+        yOffset,
 #ifdef FEATURE_T6
         isScalingAllowed,
 #endif
