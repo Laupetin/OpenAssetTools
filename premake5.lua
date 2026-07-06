@@ -103,6 +103,7 @@ include "thirdparty/salsa20.lua"
 include "thirdparty/stb.lua"
 include "thirdparty/webwindowed.lua"
 include "thirdparty/zlib.lua"
+include "thirdparty/antlr4.lua"
 
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
@@ -118,6 +119,7 @@ group "ThirdParty"
     salsa20:project()
     stb:project()
     zlib:project()
+    antlr4:project()
     
     if _OPTIONS["modman"] then
         webwindowed:project()
