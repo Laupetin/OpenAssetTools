@@ -31,6 +31,7 @@
 #include JSON_HEADER
 #include "Image/DdsWriter.h"
 #include "Image/Texture.h"
+#include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
@@ -48,41 +49,115 @@ namespace
     constexpr auto REQUIRED_GLYPH_START = 0x20;
     constexpr auto REQUIRED_GLYPH_END_INCLUSIVE = 0x7F;
     constexpr unsigned REQUIRED_GLYPH_COUNT = REQUIRED_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
-    
+
     constexpr unsigned DEFAULT_FONT_SIZE = 20;
     constexpr unsigned DEFAULT_Y_OFFSET = 0;
-    constexpr unsigned DEFAULT_TEXTURE_SIZE = 256;
-    constexpr unsigned TEXTURE_SIZE_STEP = 16;
-    
+    constexpr unsigned DEFAULT_TEXTURE_WIDTH = 256;
+
     void PrintError(const Font_s& font, const std::string& message)
     {
         con::error("Cannot compile font \"{}\": {}", font.fontName, message);
     }
 
-    std::unique_ptr<image::Texture> BakeTexture(const unsigned char* fontData, const unsigned fontSize, stbtt_bakedchar (&cdata)[96])
+    unsigned GetBakedTextureHeight(const stbtt_fontinfo& f, const float scale, const std::vector<Glyph>& glyphs, const unsigned textureWidth)
     {
-        auto currentTextureSize = DEFAULT_TEXTURE_SIZE;
+        auto x = 1u;
+        auto y = 1u;
+        auto bottomY = 1u;
 
-        while (true)
+        for (const auto& glyph : glyphs)
         {
-            auto texture = image::Texture::CreateForType(image::TextureType::T_2D, &image::format::A8, currentTextureSize, currentTextureSize, 1, false);
-            texture->Allocate();
-            auto* buf = texture->GetBufferForMipLevel(0);
+            const auto fontGlyphIndex = stbtt_FindGlyphIndex(&f, glyph.letter);
 
-            const auto result = stbtt_BakeFontBitmap(fontData,
-                                                     0,
-                                                     static_cast<float>(fontSize),
-                                                     buf,
-                                                     static_cast<int>(currentTextureSize),
-                                                     static_cast<int>(currentTextureSize),
-                                                     REQUIRED_GLYPH_START,
-                                                     REQUIRED_GLYPH_COUNT,
-                                                     cdata);
-            if (result > 0)
-                return texture;
+            int advance, lsb;
+            stbtt_GetGlyphHMetrics(&f, fontGlyphIndex, &advance, &lsb);
 
-            currentTextureSize += TEXTURE_SIZE_STEP;
+            int x0, y0, x1, y1;
+            stbtt_GetGlyphBitmapBox(&f, fontGlyphIndex, scale, scale, &x0, &y0, &x1, &y1);
+
+            const auto glyphWidth = static_cast<unsigned>(x1 - x0);
+            const auto glyphHeight = static_cast<unsigned>(y1 - y0);
+            if (x + glyphWidth + 1u >= textureWidth)
+            {
+                // advance to next row
+                x = 1u;
+                y = bottomY;
+            }
+
+            assert(x + glyphWidth < textureWidth);
+
+            x = x + glyphWidth + 1u;
+            bottomY = std::max(y + glyphHeight + 1u, bottomY);
         }
+
+        return utils::Align<unsigned>(bottomY + 1u, 16u);
+    }
+
+    std::unique_ptr<image::Texture> BakeTexture(const unsigned char* fontData, const unsigned fontSize, const int yOffset, std::vector<Glyph>& glyphs)
+    {
+        stbtt_fontinfo f;
+        if (!stbtt_InitFont(&f, fontData, 0))
+            return nullptr;
+
+        const auto scale = stbtt_ScaleForPixelHeight(&f, static_cast<float>(fontSize));
+
+        constexpr auto textureWidth = DEFAULT_TEXTURE_WIDTH;
+        const auto textureHeight = GetBakedTextureHeight(f, scale, glyphs, textureWidth);
+
+        auto texture = image::Texture::CreateForType(image::TextureType::T_2D, &image::format::A8, textureWidth, textureHeight, 1, false);
+        texture->Allocate();
+        auto* buf = texture->GetBufferForMipLevel(0);
+
+        f.userdata = nullptr;
+        memset(buf, 0, textureWidth * textureHeight);
+
+        auto x = 1u;
+        auto y = 1u;
+        auto bottomY = 1u;
+        for (auto& glyph : glyphs)
+        {
+            const auto fontGlyphIndex = stbtt_FindGlyphIndex(&f, glyph.letter);
+
+            int advance, lsb;
+            stbtt_GetGlyphHMetrics(&f, fontGlyphIndex, &advance, &lsb);
+
+            int x0, y0, x1, y1;
+            stbtt_GetGlyphBitmapBox(&f, fontGlyphIndex, scale, scale, &x0, &y0, &x1, &y1);
+
+            const auto glyphWidth = static_cast<unsigned>(x1 - x0);
+            const auto glyphHeight = static_cast<unsigned>(y1 - y0);
+            if (x + glyphWidth + 1 >= textureWidth)
+            {
+                // advance to next row
+                x = 1;
+                y = bottomY;
+            }
+
+            // check if it fits vertically AFTER potentially moving to next row
+            assert(y + glyphHeight + 1u < textureHeight);
+            if (y + glyphHeight + 1u >= textureHeight)
+                return nullptr;
+
+            assert(x + glyphWidth < textureWidth);
+            assert(y + glyphHeight < textureHeight);
+            stbtt_MakeGlyphBitmap(
+                &f, buf + x + y * textureWidth, static_cast<int>(glyphWidth), static_cast<int>(glyphHeight), textureWidth, scale, scale, fontGlyphIndex);
+
+            glyph.x0 = static_cast<decltype(Glyph::x0)>(x0);
+            glyph.y0 = static_cast<decltype(Glyph::y0)>(y0 + yOffset);
+            glyph.dx = static_cast<decltype(Glyph::dx)>(std::round(scale * static_cast<float>(advance)));
+            glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(glyphWidth);
+            glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(glyphHeight);
+            glyph.s0 = static_cast<float>(x) / static_cast<float>(textureWidth);
+            glyph.t0 = static_cast<float>(y) / static_cast<float>(textureHeight);
+            glyph.s1 = static_cast<float>(x + glyphWidth) / static_cast<float>(textureWidth);
+            glyph.t1 = static_cast<float>(y + glyphHeight) / static_cast<float>(textureHeight);
+
+            x = x + glyphWidth + 1u;
+            bottomY = std::max(y + glyphHeight + 1u, bottomY);
+        }
+
+        return texture;
     }
     
     XAssetInfo<GfxImage>* CreateFontImage(const std::string& name, const image::Texture& texture, MemoryManager& memory, AssetCreationContext& context)
@@ -293,29 +368,20 @@ namespace
             std::vector<unsigned char> fontData(static_cast<size_t>(fontFile.m_length));
             fontFile.m_stream->read(reinterpret_cast<char*>(fontData.data()), fontFile.m_length);
 
-            stbtt_bakedchar cdata[REQUIRED_GLYPH_COUNT];
-            const auto texture = BakeTexture(fontData.data(), fontSize, cdata);
-            const auto textureWidth = texture->GetWidth();
-            const auto textureHeight = texture->GetHeight();
-
-            font.glyphCount = std::extent_v<decltype(cdata)>;
-            font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
-            for (auto glyphIndex = 0; glyphIndex < font.glyphCount; ++glyphIndex)
+            std::vector<Glyph> glyphs;
+            glyphs.reserve(REQUIRED_GLYPH_COUNT);
+            for (auto letter = REQUIRED_GLYPH_START; letter <= REQUIRED_GLYPH_END_INCLUSIVE; letter++)
             {
-                auto& glyph = font.glyphs[glyphIndex];
-                const auto& bakedCharData = cdata[glyphIndex];
-
-                glyph.letter = static_cast<decltype(Glyph::letter)>(REQUIRED_GLYPH_START + glyphIndex);
-                glyph.x0 = static_cast<decltype(Glyph::x0)>(bakedCharData.xoff);
-                glyph.y0 = static_cast<decltype(Glyph::y0)>(bakedCharData.yoff + yOffset);
-                glyph.dx = static_cast<decltype(Glyph::dx)>(bakedCharData.xadvance);
-                glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(bakedCharData.x1 - bakedCharData.x0);
-                glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(bakedCharData.y1 - bakedCharData.y0);
-                glyph.s0 = static_cast<float>(bakedCharData.x0) / static_cast<float>(textureWidth);
-                glyph.t0 = static_cast<float>(bakedCharData.y0) / static_cast<float>(textureHeight);
-                glyph.s1 = static_cast<float>(bakedCharData.x1) / static_cast<float>(textureWidth);
-                glyph.t1 = static_cast<float>(bakedCharData.y1) / static_cast<float>(textureHeight);
+                Glyph glyph{};
+                glyph.letter = static_cast<decltype(Glyph::letter)>(letter);
+                glyphs.emplace_back(glyph);
             }
+            
+            const auto texture = BakeTexture(fontData.data(), fontSize, yOffset, glyphs);
+
+            font.glyphCount = static_cast<decltype(Glyph::letter)>(glyphs.size());
+            font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
+            std::memcpy(font.glyphs, glyphs.data(), font.glyphCount * sizeof(Glyph));
             
 #ifdef FEATURE_T6
             // The game is bugged here and accesses the kerning pairs even when kerningPairsCount is set to 0.
