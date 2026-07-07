@@ -3,18 +3,23 @@
 #filename "Game/" + GAME + "/Font/FontCompiler" + GAME + ".cpp"
 
 #if GAME == "IW3"
+#define FEATURE_IW3
 #define GAME_LOWER "iw3"
 #elif GAME == "IW4"
+#define FEATURE_IW4
 #define GAME_LOWER "iw4"
 #elif GAME == "IW5"
+#define FEATURE_IW5
 #define GAME_LOWER "iw5"
 #elif GAME == "T4"
+#define FEATURE_T4
 #define GAME_LOWER "t4"
 #elif GAME == "T5"
+#define FEATURE_T5
 #define GAME_LOWER "t5"
 #elif GAME == "T6"
-#define GAME_LOWER "t6"
 #define FEATURE_T6
+#define GAME_LOWER "t6"
 #endif
 
 // This file was templated.
@@ -194,7 +199,11 @@ namespace
         image->texture.loadDef = loadDef;
         
         loadDef->resourceSize = static_cast<decltype(GfxImageLoadDef::resourceSize)>(textureSize);
+#ifdef FEATURE_T6
         loadDef->format = texture.GetFormat()->GetDxgiFormat();
+#else
+        loadDef->format = texture.GetFormat()->GetD3DFormat();
+#endif
         loadDef->levelCount = 1;
         std::memcpy(loadDef->data, texture.GetBufferForMipLevel(0), textureSize);
         
@@ -205,6 +214,9 @@ namespace
     {
         material->cameraRegion = CAMERA_REGION_NONE;
         
+#ifdef defined(FEATURE_IW4) || defined(FEATURE_IW5)
+        material->stateFlags = 3;
+#endif
 #ifdef FEATURE_T6
         material->info.contents = 1;
 #endif
@@ -239,10 +251,18 @@ namespace
         material->textureCount = 1;
         material->textureTable = memory.Alloc<MaterialTextureDef>(1);
         auto& textureDef = material->textureTable[0];
+
+#if defined(FEATURE_T6)
         // Yes, there is a typo. That's what the game does.
         textureDef.nameHash = Common::R_HashString("FontTextutre");
         textureDef.nameStart = 'F';
         textureDef.nameEnd = 'e';
+#else
+        textureDef.nameHash = Common::R_HashString("colorMap");
+        textureDef.nameStart = 'c';
+        textureDef.nameEnd = 'p';
+#endif
+        
         textureDef.samplerState.filter = TEXTURE_FILTER_LINEAR;
         textureDef.samplerState.mipMap = SAMPLER_MIPMAP_ENUM_DISABLED;
         textureDef.semantic = TS_2D;
@@ -264,9 +284,23 @@ namespace
         
         CreateFontMaterialShared(material, registration, image, memory, context);
         
+#if defined(FEATURE_IW4)
+        material->info.sortKey = 47;
+#elif defined(FEATURE_IW5)
+        material->info.sortKey = 54;
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5)
+        material->info.sortKey = 43;
+#elif defined(FEATURE_T6)
         material->info.sortKey = 40;
+#endif
         
-        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>("sw4_2d_alphafont_3q76z816");
+        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>(
+#if defined(FEATURE_T6)
+            "sw4_2d_alphafont_3q76z816"
+#else
+            "2d"
+#endif
+        );
         if (!techsetAsset)
             return nullptr;
         material->techniqueSet = techsetAsset->Asset();
@@ -274,6 +308,9 @@ namespace
         
         auto& stateBits = material->stateBitsTable[0].loadBits.structured;
         stateBits.dstBlendRgb = GFXS_BLEND_INVSRCALPHA;
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+        stateBits.dstBlendAlpha = GFXS_BLEND_ZERO;
+#endif
         
         return context.AddAsset<AssetMaterial>(std::move(registration));
     }
@@ -286,9 +323,21 @@ namespace
         
         CreateFontMaterialShared(material, registration, image, memory, context);
         
+#if defined(FEATURE_IW4)
+        material->info.sortKey = 34;
+#elif defined(FEATURE_IW5)
+        material->info.sortKey = 54;
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         material->info.sortKey = 4;
+#endif
         
-        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>("sw4_2d_alphafont_3340wf8q");
+        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>(
+#if defined(FEATURE_T6)
+            "sw4_2d_alphafont_3340wf8q"
+#else
+            "2d"
+#endif
+        );
         if (!techsetAsset)
             return nullptr;
         material->techniqueSet = techsetAsset->Asset();
