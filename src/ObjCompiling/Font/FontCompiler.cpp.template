@@ -86,8 +86,11 @@ namespace
 
             assert(x + glyphWidth < textureWidth);
 
-            x = x + glyphWidth + 1u;
-            bottomY = std::max(y + glyphHeight + 1u, bottomY);
+            if (fontGlyphIndex > 0)
+            {
+                x = x + glyphWidth + 1u;
+                bottomY = std::max(y + glyphHeight + 1u, bottomY);
+            }
         }
 
         return utils::Align<unsigned>(bottomY + 1u, 16u);
@@ -133,28 +136,44 @@ namespace
                 y = bottomY;
             }
 
-            // check if it fits vertically AFTER potentially moving to next row
-            assert(y + glyphHeight + 1u < textureHeight);
-            if (y + glyphHeight + 1u >= textureHeight)
-                return nullptr;
-
-            assert(x + glyphWidth < textureWidth);
-            assert(y + glyphHeight < textureHeight);
-            stbtt_MakeGlyphBitmap(
-                &f, buf + x + y * textureWidth, static_cast<int>(glyphWidth), static_cast<int>(glyphHeight), textureWidth, scale, scale, fontGlyphIndex);
-
             glyph.x0 = static_cast<decltype(Glyph::x0)>(x0);
             glyph.y0 = static_cast<decltype(Glyph::y0)>(y0 + yOffset);
             glyph.dx = static_cast<decltype(Glyph::dx)>(std::round(scale * static_cast<float>(advance)));
-            glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(glyphWidth);
-            glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(glyphHeight);
-            glyph.s0 = static_cast<float>(x) / static_cast<float>(textureWidth);
-            glyph.t0 = static_cast<float>(y) / static_cast<float>(textureHeight);
-            glyph.s1 = static_cast<float>(x + glyphWidth) / static_cast<float>(textureWidth);
-            glyph.t1 = static_cast<float>(y + glyphHeight) / static_cast<float>(textureHeight);
+            
+            // Glyph index 0 means no glyph found in font
+            if (fontGlyphIndex > 0)
+            {
+                // check if it fits vertically AFTER potentially moving to next row
+                assert(y + glyphHeight + 1u < textureHeight);
+                if (y + glyphHeight + 1u >= textureHeight)
+                    return nullptr;
+    
+                assert(x + glyphWidth < textureWidth);
+                assert(y + glyphHeight < textureHeight);
+            
+                stbtt_MakeGlyphBitmap(
+                    &f, buf + x + y * textureWidth, static_cast<int>(glyphWidth), static_cast<int>(glyphHeight), textureWidth, scale, scale, fontGlyphIndex);
 
-            x = x + glyphWidth + 1u;
-            bottomY = std::max(y + glyphHeight + 1u, bottomY);
+                glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(glyphWidth);
+                glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(glyphHeight);
+                glyph.s0 = static_cast<float>(x) / static_cast<float>(textureWidth);
+                glyph.t0 = static_cast<float>(y) / static_cast<float>(textureHeight);
+                glyph.s1 = static_cast<float>(x + glyphWidth) / static_cast<float>(textureWidth);
+                glyph.t1 = static_cast<float>(y + glyphHeight) / static_cast<float>(textureHeight);
+
+                x = x + glyphWidth + 1u;
+                bottomY = std::max(y + glyphHeight + 1u, bottomY);
+            }
+            else
+            {
+                // If the font does not have the glyph we set it to empty space
+                glyph.pixelWidth = 0;
+                glyph.pixelHeight = 0;
+                glyph.s0 = 1.0f / static_cast<float>(textureWidth);
+                glyph.t0 = 1.0f / static_cast<float>(textureHeight);
+                glyph.s1 = glyph.s0;
+                glyph.t1 = glyph.t0;
+            }
         }
 
         return texture;
@@ -378,6 +397,11 @@ namespace
             }
             
             const auto texture = BakeTexture(fontData.data(), fontSize, yOffset, glyphs);
+            if (!texture)
+            {
+                PrintError(font, std::format("Failed to bake font texture: {}", jFont.file));
+                return false;
+            }
 
             font.glyphCount = static_cast<decltype(Glyph::letter)>(glyphs.size());
             font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
