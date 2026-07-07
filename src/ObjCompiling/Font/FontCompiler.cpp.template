@@ -29,7 +29,6 @@
 #include "Font/FontCommon.h"
 #set JSON_HEADER "\"Game/" + GAME + "/Font/JsonFont" + GAME + ".h\""
 #include JSON_HEADER
-#include "Image/DdsWriter.h"
 #include "Image/Texture.h"
 #include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
@@ -433,17 +432,6 @@ namespace
                 return false;
             font.glowMaterial = fontGlowMaterial->Asset();
             registration.AddDependency(fontGlowMaterial);
-
-            {
-                auto convertedTexture = image::Texture::CreateForType(image::TextureType::T_2D, &image::format::R8, texture->GetWidth(), texture->GetHeight(), texture->GetDepth(), false);
-                convertedTexture->Allocate();
-                std::memcpy(convertedTexture->GetBufferForMipLevel(0, 0), texture->GetBufferForMipLevel(0, 0), convertedTexture->GetFormat()->GetSizeOfMipLevel(0, texture->GetWidth(), texture->GetHeight(), texture->GetDepth()));
-                
-                image::DdsWriter writer;
-                std::ofstream foo("foo.dds", std::ios::binary);
-                writer.DumpImage(foo, convertedTexture.get());
-                foo.close();
-            }
 
             return true;
         }
