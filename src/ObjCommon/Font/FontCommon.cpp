@@ -13,6 +13,7 @@ namespace font
         return path.string();
     }
 
+    // ISO-8859-1
     bool IsPrintableLetter(const unsigned letter)
     {
         // Control characters
@@ -23,25 +24,17 @@ namespace font
         if (letter < 0x7F)
             return true;
 
+        // 0xA0 is not a control character but NBSP that just looks like a space
+        if (letter < 0xA1)
+            return false;
+
         // There are characters after this point that are printable as well
         // But they don't seem to play a role in cod fonts
         if (letter > 0xFF)
             return false;
 
-        switch (letter)
-        {
-        case 0x7F:
-        case 0x81:
-        case 0x8D:
-        case 0x8F:
-        case 0x90:
-        case 0x9D:
-        case 0xA0:
-        case 0xAD:
-            return false;
-        default:
-            return true;
-        }
+        // 0xAD is soft hyphen
+        return letter != 0xAD;
     }
 
     std::string LetterToString(const unsigned letter)

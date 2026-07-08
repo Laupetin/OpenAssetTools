@@ -1,5 +1,6 @@
 #include "ObjCompilerT4.h"
 
+#include "Game/T4/Font/FontCompilerT4.h"
 #include "Game/T4/T4.h"
 #include "Image/ImageIwdPostProcessor.h"
 
@@ -9,7 +10,12 @@ using namespace T4;
 
 namespace
 {
-    void ConfigureCompilers(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) {}
+    void ConfigureCompilers(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+    {
+        auto& memory = zone.Memory();
+
+        collection.AddAssetCreator(font::CreateCompilerT4(memory, searchPath));
+    }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
                                  Zone& zone,

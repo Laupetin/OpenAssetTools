@@ -22,3 +22,6 @@
 [submodule "thirdparty/webwindowed"]
 	path = thirdparty/webwindowed
 	url = https://github.com/Laupetin/webwindowed.git
+[submodule "thirdparty/stb"]
+	path = thirdparty/stb
+	url = https://github.com/nothings/stb.git
