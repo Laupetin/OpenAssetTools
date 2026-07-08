@@ -100,7 +100,7 @@ namespace
         return utils::Align<unsigned>(bottomY + 1u, 16u);
     }
 
-    std::unique_ptr<image::Texture> BakeTexture(const unsigned char* fontData, const unsigned fontSize, const int yOffset, std::vector<Glyph>& glyphs)
+    std::unique_ptr<image::Texture> BakeAlphaTexture(const unsigned char* fontData, const unsigned fontSize, const int yOffset, std::vector<Glyph>& glyphs)
     {
         stbtt_fontinfo f;
         if (!stbtt_InitFont(&f, fontData, 0))
@@ -444,12 +444,20 @@ namespace
                 glyphs.emplace_back(glyph);
             }
             
-            const auto texture = BakeTexture(fontData.data(), fontSize, yOffset, glyphs);
+            auto texture = BakeAlphaTexture(fontData.data(), fontSize, yOffset, glyphs);
             if (!texture)
             {
-                PrintError(font, std::format("Failed to bake font texture: {}", jFont.file));
+                PrintError(font, std::format("Failed to bake font alpha texture: {}", jFont.file));
                 return false;
             }
+            
+#ifndef FEATURE_T6
+            {
+                image::TextureConverter converter(texture.get(), &image::format::B8_G8_R8_A8);
+                converter.SetColorFill(true, true, true);
+                texture = converter.Convert();
+            }
+#endif
 
             font.glyphCount = static_cast<decltype(Glyph::letter)>(glyphs.size());
             font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
