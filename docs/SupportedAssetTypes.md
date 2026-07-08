@@ -134,7 +134,7 @@ using `Linker`):
 | XModel               | ✅               | ❌               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ❌               | ❌               |                                                                              |
 | MaterialTechniqueSet | ❌               | ❌               |                                                                              |
-| GfxImage             | ✅               | ❌               | A few special image encodings are not yet supported.                         |
+| GfxImage             | ✅               | ✅               | A few special image encodings are not yet supported.                         |
 | snd_alias_list_t     | ❌               | ❌               |                                                                              |
 | SndDriverGlobals     | ❌               | ❌               |                                                                              |
 | LoadedSound          | ✅               | ❌               |                                                                              |

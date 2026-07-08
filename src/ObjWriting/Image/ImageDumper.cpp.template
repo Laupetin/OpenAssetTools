@@ -10,10 +10,6 @@
 #define FEATURE_IW3
 #define DX9
 #define IWI6
-#elif GAME == "T4"
-#define FEATURE_T4
-#define DX9
-#define IWI6
 #elif GAME == "IW4"
 #define FEATURE_IW4
 #define DX9
@@ -22,6 +18,10 @@
 #define FEATURE_IW5
 #define DX9
 #define IWI8
+#elif GAME == "T4"
+#define FEATURE_T4
+#define DX9
+#define IWI6
 #elif GAME == "T5"
 #define FEATURE_T5
 #define DX9
