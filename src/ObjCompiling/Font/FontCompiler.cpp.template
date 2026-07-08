@@ -59,8 +59,8 @@ namespace fs = std::filesystem;
 namespace
 {
     constexpr auto REQUIRED_GLYPH_START = 0x20;
-    constexpr auto REQUIRED_GLYPH_END_INCLUSIVE = 0x7F;
-    constexpr unsigned REQUIRED_GLYPH_COUNT = REQUIRED_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
+    constexpr auto OPTIONAL_GLYPH_END_INCLUSIVE = 0xFF;
+    constexpr unsigned REQUIRED_PLUS_OPTIONAL_GLYPH_COUNT = OPTIONAL_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
 
     constexpr unsigned DEFAULT_FONT_SIZE = 20;
     constexpr unsigned DEFAULT_Y_OFFSET = 0;
@@ -452,8 +452,8 @@ namespace
             fontFile.m_stream->read(reinterpret_cast<char*>(fontData.data()), fontFile.m_length);
 
             std::vector<Glyph> glyphs;
-            glyphs.reserve(REQUIRED_GLYPH_COUNT);
-            for (auto letter = REQUIRED_GLYPH_START; letter <= REQUIRED_GLYPH_END_INCLUSIVE; letter++)
+            glyphs.reserve(REQUIRED_PLUS_OPTIONAL_GLYPH_COUNT);
+            for (auto letter = REQUIRED_GLYPH_START; letter <= OPTIONAL_GLYPH_END_INCLUSIVE; letter++)
             {
                 Glyph glyph{};
                 glyph.letter = static_cast<decltype(Glyph::letter)>(letter);
