@@ -205,7 +205,13 @@ namespace
         const auto textureSize = texture.GetFormat()->GetSizeOfMipLevel(0, image->width, image->height, image->depth);
         auto* loadDef = static_cast<GfxImageLoadDef*>(memory.AllocRaw(offsetof(GfxImageLoadDef, data) + textureSize));
         image->texture.loadDef = loadDef;
-        
+
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+        loadDef->dimensions[0] = image->width;
+        loadDef->dimensions[1] = image->height;
+        loadDef->dimensions[2] = image->depth;
+#endif
+
         loadDef->resourceSize = static_cast<decltype(GfxImageLoadDef::resourceSize)>(textureSize);
 #ifdef FEATURE_T6
         loadDef->format = texture.GetFormat()->GetDxgiFormat();
