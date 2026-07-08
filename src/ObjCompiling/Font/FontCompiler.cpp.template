@@ -4,21 +4,27 @@
 
 #if GAME == "IW3"
 #define FEATURE_IW3
+#define IWI_NS iwi6
 #define GAME_LOWER "iw3"
 #elif GAME == "IW4"
 #define FEATURE_IW4
+#define IWI_NS iwi8
 #define GAME_LOWER "iw4"
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define IWI_NS iwi8
 #define GAME_LOWER "iw5"
 #elif GAME == "T4"
 #define FEATURE_T4
+#define IWI_NS iwi6
 #define GAME_LOWER "t4"
 #elif GAME == "T5"
 #define FEATURE_T5
+#define IWI_NS iwi13
 #define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
+#define IWI_NS iwi27
 #define GAME_LOWER "t6"
 #endif
 
@@ -34,7 +40,9 @@
 #include "Font/FontCommon.h"
 #set JSON_HEADER "\"Game/" + GAME + "/Font/JsonFont" + GAME + ".h\""
 #include JSON_HEADER
+#include "Image/IwiTypes.h"
 #include "Image/Texture.h"
+#include "Image/TextureConverter.h"
 #include "Utils/Alignment.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
@@ -206,6 +214,8 @@ namespace
 #endif
         loadDef->levelCount = 1;
         std::memcpy(loadDef->data, texture.GetBufferForMipLevel(0), textureSize);
+        
+        loadDef->flags |= image::IWI_NS::IMG_FLAG_NOMIPMAPS;
         
         return context.AddAsset<AssetImage>(name, image);
     }
