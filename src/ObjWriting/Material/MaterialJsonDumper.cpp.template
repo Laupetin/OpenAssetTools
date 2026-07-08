@@ -157,7 +157,7 @@ namespace
             }
 
             jTextureDef.semantic = static_cast<TextureSemantic>(textureDef.semantic);
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             jTextureDef.isMatureContent = textureDef.isMatureContent;
 #endif
 
@@ -322,7 +322,7 @@ namespace
             jMaterial.textureAtlas->columns = material.info.textureAtlasColumnCount;
 
             jMaterial.surfaceTypeBits = material.info.surfaceTypeBits;
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             jMaterial.layeredSurfaceTypes = material.info.layeredSurfaceTypes;
 #endif
 #if defined(FEATURE_T6)

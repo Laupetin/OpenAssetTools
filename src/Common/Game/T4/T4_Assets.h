@@ -1046,6 +1046,7 @@ namespace T4
         unsigned char textureAtlasColumnCount;
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
+        unsigned int layeredSurfaceTypes;
         uint16_t hashIndex;
     };
 
@@ -1074,7 +1075,7 @@ namespace T4
     struct Material
     {
         MaterialInfo info;
-        char stateBitsEntry[67];
+        char stateBitsEntry[59];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
@@ -1479,27 +1480,34 @@ namespace T4
         TECHNIQUE_LIT_OMNI_FADE_CHARRED = 0x21,
         TECHNIQUE_LIT_OMNI_SHADOW_CHARRED = 0x22,
         TECHNIQUE_LIT_OMNI_SHADOW_FADE_CHARRED = 0x23,
+        TECHNIQUE_LIT_INSTANCED = 0x24,
+        TECHNIQUE_LIT_INSTANCED_SUN = 0x25,
+        TECHNIQUE_LIT_INSTANCED_SUN_SHADOW = 0x26,
+        TECHNIQUE_LIT_INSTANCED_SPOT = 0x27,
+        TECHNIQUE_LIT_INSTANCED_SPOT_SHADOW = 0x28,
+        TECHNIQUE_LIT_INSTANCED_OMNI = 0x29,
+        TECHNIQUE_LIT_INSTANCED_OMNI_SHADOW = 0x2A,
 
-        TECHNIQUE_LIT_END = 0x24,
+        TECHNIQUE_LIT_END = 0x2B,
 
-        TECHNIQUE_LIGHT_SPOT = 0x24,
-        TECHNIQUE_LIGHT_OMNI = 0x25,
-        TECHNIQUE_LIGHT_SPOT_SHADOW = 0x26,
-        TECHNIQUE_LIGHT_SPOT_CHARRED = 0x27,
-        TECHNIQUE_LIGHT_OMNI_CHARRED = 0x28,
-        TECHNIQUE_LIGHT_SPOT_SHADOW_CHARRED = 0x29,
-        TECHNIQUE_FAKELIGHT_NORMAL = 0x2A,
-        TECHNIQUE_FAKELIGHT_VIEW = 0x2B,
-        TECHNIQUE_SUNLIGHT_PREVIEW = 0x2C,
-        TECHNIQUE_CASE_TEXTURE = 0x2D,
-        TECHNIQUE_WIREFRAME_SOLID = 0x2E,
-        TECHNIQUE_WIREFRAME_SHADED = 0x2F,
-        TECHNIQUE_SHADOWCOOKIE_CASTER = 0x30,
-        TECHNIQUE_SHADOWCOOKIE_RECEIVER = 0x31,
-        TECHNIQUE_DEBUG_BUMPMAP = 0x32,
-        TECHNIQUE_COUNT = 0x33,
-        TECHNIQUE_TOTAL_COUNT = 0x34,
-        TECHNIQUE_NONE = 0x35,
+        TECHNIQUE_LIGHT_SPOT = 0x2B,
+        TECHNIQUE_LIGHT_OMNI = 0x2C,
+        TECHNIQUE_LIGHT_SPOT_SHADOW = 0x2D,
+        TECHNIQUE_LIGHT_SPOT_CHARRED = 0x2E,
+        TECHNIQUE_LIGHT_OMNI_CHARRED = 0x2F,
+        TECHNIQUE_LIGHT_SPOT_SHADOW_CHARRED = 0x30,
+        TECHNIQUE_FAKELIGHT_NORMAL = 0x31,
+        TECHNIQUE_FAKELIGHT_VIEW = 0x32,
+        TECHNIQUE_SUNLIGHT_PREVIEW = 0x33,
+        TECHNIQUE_CASE_TEXTURE = 0x34,
+        TECHNIQUE_WIREFRAME_SOLID = 0x35,
+        TECHNIQUE_WIREFRAME_SHADED = 0x36,
+        TECHNIQUE_SHADOWCOOKIE_CASTER = 0x37,
+        TECHNIQUE_SHADOWCOOKIE_RECEIVER = 0x38,
+        TECHNIQUE_DEBUG_BUMPMAP = 0x39,
+        TECHNIQUE_DEBUG_BUMPMAP_INSTANCED = 0x3A,
+
+        TECHNIQUE_COUNT
     };
 
     enum MaterialWorldVertexFormat : unsigned char

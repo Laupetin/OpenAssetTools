@@ -211,7 +211,7 @@ namespace
             CreateSamplerStateFromJson(jTexture.samplerState, textureDef.samplerState);
 
             textureDef.semantic = jTexture.semantic;
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             textureDef.isMatureContent = jTexture.isMatureContent;
 #endif
 
@@ -423,7 +423,7 @@ namespace
             }
 
             material.info.surfaceTypeBits = jMaterial.surfaceTypeBits;
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             material.info.layeredSurfaceTypes = jMaterial.layeredSurfaceTypes;
 #endif
 #if defined(FEATURE_T6)

@@ -381,7 +381,7 @@ namespace GAME
         std::optional<std::string> nameStart;
         std::optional<std::string> nameEnd;
         TextureSemantic semantic;
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         bool isMatureContent;
 #endif
         JsonSamplerState samplerState;
@@ -405,7 +405,7 @@ namespace GAME
         }
 
         out["semantic"] = in.semantic;
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         out["isMatureContent"] = in.isMatureContent;
 #endif
         out["samplerState"] = in.samplerState;
@@ -422,7 +422,7 @@ namespace GAME
         optional_from_json(in, "nameStart", out.nameStart);
         optional_from_json(in, "nameEnd", out.nameEnd);
         in.at("semantic").get_to(out.semantic);
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         in.at("isMatureContent").get_to(out.isMatureContent);
 #endif
         in.at("samplerState").get_to(out.samplerState);
@@ -464,7 +464,7 @@ namespace GAME
         {MTL_GAMEFLAG_40,           "40"          },
 #endif
         {MTL_GAMEFLAG_80,           "80"          },
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         {MTL_GAMEFLAG_100,          "100"         },
         {MTL_GAMEFLAG_200,          "200"         },
 #if defined(FEATURE_T6)
@@ -509,7 +509,7 @@ namespace GAME
     class JsonMaterial
     {
     public:
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         unsigned layeredSurfaceTypes;
 #if defined(FEATURE_T6)
         unsigned surfaceFlags;
