@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h"
 
@@ -10,6 +10,9 @@
 #define HAS_WATER
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define HAS_WATER
+#elif GAME == "T4"
+#define FEATURE_T4
 #define HAS_WATER
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -81,7 +84,7 @@ namespace GAME
         INVALID,
         DISABLED,
         GT0,
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
         LT128,
 #elif defined(FEATURE_T5)
         GE255,
@@ -93,7 +96,7 @@ namespace GAME
         {JsonAlphaTest::INVALID,  nullptr   },
         {JsonAlphaTest::DISABLED, "disabled"},
         {JsonAlphaTest::GT0,      "gt0"     },
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
         {JsonAlphaTest::LT128,    "lt128"   },
 #elif defined(FEATURE_T5)
         {JsonAlphaTest::GE255,    "ge255"   },
@@ -328,7 +331,7 @@ namespace GAME
         {TS_2D,               "2D"             },
         {TS_FUNCTION,         "function"       },
         {TS_COLOR_MAP,        "colorMap"       },
-#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         {TS_UNUSED_1,         "unused1"        },
 #else
         {TS_DETAIL_MAP,       "detailMap"      },
@@ -343,7 +346,7 @@ namespace GAME
         {TS_OCCLUSION_MAP,    "occlusionMap"   },
 #endif
         {TS_UNUSED_6,         "unused6"        },
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4) || defined(FEATURE_T5)
         {TS_WATER_MAP,        "waterMap"       },
 #endif
 #ifdef FEATURE_IW5
@@ -454,7 +457,7 @@ namespace GAME
         {MTL_GAMEFLAG_8,            "8"           },
         {MTL_GAMEFLAG_10,           "10"          },
         {MTL_GAMEFLAG_20,           "20"          },
-#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         {MTL_GAMEFLAG_CASTS_SHADOW, "CASTS_SHADOW"},
         {MTL_GAMEFLAG_CASTS_SHADOW, "40"          },
 #else
@@ -475,7 +478,7 @@ namespace GAME
     });
 
     NLOHMANN_JSON_SERIALIZE_ENUM(GfxCameraRegionType, {
-#if defined(FEATURE_IW3) || defined(FEATURE_T5)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5)
         {CAMERA_REGION_LIT,              "lit"           },
         {CAMERA_REGION_DECAL,            "decal"         },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
