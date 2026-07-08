@@ -484,9 +484,6 @@ namespace GAME
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
         {CAMERA_REGION_DEPTH_HACK,       "depthHack"     },
-#ifdef FEATURE_IW5
-        {CAMERA_REGION_LIGHT_MAP_OPAQUE, "lightMapOpaque"},
-#endif
 #elif defined(FEATURE_T6)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
@@ -500,6 +497,10 @@ namespace GAME
         {CAMERA_REGION_SONAR,            "sonar"         },
 #endif
         {CAMERA_REGION_NONE,             "none"          },
+#ifdef FEATURE_IW5
+        // Backwards compatibility, it was accidentally added but this does not exist on PC
+        {CAMERA_REGION_NONE,             "lightMapOpaque"},
+#endif
     });
 
     class JsonMaterial
