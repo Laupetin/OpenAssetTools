@@ -1,0 +1,194 @@
+// =========================================
+// GfxWorld
+// =========================================
+use GfxWorld;
+set block XFILE_BLOCK_TEMP;
+set allocalign GfxWorld 4;
+set string name;
+set string baseName;
+set reusable planes;
+set count planes planeCount;
+set count nodes nodeCount;
+set count indices indexCount;
+set count surfaces surfaceCount;
+set count skyStartSurfs skySurfCount;
+set string skyBoxModel;
+set reusable sunLight;
+set count reflectionProbes reflectionProbeCount;
+set count cullGroups cullGroupCount;
+set count smodelDrawInsts smodelCount;
+set count smodelInsts smodelCount;
+set count cells cellCount;
+set count lightmaps lightmapCount;
+set count models modelCount;
+set count materialMemory materialMemoryCount;
+set block smodelVisData0 XFILE_BLOCK_RUNTIME;
+set count smodelVisData0 smodelCount;
+set block smodelVisData1 XFILE_BLOCK_RUNTIME;
+set count smodelVisData1 smodelCount;
+set block smodelVisData2 XFILE_BLOCK_RUNTIME;
+set count smodelVisData2 smodelCount;
+set block smodelVisData3 XFILE_BLOCK_RUNTIME;
+set count smodelVisData3 smodelCount;
+set block surfaceVisData0 XFILE_BLOCK_RUNTIME;
+set count surfaceVisData0 models::surfaceCount;
+set block surfaceVisData1 XFILE_BLOCK_RUNTIME;
+set count surfaceVisData1 models::surfaceCount;
+set block surfaceVisData2 XFILE_BLOCK_RUNTIME;
+set count surfaceVisData2 models::surfaceCount;
+set block surfaceVisData3 XFILE_BLOCK_RUNTIME;
+set count surfaceVisData3 models::surfaceCount;
+set block surfaceMaterials XFILE_BLOCK_RUNTIME;
+set count surfaceMaterials models::surfaceCount;
+set allocalign surfaceMaterials 4;
+set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME;
+set count surfaceCastsSunShadow (models::surfaceCount / 32) + 1;
+set block cellCasterBits XFILE_BLOCK_RUNTIME;
+set count cellCasterBits cellCount * ((cellCount + 31) / 32);
+set block cellHasSunLitSurfsBits XFILE_BLOCK_RUNTIME;
+set count cellHasSunLitSurfsBits (cellCount * 512) + 1;
+set block dynEntVisData0_0 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData0_0 dynEntDataSize0;
+set block dynEntVisData0_1 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData0_1 dynEntDataSize0;
+set block dynEntVisData0_2 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData0_2 dynEntDataSize0;
+set block dynEntVisData0_3 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData0_3 dynEntDataSize0;
+set block dynEntVisData1_0 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData1_0 dynEntDataSize1;
+set block dynEntVisData1_1 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData1_1 dynEntDataSize1;
+set block dynEntVisData1_2 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData1_2 dynEntDataSize1;
+set block dynEntVisData1_3 XFILE_BLOCK_RUNTIME;
+set count dynEntVisData1_3 dynEntDataSize1;
+set block dynEntCellBits0 XFILE_BLOCK_RUNTIME;
+set count dynEntCellBits0 (cellCount * dynEntDataSize0 / 8) + 1;
+set block dynEntCellBits1 XFILE_BLOCK_RUNTIME;
+set count dynEntCellBits1 (cellCount * dynEntDataSize1 / 8) + 1;
+set block dynEntSortList0 XFILE_BLOCK_RUNTIME;
+set count dynEntSortList0 dynEntDataSize0;
+set block dynEntSortList1 XFILE_BLOCK_RUNTIME;
+set count dynEntSortList1 dynEntDataSize1;
+set block sceneDynModel XFILE_BLOCK_RUNTIME;
+set count sceneDynModel sceneDynModelCount;
+set block sceneDynBrush XFILE_BLOCK_RUNTIME;
+set count sceneDynBrush sceneDynBrushCount;
+set block dynEntCellRefs XFILE_BLOCK_RUNTIME;
+set count dynEntCellRefs dynEntDataSize0;
+set block dynEntUnknown XFILE_BLOCK_RUNTIME;
+set count dynEntUnknown dynEntDataSize1;
+set count sortedSurfIndex models::surfaceCount;
+set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x1000;
+set block primaryLightDynEntShadowVis0 XFILE_BLOCK_RUNTIME;
+set count primaryLightDynEntShadowVis0 dynEntDataSize0 * (primaryLightCount - sunPrimaryLightIndex - 1);
+set block primaryLightDynEntShadowVis1 XFILE_BLOCK_RUNTIME;
+set count primaryLightDynEntShadowVis1 dynEntDataSize1 * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count shadowGeom primaryLightCount;
+set count lightRegion lightRegionCount;
+set allocalign lightRegion 4;
+reorder:
+    name
+    baseName
+    planes
+    nodes
+    indices
+    surfaces
+    skyStartSurfs
+    skyImage
+    skyBoxModel
+    sunLight
+    reflectionProbes
+    cullGroups
+    smodelDrawInsts
+    smodelInsts
+    cells
+    lightmaps
+    lightGrid
+    models
+    materialMemory
+    vd
+    vld
+    sun
+    outdoorImage
+    smodelVisData0
+    smodelVisData1
+    smodelVisData2
+    smodelVisData3
+    surfaceVisData0
+    surfaceVisData1
+    surfaceVisData2
+    surfaceVisData3
+    surfaceMaterials
+    surfaceCastsSunShadow
+    cellCasterBits
+    cellHasSunLitSurfsBits
+    dynEntVisData0_0
+    dynEntVisData1_0
+    dynEntVisData0_1
+    dynEntVisData1_1
+    dynEntVisData0_2
+    dynEntVisData1_2
+    dynEntVisData0_3
+    dynEntVisData1_3
+    dynEntCellBits0
+    dynEntCellBits1
+    dynEntSortList0
+    dynEntSortList1
+    sceneDynModel
+    sceneDynBrush
+    dynEntCellRefs
+    dynEntUnknown
+    primaryLightEntityShadowVis
+    primaryLightDynEntShadowVis0
+    primaryLightDynEntShadowVis1
+    sortedSurfIndex
+    shadowGeom
+    lightRegion
+    unknownMaterial;
+
+// GfxWorldVertexData
+use GfxWorldVertexData;
+set count vertices GfxWorld::vertexCount;
+set condition worldVb never;
+
+// GfxWorldVertexLayerData
+use GfxWorldVertexLayerData;
+set count data GfxWorld::vertexLayerDataSize;
+set condition layerVb never;
+
+// GfxCell
+use GfxCell;
+set count portals portalCount;
+set count cullGroups cullGroupCount;
+set count reflectionProbes reflectionProbeCount;
+
+// GfxAabbTree
+use GfxAabbTree;
+set reusable smodelIndexes;
+set count smodelIndexes smodelIndexCount;
+set count children childCount;
+
+// GfxAabbTreeChildren
+use GfxAabbTreeChildren;
+
+// GfxPortal
+use GfxPortal;
+set reusable cell;
+set count vertices vertexCount;
+
+// GfxLightGrid
+use GfxLightGrid;
+set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
+set count rawRowData rawRowDataSize;
+set allocalign entries 4;
+set count entries entryCount;
+set allocalign colors 4;
+set count colors colorCount;
+
+// GfxShadowGeometry
+use GfxShadowGeometry;
+set count sortedSurfIndex surfaceCount;
+set count smodelIndex smodelCount;

@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5, T6)
+#options GAME (IW3, IW4, IW5, QOS, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h"
 
@@ -16,6 +16,8 @@
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
+#elif GAME == "QOS"
+#define FEATURE_QOS
 #endif
 
 // This file was templated.
@@ -63,7 +65,7 @@ namespace GAME
         std::optional<std::string> physPreset;
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         std::optional<std::string> physCollmap;
-#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6) || defined(FEATURE_QOS)
         std::optional<std::string> physConstraints;
 #endif
 #if defined(FEATURE_T6)
@@ -82,7 +84,7 @@ namespace GAME
         physPreset,
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         physCollmap,
-#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#elif defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6) || defined(FEATURE_QOS)
         physConstraints,
 #endif
 #if defined(FEATURE_T6)

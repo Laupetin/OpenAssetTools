@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5, T6)
+#options GAME (IW3, IW4, IW5, QOS, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".cpp"
 
@@ -25,6 +25,9 @@
 #elif GAME == "T6"
 #define FEATURE_T6
 #define GAME_LOWER "t6"
+#elif GAME == "QOS"
+#define FEATURE_QOS
+#define GAME_LOWER "qos"
 #endif
 
 // This file was templated.
@@ -334,7 +337,7 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
-#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_QOS)
             // IW3 has some models that are missing 1 (a single) tri in its first lod.
             // It is not contained in any vert list or blend
             // I think this is a bug (?), so omit anyway.
@@ -398,7 +401,7 @@ namespace
             jXModel.physCollmap = AssetName(model.physCollmap->name);
 #endif
 
-#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6) || defined(FEATURE_QOS)
         if (model.physConstraints && model.physConstraints->name)
             jXModel.physConstraints = AssetName(model.physConstraints->name);
 #endif

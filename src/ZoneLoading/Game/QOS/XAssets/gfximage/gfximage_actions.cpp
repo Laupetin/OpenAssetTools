@@ -1,0 +1,24 @@
+#include "gfximage_actions.h"
+
+#include <cstring>
+
+using namespace QOS;
+
+Actions_GfxImage::Actions_GfxImage(Zone& zone)
+    : AssetLoadingActions(zone)
+{
+}
+
+void Actions_GfxImage::OnImageLoaded(GfxImage* image) const
+{
+    // QOS runtime image-memory fields are not identified yet.
+    (void)image;
+}
+
+void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const
+{
+    const size_t loadDefSize = offsetof(GfxImageLoadDef, data) + loadDef->resourceSize;
+
+    image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone.Memory().AllocRaw(loadDefSize));
+    memcpy(image->texture.loadDef, loadDef, loadDefSize);
+}

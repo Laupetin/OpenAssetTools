@@ -4,6 +4,7 @@
 #include "IW4/AutoSearchPathsIW4.h"
 #include "IW4/InfoString/InfoStringToStructConverter.h"
 #include "IW5/AutoSearchPathsIW5.h"
+#include "QOS/AutoSearchPathsQOS.h"
 #include "T4/AutoSearchPathsT4.h"
 #include "T5/AutoSearchPathsT5.h"
 #include "T6/AutoSearchPathsT6.h"
@@ -76,6 +77,7 @@ AutoSearchPaths* AutoSearchPaths::GetForGame(GameId gameId)
         new AutoSearchPathsIW3(),
         new AutoSearchPathsIW4(),
         new AutoSearchPathsIW5(),
+        new AutoSearchPathsQOS(),
         new AutoSearchPathsT4(),
         new AutoSearchPathsT5(),
         new AutoSearchPathsT6(),

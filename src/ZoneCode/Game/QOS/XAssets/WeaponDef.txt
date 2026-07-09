@@ -1,0 +1,48 @@
+// =========================================
+// WeaponDef
+// =========================================
+use WeaponDef;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set string displayName;
+set string overlayName;
+set string xanimNames;
+set assetref xanimNames AssetXAnim;
+set string modeName;
+set string unknownString196;
+set reusable bounceSound;
+set count bounceSound 30;
+set string unknownString616;
+set string unknownString620;
+set string unknownString652;
+set string unknownString660;
+set string unknownString680;
+set string unknownString992;
+set string unknownString1220;
+set string unknownString1300;
+set string unknownString1308;
+set string unknownStrings1380;
+set string aiVsAiAccuracyGraphName;
+set string aiVsPlayerAccuracyGraphName;
+set reusable aiVsAiAccuracyGraphKnots;
+set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
+set reusable aiVsPlayerAccuracyGraphKnots;
+set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set reusable originalAiVsAiAccuracyGraphKnots;
+set count originalAiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
+set reusable originalAiVsPlayerAccuracyGraphKnots;
+set count originalAiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set string unknownString2192;
+set string unknownString2196;
+set string unknownString2216;
+set string unknownString2332;
+set string unknownString2336;
+
+reorder:
+...
+aiVsAiAccuracyGraphName
+aiVsAiAccuracyGraphKnots
+originalAiVsAiAccuracyGraphKnots
+aiVsPlayerAccuracyGraphName
+aiVsPlayerAccuracyGraphKnots
+originalAiVsPlayerAccuracyGraphKnots;
