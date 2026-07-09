@@ -123,6 +123,42 @@ using `Linker`):
 | VehicleDef                | ❌               | ❌               |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                                                    |
 
+## QOS (007: Quantum of Solace)
+
+| Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
+|----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| PhysPreset           | ❌               | ❌               |                                                                              |
+| PhysConstraints      | ❌               | ❌               |                                                                              |
+| DestructibleDef      | ❌               | ❌               |                                                                              |
+| XAnimParts           | ❌               | ❌               |                                                                              |
+| XModel               | ✅               | ❌               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
+| Material             | ❌               | ❌               |                                                                              |
+| MaterialTechniqueSet | ❌               | ❌               |                                                                              |
+| GfxImage             | ✅               | ❌               |                                                                              |
+| snd_alias_list_t     | ❌               | ❌               |                                                                              |
+| SndCurve             | ❌               | ❌               |                                                                              |
+| clipMap_t            | ❌               | ❌               |                                                                              |
+| ComWorld             | ❌               | ❌               |                                                                              |
+| GameWorldSp          | ❌               | ❌               |                                                                              |
+| GameWorldMp          | ❌               | ❌               |                                                                              |
+| MapEnts              | ✅               | ❌               |                                                                              |
+| GfxWorld             | ❌               | ❌               |                                                                              |
+| GfxLightDef          | ❌               | ❌               |                                                                              |
+| Font_s               | ✅               | ❌               |                                                                              |
+| MenuList             | ❌               | ❌               |                                                                              |
+| menuDef_t            | ❌               | ❌               |                                                                              |
+| LocalizeEntry        | ✅               | ❌               |                                                                              |
+| WeaponDef            | ❌               | ❌               |                                                                              |
+| SndDriverGlobals     | ❌               | ❌               |                                                                              |
+| FxEffectDef          | ❌               | ❌               |                                                                              |
+| FxImpactTable        | ❌               | ❌               |                                                                              |
+| RawFile              | ✅               | ✅               |                                                                              |
+| StringTable          | ✅               | ❌               |                                                                              |
+| XmlTree              | ❌               | ❌               |                                                                              |
+| SceneAnimation       | ❌               | ❌               |                                                                              |
+| Cutscene             | ❌               | ❌               |                                                                              |
+| CustomCamera         | ❌               | ❌               |                                                                              |
+
 ## T4 (Call of Duty: World at War)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |

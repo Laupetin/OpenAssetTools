@@ -14,6 +14,7 @@ It currently offers support for the PC versions of:
 - [IW3 (COD4: Modern Warfare - 2007)](https://en.wikipedia.org/wiki/Call_of_Duty_4:_Modern_Warfare)
 - [IW4 (Modern Warfare 2 - 2009)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_2)
 - [IW5 (Modern Warfare 3 - 2011)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_3)
+- [QOS (007: Quantum of Solace - 2008)](https://en.wikipedia.org/wiki/007:_Quantum_of_Solace)
 - [T4 (World at War - 2008)](https://en.wikipedia.org/wiki/Call_of_Duty:_World_at_War)
 - [T5 (Black Ops - 2010)](https://en.wikipedia.org/wiki/Call_of_Duty:_Black_Ops)
 - [T6 (Black Ops II - 2012)](https://en.wikipedia.org/wiki/Call_of_Duty:_Black_Ops_II)

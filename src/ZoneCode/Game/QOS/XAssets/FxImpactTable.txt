@@ -1,0 +1,7 @@
+// =========================================
+// FxImpactTable
+// =========================================
+use FxImpactTable;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count table 13;

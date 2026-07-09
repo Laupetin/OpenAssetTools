@@ -43,7 +43,7 @@ private:
     class EqualValue
     {
     public:
-        constexpr bool operator()(const std::string& lhs, const std::string& rhs) const
+        bool operator()(const std::string& lhs, const std::string& rhs) const
         {
             return utils::StringEqualsIgnoreCase(lhs, rhs);
         }
