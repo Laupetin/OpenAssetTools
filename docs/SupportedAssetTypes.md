@@ -147,7 +147,7 @@ using `Linker`):
 | Font_s               | ✅               | ❌               |                                                                              |
 | MenuList             | ❌               | ❌               |                                                                              |
 | menuDef_t            | ❌               | ❌               |                                                                              |
-| LocalizeEntry        | ✅               | ❌               |                                                                              |
+| LocalizeEntry        | ✅               | ✅               |                                                                              |
 | WeaponDef            | ❌               | ❌               |                                                                              |
 | SndDriverGlobals     | ❌               | ❌               |                                                                              |
 | FxEffectDef          | ❌               | ❌               |                                                                              |
