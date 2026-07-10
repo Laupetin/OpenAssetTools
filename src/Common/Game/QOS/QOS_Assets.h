@@ -775,18 +775,55 @@ namespace QOS
         GfxImageLoadDef* loadDef;
     };
 
+    struct Picmip
+    {
+        char platform[2];
+    };
+
+    struct CardMemory
+    {
+        int platform[2];
+    };
+
+    enum MapType
+    {
+        MAPTYPE_NONE = 0x0,
+        MAPTYPE_INVALID1 = 0x1,
+        MAPTYPE_INVALID2 = 0x2,
+        MAPTYPE_2D = 0x3,
+        MAPTYPE_3D = 0x4,
+        MAPTYPE_CUBE = 0x5,
+
+        MAPTYPE_COUNT
+    };
+
+    enum ImageCategory
+    {
+        IMG_CATEGORY_UNKNOWN = 0x0,
+        IMG_CATEGORY_AUTO_GENERATED = 0x1,
+        IMG_CATEGORY_LIGHTMAP = 0x2,
+        IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+        IMG_CATEGORY_RAW = 0x4,
+        IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+        IMG_CATEGORY_WATER = 0x5,
+        IMG_CATEGORY_RENDERTARGET = 0x6,
+        IMG_CATEGORY_TEMP = 0x7,
+    };
+
     struct GfxImage
     {
-        // Runtime texture type in the executable.
-        char unknown0[4];
+        MapType mapType;
         GfxTexture texture;
-        // Includes runtime picmip/category fields used by the image loader.
-        char unknown1[16];
-        // Runtime dimensions populated by the image loader from GfxImageLoadDef.
+        Picmip picmip;
+        bool noPicmip;
+        char semantic;
+        char track;
+        CardMemory cardMemory;
         unsigned short width;
         unsigned short height;
         unsigned short depth;
-        char unknown2[2];
+        char category;
+        bool delayLoadPixels;
         const char* name;
     };
 
