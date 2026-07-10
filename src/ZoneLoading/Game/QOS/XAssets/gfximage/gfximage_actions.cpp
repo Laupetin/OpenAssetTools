@@ -11,8 +11,7 @@ Actions_GfxImage::Actions_GfxImage(Zone& zone)
 
 void Actions_GfxImage::OnImageLoaded(GfxImage* image) const
 {
-    // QOS runtime image-memory fields are not identified yet.
-    (void)image;
+    image->cardMemory.platform[0] = 0;
 }
 
 void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const
