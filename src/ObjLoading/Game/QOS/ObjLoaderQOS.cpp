@@ -5,6 +5,7 @@
 #include "Game/QOS/QOS.h"
 #include "Localize/AssetLoaderLocalizeQOS.h"
 #include "RawFile/AssetLoaderRawFileQOS.h"
+#include "StringTable/AssetLoaderStringTableQOS.h"
 
 using namespace QOS;
 
@@ -97,6 +98,7 @@ namespace
 
         collection.AddAssetCreator(localize::CreateLoaderQOS(memory, searchPath, zone));
         collection.AddAssetCreator(raw_file::CreateLoaderQOS(memory, searchPath));
+        collection.AddAssetCreator(string_table::CreateLoaderQOS(memory, searchPath));
     }
 } // namespace
 

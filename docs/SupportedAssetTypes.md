@@ -153,7 +153,7 @@ using `Linker`):
 | FxEffectDef          | ❌               | ❌               |                                                                              |
 | FxImpactTable        | ❌               | ❌               |                                                                              |
 | RawFile              | ✅               | ✅               |                                                                              |
-| StringTable          | ✅               | ❌               |                                                                              |
+| StringTable          | ✅               | ✅               |                                                                              |
 | XmlTree              | ❌               | ❌               |                                                                              |
 | SceneAnimation       | ❌               | ❌               |                                                                              |
 | Cutscene             | ❌               | ❌               |                                                                              |
