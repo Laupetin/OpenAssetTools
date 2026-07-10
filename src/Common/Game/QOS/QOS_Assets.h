@@ -340,7 +340,6 @@ namespace QOS
     struct XAnimParts
     {
         const char* name;
-        // Loaded as an xstring at offset 4.
         const char* unknownString;
         uint16_t dataByteCount;
         uint16_t dataShortCount;
@@ -883,7 +882,6 @@ namespace QOS
     struct SndCurve
     {
         const char* name;
-        // The PC loader only follows the name pointer.
         char unknown0[68];
     };
 
@@ -934,7 +932,6 @@ namespace QOS
         const char* secondaryAliasName;
         const char* chainAliasName;
         SoundFile* soundFile;
-        // Alias parameters. PC alias records are 80 bytes; the SndCurve pointer is at offset 76.
         char unknown0[56];
         SndCurve* volumeFalloffCurve;
     };
@@ -955,7 +952,6 @@ namespace QOS
 
     struct cStaticModel_t
     {
-        // PC loader places the XModelPtr at offset 4.
         char unknown0[4];
         XModel* xmodel;
         float origin[3];
@@ -1028,10 +1024,10 @@ namespace QOS
     {
         unsigned char triCount;
         unsigned char borderCount;
-        char unknown0[2]; // Padding bytes before firstTri.
+        char unknown0[2];
         int firstTri;
-        int unknown1; // PC loader confirms a 20-byte partition with borders at offset 16.
-        int unknown2; // PC loader confirms a 20-byte partition with borders at offset 16.
+        int unknown1;
+        int unknown2;
         CollisionBorder* borders;
     };
 
@@ -1069,7 +1065,7 @@ namespace QOS
         cbrushedge_t* baseAdjacentSide;
         int16_t firstAdjacentSideOffsets[2][3];
         char edgeCount[2][3];
-        char unknown0[2];      // Padding bytes before the offset-72 word.
+        char unknown0[2];
         unsigned int unknown1; // PC loader does not use this word while streaming; likely related to verts.
         vec3_t* verts;
     };
@@ -1147,15 +1143,15 @@ namespace QOS
         unsigned int numSubModels;
         cmodel_t* cmodels;
         uint16_t numBrushes;
-        uint16_t unknown0; // Padding word before brushes.
+        uint16_t unknown0;
         cbrush_t* brushes;
         int numClusters;
         int clusterBytes;
         char* visibility;
-        int unknown2; // PC loader skips this word before the MapEnts pointer at offset 180.
+        int unknown2;
         MapEnts* mapEnts;
         cbrush_t* box_brush;
-        char unknown1[74]; // PC loader skips this area before dynEntCount.
+        char unknown1[74];
         uint16_t dynEntCount[4];
         DynEntityDef* dynEntDefList[2];
         DynEntityClient* dynEntClientList[2];
@@ -1163,7 +1159,7 @@ namespace QOS
         DynEntityColl* dynEntCollList[4];
         int num_constraints;
         DynEntityPhysConstraint* constraints;
-        int unknown3; // Explicit tail word: PC loader reads 0x144 bytes and the last known pointer is at offset 316.
+        int unknown3;
     };
 
     struct ComPrimaryLight
@@ -1239,7 +1235,7 @@ namespace QOS
         float fCost;
         float fHeuristic;
         float costFactor;
-        int unknown0; // Required for the 132-byte pathnode_t loader stride.
+        int unknown0;
     };
 
     struct pathnode_dynamic_t
@@ -1526,7 +1522,7 @@ namespace QOS
     struct sunflare_t
     {
         char hasValidData;
-        char unknown0[3]; // Padding bytes confirmed by material pointer offsets.
+        char unknown0[3];
         Material* spriteMaterial;
         Material* flareMaterial;
         float spriteSize;
@@ -1698,7 +1694,6 @@ namespace QOS
         unsigned char dx;
         unsigned char pixelWidth;
         unsigned char pixelHeight;
-        // Padding byte present in the 24-byte glyph record.
         unsigned char unknown0;
         float s0;
         float t0;
@@ -2065,24 +2060,16 @@ namespace QOS
         const char* name;
         const char* displayName;
         const char* overlayName;
-        // Offset 12: XModel pointer in the PC loader.
         XModel* unknownModel12;
-        // Offset 16: XModel pointer in the PC loader.
         XModel* unknownModel16;
-        // Offset 20: loaded as 35 xstrings and treated as xanim references, matching the Wii symbol loader.
         const char* xanimNames[35];
         const char* modeName;
-        // Offset 164: data between modeName and the next xstring.
         char unknownData164[32];
-        // Offset 196: xstring in the PC loader.
         const char* unknownString196;
         char unknownData200[4];
-        // Offsets 204 and 208: FxEffectDef handles in the PC loader.
         FxEffectDef* unknownFx204;
         FxEffectDef* unknownFx208;
-        // Offsets 212..420: SndAliasCustom values in the PC loader.
         SndAliasCustom unknownSoundAliases[53];
-        // Offset 424: reusable SndAliasCustom array, 30 entries in the PC loader.
         SndAliasCustom* bounceSound;
         FxEffectDef* unknownFx428;
         FxEffectDef* unknownFx432;
@@ -2388,8 +2375,8 @@ namespace QOS
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[30]; // PC/Wii loaders confirm 30 non-flesh handles at offset 0.
-        FxEffectDef* flesh[4];     // PC/Wii loaders confirm 4 flesh handles at offset 120.
+        FxEffectDef* nonflesh[30];
+        FxEffectDef* flesh[4];
     };
 
     struct FxImpactTable
@@ -2486,7 +2473,6 @@ namespace QOS
     {
         const char* name;
         unsigned int animReferenceCount;
-        // Non-pointer field between the count and the reference array pointer.
         unsigned int unknown0;
         AnimReference* animReferences;
     };
@@ -2530,7 +2516,6 @@ namespace QOS
     {
         const char* name;
         int unknown4;
-        // PC/Wii loaders confirm these two pointers are XStrings at offsets 8 and 12.
         const char* unknownString0;
         const char* unknownString1;
         char unknown16[100];
