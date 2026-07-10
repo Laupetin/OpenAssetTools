@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/QOS/AssetMarkerQOS.h"
 #include "Game/QOS/QOS.h"
+#include "Localize/AssetLoaderLocalizeQOS.h"
 #include "RawFile/AssetLoaderRawFileQOS.h"
 
 using namespace QOS;
@@ -94,6 +95,7 @@ namespace
     {
         auto& memory = zone.Memory();
 
+        collection.AddAssetCreator(localize::CreateLoaderQOS(memory, searchPath, zone));
         collection.AddAssetCreator(raw_file::CreateLoaderQOS(memory, searchPath));
     }
 } // namespace
