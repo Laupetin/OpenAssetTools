@@ -8,6 +8,7 @@
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "LightDef/LightDefDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
+#include "Maps/MapEntsDumperT5.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT5.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
@@ -37,7 +38,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperComWorld, m_com_world)
     // REGISTER_DUMPER(AssetDumperGameWorldSp, m_game_world_sp)
     // REGISTER_DUMPER(AssetDumperGameWorldMp, m_game_world_mp)
-    // REGISTER_DUMPER(AssetDumperMapEnts, m_map_ents)
+    RegisterAssetDumper(std::make_unique<map_ents::DumperT5>());
     // REGISTER_DUMPER(AssetDumperGfxWorld, m_gfx_world)
     RegisterAssetDumper(std::make_unique<light_def::DumperT5>());
     RegisterAssetDumper(std::make_unique<font::JsonDumperT5>());

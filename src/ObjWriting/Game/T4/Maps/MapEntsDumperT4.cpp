@@ -6,7 +6,7 @@ using namespace T4;
 
 namespace map_ents
 {
-    void DumperT4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
+    void DumperT4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMapEnts::Type>& asset)
     {
         const auto* mapEnts = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetEntsFileNameForAssetName(asset.m_name));
