@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <format>
+#include <limits>
 #include <numbers>
 
 using namespace gltf;
@@ -53,13 +54,26 @@ namespace
         quat[3] = eigenQuat.w();
     }
 
-    void LhcToRhcIndices(unsigned short* indices)
+    template<typename IndexType> void LhcToRhcIndices(IndexType* indices)
     {
-        const unsigned short two[3]{indices[0], indices[1], indices[2]};
+        const IndexType two[3]{indices[0], indices[1], indices[2]};
 
         indices[0] = two[2];
         indices[1] = two[1];
         indices[2] = two[0];
+    }
+
+    // glTF index accessors must be able to address every vertex of the model's single shared vertex
+    // buffer. XModelFace::vertexIndex is 32-bit, so a model with more than 0xFFFF vertices cannot be
+    // represented with UNSIGNED_SHORT indices and must fall back to UNSIGNED_INT.
+    bool NeedsBigIndices(const XModelCommon& xmodel)
+    {
+        return xmodel.m_vertices.size() > std::numeric_limits<unsigned short>::max();
+    }
+
+    size_t GetIndexSize(const XModelCommon& xmodel)
+    {
+        return NeedsBigIndices(xmodel) ? sizeof(unsigned int) : sizeof(unsigned short);
     }
 
     void LhcToRhcMatrix(Eigen::Matrix4f& matrix)
@@ -468,7 +482,7 @@ namespace
                 JsonBufferView indicesBufferView;
                 indicesBufferView.buffer = 0u;
                 indicesBufferView.byteOffset = bufferOffset;
-                indicesBufferView.byteLength = static_cast<unsigned>(sizeof(unsigned short) * object.m_faces.size() * 3u);
+                indicesBufferView.byteLength = static_cast<unsigned>(GetIndexSize(xmodel) * object.m_faces.size() * 3u);
                 indicesBufferView.target = JsonBufferViewTarget::ELEMENT_ARRAY_BUFFER;
                 bufferOffset += indicesBufferView.byteLength;
 
@@ -553,7 +567,8 @@ namespace
 
                 JsonAccessor indicesAccessor;
                 indicesAccessor.bufferView = m_first_index_buffer_view + i;
-                indicesAccessor.componentType = JsonAccessorComponentType::UNSIGNED_SHORT;
+                indicesAccessor.componentType =
+                    NeedsBigIndices(xmodel) ? JsonAccessorComponentType::UNSIGNED_INT : JsonAccessorComponentType::UNSIGNED_SHORT;
                 indicesAccessor.count = static_cast<unsigned>(object.m_faces.size() * 3u);
                 indicesAccessor.type = JsonAccessorType::SCALAR;
 
@@ -691,17 +706,31 @@ namespace
                 currentBufferOffset += sizeof(float) * 16u * xmodel.m_bones.size();
             }
 
+            const auto bigIndices = NeedsBigIndices(xmodel);
             for (const auto& object : xmodel.m_objects)
             {
                 for (const auto& face : object.m_faces)
                 {
-                    auto* faceIndices = reinterpret_cast<unsigned short*>(&bufferData[currentBufferOffset]);
-                    faceIndices[0] = static_cast<unsigned short>(face.vertexIndex[0]);
-                    faceIndices[1] = static_cast<unsigned short>(face.vertexIndex[1]);
-                    faceIndices[2] = static_cast<unsigned short>(face.vertexIndex[2]);
-                    LhcToRhcIndices(faceIndices);
+                    if (bigIndices)
+                    {
+                        auto* faceIndices = reinterpret_cast<unsigned int*>(&bufferData[currentBufferOffset]);
+                        faceIndices[0] = face.vertexIndex[0];
+                        faceIndices[1] = face.vertexIndex[1];
+                        faceIndices[2] = face.vertexIndex[2];
+                        LhcToRhcIndices(faceIndices);
 
-                    currentBufferOffset += sizeof(unsigned short) * 3u;
+                        currentBufferOffset += sizeof(unsigned int) * 3u;
+                    }
+                    else
+                    {
+                        auto* faceIndices = reinterpret_cast<unsigned short*>(&bufferData[currentBufferOffset]);
+                        faceIndices[0] = static_cast<unsigned short>(face.vertexIndex[0]);
+                        faceIndices[1] = static_cast<unsigned short>(face.vertexIndex[1]);
+                        faceIndices[2] = static_cast<unsigned short>(face.vertexIndex[2]);
+                        LhcToRhcIndices(faceIndices);
+
+                        currentBufferOffset += sizeof(unsigned short) * 3u;
+                    }
                 }
             }
 
@@ -728,7 +757,7 @@ namespace
 
             for (const auto& object : xmodel.m_objects)
             {
-                result += object.m_faces.size() * sizeof(unsigned short) * 3u;
+                result += object.m_faces.size() * GetIndexSize(xmodel) * 3u;
             }
 
             return result;
