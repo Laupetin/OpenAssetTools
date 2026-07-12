@@ -82,5 +82,16 @@ namespace T4
         {"c4_pitch",       offsetof(PhysConstraints, data[3].scale[2]),     CSPFT_FLOAT },
     };
 
-    inline const char* s_constraintTypeNames[]{"none", "point", "distance", "hinge", "joint", "actuator", "fake_shake", "launch", "rope"};
+    inline const char* s_constraintTypeNames[]{
+        "none",
+        "point",
+        "distance",
+        "hinge",
+        "joint",
+        "actuator",
+        "fake_shake",
+        "launch",
+        "rope",
+    };
+    static_assert(std::extent_v<decltype(s_constraintTypeNames)> == NUM_CONSTRAINT_TYPES);
 } // namespace T4

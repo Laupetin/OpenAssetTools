@@ -405,7 +405,8 @@ namespace T6
         CONSTRAINT_LAUNCH = 0x7,
         CONSTRAINT_ROPE = 0x8,
         CONSTRAINT_LIGHT = 0x9,
-        NUM_CONSTRAINT_TYPES = 0xA,
+
+        NUM_CONSTRAINT_TYPES
     };
 
     enum AttachPointType

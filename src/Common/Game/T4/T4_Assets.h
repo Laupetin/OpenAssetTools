@@ -151,7 +151,8 @@ namespace T4
         CONSTRAINT_FAKE_SHAKE = 0x6,
         CONSTRAINT_LAUNCH = 0x7,
         CONSTRAINT_ROPE = 0x8,
-        NUM_CONSTRAINT_TYPES = 0x9,
+
+        NUM_CONSTRAINT_TYPES,
     };
 
     enum AttachPointType : int

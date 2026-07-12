@@ -94,4 +94,5 @@ namespace T6
         "rope",
         "light",
     };
+    static_assert(std::extent_v<decltype(s_constraintTypeNames)> == NUM_CONSTRAINT_TYPES);
 } // namespace T6
