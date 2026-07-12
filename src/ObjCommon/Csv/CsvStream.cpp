@@ -5,7 +5,10 @@
 #include <cstdlib>
 #include <sstream>
 
-constexpr char CSV_SEPARATOR = ',';
+namespace
+{
+    constexpr char CSV_SEPARATOR = ',';
+}
 
 CsvCell::CsvCell(std::string value)
     : m_value(std::move(value))
@@ -159,6 +162,22 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
     return !isEof;
 }
 
+namespace
+{
+    void InspectCsvValue(const std::string& value, bool& outContainsSeparator, bool& outContainsQuote, bool& outContainsNewLine)
+    {
+        for (const auto& c : value)
+        {
+            if (c == '"')
+                outContainsQuote = true;
+            else if (c == CSV_SEPARATOR)
+                outContainsSeparator = true;
+            else if (c == '\n')
+                outContainsNewLine = true;
+        }
+    }
+} // namespace
+
 CsvOutputStream::CsvOutputStream(std::ostream& stream)
     : m_stream(stream),
       m_column_count(0),
@@ -174,17 +193,8 @@ void CsvOutputStream::WriteColumn(const std::string& value)
 
     auto containsSeparator = false;
     auto containsQuote = false;
-    for (const auto& c : value)
-    {
-        if (c == '"')
-        {
-            containsQuote = true;
-            break;
-        }
-
-        if (c == CSV_SEPARATOR)
-            containsSeparator = true;
-    }
+    auto containsNewLine = false;
+    InspectCsvValue(value, containsSeparator, containsQuote, containsNewLine);
 
     if (containsQuote)
     {
@@ -199,7 +209,7 @@ void CsvOutputStream::WriteColumn(const std::string& value)
 
         m_stream << "\"";
     }
-    else if (containsSeparator)
+    else if (containsSeparator || containsNewLine)
     {
         m_stream << "\"" << value << "\"";
     }
