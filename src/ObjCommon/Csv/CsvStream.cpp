@@ -113,12 +113,44 @@ bool CsvInputStream::NextRow(std::vector<const char*>& out, MemoryManager& memor
 bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) const
 {
     auto c = m_stream.get();
-    const auto isEof = c == EOF;
+    const auto startedWithEof = c == EOF;
+    auto inQuotes = c == '"';
     std::ostringstream col;
     auto content = false;
+
+    if (inQuotes)
+        c = m_stream.get();
+
     while (c != EOF)
     {
-        if (c == CSV_SEPARATOR)
+        if (inQuotes)
+        {
+            if (c == '"')
+            {
+                c = m_stream.peek();
+                if (c == '"')
+                {
+                    m_stream.get();
+                    content = true;
+                    col << '"';
+                }
+                else
+                {
+                    inQuotes = false;
+                }
+            }
+            else if (isspace(c))
+            {
+                if (content)
+                    col << static_cast<char>(c);
+            }
+            else
+            {
+                content = true;
+                col << static_cast<char>(c);
+            }
+        }
+        else if (c == CSV_SEPARATOR)
         {
             auto value = col.str();
             utils::StringTrimR(value);
@@ -126,6 +158,13 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
             col.clear();
             col.str(std::string());
             content = false;
+
+            c = m_stream.peek();
+            if (c == '"')
+            {
+                m_stream.get();
+                inQuotes = true;
+            }
         }
         else if (c == '\r')
         {
@@ -152,14 +191,14 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
         c = m_stream.get();
     }
 
-    if (!isEof)
+    if (!startedWithEof)
     {
         auto value = col.str();
         utils::StringTrimR(value);
         cb(std::move(value));
     }
 
-    return !isEof;
+    return !startedWithEof;
 }
 
 namespace
