@@ -1,7 +1,7 @@
 #pragma once
-#include "Game/T6/T6.h"
+#include "Game/T5/T5.h"
 
-namespace T6
+namespace T5
 {
     inline cspField_t phys_constraints_fields[]{
         {"c1_type",        offsetof(PhysConstraints, data[0].type),         CFT_TYPE    },
@@ -95,4 +95,4 @@ namespace T6
         "light",
     };
     static_assert(std::extent_v<decltype(s_constraintTypeNames)> == NUM_CONSTRAINT_TYPES);
-} // namespace T6
+} // namespace T5
