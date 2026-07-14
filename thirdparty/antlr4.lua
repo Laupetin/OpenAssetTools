@@ -37,7 +37,7 @@ function antlr4:project()
             path.join(folder, "antlr4/runtime/Cpp/runtime/src/**.h")
         }
 
-		if os.host() == "windows" then
+		if _OPTIONS["antlr4"] and os.host() == "windows" then
 			self:installJar()
 		end
 
