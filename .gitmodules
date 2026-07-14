@@ -28,3 +28,6 @@
 [submodule "thirdparty/antlr4"]
 	path = thirdparty/antlr4
 	url = https://github.com/antlr/antlr4.git
+[submodule "thirdparty/stb"]
+	path = thirdparty/stb
+	url = https://github.com/nothings/stb.git
