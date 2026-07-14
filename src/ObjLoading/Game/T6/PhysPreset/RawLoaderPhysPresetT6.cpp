@@ -1,49 +1,80 @@
 #include "RawLoaderPhysPresetT6.h"
 
-#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/T6.h"
-#include "InfoString/InfoString.h"
-#include "InfoStringLoaderPhysPresetT6.h"
-#include "PhysPreset/PhysPresetCommon.h"
-#include "Utils/Logging/Log.h"
+#include "PhysPreset/AbstractPhysPresetLoader.h"
 
-#include <cstring>
-#include <format>
-#include <iostream>
+#include <algorithm>
+#include <limits>
+#include <string>
 
 using namespace T6;
 
 namespace
 {
-    class RawLoaderPhysPreset final : public AssetCreator<AssetPhysPreset>
+    class RawLoaderPhysPreset final : public phys_preset::AbstractPhysPresetLoader<AssetPhysPreset>
     {
     public:
-        RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-            : m_search_path(searchPath),
-              m_info_string_loader(memory, zone)
-        {
-        }
+        using AbstractPhysPresetLoader::AbstractPhysPresetLoader;
 
-        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+    protected:
+        bool FillFromTree(PhysPreset& physPreset, const std::string& assetName, PhysPresetParser::PhysPresetContext* tree) override
         {
-            const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
-            const auto file = m_search_path.Open(fileName);
-            if (!file.IsOpen())
-                return AssetCreationResult::NoAction();
+            physPreset.name = m_memory.Dup(assetName.c_str());
 
-            InfoString infoString;
-            if (!infoString.FromStream(INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
+            float mass = 0.0f;
+            float friction = 0.0f;
+            bool isFrictionInfinity = false;
+
+            for (auto* pair : tree->pair())
             {
-                con::error("Could not parse as info string file: \"{}\"", fileName);
-                return AssetCreationResult::Failure();
+                const auto key = pair->key()->getText();
+                const auto value = pair->value()->getText();
+
+                if (key == "mass")
+                    mass = std::stof(value);
+                else if (key == "bounce")
+                    physPreset.bounce = std::stof(value);
+                else if (key == "friction")
+                    friction = std::stof(value);
+                else if (key == "isFrictionInfinity")
+                    isFrictionInfinity = value != "0";
+                else if (key == "bulletForceScale")
+                    physPreset.bulletForceScale = std::stof(value);
+                else if (key == "explosiveForceScale")
+                    physPreset.explosiveForceScale = std::stof(value);
+                else if (key == "piecesSpreadFraction")
+                    physPreset.piecesSpreadFraction = std::stof(value);
+                else if (key == "piecesUpwardVelocity")
+                    physPreset.piecesUpwardVelocity = std::stof(value);
+                else if (key == "canFloat")
+                    physPreset.canFloat = std::stoi(value);
+                else if (key == "gravityScale")
+                    physPreset.gravityScale = std::stof(value);
+                else if (key == "massOffsetX")
+                    physPreset.centerOfMassOffset.x = std::stof(value);
+                else if (key == "massOffsetY")
+                    physPreset.centerOfMassOffset.y = std::stof(value);
+                else if (key == "massOffsetZ")
+                    physPreset.centerOfMassOffset.z = std::stof(value);
+                else if (key == "buoyancyMinX")
+                    physPreset.buoyancyBoxMin.x = std::stof(value);
+                else if (key == "buoyancyMinY")
+                    physPreset.buoyancyBoxMin.y = std::stof(value);
+                else if (key == "buoyancyMinZ")
+                    physPreset.buoyancyBoxMin.z = std::stof(value);
+                else if (key == "buoyancyMaxX")
+                    physPreset.buoyancyBoxMax.x = std::stof(value);
+                else if (key == "buoyancyMaxY")
+                    physPreset.buoyancyBoxMax.y = std::stof(value);
+                else if (key == "buoyancyMaxZ")
+                    physPreset.buoyancyBoxMax.z = std::stof(value);
             }
 
-            return m_info_string_loader.CreateAsset(assetName, infoString, context);
-        }
+            physPreset.mass = std::clamp(mass, 1.0f, 2000.0f) * 0.001f;
+            physPreset.friction = isFrictionInfinity ? std::numeric_limits<float>::infinity() : friction;
 
-    private:
-        ISearchPath& m_search_path;
-        phys_preset::InfoStringLoaderT6 m_info_string_loader;
+            return true;
+        }
     };
 } // namespace
 
@@ -51,6 +82,6 @@ namespace phys_preset
 {
     std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoaderT6(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
-        return std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone);
+        return std::make_unique<RawLoaderPhysPreset>(memory, searchPath);
     }
 } // namespace phys_preset
