@@ -40,8 +40,7 @@ namespace phys_preset
         bool m_has_errors;
     };
 
-    template<typename AssetT>
-    class AbstractPhysPresetLoader : public AssetCreator<AssetT>
+    template<typename AssetT> class AbstractPhysPresetLoader : public AssetCreator<AssetT>
     {
     public:
         AbstractPhysPresetLoader(MemoryManager& memory, ISearchPath& searchPath)
@@ -92,8 +91,6 @@ namespace phys_preset
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
 
-        virtual bool FillFromTree(typename AssetT::Type& physPreset,
-                                   const std::string& assetName,
-                                   PhysPresetParser::PhysPresetContext* tree) = 0;
+        virtual bool FillFromTree(typename AssetT::Type& physPreset, const std::string& assetName, PhysPresetParser::PhysPresetContext* tree) = 0;
     };
 } // namespace phys_preset
