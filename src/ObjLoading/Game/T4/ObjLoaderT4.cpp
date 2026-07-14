@@ -11,6 +11,7 @@
 #include "Localize/AssetLoaderLocalizeT4.h"
 #include "Maps/MapEntsLoaderT4.h"
 #include "Material/LoaderMaterialT4.h"
+#include "PhysPreset/RawLoaderPhysPresetT4.h"
 #include "RawFile/AssetLoaderRawFileT4.h"
 #include "Weapon/FlameTableLoaderT4.h"
 #include "Weapon/WeaponGdtLoaderT4.h"
@@ -96,6 +97,7 @@ namespace
     {
         auto& memory = zone.Memory();
 
+        collection.AddAssetCreator(phys_preset::CreateRawLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(xanim::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedT4(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalT4(memory, searchPath));
