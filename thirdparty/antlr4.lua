@@ -98,6 +98,13 @@ function antlr4:installJar()
     io.writefile(versionFile, ANTLR4_VERSION)
 end
 
+-- Adds all .g4 grammar files found recursively under dir to the current project
+function antlr4:addGrammarsInDir(dir)
+    for _, grammarFile in ipairs(os.matchfiles(path.join(dir, "**.g4"))) do
+        self:addGrammar(grammarFile)
+    end
+end
+
 -- Adds a .g4 grammar file to the current project
 function antlr4:addGrammar(grammarFile)
     local absGrammar = path.getabsolute(grammarFile)

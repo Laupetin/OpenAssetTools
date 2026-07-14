@@ -74,6 +74,6 @@ function ObjLoading:project()
 		libtomcrypt:include(includes)
 
 		if _OPTIONS["antlr4"] then
-			antlr4:addGrammar(path.join(folder, "ObjLoading/Game/IW3/PhysPreset/PhysPreset.g4"))
+			antlr4:addGrammarsInDir(path.join(folder, "ObjLoading"))
 		end
 end
