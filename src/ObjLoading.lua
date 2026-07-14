@@ -8,6 +8,9 @@ function ObjLoading:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjLoading")
 		}
+		if _OPTIONS["antlr4"] then
+			antlr4:include(includes)
+		end
 	end
 end
 
@@ -22,6 +25,9 @@ function ObjLoading:link(links)
 	links:linkto(minizip)
 	links:linkto(zlib)
 	links:linkto(libtomcrypt)
+	if _OPTIONS["antlr4"] then
+		links:linkto(antlr4)
+	end
 end
 
 function ObjLoading:use()
@@ -66,4 +72,8 @@ function ObjLoading:project()
 		eigen:include(includes)
 		json:include(includes)
 		libtomcrypt:include(includes)
+
+		if _OPTIONS["antlr4"] then
+			antlr4:addGrammar(path.join(folder, "ObjLoading/Game/IW3/PhysPreset/PhysPreset.g4"))
+		end
 end

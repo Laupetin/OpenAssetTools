@@ -119,7 +119,10 @@ group "ThirdParty"
     salsa20:project()
     stb:project()
     zlib:project()
-    antlr4:project()
+	
+    if _OPTIONS["antlr4"] then
+        antlr4:project()
+    end
     
     if _OPTIONS["modman"] then
         webwindowed:project()
