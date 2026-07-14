@@ -1,48 +1,61 @@
 #include "RawLoaderPhysPresetIW4.h"
 
 #include "Game/IW4/IW4.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "InfoString/InfoString.h"
-#include "InfoStringLoaderPhysPresetIW4.h"
-#include "PhysPreset/PhysPresetCommon.h"
-#include "Utils/Logging/Log.h"
+#include "PhysPreset/AbstractPhysPresetLoader.h"
 
-#include <format>
-#include <iostream>
+#include <limits>
+#include <string>
 
 using namespace IW4;
 
 namespace
 {
-    class RawLoaderPhysPreset final : public AssetCreator<AssetPhysPreset>
+    class RawLoaderPhysPreset final : public phys_preset::AbstractPhysPresetLoader<AssetPhysPreset>
     {
     public:
-        RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-            : m_search_path(searchPath),
-              m_info_string_loader(memory, zone)
-        {
-        }
+        using AbstractPhysPresetLoader::AbstractPhysPresetLoader;
 
-        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+    protected:
+        bool FillFromTree(PhysPreset& physPreset, const std::string& assetName, PhysPresetParser::PhysPresetContext* tree) override
         {
-            const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
-            const auto file = m_search_path.Open(fileName);
-            if (!file.IsOpen())
-                return AssetCreationResult::NoAction();
+            physPreset.name = m_memory.Dup(assetName.c_str());
 
-            InfoString infoString;
-            if (!infoString.FromStream(INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
+            float friction = 0.0f;
+            bool isFrictionInfinity = false;
+
+            for (auto* pair : tree->pair())
             {
-                con::error("Could not parse as info string file: \"{}\"", fileName);
-                return AssetCreationResult::Failure();
+                const auto key = pair->key()->getText();
+                const auto value = pair->value()->getText();
+
+                if (key == "mass")
+                    physPreset.mass = std::stof(value);
+                else if (key == "bounce")
+                    physPreset.bounce = std::stof(value);
+                else if (key == "friction")
+                    friction = std::stof(value);
+                else if (key == "isFrictionInfinity")
+                    isFrictionInfinity = value != "0";
+                else if (key == "bulletForceScale")
+                    physPreset.bulletForceScale = std::stof(value);
+                else if (key == "explosiveForceScale")
+                    physPreset.explosiveForceScale = std::stof(value);
+                else if (key == "sndAliasPrefix")
+                    physPreset.sndAliasPrefix = m_memory.Dup(value.c_str());
+                else if (key == "piecesSpreadFraction")
+                    physPreset.piecesSpreadFraction = std::stof(value);
+                else if (key == "piecesUpwardVelocity")
+                    physPreset.piecesUpwardVelocity = std::stof(value);
+                else if (key == "tempDefaultToCylinder")
+                    physPreset.tempDefaultToCylinder = value != "0";
+                else if (key == "perSurfaceSndAlias")
+                    physPreset.perSurfaceSndAlias = value != "0";
             }
 
-            return m_info_string_loader.CreateAsset(assetName, infoString, context);
-        }
+            physPreset.friction = isFrictionInfinity ? std::numeric_limits<float>::max() : friction;
 
-    private:
-        ISearchPath& m_search_path;
-        phys_preset::InfoStringLoaderIW4 m_info_string_loader;
+            return true;
+        }
     };
 } // namespace
 
@@ -50,6 +63,6 @@ namespace phys_preset
 {
     std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoaderIW4(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
-        return std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone);
+        return std::make_unique<RawLoaderPhysPreset>(memory, searchPath);
     }
 } // namespace phys_preset
