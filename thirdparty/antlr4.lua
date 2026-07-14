@@ -119,8 +119,6 @@ function antlr4:generateGrammar()
         local outdir = path.getabsolute(path.join(buildFolder, "src", path.getdirectory(rel)))
         local cmd = "java -jar \"" .. jar .. "\" -Dlanguage=Cpp -o \"" .. outdir .. "\" \"" .. path.getabsolute(grammar) .. "\""
 
-        print("  " .. rel)
-
         if not os.isdir(outdir) then
             os.mkdir(outdir)
         end
