@@ -1,12 +1,13 @@
 antlr4 = {}
 
-local ANTLR4_DEFAULT_VERSION = "4.13.2"
+local ANTLR4_VERSION = "4.13.2"
 
 function antlr4:include(includes)
     if includes:handle(self:name()) then
         includedirs {
             path.join(ThirdPartyFolder(), "antlr4/runtime/Cpp/runtime/src")
         }
+        defines { "ANTLR4CPP_STATIC" }
     end
 end
 
@@ -15,7 +16,6 @@ function antlr4:link(links)
 end
 
 function antlr4:use()
-
 end
 
 function antlr4:name()
@@ -24,6 +24,7 @@ end
 
 function antlr4:project()
     local folder = ThirdPartyFolder()
+	local includes = Includes:create()
 
     project(self:name())
         targetdir(TargetDirectoryLib)
@@ -36,97 +37,93 @@ function antlr4:project()
             path.join(folder, "antlr4/runtime/Cpp/runtime/src/**.h")
         }
 
-        vpaths {
-            ["*"] = {
-                path.join(folder, "antlr4/runtime/Cpp/runtime/src")
-            }
-        }
+		if os.host() == "windows" then
+			self:installJar()
+		end
 
         defines { "ANTLR4CPP_STATIC" }
 
-        self:include(Includes:create())
+		self:include(includes)
 
-        warnings "off"
+		-- Disable warnings. They do not have any value to us since it is not our code.
+		warnings "off"
 end
 
+function antlr4:jarPath()
+    return path.join(BuildFolder(), "thirdparty/antlr4", "antlr-" .. ANTLR4_VERSION .. "-complete.jar")
+end
+
+-- Downloads and installs latest ANTLR4 jar
 function antlr4:installJar()
+	local truth_hash = "7df86c341abb175a0f4b76a7845074cc45f82ff8"
     local jarDir = path.join(BuildFolder(), "thirdparty/antlr4")
     local versionFile = path.join(jarDir, "antlr4-jar-version.txt")
+    local jarPath = self:jarPath()
+    local jarName = "antlr-" .. ANTLR4_VERSION .. "-complete.jar"
+    local url = "https://www.antlr.org/download/" .. jarName
+
     if not os.isdir(jarDir) then
         os.mkdir(jarDir)
     end
 
-    local installedVersion = io.readfile(versionFile) or ""
-    if installedVersion ~= "" then
-        local installedJarPath = path.join(jarDir, "antlr-" .. installedVersion .. "-complete.jar")
-        if os.isfile(installedJarPath) then
-            return installedJarPath
-        end
-    end
-
-    local targetVersion = ANTLR4_DEFAULT_VERSION
-    local jarName = "antlr-" .. targetVersion .. "-complete.jar"
-    local jarPath = path.join(jarDir, jarName)
-    if os.isfile(jarPath) then
-        io.writefile(versionFile, targetVersion)
-        return jarPath
-    end
-
-    local downloadUrl = "https://www.antlr.org/download/" .. jarName
-    print("Downloading ANTLR4 " .. targetVersion .. " jar...")
-    function progress(total, current)
-        if total > 0 then
-            local ratio = current / total
-            ratio = math.min(math.max(ratio, 0), 1)
-            local percent = math.floor(ratio * 100)
-            io.write("\rDownload progress (" .. percent .. "%/100%)")
-        else
-            io.write("\rDownloaded " .. current .. " bytes...")
-        end
-        io.stdout:flush()
-    end
-
-    local result_str, response_code = http.download(downloadUrl, jarPath, { progress = progress })
-    io.write("\n")
-
-    if result_str ~= "OK" then
-        premake.error("Failed to download ANTLR4 jar from " .. downloadUrl .. ": " .. result_str)
-    end
-
-    io.writefile(versionFile, targetVersion)
-    return jarPath
-end
-
-function antlr4:generateGrammar()
-    local folder = ProjectFolder()
-    local buildFolder = BuildFolder()
-    local grammars = os.matchfiles(path.join(folder, "**.g4"))
-
-    if #grammars == 0 then
+    local installedVersion = io.readfile(versionFile)
+    if installedVersion == ANTLR4_VERSION and os.isfile(jarPath) then
         return
     end
 
-    local jar = path.getabsolute(self:installJar())
+    local function progress(total, current)
+		local ratio = current / total;
+		ratio = math.min(math.max(ratio, 0), 1);
+		local percent = math.floor(ratio * 100);
+		io.write("\rDownload progress (" .. percent .. "%/100%)")
+    end
 
-    print("Running antlr4 generation...")
+    print("Downloading ANTLR4 " .. ANTLR4_VERSION .. " jar...")
+    local result_str, response_code = http.download(url, jarPath, { 
+		progress = progress 
+	})
 
-    for _, grammar in ipairs(grammars) do
-        local rel = path.getrelative(folder, grammar)
-        local outdir = path.getabsolute(path.join(buildFolder, "src", path.getdirectory(rel)))
-        local cmd = "java -jar \"" .. jar .. "\" -Dlanguage=Cpp -o \"" .. outdir .. "\" \"" .. path.getabsolute(grammar) .. "\""
+    io.write("\n")
 
-        if not os.isdir(outdir) then
-            os.mkdir(outdir)
-        end
-        os.execute(cmd)
+    if result_str ~= "OK" then
+        premake.error("Failed to download ANTLR4 jar from " .. url .. ": " .. result_str)
+    end
 
-        prebuildcommands { cmd }
+    local hash = string.lower(string.sha1(io.readfile(jarPath)))
+    if hash ~= truth_hash then
+        os.remove(jarPath)
+        premake.error("ANTLR4 jar SHA1 mismatch (expected " .. truth_hash .. ", got " .. hash .. ")")
+    end
 
-        files {
-            path.join(outdir, "**.h"),
-            path.join(outdir, "**.cpp")
-        }
+    io.writefile(versionFile, ANTLR4_VERSION)
+end
 
-        includedirs { outdir }
+-- Adds a .g4 grammar file to the current project
+function antlr4:addGrammar(grammarFile)
+    local absGrammar = path.getabsolute(grammarFile)
+    local grammarName = path.getbasename(absGrammar)
+    local absOutputDir = path.getdirectory(absGrammar)
+
+    files { grammarFile }
+
+    if _OPTIONS["antlr4"] then
+        local jar = path.getabsolute(self:jarPath())
+        local cmd = "java -jar \"" .. jar .. "\" -Dlanguage=Cpp -o \"" .. absOutputDir .. "\" \"" .. absGrammar .. "\""
+
+        filter("files:" .. grammarFile)
+            buildmessage("Generating ANTLR4 parser for " .. grammarName .. ".g4")
+            buildinputs  { absGrammar }
+            buildcommands { cmd }
+            buildoutputs {
+                path.join(absOutputDir, grammarName .. "Lexer.h"),
+                path.join(absOutputDir, grammarName .. "Lexer.cpp"),
+                path.join(absOutputDir, grammarName .. "Parser.h"),
+                path.join(absOutputDir, grammarName .. "Parser.cpp"),
+                path.join(absOutputDir, grammarName .. "Listener.h"),
+                path.join(absOutputDir, grammarName .. "Listener.cpp"),
+                path.join(absOutputDir, grammarName .. "BaseListener.h"),
+                path.join(absOutputDir, grammarName .. "BaseListener.cpp"),
+            }
+        filter {}
     end
 end
