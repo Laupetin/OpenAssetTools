@@ -31,8 +31,9 @@ namespace
     TEST_CASE("RawLoaderPhysPreset(IW3): Can parse physpreset", "[iw3][physpreset][assetloader]")
     {
         MockSearchPath searchPath;
-        searchPath.AddFileData("physic/brick",
-                               R"(PHYSIC\mass\5\bounce\0.3\friction\0.5\isFrictionInfinity\0\bulletForceScale\0.6\explosiveForceScale\0.12\sndAliasPrefix\physics_brick\piecesSpreadFraction\0.1\piecesUpwardVelocity\0.2\tempDefaultToCylinder\0)");
+        searchPath.AddFileData(
+            "physic/brick",
+            R"(PHYSIC\mass\5\bounce\0.3\friction\0.5\isFrictionInfinity\0\bulletForceScale\0.6\explosiveForceScale\0.12\sndAliasPrefix\physics_brick\piecesSpreadFraction\0.1\piecesUpwardVelocity\0.2\tempDefaultToCylinder\0)");
 
         Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
         MemoryManager memory;
@@ -61,8 +62,7 @@ namespace
     TEST_CASE("RawLoaderPhysPreset(IW3): Sets friction to float max when isFrictionInfinity is set", "[iw3][physpreset][assetloader]")
     {
         MockSearchPath searchPath;
-        searchPath.AddFileData("physic/brick",
-                               R"(PHYSIC\mass\5\bounce\0.3\friction\0.5\isFrictionInfinity\1)");
+        searchPath.AddFileData("physic/brick", R"(PHYSIC\mass\5\bounce\0.3\friction\0.5\isFrictionInfinity\1)");
 
         Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
         MemoryManager memory;
