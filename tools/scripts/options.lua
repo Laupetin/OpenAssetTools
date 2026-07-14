@@ -23,3 +23,9 @@ newoption {
     trigger = "modman",
     description = "Activate experimental compilation of ModMan (OAT GUI)"
 }
+
+-- ANTLR4 parser code is experimental and deactivated by default.
+newoption {
+    trigger = "antlr4",
+    description = "Activate experimental generation of ANTLR4 grammar code. Requires JAVA on path."
+}
