@@ -49,12 +49,8 @@ function antlr4:project()
         warnings "off"
 end
 
-function antlr4:jarDir()
-    return path.join(BuildFolder(), "thirdparty/antlr4")
-end
-
 function antlr4:installJar()
-    local jarDir = self:jarDir()
+    local jarDir = path.join(BuildFolder(), "thirdparty/antlr4")
     local versionFile = path.join(jarDir, "antlr4-jar-version.txt")
     if not os.isdir(jarDir) then
         os.mkdir(jarDir)
