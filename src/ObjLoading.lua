@@ -8,9 +8,7 @@ function ObjLoading:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjLoading")
 		}
-		if _OPTIONS["antlr4"] then
-			antlr4:include(includes)
-		end
+		antlr4:include(includes)
 	end
 end
 
@@ -25,9 +23,7 @@ function ObjLoading:link(links)
 	links:linkto(minizip)
 	links:linkto(zlib)
 	links:linkto(libtomcrypt)
-	if _OPTIONS["antlr4"] then
-		links:linkto(antlr4)
-	end
+	links:linkto(antlr4)
 end
 
 function ObjLoading:use()
