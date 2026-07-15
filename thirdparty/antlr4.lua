@@ -44,7 +44,9 @@ function antlr4:project()
 
         defines { "ANTLR4CPP_STATIC" }
 
-		self:include(includes)
+        includedirs {
+            path.join(folder, "antlr4/runtime/Cpp/runtime/src")
+        }
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
 		warnings "off"
