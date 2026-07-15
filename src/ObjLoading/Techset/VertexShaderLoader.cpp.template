@@ -28,6 +28,9 @@
 #include LOADER_HEADER
 
 #include GAME_HEADER
+#if defined(FEATURE_IW3)
+#include "Shader/D3D9ShaderAnalyser.h"
+#endif
 #include "Shader/ShaderCommon.h"
 #include "Utils/Logging/Log.h"
 
@@ -93,6 +96,11 @@ namespace
             file.m_stream->read(fileBuffer, file.m_length);
             if (file.m_stream->gcount() != file.m_length)
                 return AssetCreationResult::Failure();
+
+#if defined(FEATURE_IW3)
+            const auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(fileBuffer, static_cast<size_t>(file.m_length));
+            vertexShader->prog.loadDef.loadForRenderer = shaderInfo && shaderInfo->m_version_major >= 3u ? 1u : 0u;
+#endif
 
 #if defined(IS_DX9)
             vertexShader->prog.loadDef.program = reinterpret_cast<decltype(GfxVertexShaderLoadDef::program)>(fileBuffer);
