@@ -8,6 +8,9 @@ function antlr4:include(includes)
             path.join(ThirdPartyFolder(), "antlr4/runtime/Cpp/runtime/src")
         }
         defines { "ANTLR4CPP_STATIC" }
+        filter "toolset:msc"
+            disablewarnings { "4244" }
+        filter {}
     end
 end
 
