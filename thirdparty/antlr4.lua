@@ -4,13 +4,11 @@ local ANTLR4_VERSION = "4.13.2"
 
 function antlr4:include(includes)
     if includes:handle(self:name()) then
-        includedirs {
+        externalincludedirs {
             path.join(ThirdPartyFolder(), "antlr4/runtime/Cpp/runtime/src")
         }
+        externalwarnings "Off"
         defines { "ANTLR4CPP_STATIC" }
-        filter "toolset:msc"
-            disablewarnings { "4244" }
-        filter {}
     end
 end
 
