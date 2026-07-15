@@ -5,7 +5,10 @@
 #include <cstdlib>
 #include <sstream>
 
-constexpr char CSV_SEPARATOR = ',';
+namespace
+{
+    constexpr char CSV_SEPARATOR = ',';
+}
 
 CsvCell::CsvCell(std::string value)
     : m_value(std::move(value))
@@ -110,12 +113,44 @@ bool CsvInputStream::NextRow(std::vector<const char*>& out, MemoryManager& memor
 bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) const
 {
     auto c = m_stream.get();
-    const auto isEof = c == EOF;
+    const auto startedWithEof = c == EOF;
+    auto inQuotes = c == '"';
     std::ostringstream col;
     auto content = false;
+
+    if (inQuotes)
+        c = m_stream.get();
+
     while (c != EOF)
     {
-        if (c == CSV_SEPARATOR)
+        if (inQuotes)
+        {
+            if (c == '"')
+            {
+                c = m_stream.peek();
+                if (c == '"')
+                {
+                    m_stream.get();
+                    content = true;
+                    col << '"';
+                }
+                else
+                {
+                    inQuotes = false;
+                }
+            }
+            else if (isspace(c))
+            {
+                if (content)
+                    col << static_cast<char>(c);
+            }
+            else
+            {
+                content = true;
+                col << static_cast<char>(c);
+            }
+        }
+        else if (c == CSV_SEPARATOR)
         {
             auto value = col.str();
             utils::StringTrimR(value);
@@ -123,6 +158,13 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
             col.clear();
             col.str(std::string());
             content = false;
+
+            c = m_stream.peek();
+            if (c == '"')
+            {
+                m_stream.get();
+                inQuotes = true;
+            }
         }
         else if (c == '\r')
         {
@@ -149,15 +191,31 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
         c = m_stream.get();
     }
 
-    if (!isEof)
+    if (!startedWithEof)
     {
         auto value = col.str();
         utils::StringTrimR(value);
         cb(std::move(value));
     }
 
-    return !isEof;
+    return !startedWithEof;
 }
+
+namespace
+{
+    void InspectCsvValue(const std::string& value, bool& outContainsSeparator, bool& outContainsQuote, bool& outContainsNewLine)
+    {
+        for (const auto& c : value)
+        {
+            if (c == '"')
+                outContainsQuote = true;
+            else if (c == CSV_SEPARATOR)
+                outContainsSeparator = true;
+            else if (c == '\n')
+                outContainsNewLine = true;
+        }
+    }
+} // namespace
 
 CsvOutputStream::CsvOutputStream(std::ostream& stream)
     : m_stream(stream),
@@ -174,17 +232,8 @@ void CsvOutputStream::WriteColumn(const std::string& value)
 
     auto containsSeparator = false;
     auto containsQuote = false;
-    for (const auto& c : value)
-    {
-        if (c == '"')
-        {
-            containsQuote = true;
-            break;
-        }
-
-        if (c == CSV_SEPARATOR)
-            containsSeparator = true;
-    }
+    auto containsNewLine = false;
+    InspectCsvValue(value, containsSeparator, containsQuote, containsNewLine);
 
     if (containsQuote)
     {
@@ -199,7 +248,7 @@ void CsvOutputStream::WriteColumn(const std::string& value)
 
         m_stream << "\"";
     }
-    else if (containsSeparator)
+    else if (containsSeparator || containsNewLine)
     {
         m_stream << "\"" << value << "\"";
     }

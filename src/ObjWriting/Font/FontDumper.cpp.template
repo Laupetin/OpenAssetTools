@@ -83,7 +83,7 @@ namespace
     }
 #endif
 
-    void CreateJsonFont(JsonFont& jFont, const Font_s& font)
+    void CreateCompiledJsonFont(JsonCompiledFont& jFont, const Font_s& font)
     {
         jFont.pixelHeight = font.pixelHeight;
         
@@ -125,7 +125,8 @@ namespace
         void Dump(const Font_s& font) const
         {
             JsonFont jFont;
-            CreateJsonFont(jFont, font);
+            jFont.font.emplace<JsonCompiledFont>();
+            CreateCompiledJsonFont(std::get<JsonCompiledFont>(jFont.font), font);
 
             ordered_json jRoot;
             jRoot["$schema"] = "http://openassettools.dev/schema/font.v1.json";

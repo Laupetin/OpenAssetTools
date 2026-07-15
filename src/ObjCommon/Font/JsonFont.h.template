@@ -15,9 +15,11 @@
 #include "Json/JsonExtension.h"
 #include "Font/FontCommon.h"
 
+#include <cassert>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace GAME
@@ -100,7 +102,7 @@ namespace GAME
     }
 #endif
 
-    class JsonFont
+    class JsonCompiledFont
     {
     public:
         unsigned pixelHeight;
@@ -116,7 +118,7 @@ namespace GAME
     };
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
-        JsonFont,
+        JsonCompiledFont,
         pixelHeight,
 #ifdef FEATURE_T6
         isScalingAllowed,
@@ -130,4 +132,62 @@ namespace GAME
         glyphs
 #endif
     );
+
+    class JsonFileFont
+    {
+    public:
+        std::string file;
+        std::optional<unsigned> fontSize;
+        std::optional<int> yOffset;
+#ifdef FEATURE_T6
+        std::optional<bool> isScalingAllowed;
+#endif
+        std::optional<std::string> generatedMaterialName;
+        std::optional<std::string> generatedGlowMaterialName;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonFileFont,
+        file,
+        fontSize,
+        yOffset,
+#ifdef FEATURE_T6
+        isScalingAllowed,
+#endif
+        generatedMaterialName,
+        generatedGlowMaterialName
+    );
+
+    class JsonFont
+    {
+    public:
+        std::variant<JsonCompiledFont, JsonFileFont> font;
+    };
+
+    NLOHMANN_TO_JSON_METHOD(JsonFont)
+    {
+        if (std::holds_alternative<JsonCompiledFont>(nlohmann_json_t.font))
+        {
+            to_json(nlohmann_json_j, std::get<JsonCompiledFont>(nlohmann_json_t.font));
+        }
+        else
+        {
+            assert(std::holds_alternative<JsonFileFont>(nlohmann_json_t.font));
+            to_json(nlohmann_json_j, std::get<JsonFileFont>(nlohmann_json_t.font));
+        }
+    }
+    
+    NLOHMANN_FROM_JSON_METHOD(JsonFont)
+    {
+        if (nlohmann_json_j.contains("file"))
+        {
+            nlohmann_json_t.font.emplace<JsonFileFont>();
+            from_json(nlohmann_json_j, std::get<JsonFileFont>(nlohmann_json_t.font));
+        }
+        else
+        {
+            nlohmann_json_t.font.emplace<JsonCompiledFont>();
+            from_json(nlohmann_json_j, std::get<JsonCompiledFont>(nlohmann_json_t.font));
+        }
+    }
 } // namespace GAME

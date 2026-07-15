@@ -93,13 +93,24 @@ namespace
             pf.dwABitMask = format->HasA() ? Mask1(format->m_a_size) << format->m_a_offset : 0;
 
             pf.dwFlags = 0;
-            if (format->HasA())
-                pf.dwFlags |= DDPF_ALPHAPIXELS;
 
-            if (format->HasR() && !format->HasG() && !format->HasB())
-                pf.dwFlags |= DDPF_LUMINANCE;
+            const auto hasAnyColor = format->HasR() || format->HasG() || format->HasB();
+            const auto hasAlpha = format->HasA();
+
+            if (!hasAnyColor && hasAlpha)
+            {
+                pf.dwFlags |= DDPF_ALPHA;
+            }
             else
-                pf.dwFlags |= DDPF_RGB;
+            {
+                if (hasAlpha)
+                    pf.dwFlags |= DDPF_ALPHAPIXELS;
+
+                if (format->HasR() && !format->HasG() && !format->HasB())
+                    pf.dwFlags |= DDPF_LUMINANCE;
+                else if (hasAnyColor)
+                    pf.dwFlags |= DDPF_RGB;
+            }
         }
 
         void PopulatePixelFormat(DDS_PIXELFORMAT& pf)

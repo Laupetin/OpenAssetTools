@@ -1,5 +1,6 @@
 #include "ObjCompilerT5.h"
 
+#include "Game/T5/Font/FontCompilerT5.h"
 #include "Game/T5/T5.h"
 #include "Game/T5/Techset/TechniqueCompilerT5.h"
 #include "Game/T5/Techset/TechsetCompilerT5.h"
@@ -17,6 +18,7 @@ namespace
         auto& memory = zone.Memory();
 
         collection.AddAssetCreator(techset::CreateTechsetCompilerT5(memory, searchPath));
+        collection.AddAssetCreator(font::CreateCompilerT5(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT5(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT5(memory));

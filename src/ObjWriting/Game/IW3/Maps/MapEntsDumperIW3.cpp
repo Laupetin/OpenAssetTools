@@ -6,7 +6,7 @@ using namespace IW3;
 
 namespace map_ents
 {
-    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<MapEnts>& asset)
+    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMapEnts::Type>& asset)
     {
         const auto* mapEnts = asset.Asset();
         const auto assetFile = context.OpenAssetFile(GetEntsFileNameForAssetName(asset.m_name));
@@ -15,6 +15,6 @@ namespace map_ents
             return;
 
         auto& stream = *assetFile;
-        stream.write(mapEnts->entityString, mapEnts->numEntityChars);
+        stream.write(mapEnts->entityString, std::max(mapEnts->numEntityChars - 1, 0));
     }
 } // namespace map_ents

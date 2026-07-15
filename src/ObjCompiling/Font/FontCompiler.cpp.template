@@ -1,0 +1,524 @@
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Font/FontCompiler" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IWI_NS iwi6
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IWI_NS iwi8
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IWI_NS iwi8
+#define GAME_LOWER "iw5"
+#elif GAME == "T4"
+#define FEATURE_T4
+#define IWI_NS iwi6
+#define GAME_LOWER "t4"
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IWI_NS iwi13
+#define GAME_LOWER "t5"
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IWI_NS iwi27
+#define GAME_LOWER "t6"
+#endif
+
+// This file was templated.
+// See FontCompiler.cpp.template.
+// Do not modify, changes will be lost.
+
+#set COMPILER_HEADER "\"FontCompiler" + GAME + ".h\""
+#include COMPILER_HEADER
+
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#include COMMON_HEADER
+#include "Font/FontCommon.h"
+#set JSON_HEADER "\"Game/" + GAME + "/Font/JsonFont" + GAME + ".h\""
+#include JSON_HEADER
+#include "Image/IwiTypes.h"
+#include "Image/Texture.h"
+#include "Image/TextureConverter.h"
+#include "Utils/Alignment.h"
+#include "Utils/Logging/Log.h"
+#include "Utils/StringUtils.h"
+
+#include <format>
+#include <filesystem>
+#include <nlohmann/json.hpp>
+#include <stb_truetype.h>
+
+using namespace nlohmann;
+using namespace GAME;
+namespace fs = std::filesystem;
+
+namespace
+{
+    constexpr auto REQUIRED_GLYPH_START = 0x20;
+    constexpr auto OPTIONAL_GLYPH_END_INCLUSIVE = 0xFF;
+    constexpr unsigned REQUIRED_PLUS_OPTIONAL_GLYPH_COUNT = OPTIONAL_GLYPH_END_INCLUSIVE + 1 - REQUIRED_GLYPH_START;
+
+    constexpr unsigned DEFAULT_FONT_SIZE = 20;
+    constexpr unsigned DEFAULT_Y_OFFSET = 0;
+    constexpr unsigned DEFAULT_TEXTURE_WIDTH = 256;
+
+    void PrintError(const Font_s& font, const std::string& message)
+    {
+        con::error("Cannot compile font \"{}\": {}", font.fontName, message);
+    }
+
+    unsigned GetBakedTextureHeight(const stbtt_fontinfo& f, const float scale, const std::vector<Glyph>& glyphs, const unsigned textureWidth)
+    {
+        auto x = 1u;
+        auto y = 1u;
+        auto bottomY = 1u;
+
+        for (const auto& glyph : glyphs)
+        {
+            const auto fontGlyphIndex = stbtt_FindGlyphIndex(&f, glyph.letter);
+
+            int advance, lsb;
+            stbtt_GetGlyphHMetrics(&f, fontGlyphIndex, &advance, &lsb);
+
+            int x0, y0, x1, y1;
+            stbtt_GetGlyphBitmapBox(&f, fontGlyphIndex, scale, scale, &x0, &y0, &x1, &y1);
+
+            const auto glyphWidth = static_cast<unsigned>(x1 - x0);
+            const auto glyphHeight = static_cast<unsigned>(y1 - y0);
+            if (x + glyphWidth + 1u >= textureWidth)
+            {
+                // advance to next row
+                x = 1u;
+                y = bottomY;
+            }
+
+            assert(x + glyphWidth < textureWidth);
+
+            if (fontGlyphIndex > 0)
+            {
+                x = x + glyphWidth + 1u;
+                bottomY = std::max(y + glyphHeight + 1u, bottomY);
+            }
+        }
+
+        return utils::Align<unsigned>(bottomY + 1u, 16u);
+    }
+
+    std::unique_ptr<image::Texture> BakeAlphaTexture(const unsigned char* fontData, const unsigned fontSize, const int yOffset, std::vector<Glyph>& glyphs)
+    {
+        stbtt_fontinfo f;
+        if (!stbtt_InitFont(&f, fontData, 0))
+            return nullptr;
+
+        const auto scale = stbtt_ScaleForPixelHeight(&f, static_cast<float>(fontSize));
+
+        constexpr auto textureWidth = DEFAULT_TEXTURE_WIDTH;
+        const auto textureHeight = GetBakedTextureHeight(f, scale, glyphs, textureWidth);
+
+        auto texture = image::Texture::CreateForType(image::TextureType::T_2D, &image::format::A8, textureWidth, textureHeight, 1, false);
+        texture->Allocate();
+        auto* buf = texture->GetBufferForMipLevel(0);
+
+        f.userdata = nullptr;
+        memset(buf, 0, textureWidth * textureHeight);
+
+        auto x = 1u;
+        auto y = 1u;
+        auto bottomY = 1u;
+        for (auto& glyph : glyphs)
+        {
+            const auto fontGlyphIndex = stbtt_FindGlyphIndex(&f, glyph.letter);
+
+            int advance, lsb;
+            stbtt_GetGlyphHMetrics(&f, fontGlyphIndex, &advance, &lsb);
+
+            int x0, y0, x1, y1;
+            stbtt_GetGlyphBitmapBox(&f, fontGlyphIndex, scale, scale, &x0, &y0, &x1, &y1);
+
+            const auto glyphWidth = static_cast<unsigned>(x1 - x0);
+            const auto glyphHeight = static_cast<unsigned>(y1 - y0);
+            if (x + glyphWidth + 1 >= textureWidth)
+            {
+                // advance to next row
+                x = 1;
+                y = bottomY;
+            }
+
+            glyph.x0 = static_cast<decltype(Glyph::x0)>(x0);
+            glyph.y0 = static_cast<decltype(Glyph::y0)>(y0 + yOffset);
+            glyph.dx = static_cast<decltype(Glyph::dx)>(std::round(scale * static_cast<float>(advance)));
+            
+            // Glyph index 0 means no glyph found in font
+            if (fontGlyphIndex > 0)
+            {
+                // check if it fits vertically AFTER potentially moving to next row
+                assert(y + glyphHeight + 1u < textureHeight);
+                if (y + glyphHeight + 1u >= textureHeight)
+                    return nullptr;
+    
+                assert(x + glyphWidth < textureWidth);
+                assert(y + glyphHeight < textureHeight);
+            
+                stbtt_MakeGlyphBitmap(
+                    &f, buf + x + y * textureWidth, static_cast<int>(glyphWidth), static_cast<int>(glyphHeight), textureWidth, scale, scale, fontGlyphIndex);
+
+                glyph.pixelWidth = static_cast<decltype(Glyph::pixelWidth)>(glyphWidth);
+                glyph.pixelHeight = static_cast<decltype(Glyph::pixelHeight)>(glyphHeight);
+                glyph.s0 = static_cast<float>(x) / static_cast<float>(textureWidth);
+                glyph.t0 = static_cast<float>(y) / static_cast<float>(textureHeight);
+                glyph.s1 = static_cast<float>(x + glyphWidth) / static_cast<float>(textureWidth);
+                glyph.t1 = static_cast<float>(y + glyphHeight) / static_cast<float>(textureHeight);
+
+                x = x + glyphWidth + 1u;
+                bottomY = std::max(y + glyphHeight + 1u, bottomY);
+            }
+            else
+            {
+                // If the font does not have the glyph we set it to empty space
+                glyph.pixelWidth = 0;
+                glyph.pixelHeight = 0;
+                glyph.s0 = 1.0f / static_cast<float>(textureWidth);
+                glyph.t0 = 1.0f / static_cast<float>(textureHeight);
+                glyph.s1 = glyph.s0;
+                glyph.t1 = glyph.t0;
+            }
+        }
+
+        return texture;
+    }
+    
+    XAssetInfo<GfxImage>* CreateFontImage(const std::string& name, const image::Texture& texture, MemoryManager& memory, AssetCreationContext& context)
+    {
+        auto* image = memory.Alloc<GfxImage>();
+        image->name = memory.Dup(name.c_str());
+        image->width = static_cast<decltype(GfxImage::width)>(texture.GetWidth());
+        image->height = static_cast<decltype(GfxImage::height)>(texture.GetHeight());
+        image->depth = static_cast<decltype(GfxImage::depth)>(texture.GetDepth());
+        image->mapType = MAPTYPE_2D;
+        image->semantic = TS_2D;
+        image->noPicmip = true;
+        
+        const auto textureSize = texture.GetFormat()->GetSizeOfMipLevel(0, image->width, image->height, image->depth);
+        auto* loadDef = static_cast<GfxImageLoadDef*>(memory.AllocRaw(offsetof(GfxImageLoadDef, data) + textureSize));
+        image->texture.loadDef = loadDef;
+
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+        loadDef->dimensions[0] = image->width;
+        loadDef->dimensions[1] = image->height;
+        loadDef->dimensions[2] = image->depth;
+#endif
+
+        loadDef->resourceSize = static_cast<decltype(GfxImageLoadDef::resourceSize)>(textureSize);
+#ifdef FEATURE_T6
+        loadDef->format = texture.GetFormat()->GetDxgiFormat();
+#else
+        loadDef->format = texture.GetFormat()->GetD3DFormat();
+#endif
+        loadDef->levelCount = 1;
+        std::memcpy(loadDef->data, texture.GetBufferForMipLevel(0), textureSize);
+        
+        loadDef->flags |= image::IWI_NS::IMG_FLAG_NOMIPMAPS;
+        
+        return context.AddAsset<AssetImage>(name, image);
+    }
+    
+    XAssetInfo<Material>* CreateFontMaterialShared(Material* material, AssetRegistration<AssetMaterial>& registration, XAssetInfo<GfxImage>* image, MemoryManager& memory, AssetCreationContext& context)
+    {
+        material->cameraRegion = CAMERA_REGION_NONE;
+        
+#ifdef defined(FEATURE_IW4) || defined(FEATURE_IW5)
+        material->stateFlags = 3;
+#endif
+#ifdef FEATURE_T6
+        material->info.contents = 1;
+#endif
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+        material->info.layeredSurfaceTypes = 0x20000000;
+#endif
+        material->info.textureAtlasColumnCount = 1;
+        material->info.textureAtlasRowCount = 1;
+        
+        for (auto& entry : material->stateBitsEntry)
+            entry = -1;
+        material->stateBitsEntry[TECHNIQUE_UNLIT] = 0;
+        
+        material->stateBitsCount = 1;
+        material->stateBitsTable = memory.Alloc<GfxStateBits>(1);
+        auto& stateBits = material->stateBitsTable[0].loadBits.structured;
+        stateBits.srcBlendRgb = GFXS_BLEND_SRCALPHA;
+        stateBits.dstBlendRgb = GFXS_BLEND_INVSRCALPHA;
+        stateBits.blendOpRgb = GFXS_BLENDOP_ADD;
+        stateBits.alphaTest = GFXS_ALPHA_TEST_GT_0;
+        stateBits.cullFace = GFXS_CULL_BACK;
+        stateBits.srcBlendAlpha = GFXS_BLEND_INVDESTALPHA;
+        stateBits.dstBlendAlpha = GFXS_BLEND_ONE;
+        stateBits.blendOpAlpha = GFXS_BLENDOP_ADD;
+        stateBits.colorWriteRgb = 1;
+        stateBits.colorWriteAlpha = 1;
+        stateBits.polymodeLine = 0;
+        stateBits.depthWrite = 0;
+        stateBits.depthTestDisabled = 1;
+        stateBits.polygonOffset = GFXS_POLYGON_OFFSET_0;
+        
+        material->textureCount = 1;
+        material->textureTable = memory.Alloc<MaterialTextureDef>(1);
+        auto& textureDef = material->textureTable[0];
+
+#if defined(FEATURE_T6)
+        // Yes, there is a typo. That's what the game does.
+        textureDef.nameHash = Common::R_HashString("FontTextutre");
+        textureDef.nameStart = 'F';
+        textureDef.nameEnd = 'e';
+#else
+        textureDef.nameHash = Common::R_HashString("colorMap");
+        textureDef.nameStart = 'c';
+        textureDef.nameEnd = 'p';
+#endif
+        
+        textureDef.samplerState.filter = TEXTURE_FILTER_LINEAR;
+        textureDef.samplerState.mipMap = SAMPLER_MIPMAP_ENUM_DISABLED;
+        textureDef.semantic = TS_2D;
+#ifdef FEATURE_T6
+        textureDef.image = image->Asset();
+#else
+        textureDef.u.image = image->Asset();
+#endif
+        registration.AddDependency(image);
+        
+        return context.AddAsset<AssetMaterial>(std::move(registration));
+    }
+    
+    XAssetInfo<Material>* CreateFontMaterial(const std::string& name, XAssetInfo<GfxImage>* image, MemoryManager& memory, AssetCreationContext& context)
+    {
+        auto* material = memory.Alloc<Material>();
+        material->info.name = memory.Dup(name.c_str());
+        AssetRegistration<AssetMaterial> registration(name, material);
+        
+        CreateFontMaterialShared(material, registration, image, memory, context);
+        
+#if defined(FEATURE_IW4)
+        material->info.sortKey = 47;
+#elif defined(FEATURE_IW5)
+        material->info.sortKey = 54;
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5)
+        material->info.sortKey = 43;
+#elif defined(FEATURE_T6)
+        material->info.sortKey = 40;
+#endif
+        
+        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>(
+#if defined(FEATURE_T6)
+            "sw4_2d_alphafont_3q76z816"
+#else
+            "2d"
+#endif
+        );
+        if (!techsetAsset)
+            return nullptr;
+        material->techniqueSet = techsetAsset->Asset();
+        registration.AddDependency(techsetAsset);
+        
+        auto& stateBits = material->stateBitsTable[0].loadBits.structured;
+        stateBits.dstBlendRgb = GFXS_BLEND_INVSRCALPHA;
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+        stateBits.dstBlendAlpha = GFXS_BLEND_ZERO;
+#endif
+        
+        return context.AddAsset<AssetMaterial>(std::move(registration));
+    }
+    
+    XAssetInfo<Material>* CreateFontGlowMaterial(const std::string& name, XAssetInfo<GfxImage>* image, MemoryManager& memory, AssetCreationContext& context)
+    {
+        auto* material = memory.Alloc<Material>();
+        material->info.name = memory.Dup(name.c_str());
+        AssetRegistration<AssetMaterial> registration(name, material);
+        
+        CreateFontMaterialShared(material, registration, image, memory, context);
+        
+#if defined(FEATURE_IW4)
+        material->info.sortKey = 34;
+#elif defined(FEATURE_IW5)
+        material->info.sortKey = 54;
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
+        material->info.sortKey = 4;
+#endif
+        
+        auto* techsetAsset = context.LoadDependency<AssetTechniqueSet>(
+#if defined(FEATURE_T6)
+            "sw4_2d_alphafont_3340wf8q"
+#else
+            "2d"
+#endif
+        );
+        if (!techsetAsset)
+            return nullptr;
+        material->techniqueSet = techsetAsset->Asset();
+        registration.AddDependency(techsetAsset);
+        
+        auto& stateBits = material->stateBitsTable[0].loadBits.structured;
+        stateBits.dstBlendRgb = GFXS_BLEND_ONE;
+        
+        return context.AddAsset<AssetMaterial>(std::move(registration));
+    }
+
+    class FontCompiler final : public AssetCreator<AssetFont>
+    {
+    public:
+        FontCompiler(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto file = m_search_path.Open(font::GetJsonFileNameForAssetName(assetName));
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            auto* font = m_memory.Alloc<Font_s>();
+            font->fontName = m_memory.Dup(assetName.c_str());
+            AssetRegistration<AssetFont> registration(assetName, font);
+
+            try
+            {
+                const auto jRoot = json::parse(*file.m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "font" || version != 1u)
+                {
+                    con::error(R"(Tried to load font "{}" but did not find expected type font of version 1)", assetName);
+                    return AssetCreationResult::Failure();
+                }
+
+                std::string game;
+                jRoot.at("_game").get_to(game);
+                if (game != GAME_LOWER)
+                {
+                    con::error(R"(Tried to load font "{}" but "_game" did not have expected value {})", assetName, GAME_LOWER);
+                    return AssetCreationResult::Failure();
+                }
+
+                const auto jFont = jRoot.get<JsonFont>();
+                if (!std::holds_alternative<JsonFileFont>(jFont.font))
+                    return AssetCreationResult::NoAction();
+                
+                if (CreateFontFromJson(std::get<JsonFileFont>(jFont.font), *font, registration, context))
+                    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+            }
+            catch (const json::exception& e)
+            {
+                con::error("Failed to parse json of font: {}", e.what());
+            }
+
+            return AssetCreationResult::Failure();
+        }
+
+    private:
+        bool CreateFontFromJson(const JsonFileFont& jFont, Font_s& font, AssetRegistration<AssetFont>& registration, AssetCreationContext& context) const
+        {
+            const auto fontSize = jFont.fontSize.value_or(DEFAULT_FONT_SIZE);
+            const auto yOffset = jFont.yOffset.value_or(DEFAULT_Y_OFFSET);
+            font.pixelHeight = static_cast<decltype(Font_s::pixelHeight)>(fontSize);
+            
+#ifdef FEATURE_T6
+            const auto scalingAllowed = jFont.isScalingAllowed.value_or(false);
+            font.isScalingAllowed = scalingAllowed ? 1 : 0;
+#endif
+            
+            const auto extension = fs::path(jFont.file).extension().string();
+            if (!utils::StringEqualsIgnoreCase(extension, ".ttf"))
+            {
+                PrintError(font, std::format("Only ttf files are supported: {}", jFont.file));
+                return false;
+            }
+            
+            const auto fontFile = m_search_path.Open(jFont.file);
+            if (!fontFile.IsOpen())
+            {
+                PrintError(font, std::format("Failed to open font file: {}", jFont.file));
+                return false;
+            }
+            
+            std::vector<unsigned char> fontData(static_cast<size_t>(fontFile.m_length));
+            fontFile.m_stream->read(reinterpret_cast<char*>(fontData.data()), fontFile.m_length);
+
+            std::vector<Glyph> glyphs;
+            glyphs.reserve(REQUIRED_PLUS_OPTIONAL_GLYPH_COUNT);
+            for (auto letter = REQUIRED_GLYPH_START; letter <= OPTIONAL_GLYPH_END_INCLUSIVE; letter++)
+            {
+                Glyph glyph{};
+                glyph.letter = static_cast<decltype(Glyph::letter)>(letter);
+                glyphs.emplace_back(glyph);
+            }
+            
+            auto texture = BakeAlphaTexture(fontData.data(), fontSize, yOffset, glyphs);
+            if (!texture)
+            {
+                PrintError(font, std::format("Failed to bake font alpha texture: {}", jFont.file));
+                return false;
+            }
+            
+#ifndef FEATURE_T6
+            {
+                image::TextureConverter converter(texture.get(), &image::format::B8_G8_R8_A8);
+                converter.SetColorFill(true, true, true);
+                texture = converter.Convert();
+            }
+#endif
+
+            font.glyphCount = static_cast<decltype(Glyph::letter)>(glyphs.size());
+            font.glyphs = m_memory.Alloc<Glyph>(font.glyphCount);
+            std::memcpy(font.glyphs, glyphs.data(), font.glyphCount * sizeof(Glyph));
+            
+#ifdef FEATURE_T6
+            // The game is bugged here and accesses the kerning pairs even when kerningPairsCount is set to 0.
+            // It always checks the first entry so we add a nonsense entry here that never matches
+            // to ensure that no kerning is applied on randomly matching bytes.
+            font.kerningPairsCount = 1;
+            font.kerningPairs = m_memory.Alloc<KerningPairs>(1);
+            font.kerningPairs[0].wFirst = 0;
+            font.kerningPairs[0].wSecond = 0;
+            font.kerningPairs[0].iKernAmount = 0;
+#endif
+            
+            auto materialName = jFont.generatedMaterialName.value_or(font.fontName);
+            auto* image = CreateFontImage(materialName, *texture, m_memory, context);
+            
+            auto fontMaterial = CreateFontMaterial(materialName, image, m_memory, context);
+            if (!fontMaterial)
+                return false;
+            font.material = fontMaterial->Asset();
+            registration.AddDependency(fontMaterial);
+            
+            auto glowMaterialName = jFont.generatedGlowMaterialName.value_or(std::format("{}_glow", materialName));
+            auto fontGlowMaterial = CreateFontGlowMaterial(glowMaterialName, image, m_memory, context);
+            if (!fontGlowMaterial)
+                return false;
+            font.glowMaterial = fontGlowMaterial->Asset();
+            registration.AddDependency(fontGlowMaterial);
+
+            return true;
+        }
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace font
+{
+#set CREATE_COMPILER_METHOD "CreateCompiler" + GAME
+    std::unique_ptr<AssetCreator<AssetFont>> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<FontCompiler>(memory, searchPath);
+    }
+} // namespace font

@@ -1,5 +1,6 @@
 #include "ObjCompilerIW5.h"
 
+#include "Game/IW5/Font/FontCompilerIW5.h"
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Techset/TechniqueCompilerIW5.h"
 #include "Game/IW5/Techset/TechsetCompilerIW5.h"
@@ -18,6 +19,7 @@ namespace
 
         collection.AddAssetCreator(techset::CreateVertexDeclCompilerIW5(memory));
         collection.AddAssetCreator(techset::CreateTechsetCompilerIW5(memory, searchPath));
+        collection.AddAssetCreator(font::CreateCompilerIW5(memory, searchPath));
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerIW5(memory, zone, searchPath));
     }

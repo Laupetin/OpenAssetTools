@@ -405,7 +405,8 @@ namespace T6
         CONSTRAINT_LAUNCH = 0x7,
         CONSTRAINT_ROPE = 0x8,
         CONSTRAINT_LIGHT = 0x9,
-        NUM_CONSTRAINT_TYPES = 0xA,
+
+        NUM_CONSTRAINT_TYPES
     };
 
     enum AttachPointType
@@ -838,7 +839,7 @@ namespace T6
         uint32_t valid : 1;
     };
 
-    enum MapType
+    enum MapType : unsigned char
     {
         MAPTYPE_NONE = 0x0,
         MAPTYPE_INVALID1 = 0x1,
@@ -900,7 +901,7 @@ namespace T6
     struct GfxImage
     {
         GfxTexture texture;
-        char mapType;
+        MapType mapType;
         char semantic;
         char category;
         bool delayLoadPixels;

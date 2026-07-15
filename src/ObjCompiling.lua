@@ -15,6 +15,7 @@ end
 function ObjCompiling:link(links)
 	links:add(self:name())
 	links:linkto(minilzo)
+	links:linkto(stb)
 	links:linkto(Utils)
 	links:linkto(ObjCommon)
 	links:linkto(ObjLoading)
@@ -58,4 +59,5 @@ function ObjCompiling:project()
 		minilzo:include(includes)
 		Utils:include(includes)
 		json:include(includes)
+		stb:include(includes)
 end

@@ -1,0 +1,23 @@
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Font/FontCompiler" + GAME + ".h"
+
+// This file was templated.
+// See FontCompiler.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+namespace font
+{
+#set CREATE_COMPILER_METHOD "CreateCompiler" + GAME
+    std::unique_ptr<AssetCreator<GAME::AssetFont>> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace font

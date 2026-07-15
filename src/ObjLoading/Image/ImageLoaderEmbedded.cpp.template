@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageLoaderEmbedded" + GAME + ".cpp"
 
@@ -8,13 +8,15 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
 #endif
 
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
 #define IWI_NS iwi6
 #define FLAG_CUBE IMG_FLAG_CUBEMAP
 #define FLAG_3D IMG_FLAG_VOLMAP
@@ -136,7 +138,7 @@ namespace
             if (texture->GetTextureType() == TextureType::T_3D)
                 loadDef->flags |= IWI_NS::FLAG_3D;
         
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             loadDef->dimensions[0] = image->width;
             loadDef->dimensions[1] = image->height;
             loadDef->dimensions[2] = image->depth;
