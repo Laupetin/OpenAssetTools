@@ -134,6 +134,7 @@ namespace
         editItem.window.borderColor[2] = 0.5f;
         editItem.window.borderColor[3] = 1.0f;
         editItem.type = ITEM_TYPE_UPREDITFIELD;
+        editItem.text = "";
         editItem.textAlignMode = 1;
         editItem.textalignx = -28.0f;
         editItem.textaligny = 14.0f;
@@ -276,6 +277,7 @@ namespace
         itemDef
         {
             name                        "name_field"
+            text                        ""
             group                       "fields"
             rect                        10 56 180 24 1 2
             style                       1

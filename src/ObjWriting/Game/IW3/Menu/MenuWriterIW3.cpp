@@ -457,10 +457,22 @@ namespace
             WriteStringProperty("dvarEnumList", item.typeData.enumDvarName);
         }
 
+        void WriteItemTextProperty(const char* text) const
+        {
+            // IW3 distinguishes explicitly empty text from null text, which falls back to the item's dvar.
+            if (!text)
+                return;
+
+            Indent();
+            WriteKey("text");
+            WriteEscapedString(text);
+            m_stream << "\n";
+        }
+
         void WriteItemData(const itemDef_s& item)
         {
             WriteStringProperty("name", item.window.name);
-            WriteStringProperty("text", item.text);
+            WriteItemTextProperty(item.text);
             WriteStringProperty("group", item.window.group);
             WriteRectProperty("rect", item.window.rectClient);
             WriteIntProperty("style", item.window.style, 0);
