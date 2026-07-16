@@ -1,6 +1,6 @@
 #include "Game/IW3/Menu/MenuDumperIW3.h"
-#include "Game/IW3/Menu/MenuListDumperIW3.h"
 
+#include "Game/IW3/Menu/MenuListDumperIW3.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
