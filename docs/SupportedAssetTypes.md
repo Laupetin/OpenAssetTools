@@ -29,8 +29,8 @@ using `Linker`):
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ✅               | ✅               |                                                                              |
 | Font_s               | ✅               | ✅               |                                                                              |
-| MenuList             | ❌               | ❌               |                                                                              |
-| menuDef_t            | ❌               | ❌               |                                                                              |
+| MenuList             | ✅               | ❌               |                                                                              |
+| menuDef_t            | ✅               | ❌               |                                                                              |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |
 | WeaponDef            | ✅               | ✅               |                                                                              |
 | FxEffectDef          | ❌               | ❌               |                                                                              |
