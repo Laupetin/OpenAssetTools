@@ -51,6 +51,9 @@ namespace
 
     TEST_CASE("MenuDumperIW3: Can dump menu with expressions and scripts", "[iw3][menu][assetdumper]")
     {
+        constexpr auto UI_SHOW_FAVORITE_SERVERS = 0x00000004;
+        constexpr auto UI_SHOW_NOT_FAVORITE_SERVERS = 0x00001000;
+
         auto menuVisibleValues = std::array{Operator(OP_DVARBOOL), StringOperand("ui_test"), Operator(OP_RIGHTPAREN)};
         auto menuVisibleEntries = EntryPointers(menuVisibleValues);
 
@@ -79,6 +82,7 @@ namespace
         button.window.group = "buttons";
         button.window.rectClient = {10.0f, 20.0f, 180.0f, 24.0f, 1, 2};
         button.window.style = 1;
+        button.window.ownerDrawFlags = UI_SHOW_NOT_FAVORITE_SERVERS;
         button.window.backColor[0] = 0.1f;
         button.window.backColor[1] = 0.1f;
         button.window.backColor[2] = 0.1f;
@@ -145,6 +149,7 @@ namespace
         menu.window.name = "test_menu";
         menu.window.rect = {0.0f, 0.0f, 640.0f, 480.0f, 0, 0};
         menu.window.style = 1;
+        menu.window.ownerDrawFlags = UI_SHOW_FAVORITE_SERVERS;
         menu.window.border = 1;
         menu.window.borderSize = 2.0f;
         menu.window.backColor[0] = 0.1f;
@@ -200,6 +205,7 @@ namespace
         borderSize                  2
         backcolor                   0.1 0.2 0.3 0.75
         focuscolor                  1 0.8 0.2 1
+        ownerdrawFlag               4
         soundLoop                   "menu_music"
         fadeClamp                   1
         fadeCycle                   16
@@ -234,6 +240,7 @@ namespace
             style                       1
             type                        1
             visible                     when((localvarint("ui_highlight")==5&&localvarstring("ui_choicegroup")=="popmenu"));
+            ownerdrawFlag               4096
             textalign                   10
             textalignx                  -6
             textscale                   0.4
@@ -300,8 +307,10 @@ namespace
         REQUIRE(parsed);
         REQUIRE(parsed->m_menus.size() == 1);
         REQUIRE(parsed->m_menus[0]->m_name == "test_menu");
+        REQUIRE(parsed->m_menus[0]->m_owner_draw_flags == UI_SHOW_FAVORITE_SERVERS);
         REQUIRE(parsed->m_menus[0]->m_items.size() == 2);
         REQUIRE(parsed->m_menus[0]->m_items[0]->m_name == "button_test");
+        REQUIRE(parsed->m_menus[0]->m_items[0]->m_owner_draw_flags == UI_SHOW_NOT_FAVORITE_SERVERS);
         REQUIRE(parsed->m_menus[0]->m_items[1]->m_name == "name_field");
         REQUIRE(parsed->m_menus[0]->m_items[1]->m_dvar == "player_name");
     }
