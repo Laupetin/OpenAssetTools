@@ -477,7 +477,7 @@ namespace
                 WriteIntProperty("visible", 1, 0);
 
             WriteIntProperty("ownerdraw", item.window.ownerDraw, 0);
-            WriteFlagsProperty("ownerdrawFlag", item.window.ownerDrawFlags);
+            WriteIntProperty("ownerdrawFlag", item.window.ownerDrawFlags, 0);
             WriteIntProperty("align", item.alignment, 0);
             WriteIntProperty("textalign", item.textAlignMode, 0);
             WriteFloatProperty("textalignx", item.textalignx, 0.0f);
@@ -562,7 +562,7 @@ namespace
             WriteColorProperty("outlinecolor", menu.window.outlineColor, COLOR_0000);
             WriteMaterialProperty("background", menu.window.background);
             WriteIntProperty("ownerdraw", menu.window.ownerDraw, 0);
-            WriteFlagsProperty("ownerdrawFlag", menu.window.ownerDrawFlags);
+            WriteIntProperty("ownerdrawFlag", menu.window.ownerDrawFlags, 0);
             WriteKeywordProperty("outOfBoundsClick", menu.window.staticFlags & WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
             WriteStringProperty("soundLoop", menu.soundName);
             WriteKeywordProperty("popup", menu.window.staticFlags & WINDOW_FLAG_POPUP);
