@@ -72,8 +72,11 @@ namespace
                                               Operator(OP_RIGHTPAREN)};
         auto buttonVisibleEntries = EntryPointers(buttonVisibleValues);
 
-        auto materialValues = std::array{Operator(OP_LEFTPAREN), StringOperand("gradient_fadein"), Operator(OP_RIGHTPAREN)};
-        auto materialEntries = EntryPointers(materialValues);
+        auto materialExpressionValues = std::array{Operator(OP_LEFTPAREN), StringOperand("expression_material"), Operator(OP_RIGHTPAREN)};
+        auto materialExpressionEntries = EntryPointers(materialExpressionValues);
+
+        Material backgroundMaterial{};
+        backgroundMaterial.info.name = "background_material";
 
         ItemKeyHandler buttonKeyHandler{'a', "open advanced;", nullptr};
 
@@ -91,6 +94,7 @@ namespace
         button.window.foreColor[1] = 0.69f;
         button.window.foreColor[2] = 0.69f;
         button.window.foreColor[3] = 1.0f;
+        button.window.background = &backgroundMaterial;
         button.type = ITEM_TYPE_BUTTON;
         button.text = "@MENU_TEST";
         button.textAlignMode = 10;
@@ -104,7 +108,7 @@ namespace
         button.action = "play mouse_click; open options;";
         button.onKey = &buttonKeyHandler;
         button.visibleExp = {static_cast<int>(buttonVisibleEntries.size()), buttonVisibleEntries.data()};
-        button.materialExp = {static_cast<int>(materialEntries.size()), materialEntries.data()};
+        button.materialExp = {static_cast<int>(materialExpressionEntries.size()), materialExpressionEntries.data()};
 
         editFieldDef_s editField{};
         editField.minVal = -1.0f;
@@ -250,6 +254,7 @@ namespace
             textfont                    1
             backcolor                   0.1 0.1 0.1 0.25
             forecolor                   0.69 0.69 0.69 1
+            background                  "background_material"
             onFocus
             {
                 play mouse_over;
@@ -272,7 +277,7 @@ namespace
             {
                 open advanced;
             }
-            exp material                ("gradient_fadein");
+            exp material                ("expression_material");
         }
         itemDef
         {
