@@ -1,4 +1,5 @@
 #include "Game/IW3/Menu/MenuDumperIW3.h"
+#include "Game/IW3/Menu/MenuListDumperIW3.h"
 
 #include "Parsing/Menu/MenuFileReader.h"
 #include "SearchPath/MockOutputPath.h"
@@ -325,5 +326,35 @@ namespace
         REQUIRE(parsed->m_menus[0]->m_items[0]->m_owner_draw_flags == UI_SHOW_NOT_FAVORITE_SERVERS);
         REQUIRE(parsed->m_menus[0]->m_items[1]->m_name == "name_field");
         REQUIRE(parsed->m_menus[0]->m_items[1]->m_dvar == "player_name");
+    }
+
+    TEST_CASE("MenuDumperIW3: Prefers parent menu list path over ui_mp fallback", "[iw3][menu][assetdumper]")
+    {
+        menuDef_t menu{};
+        menu.window.name = "test_menu";
+
+        menuDef_t* menus[]{&menu};
+
+        MenuList menuList{};
+        menuList.name = "ui/menus.txt";
+        menuList.menuCount = static_cast<int>(std::size(menus));
+        menuList.menus = menus;
+
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<MenuList>>(ASSET_TYPE_MENULIST, menuList.name, &menuList));
+
+        MockSearchPath mockObjPath;
+        MockOutputPath mockOutput;
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
+
+        menu::MenuListDumperIW3 menuListDumper;
+        menuListDumper.Dump(context);
+
+        menu::MenuDumperIW3 menuDumper;
+        menuDumper.Dump(context);
+
+        REQUIRE(mockOutput.GetMockedFile("ui/test_menu.menu"));
+        REQUIRE_FALSE(mockOutput.GetMockedFile("ui_mp/test_menu.menu"));
     }
 } // namespace
