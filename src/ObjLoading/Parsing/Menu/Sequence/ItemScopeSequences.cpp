@@ -17,6 +17,8 @@
 
 using namespace menu;
 
+constexpr auto ITEM_TYPE_OWNERDRAW = 8;
+
 class ItemScopeOperations
 {
     inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]{
@@ -705,6 +707,7 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     AddSequence(std::make_unique<GenericIntPropertySequence>("ownerdraw",
                                                              [](const MenuFileParserState* state, const TokenPos&, const int value)
                                                              {
+                                                                 state->m_current_item->m_type = ITEM_TYPE_OWNERDRAW;
                                                                  state->m_current_item->m_owner_draw = value;
                                                              }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("align",

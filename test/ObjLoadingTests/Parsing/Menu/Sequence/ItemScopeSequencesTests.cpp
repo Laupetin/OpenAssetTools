@@ -334,6 +334,28 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(item->m_rect.verticalAlign == 0);
     }
 
+    TEST_CASE("ItemScopeSequences: Ownerdraw sets the ownerdraw item type", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("ownerdraw")),
+            SimpleParserValue::Integer(pos, 220),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 2);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE(item->m_owner_draw == 220);
+        REQUIRE(item->m_type == 8); // ITEM_TYPE_OWNERDRAW
+    }
+
     TEST_CASE("ItemScopeSequences: Simple dvarStrList works", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
