@@ -100,6 +100,7 @@ namespace
         button.fontEnum = 1;
         button.onFocus = "play mouse_over; setlocalvarint ui_highlight 5;";
         button.leaveFocus = "setlocalvarint ui_highlight 0;";
+        button.mouseExit = "setitemcolor button_test bordercolor \"0.1\" \"0.1\" \"0.12\" \"0.5\";";
         button.action = "play mouse_click; open options;";
         button.onKey = &buttonKeyHandler;
         button.visibleExp = {static_cast<int>(buttonVisibleEntries.size()), buttonVisibleEntries.data()};
@@ -256,6 +257,10 @@ namespace
             leaveFocus
             {
                 setlocalvarint ui_highlight 0;
+            }
+            mouseExit
+            {
+                setitemcolor button_test bordercolor 0.1 0.1 0.12 0.5;
             }
             action
             {
