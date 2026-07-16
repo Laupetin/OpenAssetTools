@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <sstream>
 
 namespace menu
@@ -116,6 +117,11 @@ namespace menu
     {
         if (token.empty())
             return true;
+
+        char* numericEnd;
+        std::strtof(token.c_str(), &numericEnd);
+        if (numericEnd == token.c_str() + token.size())
+            return false;
 
         const auto hasAlNumCharacter = std::ranges::any_of(token,
                                                            [](const char& c)
