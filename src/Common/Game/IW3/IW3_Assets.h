@@ -2491,6 +2491,24 @@ namespace IW3
         int vertAlign;
     };
 
+    enum WindowDefStaticFlag : unsigned int
+    {
+        WINDOW_FLAG_DECORATION = 0x100000,
+        WINDOW_FLAG_HORIZONTAL_SCROLL = 0x200000,
+        WINDOW_FLAG_AUTO_WRAPPED = 0x800000,
+        WINDOW_FLAG_POPUP = 0x1000000,
+        WINDOW_FLAG_OUT_OF_BOUNDS_CLICK = 0x2000000,
+        WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
+        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000,
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,
+    };
+
+    enum WindowDefDynamicFlag : unsigned int
+    {
+        WINDOW_FLAG_VISIBLE = 0x4,
+    };
+
     struct windowDef_t
     {
         const char* name;
@@ -2539,10 +2557,98 @@ namespace IW3
         operandInternalDataUnion internals;
     };
 
+    enum operationEnum : int
+    {
+        OP_NOOP = 0x0,
+        OP_RIGHTPAREN = 0x1,
+        OP_MULTIPLY = 0x2,
+        OP_DIVIDE = 0x3,
+        OP_MODULUS = 0x4,
+        OP_ADD = 0x5,
+        OP_SUBTRACT = 0x6,
+        OP_NOT = 0x7,
+        OP_LESSTHAN = 0x8,
+        OP_LESSTHANEQUALTO = 0x9,
+        OP_GREATERTHAN = 0xA,
+        OP_GREATERTHANEQUALTO = 0xB,
+        OP_EQUALS = 0xC,
+        OP_NOTEQUAL = 0xD,
+        OP_AND = 0xE,
+        OP_OR = 0xF,
+        OP_LEFTPAREN = 0x10,
+        OP_COMMA = 0x11,
+        OP_BITWISEAND = 0x12,
+        OP_BITWISEOR = 0x13,
+        OP_BITWISENOT = 0x14,
+        OP_BITSHIFTLEFT = 0x15,
+        OP_BITSHIFTRIGHT = 0x16,
+        OP_SIN = 0x17,
+        OP_FIRSTFUNCTIONCALL = 0x17,
+        OP_COS = 0x18,
+        OP_MIN = 0x19,
+        OP_MAX = 0x1A,
+        OP_MILLISECONDS = 0x1B,
+        OP_DVARINT = 0x1C,
+        OP_DVARBOOL = 0x1D,
+        OP_DVARFLOAT = 0x1E,
+        OP_DVARSTRING = 0x1F,
+        OP_STAT = 0x20,
+        OP_UIACTIVE = 0x21,
+        OP_FLASHBANGED = 0x22,
+        OP_SCOPED = 0x23,
+        OP_SCOREBOARDVISIBLE = 0x24,
+        OP_INKILLCAM = 0x25,
+        OP_PLAYERFIELD = 0x26,
+        OP_SELECTINGLOCATION = 0x27,
+        OP_TEAMFIELD = 0x28,
+        OP_OTHERTEAMFIELD = 0x29,
+        OP_MARINESFIELD = 0x2A,
+        OP_OPFORFIELD = 0x2B,
+        OP_MENUISOPEN = 0x2C,
+        OP_WRITINGDATA = 0x2D,
+        OP_INLOBBY = 0x2E,
+        OP_INPRIVATEPARTY = 0x2F,
+        OP_PRIVATEPARTYHOST = 0x30,
+        OP_PRIVATEPARTYHOSTINLOBBY = 0x31,
+        OP_ALONEINPARTY = 0x32,
+        OP_ADSJAVELIN = 0x33,
+        OP_WEAPLOCKBLINK = 0x34,
+        OP_WEAPATTACKTOP = 0x35,
+        OP_WEAPATTACKDIRECT = 0x36,
+        OP_SECONDSASTIME = 0x37,
+        OP_TABLELOOKUP = 0x38,
+        OP_LOCALIZESTRING = 0x39,
+        OP_LOCALVARINT = 0x3A,
+        OP_LOCALVARBOOL = 0x3B,
+        OP_LOCALVARFLOAT = 0x3C,
+        OP_LOCALVARSTRING = 0x3D,
+        OP_TIMELEFT = 0x3E,
+        OP_SECONDSASCOUNTDOWN = 0x3F,
+        OP_GAMEMSGWNDACTIVE = 0x40,
+        OP_TOINT = 0x41,
+        OP_TOSTRING = 0x42,
+        OP_TOFLOAT = 0x43,
+        OP_GAMETYPENAME = 0x44,
+        OP_GAMETYPE = 0x45,
+        OP_GAMETYPEDESCRIPTION = 0x46,
+        OP_SCORE = 0x47,
+        OP_FRIENDSONLINE = 0x48,
+        OP_FOLLOWING = 0x49,
+        OP_STATRANGEBITSSET = 0x4A,
+        OP_KEYBINDING = 0x4B,
+        OP_ACTIONSLOTUSABLE = 0x4C,
+        OP_HUDFADE = 0x4D,
+        OP_MAXPLAYERS = 0x4E,
+        OP_ACCEPTINGINVITE = 0x4F,
+        OP_ISINTERMISSION = 0x50,
+
+        NUM_OPERATORS = 0x51,
+    };
+
     union entryInternalData
     {
+        operationEnum op;
         Operand operand;
-        int op;
     };
 
     enum expressionEntryType : int
@@ -2643,6 +2749,15 @@ namespace IW3
         ITEM_TYPE_DECIMALFIELD = 0x11,
         ITEM_TYPE_UPREDITFIELD = 0x12,
         ITEM_TYPE_GAME_MESSAGE_WINDOW = 0x13
+    };
+
+    enum ItemDefDvarFlag
+    {
+        ITEM_DVAR_FLAG_ENABLE = 0x1,
+        ITEM_DVAR_FLAG_DISABLE = 0x2,
+        ITEM_DVAR_FLAG_SHOW = 0x4,
+        ITEM_DVAR_FLAG_HIDE = 0x8,
+        ITEM_DVAR_FLAG_FOCUS = 0x10,
     };
 
     struct itemDef_s
