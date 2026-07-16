@@ -9,6 +9,8 @@
 #include "LightDef/LightDefDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
 #include "Maps/MapEntsDumperIW3.h"
+#include "Menu/MenuDumperIW3.h"
+#include "Menu/MenuListDumperIW3.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW3.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
@@ -43,8 +45,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW3>());
     RegisterAssetDumper(std::make_unique<font::JsonDumperIW3>());
-    // REGISTER_DUMPER(AssetDumperMenuList)
-    // REGISTER_DUMPER(AssetDumpermenuDef_t)
+    RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW3>());
+    RegisterAssetDumper(std::make_unique<menu::MenuDumperIW3>());
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
     RegisterAssetDumper(std::make_unique<weapon::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals)
