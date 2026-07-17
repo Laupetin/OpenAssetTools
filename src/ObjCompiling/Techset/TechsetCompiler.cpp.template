@@ -69,6 +69,28 @@ namespace
         return static_cast<MaterialWorldVertexFormat>(0);
     }
 
+#if defined(FEATURE_IW3)
+    uint16_t GetLoadForRenderer(const std::string& techniqueSetName)
+    {
+        if (techniqueSetName.starts_with("sm2/"))
+            return 0;
+        return 1;
+    }
+
+    void ApplyLoadForRendererToTechnique(const MaterialTechnique& technique, const uint16_t loadForRenderer)
+    {
+        for (auto passIndex = 0u; passIndex < technique.passCount; passIndex++)
+        {
+            auto* vertexShader = technique.passArray[passIndex].vertexShader;
+            if (vertexShader)
+                vertexShader->prog.loadDef.loadForRenderer = std::max(vertexShader->prog.loadDef.loadForRenderer, loadForRenderer);
+            auto* pixelShader = technique.passArray[passIndex].pixelShader;
+            if (pixelShader)
+                pixelShader->prog.loadDef.loadForRenderer = std::max(pixelShader->prog.loadDef.loadForRenderer, loadForRenderer);
+        }
+    }
+#endif
+
 #if defined(FEATURE_T6)
     MaterialType GetMaterialType(const std::string& name)
     {
@@ -116,6 +138,9 @@ namespace
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
+#if defined(FEATURE_IW3)
+            const auto loadForRenderer = GetLoadForRenderer(assetName);
+#endif
 #if defined(FEATURE_T6)
             const auto materialType = GetMaterialType(assetName);
 #endif
@@ -132,6 +157,12 @@ namespace
 
                 techset->techniques[techniqueIndex] = technique->Asset();
 
+#if defined(FEATURE_IW3)
+                // IW3 supports both sm2 and sm3.
+                // The shader's loadForRenderer property is set to 0 for sm2 and 1 for sm3.
+                // Which shader model a techset is for is entirely determined by its name according to modtools.
+                ApplyLoadForRendererToTechnique(*techset->techniques[techniqueIndex], loadForRenderer);
+#endif
 #if defined(FEATURE_T6)
                 // Another techset may override this for the technique
                 // but the game determines the material type by techset name.
