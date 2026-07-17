@@ -8,6 +8,11 @@ on:
     branches:
       - "main"
 
+env:
+  SCCACHE_GHA_ENABLED: "on"
+  SCCACHE_BASEDIRS: ${{ github.workspace }}
+  SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
+
 jobs:
   build-test-linux:
     strategy:
@@ -58,6 +63,11 @@ jobs:
         with:
           node-version: 24
 
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+        with:
+          version: v0.15.0
+
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
@@ -73,6 +83,13 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
+          if [[ "${{ matrix.toolset }}" == "gcc" ]]; then
+            export CC="sccache gcc"
+            export CXX="sccache g++"
+          else
+            export CC="sccache clang"
+            export CXX="sccache clang++"
+          fi
           [[ "${{ matrix.build_arch }}" == "x86" ]] && export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig:$PKG_CONFIG_PATH || true
           echo "Package config path: $PKG_CONFIG_PATH"
           scripts/build.sh release ${{ matrix.build_arch }}
@@ -111,6 +128,38 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v3.0.0
 
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+        with:
+          version: v0.15.0
+
+      - name: Configure sccache for MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installationPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $installationPath) {
+            throw "Could not locate the Visual C++ tools"
+          }
+
+          $toolsVersionFile = Join-Path $installationPath "VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt"
+          $toolsVersion = (Get-Content -Raw -LiteralPath $toolsVersionFile).Trim()
+          $targetArchitecture = "${{ matrix.build_arch }}"
+          $compilerDirectory = Join-Path $installationPath "VC\Tools\MSVC\$toolsVersion\bin\Hostx86\$targetArchitecture"
+          $compilerPath = Join-Path $compilerDirectory "cl.exe"
+          if (-not (Test-Path -LiteralPath $compilerPath)) {
+            throw "Could not locate cl.exe at $compilerPath"
+          }
+
+          # A cl.exe-named copy enables sccache's compiler-proxy mode. The real
+          # compiler directory must also be on PATH so cache misses can run cl.exe.
+          $wrapperDirectory = Join-Path $env:RUNNER_TEMP "sccache-msvc"
+          $wrapperPath = Join-Path $wrapperDirectory "cl.exe"
+          New-Item -ItemType Directory -Path $wrapperDirectory -Force | Out-Null
+          Copy-Item -LiteralPath (Get-Command sccache.exe).Source -Destination $wrapperPath -Force
+          $compilerDirectory >> $env:GITHUB_PATH
+          "SCCACHE_CL_WRAPPER=$wrapperPath" >> $env:GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v7.0.0
         with:
@@ -131,7 +180,7 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
-          msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
+          msbuild /m /p:TrackFileAccess=false /p:UseMultiToolTask=true "/p:CLToolExe=$env:SCCACHE_CL_WRAPPER" /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
