@@ -130,10 +130,8 @@ TEST_CASE("TechniqueCompilerIW3", "[iw3][techset][compiler]")
 
         REQUIRE(pass.vertexShader);
         CHECK(pass.vertexShader->name == "simple.hlsl"s);
-        CHECK(pass.vertexShader->prog.loadDef.loadForRenderer == 1);
         REQUIRE(pass.pixelShader);
         CHECK(pass.pixelShader->name == "simple.hlsl"s);
-        CHECK(pass.pixelShader->prog.loadDef.loadForRenderer == 1);
 
         REQUIRE(pass.vertexDecl);
         auto& vertexDecl = *pass.vertexDecl;

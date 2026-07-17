@@ -94,10 +94,6 @@ namespace
             if (file.m_stream->gcount() != file.m_length)
                 return AssetCreationResult::Failure();
 
-#if defined(FEATURE_IW3)
-            pixelShader->prog.loadDef.loadForRenderer = 1;
-#endif
-
 #if defined(IS_DX9)
             pixelShader->prog.loadDef.program = reinterpret_cast<decltype(GfxPixelShaderLoadDef::program)>(fileBuffer);
 #else
