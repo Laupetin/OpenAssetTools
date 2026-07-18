@@ -2647,8 +2647,8 @@ namespace IW3
 
     union entryInternalData
     {
-        operationEnum op;
         Operand operand;
+        operationEnum op;
     };
 
     enum expressionEntryType : int
