@@ -85,8 +85,7 @@ namespace
     {
         const auto* game = IGame::GetGameById(zone.m_game_id);
 
-        con::info("Loaded zone \"{}\"", zone.m_name);
-        con::info("Detected game: {} ({})", game->GetFullName(), game->GetShortName());
+        con::info("Loaded zone \"{}\" ({})", zone.m_name, game->GetShortName());
     }
 
     class UnlinkerImpl : public Unlinker
