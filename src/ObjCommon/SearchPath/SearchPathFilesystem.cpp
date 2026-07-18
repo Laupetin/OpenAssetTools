@@ -31,7 +31,7 @@ namespace
                 return false;
 
             path = parentDir.string();
-            prefix = combinedPath.filename().string();
+            prefix = combinedPath.string();
         }
 
         return true;
@@ -77,7 +77,7 @@ void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const st
                     continue;
 
                 auto entryPath = entry->path();
-                if (!prefix.empty() && !entryPath.filename().string().starts_with(prefix))
+                if (!prefix.empty() && !entryPath.string().starts_with(prefix))
                     continue;
 
                 if (options.m_filter_extensions && entryPath.extension().string() != options.m_extension)
@@ -104,7 +104,7 @@ void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const st
                     continue;
 
                 auto entryPath = entry->path();
-                if (!prefix.empty() && !entryPath.filename().string().starts_with(prefix))
+                if (!prefix.empty() && !entryPath.string().starts_with(prefix))
                     continue;
 
                 if (options.m_filter_extensions && entryPath.extension().string() != options.m_extension)
