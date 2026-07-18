@@ -25,6 +25,13 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    void LogLoadedZone(const Zone& zone)
+    {
+        const auto* game = IGame::GetGameById(zone.m_game_id);
+
+        con::info("Loaded zone \"{}\" ({})", zone.m_name, game->GetShortName());
+    }
+
     class LinkerSearchPathContext
     {
     public:
@@ -410,7 +417,7 @@ namespace
 
                 auto zone = std::move(*maybeZone);
 
-                con::debug("Loaded zone \"{}\"", zone->m_name);
+                LogLoadedZone(*zone);
 
                 m_loaded_zones.emplace_back(std::move(zone));
             }
