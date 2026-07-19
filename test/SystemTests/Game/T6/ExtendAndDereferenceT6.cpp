@@ -34,6 +34,7 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
+            "--no-assetlist",
             "--asset-search-path",
             testDirStr.c_str(),
             "--source-search-path",
@@ -68,6 +69,7 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
+            "--no-assetlist",
             "--load",
             zoneWithTechsetPathStr.c_str(),
             "--load",

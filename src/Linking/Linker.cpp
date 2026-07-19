@@ -8,6 +8,7 @@
 #include "SearchPath/SearchPaths.h"
 #include "Utils/Logging/Log.h"
 #include "Zone/AssetList/AssetList.h"
+#include "Zone/AssetList/AssetListOutputStream.h"
 #include "Zone/AssetList/AssetListReader.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
 #include "ZoneCreation/ZoneCreationContext.h"
@@ -336,6 +337,38 @@ namespace
             return true;
         }
 
+        bool WriteAssetList(const Zone& zone) const
+        {
+            const auto sourceDirectory = fs::path(m_args.m_base_folder) / "zone_source";
+            OutputPathFilesystem sourceOutputPath(sourceDirectory);
+            const auto assetListPath = fs::path("assetlist") / std::format("{}.csv", zone.m_name);
+            const auto stream = sourceOutputPath.Open(assetListPath.string());
+            if (!stream)
+            {
+                con::error("Failed to open assetlist for zone: {}", zone.m_name);
+                return false;
+            }
+
+            AssetListOutputStream assetListStream(*stream, zone.m_game_id);
+            for (const auto* asset : zone.m_pools)
+            {
+                if (asset->IsReference())
+                    assetListStream.WriteEntry(AssetListEntry(asset->m_type, asset->ReferencedAssetName(), true));
+                else
+                    assetListStream.WriteEntry(AssetListEntry(asset->m_type, asset->m_name, false));
+            }
+
+            stream->flush();
+            if (!*stream)
+            {
+                con::error("Writing assetlist for zone \"{}\" failed.", zone.m_name);
+                return false;
+            }
+
+            con::info("Created assetlist \"{}\"", (sourceDirectory / assetListPath).string());
+            return true;
+        }
+
         bool BuildFastFile(LinkerPathManager& paths, const std::string& projectName, const std::string& targetName, ZoneDefinition& zoneDefinition) const
         {
             const fs::path outDir(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
@@ -348,7 +381,11 @@ namespace
             const auto zone = CreateZoneForDefinition(paths, outDir, cacheDir, targetName, zoneDefinition);
             auto result = zone != nullptr;
             if (zone)
+            {
                 result = WriteZoneToFile(outputPath, *zone);
+                if (result && m_args.m_generate_asset_lists)
+                    result = WriteAssetList(*zone);
+            }
 
             return result;
         }
