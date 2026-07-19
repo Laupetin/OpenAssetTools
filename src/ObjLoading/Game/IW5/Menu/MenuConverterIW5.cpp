@@ -37,11 +37,11 @@ namespace
             };
         }
 
-        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const CommonRect& rectRelativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const rectDef_s& rectRelativeTo)
         {
             return rectDef_s{
-                .x = static_cast<float>(rectRelativeTo.x + rect.x),
-                .y = static_cast<float>(rectRelativeTo.y + rect.y),
+                .x = rectRelativeTo.x + rect.x,
+                .y = rectRelativeTo.y + rect.y,
                 .w = static_cast<float>(rect.w),
                 .h = static_cast<float>(rect.h),
                 .horzAlign = static_cast<unsigned char>(rect.horzAlign),
@@ -1117,7 +1117,7 @@ namespace
             return newsTicker;
         }
 
-        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& commonParentMenu, const menuDef_t& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory.Alloc<itemDef_s>();
             memset(item, 0, sizeof(itemDef_s));
@@ -1136,8 +1136,8 @@ namespace
             item->dataType = item->type;
             item->window.border = commonItem.m_border;
             item->window.borderSize = static_cast<float>(commonItem.m_border_size);
-            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
-            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
+            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &commonParentMenu, &commonItem);
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &commonParentMenu, &commonItem);
             item->window.ownerDraw = commonItem.m_owner_draw;
             item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
             item->alignment = commonItem.m_align;
@@ -1157,25 +1157,25 @@ namespace
             ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
             ConvertColor(item->window.disableColor, commonItem.m_disable_color);
             ConvertColor(item->glowColor, commonItem.m_glow_color);
-            item->window.background = ConvertMaterial(commonItem.m_background, &parentMenu, &commonItem);
-            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &parentMenu, &commonItem);
-            item->hasFocus = ConvertEventHandlerSet(commonItem.m_has_focus.get(), &parentMenu, &commonItem);
-            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &parentMenu, &commonItem);
-            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &parentMenu, &commonItem);
-            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &parentMenu, &commonItem);
-            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &parentMenu, &commonItem);
-            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &parentMenu, &commonItem);
-            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &parentMenu, &commonItem);
-            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &parentMenu, &commonItem);
-            item->focusSound = ConvertSound(commonItem.m_focus_sound, &parentMenu, &commonItem);
+            item->window.background = ConvertMaterial(commonItem.m_background, &commonParentMenu, &commonItem);
+            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &commonParentMenu, &commonItem);
+            item->hasFocus = ConvertEventHandlerSet(commonItem.m_has_focus.get(), &commonParentMenu, &commonItem);
+            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &commonParentMenu, &commonItem);
+            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &commonParentMenu, &commonItem);
+            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &commonParentMenu, &commonItem);
+            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &commonParentMenu, &commonItem);
+            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &commonParentMenu, &commonItem);
+            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &commonParentMenu, &commonItem);
+            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &commonParentMenu, &commonItem);
+            item->focusSound = ConvertSound(commonItem.m_focus_sound, &commonParentMenu, &commonItem);
             item->dvarTest = ConvertString(commonItem.m_dvar_test);
             item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
-            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
-            item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
-            item->textAlignYExp = ConvertOrApplyStatement(item->textaligny, commonItem.m_text_align_y_expression.get(), &parentMenu, &commonItem);
-            item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
-            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
-            item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &parentMenu, item->floatExpressionCount);
+            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &commonParentMenu, &commonItem);
+            item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &commonParentMenu, &commonItem);
+            item->textAlignYExp = ConvertOrApplyStatement(item->textaligny, commonItem.m_text_align_y_expression.get(), &commonParentMenu, &commonItem);
+            item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &commonParentMenu, &commonItem);
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &commonParentMenu, &commonItem);
+            item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &commonParentMenu, item->floatExpressionCount);
             item->gameMsgWindowIndex = commonItem.m_game_message_window_index;
             item->gameMsgWindowMode = commonItem.m_game_message_window_mode;
             item->fxLetterTime = commonItem.m_fx_letter_time;
@@ -1186,15 +1186,15 @@ namespace
             switch (commonItem.m_feature_type)
             {
             case CommonItemFeatureType::LISTBOX:
-                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), parentMenu, commonItem);
+                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::EDIT_FIELD:
-                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), parentMenu, commonItem);
+                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::MULTI_VALUE:
-                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), parentMenu, commonItem);
+                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::ENUM_DVAR:
@@ -1202,7 +1202,7 @@ namespace
                 break;
 
             case CommonItemFeatureType::NEWS_TICKER:
-                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), parentMenu, commonItem);
+                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::NONE:
@@ -1214,12 +1214,12 @@ namespace
             }
 
             // Do this last so any optimizations are considered
-            item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.m_rect);
+            item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.window.rect);
 
             return item;
         }
 
-        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, int& itemCount) const
+        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, const menuDef_t& menu, int& itemCount) const
         {
             if (commonMenu.m_items.empty())
             {
@@ -1229,7 +1229,7 @@ namespace
 
             auto* items = m_memory.Alloc<itemDef_s*>(commonMenu.m_items.size());
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
-                items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
+                items[i] = ConvertItem(commonMenu, menu, *commonMenu.m_items[i]);
 
             itemCount = static_cast<int>(commonMenu.m_items.size());
 
@@ -1293,7 +1293,7 @@ namespace
                 menuData->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
                 menuData->onFocusDueToClose = ConvertEventHandlerSet(commonMenu.m_on_focus_due_to_close.get(), &commonMenu);
                 menuData->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
-                menu.items = ConvertMenuItems(commonMenu, menu.itemCount);
+                menu.items = ConvertMenuItems(commonMenu, menu, menu.itemCount);
                 menuData->expressionData = m_conversion_zone_state.m_supporting_data;
             }
             catch (const MenuConversionException& e)
