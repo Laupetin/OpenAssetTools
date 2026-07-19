@@ -255,8 +255,8 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            state->m_current_item->m_rect.x = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
-            state->m_current_item->m_rect.y = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            state->m_current_item->m_rect.x += MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            state->m_current_item->m_rect.y += MenuMatcherFactory::TokenNumericExpressionValue(state, result);
         }
     };
 

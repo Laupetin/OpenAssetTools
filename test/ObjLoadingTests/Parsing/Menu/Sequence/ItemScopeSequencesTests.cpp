@@ -303,10 +303,11 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(item->m_rect.verticalAlign == 2);
     }
 
-    TEST_CASE("ItemScopeSequences: Can specify origin", "[parsing][sequence][menu]")
+    TEST_CASE("ItemScopeSequences: Origin offsets the item rect", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
+        helper.m_item->m_rect = CommonRect{10.0f, 20.0f, 30.0f, 40.0f, 1, 2};
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("origin")),
             SimpleParserValue::FloatingPoint(pos, 4.20),
@@ -326,12 +327,12 @@ namespace test::parsing::menu::sequence::item
         const auto* item = helper.m_state->m_current_item;
         REQUIRE(item);
 
-        REQUIRE_THAT(item->m_rect.x, WithinRel(4.20));
-        REQUIRE_THAT(item->m_rect.y, WithinRel(13.37));
-        REQUIRE_THAT(item->m_rect.w, WithinRel(0.0));
-        REQUIRE_THAT(item->m_rect.h, WithinRel(0.0));
-        REQUIRE(item->m_rect.horizontalAlign == 0);
-        REQUIRE(item->m_rect.verticalAlign == 0);
+        REQUIRE_THAT(item->m_rect.x, WithinRel(14.20));
+        REQUIRE_THAT(item->m_rect.y, WithinRel(33.37));
+        REQUIRE_THAT(item->m_rect.w, WithinRel(30.0));
+        REQUIRE_THAT(item->m_rect.h, WithinRel(40.0));
+        REQUIRE(item->m_rect.horizontalAlign == 1);
+        REQUIRE(item->m_rect.verticalAlign == 2);
     }
 
     TEST_CASE("ItemScopeSequences: Ownerdraw sets the ownerdraw item type", "[parsing][sequence][menu]")
