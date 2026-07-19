@@ -37,15 +37,15 @@ namespace
             };
         }
 
-        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& rectRelativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const CommonRect& rectRelativeTo)
         {
             return rectDef_s{
-                static_cast<float>(rectRelativeTo.x + rect.x),
-                static_cast<float>(rectRelativeTo.y + rect.y),
-                static_cast<float>(rect.w),
-                static_cast<float>(rect.h),
-                static_cast<unsigned char>(rect.horizontalAlign),
-                static_cast<unsigned char>(rect.verticalAlign),
+                .x = static_cast<float>(rectRelativeTo.x + rect.x),
+                .y = static_cast<float>(rectRelativeTo.y + rect.y),
+                .w = static_cast<float>(rect.w),
+                .h = static_cast<float>(rect.h),
+                .horzAlign = static_cast<unsigned char>(rect.horzAlign),
+                .vertAlign = static_cast<unsigned char>(rect.vertAlign),
             };
         }
 
@@ -745,40 +745,158 @@ namespace
             };
 
             FloatExpressionLocation locations[]{
-                {commonItem->m_rect_x_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_X,        &item->window.rectClient.x, 1, 0                                },
-                {commonItem->m_rect_y_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_Y,        &item->window.rectClient.y, 1, 0                                },
-                {commonItem->m_rect_w_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_W,        &item->window.rectClient.w, 1, 0                                },
-                {commonItem->m_rect_h_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_H,        &item->window.rectClient.h, 1, 0                                },
-                {commonItem->m_forecolor_expressions.m_r_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_R,
-                 &item->window.foreColor[0],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_g_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_G,
-                 &item->window.foreColor[1],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_b_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_B,
-                 &item->window.foreColor[2],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_a_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_A,
-                 &item->window.foreColor[3],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_rgb_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_RGB,
-                 &item->window.foreColor[0],
-                 3,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_glowcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R,   &item->glowColor[0],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G,   &item->glowColor[1],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B,   &item->glowColor[2],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A,   &item->glowColor[3],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, &item->glowColor[0],        3, 0                                },
-                {commonItem->m_backcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_R,   &item->window.backColor[0], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_G,   &item->window.backColor[1], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_B,   &item->window.backColor[2], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_A,   &item->window.backColor[3], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, &item->window.backColor[0], 3, 0                                },
+                {
+                 .m_expression = commonItem->m_rect_x_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_X,
+                 .m_static_value = &item->window.rectClient.x,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_y_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_Y,
+                 .m_static_value = &item->window.rectClient.y,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_w_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_W,
+                 .m_static_value = &item->window.rectClient.w,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_h_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_H,
+                 .m_static_value = &item->window.rectClient.h,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_R,
+                 .m_static_value = &item->window.foreColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_G,
+                 .m_static_value = &item->window.foreColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_B,
+                 .m_static_value = &item->window.foreColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_A,
+                 .m_static_value = &item->window.foreColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_RGB,
+                 .m_static_value = &item->window.foreColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_R,
+                 .m_static_value = &item->glowColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_G,
+                 .m_static_value = &item->glowColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_B,
+                 .m_static_value = &item->glowColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_A,
+                 .m_static_value = &item->glowColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB,
+                 .m_static_value = &item->glowColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_R,
+                 .m_static_value = &item->window.backColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_G,
+                 .m_static_value = &item->window.backColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_B,
+                 .m_static_value = &item->window.backColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_A,
+                 .m_static_value = &item->window.backColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_RGB,
+                 .m_static_value = &item->window.backColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = 0,
+                 },
             };
 
             floatExpressionCount = 0;
@@ -1004,7 +1122,6 @@ namespace
             ApplyFlag(item->itemFlags, commonItem.m_text_cinematic_subtitle, ITEM_FLAG_CINEMATIC_SUBTITLE);
             item->window.group = ConvertString(commonItem.m_group);
             item->window.rectClient = ConvertRectDef(commonItem.m_rect);
-            item->window.rect = ConvertRectDefRelativeTo(commonItem.m_rect, parentMenu.m_rect);
             item->window.style = commonItem.m_style;
             ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
             ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
@@ -1087,6 +1204,9 @@ namespace
 
                 break;
             }
+
+            // Do this last so any optimizations are considered
+            item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.m_rect);
 
             return item;
         }

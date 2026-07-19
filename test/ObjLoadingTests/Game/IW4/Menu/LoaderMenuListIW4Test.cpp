@@ -378,4 +378,72 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript != nullptr);
         REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript == R"("play" "lol" ; )"s);
     }
+
+    TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent pos", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+	name  "Blab"
+        rect 10 10 70 70;
+
+        itemDef
+        {
+            rect 20 20 40 40;
+        }
+
+        itemDef
+        {
+            rect 0 0 0 0;
+            exp rect x 20;
+            exp rect y 20;
+            exp rect w 40;
+            exp rect h 40;
+        }
+    }
+})testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
+        const auto* menu = helper.GetMenuAsset("Blab");
+
+        REQUIRE(menuList->menuCount == 1);
+        REQUIRE(menuList->menus);
+        REQUIRE(menuList->menus[0] == menu);
+        REQUIRE(menu->window.name == "Blab"s);
+        CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
+        CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
+
+        REQUIRE(menu->itemCount == 2);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* item0 = menu->items[0];
+        REQUIRE(item0 != nullptr);
+        CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
+
+        const auto* item1 = menu->items[1];
+        REQUIRE(item1 != nullptr);
+        CHECK_THAT(item1->window.rectClient.x, WithinRel(20.0f));
+        CHECK_THAT(item1->window.rectClient.y, WithinRel(20.0f));
+        CHECK_THAT(item1->window.rectClient.w, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rectClient.h, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rect.x, WithinRel(30.0f));
+        CHECK_THAT(item1->window.rect.y, WithinRel(30.0f));
+        CHECK_THAT(item1->window.rect.w, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rect.h, WithinRel(40.0f));
+    }
 } // namespace test::game::iw4::menu::parsing::it
