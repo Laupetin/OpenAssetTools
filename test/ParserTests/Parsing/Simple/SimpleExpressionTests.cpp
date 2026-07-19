@@ -808,6 +808,24 @@ namespace test::parsing::simple::expression
 
     namespace it
     {
+        TEST_CASE("SimpleExpressionsIT: Can parse UTF-8 BOM-prefixed input", "[parsing][simple][expression][it]")
+        {
+            SimpleExpressionTestsHelper helper;
+            helper.String("\xEF\xBB\xBF"
+                          "6+5");
+
+            const auto result = helper.PerformIntegrationTest();
+
+            REQUIRE(result);
+
+            const auto& expression = helper.m_state->m_expression;
+            REQUIRE(expression->IsStatic());
+
+            const auto value = expression->EvaluateStatic();
+            REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+            REQUIRE(value.m_int_value == 11);
+        }
+
         TEST_CASE("SimpleExpressionsIT: Can parse subtraction without space", "[parsing][simple][expression][it]")
         {
             SimpleExpressionTestsHelper helper;
