@@ -6,6 +6,7 @@
 #include "Game/IW4/Techset/PixelShaderDumperIW4.h"
 #include "Game/IW4/Techset/TechsetDumperIW4.h"
 #include "Game/IW4/Techset/VertexShaderDumperIW4.h"
+#include "Game/IW4/Tracer/TracerDumperIW4.h"
 #include "Game/IW4/XAnim/XAnimDumperIW4.h"
 #include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
@@ -22,7 +23,6 @@
 #include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
 #include "StructuredDataDef/StructuredDataDefDumperIW4.h"
-#include "Tracer/TracerDumperIW4.h"
 #include "Vehicle/VehicleDumperIW4.h"
 #include "Weapon/WeaponDumperIW4.h"
 

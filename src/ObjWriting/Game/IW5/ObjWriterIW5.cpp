@@ -7,6 +7,7 @@
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
 #include "Game/IW5/Techset/VertexShaderDumperIW5.h"
+#include "Game/IW5/Tracer/TracerDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "LightDef/LightDefDumperIW5.h"
@@ -68,7 +69,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<string_table::DumperIW5>());
     RegisterAssetDumper(std::make_unique<leaderboard::JsonDumperIW5>());
     // REGISTER_DUMPER(AssetDumperStructuredDataDefSet)
-    // REGISTER_DUMPER(AssetDumperTracerDef)
+    RegisterAssetDumper(std::make_unique<tracer::DumperIW5>());
     // REGISTER_DUMPER(AssetDumperVehicleDef)
     RegisterAssetDumper(std::make_unique<addon_map_ents::DumperIW5>());
 }

@@ -1,0 +1,76 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/TracerDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"TracerDumper" + GAME + ".h\""
+#set INFO_STRING_CONVERTER_HEADER "\"Game/" + GAME + "/InfoString/InfoStringFromStructConverter.h\""
+#set OBJ_CONSTANTS_HEADER "\"Game/" + GAME + "/ObjConstants" + GAME + ".h\""
+#set TRACER_FIELDS_HEADER "\"Game/" + GAME + "/Tracer/TracerFields.h\""
+#set CLASS_NAME "Dumper" + GAME
+
+// This file was templated.
+// See TracerDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
+
+#include INFO_STRING_CONVERTER_HEADER
+#include OBJ_CONSTANTS_HEADER
+#include TRACER_FIELDS_HEADER
+#include "Tracer/TracerCommon.h"
+
+#include <cassert>
+#include <type_traits>
+
+using namespace GAME;
+
+namespace
+{
+    class InfoStringFromTracerConverter final : public InfoStringFromStructConverter
+    {
+    protected:
+        void FillFromExtensionField(const cspField_t& field) override
+        {
+            assert(false);
+        }
+
+    public:
+        InfoStringFromTracerConverter(const TracerDef* structure, const cspField_t* fields, const size_t fieldCount)
+            : InfoStringFromStructConverter(structure, fields, fieldCount)
+        {
+        }
+    };
+
+    InfoString CreateInfoString(const XAssetInfo<TracerDef>& asset)
+    {
+        InfoStringFromTracerConverter converter(asset.Asset(), tracer_fields, std::extent_v<decltype(tracer_fields)>);
+        return converter.Convert();
+    }
+} // namespace
+
+namespace tracer
+{
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetTracer::Type>& asset)
+    {
+        // Only dump raw when no gdt available
+        if (context.m_gdt)
+        {
+            const auto infoString = CreateInfoString(asset);
+            GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_TRACER);
+            infoString.ToGdtProperties(INFO_STRING_PREFIX_TRACER, gdtEntry);
+            context.m_gdt->WriteEntry(gdtEntry);
+        }
+        else
+        {
+            const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
+
+            if (!assetFile)
+                return;
+
+            auto& stream = *assetFile;
+            const auto infoString = CreateInfoString(asset);
+            const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_TRACER);
+            stream.write(stringValue.c_str(), stringValue.size());
+        }
+    }
+} // namespace tracer

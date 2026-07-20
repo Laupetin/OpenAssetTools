@@ -1,0 +1,24 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/RawLoaderTracer" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set FACTORY_NAME "CreateRawLoader" + GAME
+
+// This file was templated.
+// See RawLoaderTracer.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+namespace tracer
+{
+    std::unique_ptr<AssetCreator<GAME::AssetTracer>> FACTORY_NAME(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace tracer
