@@ -74,7 +74,7 @@ using `Linker`):
 | StringTable               | ✅               | ✅               |                                                                              |
 | LeaderboardDef            | ✅               | ✅               |                                                                              |
 | StructuredDataDefSet      | ✅               | ✅               | The format is custom due to lacking information about original format.       |
-| TracerDef                 | ✅               | ❌               |                                                                              |
+| TracerDef                 | ✅               | ✅               |                                                                              |
 | VehicleDef                | ✅               | ❌               |                                                                              |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                   |
 
@@ -119,7 +119,7 @@ using `Linker`):
 | StringTable               | ✅               | ✅               |                                                                                                               |
 | LeaderboardDef            | ✅               | ✅               |                                                                                                               |
 | StructuredDataDefSet      | ❌               | ❌               |                                                                                                               |
-| TracerDef                 | ❌               | ❌               |                                                                                                               |
+| TracerDef                 | ✅               | ✅               |                                                                                                               |
 | VehicleDef                | ❌               | ❌               |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                                                    |
 

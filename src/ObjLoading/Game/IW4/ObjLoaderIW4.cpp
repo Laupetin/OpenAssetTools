@@ -9,6 +9,8 @@
 #include "Game/IW4/Image/ImageLoaderExternalIW4.h"
 #include "Game/IW4/Techset/PixelShaderLoaderIW4.h"
 #include "Game/IW4/Techset/VertexShaderLoaderIW4.h"
+#include "Game/IW4/Tracer/GdtLoaderTracerIW4.h"
+#include "Game/IW4/Tracer/RawLoaderTracerIW4.h"
 #include "Game/IW4/Weapon/AccuracyGraphLoaderIW4.h"
 #include "Game/IW4/XAnim/XAnimLoaderIW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
@@ -159,7 +161,8 @@ namespace
         collection.AddAssetCreator(string_table::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(leaderboard::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(structured_data_def::CreateLoaderIW4(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
+        collection.AddAssetCreator(tracer::CreateRawLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(tracer::CreateGdtLoaderIW4(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
 
