@@ -37,15 +37,15 @@ namespace
             };
         }
 
-        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& rectRelativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const rectDef_s& rectRelativeTo)
         {
             return rectDef_s{
-                static_cast<float>(rectRelativeTo.x + rect.x),
-                static_cast<float>(rectRelativeTo.y + rect.y),
-                static_cast<float>(rect.w),
-                static_cast<float>(rect.h),
-                static_cast<unsigned char>(rect.horizontalAlign),
-                static_cast<unsigned char>(rect.verticalAlign),
+                .x = rectRelativeTo.x + rect.x,
+                .y = rectRelativeTo.y + rect.y,
+                .w = static_cast<float>(rect.w),
+                .h = static_cast<float>(rect.h),
+                .horzAlign = static_cast<unsigned char>(rect.horzAlign),
+                .vertAlign = static_cast<unsigned char>(rect.vertAlign),
             };
         }
 
@@ -745,40 +745,158 @@ namespace
             };
 
             FloatExpressionLocation locations[]{
-                {commonItem->m_rect_x_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_X,        &item->window.rectClient.x, 1, 0                                },
-                {commonItem->m_rect_y_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_Y,        &item->window.rectClient.y, 1, 0                                },
-                {commonItem->m_rect_w_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_W,        &item->window.rectClient.w, 1, 0                                },
-                {commonItem->m_rect_h_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_H,        &item->window.rectClient.h, 1, 0                                },
-                {commonItem->m_forecolor_expressions.m_r_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_R,
-                 &item->window.foreColor[0],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_g_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_G,
-                 &item->window.foreColor[1],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_b_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_B,
-                 &item->window.foreColor[2],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_a_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_A,
-                 &item->window.foreColor[3],
-                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_rgb_exp.get(),
-                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_RGB,
-                 &item->window.foreColor[0],
-                 3,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_glowcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R,   &item->glowColor[0],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G,   &item->glowColor[1],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B,   &item->glowColor[2],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A,   &item->glowColor[3],        1, 0                                },
-                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, &item->glowColor[0],        3, 0                                },
-                {commonItem->m_backcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_R,   &item->window.backColor[0], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_G,   &item->window.backColor[1], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_B,   &item->window.backColor[2], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_A,   &item->window.backColor[3], 1, 0                                },
-                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, &item->window.backColor[0], 3, 0                                },
+                {
+                 .m_expression = commonItem->m_rect_x_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_X,
+                 .m_static_value = &item->window.rectClient.x,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_y_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_Y,
+                 .m_static_value = &item->window.rectClient.y,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_w_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_W,
+                 .m_static_value = &item->window.rectClient.w,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_rect_h_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_RECT_H,
+                 .m_static_value = &item->window.rectClient.h,
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_R,
+                 .m_static_value = &item->window.foreColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_G,
+                 .m_static_value = &item->window.foreColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_B,
+                 .m_static_value = &item->window.foreColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_A,
+                 .m_static_value = &item->window.foreColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_forecolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_FORECOLOR_RGB,
+                 .m_static_value = &item->window.foreColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = WINDOW_FLAG_NON_DEFAULT_FORECOLOR,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_R,
+                 .m_static_value = &item->glowColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_G,
+                 .m_static_value = &item->glowColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_B,
+                 .m_static_value = &item->glowColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_A,
+                 .m_static_value = &item->glowColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_glowcolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB,
+                 .m_static_value = &item->glowColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_r_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_R,
+                 .m_static_value = &item->window.backColor[0],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_g_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_G,
+                 .m_static_value = &item->window.backColor[1],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_b_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_B,
+                 .m_static_value = &item->window.backColor[2],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_a_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_A,
+                 .m_static_value = &item->window.backColor[3],
+                 .m_static_value_array_size = 1,
+                 .m_dynamic_flags_to_set = 0,
+                 },
+                {
+                 .m_expression = commonItem->m_backcolor_expressions.m_rgb_exp.get(),
+                 .m_expression_is_static = false,
+                 .m_target = ITEM_FLOATEXP_TGT_BACKCOLOR_RGB,
+                 .m_static_value = &item->window.backColor[0],
+                 .m_static_value_array_size = 3,
+                 .m_dynamic_flags_to_set = 0,
+                 },
             };
 
             floatExpressionCount = 0;
@@ -994,7 +1112,7 @@ namespace
             return newsTicker;
         }
 
-        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& commonParentMenu, const menuDef_t& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory.Alloc<itemDef_s>();
 
@@ -1004,7 +1122,6 @@ namespace
             ApplyFlag(item->itemFlags, commonItem.m_text_cinematic_subtitle, ITEM_FLAG_CINEMATIC_SUBTITLE);
             item->window.group = ConvertString(commonItem.m_group);
             item->window.rectClient = ConvertRectDef(commonItem.m_rect);
-            item->window.rect = ConvertRectDefRelativeTo(commonItem.m_rect, parentMenu.m_rect);
             item->window.style = commonItem.m_style;
             ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
             ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
@@ -1013,8 +1130,8 @@ namespace
             item->dataType = item->type;
             item->window.border = commonItem.m_border;
             item->window.borderSize = static_cast<float>(commonItem.m_border_size);
-            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
-            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
+            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &commonParentMenu, &commonItem);
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &commonParentMenu, &commonItem);
             item->window.ownerDraw = commonItem.m_owner_draw;
             item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
             item->alignment = commonItem.m_align;
@@ -1034,23 +1151,23 @@ namespace
             ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
             ConvertColor(item->window.disableColor, commonItem.m_disable_color);
             ConvertColor(item->glowColor, commonItem.m_glow_color);
-            item->window.background = ConvertMaterial(commonItem.m_background, &parentMenu, &commonItem);
-            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &parentMenu, &commonItem);
-            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &parentMenu, &commonItem);
-            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &parentMenu, &commonItem);
-            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &parentMenu, &commonItem);
-            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &parentMenu, &commonItem);
-            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &parentMenu, &commonItem);
-            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &parentMenu, &commonItem);
-            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &parentMenu, &commonItem);
-            item->focusSound = ConvertSound(commonItem.m_focus_sound, &parentMenu, &commonItem);
+            item->window.background = ConvertMaterial(commonItem.m_background, &commonParentMenu, &commonItem);
+            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &commonParentMenu, &commonItem);
+            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &commonParentMenu, &commonItem);
+            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &commonParentMenu, &commonItem);
+            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &commonParentMenu, &commonItem);
+            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &commonParentMenu, &commonItem);
+            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &commonParentMenu, &commonItem);
+            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &commonParentMenu, &commonItem);
+            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &commonParentMenu, &commonItem);
+            item->focusSound = ConvertSound(commonItem.m_focus_sound, &commonParentMenu, &commonItem);
             item->dvarTest = ConvertString(commonItem.m_dvar_test);
             item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
-            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
-            item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
-            item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
-            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
-            item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &parentMenu, item->floatExpressionCount);
+            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &commonParentMenu, &commonItem);
+            item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &commonParentMenu, &commonItem);
+            item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &commonParentMenu, &commonItem);
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &commonParentMenu, &commonItem);
+            item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &commonParentMenu, item->floatExpressionCount);
             item->gameMsgWindowIndex = commonItem.m_game_message_window_index;
             item->gameMsgWindowMode = commonItem.m_game_message_window_mode;
             item->fxLetterTime = commonItem.m_fx_letter_time;
@@ -1061,15 +1178,15 @@ namespace
             switch (commonItem.m_feature_type)
             {
             case CommonItemFeatureType::LISTBOX:
-                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), parentMenu, commonItem);
+                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::EDIT_FIELD:
-                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), parentMenu, commonItem);
+                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::MULTI_VALUE:
-                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), parentMenu, commonItem);
+                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::ENUM_DVAR:
@@ -1077,7 +1194,7 @@ namespace
                 break;
 
             case CommonItemFeatureType::NEWS_TICKER:
-                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), parentMenu, commonItem);
+                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), commonParentMenu, commonItem);
                 break;
 
             case CommonItemFeatureType::NONE:
@@ -1088,10 +1205,13 @@ namespace
                 break;
             }
 
+            // Do this last so any optimizations are considered
+            item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.window.rect);
+
             return item;
         }
 
-        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, int& itemCount) const
+        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, const menuDef_t& menu, int& itemCount) const
         {
             if (commonMenu.m_items.empty())
             {
@@ -1101,7 +1221,7 @@ namespace
 
             auto* items = m_memory.Alloc<itemDef_s*>(commonMenu.m_items.size());
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
-                items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
+                items[i] = ConvertItem(commonMenu, menu, *commonMenu.m_items[i]);
 
             itemCount = static_cast<int>(commonMenu.m_items.size());
 
@@ -1161,7 +1281,7 @@ namespace
                 menu.onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
                 menu.onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
                 menu.onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
-                menu.items = ConvertMenuItems(commonMenu, menu.itemCount);
+                menu.items = ConvertMenuItems(commonMenu, menu, menu.itemCount);
                 menu.expressionData = m_conversion_zone_state.m_supporting_data;
             }
             catch (const MenuConversionException& e)
