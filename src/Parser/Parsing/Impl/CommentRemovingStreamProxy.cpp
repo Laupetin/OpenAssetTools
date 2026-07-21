@@ -1,15 +1,25 @@
 #include "CommentRemovingStreamProxy.h"
 
+#include "Parsing/ParsingException.h"
+
 CommentRemovingStreamProxy::CommentRemovingStreamProxy(IParserLineStream* stream)
     : m_stream(stream),
       m_inside_multi_line_comment(false),
-      m_next_line_is_comment(false)
+      m_next_line_is_comment(false),
+      m_multi_line_comment_start_pos(0u)
 {
 }
 
 ParserLine CommentRemovingStreamProxy::NextLine()
 {
     auto line = m_stream->NextLine();
+
+    if (line.IsEof() && m_inside_multi_line_comment)
+    {
+        throw ParsingException(
+            TokenPos(*m_multi_line_comment_start_line.m_filename, m_multi_line_comment_start_line.m_line_number, m_multi_line_comment_start_pos + 1u),
+            "Unclosed multi-line comment");
+    }
 
     if (m_next_line_is_comment)
     {
@@ -57,6 +67,8 @@ ParserLine CommentRemovingStreamProxy::NextLine()
                 {
                     multiLineCommentStart = i;
                     m_inside_multi_line_comment = true;
+                    m_multi_line_comment_start_line = line;
+                    m_multi_line_comment_start_pos = i;
                 }
                 else if (c1 == '/')
                 {
