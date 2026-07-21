@@ -11,5 +11,5 @@ namespace T4
     static constexpr auto GDF_FILENAME_PHYS_PRESET = "physpreset.gdf";
     static constexpr auto GDF_FILENAME_WEAPON = "weapon.gdf";
 
-    static constexpr float MAX_FRICTION = 1e+10f;
+    static constexpr float PHYS_PRESET_MAX_FRICTION = 1e+10f;
 } // namespace T4

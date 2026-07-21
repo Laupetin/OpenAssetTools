@@ -43,7 +43,7 @@ namespace
         physPreset.bounce = physPresetInfo.bounce;
 
         if (physPresetInfo.isFrictionInfinity != 0)
-            physPreset.friction = MAX_FRICTION;
+            physPreset.friction = PHYS_PRESET_MAX_FRICTION;
         else
             physPreset.friction = physPresetInfo.friction;
 

@@ -24,7 +24,7 @@ namespace
         physPreset->name = PHYS_PRESET_NAME;
         physPreset->mass = 1.25f;
         physPreset->bounce = 0.25f;
-        physPreset->friction = MAX_FRICTION;
+        physPreset->friction = PHYS_PRESET_MAX_FRICTION;
         physPreset->bulletForceScale = 0.5f;
         physPreset->explosiveForceScale = 0.75f;
         physPreset->sndAliasPrefix = SOUND_ALIAS_PREFIX;
@@ -100,7 +100,7 @@ namespace
         REQUIRE(std::string(loadedPhysPreset->name) == PHYS_PRESET_NAME);
         REQUIRE(loadedPhysPreset->mass == 1.25f);
         REQUIRE(loadedPhysPreset->bounce == 0.25f);
-        REQUIRE(loadedPhysPreset->friction == MAX_FRICTION);
+        REQUIRE(loadedPhysPreset->friction == PHYS_PRESET_MAX_FRICTION);
         REQUIRE(loadedPhysPreset->bulletForceScale == 0.5f);
         REQUIRE(loadedPhysPreset->explosiveForceScale == 0.75f);
         REQUIRE(std::string(loadedPhysPreset->sndAliasPrefix) == SOUND_ALIAS_PREFIX);
