@@ -1,16 +1,14 @@
 #include "InfoStringLoaderPhysPresetT6.h"
 
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/PhysPreset/PhysPresetFields.h"
 #include "Game/T6/T6.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
-#include <format>
-#include <iostream>
-#include <limits>
+#include <type_traits>
 
 using namespace T6;
 
@@ -76,8 +74,7 @@ namespace phys_preset
 
         AssetRegistration<AssetPhysPreset> registration(assetName, physPreset);
 
-        PhysPresetInfo physPresetInfo;
-        memset(&physPresetInfo, 0, sizeof(physPresetInfo));
+        PhysPresetInfo physPresetInfo{};
         InfoStringToPhysPresetConverter converter(infoString,
                                                   physPresetInfo,
                                                   m_zone.m_script_strings,
