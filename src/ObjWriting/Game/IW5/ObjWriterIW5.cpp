@@ -3,6 +3,7 @@
 #include "Game/IW4/XAnim/XAnimDumperIW4.h"
 #include "Game/IW5/Font/FontDumperIW5.h"
 #include "Game/IW5/Image/ImageDumperIW5.h"
+#include "Game/IW5/Maps/MapEntsDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
@@ -51,7 +52,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperGlassWorld)
     // REGISTER_DUMPER(AssetDumperPathData)
     // REGISTER_DUMPER(AssetDumperVehicleTrack)
-    // REGISTER_DUMPER(AssetDumperMapEnts)
+    RegisterAssetDumper(std::make_unique<map_ents::DumperIW5>());
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW5>());

@@ -59,7 +59,7 @@ using `Linker`):
 | ComWorld                  | ❌               | ❌               |                                                                              |
 | GameWorldSp               | ❌               | ❌               |                                                                              |
 | GameWorldMp               | ❌               | ❌               |                                                                              |
-| MapEnts                   | ❌               | ❌               |                                                                              |
+| MapEnts                   | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                    |
 | FxWorld                   | ❌               | ❌               |                                                                              |
 | GfxWorld                  | ❌               | ❌               |                                                                              |
 | GfxLightDef               | ✅               | ✅               |                                                                              |
@@ -101,7 +101,7 @@ using `Linker`):
 | GlassWorld                | ❌               | ❌               |                                                                                                               |
 | PathData                  | ❌               | ❌               |                                                                                                               |
 | VehicleTrack              | ❌               | ❌               |                                                                                                               |
-| MapEnts                   | ❌               | ❌               |                                                                                                               |
+| MapEnts                   | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                                                     |
 | FxWorld                   | ❌               | ❌               |                                                                                                               |
 | GfxWorld                  | ❌               | ❌               |                                                                                                               |
 | GfxLightDef               | ✅               | ✅               |                                                                                                               |
@@ -211,7 +211,7 @@ using `Linker`):
 | ComWorld               | ❌               | ❌               |                                                                                                                                                                |
 | GameWorldSp            | ❌               | ❌               |                                                                                                                                                                |
 | GameWorldMp            | ❌               | ❌               |                                                                                                                                                                |
-| MapEnts                | ✅               | ❌               |                                                                                                                                                                |
+| MapEnts                | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                                                                                                      |
 | GfxWorld               | ❌               | ❌               |                                                                                                                                                                |
 | GfxLightDef            | ✅               | ✅               |                                                                                                                                                                |
 | Font_s                 | ✅               | ✅               |                                                                                                                                                                |

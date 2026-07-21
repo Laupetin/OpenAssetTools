@@ -2,11 +2,11 @@
 
 #include "Game/T4/Font/FontDumperT4.h"
 #include "Game/T4/Image/ImageDumperT4.h"
+#include "Game/T4/Maps/MapEntsDumperT4.h"
 #include "Game/T4/Material/MaterialJsonDumperT4.h"
 #include "Game/T4/XAnim/XAnimDumperT4.h"
 #include "Game/T4/XModel/XModelDumperT4.h"
 #include "Localize/LocalizeDumperT4.h"
-#include "Maps/MapEntsDumperT4.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT4.h"
 #include "RawFile/RawFileDumperT4.h"
 #include "Sound/LoadedSoundDumperT4.h"
