@@ -127,7 +127,7 @@ using `Linker`):
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
-| PhysPreset           | ❌               | ❌               |                                                                              |
+| PhysPreset           | ✅               | ✅               |                                                                              |
 | PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
 | XAnimParts           | ✅               | ✅               |                                                                              |

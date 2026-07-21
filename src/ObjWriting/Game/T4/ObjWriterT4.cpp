@@ -8,6 +8,7 @@
 #include "Localize/LocalizeDumperT4.h"
 #include "Maps/MapEntsDumperT4.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT4.h"
+#include "PhysPreset/PhysPresetInfoStringDumperT4.h"
 #include "RawFile/RawFileDumperT4.h"
 #include "Sound/LoadedSoundDumperT4.h"
 #include "StringTable/StringTableDumperT4.h"
@@ -18,6 +19,7 @@ using namespace T4;
 void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
     RegisterAssetDumper(std::make_unique<phys_constraints::InfoStringDumperT4>());
+    RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperT4>());
     RegisterAssetDumper(std::make_unique<xanim::DumperT4>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperT4>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT4>());
