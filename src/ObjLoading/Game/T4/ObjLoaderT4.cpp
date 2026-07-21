@@ -11,6 +11,8 @@
 #include "Localize/AssetLoaderLocalizeT4.h"
 #include "Maps/MapEntsLoaderT4.h"
 #include "Material/LoaderMaterialT4.h"
+#include "PhysPreset/GdtLoaderPhysPresetT4.h"
+#include "PhysPreset/RawLoaderPhysPresetT4.h"
 #include "RawFile/AssetLoaderRawFileT4.h"
 #include "Weapon/FlameTableLoaderT4.h"
 #include "Weapon/WeaponGdtLoaderT4.h"
@@ -103,6 +105,8 @@ namespace
         collection.AddAssetCreator(font::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(map_ents::CreateLoaderT4(memory, searchPath));
+        collection.AddAssetCreator(phys_preset::CreateRawLoaderT4(memory, searchPath, zone));
+        collection.AddAssetCreator(phys_preset::CreateGdtLoaderT4(memory, gdt, zone));
         collection.AddAssetCreator(raw_file::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(weapon::CreateRawLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateGdtLoaderT4(memory, searchPath, gdt, zone));
