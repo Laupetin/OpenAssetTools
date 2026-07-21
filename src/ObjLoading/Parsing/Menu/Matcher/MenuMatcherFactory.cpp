@@ -42,6 +42,24 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Text() const
     }));
 }
 
+MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextOrNumeric() const
+{
+    return Or({
+        Text(),
+        Numeric().Transform(
+            [](const token_list_t& tokens) -> SimpleParserValue
+            {
+                const auto& token = tokens[0].get();
+                if (token.m_type == SimpleParserValueType::INTEGER)
+                    return SimpleParserValue::String(token.GetPos(), new std::string(std::to_string(token.IntegerValue())));
+
+                std::ostringstream ss;
+                ss << std::noshowpoint << token.FloatingPointValue();
+                return SimpleParserValue::String(token.GetPos(), new std::string(ss.str()));
+            }),
+    });
+}
+
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextNoChain() const
 {
     return MatcherFactoryWrapper(Or({

@@ -308,10 +308,10 @@ namespace menu::item_scope_sequences
                 create.KeywordIgnoreCase(std::move(keyName)).Capture(CAPTURE_FIRST_TOKEN),
                 create.Char('{'),
                 create.Optional(create.And({
-                    create.Text().Capture(CAPTURE_VALUE),
+                    create.TextOrNumeric().Capture(CAPTURE_VALUE),
                     create.OptionalLoop(create.And({
                         create.Char(';'),
-                        create.Text().Capture(CAPTURE_VALUE),
+                        create.TextOrNumeric().Capture(CAPTURE_VALUE),
                     })),
                 })),
                 create.Char('}'),
