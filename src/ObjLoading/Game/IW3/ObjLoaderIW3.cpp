@@ -14,6 +14,7 @@
 #include "Game/IW3/XModel/LoaderXModelIW3.h"
 #include "LightDef/LightDefLoaderIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
+#include "Maps/D3DBspLoaderIW3.h"
 #include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
 #include "PhysPreset/GdtLoaderPhysPresetIW3.h"
@@ -113,12 +114,12 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldSp>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
+        collection.AddAssetCreator(map_d3dbsp::CreateClipMapPvsLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(map_d3dbsp::CreateComWorldLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(map_d3dbsp::CreateGameWorldSpLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(map_d3dbsp::CreateGameWorldMpLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(map_d3dbsp::CreateMapEntsLoaderIW3(memory, searchPath));
+        collection.AddAssetCreator(map_d3dbsp::CreateGfxWorldLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(light_def::CreateLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(font::CreateLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
