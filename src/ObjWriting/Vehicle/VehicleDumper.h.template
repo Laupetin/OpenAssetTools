@@ -1,0 +1,24 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Vehicle/VehicleDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set CLASS_NAME "Dumper" + GAME
+
+// This file was templated.
+// See VehicleDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+namespace vehicle
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetVehicle>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetVehicle::Type>& asset) override;
+    };
+} // namespace vehicle
