@@ -1,6 +1,5 @@
 #include "PhysPresetInfoStringDumperIW5.h"
 
-#include "Game/IW5/InfoString/EnumStrings.h"
 #include "Game/IW5/InfoString/InfoStringFromStructConverter.h"
 #include "Game/IW5/ObjConstantsIW5.h"
 #include "Game/IW5/PhysPreset/PhysPresetFields.h"
