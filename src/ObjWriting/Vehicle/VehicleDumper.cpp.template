@@ -1,17 +1,35 @@
-#include "VehicleDumperIW4.h"
+#options GAME(IW4, IW5)
 
-#include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/InfoString/EnumStrings.h"
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/Vehicle/VehicleFields.h"
+#filename "Game/" + GAME + "/Vehicle/VehicleDumper" + GAME + ".cpp"
+
+#set DUMPER_HEADER "\"VehicleDumper" + GAME + ".h\""
+#set INFO_STRING_CONVERTER_HEADER "\"Game/" + GAME + "/InfoString/InfoStringFromStructConverter.h\""
+#set OBJ_CONSTANTS_HEADER "\"Game/" + GAME + "/ObjConstants" + GAME + ".h\""
+#set VEHICLE_FIELDS_HEADER "\"Game/" + GAME + "/Vehicle/VehicleFields" + GAME + ".h\""
+#set VEHICLE_STRINGS_HEADER "\"Game/" + GAME + "/Vehicle/VehicleStrings" + GAME + ".h\""
+#set CLASS_NAME "Dumper" + GAME
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#endif
+
+// This file was templated.
+// See VehicleDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#include DUMPER_HEADER
+
+#include INFO_STRING_CONVERTER_HEADER
+#include OBJ_CONSTANTS_HEADER
+#include VEHICLE_FIELDS_HEADER
+#include VEHICLE_STRINGS_HEADER
 #include "Vehicle/VehicleCommon.h"
 
 #include <cassert>
 #include <sstream>
 #include <type_traits>
 
-using namespace IW4;
+using namespace GAME;
 
 namespace
 {
@@ -56,6 +74,13 @@ namespace
                 break;
             }
 
+#ifdef FEATURE_IW5
+            case VFT_CAM_Z_OFFSET_MODE:
+                FillFromEnumInt(
+                    std::string(field.szName), field.iOffset, s_vehicleCameraZOffsetModeNames, std::extent_v<decltype(s_vehicleCameraZOffsetModeNames)>);
+                break;
+#endif
+
             case VFT_NUM:
             default:
                 assert(false);
@@ -93,7 +118,7 @@ namespace
 
 namespace vehicle
 {
-    void DumperIW4::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetVehicle::Type>& asset)
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetVehicle::Type>& asset)
     {
         // Only dump raw when no gdt available
         if (context.m_gdt)

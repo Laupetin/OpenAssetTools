@@ -1,0 +1,65 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Vehicle/RawLoaderVehicle" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"RawLoaderVehicle" + GAME + ".h\""
+#set INFO_STRING_LOADER_HEADER "\"InfoStringLoaderVehicle" + GAME + ".h\""
+#set OBJ_CONSTANTS_HEADER "\"Game/" + GAME + "/ObjConstants" + GAME + ".h\""
+#set INFO_STRING_LOADER_NAME "InfoStringLoader" + GAME
+#set FACTORY_NAME "CreateRawLoader" + GAME
+
+// This file was templated.
+// See RawLoaderVehicle.cpp.template.
+// Do not modify, changes will be lost.
+
+#include LOADER_HEADER
+
+#include INFO_STRING_LOADER_HEADER
+#include OBJ_CONSTANTS_HEADER
+#include "InfoString/InfoString.h"
+#include "Utils/Logging/Log.h"
+#include "Vehicle/VehicleCommon.h"
+
+using namespace GAME;
+
+namespace
+{
+    class RawLoaderVehicle final : public AssetCreator<AssetVehicle>
+    {
+    public:
+        RawLoaderVehicle(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+            : m_search_path(searchPath),
+              m_info_string_loader(memory, zone)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = vehicle::GetFileNameForAssetName(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            InfoString infoString;
+            if (!infoString.FromStream(INFO_STRING_PREFIX_VEHICLE, *file.m_stream))
+            {
+                con::error("Could not parse as info string file: \"{}\"", fileName);
+                return AssetCreationResult::Failure();
+            }
+
+            return m_info_string_loader.CreateAsset(assetName, infoString, context);
+        }
+
+    private:
+        ISearchPath& m_search_path;
+        vehicle::INFO_STRING_LOADER_NAME m_info_string_loader;
+    };
+} // namespace
+
+namespace vehicle
+{
+    std::unique_ptr<AssetCreator<AssetVehicle>> FACTORY_NAME(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    {
+        return std::make_unique<RawLoaderVehicle>(memory, searchPath, zone);
+    }
+} // namespace vehicle

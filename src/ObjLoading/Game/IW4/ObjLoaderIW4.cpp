@@ -11,6 +11,8 @@
 #include "Game/IW4/Techset/VertexShaderLoaderIW4.h"
 #include "Game/IW4/Tracer/GdtLoaderTracerIW4.h"
 #include "Game/IW4/Tracer/RawLoaderTracerIW4.h"
+#include "Game/IW4/Vehicle/GdtLoaderVehicleIW4.h"
+#include "Game/IW4/Vehicle/RawLoaderVehicleIW4.h"
 #include "Game/IW4/Weapon/AccuracyGraphLoaderIW4.h"
 #include "Game/IW4/XAnim/XAnimLoaderIW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
@@ -163,7 +165,8 @@ namespace
         collection.AddAssetCreator(structured_data_def::CreateLoaderIW4(memory, searchPath));
         collection.AddAssetCreator(tracer::CreateRawLoaderIW4(memory, searchPath, zone));
         collection.AddAssetCreator(tracer::CreateGdtLoaderIW4(memory, gdt, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
+        collection.AddAssetCreator(vehicle::CreateRawLoaderIW4(memory, searchPath, zone));
+        collection.AddAssetCreator(vehicle::CreateGdtLoaderIW4(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
 
         collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW4(memory, searchPath));

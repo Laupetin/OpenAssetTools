@@ -1,0 +1,33 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Vehicle/InfoStringLoaderVehicle" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set CLASS_NAME "InfoStringLoader" + GAME
+
+// This file was templated.
+// See InfoStringLoaderVehicle.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include GAME_HEADER
+#include "Asset/AssetCreationContext.h"
+#include "Asset/AssetRegistration.h"
+#include "InfoString/InfoString.h"
+#include "Utils/MemoryManager.h"
+#include "Zone/Zone.h"
+
+namespace vehicle
+{
+    class CLASS_NAME
+    {
+    public:
+        CLASS_NAME(MemoryManager& memory, Zone& zone);
+        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
+
+    private:
+        MemoryManager& m_memory;
+        Zone& m_zone;
+    };
+} // namespace vehicle
