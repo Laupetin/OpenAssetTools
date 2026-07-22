@@ -2,12 +2,11 @@
 
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/PhysPreset/PhysPresetFields.h"
+#include "Game/T6/PhysPreset/PhysPresetFieldsT6.h"
 #include "PhysPreset/PhysPresetCommon.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <type_traits>
 
 using namespace T6;
@@ -23,59 +22,45 @@ namespace
         }
 
     public:
-        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure,
-                                          const cspField_t* fields,
-                                          const size_t fieldCount,
-                                          std::function<std::string(scr_string_t)> scriptStringValueCallback)
-            : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
+        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure, const cspField_t* fields, const size_t fieldCount)
+            : InfoStringFromStructConverter(structure, fields, fieldCount)
         {
         }
     };
 
-    void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
+    void CopyToPhysPresetInfo(const PhysPreset& physPreset, PhysPresetInfo& physPresetInfo)
     {
-        physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
-        physPresetInfo->bounce = physPreset->bounce;
+        physPresetInfo.mass = std::clamp(physPreset.mass * 1000.0f, 1.0f, 2000.0f);
+        physPresetInfo.bounce = physPreset.bounce;
 
-        if (std::isinf(physPreset->friction))
+        if (physPreset.friction >= PHYS_PRESET_MAX_FRICTION)
         {
-            physPresetInfo->isFrictionInfinity = 1;
-            physPresetInfo->friction = 0;
+            physPresetInfo.isFrictionInfinity = 1;
+            physPresetInfo.friction = 0;
         }
         else
         {
-            physPresetInfo->isFrictionInfinity = 0;
-            physPresetInfo->friction = physPreset->friction;
+            physPresetInfo.isFrictionInfinity = 0;
+            physPresetInfo.friction = physPreset.friction;
         }
 
-        physPresetInfo->bulletForceScale = physPreset->bulletForceScale;
-        physPresetInfo->explosiveForceScale = physPreset->explosiveForceScale;
-        physPresetInfo->piecesSpreadFraction = physPreset->piecesSpreadFraction;
-        physPresetInfo->piecesUpwardVelocity = physPreset->piecesUpwardVelocity;
-        physPresetInfo->canFloat = physPreset->canFloat;
-        physPresetInfo->gravityScale = std::clamp(physPreset->gravityScale, 0.01f, 10.0f);
-        physPresetInfo->centerOfMassOffset = physPreset->centerOfMassOffset;
-        physPresetInfo->buoyancyBoxMin = physPreset->buoyancyBoxMin;
-        physPresetInfo->buoyancyBoxMax = physPreset->buoyancyBoxMax;
+        physPresetInfo.bulletForceScale = physPreset.bulletForceScale;
+        physPresetInfo.explosiveForceScale = physPreset.explosiveForceScale;
+        physPresetInfo.piecesSpreadFraction = physPreset.piecesSpreadFraction;
+        physPresetInfo.piecesUpwardVelocity = physPreset.piecesUpwardVelocity;
+        physPresetInfo.canFloat = physPreset.canFloat;
+        physPresetInfo.gravityScale = std::clamp(physPreset.gravityScale, 0.01f, 10.0f);
+        physPresetInfo.centerOfMassOffset = physPreset.centerOfMassOffset;
+        physPresetInfo.buoyancyBoxMin = physPreset.buoyancyBoxMin;
+        physPresetInfo.buoyancyBoxMax = physPreset.buoyancyBoxMax;
     }
 
-    InfoString CreateInfoString(const XAssetInfo<PhysPreset>& asset)
+    InfoString CreateInfoString(const PhysPreset& physPreset)
     {
-        auto* physPresetInfo = new PhysPresetInfo;
-        CopyToPhysPresetInfo(asset.Asset(), physPresetInfo);
+        PhysPresetInfo physPresetInfo{};
+        CopyToPhysPresetInfo(physPreset, physPresetInfo);
 
-        InfoStringFromPhysPresetConverter converter(physPresetInfo,
-                                                    phys_preset_fields,
-                                                    std::extent_v<decltype(phys_preset_fields)>,
-                                                    [asset](const scr_string_t scrStr) -> std::string
-                                                    {
-                                                        assert(scrStr < asset.m_zone->m_script_strings.Count());
-                                                        if (scrStr >= asset.m_zone->m_script_strings.Count())
-                                                            return "";
-
-                                                        return asset.m_zone->m_script_strings[scrStr];
-                                                    });
-
+        InfoStringFromPhysPresetConverter converter(&physPresetInfo, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
         return converter.Convert();
     }
 } // namespace
@@ -87,7 +72,7 @@ namespace phys_preset
         // Only dump raw when no gdt available
         if (context.m_gdt)
         {
-            const auto infoString = CreateInfoString(asset);
+            const auto infoString = CreateInfoString(*asset.Asset());
             GdtEntry gdtEntry(asset.m_name, GDF_FILENAME_PHYS_PRESET);
             infoString.ToGdtProperties(INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
             context.m_gdt->WriteEntry(gdtEntry);
@@ -100,7 +85,7 @@ namespace phys_preset
                 return;
 
             auto& stream = *assetFile;
-            const auto infoString = CreateInfoString(asset);
+            const auto infoString = CreateInfoString(*asset.Asset());
             const auto stringValue = infoString.ToString(INFO_STRING_PREFIX_PHYS_PRESET);
             stream.write(stringValue.c_str(), stringValue.size());
         }

@@ -11,5 +11,5 @@ namespace T5
     static constexpr auto GDF_FILENAME_PHYS_PRESET = "physpreset.gdf";
     static constexpr auto GDF_FILENAME_WEAPON = "weapon.gdf";
 
-    static constexpr float MAX_FRICTION = 1e+10;
+    static constexpr float PHYS_PRESET_MAX_FRICTION = 1e+10;
 } // namespace T5

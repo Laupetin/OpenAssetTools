@@ -2,16 +2,13 @@
 
 #include "Game/T5/InfoString/InfoStringToStructConverter.h"
 #include "Game/T5/ObjConstantsT5.h"
-#include "Game/T5/PhysPreset/PhysPresetFields.h"
+#include "Game/T5/PhysPreset/PhysPresetFieldsT5.h"
 #include "Game/T5/T5.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
-#include <format>
-#include <iostream>
-#include <limits>
+#include <type_traits>
 
 using namespace T5;
 
@@ -46,7 +43,7 @@ namespace
         physPreset.bounce = physPresetInfo.bounce;
 
         if (physPresetInfo.isFrictionInfinity != 0)
-            physPreset.friction = MAX_FRICTION;
+            physPreset.friction = PHYS_PRESET_MAX_FRICTION;
         else
             physPreset.friction = physPresetInfo.friction;
 
@@ -77,8 +74,7 @@ namespace phys_preset
 
         AssetRegistration<AssetPhysPreset> registration(assetName, physPreset);
 
-        PhysPresetInfo physPresetInfo;
-        memset(&physPresetInfo, 0, sizeof(physPresetInfo));
+        PhysPresetInfo physPresetInfo{};
         InfoStringToPhysPresetConverter converter(infoString,
                                                   physPresetInfo,
                                                   m_zone.m_script_strings,

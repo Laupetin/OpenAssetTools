@@ -23,4 +23,10 @@ namespace IW5
         {"tempDefaultToCylinder", offsetof(PhysPresetInfo, tempDefaultToCylinder), CSPFT_QBOOLEAN},
         {"perSurfaceSndAlias",    offsetof(PhysPresetInfo, perSurfaceSndAlias),    CSPFT_QBOOLEAN},
     };
-}
+
+    inline const char* szPhysPresetScalingNames[]{
+        "linear",
+        "quadratic",
+    };
+    static_assert(std::extent_v<decltype(szPhysPresetScalingNames)> == PHYSPRESET_SCALING_COUNT);
+} // namespace IW5
