@@ -2,7 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/InfoString/InfoStringToStructConverter.h"
-#include "Game/IW4/PhysPreset/PhysPresetFields.h"
+#include "Game/IW4/PhysPreset/PhysPresetFieldsIW4.h"
 #include "Utils/Logging/Log.h"
 
 #include <cassert>

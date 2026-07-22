@@ -2,7 +2,7 @@
 
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/InfoString/InfoStringToStructConverter.h"
-#include "Game/IW3/PhysPreset/PhysPresetFields.h"
+#include "Game/IW3/PhysPreset/PhysPresetFieldsIW3.h"
 #include "Utils/Logging/Log.h"
 
 #include <cassert>

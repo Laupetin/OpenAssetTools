@@ -2,7 +2,7 @@
 
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/PhysPreset/PhysPresetFields.h"
+#include "Game/T6/PhysPreset/PhysPresetFieldsT6.h"
 #include "PhysPreset/PhysPresetCommon.h"
 
 #include <algorithm>
