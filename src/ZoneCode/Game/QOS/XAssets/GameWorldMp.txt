@@ -1,0 +1,6 @@
+// =========================================
+// GameWorldMp
+// =========================================
+use GameWorldMp;
+set block XFILE_BLOCK_TEMP;
+set string name;

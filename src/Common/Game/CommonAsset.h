@@ -160,6 +160,12 @@ enum class CommonAssetType : std::uint8_t
     // T6
     ZBARRIER,
 
+    // QOS
+    XML_TREE,
+    SCENE_ANIMATION,
+    CUTSCENE,
+    CUSTOM_CAMERA,
+
     COUNT,
 };
 

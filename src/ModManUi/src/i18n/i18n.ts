@@ -89,6 +89,10 @@ const ASSET_TYPE_LOOKUP: Record<CommonAssetType, string> = {
   footstep_table: "Footstep table",
   footstep_fx_table: "Footstep FX table",
   zbarrier: "ZBarrier",
+  xml_tree: "XML tree",
+  scene_animation: "Scene animation",
+  cutscene: "Cutscene",
+  custom_camera: "Custom camera",
 };
 
 export function localizeAssetType(assetType: CommonAssetType): string {

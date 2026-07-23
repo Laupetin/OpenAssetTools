@@ -1,0 +1,23 @@
+// =========================================
+// XmlTree
+// =========================================
+use XmlTree;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// xmlNodeList
+use xmlNodeList;
+set count nodes nodeCount;
+
+// xmlNode
+use xmlNode;
+set string name;
+
+// xmlNodeComplex
+use xmlNodeComplex;
+set string name;
+
+// xmlAttribute
+use xmlAttribute;
+set string name;
+set string value;

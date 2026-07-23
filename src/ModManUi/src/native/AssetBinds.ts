@@ -73,7 +73,11 @@ export type CommonAssetType =
   | "slug"
   | "footstep_table"
   | "footstep_fx_table"
-  | "zbarrier";
+  | "zbarrier"
+  | "xml_tree"
+  | "scene_animation"
+  | "cutscene"
+  | "custom_camera";
 
 export interface AssetDto {
   type: CommonAssetType;

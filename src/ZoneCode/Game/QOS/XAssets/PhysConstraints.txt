@@ -1,0 +1,11 @@
+// =========================================
+// PhysConstraints
+// =========================================
+use PhysConstraints;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// PhysConstraint
+use PhysConstraint;
+set string target_bone1;
+set string target_bone2;

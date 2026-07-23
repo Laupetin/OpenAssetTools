@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5, T6)
+#options GAME (IW3, IW4, IW5, QOS, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelToCommonConverter" + GAME + ".cpp"
 
@@ -17,6 +17,8 @@
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
+#elif GAME == "QOS"
+#define FEATURE_QOS
 #endif
 
 // This file was templated.
@@ -34,6 +36,7 @@
 
 #include <cassert>
 #include <format>
+#include <string_view>
 
 using namespace GAME;
 
@@ -56,7 +59,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4) || defined(FEATURE_QOS)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -69,6 +72,30 @@ namespace
             return nullptr;
         if (potentialTextureDefs.size() == 1)
             return GetImageFromTextureDef(*potentialTextureDefs[0]);
+
+#ifdef FEATURE_QOS
+        // QoS can tag helper maps like *_edge as TS_COLOR_MAP; prefer diffuse-style names when several candidates exist.
+        GfxImage* qosFallback = nullptr;
+        for (const auto* def : potentialTextureDefs)
+        {
+            auto* image = GetImageFromTextureDef(*def);
+            if (!image || !image->name)
+                continue;
+
+            auto name = std::string_view(image->name);
+            while (!name.empty() && (name.front() == ',' || name.front() == '*'))
+                name.remove_prefix(1);
+
+            if (name.ends_with("_c") || name.ends_with("_col") || name.ends_with("_color") || name.ends_with("_diff"))
+                return image;
+
+            if (!qosFallback && !name.ends_with("_edge") && !name.ends_with("_print") && !name.ends_with("_prsz")
+                && name.find("_edge_") == std::string_view::npos)
+                qosFallback = image;
+        }
+        if (qosFallback)
+            return qosFallback;
+#endif
 
         for (const auto* def : potentialTextureDefs)
         {
@@ -180,7 +207,7 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
-#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_QOS)
             // IW3 has some models that are missing 1 (a single) tri in its first lod.
             // It is not contained in any vert list or blend
             // I think this is a bug (?), so omit anyway.
@@ -298,9 +325,12 @@ namespace
                 if (colorMap)
                     xMaterial.colorMapName = AssetName(colorMap->name);
 
+#ifndef FEATURE_QOS
+                // QoS normal map decoding/selection is not verified yet; exporting them makes the preview shading misleading.
                 const auto* normalMap = GetMaterialNormalMap(material);
                 if (normalMap)
                     xMaterial.normalMapName = AssetName(normalMap->name);
+#endif
 
                 const auto* specularMap = GetMaterialSpecularMap(material);
                 if (specularMap)
@@ -346,8 +376,17 @@ namespace
                 vertex.coordinates[1] = v.xyz.y;
                 vertex.coordinates[2] = v.xyz.z;
                 Common::Vec3UnpackUnitVec(v.normal, vertex.normal);
+#ifdef FEATURE_QOS
+                vertex.color[0] = 1.0f;
+                vertex.color[1] = 1.0f;
+                vertex.color[2] = 1.0f;
+                vertex.color[3] = 1.0f;
+                vertex.uv[0] = v.texCoord.x;
+                vertex.uv[1] = v.texCoord.y;
+#else
                 Common::Vec4UnpackGfxColor(v.color, vertex.color);
                 Common::Vec2UnpackTexCoords(v.texCoord, vertex.uv);
+#endif
 
                 out.m_vertices.emplace_back(vertex);
             }
@@ -405,7 +444,7 @@ namespace
 
             if (surface.vertList)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4) || defined(FEATURE_QOS)
                 assert(!surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) == 0);
@@ -430,7 +469,7 @@ namespace
             auto vertsBlendOffset = 0u;
             if (surface.vertInfo.vertsBlend)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4) || defined(FEATURE_QOS)
                 assert(surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) > 0);
@@ -532,7 +571,7 @@ namespace
             auto& object = out.m_objects[surfIndex];
             object.m_faces.reserve(surface.triCount);
 
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_QOS)
             // T4 tri indices are local to the surface, while baseVertIndex does not match
             // the flattened common vertex buffer we build here.
             auto surfaceVertexOffset = 0u;

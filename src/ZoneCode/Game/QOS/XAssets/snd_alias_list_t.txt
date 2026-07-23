@@ -1,0 +1,34 @@
+// =========================================
+// snd_alias_list_t
+// =========================================
+use snd_alias_list_t;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set reusable head;
+set count head count;
+
+// snd_alias_t
+use snd_alias_t;
+set string aliasName;
+set string subtitle;
+set string secondaryAliasName;
+set string chainAliasName;
+set reusable soundFile;
+
+// SoundFile
+use SoundFile;
+set string unknownString0;
+set string unknownString1;
+set condition u::primeSnd type == QOS_SOUND_FILE_TYPE_PRIMED;
+set reusable u::primeSnd;
+
+// QosMssSound
+use QosMssSound;
+set arraysize data dataSize;
+
+// QosPrimedSound
+use QosPrimedSound;
+set string name;
+set count buffer size;
+set block buffer XFILE_BLOCK_LARGE;
+set allocalign buffer 2048;

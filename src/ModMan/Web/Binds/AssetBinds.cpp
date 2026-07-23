@@ -82,6 +82,10 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CommonAssetType,
                                  {CommonAssetType::FOOTSTEP_TABLE,       "footstep_table"      },
                                  {CommonAssetType::FOOTSTEP_FX_TABLE,    "footstep_fx_table"   },
                                  {CommonAssetType::ZBARRIER,             "zbarrier"            },
+                                 {CommonAssetType::XML_TREE,             "xml_tree"            },
+                                 {CommonAssetType::SCENE_ANIMATION,      "scene_animation"     },
+                                 {CommonAssetType::CUTSCENE,             "cutscene"            },
+                                 {CommonAssetType::CUSTOM_CAMERA,        "custom_camera"       },
 });
 
 namespace

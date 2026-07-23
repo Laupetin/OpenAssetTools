@@ -1,0 +1,25 @@
+// =========================================
+// Cutscene
+// =========================================
+use Cutscene;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count entities entityCount;
+set count sections sectionCount;
+
+// CutsceneEntityDef
+use CutsceneEntityDef;
+set string unknownString0;
+set string unknownString1;
+set scriptstring unknownScriptString0;
+set count modelAttachments modelAttachmentCount;
+
+// CutsceneModelAttachment
+use CutsceneModelAttachment;
+set string unknownString0;
+set string unknownString1;
+
+// CutsceneSectionDef
+use CutsceneSectionDef;
+set count entities entityCount;
+set count sceneAnimations sceneAnimationCount;
