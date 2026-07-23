@@ -1,0 +1,191 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Vehicle/InfoStringLoaderVehicle" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"InfoStringLoaderVehicle" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set INFO_STRING_CONVERTER_HEADER "\"Game/" + GAME + "/InfoString/InfoStringToStructConverter.h\""
+#set VEHICLE_FIELDS_HEADER "\"Game/" + GAME + "/Vehicle/VehicleFields" + GAME + ".h\""
+#set VEHICLE_STRINGS_HEADER "\"Game/" + GAME + "/Vehicle/VehicleStrings" + GAME + ".h\""
+#set CLASS_NAME "InfoStringLoader" + GAME
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#endif
+
+// This file was templated.
+// See InfoStringLoaderVehicle.cpp.template.
+// Do not modify, changes will be lost.
+
+#include LOADER_HEADER
+
+#include GAME_HEADER
+#include INFO_STRING_CONVERTER_HEADER
+#include VEHICLE_FIELDS_HEADER
+#include VEHICLE_STRINGS_HEADER
+#include "Utils/Logging/Log.h"
+
+#include <cassert>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+using namespace GAME;
+
+namespace
+{
+    constexpr const char* SURFACE_SOUND_SUFFIXES[]{
+        "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",          "_flesh",       "_foliage", "_glass", "_grass",
+        "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",          "_sand",        "_snow",    "_water", "_wood",
+        "_asphalt", "_ceramic", "_plastic", "_rubber", "_cushion", "_fruit",    "_painted_metal", "_riot_shield", "_slush",
+    };
+
+    class InfoStringToVehicleConverter final : public InfoStringToStructConverter
+    {
+        bool ConvertTrophyTags(const cspField_t& field, const std::string& value)
+        {
+            std::vector<std::string> valueArray;
+            if (!ParseAsArray(value, valueArray))
+            {
+                con::error("Failed to parse trophy tags as array");
+                return false;
+            }
+
+            if (valueArray.size() > std::extent_v<decltype(VehicleDef::trophyTags)>)
+            {
+                con::error("Cannot have more than {} trophy tags!", std::extent_v<decltype(VehicleDef::trophyTags)>);
+                return false;
+            }
+
+            auto* trophyTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+            for (auto i = 0u; i < valueArray.size(); i++)
+            {
+                if (valueArray[i].empty())
+                    continue;
+
+                const auto scriptString = m_zone_script_strings.AddOrGetScriptString(valueArray[i]);
+                trophyTags[i] = scriptString;
+                m_registration.AddScriptString(scriptString);
+            }
+
+            return true;
+        }
+
+    protected:
+        bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
+        {
+            switch (static_cast<VehicleFieldType>(field.iFieldType))
+            {
+            case VFT_TYPE:
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
+
+            case VFT_AXLE_STEERING:
+            case VFT_AXLE_POWER:
+            case VFT_AXLE_BRAKING:
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_vehicleAxleTypeNames, std::extent_v<decltype(s_vehicleAxleTypeNames)>);
+
+            case VFT_TROPHY_TAGS:
+                return ConvertTrophyTags(field, value);
+
+#ifdef FEATURE_IW5
+            case VFT_CAM_Z_OFFSET_MODE:
+                return ConvertEnumInt(
+                    field.szName, value, field.iOffset, s_vehicleCameraZOffsetModeNames, std::extent_v<decltype(s_vehicleCameraZOffsetModeNames)>);
+#endif
+
+            case VFT_NUM:
+            default:
+                assert(false);
+                return false;
+            }
+        }
+
+    public:
+        InfoStringToVehicleConverter(const InfoString& infoString,
+                                     VehicleDef& vehicle,
+                                     ZoneScriptStrings& zoneScriptStrings,
+                                     MemoryManager& memory,
+                                     AssetCreationContext& context,
+                                     AssetRegistration<AssetVehicle>& registration,
+                                     const cspField_t* fields,
+                                     const size_t fieldCount)
+            : InfoStringToStructConverter(infoString, &vehicle, zoneScriptStrings, memory, context, registration, fields, fieldCount)
+        {
+        }
+    };
+
+    bool LoadDependencies(VehicleDef& vehicle, AssetCreationContext& context, AssetRegistration<AssetVehicle>& registration)
+    {
+        if (vehicle.vehPhysDef.physPresetName && vehicle.vehPhysDef.physPresetName[0])
+        {
+            auto* physPreset = context.LoadDependency<AssetPhysPreset>(vehicle.vehPhysDef.physPresetName);
+            if (physPreset == nullptr)
+            {
+                con::error("Failed to load phys preset asset \"{}\"", vehicle.vehPhysDef.physPresetName);
+                return false;
+            }
+
+            vehicle.vehPhysDef.physPreset = physPreset->Asset();
+            registration.AddDependency(physPreset);
+        }
+
+        if (vehicle.turretWeaponName && vehicle.turretWeaponName[0])
+        {
+            auto* weapon = context.LoadDependency<AssetWeapon>(vehicle.turretWeaponName);
+            if (weapon == nullptr)
+            {
+                con::error("Failed to load weapon asset \"{}\"", vehicle.turretWeaponName);
+                return false;
+            }
+
+            vehicle.turretWeapon = weapon->Asset();
+            registration.AddDependency(weapon);
+        }
+
+        return true;
+    }
+
+    void CreateSurfaceSounds(VehicleDef& vehicle, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetVehicle>& registration)
+    {
+        if (vehicle.surfaceSndPrefix == nullptr || vehicle.surfaceSndPrefix[0] == '\0')
+            return;
+
+        static_assert(std::extent_v<decltype(VehicleDef::surfaceSnds)> == std::extent_v<decltype(SURFACE_SOUND_SUFFIXES)>);
+        for (auto i = 0u; i < std::extent_v<decltype(VehicleDef::surfaceSnds)>; i++)
+        {
+            const auto soundName = std::string(vehicle.surfaceSndPrefix) + SURFACE_SOUND_SUFFIXES[i];
+            vehicle.surfaceSnds[i].name = memory.Alloc<snd_alias_list_name>();
+            vehicle.surfaceSnds[i].name->soundName = memory.Dup(soundName.c_str());
+            registration.AddIndirectAssetReference(context.LoadIndirectAssetReference<AssetSound>(soundName));
+        }
+    }
+} // namespace
+
+namespace vehicle
+{
+    CLASS_NAME::CLASS_NAME(MemoryManager& memory, Zone& zone)
+        : m_memory(memory),
+          m_zone(zone)
+    {
+    }
+
+    AssetCreationResult CLASS_NAME::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* vehicle = m_memory.Alloc<VehicleDef>();
+        vehicle->name = m_memory.Dup(assetName.c_str());
+
+        AssetRegistration<AssetVehicle> registration(assetName, vehicle);
+        InfoStringToVehicleConverter converter(
+            infoString, *vehicle, m_zone.m_script_strings, m_memory, context, registration, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
+        if (!converter.Convert() || !LoadDependencies(*vehicle, context, registration))
+        {
+            con::error("Failed to parse vehicle: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        vehicle->vehPhysDef.topSpeed = vehicle->topSpeed;
+        vehicle->vehPhysDef.suspensionTravelFront = vehicle->suspensionTravel;
+        CreateSurfaceSounds(*vehicle, m_memory, context, registration);
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace vehicle

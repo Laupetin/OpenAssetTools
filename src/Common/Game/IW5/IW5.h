@@ -205,6 +205,18 @@ namespace IW5
         PPFT_NUM_FIELD_TYPES,
     };
 
+    enum VehicleFieldType
+    {
+        VFT_TYPE = CSPFT_NUM_BASE_FIELD_TYPES,
+        VFT_AXLE_STEERING,
+        VFT_AXLE_POWER,
+        VFT_AXLE_BRAKING,
+        VFT_TROPHY_TAGS,
+        VFT_CAM_Z_OFFSET_MODE,
+
+        VFT_NUM,
+    };
+
     struct AccuracyGraph
     {
         vec2_t* graphKnots;
