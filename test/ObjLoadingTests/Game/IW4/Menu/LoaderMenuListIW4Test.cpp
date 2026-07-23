@@ -331,6 +331,59 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(item->dvarFlags == ITEM_DVAR_FLAG_FOCUS);
     }
 
+    TEST_CASE("MenuParsingIW4IT: Can omit list box column alignment", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+        name "ListBoxColumns"
+        itemDef
+        {
+            type 6
+            // x, width, max chars
+            columns 1 22 190 64
+        }
+        itemDef
+        {
+            type 6
+            // x, width, max chars, alignment
+            columns 2 0 18 3 2 18 25 10 1
+        }
+    }
+}
+            )testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menu = helper.GetMenuAsset("ListBoxColumns");
+        REQUIRE(menu->itemCount == 2);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* columnsWithoutAlignment = menu->items[0]->typeData.listBox;
+        REQUIRE(columnsWithoutAlignment != nullptr);
+        REQUIRE(columnsWithoutAlignment->numColumns == 1);
+        CHECK(columnsWithoutAlignment->columnInfo[0].pos == 22);
+        CHECK(columnsWithoutAlignment->columnInfo[0].width == 190);
+        CHECK(columnsWithoutAlignment->columnInfo[0].maxChars == 64);
+        CHECK(columnsWithoutAlignment->columnInfo[0].alignment == 0);
+
+        const auto* columnsWithAlignment = menu->items[1]->typeData.listBox;
+        REQUIRE(columnsWithAlignment != nullptr);
+        REQUIRE(columnsWithAlignment->numColumns == 2);
+        CHECK(columnsWithAlignment->columnInfo[0].pos == 0);
+        CHECK(columnsWithAlignment->columnInfo[0].width == 18);
+        CHECK(columnsWithAlignment->columnInfo[0].maxChars == 3);
+        CHECK(columnsWithAlignment->columnInfo[0].alignment == 2);
+        CHECK(columnsWithAlignment->columnInfo[1].pos == 18);
+        CHECK(columnsWithAlignment->columnInfo[1].width == 25);
+        CHECK(columnsWithAlignment->columnInfo[1].maxChars == 10);
+        CHECK(columnsWithAlignment->columnInfo[1].alignment == 1);
+    }
+
     TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
     {
         MenuParsingItHelper helper;

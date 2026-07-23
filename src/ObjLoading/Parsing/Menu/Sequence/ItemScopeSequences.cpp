@@ -483,10 +483,7 @@ namespace menu::item_scope_sequences
                     create.Integer().Capture(CAPTURE_COLUMN_COUNT),
                     create.Loop(create.And({
                         create.True().Tag(TAG_COLUMN),
-                        create.IntExpression(), // xpos
-                        create.IntExpression(), // width
-                        create.IntExpression(), // maxChars
-                        create.IntExpression(), // alignment
+                        create.IntExpression(),
                     })),
                 });
             }
@@ -497,36 +494,52 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+            const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
+            ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, firstToken.GetPos());
 
             assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
 
             const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
+
+            if (state->m_feature_level == FeatureLevel::IW4)
+            {
+                const auto columnCount = static_cast<size_t>(result.NextCapture(CAPTURE_COLUMN_COUNT).IntegerValue());
+                std::vector<int> columnValues;
+                while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
+                    columnValues.emplace_back(MenuMatcherFactory::TokenIntExpressionValue(state, result));
+
+                size_t valuesPerColumn;
+                if (columnValues.size() == columnCount * 4u)
+                    valuesPerColumn = 4u;
+                else if (columnValues.size() == columnCount * 3u)
+                    valuesPerColumn = 3u;
+                else
+                    throw ParsingException(firstToken.GetPos(), "Each column must have a position, width, max character count, and optional alignment");
+
+                for (auto columnIndex = 0u; columnIndex < columnCount; columnIndex++)
+                {
+                    const auto valueIndex = columnIndex * valuesPerColumn;
+                    listBoxFeatures->m_columns.emplace_back(CommonItemFeaturesListBox::Column{
+                        columnValues[valueIndex],
+                        0,
+                        columnValues[valueIndex + 1u],
+                        0,
+                        columnValues[valueIndex + 2u],
+                        valuesPerColumn == 4u ? columnValues[valueIndex + 3u] : 0,
+                    });
+                }
+
+                return;
+            }
+
             while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
             {
-                int xPos = 0;
-                int yPos = 0;
-                int width = 0;
-                int height = 0;
-                int maxChars = 0;
-                int alignment = 0;
-
-                if (state->m_feature_level == FeatureLevel::IW4)
-                {
-                    xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                }
-                else if (state->m_feature_level == FeatureLevel::IW5)
-                {
-                    xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    yPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    height = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                    alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                }
+                const auto xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto yPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto height = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
 
                 CommonItemFeaturesListBox::Column column{
                     xPos,
