@@ -231,6 +231,13 @@ namespace T6
             con::debug("Loading zombie ipak for zone \"{}\"", zone.m_name);
 
             LoadIPakForZone(searchPath, "zm", zone);
+
+            // Zombie DLC fastfiles are missing ipak_read "dlczm#" in every map.
+            LoadIPakForZone(searchPath, "dlczm0", zone);
+            LoadIPakForZone(searchPath, "dlczm1", zone);
+            LoadIPakForZone(searchPath, "dlczm2", zone);
+            LoadIPakForZone(searchPath, "dlczm3", zone);
+            LoadIPakForZone(searchPath, "dlczm4", zone);
         }
         else
         {
