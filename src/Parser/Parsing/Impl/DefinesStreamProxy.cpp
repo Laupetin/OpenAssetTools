@@ -541,10 +541,14 @@ bool DefinesStreamProxy::FindMacroForIdentifier(const std::string& input,
 void DefinesStreamProxy::ExtractParametersFromMacroUsage(
     const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
-    if (input[inputPos] != '(')
+    auto parameterStart = inputPos;
+    while (parameterStart < input.size() && isspace(input[parameterStart]))
+        parameterStart++;
+
+    if (parameterStart >= input.size() || input[parameterStart] != '(')
         return;
 
-    inputPos++;
+    inputPos = parameterStart + 1u;
     state.m_parameter_state = ParameterState::AFTER_OPEN;
     state.m_parameters = std::vector<std::string>();
     state.m_current_parameter.clear();
