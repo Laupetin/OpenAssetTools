@@ -839,6 +839,24 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Function macro call can have space before arguments", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define CHOICE_X(itemIndex) itemIndex",
+            "CHOICE_X(2)",
+            "CHOICE_X (2)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "2");
+        ExpectLine(&proxy, 3, "2");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Macro definition that has unclosed parameters throws an error", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
