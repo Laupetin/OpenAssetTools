@@ -1,0 +1,128 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Techset/PixelShaderCompiler" + GAME + ".cpp"
+
+#set COMPILER_HEADER "\"PixelShaderCompiler" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_DX9
+#define IS_SUB_ASSET
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define IS_DX9
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#define IS_DX9
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IS_DX9
+#define IS_SUB_ASSET
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IS_DX11
+#define IS_SUB_ASSET
+#endif
+
+#include COMPILER_HEADER
+
+#include GAME_HEADER
+#include "Shader/D3DShaderCompiler.h"
+#include "Utils/Logging/Log.h"
+
+#include <cassert>
+#include <iostream>
+#include <utility>
+
+using namespace GAME;
+
+#set COMPILER_CLASS_NAME "PixelShaderCompiler" + GAME
+
+#if defined(IS_SUB_ASSET)
+#define ABSTRACT_CREATOR_NAME SubAssetCreator
+#define OVERRIDDEN_CREATOR_METHOD CreateSubAsset
+#define ADD_ASSET_METHOD AddSubAsset
+#define ASSET_NAME SubAssetPixelShader
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define ABSTRACT_CREATOR_NAME AssetCreator
+#define OVERRIDDEN_CREATOR_METHOD CreateAsset
+#define ADD_ASSET_METHOD AddAsset
+#define ASSET_NAME AssetPixelShader
+#define INTERFACE_NAME IAssetCreator
+#endif
+
+namespace
+{
+    class COMPILER_CLASS_NAME final : public ABSTRACT_CREATOR_NAME<ASSET_NAME>
+    {
+    public:
+        COMPILER_CLASS_NAME(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult OVERRIDDEN_CREATOR_METHOD(const std::string& assetName, AssetCreationContext& context) override
+        {
+            auto result = shader::CompileShader(assetName,
+                                                "PSMain",
+#ifdef IS_DX9
+                                                "ps_3_0",
+#else
+                                                "ps_4_0",
+#endif
+                                                false,
+                                                m_search_path,
+                                                m_memory);
+
+            if (result.has_value())
+            {
+                const std::optional maybeShader(*std::move(result));
+                if (!maybeShader.has_value())
+                    return AssetCreationResult::NoAction();
+
+                con::info("Compiled pixel shader \"{}\"", assetName);
+
+#ifdef IS_DX9
+                assert(maybeShader->m_shader_size % sizeof(uint32_t) == 0);
+#endif
+
+                auto* pixelShader = m_memory.Alloc<MaterialPixelShader>();
+                pixelShader->name = m_memory.Dup(assetName.c_str());
+                pixelShader->prog.loadDef.program = static_cast<decltype(GfxPixelShaderLoadDef::program)>(maybeShader->m_shader_bin);
+#ifdef IS_DX9
+                pixelShader->prog.loadDef.programSize = static_cast<decltype(GfxPixelShaderLoadDef::programSize)>(
+                    maybeShader->m_shader_size / sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>));
+#else
+                pixelShader->prog.loadDef.programSize = static_cast<decltype(GfxPixelShaderLoadDef::programSize)>(maybeShader->m_shader_size);
+#endif
+
+                return AssetCreationResult::Success(context.ADD_ASSET_METHOD(AssetRegistration<ASSET_NAME>(assetName, pixelShader)));
+            }
+
+            con::error("Failed to compile pixel shader \"{}\": {}", assetName, result.error());
+            return AssetCreationResult::Failure();
+        }
+
+        void FinalizeZone(AssetCreationContext& context) override {}
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+#set CREATE_COMPILER_METHOD "CreatePixelShaderCompiler" + GAME
+
+namespace techset
+{
+    std::unique_ptr<INTERFACE_NAME> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        if (!shader::ShaderCompilationAvailable())
+            return nullptr;
+
+        return std::make_unique<COMPILER_CLASS_NAME>(memory, searchPath);
+    }
+} // namespace techset
