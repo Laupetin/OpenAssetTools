@@ -20,4 +20,6 @@ namespace T6
     static constexpr auto GDF_FILENAME_WEAPON_ATTACHMENT = "attachment.gdf";
     static constexpr auto GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE = "attachmentunique.gdf";
     static constexpr auto GDF_FILENAME_ZBARRIER = "zbarrier.gdf";
+
+    static constexpr float PHYS_PRESET_MAX_FRICTION = 1e+10;
 } // namespace T6
