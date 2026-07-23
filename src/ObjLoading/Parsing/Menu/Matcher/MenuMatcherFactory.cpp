@@ -2,6 +2,7 @@
 
 #include "MenuExpressionMatchers.h"
 
+#include <format>
 #include <sstream>
 
 using namespace menu;
@@ -53,9 +54,7 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextOrNumeric() con
                 if (token.m_type == SimpleParserValueType::INTEGER)
                     return SimpleParserValue::String(token.GetPos(), new std::string(std::to_string(token.IntegerValue())));
 
-                std::ostringstream ss;
-                ss << std::noshowpoint << token.FloatingPointValue();
-                return SimpleParserValue::String(token.GetPos(), new std::string(ss.str()));
+                return SimpleParserValue::String(token.GetPos(), new std::string(std::format("{:g}", token.FloatingPointValue())));
             }),
     });
 }
