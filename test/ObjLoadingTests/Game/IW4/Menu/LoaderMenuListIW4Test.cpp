@@ -301,6 +301,36 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(menu->items == nullptr);
     }
 
+    TEST_CASE("MenuParsingIW4IT: Can use numeric focus dvar values", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+        name "NumericFocusDvar"
+        itemDef
+        {
+            focusDvar { 0; 1.5; -2 }
+        }
+    }
+}
+            )testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menu = helper.GetMenuAsset("NumericFocusDvar");
+        REQUIRE(menu->itemCount == 1);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* item = menu->items[0];
+        REQUIRE(item != nullptr);
+        REQUIRE(item->enableDvar == R"("0" "1.5" "-2" )"s);
+        REQUIRE(item->dvarFlags == ITEM_DVAR_FLAG_FOCUS);
+    }
+
     TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
     {
         MenuParsingItHelper helper;
