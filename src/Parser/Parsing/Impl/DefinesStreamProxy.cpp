@@ -561,6 +561,9 @@ bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, size_t& 
     if (!MatchNextCharacter(line, currentPos, '('))
         return false;
 
+    if (!SkipWhitespace(line, currentPos))
+        return false;
+
     const auto nameStartPos = currentPos;
     if (!ExtractIdentifier(line, currentPos))
         return false;
@@ -586,7 +589,7 @@ void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
 
         currentPos = definedPos;
 
-        if (definedPos > 0 && !isspace(line.m_line[definedPos - 1]))
+        if (definedPos > 0 && (isalnum(line.m_line[definedPos - 1]) || line.m_line[definedPos - 1] == '_'))
         {
             currentPos += std::char_traits<char>::length(DEFINED_KEYWORD);
             continue;
