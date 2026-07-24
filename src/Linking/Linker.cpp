@@ -337,12 +337,10 @@ namespace
             return true;
         }
 
-        bool WriteAssetList(const Zone& zone) const
+        static bool WriteAssetList(IOutputPath& outPath, const fs::path& outDir, const Zone& zone)
         {
-            const auto sourceDirectory = fs::path(m_args.m_base_folder) / "zone_source";
-            OutputPathFilesystem sourceOutputPath(sourceDirectory);
             const auto assetListPath = fs::path("assetlist") / std::format("{}.csv", zone.m_name);
-            const auto stream = sourceOutputPath.Open(assetListPath.string());
+            const auto stream = outPath.Open(assetListPath.string());
             if (!stream)
             {
                 con::error("Failed to open assetlist for zone: {}", zone.m_name);
@@ -365,7 +363,7 @@ namespace
                 return false;
             }
 
-            con::info("Created assetlist \"{}\"", (sourceDirectory / assetListPath).string());
+            con::info("Created assetlist \"{}\"", (outDir / assetListPath).string());
             return true;
         }
 
@@ -384,7 +382,7 @@ namespace
             {
                 result = WriteZoneToFile(outputPath, *zone);
                 if (result && m_args.m_generate_asset_lists)
-                    result = WriteAssetList(*zone);
+                    result = WriteAssetList(outputPath, outDir, *zone);
             }
 
             return result;

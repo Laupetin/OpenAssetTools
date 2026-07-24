@@ -25,7 +25,6 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
-            "--no-assetlist",
             "--asset-search-path",
             assetSearchPath.c_str(),
             "--source-search-path",

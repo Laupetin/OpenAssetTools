@@ -26,7 +26,6 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
-            "--no-assetlist",
             "--asset-search-path",
             assetSearchPath.c_str(),
             "--source-search-path",
@@ -93,7 +92,7 @@ namespace
         const auto linker = Linker::Create(std::move(args));
         REQUIRE(linker->Start());
 
-        const auto expectedAssetListPath = fs::path(outputPath) / "zone_source/assetlist/SimpleZoneIW4.csv";
+        const auto expectedAssetListPath = fs::path(outputPath) / "assetlist/SimpleZoneIW4.csv";
         std::ifstream assetListStream(expectedAssetListPath, std::ios::binary);
         REQUIRE(assetListStream.is_open());
 
@@ -133,7 +132,7 @@ namespace
         const auto linker = Linker::Create(std::move(args));
         REQUIRE(linker->Start());
 
-        const auto expectedAssetListPath = fs::path(outputPath) / "zone_source/assetlist/SimpleZoneIW4.csv";
+        const auto expectedAssetListPath = fs::path(outputPath) / "assetlist/SimpleZoneIW4.csv";
         REQUIRE_FALSE(fs::exists(expectedAssetListPath));
     }
 
@@ -165,20 +164,18 @@ namespace
         REQUIRE(shouldContinue);
         REQUIRE(Linker::Create(std::move(generateArgs))->Start());
 
-        const auto generatedSourcePath = (fs::path(outputPath) / "zone_source").string();
         const char* ignoreArgStrings[]{
             "SystemTests", // bin
             "--asset-search-path",
             assetSearchPath.c_str(),
             "--source-search-path",
-            generatedSourcePath.c_str(),
+            outputPath.c_str(),
             "--add-source-search-path",
             ignoreSourcePath.c_str(),
             "--base-folder",
             outputPath.c_str(),
             "--output-folder",
             outputPath.c_str(),
-            "--no-assetlist",
             "IgnoreAssetListIW4",
         };
 

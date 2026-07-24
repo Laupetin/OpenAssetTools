@@ -36,7 +36,6 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
-            "--no-assetlist",
             "--add-asset-search-path",
             assetDirStr.c_str(),
             "--source-search-path",
@@ -71,7 +70,6 @@ namespace
         const char* argStrings[]{
             "SystemTests", // bin
             "--verbose",
-            "--no-assetlist",
             "--load",
             baseZonePathStr.c_str(),
             "--add-asset-search-path",
