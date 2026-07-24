@@ -153,7 +153,7 @@ using `Linker`):
 | FxEffectDef          | ❌               | ❌               |                                                                              |
 | FxImpactTable        | ❌               | ❌               |                                                                              |
 | RawFile              | ✅               | ✅               |                                                                              |
-| StringTable          | ✅               | ❌               |                                                                              |
+| StringTable          | ✅               | ✅               |                                                                              |
 | PackIndex            | ❌               | ❌               |                                                                              |
 
 ## T5 (Call of Duty: Black Ops)

@@ -14,6 +14,7 @@
 #include "PhysPreset/GdtLoaderPhysPresetT4.h"
 #include "PhysPreset/RawLoaderPhysPresetT4.h"
 #include "RawFile/AssetLoaderRawFileT4.h"
+#include "StringTable/AssetLoaderStringTableT4.h"
 #include "Weapon/FlameTableLoaderT4.h"
 #include "Weapon/WeaponGdtLoaderT4.h"
 #include "Weapon/WeaponRawLoaderT4.h"
@@ -108,6 +109,7 @@ namespace
         collection.AddAssetCreator(phys_preset::CreateRawLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderT4(memory, gdt, zone));
         collection.AddAssetCreator(raw_file::CreateLoaderT4(memory, searchPath));
+        collection.AddAssetCreator(string_table::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(weapon::CreateRawLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateGdtLoaderT4(memory, searchPath, gdt, zone));
 

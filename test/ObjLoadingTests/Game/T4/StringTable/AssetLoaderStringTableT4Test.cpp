@@ -1,0 +1,47 @@
+#include "Game/T4/StringTable/AssetLoaderStringTableT4.h"
+
+#include "Game/T4/GameT4.h"
+#include "SearchPath/MockSearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+
+using namespace T4;
+using namespace std::literals;
+
+namespace
+{
+    TEST_CASE("AssetLoaderStringTable(T4): Can parse string table", "[t4][stringtable][assetloader]")
+    {
+        MockSearchPath searchPath;
+        searchPath.AddFileData("mp/cooltable.csv",
+                               "test,data,lol\n"
+                               "lorem,ipsum");
+
+        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+
+        MemoryManager memory;
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+
+        auto loader = string_table::CreateLoaderT4(memory, searchPath);
+        auto result = loader->CreateAsset("mp/cooltable.csv", context);
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(result.GetAssetInfo());
+        const auto* stringTable = assetInfo->Asset();
+
+        REQUIRE(stringTable->name == "mp/cooltable.csv"s);
+        REQUIRE(stringTable->columnCount == 3);
+        REQUIRE(stringTable->rowCount == 2);
+
+        REQUIRE(stringTable->values[0] == "test"s);
+        REQUIRE(stringTable->values[1] == "data"s);
+        REQUIRE(stringTable->values[2] == "lol"s);
+        REQUIRE(stringTable->values[3] == "lorem"s);
+        REQUIRE(stringTable->values[4] == "ipsum"s);
+        REQUIRE(stringTable->values[5] == ""s);
+    }
+} // namespace
