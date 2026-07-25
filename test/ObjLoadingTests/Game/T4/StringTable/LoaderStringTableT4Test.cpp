@@ -1,31 +1,32 @@
-#include "Game/IW3/GameIW3.h"
-#include "Game/IW3/StringTable/LoaderStringTableIW3.h"
+#include "Game/T4/StringTable/LoaderStringTableT4.h"
+
+#include "Game/T4/GameT4.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-using namespace IW3;
+using namespace T4;
 using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("AssetLoaderStringTable(IW3): Can parse string table", "[iw3][stringtable][assetloader]")
+    TEST_CASE("LoaderStringTable(T4): Can parse string table", "[t4][stringtable][assetloader]")
     {
         MockSearchPath searchPath;
         searchPath.AddFileData("mp/cooltable.csv",
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
         IgnoredAssetLookup ignoredAssetLookup;
         AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
 
-        auto loader = string_table::CreateLoaderIW3(memory, searchPath);
+        auto loader = string_table::CreateLoaderT4(memory, searchPath);
         auto result = loader->CreateAsset("mp/cooltable.csv", context);
         REQUIRE(result.HasBeenSuccessful());
 

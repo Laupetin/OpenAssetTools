@@ -1,10 +1,9 @@
-#include "LoaderStringTableT5.h"
+#include "LoaderStringTableT4.h"
 
-#include "Game/T5/CommonT5.h"
-#include "Game/T5/T5.h"
+#include "Game/T4/T4.h"
 #include "StringTable/StringTableLoader.h"
 
-using namespace T5;
+using namespace T4;
 
 namespace
 {
@@ -23,7 +22,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            string_table::StringTableLoaderV3<StringTable, Common::Com_HashString> loader;
+            string_table::StringTableLoaderV1<StringTable> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
             if (!stringTable)
                 return AssetCreationResult::Failure();
@@ -39,7 +38,7 @@ namespace
 
 namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderT5(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderT4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }
