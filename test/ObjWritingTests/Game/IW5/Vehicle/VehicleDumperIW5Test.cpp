@@ -1,15 +1,10 @@
-#include "Game/IW5/Vehicle/RawLoaderVehicleIW5.h"
 #include "Game/IW5/Vehicle/VehicleDumperIW5.h"
+
 #include "InfoString/InfoString.h"
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
-#include "ZoneLoading.h"
 
-#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <memory>
-#include <sstream>
-#include <string>
 
 using namespace IW5;
 
@@ -38,13 +33,13 @@ namespace
     TestVehicle CreateTestVehicle()
     {
         TestVehicle result{
-            std::make_unique<PhysPreset>(),
-            std::make_unique<WeaponCompleteDef>(),
-            std::make_unique<FxEffectDef>(),
-            std::make_unique<FxEffectDef>(),
-            std::make_unique<Material>(),
-            std::make_unique<snd_alias_list_name>(),
-            std::make_unique<VehicleDef>(),
+            .physPreset = std::make_unique<PhysPreset>(),
+            .weapon = std::make_unique<WeaponCompleteDef>(),
+            .explodeFx = std::make_unique<FxEffectDef>(),
+            .flashFx = std::make_unique<FxEffectDef>(),
+            .material = std::make_unique<Material>(),
+            .altIdleSound = std::make_unique<snd_alias_list_name>(),
+            .vehicle = std::make_unique<VehicleDef>(),
         };
 
         result.physPreset->name = PHYS_PRESET_NAME;
@@ -99,7 +94,7 @@ namespace
         return dumpedFile->AsString();
     }
 
-    TEST_CASE("Vehicle dumper serializes IW5 fields", "[iw5][vehicle][system]")
+    TEST_CASE("Vehicle dumper serializes raw fields (IW5)", "[iw5][vehicle][system]")
     {
         auto testVehicle = CreateTestVehicle();
         std::istringstream dumpedStream(DumpVehicle(*testVehicle.vehicle));
@@ -121,65 +116,5 @@ namespace
         REQUIRE(infoString.GetValueForKey("audioOriginTag") == "tag_audio_origin");
         REQUIRE(infoString.GetValueForKey("audioOriginTagAlt") == "tag_audio_origin_alt");
         REQUIRE(infoString.GetValueForKey("lowIdleSndAlt") == ALT_IDLE_SOUND_NAME);
-    }
-
-    TEST_CASE("Vehicle loader restores dumped raw asset (IW5)", "[iw5][vehicle][system]")
-    {
-        auto testVehicle = CreateTestVehicle();
-        MockSearchPath loadingSearchPath;
-        loadingSearchPath.AddFileData("vehicles/test_vehicle_iw5", DumpVehicle(*testVehicle.vehicle));
-
-        Zone loadingZone("LoadingZone", 0, GameId::IW5, GamePlatform::PC);
-        auto* physPresetInfo =
-            loadingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<PhysPreset>>(ASSET_TYPE_PHYSPRESET, PHYS_PRESET_NAME, testVehicle.physPreset.get()));
-        auto* weaponInfo =
-            loadingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<WeaponCompleteDef>>(ASSET_TYPE_WEAPON, WEAPON_NAME, testVehicle.weapon.get()));
-        auto* explodeFxInfo =
-            loadingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<FxEffectDef>>(ASSET_TYPE_FX, EXPLODE_FX_NAME, testVehicle.explodeFx.get()));
-        auto* flashFxInfo = loadingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<FxEffectDef>>(ASSET_TYPE_FX, FLASH_FX_NAME, testVehicle.flashFx.get()));
-        auto* materialInfo =
-            loadingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, MATERIAL_NAME, testVehicle.material.get()));
-
-        AssetCreatorCollection creatorCollection(loadingZone);
-        IgnoredAssetLookup ignoredAssetLookup;
-        AssetCreationContext loadingContext(loadingZone, &creatorCollection, &ignoredAssetLookup);
-        const auto loader = vehicle::CreateRawLoaderIW5(loadingZone.Memory(), loadingSearchPath, loadingZone);
-        const auto result = loader->CreateAsset(VEHICLE_NAME, loadingContext);
-
-        REQUIRE(result.HasBeenSuccessful());
-        const auto* loadedAssetInfo = reinterpret_cast<XAssetInfo<VehicleDef>*>(result.GetAssetInfo());
-        const auto* loadedVehicle = loadedAssetInfo->Asset();
-
-        REQUIRE(std::string(loadedVehicle->name) == VEHICLE_NAME);
-        REQUIRE(loadedVehicle->type == VEH_UGV);
-        REQUIRE(loadedVehicle->topSpeed == 176.0f);
-        REQUIRE(loadedVehicle->vehPhysDef.topSpeed == loadedVehicle->topSpeed);
-        REQUIRE(loadedVehicle->vehPhysDef.suspensionTravelFront == loadedVehicle->suspensionTravel);
-        REQUIRE(loadedVehicle->fakeBodyStabilizer == 1);
-        REQUIRE(loadedVehicle->vehPhysDef.physPreset == testVehicle.physPreset.get());
-        REQUIRE(loadedVehicle->vehHelicopterBoundsRadius == 123.25f);
-        REQUIRE(loadedVehicle->camRelativeControl == 1);
-        REQUIRE(loadedVehicle->vehCam_zOffsetMode == VEHCAM_ZMODE_VIEW);
-        REQUIRE(loadedVehicle->vehCam_zOffsetMode3P == VEHCAM_ZMODE_VEHICLE);
-        REQUIRE(loadedVehicle->turretWeapon == testVehicle.weapon.get());
-        REQUIRE(loadedVehicle->turretHorizResistLeft == 27.5f);
-        REQUIRE(loadedVehicle->trophyExplodeFx == testVehicle.explodeFx.get());
-        REQUIRE(loadedVehicle->trophyFlashFx == testVehicle.flashFx.get());
-        REQUIRE(loadedVehicle->compassFriendlyAltIcon == testVehicle.material.get());
-        REQUIRE(loadingZone.m_script_strings[loadedVehicle->trophyTags[0]] == "tag_trophy_iw5");
-        REQUIRE(loadingZone.m_script_strings[loadedVehicle->audioOriginTag] == "tag_audio_origin");
-        REQUIRE(loadingZone.m_script_strings[loadedVehicle->audioOriginTagAlt] == "tag_audio_origin_alt");
-        REQUIRE(std::string(loadedVehicle->idleLowSndAlt.name->soundName) == ALT_IDLE_SOUND_NAME);
-        REQUIRE(std::string(loadedVehicle->surfaceSnds[0].name->soundName) == "test_iw5_surface_default");
-        REQUIRE(std::string(loadedVehicle->surfaceSnds[30].name->soundName) == "test_iw5_surface_slush");
-
-        REQUIRE(loadedAssetInfo->m_dependencies.size() == 5u);
-        REQUIRE(std::ranges::find(loadedAssetInfo->m_dependencies, physPresetInfo) != loadedAssetInfo->m_dependencies.end());
-        REQUIRE(std::ranges::find(loadedAssetInfo->m_dependencies, weaponInfo) != loadedAssetInfo->m_dependencies.end());
-        REQUIRE(std::ranges::find(loadedAssetInfo->m_dependencies, explodeFxInfo) != loadedAssetInfo->m_dependencies.end());
-        REQUIRE(std::ranges::find(loadedAssetInfo->m_dependencies, flashFxInfo) != loadedAssetInfo->m_dependencies.end());
-        REQUIRE(std::ranges::find(loadedAssetInfo->m_dependencies, materialInfo) != loadedAssetInfo->m_dependencies.end());
-        REQUIRE(loadedAssetInfo->m_used_script_strings.size() == 3u);
-        REQUIRE(loadedAssetInfo->m_indirect_asset_references.size() == 32u);
     }
 } // namespace

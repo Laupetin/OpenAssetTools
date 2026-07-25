@@ -5173,7 +5173,8 @@ namespace IW5
         VEHCAM_ZMODE_WORLD = 0x0,
         VEHCAM_ZMODE_VEHICLE = 0x1,
         VEHCAM_ZMODE_VIEW = 0x2,
-        VEHCAM_ZMODE_COUNT = 0x3
+
+        VEHCAM_ZMODE_COUNT
     };
 
     struct VehiclePhysDef

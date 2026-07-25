@@ -8,7 +8,7 @@ namespace IW5
         {"useHintString",                               offsetof(VehicleDef, useHintString),                               CSPFT_STRING               },
         {"health",                                      offsetof(VehicleDef, health),                                      CSPFT_INT                  },
         {"quadBarrel",                                  offsetof(VehicleDef, quadBarrel),                                  CSPFT_QBOOLEAN             },
-        {"texureScrollScale",                           offsetof(VehicleDef, texScrollScale),                              CSPFT_FLOAT                },
+        {"textureScrollScale",                          offsetof(VehicleDef, texScrollScale),                              CSPFT_FLOAT                },
         {"topSpeed",                                    offsetof(VehicleDef, topSpeed),                                    CSPFT_MPH_TO_INCHES_PER_SEC},
         {"accel",                                       offsetof(VehicleDef, accel),                                       CSPFT_MPH_TO_INCHES_PER_SEC},
         {"rotRate",                                     offsetof(VehicleDef, rotRate),                                     CSPFT_FLOAT                },
