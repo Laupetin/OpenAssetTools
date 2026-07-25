@@ -1,6 +1,5 @@
-#include "Game/IW3/StringTable/AssetLoaderStringTableIW3.h"
-
 #include "Game/IW3/GameIW3.h"
+#include "Game/IW3/StringTable/LoaderStringTableIW3.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 

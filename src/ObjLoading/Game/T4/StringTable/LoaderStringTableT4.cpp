@@ -1,11 +1,9 @@
-#include "AssetLoaderStringTableIW3.h"
+#include "LoaderStringTableT4.h"
 
-#include "Game/IW3/IW3.h"
+#include "Game/T4/T4.h"
 #include "StringTable/StringTableLoader.h"
 
-#include <cstring>
-
-using namespace IW3;
+using namespace T4;
 
 namespace
 {
@@ -40,7 +38,7 @@ namespace
 
 namespace string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoaderT4(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }

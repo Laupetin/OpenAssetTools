@@ -1,4 +1,4 @@
-#include "Game/T4/StringTable/AssetLoaderStringTableT4.h"
+#include "Game/T4/StringTable/LoaderStringTableT4.h"
 
 #include "Game/T4/GameT4.h"
 #include "SearchPath/MockSearchPath.h"
@@ -12,7 +12,7 @@ using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("AssetLoaderStringTable(T4): Can parse string table", "[t4][stringtable][assetloader]")
+    TEST_CASE("LoaderStringTable(T4): Can parse string table", "[t4][stringtable][assetloader]")
     {
         MockSearchPath searchPath;
         searchPath.AddFileData("mp/cooltable.csv",
