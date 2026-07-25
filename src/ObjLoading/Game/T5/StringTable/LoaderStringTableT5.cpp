@@ -4,8 +4,6 @@
 #include "Game/T5/T5.h"
 #include "StringTable/StringTableLoader.h"
 
-#include <cstring>
-
 using namespace T5;
 
 namespace
@@ -27,6 +25,8 @@ namespace
 
             string_table::StringTableLoaderV3<StringTable, Common::Com_HashString> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
+            if (!stringTable)
+                return AssetCreationResult::Failure();
 
             return AssetCreationResult::Success(context.AddAsset<AssetStringTable>(assetName, stringTable));
         }
