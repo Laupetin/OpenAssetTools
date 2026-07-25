@@ -75,7 +75,7 @@ using `Linker`):
 | LeaderboardDef            | ✅               | ✅               |                                                                              |
 | StructuredDataDefSet      | ✅               | ✅               | The format is custom due to lacking information about original format.       |
 | TracerDef                 | ✅               | ✅               |                                                                              |
-| VehicleDef                | ✅               | ❌               |                                                                              |
+| VehicleDef                | ✅               | ✅               |                                                                              |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                   |
 
 ## IW5 (Call of Duty: Modern Warfare 3)
@@ -120,7 +120,7 @@ using `Linker`):
 | LeaderboardDef            | ✅               | ✅               |                                                                                                               |
 | StructuredDataDefSet      | ❌               | ❌               |                                                                                                               |
 | TracerDef                 | ✅               | ✅               |                                                                                                               |
-| VehicleDef                | ❌               | ❌               |                                                                                                               |
+| VehicleDef                | ✅               | ✅               |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                                                    |
 
 ## T4 (Call of Duty: World at War)
