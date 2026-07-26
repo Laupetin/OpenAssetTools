@@ -14,7 +14,7 @@
 
 using namespace menu;
 
-namespace menu
+namespace
 {
     enum class ExpectedScriptToken
     {
@@ -195,14 +195,9 @@ namespace menu
             });
         }
     };
-} // namespace menu
 
-namespace menu::event_handler_set_scope_sequences
-{
     class SequenceCloseBlock final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_TOKEN = 1;
-
     public:
         SequenceCloseBlock()
         {
@@ -922,9 +917,7 @@ namespace menu::event_handler_set_scope_sequences
             });
         }
     };
-} // namespace menu::event_handler_set_scope_sequences
-
-using namespace event_handler_set_scope_sequences;
+} // namespace
 
 EventHandlerSetScopeSequences::EventHandlerSetScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
                                                              std::vector<MenuFileParser::sequence_t*>& scopeSequences)

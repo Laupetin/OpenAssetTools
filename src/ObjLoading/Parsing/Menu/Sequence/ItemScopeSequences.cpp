@@ -18,143 +18,143 @@
 
 using namespace menu;
 
-constexpr auto ITEM_TYPE_OWNERDRAW = 8;
-
-class ItemScopeOperations
+namespace
 {
-    inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]{
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_CHECKBOX
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EDITFIELD
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_COMBO
-        CommonItemFeatureType::LISTBOX,     // ITEM_TYPE_LISTBOX
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_MODEL
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_OWNERDRAW
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_NUMERICFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_SLIDER
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_YESNO
-        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
-        CommonItemFeatureType::ENUM_DVAR,   // ITEM_TYPE_DVARENUM
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_BIND
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_MENUMODEL
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_VALIDFILEFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_DECIMALFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_UPREDITFIELD
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_GAME_MESSAGE_WINDOW
-        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_TEXT_SCROLL
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EMAILFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
-    };
+    constexpr auto ITEM_TYPE_OWNERDRAW = 8;
 
-    inline static const CommonItemFeatureType IW5_FEATURE_TYPE_BY_TYPE[0x18]{
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_CHECKBOX
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EDITFIELD
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_COMBO
-        CommonItemFeatureType::LISTBOX,     // ITEM_TYPE_LISTBOX
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_MODEL
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_OWNERDRAW
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_NUMERICFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_SLIDER
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_YESNO
-        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
-        CommonItemFeatureType::ENUM_DVAR,   // ITEM_TYPE_DVARENUM
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_BIND
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_MENUMODEL
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_VALIDFILEFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_DECIMALFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_UPREDITFIELD
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_GAME_MESSAGE_WINDOW
-        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
-        CommonItemFeatureType::NONE,        // ITEM_TYPE_TEXT_SCROLL
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EMAILFIELD
-        CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
-    };
-
-public:
-    static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
+    class ItemScopeOperations
     {
-        if (type < 0)
-            throw ParsingException(pos, "Invalid item type");
+        inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]{
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_CHECKBOX
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EDITFIELD
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_COMBO
+            CommonItemFeatureType::LISTBOX,     // ITEM_TYPE_LISTBOX
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_MODEL
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_OWNERDRAW
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_NUMERICFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_SLIDER
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_YESNO
+            CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
+            CommonItemFeatureType::ENUM_DVAR,   // ITEM_TYPE_DVARENUM
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_BIND
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_MENUMODEL
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_VALIDFILEFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_DECIMALFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_UPREDITFIELD
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_GAME_MESSAGE_WINDOW
+            CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_TEXT_SCROLL
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EMAILFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
+        };
 
-        if (item.m_feature_type != CommonItemFeatureType::NONE)
-            throw ParsingException(pos, "Item type has already been set");
+        inline static const CommonItemFeatureType IW5_FEATURE_TYPE_BY_TYPE[0x18]{
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_CHECKBOX
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EDITFIELD
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_COMBO
+            CommonItemFeatureType::LISTBOX,     // ITEM_TYPE_LISTBOX
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_MODEL
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_OWNERDRAW
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_NUMERICFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_SLIDER
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_YESNO
+            CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
+            CommonItemFeatureType::ENUM_DVAR,   // ITEM_TYPE_DVARENUM
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_BIND
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_MENUMODEL
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_VALIDFILEFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_DECIMALFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_UPREDITFIELD
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_GAME_MESSAGE_WINDOW
+            CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
+            CommonItemFeatureType::NONE,        // ITEM_TYPE_TEXT_SCROLL
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_EMAILFIELD
+            CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
+        };
 
-        item.m_type = type;
-
-        switch (featureLevel)
+    public:
+        static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
         {
-        case FeatureLevel::IW4:
-            if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
+            if (type < 0)
                 throw ParsingException(pos, "Invalid item type");
-            item.m_feature_type = IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
-            break;
 
-        case FeatureLevel::IW5:
-        default:
-            if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW5_FEATURE_TYPE_BY_TYPE)>)
-                throw ParsingException(pos, "Invalid item type");
-            item.m_feature_type = IW5_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
-            break;
+            if (item.m_feature_type != CommonItemFeatureType::NONE)
+                throw ParsingException(pos, "Item type has already been set");
+
+            item.m_type = type;
+
+            switch (featureLevel)
+            {
+            case FeatureLevel::IW4:
+                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
+                    throw ParsingException(pos, "Invalid item type");
+                item.m_feature_type = IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+                break;
+
+            case FeatureLevel::IW5:
+            default:
+                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW5_FEATURE_TYPE_BY_TYPE)>)
+                    throw ParsingException(pos, "Invalid item type");
+                item.m_feature_type = IW5_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+                break;
+            }
+
+            switch (item.m_feature_type)
+            {
+            case CommonItemFeatureType::LISTBOX:
+                item.m_list_box_features = std::make_unique<CommonItemFeaturesListBox>();
+                break;
+            case CommonItemFeatureType::EDIT_FIELD:
+                item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
+                break;
+            case CommonItemFeatureType::MULTI_VALUE:
+                item.m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();
+                break;
+            case CommonItemFeatureType::NEWS_TICKER:
+                item.m_news_ticker_features = std::make_unique<CommonItemFeaturesNewsTicker>();
+                break;
+            default:
+                break;
+            }
         }
 
-        switch (item.m_feature_type)
+        static void EnsureHasListboxFeatures(const CommonItemDef& item, const TokenPos& pos)
         {
-        case CommonItemFeatureType::LISTBOX:
-            item.m_list_box_features = std::make_unique<CommonItemFeaturesListBox>();
-            break;
-        case CommonItemFeatureType::EDIT_FIELD:
-            item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
-            break;
-        case CommonItemFeatureType::MULTI_VALUE:
-            item.m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();
-            break;
-        case CommonItemFeatureType::NEWS_TICKER:
-            item.m_news_ticker_features = std::make_unique<CommonItemFeaturesNewsTicker>();
-            break;
-        default:
-            break;
+            if (item.m_feature_type != CommonItemFeatureType::LISTBOX || !item.m_list_box_features)
+                throw ParsingException(pos, "Item must have be listbox to use this declaration");
         }
-    }
 
-    static void EnsureHasListboxFeatures(const CommonItemDef& item, const TokenPos& pos)
-    {
-        if (item.m_feature_type != CommonItemFeatureType::LISTBOX || !item.m_list_box_features)
-            throw ParsingException(pos, "Item must have be listbox to use this declaration");
-    }
+        static void EnsureHasEditFieldFeatures(const CommonItemDef& item, const TokenPos& pos)
+        {
+            if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
+                throw ParsingException(pos, "Item must have be edit field to use this declaration");
+        }
 
-    static void EnsureHasEditFieldFeatures(const CommonItemDef& item, const TokenPos& pos)
-    {
-        if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
-            throw ParsingException(pos, "Item must have be edit field to use this declaration");
-    }
+        static void EnsureHasMultiValueFeatures(const CommonItemDef& item, const TokenPos& pos)
+        {
+            if (item.m_feature_type != CommonItemFeatureType::MULTI_VALUE || !item.m_multi_value_features)
+                throw ParsingException(pos, "Item must have be multi value to use this declaration");
+        }
 
-    static void EnsureHasMultiValueFeatures(const CommonItemDef& item, const TokenPos& pos)
-    {
-        if (item.m_feature_type != CommonItemFeatureType::MULTI_VALUE || !item.m_multi_value_features)
-            throw ParsingException(pos, "Item must have be multi value to use this declaration");
-    }
+        static void EnsureHasEnumDvarFeatures(const CommonItemDef& item, const TokenPos& pos)
+        {
+            if (item.m_feature_type != CommonItemFeatureType::ENUM_DVAR)
+                throw ParsingException(pos, "Item must have be enum dvar to use this declaration");
+        }
 
-    static void EnsureHasEnumDvarFeatures(const CommonItemDef& item, const TokenPos& pos)
-    {
-        if (item.m_feature_type != CommonItemFeatureType::ENUM_DVAR)
-            throw ParsingException(pos, "Item must have be enum dvar to use this declaration");
-    }
+        static void EnsureHasNewsTickerFeatures(const CommonItemDef& item, const TokenPos& pos)
+        {
+            if (item.m_feature_type != CommonItemFeatureType::NEWS_TICKER || !item.m_news_ticker_features)
+                throw ParsingException(pos, "Item must have be news ticker to use this declaration");
+        }
+    };
 
-    static void EnsureHasNewsTickerFeatures(const CommonItemDef& item, const TokenPos& pos)
-    {
-        if (item.m_feature_type != CommonItemFeatureType::NEWS_TICKER || !item.m_news_ticker_features)
-            throw ParsingException(pos, "Item must have be news ticker to use this declaration");
-    }
-};
-
-namespace menu::item_scope_sequences
-{
     class SequenceCloseBlock final : public MenuFileParser::sequence_t
     {
     public:
@@ -586,7 +586,7 @@ namespace menu::item_scope_sequences
             auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
             state->m_current_event_handler_set = newEventHandlerSet.get();
             state->m_current_nested_event_handler_set = newEventHandlerSet.get();
-            state->m_current_item->m_key_handlers.emplace(std::make_pair(key, std::move(newEventHandlerSet)));
+            state->m_current_item->m_key_handlers.emplace(key, std::move(newEventHandlerSet));
         }
     };
 
@@ -620,12 +620,10 @@ namespace menu::item_scope_sequences
             auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
             state->m_current_event_handler_set = newEventHandlerSet.get();
             state->m_current_nested_event_handler_set = newEventHandlerSet.get();
-            state->m_current_item->m_key_handlers.emplace(std::make_pair(keyValue, std::move(newEventHandlerSet)));
+            state->m_current_item->m_key_handlers.emplace(keyValue, std::move(newEventHandlerSet));
         }
     };
-} // namespace menu::item_scope_sequences
-
-using namespace item_scope_sequences;
+} // namespace
 
 ItemScopeSequences::ItemScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
                                        std::vector<MenuFileParser::sequence_t*>& scopeSequences)
@@ -633,7 +631,7 @@ ItemScopeSequences::ItemScopeSequences(std::vector<std::unique_ptr<MenuFileParse
 {
 }
 
-void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
+void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<GenericStringPropertySequence>("name",
@@ -759,32 +757,32 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
                                                                  state->m_current_item->m_text_font = value;
                                                              }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("backcolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_back_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("forecolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_fore_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("bordercolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_border_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("outlinecolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_outline_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("disablecolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_disable_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("glowcolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_item->m_glow_color = value;
                                                                }));
