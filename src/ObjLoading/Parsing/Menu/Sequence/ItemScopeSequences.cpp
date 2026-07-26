@@ -12,6 +12,7 @@
 #include "Parsing/Menu/MenuFileCommonOperations.h"
 
 #include <cassert>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -449,107 +450,106 @@ namespace menu::item_scope_sequences
 
     class SequenceColumns final : public MenuFileParser::sequence_t
     {
-        static constexpr auto TAG_COLUMN = 1;
+        static constexpr auto TAG_VALUE = 1;
 
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
 
+        static constexpr const char* SYNTAX_IW4 = "<xpos> <width> <maxChars> [alignment]";
+        static constexpr auto BASE_COLUMN_COUNT_IW4 = 3;
+
+        static constexpr const char* SYNTAX_IW5 = "<xpos> <ypos> <width> <height> <maxChars> [alignment]";
+        static constexpr auto BASE_COLUMN_COUNT_IW5 = 5;
+
     public:
-        explicit SequenceColumns(const FeatureLevel featureLevel)
+        explicit SequenceColumns()
         {
             const MenuMatcherFactory create(this);
             AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
-            if (featureLevel == FeatureLevel::IW5)
-            {
-                AddMatchers({
-                    create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
-                    create.Integer().Capture(CAPTURE_COLUMN_COUNT),
-                    create.Loop(create.And({
-                        create.True().Tag(TAG_COLUMN),
-                        create.IntExpression(), // xpos
-                        create.IntExpression(), // ypos
-                        create.IntExpression(), // width
-                        create.IntExpression(), // height
-                        create.IntExpression(), // maxChars
-                        create.IntExpression(), // alignment
-                    })),
-                });
-            }
-            else
-            {
-                AddMatchers({
-                    create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
-                    create.Integer().Capture(CAPTURE_COLUMN_COUNT),
-                    create.Loop(create.And({
-                        create.True().Tag(TAG_COLUMN),
-                        create.IntExpression(),
-                    })),
-                });
-            }
+            AddMatchers({
+                create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
+                create.Integer().Capture(CAPTURE_COLUMN_COUNT),
+                create.Loop(create.IntExpression().Tag(TAG_VALUE)),
+            });
         }
 
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_item);
+            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
 
             const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, firstToken.GetPos());
 
-            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+            const auto columnCount = static_cast<size_t>(result.NextCapture(CAPTURE_COLUMN_COUNT).IntegerValue());
+            std::vector<int> columnValues;
+            while (result.PeekAndRemoveIfTag(TAG_VALUE) == TAG_VALUE)
+                columnValues.emplace_back(MenuMatcherFactory::TokenIntExpressionValue(state, result));
+
+            size_t baseColumnCount;
+            const char* syntax;
+            bool hasHeightValues;
+            if (state->m_feature_level == FeatureLevel::IW4)
+            {
+                baseColumnCount = BASE_COLUMN_COUNT_IW4;
+                syntax = SYNTAX_IW4;
+                hasHeightValues = false;
+            }
+            else
+            {
+                assert(state->m_feature_level == FeatureLevel::IW5);
+                baseColumnCount = BASE_COLUMN_COUNT_IW5;
+                syntax = SYNTAX_IW5;
+                hasHeightValues = true;
+            }
+
+            bool hasAlignmentSpecified;
+            if (columnValues.size() == columnCount * (baseColumnCount + 1))
+                hasAlignmentSpecified = true;
+            else if (columnValues.size() == columnCount * baseColumnCount)
+                hasAlignmentSpecified = false;
+            else
+                throw ParsingException(firstToken.GetPos(), std::format("Each row must have the following syntax: {}", syntax));
 
             const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
 
-            if (state->m_feature_level == FeatureLevel::IW4)
+            size_t valueIndex = 0u;
+            for (auto columnIndex = 0u; columnIndex < columnCount; columnIndex++)
             {
-                const auto columnCount = static_cast<size_t>(result.NextCapture(CAPTURE_COLUMN_COUNT).IntegerValue());
-                std::vector<int> columnValues;
-                while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
-                    columnValues.emplace_back(MenuMatcherFactory::TokenIntExpressionValue(state, result));
+                const auto xPos = columnValues[valueIndex++];
 
-                size_t valuesPerColumn;
-                if (columnValues.size() == columnCount * 4u)
-                    valuesPerColumn = 4u;
-                else if (columnValues.size() == columnCount * 3u)
-                    valuesPerColumn = 3u;
+                int yPos;
+                if (hasHeightValues)
+                    yPos = columnValues[valueIndex++];
                 else
-                    throw ParsingException(firstToken.GetPos(), "Each column must have a position, width, max character count, and optional alignment");
+                    yPos = 0;
 
-                for (auto columnIndex = 0u; columnIndex < columnCount; columnIndex++)
-                {
-                    const auto valueIndex = columnIndex * valuesPerColumn;
-                    listBoxFeatures->m_columns.emplace_back(CommonItemFeaturesListBox::Column{
-                        columnValues[valueIndex],
-                        0,
-                        columnValues[valueIndex + 1u],
-                        0,
-                        columnValues[valueIndex + 2u],
-                        valuesPerColumn == 4u ? columnValues[valueIndex + 3u] : 0,
-                    });
-                }
+                const auto width = columnValues[valueIndex++];
 
-                return;
-            }
+                int height;
+                if (hasHeightValues)
+                    height = columnValues[valueIndex++];
+                else
+                    height = 0;
 
-            while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
-            {
-                const auto xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                const auto yPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                const auto width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                const auto height = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                const auto maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
-                const auto alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                const auto maxChars = columnValues[valueIndex++];
 
-                CommonItemFeaturesListBox::Column column{
-                    xPos,
-                    yPos,
-                    width,
-                    height,
-                    maxChars,
-                    alignment,
-                };
-                listBoxFeatures->m_columns.emplace_back(column);
+                int alignment;
+                if (hasAlignmentSpecified)
+                    alignment = columnValues[valueIndex++];
+                else
+                    alignment = 0;
+
+                listBoxFeatures->m_columns.emplace_back(CommonItemFeaturesListBox::Column{
+                    .m_x_pos = xPos,
+                    .m_y_pos = yPos,
+                    .m_width = width,
+                    .m_height = height,
+                    .m_max_chars = maxChars,
+                    .m_alignment = alignment,
+                });
             }
         }
     };
@@ -1073,7 +1073,7 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     }
 
     // ============== ListBox ==============
-    AddSequence(std::make_unique<SequenceColumns>(featureLevel));
+    AddSequence(std::make_unique<SequenceColumns>());
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("notselectable",
                                                                  [](const MenuFileParserState* state, const TokenPos& pos)
                                                                  {
