@@ -17,7 +17,7 @@
 
 using namespace menu;
 
-namespace menu::menu_scope_sequences
+namespace
 {
     class SequenceCloseBlock final : public MenuFileParser::sequence_t
     {
@@ -72,8 +72,6 @@ namespace menu::menu_scope_sequences
 
     class SequenceItemDef final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_TOKEN = 1;
-
     public:
         SequenceItemDef()
         {
@@ -208,9 +206,7 @@ namespace menu::menu_scope_sequences
             state->m_current_menu->m_key_handlers.emplace(std::make_pair(keyValue, std::move(newEventHandlerSet)));
         }
     };
-} // namespace menu::menu_scope_sequences
-
-using namespace menu_scope_sequences;
+} // namespace
 
 MenuScopeSequences::MenuScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
                                        std::vector<MenuFileParser::sequence_t*>& scopeSequences)
@@ -218,7 +214,7 @@ MenuScopeSequences::MenuScopeSequences(std::vector<std::unique_ptr<MenuFileParse
 {
 }
 
-void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
+void MenuScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<SequenceItemDef>());
@@ -294,27 +290,27 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
                                                                            state->m_current_menu->m_border_size = value;
                                                                        }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("backcolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_menu->m_back_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("forecolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_menu->m_fore_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("bordercolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_menu->m_border_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("focuscolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_menu->m_focus_color = value;
                                                                }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("outlinecolor",
-                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {
                                                                    state->m_current_menu->m_outline_color = value;
                                                                }));
