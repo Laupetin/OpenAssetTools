@@ -2,6 +2,7 @@
 
 #include "Game/IW3/IW3.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW5/IW5.h"
 #include "GitVersion.h"
 #include "Utils/TestMemoryManager.h"
 
@@ -89,7 +90,7 @@ namespace test::rawfile
         REQUIRE(std::string_view(rawFile->buffer, static_cast<size_t>(rawFile->len)) == expectedBranding);
     }
 
-    TEST_CASE("BrandingAssetCreator: Creates compressed branding rawfile", "[rawfile][branding][iw4]")
+    TEST_CASE("BrandingAssetCreator: Does not compress branding rawfile", "[rawfile][branding][iw4]")
     {
         using namespace IW4;
 
@@ -112,14 +113,40 @@ namespace test::rawfile
         const auto* rawFile = assetInfo->Asset();
         REQUIRE(rawFile->name == "target"s);
         REQUIRE(rawFile->len == static_cast<int>(expectedBranding.size()));
+        REQUIRE(rawFile->compressedLen == 0);
+        REQUIRE(rawFile->data.buffer);
+        REQUIRE(std::string_view(rawFile->data.buffer, static_cast<size_t>(rawFile->len)) == expectedBranding);
+        REQUIRE(rawFile->data.buffer[rawFile->len] == '\0');
+    }
+
+    TEST_CASE("BrandingAssetCreator: Compresses branding rawfile when requested", "[rawfile][branding][iw5]")
+    {
+        using namespace IW5;
+
+        TestMemoryManager memory;
+        Zone zone("target", 0, GameId::IW5, GamePlatform::PC);
+        ZoneDefinition zoneDefinition;
+        AssetCreatorCollection creators(zone);
+        IgnoredAssetLookup ignoredAssets;
+        AssetCreationContext context(zone, &creators, &ignoredAssets);
+
+        const auto sut = raw_file::CreateBrandingAssetCreator<AssetRawFile, true>(memory, zone, zoneDefinition);
+        sut->FinalizeZone(context);
+
+        const auto* assetInfo = zone.m_pools.GetAsset<AssetRawFile>("target");
+        REQUIRE(assetInfo);
+
+        const auto expectedBranding = "generator.name=OpenAssetTools\ngenerator.version=" GIT_VERSION "\nmod.name=target"s;
+        const auto* rawFile = assetInfo->Asset();
+        REQUIRE(rawFile->len == static_cast<int>(expectedBranding.size()));
         REQUIRE(rawFile->compressedLen > 0);
-        REQUIRE(rawFile->data.compressedBuffer);
+        REQUIRE(rawFile->buffer);
 
         std::vector<char> uncompressedBuffer(expectedBranding.size());
         auto uncompressedSize = static_cast<uLongf>(uncompressedBuffer.size());
         REQUIRE(uncompress(reinterpret_cast<Bytef*>(uncompressedBuffer.data()),
                            &uncompressedSize,
-                           reinterpret_cast<const Bytef*>(rawFile->data.compressedBuffer),
+                           reinterpret_cast<const Bytef*>(rawFile->buffer),
                            static_cast<uLong>(rawFile->compressedLen))
                 == Z_OK);
         REQUIRE(uncompressedSize == expectedBranding.size());

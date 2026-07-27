@@ -18,13 +18,14 @@ namespace raw_file
 
     namespace detail
     {
-        template<typename RawFile> RawFile* CreateBrandingRawFile(MemoryManager& memory, const std::string& name, const std::string& brandingText)
+        template<typename RawFile, bool Compress>
+        RawFile* CreateBrandingRawFile(MemoryManager& memory, const std::string& name, const std::string& brandingText)
         {
             auto* rawFile = memory.Alloc<RawFile>();
             rawFile->name = memory.Dup(name.c_str());
             rawFile->len = static_cast<int>(brandingText.size());
 
-            if constexpr (requires { rawFile->compressedLen; })
+            if constexpr (Compress)
             {
                 auto compressedSize = compressBound(static_cast<uLong>(brandingText.size()));
                 auto* compressedBuffer = memory.Alloc<char>(compressedSize);
@@ -38,11 +39,7 @@ namespace raw_file
                     throw std::runtime_error("Compressing branding rawfile failed");
 
                 rawFile->compressedLen = static_cast<int>(compressedSize);
-
-                if constexpr (requires { rawFile->data.compressedBuffer; })
-                    rawFile->data.compressedBuffer = compressedBuffer;
-                else
-                    rawFile->buffer = reinterpret_cast<decltype(rawFile->buffer)>(compressedBuffer);
+                rawFile->buffer = reinterpret_cast<decltype(rawFile->buffer)>(compressedBuffer);
             }
             else
             {
@@ -50,14 +47,20 @@ namespace raw_file
                 std::memcpy(buffer, brandingText.data(), brandingText.size());
                 buffer[brandingText.size()] = '\0';
 
-                rawFile->buffer = reinterpret_cast<decltype(rawFile->buffer)>(buffer);
+                if constexpr (requires { rawFile->compressedLen; })
+                    rawFile->compressedLen = 0;
+
+                if constexpr (requires { rawFile->data.buffer; })
+                    rawFile->data.buffer = reinterpret_cast<decltype(rawFile->data.buffer)>(buffer);
+                else
+                    rawFile->buffer = reinterpret_cast<decltype(rawFile->buffer)>(buffer);
             }
 
             return rawFile;
         }
     } // namespace detail
 
-    template<AssetDefinition Asset_t> class BrandingAssetCreator final : public IAssetCreator
+    template<AssetDefinition Asset_t, bool Compress> class BrandingAssetCreator final : public IAssetCreator
     {
     public:
         BrandingAssetCreator(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition)
@@ -80,7 +83,7 @@ namespace raw_file
         void FinalizeZone(AssetCreationContext& context) override
         {
             const auto brandingText = CreateBrandingText(m_zone_definition, m_zone.m_name);
-            auto* rawFile = detail::CreateBrandingRawFile<typename Asset_t::Type>(m_memory, m_zone.m_name, brandingText);
+            auto* rawFile = detail::CreateBrandingRawFile<typename Asset_t::Type, Compress>(m_memory, m_zone.m_name, brandingText);
             context.AddAsset<Asset_t>(m_zone.m_name, rawFile);
         }
 
@@ -90,9 +93,9 @@ namespace raw_file
         const ZoneDefinition& m_zone_definition;
     };
 
-    template<AssetDefinition Asset_t>
+    template<AssetDefinition Asset_t, bool Compress = false>
     std::unique_ptr<IAssetCreator> CreateBrandingAssetCreator(MemoryManager& memory, const Zone& zone, const ZoneDefinition& zoneDefinition)
     {
-        return std::make_unique<BrandingAssetCreator<Asset_t>>(memory, zone, zoneDefinition);
+        return std::make_unique<BrandingAssetCreator<Asset_t, Compress>>(memory, zone, zoneDefinition);
     }
 } // namespace raw_file

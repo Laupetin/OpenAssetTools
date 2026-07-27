@@ -49,6 +49,6 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              IOutputPath& cacheDir) const
 {
     ConfigureCompilers(collection, zone, searchPath);
-    collection.AddAssetCreator(raw_file::CreateBrandingAssetCreator<AssetRawFile>(zone.Memory(), zone, zoneDefinition.m_zone_definition));
+    collection.AddAssetCreator(raw_file::CreateBrandingAssetCreator<AssetRawFile, true>(zone.Memory(), zone, zoneDefinition.m_zone_definition));
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }
