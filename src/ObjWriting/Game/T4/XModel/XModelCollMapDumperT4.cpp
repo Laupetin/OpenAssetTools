@@ -11,40 +11,43 @@ namespace xmodel
 {
     namespace
     {
-        constexpr auto BRUSH_EDGE_MIN = 0u;
-        constexpr auto BRUSH_EDGE_MAX = 1u;
+        constexpr auto BRUSH_DIRECTION_MIN = 0u;
+        constexpr auto BRUSH_DIRECTION_MAX = 1u;
+        constexpr auto BRUSH_AXIS_X = 0u;
+        constexpr auto BRUSH_AXIS_Y = 1u;
+        constexpr auto BRUSH_AXIS_Z = 2u;
 
         void WriteBrush(MapFileDumper& mapFileDumper, const BrushWrapper& brush)
         {
-            if (brush.edgeCount[BRUSH_EDGE_MIN][0] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MIN][BRUSH_AXIS_X] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {1.0f, 0.0f, 0.0f},
-                    brush.mins[0]
+                    brush.mins[BRUSH_AXIS_X]
                 });
-            if (brush.edgeCount[BRUSH_EDGE_MAX][0] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MAX][BRUSH_AXIS_X] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {-1.0f, 0.0f, 0.0f},
-                    -brush.maxs[0]
+                    -brush.maxs[BRUSH_AXIS_X]
                 });
-            if (brush.edgeCount[BRUSH_EDGE_MIN][1] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MIN][BRUSH_AXIS_Y] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {0.0f, 1.0f, 0.0f},
-                    brush.mins[1]
+                    brush.mins[BRUSH_AXIS_Y]
                 });
-            if (brush.edgeCount[BRUSH_EDGE_MAX][1] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MAX][BRUSH_AXIS_Y] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {0.0f, -1.0f, 0.0f},
-                    -brush.maxs[1]
+                    -brush.maxs[BRUSH_AXIS_Y]
                 });
-            if (brush.edgeCount[BRUSH_EDGE_MIN][2] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MIN][BRUSH_AXIS_Z] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {0.0f, 0.0f, 1.0f},
-                    brush.mins[2]
+                    brush.mins[BRUSH_AXIS_Z]
                 });
-            if (brush.edgeCount[BRUSH_EDGE_MAX][2] != 0)
+            if (brush.edgeCount[BRUSH_DIRECTION_MAX][BRUSH_AXIS_Z] != 0)
                 mapFileDumper.WriteBrushPlane({
                     {0.0f, 0.0f, -1.0f},
-                    -brush.maxs[2]
+                    -brush.maxs[BRUSH_AXIS_Z]
                 });
 
             if (!brush.sides)
