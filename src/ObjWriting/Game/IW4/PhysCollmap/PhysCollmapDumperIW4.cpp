@@ -49,6 +49,17 @@ namespace phys_collmap
                 });
                 break;
 
+            case PHYS_GEOM_COLLMAP:
+                // Serialized PhysGeomInfo type 4 is an IW3-style cylinder:
+                // halfSize[0] is half-height and halfSize[1] is radius.
+                mapFileDumper.WritePhysicsCylinder({
+                    {geom.bounds.midPoint.v[0], geom.bounds.midPoint.v[1], geom.bounds.midPoint.v[2]},
+                    geom.bounds.halfSize.v[1],
+                    geom.bounds.halfSize.v[0] * 2,
+                    {geom.orientation[0][0],    geom.orientation[0][1],    geom.orientation[0][2]   }
+                });
+                break;
+
             case PHYS_GEOM_CYLINDER:
                 mapFileDumper.WritePhysicsCylinder({
                     {geom.bounds.midPoint.v[0], geom.bounds.midPoint.v[1], geom.bounds.midPoint.v[2]},
@@ -60,7 +71,6 @@ namespace phys_collmap
 
             case PHYS_GEOM_BRUSHMODEL:
             case PHYS_GEOM_BRUSH:
-            case PHYS_GEOM_COLLMAP:
             case PHYS_GEOM_CAPSULE:
             case PHYS_GEOM_GLASS:
             default:
