@@ -2,8 +2,7 @@
 
 #include <cassert>
 #include <cmath>
-#include <iomanip>
-#include <sstream>
+#include <format>
 #include <string_view>
 
 namespace
@@ -40,17 +39,12 @@ namespace
         return {a.m_x + b.m_x, a.m_y + b.m_y, a.m_z + b.m_z};
     }
 
-    float CleanZero(const float value)
-    {
-        return std::fabs(value) < 0.000001f ? 0.0f : value;
-    }
-
     std::string FormatFloat(const float value)
     {
-        std::ostringstream stream;
-        stream << std::fixed << std::setprecision(6) << CleanZero(value);
+        // Prevent insignificant negative values from being formatted as "-0.000000".
+        const auto cleanedValue = std::fabs(value) < 0.000001f ? 0.0f : value;
+        auto result = std::format("{:.6f}", cleanedValue);
 
-        auto result = stream.str();
         constexpr std::string_view ZERO_FRACTION = ".000000";
         if (result.ends_with(ZERO_FRACTION))
             result.resize(result.size() - ZERO_FRACTION.size());
