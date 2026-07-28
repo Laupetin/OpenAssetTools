@@ -17,6 +17,7 @@ public:
 
 private:
     ArgumentParser m_argument_parser;
+    std::regex m_game_pattern;
     std::regex m_zone_pattern;
 
     /**
