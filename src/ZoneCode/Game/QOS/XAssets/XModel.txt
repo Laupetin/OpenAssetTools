@@ -63,6 +63,7 @@ set allocalign vertList 4;
 set count vertList vertListCount;
 set reusable triIndices;
 set count triIndices triCount;
+set condition indexBuffer never;
 reorder:
     vertInfo
     verts0

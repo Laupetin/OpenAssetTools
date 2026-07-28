@@ -448,8 +448,8 @@ namespace T4
         void /*IDirect3DVertexBuffer9*/* vb0;
         unsigned int vertListCount;
         XRigidVertList* vertList;
-        int partBits[4];
         void /*IDirect3DIndexBuffer9*/* indexBuffer;
+        int partBits[4];
     };
 
     struct XModelLodInfo

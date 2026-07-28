@@ -405,7 +405,8 @@ namespace QOS
         void* vb1;
         unsigned int vertListCount;
         XRigidVertList* vertList;
-        int partBits[7];
+        void* indexBuffer;
+        int partBits[6];
     };
 
     struct XModelLodInfo
