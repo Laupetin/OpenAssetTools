@@ -780,24 +780,49 @@ namespace QOS
         const char* name;
     };
 
+    struct gcc_align32(8) GfxDrawSurfFields
+    {
+        uint64_t objectId : 16;
+        uint64_t reflectionProbeIndex : 8;
+        uint64_t customIndex : 5;
+        uint64_t materialSortedIndex : 11;
+        uint64_t prepass : 2;
+        uint64_t primaryLightIndex : 8;
+        uint64_t surfType : 4;
+        uint64_t primarySortKey : 6;
+        uint64_t unused : 4;
+    };
+
+    union GfxDrawSurf
+    {
+        gcc_align32(8) GfxDrawSurfFields fields;
+        gcc_align32(8) uint64_t packed;
+    };
+
     struct MaterialInfo
     {
         const char* name;
+        unsigned char gameFlags;
+        unsigned char sortKey;
+        unsigned char textureAtlasRowCount;
+        unsigned char textureAtlasColumnCount;
+        GfxDrawSurf drawSurf;
+        unsigned int surfaceTypeBits;
+        uint16_t hashIndex;
     };
 
     struct Material
     {
         MaterialInfo info;
-        char unknown0[63];
+        char stateBitsEntry[43];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
-        char unknown1[14];
+        char unknown0[14];
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
         GfxStateBits* stateBitsTable;
-        char unknown2[4];
     };
 
     struct SndCurve
@@ -1465,11 +1490,6 @@ namespace QOS
         int glareFadeInTime;
         int glareFadeOutTime;
         float sunFxPosition[3];
-    };
-
-    struct GfxDrawSurf
-    {
-        unsigned int packed[2];
     };
 
     struct GfxSceneDynModel
