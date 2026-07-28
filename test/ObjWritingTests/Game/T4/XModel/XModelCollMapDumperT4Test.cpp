@@ -13,7 +13,7 @@ namespace
     size_t CountOccurrences(const std::string_view value, const std::string_view searchValue)
     {
         auto count = 0u;
-        auto position = 0u;
+        std::string_view::size_type position = 0;
 
         while ((position = value.find(searchValue, position)) != std::string_view::npos)
         {
