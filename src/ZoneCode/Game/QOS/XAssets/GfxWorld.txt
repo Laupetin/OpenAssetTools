@@ -48,47 +48,47 @@ set count cellCasterBits cellCount * ((cellCount + 31) / 32);
 set block cellHasSunLitSurfsBits XFILE_BLOCK_RUNTIME;
 set count cellHasSunLitSurfsBits (cellCount * 512) + 1;
 set block dynEntVisData0_0 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_0 dynEntDataSize0;
+set count dynEntVisData0_0 gfxSceneDynModelCount;
 set block dynEntVisData0_1 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_1 dynEntDataSize0;
+set count dynEntVisData0_1 gfxSceneDynModelCount;
 set block dynEntVisData0_2 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_2 dynEntDataSize0;
+set count dynEntVisData0_2 gfxSceneDynModelCount;
 set block dynEntVisData0_3 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_3 dynEntDataSize0;
+set count dynEntVisData0_3 gfxSceneDynModelCount;
 set block dynEntVisData1_0 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_0 dynEntDataSize1;
+set count dynEntVisData1_0 gfxSceneDynBrushCount;
 set block dynEntVisData1_1 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_1 dynEntDataSize1;
+set count dynEntVisData1_1 gfxSceneDynBrushCount;
 set block dynEntVisData1_2 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_2 dynEntDataSize1;
+set count dynEntVisData1_2 gfxSceneDynBrushCount;
 set block dynEntVisData1_3 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_3 dynEntDataSize1;
+set count dynEntVisData1_3 gfxSceneDynBrushCount;
 set block dynEntCellBits0 XFILE_BLOCK_RUNTIME;
-set count dynEntCellBits0 (cellCount * dynEntDataSize0 / 8) + 1;
+set count dynEntCellBits0 (cellCount * gfxSceneDynModelCount / 8) + 1;
 set block dynEntCellBits1 XFILE_BLOCK_RUNTIME;
-set count dynEntCellBits1 (cellCount * dynEntDataSize1 / 8) + 1;
+set count dynEntCellBits1 (cellCount * gfxSceneDynBrushCount / 8) + 1;
 set block dynEntSortList0 XFILE_BLOCK_RUNTIME;
-set count dynEntSortList0 dynEntDataSize0;
+set count dynEntSortList0 gfxSceneDynModelCount;
 set block dynEntSortList1 XFILE_BLOCK_RUNTIME;
-set count dynEntSortList1 dynEntDataSize1;
-set block sceneDynModel XFILE_BLOCK_RUNTIME;
-set count sceneDynModel sceneDynModelCount;
-set block sceneDynBrush XFILE_BLOCK_RUNTIME;
-set count sceneDynBrush sceneDynBrushCount;
-set block dynEntCellRefs XFILE_BLOCK_RUNTIME;
-set count dynEntCellRefs dynEntDataSize0;
-set block dynEntUnknown XFILE_BLOCK_RUNTIME;
-set count dynEntUnknown dynEntDataSize1;
+set count dynEntSortList1 gfxSceneDynBrushCount;
+set block unknownGfxDynEntCellRef0 XFILE_BLOCK_RUNTIME;
+set count unknownGfxDynEntCellRef0 unknownGfxDynEntCellRefCount0;
+set block unknownGfxDynEntCellRef1 XFILE_BLOCK_RUNTIME;
+set count unknownGfxDynEntCellRef1 unknownGfxDynEntCellRefCount1;
+set block gfxSceneDynModel XFILE_BLOCK_RUNTIME;
+set count gfxSceneDynModel gfxSceneDynModelCount;
+set block gfxSceneDynBrush XFILE_BLOCK_RUNTIME;
+set count gfxSceneDynBrush gfxSceneDynBrushCount;
 set count sortedSurfIndex models::surfaceCount;
 set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
 set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x1000;
 set block primaryLightDynEntShadowVis0 XFILE_BLOCK_RUNTIME;
-set count primaryLightDynEntShadowVis0 dynEntDataSize0 * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis0 gfxSceneDynModelCount * (primaryLightCount - sunPrimaryLightIndex - 1);
 set block primaryLightDynEntShadowVis1 XFILE_BLOCK_RUNTIME;
-set count primaryLightDynEntShadowVis1 dynEntDataSize1 * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis1 gfxSceneDynBrushCount * (primaryLightCount - sunPrimaryLightIndex - 1);
 set count shadowGeom primaryLightCount;
-set count lightRegion lightRegionCount;
-set allocalign lightRegion 4;
+set count massiveAdSurface massiveAdSurfaceCount;
+set allocalign massiveAdSurface 4;
 reorder:
     name
     baseName
@@ -137,16 +137,16 @@ reorder:
     dynEntCellBits1
     dynEntSortList0
     dynEntSortList1
-    sceneDynModel
-    sceneDynBrush
-    dynEntCellRefs
-    dynEntUnknown
+    unknownGfxDynEntCellRef0
+    unknownGfxDynEntCellRef1
+    gfxSceneDynModel
+    gfxSceneDynBrush
     primaryLightEntityShadowVis
     primaryLightDynEntShadowVis0
     primaryLightDynEntShadowVis1
     sortedSurfIndex
     shadowGeom
-    lightRegion
+    massiveAdSurface
     unknownMaterial;
 
 // GfxWorldVertexData

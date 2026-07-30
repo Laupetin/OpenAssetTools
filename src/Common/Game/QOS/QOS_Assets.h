@@ -1494,19 +1494,20 @@ namespace QOS
 
     struct GfxSceneDynModel
     {
-        char unknown[8];
+        char unknown[6];
+        // unsigned short dynEntIndex;
+        // unsigned short cellIndex;
+        // unsigned short nextIndex;
     };
 
     struct GfxSceneDynBrush
     {
-        char unknown[8];
+        char unknown[4];
     };
 
     struct GfxDynEntCellRef
     {
-        unsigned short dynEntIndex;
-        unsigned short cellIndex;
-        unsigned short nextIndex;
+        char unknown[8];
     };
 
     struct GfxShadowGeometry
@@ -1517,7 +1518,7 @@ namespace QOS
         unsigned short* smodelIndex;
     };
 
-    struct GfxLightRegion
+    struct GfxMassiveAdSurface
     {
         char unknown[24];
     };
@@ -1572,10 +1573,10 @@ namespace QOS
         sunflare_t sun;
         float outdoorLookupMatrix[4][4];
         GfxImage* outdoorImage;
-        unsigned int dynEntDataSize0;
-        unsigned int dynEntDataSize1;
-        unsigned int sceneDynModelCount;
-        unsigned int sceneDynBrushCount;
+        unsigned int gfxSceneDynModelCount; // Unknown name
+        unsigned int gfxSceneDynBrushCount; // Unknown name
+        unsigned int unknownGfxDynEntCellRefCount0;
+        unsigned int unknownGfxDynEntCellRefCount1;
         raw_byte* smodelVisData0;
         raw_byte* smodelVisData1;
         raw_byte* smodelVisData2;
@@ -1600,17 +1601,17 @@ namespace QOS
         raw_byte* dynEntCellBits1;
         unsigned short* dynEntSortList0;
         unsigned short* dynEntSortList1;
-        GfxSceneDynModel* sceneDynModel;
-        GfxSceneDynBrush* sceneDynBrush;
-        GfxDynEntCellRef* dynEntCellRefs;
-        raw_uint* dynEntUnknown;
+        GfxDynEntCellRef* unknownGfxDynEntCellRef0;
+        GfxDynEntCellRef* unknownGfxDynEntCellRef1;
+        GfxSceneDynModel* gfxSceneDynModel; // name unknown
+        GfxSceneDynBrush* gfxSceneDynBrush; // name unknown
         unsigned short* sortedSurfIndex;
         raw_uint* primaryLightEntityShadowVis;
         raw_uint* primaryLightDynEntShadowVis0;
         raw_uint* primaryLightDynEntShadowVis1;
         GfxShadowGeometry* shadowGeom;
-        unsigned int lightRegionCount;
-        GfxLightRegion* lightRegion;
+        unsigned int massiveAdSurfaceCount;
+        GfxMassiveAdSurface* massiveAdSurface;
         Material* unknownMaterial;
     };
 
