@@ -159,20 +159,53 @@ namespace QOS
         XModelPiece* pieces;
     };
 
+    // Struct mostly taken from T4, size and layout seems to match
+    // Take with a grain of salt
     struct PhysPreset
     {
         const char* name;
-        char unknown0[24];
-        const char* unknownString;
-        char unknown1[16];
+        int type;
+        float mass;
+        float bounce;
+        float friction;
+        float bulletForceScale;
+        float explosiveForceScale;
+        const char* sndAliasPrefix;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        int tempDefaultToCylinder; // might be, always 0
+        int canFloat;              // Values match known phys preset values from t5
+    };
+
+    enum ConstraintType : int
+    {
+        CONSTRAINT_NONE = 0x0,
+        CONSTRAINT_POINT = 0x1, // confirmed
+        CONSTRAINT_DISTANCE = 0x2,
+        CONSTRAINT_HINGE = 0x3, // confirmed
+        CONSTRAINT_JOINT = 0x4,
+        CONSTRAINT_ACTUATOR = 0x5, // confirmed
+
+        // I only found up to 5 in usages, maybe there are more
+
+        NUM_CONSTRAINT_TYPES
     };
 
     struct PhysConstraint
     {
-        char unknown0[4];
-        const char* target_bone1;
-        const char* target_bone2;
-        char unknown1[56];
+        ConstraintType type;      // Confirmed
+        const char* target_bone1; // Confirmed
+        const char* target_bone2; // Confirmed
+        float offset[3];          // Confirmed
+        int timeout;              // Confirmed
+        int min_health;           // Confirmed
+        int max_health;           // Confirmed
+        float damp;               // Confirmed
+        float power;              // Confirmed
+        float scale[3];           // could be, offset and size matches
+        float spin_scale;         // could be, offset and size matches
+        float minAngle;           // Confirmed
+        float maxAngle;           // Confirmed
     };
 
     struct PhysConstraints
