@@ -1,0 +1,30 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/InfoStringLoaderTracer" + GAME + ".h"
+
+#set CLASS_NAME "InfoStringLoader" + GAME
+
+// This file was templated.
+// See InfoStringLoaderTracer.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/AssetCreationContext.h"
+#include "Asset/AssetCreationResult.h"
+#include "InfoString/InfoString.h"
+
+namespace tracer
+{
+    class CLASS_NAME
+    {
+    public:
+        CLASS_NAME(MemoryManager& memory, Zone& zone);
+
+        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
+
+    private:
+        MemoryManager& m_memory;
+        Zone& m_zone;
+    };
+} // namespace tracer

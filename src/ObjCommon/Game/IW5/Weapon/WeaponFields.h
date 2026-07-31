@@ -952,26 +952,6 @@ namespace IW5
     };
     static_assert(std::extent_v<decltype(weapIconRatioNames)> == WEAPON_ICON_RATIO_COUNT);
 
-    inline const char* s_vehicleClassNames[]{
-        "4 wheel",
-        "tank",
-        "plane",
-        "boat",
-        "artillery",
-        "helicopter",
-        "snowmobile",
-        "submarine",
-        "ugv",
-    };
-    static_assert(std::extent_v<decltype(s_vehicleClassNames)> == VEH_TYPE_COUNT);
-
-    inline const char* s_vehicleAxleTypeNames[]{
-        "front",
-        "rear",
-        "all",
-    };
-    static_assert(std::extent_v<decltype(s_vehicleAxleTypeNames)> == VEH_AXLE_COUNT);
-
     inline const char* surfaceTypeSoundSuffixes[]{
         "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",          "_flesh",       "_foliage", "_glass", "_grass",
         "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",          "_sand",        "_snow",    "_water", "_wood",

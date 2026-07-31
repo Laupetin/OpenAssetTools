@@ -19,6 +19,9 @@ namespace
     {
         auto* technique = memory.Alloc<MaterialTechnique>();
         technique->name = memory.Dup(name.c_str());
+        technique->passCount = 1;
+        technique->passArray[0].vertexShader = memory.Alloc<MaterialVertexShader>();
+        technique->passArray[0].pixelShader = memory.Alloc<MaterialPixelShader>();
 
         context.AddSubAsset<SubAssetTechnique>(name, technique);
 
@@ -79,7 +82,13 @@ TEST_CASE("TechsetCompilerIW3", "[techset][iw3][compiler]")
 
     SECTION("Can parse simple techset")
     {
-        searchPath.AddFileData(techset::GetFileNameForTechsetName("simple"), R"TECHSET(
+        const auto [techsetName, expectedLoadForRendererValue] = GENERATE(Catch::Generators::table<std::string, uint16_t>({
+            {"simple",     1},
+            {"sm2/simple", 0},
+        }));
+        CAPTURE(techsetName);
+
+        searchPath.AddFileData(techset::GetFileNameForTechsetName(techsetName), R"TECHSET(
 "depth prepass":
   example_zprepass;
 
@@ -90,11 +99,11 @@ TEST_CASE("TechsetCompilerIW3", "[techset][iw3][compiler]")
         auto* exampleZPrepass = GivenTechnique("example_zprepass", context, memory);
         auto* exampleLit = GivenTechnique("example_lit_spot", context, memory);
 
-        const auto result = sut->CreateAsset("simple", context);
+        const auto result = sut->CreateAsset(techsetName, context);
         REQUIRE(result.HasBeenSuccessful());
 
         const auto* techset = static_cast<MaterialTechniqueSet*>(result.GetAssetInfo()->m_ptr);
-        CHECK(techset->name == "simple"s);
+        CHECK(techset->name == techsetName);
         CHECK(techset->worldVertFormat == MTL_WORLDVERT_TEX_1_NRM_1);
 
         size_t techniqueCount = 0;
@@ -107,6 +116,10 @@ TEST_CASE("TechsetCompilerIW3", "[techset][iw3][compiler]")
         CHECK(techniqueCount == 2);
         CHECK(techset->techniques[TECHNIQUE_DEPTH_PREPASS] == exampleZPrepass);
         CHECK(techset->techniques[TECHNIQUE_LIT_SPOT] == exampleLit);
+
+        // Make sure IW3 techset postprocessing sets correct values for loadForRenderer
+        CHECK(exampleZPrepass->passArray[0].vertexShader->prog.loadDef.loadForRenderer == expectedLoadForRendererValue);
+        CHECK(exampleZPrepass->passArray[0].pixelShader->prog.loadDef.loadForRenderer == expectedLoadForRendererValue);
     }
 
     SECTION("Can parse techset with same technique used multiple times")

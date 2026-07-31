@@ -3,11 +3,7 @@
 #include "Csv/CsvStream.h"
 #include "Game/IW5/CommonIW5.h"
 #include "Game/IW5/IW5.h"
-#include "ObjLoading.h"
-#include "Pool/GlobalAssetPool.h"
 #include "StringTable/StringTableLoader.h"
-
-#include <cstring>
 
 using namespace IW5;
 
@@ -30,6 +26,8 @@ namespace
 
             string_table::StringTableLoaderV2<StringTable, Common::StringTable_HashString> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
+            if (!stringTable)
+                return AssetCreationResult::Failure();
 
             return AssetCreationResult::Success(context.AddAsset<AssetStringTable>(assetName, stringTable));
         }

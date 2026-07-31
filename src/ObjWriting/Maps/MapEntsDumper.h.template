@@ -1,0 +1,24 @@
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Maps/MapEntsDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set CLASS_NAME "Dumper" + GAME
+
+// This file was templated.
+// See MapEntsDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+namespace map_ents
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetMapEnts>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetMapEnts::Type>& asset) override;
+    };
+} // namespace map_ents

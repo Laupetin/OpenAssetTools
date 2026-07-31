@@ -301,6 +301,89 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(menu->items == nullptr);
     }
 
+    TEST_CASE("MenuParsingIW4IT: Can use numeric focus dvar values", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+        name "NumericFocusDvar"
+        itemDef
+        {
+            focusDvar { 0; 1.5; -2 }
+        }
+    }
+}
+            )testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menu = helper.GetMenuAsset("NumericFocusDvar");
+        REQUIRE(menu->itemCount == 1);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* item = menu->items[0];
+        REQUIRE(item != nullptr);
+        REQUIRE(item->enableDvar == R"("0" "1.5" "-2" )"s);
+        REQUIRE(item->dvarFlags == ITEM_DVAR_FLAG_FOCUS);
+    }
+
+    TEST_CASE("MenuParsingIW4IT: Can omit list box column alignment", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+        name "ListBoxColumns"
+        itemDef
+        {
+            type 6
+            // x, width, max chars
+            columns 1 22 190 64
+        }
+        itemDef
+        {
+            type 6
+            // x, width, max chars, alignment
+            columns 2 0 18 3 2 18 25 10 1
+        }
+    }
+}
+            )testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menu = helper.GetMenuAsset("ListBoxColumns");
+        REQUIRE(menu->itemCount == 2);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* columnsWithoutAlignment = menu->items[0]->typeData.listBox;
+        REQUIRE(columnsWithoutAlignment != nullptr);
+        REQUIRE(columnsWithoutAlignment->numColumns == 1);
+        CHECK(columnsWithoutAlignment->columnInfo[0].pos == 22);
+        CHECK(columnsWithoutAlignment->columnInfo[0].width == 190);
+        CHECK(columnsWithoutAlignment->columnInfo[0].maxChars == 64);
+        CHECK(columnsWithoutAlignment->columnInfo[0].alignment == 0);
+
+        const auto* columnsWithAlignment = menu->items[1]->typeData.listBox;
+        REQUIRE(columnsWithAlignment != nullptr);
+        REQUIRE(columnsWithAlignment->numColumns == 2);
+        CHECK(columnsWithAlignment->columnInfo[0].pos == 0);
+        CHECK(columnsWithAlignment->columnInfo[0].width == 18);
+        CHECK(columnsWithAlignment->columnInfo[0].maxChars == 3);
+        CHECK(columnsWithAlignment->columnInfo[0].alignment == 2);
+        CHECK(columnsWithAlignment->columnInfo[1].pos == 18);
+        CHECK(columnsWithAlignment->columnInfo[1].width == 25);
+        CHECK(columnsWithAlignment->columnInfo[1].maxChars == 10);
+        CHECK(columnsWithAlignment->columnInfo[1].alignment == 1);
+    }
+
     TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
     {
         MenuParsingItHelper helper;
@@ -377,5 +460,129 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(item->action->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
         REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript != nullptr);
         REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript == R"("play" "lol" ; )"s);
+    }
+
+    TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent pos", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+	name  "Blab"
+        rect 10 10 70 70;
+
+        itemDef
+        {
+            rect 20 20 40 40;
+        }
+
+        itemDef
+        {
+            rect 0 0 0 0;
+            exp rect x 20;
+            exp rect y 20;
+            exp rect w 40;
+            exp rect h 40;
+        }
+    }
+})testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
+        const auto* menu = helper.GetMenuAsset("Blab");
+
+        REQUIRE(menuList->menuCount == 1);
+        REQUIRE(menuList->menus);
+        REQUIRE(menuList->menus[0] == menu);
+        REQUIRE(menu->window.name == "Blab"s);
+        CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
+        CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
+
+        REQUIRE(menu->itemCount == 2);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* item0 = menu->items[0];
+        REQUIRE(item0 != nullptr);
+        CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
+
+        const auto* item1 = menu->items[1];
+        REQUIRE(item1 != nullptr);
+        CHECK_THAT(item1->window.rectClient.x, WithinRel(20.0f));
+        CHECK_THAT(item1->window.rectClient.y, WithinRel(20.0f));
+        CHECK_THAT(item1->window.rectClient.w, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rectClient.h, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rect.x, WithinRel(30.0f));
+        CHECK_THAT(item1->window.rect.y, WithinRel(30.0f));
+        CHECK_THAT(item1->window.rect.w, WithinRel(40.0f));
+        CHECK_THAT(item1->window.rect.h, WithinRel(40.0f));
+    }
+
+    TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent optimized pos", "[parsing][converting][menu][it]")
+    {
+        MenuParsingItHelper helper;
+
+        helper.AddFile(R"testmenu(
+{
+    menuDef
+    {
+	name  "Blab"
+        rect 0 0 1 1;
+        exp rect x 10;
+        exp rect y 10;
+        exp rect w 70;
+        exp rect h 70;
+
+        itemDef
+        {
+            rect 0 0 0 0;
+            exp rect x 20;
+            exp rect y 20;
+            exp rect w 40;
+            exp rect h 40;
+        }
+    }
+})testmenu");
+
+        const auto result = helper.RunIntegrationTest();
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
+        const auto* menu = helper.GetMenuAsset("Blab");
+
+        REQUIRE(menuList->menuCount == 1);
+        REQUIRE(menuList->menus);
+        REQUIRE(menuList->menus[0] == menu);
+        REQUIRE(menu->window.name == "Blab"s);
+        CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
+        CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
+        CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
+
+        REQUIRE(menu->itemCount == 1);
+        REQUIRE(menu->items != nullptr);
+
+        const auto* item0 = menu->items[0];
+        REQUIRE(item0 != nullptr);
+        CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
+        CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
+        CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
+        CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
     }
 } // namespace test::game::iw4::menu::parsing::it

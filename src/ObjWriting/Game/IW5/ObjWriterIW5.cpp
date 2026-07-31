@@ -3,10 +3,13 @@
 #include "Game/IW4/XAnim/XAnimDumperIW4.h"
 #include "Game/IW5/Font/FontDumperIW5.h"
 #include "Game/IW5/Image/ImageDumperIW5.h"
+#include "Game/IW5/Maps/MapEntsDumperIW5.h"
 #include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/Techset/PixelShaderDumperIW5.h"
 #include "Game/IW5/Techset/TechsetDumperIW5.h"
 #include "Game/IW5/Techset/VertexShaderDumperIW5.h"
+#include "Game/IW5/Tracer/TracerDumperIW5.h"
+#include "Game/IW5/Vehicle/VehicleDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "LightDef/LightDefDumperIW5.h"
@@ -50,7 +53,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperGlassWorld)
     // REGISTER_DUMPER(AssetDumperPathData)
     // REGISTER_DUMPER(AssetDumperVehicleTrack)
-    // REGISTER_DUMPER(AssetDumperMapEnts)
+    RegisterAssetDumper(std::make_unique<map_ents::DumperIW5>());
     // REGISTER_DUMPER(AssetDumperFxWorld)
     // REGISTER_DUMPER(AssetDumperGfxWorld)
     RegisterAssetDumper(std::make_unique<light_def::DumperIW5>());
@@ -68,7 +71,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<string_table::DumperIW5>());
     RegisterAssetDumper(std::make_unique<leaderboard::JsonDumperIW5>());
     // REGISTER_DUMPER(AssetDumperStructuredDataDefSet)
-    // REGISTER_DUMPER(AssetDumperTracerDef)
-    // REGISTER_DUMPER(AssetDumperVehicleDef)
+    RegisterAssetDumper(std::make_unique<tracer::DumperIW5>());
+    RegisterAssetDumper(std::make_unique<vehicle::DumperIW5>());
     RegisterAssetDumper(std::make_unique<addon_map_ents::DumperIW5>());
 }

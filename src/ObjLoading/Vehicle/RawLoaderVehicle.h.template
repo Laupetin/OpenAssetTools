@@ -1,0 +1,25 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Vehicle/RawLoaderVehicle" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set FACTORY_NAME "CreateRawLoader" + GAME
+
+// This file was templated.
+// See RawLoaderVehicle.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include GAME_HEADER
+#include "Asset/IAssetCreator.h"
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+#include "Zone/Zone.h"
+
+#include <memory>
+
+namespace vehicle
+{
+    std::unique_ptr<AssetCreator<GAME::AssetVehicle>> FACTORY_NAME(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace vehicle

@@ -25,6 +25,7 @@ namespace menu
 
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> StringChain() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Text() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextOrNumeric() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextNoChain() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
 

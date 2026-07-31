@@ -59,7 +59,7 @@ using `Linker`):
 | ComWorld                  | ❌               | ❌               |                                                                              |
 | GameWorldSp               | ❌               | ❌               |                                                                              |
 | GameWorldMp               | ❌               | ❌               |                                                                              |
-| MapEnts                   | ❌               | ❌               |                                                                              |
+| MapEnts                   | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                    |
 | FxWorld                   | ❌               | ❌               |                                                                              |
 | GfxWorld                  | ❌               | ❌               |                                                                              |
 | GfxLightDef               | ✅               | ✅               |                                                                              |
@@ -74,8 +74,8 @@ using `Linker`):
 | StringTable               | ✅               | ✅               |                                                                              |
 | LeaderboardDef            | ✅               | ✅               |                                                                              |
 | StructuredDataDefSet      | ✅               | ✅               | The format is custom due to lacking information about original format.       |
-| TracerDef                 | ✅               | ❌               |                                                                              |
-| VehicleDef                | ✅               | ❌               |                                                                              |
+| TracerDef                 | ✅               | ✅               |                                                                              |
+| VehicleDef                | ✅               | ✅               |                                                                              |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                   |
 
 ## IW5 (Call of Duty: Modern Warfare 3)
@@ -101,7 +101,7 @@ using `Linker`):
 | GlassWorld                | ❌               | ❌               |                                                                                                               |
 | PathData                  | ❌               | ❌               |                                                                                                               |
 | VehicleTrack              | ❌               | ❌               |                                                                                                               |
-| MapEnts                   | ❌               | ❌               |                                                                                                               |
+| MapEnts                   | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                                                     |
 | FxWorld                   | ❌               | ❌               |                                                                                                               |
 | GfxWorld                  | ❌               | ❌               |                                                                                                               |
 | GfxLightDef               | ✅               | ✅               |                                                                                                               |
@@ -119,15 +119,15 @@ using `Linker`):
 | StringTable               | ✅               | ✅               |                                                                                                               |
 | LeaderboardDef            | ✅               | ✅               |                                                                                                               |
 | StructuredDataDefSet      | ❌               | ❌               |                                                                                                               |
-| TracerDef                 | ❌               | ❌               |                                                                                                               |
-| VehicleDef                | ❌               | ❌               |                                                                                                               |
+| TracerDef                 | ✅               | ✅               |                                                                                                               |
+| VehicleDef                | ✅               | ✅               |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌               | MapEnts String can be exported. Binary data currently not.                                                    |
 
 ## T4 (Call of Duty: World at War)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
-| PhysPreset           | ❌               | ❌               |                                                                              |
+| PhysPreset           | ✅               | ✅               |                                                                              |
 | PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
 | XAnimParts           | ✅               | ✅               |                                                                              |
@@ -153,7 +153,7 @@ using `Linker`):
 | FxEffectDef          | ❌               | ❌               |                                                                              |
 | FxImpactTable        | ❌               | ❌               |                                                                              |
 | RawFile              | ✅               | ✅               |                                                                              |
-| StringTable          | ✅               | ❌               |                                                                              |
+| StringTable          | ✅               | ✅               |                                                                              |
 | PackIndex            | ❌               | ❌               |                                                                              |
 
 ## T5 (Call of Duty: Black Ops)
@@ -211,7 +211,7 @@ using `Linker`):
 | ComWorld               | ❌               | ❌               |                                                                                                                                                                |
 | GameWorldSp            | ❌               | ❌               |                                                                                                                                                                |
 | GameWorldMp            | ❌               | ❌               |                                                                                                                                                                |
-| MapEnts                | ✅               | ❌               |                                                                                                                                                                |
+| MapEnts                | ⁉️              | ❌               | Entity string can be exported. Binary data currently not.                                                                                                      |
 | GfxWorld               | ❌               | ❌               |                                                                                                                                                                |
 | GfxLightDef            | ✅               | ✅               |                                                                                                                                                                |
 | Font_s                 | ✅               | ✅               |                                                                                                                                                                |

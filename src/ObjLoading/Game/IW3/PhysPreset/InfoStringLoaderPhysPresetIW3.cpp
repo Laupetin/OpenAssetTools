@@ -2,14 +2,10 @@
 
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/InfoString/InfoStringToStructConverter.h"
-#include "Game/IW3/PhysPreset/PhysPresetFields.h"
+#include "Game/IW3/PhysPreset/PhysPresetFieldsIW3.h"
 #include "Utils/Logging/Log.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cstring>
-#include <format>
-#include <iostream>
 #include <limits>
 
 using namespace IW3;
@@ -20,14 +16,14 @@ namespace
     {
     public:
         InfoStringToPhysPresetConverter(const InfoString& infoString,
-                                        void* structure,
+                                        PhysPresetInfo& physPreset,
                                         ZoneScriptStrings& zoneScriptStrings,
                                         MemoryManager& memory,
                                         AssetCreationContext& context,
-                                        GenericAssetRegistration& registration,
+                                        AssetRegistration<AssetPhysPreset>& registration,
                                         const cspField_t* fields,
-                                        size_t fieldCount)
-            : InfoStringToStructConverter(infoString, structure, zoneScriptStrings, memory, context, registration, fields, fieldCount)
+                                        const size_t fieldCount)
+            : InfoStringToStructConverter(infoString, &physPreset, zoneScriptStrings, memory, context, registration, fields, fieldCount)
         {
         }
 
@@ -68,22 +64,27 @@ namespace phys_preset
 
     AssetCreationResult InfoStringLoaderIW3::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
     {
-        PhysPresetInfo presetInfo;
-        std::memset(&presetInfo, 0, sizeof(presetInfo));
-
         auto* physPreset = m_memory.Alloc<PhysPreset>();
+        physPreset->name = m_memory.Dup(assetName.c_str());
+
         AssetRegistration<AssetPhysPreset> registration(assetName, physPreset);
 
-        InfoStringToPhysPresetConverter converter(
-            infoString, &presetInfo, m_zone.m_script_strings, m_memory, context, registration, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
+        PhysPresetInfo physPresetInfo{};
+        InfoStringToPhysPresetConverter converter(infoString,
+                                                  physPresetInfo,
+                                                  m_zone.m_script_strings,
+                                                  m_memory,
+                                                  context,
+                                                  registration,
+                                                  phys_preset_fields,
+                                                  std::extent_v<decltype(phys_preset_fields)>);
         if (!converter.Convert())
         {
             con::error("Failed to parse phys preset: \"{}\"", assetName);
             return AssetCreationResult::Failure();
         }
 
-        CopyFromPhysPresetInfo(presetInfo, *physPreset);
-        physPreset->name = m_memory.Dup(assetName.c_str());
+        CopyFromPhysPresetInfo(physPresetInfo, *physPreset);
 
         return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
     }

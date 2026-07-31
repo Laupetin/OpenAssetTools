@@ -81,6 +81,13 @@ namespace
         return AutoSearchPaths::GetForGame(gameId)->GetSearchPathsForZonePath(zonePath);
     }
 
+    void LogLoadedZone(const Zone& zone)
+    {
+        const auto* game = IGame::GetGameById(zone.m_game_id);
+
+        con::info("Loaded zone \"{}\" ({})", zone.m_name, game->GetShortName());
+    }
+
     class UnlinkerImpl : public Unlinker
     {
     public:
@@ -286,7 +293,7 @@ namespace
 
                 auto zone = std::move(*maybeZone);
 
-                con::info("Loaded zone \"{}\"", zone->m_name);
+                LogLoadedZone(*zone);
 
                 auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
                 for (const auto& searchPath : searchPathsForZone)
@@ -355,7 +362,7 @@ namespace
 
                 auto zone = std::move(*maybeZone);
 
-                con::info("Loaded zone \"{}\"", zone->m_name);
+                LogLoadedZone(*zone);
 
                 auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
                 for (const auto& searchPath : searchPathsForZone)

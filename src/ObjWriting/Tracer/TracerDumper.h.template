@@ -1,0 +1,24 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/TracerDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set CLASS_NAME "Dumper" + GAME
+
+// This file was templated.
+// See TracerDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include GAME_HEADER
+
+namespace tracer
+{
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetTracer>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetTracer::Type>& asset) override;
+    };
+} // namespace tracer

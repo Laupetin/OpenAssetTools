@@ -1,0 +1,77 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/InfoStringLoaderTracer" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"InfoStringLoaderTracer" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set INFO_STRING_CONVERTER_HEADER "\"Game/" + GAME + "/InfoString/InfoStringToStructConverter.h\""
+#set TRACER_FIELDS_HEADER "\"Game/" + GAME + "/Tracer/TracerFields.h\""
+#set CLASS_NAME "InfoStringLoader" + GAME
+
+// This file was templated.
+// See InfoStringLoaderTracer.cpp.template.
+// Do not modify, changes will be lost.
+
+#include LOADER_HEADER
+
+#include GAME_HEADER
+#include INFO_STRING_CONVERTER_HEADER
+#include TRACER_FIELDS_HEADER
+#include "Utils/Logging/Log.h"
+
+#include <cassert>
+#include <type_traits>
+
+using namespace GAME;
+
+namespace
+{
+    class InfoStringToTracerConverter final : public InfoStringToStructConverter
+    {
+    protected:
+        bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
+        {
+            assert(false);
+            return false;
+        }
+
+    public:
+        InfoStringToTracerConverter(const InfoString& infoString,
+                                    TracerDef& tracer,
+                                    ZoneScriptStrings& zoneScriptStrings,
+                                    MemoryManager& memory,
+                                    AssetCreationContext& context,
+                                    AssetRegistration<AssetTracer>& registration,
+                                    const cspField_t* fields,
+                                    const size_t fieldCount)
+            : InfoStringToStructConverter(infoString, &tracer, zoneScriptStrings, memory, context, registration, fields, fieldCount)
+        {
+        }
+    };
+} // namespace
+
+namespace tracer
+{
+    CLASS_NAME::CLASS_NAME(MemoryManager& memory, Zone& zone)
+        : m_memory(memory),
+          m_zone(zone)
+    {
+    }
+
+    AssetCreationResult CLASS_NAME::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* tracer = m_memory.Alloc<TracerDef>();
+        tracer->name = m_memory.Dup(assetName.c_str());
+
+        AssetRegistration<AssetTracer> registration(assetName, tracer);
+        InfoStringToTracerConverter converter(
+            infoString, *tracer, m_zone.m_script_strings, m_memory, context, registration, tracer_fields, std::extent_v<decltype(tracer_fields)>);
+        if (!converter.Convert())
+        {
+            con::error("Failed to parse tracer: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace tracer

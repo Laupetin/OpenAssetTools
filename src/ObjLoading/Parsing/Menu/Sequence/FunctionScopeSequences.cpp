@@ -9,7 +9,7 @@
 
 using namespace menu;
 
-namespace menu::function_scope_sequences
+namespace
 {
     class SequenceCloseBlock final : public MenuFileParser::sequence_t
     {
@@ -69,9 +69,7 @@ namespace menu::function_scope_sequences
             }
         }
     };
-} // namespace menu::function_scope_sequences
-
-using namespace function_scope_sequences;
+} // namespace
 
 FunctionScopeSequences::FunctionScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
                                                std::vector<MenuFileParser::sequence_t*>& scopeSequences)
@@ -79,7 +77,7 @@ FunctionScopeSequences::FunctionScopeSequences(std::vector<std::unique_ptr<MenuF
 {
 }
 
-void FunctionScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
+void FunctionScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<GenericStringPropertySequence>("name",

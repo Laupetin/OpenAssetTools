@@ -1,0 +1,65 @@
+#options GAME(IW4, IW5)
+
+#filename "Game/" + GAME + "/Tracer/GdtLoaderTracer" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"GdtLoaderTracer" + GAME + ".h\""
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#set OBJ_CONSTANTS_HEADER "\"Game/" + GAME + "/ObjConstants" + GAME + ".h\""
+#set INFO_STRING_LOADER_HEADER "\"InfoStringLoaderTracer" + GAME + ".h\""
+#set INFO_STRING_LOADER_CLASS "InfoStringLoader" + GAME
+#set FACTORY_NAME "CreateGdtLoader" + GAME
+
+// This file was templated.
+// See GdtLoaderTracer.cpp.template.
+// Do not modify, changes will be lost.
+
+#include LOADER_HEADER
+
+#include GAME_HEADER
+#include OBJ_CONSTANTS_HEADER
+#include "InfoString/InfoString.h"
+#include INFO_STRING_LOADER_HEADER
+#include "Utils/Logging/Log.h"
+
+using namespace GAME;
+
+namespace
+{
+    class GdtLoaderTracer final : public AssetCreator<AssetTracer>
+    {
+    public:
+        GdtLoaderTracer(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone)
+            : m_gdt(gdt),
+              m_info_string_loader(memory, zone)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto* gdtEntry = m_gdt.GetGdtEntryByGdfAndName(GDF_FILENAME_TRACER, assetName);
+            if (gdtEntry == nullptr)
+                return AssetCreationResult::NoAction();
+
+            InfoString infoString;
+            if (!infoString.FromGdtProperties(*gdtEntry))
+            {
+                con::error("Failed to read tracer gdt entry: \"{}\"", assetName);
+                return AssetCreationResult::Failure();
+            }
+
+            return m_info_string_loader.CreateAsset(assetName, infoString, context);
+        }
+
+    private:
+        IGdtQueryable& m_gdt;
+        tracer::INFO_STRING_LOADER_CLASS m_info_string_loader;
+    };
+} // namespace
+
+namespace tracer
+{
+    std::unique_ptr<AssetCreator<AssetTracer>> FACTORY_NAME(MemoryManager& memory, IGdtQueryable& gdt, Zone& zone)
+    {
+        return std::make_unique<GdtLoaderTracer>(memory, gdt, zone);
+    }
+} // namespace tracer

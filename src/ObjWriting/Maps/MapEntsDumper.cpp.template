@@ -1,0 +1,33 @@
+#options GAME (IW3, IW4, IW5, T4, T5, T6)
+
+#filename "Game/" + GAME + "/Maps/MapEntsDumper" + GAME + ".cpp"
+
+// This file was templated.
+// See MapEntsDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#set DUMPER_HEADER "\"MapEntsDumper" + GAME + ".h\""
+#include DUMPER_HEADER
+
+#include "Maps/MapEntsCommon.h"
+
+#include <algorithm>
+
+using namespace GAME;
+
+#set CLASS_NAME "Dumper" + GAME
+
+namespace map_ents
+{
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMapEnts::Type>& asset)
+    {
+        const auto* mapEnts = asset.Asset();
+        const auto assetFile = context.OpenAssetFile(GetEntsFileNameForAssetName(asset.m_name));
+
+        if (!assetFile)
+            return;
+
+        auto& stream = *assetFile;
+        stream.write(mapEnts->entityString, std::max(mapEnts->numEntityChars - 1, 0));
+    }
+} // namespace map_ents
