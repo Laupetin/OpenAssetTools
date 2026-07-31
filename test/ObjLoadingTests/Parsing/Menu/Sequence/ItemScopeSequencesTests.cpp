@@ -402,4 +402,36 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(multiValueFeatures->m_string_values[2] == "wide 16:10");
         REQUIRE(multiValueFeatures->m_string_values[3] == "wide 16:9");
     }
+
+    TEST_CASE("ItemScopeSequences: dvarStrList accepts numeric values", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("dvarStrList")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::String(pos, new std::string("@MPUI_RULES_5MINUTES")),
+            SimpleParserValue::Integer(pos, 5),
+            SimpleParserValue::String(pos, new std::string()),
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        helper.m_item->m_feature_type = CommonItemFeatureType::MULTI_VALUE;
+        helper.m_item->m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 7);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+        const auto* multiValueFeatures = item->m_multi_value_features.get();
+        REQUIRE(multiValueFeatures);
+
+        REQUIRE(multiValueFeatures->m_step_names == std::vector<std::string>{"@MPUI_RULES_5MINUTES", ""});
+        REQUIRE(multiValueFeatures->m_string_values == std::vector<std::string>{"5", "0"});
+    }
 } // namespace test::parsing::menu::sequence::item
