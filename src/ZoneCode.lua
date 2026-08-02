@@ -135,12 +135,12 @@ ZoneCode.Assets = {
         "WeaponDef",
         "FxEffectDef",
         "FxImpactTable",
-        "SceneAnimation",
-        "Cutscene",
-        "CustomCamera",
         "RawFile",
         "StringTable",
         "XmlTree",
+        "SceneAnimation",
+        "Cutscene",
+        "CustomCamera",
     },
 
     T4 = {
