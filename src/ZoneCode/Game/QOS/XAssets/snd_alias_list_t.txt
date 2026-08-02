@@ -25,10 +25,11 @@ set reusable u::primeSnd;
 // QosMssSound
 use QosMssSound;
 set arraysize data dataSize;
+set condition unknownDataPtr0 never;
+set condition unknownDataPtr1 never;
 
 // QosPrimedSound
 use QosPrimedSound;
 set string name;
 set count buffer size;
 set block buffer XFILE_BLOCK_LARGE;
-set allocalign buffer 2048;

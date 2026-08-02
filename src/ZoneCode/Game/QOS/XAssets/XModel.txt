@@ -16,7 +16,6 @@ set count trans (numBones - numRootBones) * 4;
 set reusable partClassification;
 set count partClassification numBones;
 set reusable baseMat;
-set allocalign baseMat 16;
 set count baseMat numBones;
 set count surfs numsurfs;
 set count materialHandles numsurfs;
@@ -26,14 +25,11 @@ set reusable physGeoms;
 set count physGeoms 1;
 
 // PhysGeomList
-use PhysGeomList;
-set reusable geoms;
-set count geoms count;
+set count PhysGeomList::geoms count;
 
 // PhysGeomInfo
 use PhysGeomInfo;
 set reusable brush;
-set allocalign brush 4;
 
 // BrushWrapper
 use BrushWrapper;
@@ -55,11 +51,9 @@ set allocalign verts0 16;
 set count verts0 vertCount;
 set condition vb0 never;
 set reusable verts1;
-set allocalign verts1 16;
 set count verts1 vertCount;
 set condition vb1 never;
 set reusable vertList;
-set allocalign vertList 4;
 set count vertList vertListCount;
 set reusable triIndices;
 set count triIndices triCount;

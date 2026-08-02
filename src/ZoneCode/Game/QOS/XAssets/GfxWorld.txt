@@ -3,7 +3,6 @@
 // =========================================
 use GfxWorld;
 set block XFILE_BLOCK_TEMP;
-set allocalign GfxWorld 4;
 set string name;
 set string baseName;
 set reusable planes;
@@ -88,7 +87,6 @@ set block primaryLightDynEntShadowVis1 XFILE_BLOCK_RUNTIME;
 set count primaryLightDynEntShadowVis1 gfxSceneDynBrushCount * (primaryLightCount - sunPrimaryLightIndex - 1);
 set count shadowGeom primaryLightCount;
 set count massiveAdSurface massiveAdSurfaceCount;
-set allocalign massiveAdSurface 4;
 reorder:
     name
     baseName
@@ -183,9 +181,7 @@ set count vertices vertexCount;
 use GfxLightGrid;
 set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
 set count rawRowData rawRowDataSize;
-set allocalign entries 4;
 set count entries entryCount;
-set allocalign colors 4;
 set count colors colorCount;
 
 // GfxShadowGeometry

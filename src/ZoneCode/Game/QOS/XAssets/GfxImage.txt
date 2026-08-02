@@ -3,7 +3,6 @@
 // =========================================
 use GfxImage;
 set block XFILE_BLOCK_TEMP;
-set allocalign GfxImage 4;
 set action OnImageLoaded(GfxImage);
 set string name;
 reorder:

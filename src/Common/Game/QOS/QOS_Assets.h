@@ -326,7 +326,7 @@ namespace QOS
     struct XAnimParts
     {
         const char* name;
-        const char* unknownString;
+        const char* unknownString; // Never set
         uint16_t dataByteCount;
         uint16_t dataShortCount;
         uint16_t dataIntCount;
@@ -363,7 +363,7 @@ namespace QOS
         float origin[4];
     };
 
-    struct DObjAnimMat
+    struct type_align(16) DObjAnimMat
     {
         vec4_t quat;
         vec3_t trans;
@@ -403,7 +403,7 @@ namespace QOS
         PackedUnitVec tangent; // Likely the second tangent-space vector at offset 36.
     };
 
-    struct GfxPackedVertex16
+    struct type_align(16) GfxPackedVertex16
     {
         unsigned int data[4];
     };
@@ -415,7 +415,7 @@ namespace QOS
         float* tensionData;
     };
 
-    struct XRigidVertList
+    struct type_align(4) XRigidVertList
     {
         unsigned short boneOffset;
         unsigned short vertCount;
@@ -735,7 +735,7 @@ namespace QOS
         MaterialTextureDefInfo u;
     };
 
-    struct MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int data[8];
     };
@@ -874,17 +874,19 @@ namespace QOS
     {
         // Largely matches an MSS sound info block, but only the embedded data size is confirmed.
         int unknown0;
-        raw_uint unknownDataPtr0;
+        raw_byte* unknownDataPtr0;
         unsigned int dataSize;
         char unknown1[24];
-        raw_uint unknownDataPtr1;
+        raw_byte* unknownDataPtr1;
         raw_byte data[1];
     };
+
+    typedef tdef_align32(2048) char snd_align_char;
 
     struct QosPrimedSound
     {
         const char* name;
-        raw_byte* buffer;
+        snd_align_char* buffer;
         unsigned int size;
     };
 
@@ -1060,22 +1062,22 @@ namespace QOS
         char unknown2[36];
     };
 
-    struct DynEntityClient
+    struct type_align(4) DynEntityClient
     {
         char unknown[52];
     };
 
-    struct DynEntityServer
+    struct type_align(4) DynEntityServer
     {
         char unknown[36];
     };
 
-    struct DynEntityColl
+    struct type_align(4) DynEntityColl
     {
         char unknown[32];
     };
 
-    struct DynEntityPhysConstraint
+    struct type_align(4) DynEntityPhysConstraint
     {
         char unknown[72];
     };
@@ -1159,10 +1161,12 @@ namespace QOS
         const char* defName;
     };
 
+    typedef tdef_align(4) unsigned char ComWorldUnknownCellData;
+
     struct ComWorldUnknownCell
     {
         char unknown[32];
-        unsigned char* data;
+        ComWorldUnknownCellData* data;
     };
 
     struct ComWorld
@@ -1455,14 +1459,14 @@ namespace QOS
         GfxImage* secondary;
     };
 
-    struct GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         unsigned short colorsIndex;
         unsigned char primaryLightIndex;
         unsigned char needsTrace;
     };
 
-    struct GfxLightGridColors
+    struct type_align(4) GfxLightGridColors
     {
         unsigned char rgb[56][3];
     };
@@ -1533,12 +1537,14 @@ namespace QOS
         // unsigned short nextIndex;
     };
 
-    struct GfxSceneDynBrush
+    typedef tdef_align(4) GfxSceneDynModel GfxSceneDynModel4;
+
+    struct type_align(4) GfxSceneDynBrush
     {
         char unknown[4];
     };
 
-    struct GfxDynEntCellRef
+    struct type_align(4) GfxDynEntCellRef
     {
         char unknown[8];
     };
@@ -1551,7 +1557,7 @@ namespace QOS
         unsigned short* smodelIndex;
     };
 
-    struct GfxMassiveAdSurface
+    struct type_align(4) GfxMassiveAdSurface
     {
         char unknown[24];
     };
@@ -1636,8 +1642,8 @@ namespace QOS
         unsigned short* dynEntSortList1;
         GfxDynEntCellRef* unknownGfxDynEntCellRef0;
         GfxDynEntCellRef* unknownGfxDynEntCellRef1;
-        GfxSceneDynModel* gfxSceneDynModel; // name unknown
-        GfxSceneDynBrush* gfxSceneDynBrush; // name unknown
+        GfxSceneDynModel4* gfxSceneDynModel; // name unknown
+        GfxSceneDynBrush* gfxSceneDynBrush;  // name unknown
         unsigned short* sortedSurfIndex;
         raw_uint* primaryLightEntityShadowVis;
         raw_uint* primaryLightDynEntShadowVis0;
@@ -2037,14 +2043,66 @@ namespace QOS
         const char* overlayName;
         XModel* unknownModel12;
         XModel* unknownModel16;
-        const char* xanimNames[35];
+        const char* szXAnims[35];
         const char* modeName;
         char unknownData164[32];
         const char* unknownString196;
         char unknownData200[4];
         FxEffectDef* unknownFx204;
         FxEffectDef* unknownFx208;
-        SndAliasCustom unknownSoundAliases[53];
+        SndAliasCustom unknownSound212;
+        SndAliasCustom unknownSound216;
+        SndAliasCustom unknownSound220;
+        SndAliasCustom unknownSound224;
+        SndAliasCustom unknownSound228;
+        SndAliasCustom unknownSound232;
+        SndAliasCustom unknownSound236;
+        SndAliasCustom unknownSound240;
+        SndAliasCustom unknownSound244;
+        SndAliasCustom unknownSound248;
+        SndAliasCustom unknownSound252;
+        SndAliasCustom unknownSound256;
+        SndAliasCustom unknownSound260;
+        SndAliasCustom unknownSound264;
+        SndAliasCustom unknownSound268;
+        SndAliasCustom unknownSound272;
+        SndAliasCustom unknownSound276;
+        SndAliasCustom unknownSound280;
+        SndAliasCustom unknownSound284;
+        SndAliasCustom unknownSound288;
+        SndAliasCustom unknownSound292;
+        SndAliasCustom unknownSound296;
+        SndAliasCustom unknownSound300;
+        SndAliasCustom unknownSound304;
+        SndAliasCustom unknownSound308;
+        SndAliasCustom unknownSound312;
+        SndAliasCustom unknownSound316;
+        SndAliasCustom unknownSound320;
+        SndAliasCustom unknownSound324;
+        SndAliasCustom unknownSound328;
+        SndAliasCustom unknownSound332;
+        SndAliasCustom unknownSound336;
+        SndAliasCustom unknownSound340;
+        SndAliasCustom unknownSound344;
+        SndAliasCustom unknownSound348;
+        SndAliasCustom unknownSound352;
+        SndAliasCustom unknownSound356;
+        SndAliasCustom unknownSound360;
+        SndAliasCustom unknownSound364;
+        SndAliasCustom unknownSound368;
+        SndAliasCustom unknownSound372;
+        SndAliasCustom unknownSound376;
+        SndAliasCustom unknownSound380;
+        SndAliasCustom unknownSound384;
+        SndAliasCustom unknownSound388;
+        SndAliasCustom unknownSound392;
+        SndAliasCustom unknownSound396;
+        SndAliasCustom unknownSound400;
+        SndAliasCustom unknownSound404;
+        SndAliasCustom unknownSound408;
+        SndAliasCustom unknownSound412;
+        SndAliasCustom unknownSound416;
+        SndAliasCustom unknownSound420;
         SndAliasCustom* bounceSound;
         FxEffectDef* unknownFx428;
         FxEffectDef* unknownFx432;
