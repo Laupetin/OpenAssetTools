@@ -16,21 +16,21 @@ namespace
         "xanim",
         "xmodel",
         "material",
-        "techset",
+        "techniqueset",
         "image",
         "sound",
-        "sndcurve",
-        "col_map_sp",
-        "col_map_mp",
-        "com_map",
-        "game_map_sp",
-        "game_map_mp",
-        "map_ents",
-        "gfx_map",
+        "soundcurve",
+        "clipmap_unused",
+        "clipmap",
+        "comworld",
+        "gameworldsp",
+        "gameworldmp",
+        "mapents",
+        "gfxworld",
         "lightdef",
-        "ui_map",
+        "uimap",
         "font",
-        "menufile",
+        "menulist",
         "menu",
         "localize",
         "weapon",
@@ -44,9 +44,9 @@ namespace
         "rawfile",
         "stringtable",
         "xmltree",
-        "scene_animation",
+        "sceneanimation",
         "cutscene",
-        "custom_camera",
+        "customcamera",
     };
     static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
@@ -65,18 +65,8 @@ namespace QOS
     Game::Game()
         : AbstractGame(ASSET_TYPE_NAMES, std::extent_v<decltype(ASSET_TYPE_NAMES)>, SUB_ASSET_TYPE_NAMES, std::extent_v<decltype(SUB_ASSET_TYPE_NAMES)>)
     {
-        AddAssetTypeNameAlias<AssetTechniqueSet>("techniqueset");
-        AddAssetTypeNameAlias<AssetClipMapSp>("clipmap_sp");
-        AddAssetTypeNameAlias<AssetClipMapMp>("clipmap_mp");
-        AddAssetTypeNameAlias<AssetClipMapSp>("clipmap");
-        AddAssetTypeNameAlias<AssetComWorld>("comworld");
-        AddAssetTypeNameAlias<AssetGameWorldSp>("gameworldsp");
-        AddAssetTypeNameAlias<AssetGameWorldMp>("gameworldmp");
-        AddAssetTypeNameAlias<AssetMapEnts>("mapents");
-        AddAssetTypeNameAlias<AssetGfxWorld>("gfxworld");
+        AddAssetTypeNameAlias<AssetTechniqueSet>("techset");
         AddAssetTypeNameAlias<AssetLightDef>("gfxlightdef");
-        AddAssetTypeNameAlias<AssetMenuFile>("menulist");
-        AddAssetTypeNameAlias<AssetLocalize>("localizeentry");
     }
 
     GameId Game::GetId() const
