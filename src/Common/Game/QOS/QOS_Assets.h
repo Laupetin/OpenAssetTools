@@ -43,13 +43,8 @@ namespace QOS
     struct menuDef_t;
     struct LocalizeEntry;
     struct WeaponDef;
-    struct SndDriverGlobals;
     struct FxEffectDef;
     struct FxImpactTable;
-    struct AiType;
-    struct MpType;
-    struct Character;
-    struct XModelAlias;
     struct RawFile;
     struct StringTable;
     struct XmlTree;
@@ -82,13 +77,8 @@ namespace QOS
         menuDef_t* menu;
         LocalizeEntry* localize;
         WeaponDef* weapon;
-        SndDriverGlobals* sndDriverGlobals;
         FxEffectDef* fx;
         FxImpactTable* impactFx;
-        AiType* aiType;
-        MpType* mpType;
-        Character* character;
-        XModelAlias* xmodelAlias;
         RawFile* rawfile;
         StringTable* stringTable;
         XmlTree* xmlTree;
@@ -2179,11 +2169,6 @@ namespace QOS
         char unknownData2340[424];
     };
 
-    struct SndDriverGlobals
-    {
-        const char* name;
-    };
-
     struct FxIntRange
     {
         int base;
@@ -2416,26 +2401,6 @@ namespace QOS
     {
         const char* name;
         FxImpactEntry* table;
-    };
-
-    struct AiType
-    {
-        const char* name;
-    };
-
-    struct MpType
-    {
-        const char* name;
-    };
-
-    struct Character
-    {
-        const char* name;
-    };
-
-    struct XModelAlias
-    {
-        const char* name;
     };
 
     struct RawFile

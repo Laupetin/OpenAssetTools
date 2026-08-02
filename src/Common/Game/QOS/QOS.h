@@ -87,7 +87,6 @@ namespace QOS
         XAsset* assets;
     };
 
-    using AssetXModelPieces = Asset<ASSET_TYPE_XMODELPIECES, XModelPieces>;
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysConstraints = Asset<ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints>;
     using AssetDestructibleDef = Asset<ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef>;
@@ -111,13 +110,8 @@ namespace QOS
     using AssetMenu = Asset<ASSET_TYPE_MENU, menuDef_t>;
     using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
     using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponDef>;
-    using AssetSoundDriverGlobals = Asset<ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals>;
     using AssetFx = Asset<ASSET_TYPE_FX, FxEffectDef>;
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
-    using AssetAiType = Asset<ASSET_TYPE_AITYPE, AiType>;
-    using AssetMpType = Asset<ASSET_TYPE_MPTYPE, MpType>;
-    using AssetCharacter = Asset<ASSET_TYPE_CHARACTER, Character>;
-    using AssetXModelAlias = Asset<ASSET_TYPE_XMODELALIAS, XModelAlias>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
     using AssetXmlTree = Asset<ASSET_TYPE_XMLTREE, XmlTree>;
@@ -131,7 +125,6 @@ namespace QOS
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
 } // namespace QOS
 
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetXModelPieces, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetPhysPreset, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetPhysConstraints, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetDestructibleDef, name);
@@ -155,13 +148,8 @@ DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetMenuFile, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetMenu, window.name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetLocalize, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetWeapon, name);
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetSoundDriverGlobals, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetFx, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetImpactFx, name);
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetAiType, name);
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetMpType, name);
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetCharacter, name);
-DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetXModelAlias, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetRawFile, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetStringTable, name);
 DEFINE_ASSET_NAME_ACCESSOR(QOS::AssetXmlTree, name);
