@@ -3,6 +3,7 @@
 #include "T5.h"
 
 #include <cassert>
+#include <type_traits>
 
 namespace T5
 {
@@ -10,7 +11,7 @@ namespace T5
 
     CommonAssetType CommonAssetTypeMapper::GameToCommonAssetType(const asset_type_t gameAssetType) const
     {
-        static CommonAssetType lookupTable[static_cast<unsigned>(ASSET_TYPE_COUNT)]{
+        static CommonAssetType lookupTable[]{
             CommonAssetType::XMODEL_PIECES,        // ASSET_TYPE_XMODELPIECES
             CommonAssetType::PHYS_PRESET,          // ASSET_TYPE_PHYSPRESET
             CommonAssetType::PHYS_CONSTRAINTS,     // ASSET_TYPE_PHYSCONSTRAINTS
@@ -55,6 +56,7 @@ namespace T5
             CommonAssetType::GLASSES,              // ASSET_TYPE_GLASSES
             CommonAssetType::EMBLEM_SET,           // ASSET_TYPE_EMBLEMSET
         };
+        static_assert(std::extent_v<decltype(lookupTable)> == static_cast<unsigned>(ASSET_TYPE_COUNT));
 
         assert(gameAssetType < ASSET_TYPE_COUNT);
         return lookupTable[gameAssetType];
