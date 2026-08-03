@@ -91,7 +91,9 @@ namespace
 
             if (!qosFallback && !name.ends_with("_edge") && !name.ends_with("_print") && !name.ends_with("_prsz")
                 && name.find("_edge_") == std::string_view::npos)
+            {
                 qosFallback = image;
+            }
         }
         if (qosFallback)
             return qosFallback;
