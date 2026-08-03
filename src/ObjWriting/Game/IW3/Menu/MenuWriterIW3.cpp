@@ -1,8 +1,8 @@
 #include "MenuWriterIW3.h"
 
+#include "Game/IW3/MenuConstantsIW3.h"
 #include "Menu/AbstractMenuWriter.h"
 
-#include <array>
 #include <cmath>
 #include <limits>
 #include <sstream>
@@ -11,90 +11,6 @@ using namespace IW3;
 
 namespace
 {
-    constexpr std::array<const char*, NUM_OPERATORS> EXPRESSION_OPERATION_NAMES{
-        "NOOP",
-        ")",
-        "*",
-        "/",
-        "%",
-        "+",
-        "-",
-        "!",
-        "<",
-        "<=",
-        ">",
-        ">=",
-        "==",
-        "!=",
-        "&&",
-        "||",
-        "(",
-        ",",
-        "&",
-        "|",
-        "~",
-        "<<",
-        ">>",
-        "sin",
-        "cos",
-        "min",
-        "max",
-        "milliseconds",
-        "dvarint",
-        "dvarbool",
-        "dvarfloat",
-        "dvarstring",
-        "stat",
-        "ui_active",
-        "flashbanged",
-        "scoped",
-        "scoreboard_visible",
-        "inkillcam",
-        "player",
-        "selecting_location",
-        "team",
-        "otherteam",
-        "marinesfield",
-        "opforfield",
-        "menuisopen",
-        "writingdata",
-        "inlobby",
-        "inprivateparty",
-        "privatepartyhost",
-        "privatepartyhostinlobby",
-        "aloneinparty",
-        "adsjavelin",
-        "weaplockblink",
-        "weapattacktop",
-        "weapattackdirect",
-        "secondsastime",
-        "tablelookup",
-        "locstring",
-        "localvarint",
-        "localvarbool",
-        "localvarfloat",
-        "localvarstring",
-        "timeleft",
-        "secondsascountdown",
-        "gamemsgwndactive",
-        "int",
-        "string",
-        "float",
-        "gametypename",
-        "gametype",
-        "gametypedescription",
-        "scoreatrank",
-        "friendsonline",
-        "spectatingclient",
-        "statrangeanybitsset",
-        "keybinding",
-        "actionslotusable",
-        "hudfade",
-        "maxrecommendedplayers",
-        "acceptinginvite",
-        "isintermission",
-    };
-
     class MenuWriter final : public menu::AbstractBaseWriter, public menu::IWriterIW3
     {
     public:
@@ -166,7 +82,7 @@ namespace
                 }
 
                 const auto operation = entry->data.op;
-                if (operation < 0 || static_cast<size_t>(operation) >= EXPRESSION_OPERATION_NAMES.size())
+                if (operation < 0 || static_cast<size_t>(operation) >= g_expFunctionNames.size())
                 {
                     m_stream << "0";
                     continue;
@@ -178,12 +94,12 @@ namespace
                 }
                 else if (operation >= OP_SIN)
                 {
-                    m_stream << EXPRESSION_OPERATION_NAMES[operation] << "(";
+                    m_stream << g_expFunctionNames[operation] << "(";
                     parenthesisDepth++;
                 }
                 else
                 {
-                    m_stream << EXPRESSION_OPERATION_NAMES[operation];
+                    m_stream << g_expFunctionNames[operation];
 
                     if (operation == OP_LEFTPAREN)
                         parenthesisDepth++;

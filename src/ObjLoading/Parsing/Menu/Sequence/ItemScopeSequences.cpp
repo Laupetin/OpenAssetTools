@@ -91,6 +91,7 @@ namespace
 
             switch (featureLevel)
             {
+            case FeatureLevel::IW3:
             case FeatureLevel::IW4:
                 if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
                     throw ParsingException(pos, "Invalid item type");
@@ -130,8 +131,15 @@ namespace
                 throw ParsingException(pos, "Item must have be listbox to use this declaration");
         }
 
-        static void EnsureHasEditFieldFeatures(const CommonItemDef& item, const TokenPos& pos)
+        static void EnsureHasEditFieldFeatures(CommonItemDef& item, const TokenPos& pos)
         {
+            // ITEM_TYPE_TEXT is the default and can therefore be omitted from menu source.
+            if (item.m_type == 0 && item.m_feature_type == CommonItemFeatureType::NONE)
+            {
+                item.m_feature_type = CommonItemFeatureType::EDIT_FIELD;
+                item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
+            }
+
             if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
                 throw ParsingException(pos, "Item must have be edit field to use this declaration");
         }
@@ -478,7 +486,7 @@ namespace
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_item);
-            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+            assert(state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
 
             const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, firstToken.GetPos());
@@ -491,7 +499,7 @@ namespace
             size_t baseColumnCount;
             const char* syntax;
             bool hasHeightValues;
-            if (state->m_feature_level == FeatureLevel::IW4)
+            if (state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4)
             {
                 baseColumnCount = BASE_COLUMN_COUNT_IW4;
                 syntax = SYNTAX_IW4;
@@ -643,6 +651,7 @@ void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
                                                                 [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
                                                                 {
                                                                     state->m_current_item->m_text = value;
+                                                                    state->m_current_item->m_has_text = true;
                                                                 }));
     // textfile
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("textsavegame",

@@ -281,7 +281,7 @@ namespace
             AddMatchers({
                 create
                     .Or({
-                        create.Numeric(),
+                        create.ScriptStrictNumeric(),
                         create.String(),
                         create.Identifier(),
                         create.Type(SimpleParserValueType::CHARACTER),
@@ -928,6 +928,15 @@ EventHandlerSetScopeSequences::EventHandlerSetScopeSequences(std::vector<std::un
 void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceSkipEmptyStatements>());
+
+    // IW3 stores event handlers as opaque script strings rather than structured handlers.
+    if (featureLevel == FeatureLevel::IW3)
+    {
+        AddSequence(std::make_unique<SequenceCloseBlock>());
+        AddSequence(std::make_unique<SequenceSkipScriptToken>());
+        return;
+    }
+
     // If else and stuff
 
     // Creating factory with no label supplier. Cannot use labels with it.

@@ -93,6 +93,7 @@ namespace menu
 
         std::string m_name;
         std::string m_text;
+        bool m_has_text = false;
         bool m_text_save_game = false;
         bool m_text_cinematic_subtitle = false;
         std::string m_group;

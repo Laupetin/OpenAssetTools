@@ -39,6 +39,9 @@ void MenuFileReader::SetupDefinesProxy()
     defines->AddDefine(DefinesStreamProxy::Define("PC", "1"));
     switch (m_feature_level)
     {
+    case FeatureLevel::IW3:
+        defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW3", "1"));
+        break;
     case FeatureLevel::IW4:
         defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW4", "1"));
         break;
