@@ -2,9 +2,9 @@
 
 #include "Game/QOS/Font/FontDumperQOS.h"
 #include "Game/QOS/Image/ImageDumperQOS.h"
+#include "Game/QOS/Maps/MapEntsDumperQOS.h"
 #include "Game/QOS/XModel/XModelDumperQOS.h"
 #include "Localize/LocalizeDumperQOS.h"
-#include "Maps/MapEntsDumperQOS.h"
 #include "RawFile/RawFileDumperQOS.h"
 #include "StringTable/StringTableDumperQOS.h"
 
