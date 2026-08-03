@@ -11,14 +11,14 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "QOS"
+#define FEATURE_QOS
 #elif GAME == "T4"
 #define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
-#elif GAME == "QOS"
-#define FEATURE_QOS
 #endif
 
 // This file was templated.
@@ -59,7 +59,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4) || defined(FEATURE_QOS)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_QOS) || defined(FEATURE_T4)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -207,7 +207,7 @@ namespace
                 return false;
 
             const auto& vertList = surface.vertList[0];
-#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_QOS)
+#if defined(FEATURE_IW3) || defined(FEATURE_QOS) || defined(FEATURE_T4)
             // IW3 has some models that are missing 1 (a single) tri in its first lod.
             // It is not contained in any vert list or blend
             // I think this is a bug (?), so omit anyway.
@@ -444,7 +444,7 @@ namespace
 
             if (surface.vertList)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4) || defined(FEATURE_QOS)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_QOS) || defined(FEATURE_T4)
                 assert(!surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) == 0);
@@ -469,7 +469,7 @@ namespace
             auto vertsBlendOffset = 0u;
             if (surface.vertInfo.vertsBlend)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4) || defined(FEATURE_QOS)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_QOS) || defined(FEATURE_T4)
                 assert(surface.deformed);
 #else
                 assert((surface.flags & XSURFACE_FLAG_DEFORMED) > 0);
@@ -571,7 +571,7 @@ namespace
             auto& object = out.m_objects[surfIndex];
             object.m_faces.reserve(surface.triCount);
 
-#if defined(FEATURE_T4) || defined(FEATURE_QOS)
+#if defined(FEATURE_QOS) || defined(FEATURE_T4)
             // T4 tri indices are local to the surface, while baseVertIndex does not match
             // the flattened common vertex buffer we build here.
             auto surfaceVertexOffset = 0u;
