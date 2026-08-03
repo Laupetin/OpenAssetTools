@@ -133,8 +133,6 @@ namespace QOS
     };
 
     typedef unsigned short ScriptString;
-    typedef unsigned char raw_byte;
-    typedef unsigned int raw_uint;
 
     struct XModelPiece
     {
@@ -864,11 +862,11 @@ namespace QOS
     {
         // Largely matches an MSS sound info block, but only the embedded data size is confirmed.
         int unknown0;
-        raw_byte* unknownDataPtr0;
+        unsigned char* unknownDataPtr0;
         unsigned int dataSize;
         char unknown1[24];
-        raw_byte* unknownDataPtr1;
-        raw_byte data[1];
+        unsigned char* unknownDataPtr1;
+        unsigned char data[1];
     };
 
     typedef tdef_align32(2048) char snd_align_char;
@@ -1332,7 +1330,7 @@ namespace QOS
 
     struct GfxWorldVertexLayerData
     {
-        raw_byte* data;
+        unsigned char* data;
         void* layerVb;
     };
 
@@ -1408,7 +1406,7 @@ namespace QOS
     {
         char unknown[32];
         unsigned int smodelIndexCount;
-        raw_uint* smodelIndexes;
+        unsigned int* smodelIndexes;
         unsigned int childCount;
         GfxAabbTreeChildren* children;
     };
@@ -1440,7 +1438,7 @@ namespace QOS
         int* cullGroups;
         unsigned char reflectionProbeCount;
         char pad[3];
-        raw_byte* reflectionProbes;
+        unsigned char* reflectionProbes;
     };
 
     struct GfxLightmapArray
@@ -1471,7 +1469,7 @@ namespace QOS
         unsigned int colAxis;
         unsigned short* rowDataStart;
         unsigned int rawRowDataSize;
-        raw_byte* rawRowData;
+        unsigned char* rawRowData;
         unsigned int entryCount;
         GfxLightGridEntry* entries;
         unsigned int colorCount;
@@ -1606,28 +1604,28 @@ namespace QOS
         unsigned int gfxSceneDynBrushCount; // Unknown name
         unsigned int unknownGfxDynEntCellRefCount0;
         unsigned int unknownGfxDynEntCellRefCount1;
-        raw_byte* smodelVisData0;
-        raw_byte* smodelVisData1;
-        raw_byte* smodelVisData2;
-        raw_byte* smodelVisData3;
-        raw_byte* surfaceVisData0;
-        raw_byte* surfaceVisData1;
-        raw_byte* surfaceVisData2;
-        raw_byte* surfaceVisData3;
+        unsigned char* smodelVisData0;
+        unsigned char* smodelVisData1;
+        unsigned char* smodelVisData2;
+        unsigned char* smodelVisData3;
+        unsigned char* surfaceVisData0;
+        unsigned char* surfaceVisData1;
+        unsigned char* surfaceVisData2;
+        unsigned char* surfaceVisData3;
         GfxDrawSurf* surfaceMaterials;
-        raw_uint* surfaceCastsSunShadow;
-        raw_uint* cellCasterBits;
-        raw_byte* cellHasSunLitSurfsBits;
-        raw_byte* dynEntVisData0_0;
-        raw_byte* dynEntVisData0_1;
-        raw_byte* dynEntVisData0_2;
-        raw_byte* dynEntVisData0_3;
-        raw_byte* dynEntVisData1_0;
-        raw_byte* dynEntVisData1_1;
-        raw_byte* dynEntVisData1_2;
-        raw_byte* dynEntVisData1_3;
-        raw_byte* dynEntCellBits0;
-        raw_byte* dynEntCellBits1;
+        unsigned int* surfaceCastsSunShadow;
+        unsigned int* cellCasterBits;
+        unsigned char* cellHasSunLitSurfsBits;
+        unsigned char* dynEntVisData0_0;
+        unsigned char* dynEntVisData0_1;
+        unsigned char* dynEntVisData0_2;
+        unsigned char* dynEntVisData0_3;
+        unsigned char* dynEntVisData1_0;
+        unsigned char* dynEntVisData1_1;
+        unsigned char* dynEntVisData1_2;
+        unsigned char* dynEntVisData1_3;
+        unsigned char* dynEntCellBits0;
+        unsigned char* dynEntCellBits1;
         unsigned short* dynEntSortList0;
         unsigned short* dynEntSortList1;
         GfxDynEntCellRef* unknownGfxDynEntCellRef0;
@@ -1635,9 +1633,9 @@ namespace QOS
         GfxSceneDynModel4* gfxSceneDynModel; // name unknown
         GfxSceneDynBrush* gfxSceneDynBrush;  // name unknown
         unsigned short* sortedSurfIndex;
-        raw_uint* primaryLightEntityShadowVis;
-        raw_uint* primaryLightDynEntShadowVis0;
-        raw_uint* primaryLightDynEntShadowVis1;
+        unsigned int* primaryLightEntityShadowVis;
+        unsigned int* primaryLightDynEntShadowVis0;
+        unsigned int* primaryLightDynEntShadowVis1;
         GfxShadowGeometry* shadowGeom;
         unsigned int massiveAdSurfaceCount;
         GfxMassiveAdSurface* massiveAdSurface;
