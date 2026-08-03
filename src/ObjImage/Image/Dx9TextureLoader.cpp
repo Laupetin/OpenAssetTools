@@ -2,6 +2,19 @@
 
 #include <cstring>
 
+namespace
+{
+    void CopyMipLevel(image::Texture& texture, const int currentMipLevel, const int faceCount, const uint8_t*& currentDataOffset)
+    {
+        for (auto currentFace = 0; currentFace < faceCount; currentFace++)
+        {
+            const auto mipSize = texture.GetSizeOfMipLevel(currentMipLevel);
+            memcpy(texture.GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
+            currentDataOffset += mipSize;
+        }
+    }
+} // namespace
+
 namespace image
 {
     Dx9TextureLoader::Dx9TextureLoader()
@@ -99,25 +112,15 @@ namespace image
         const auto faceCount = m_type == TextureType::T_CUBE ? 6 : 1;
         auto* currentDataOffset = static_cast<const uint8_t*>(data);
 
-        const auto copyMipLevel = [&](const int currentMipLevel)
-        {
-            for (auto currentFace = 0; currentFace < faceCount; currentFace++)
-            {
-                const auto mipSize = texture->GetSizeOfMipLevel(currentMipLevel);
-                memcpy(texture->GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
-                currentDataOffset += mipSize;
-            }
-        };
-
         if (m_mip_map_order == MipMapDataOrder::LargestToSmallest)
         {
             for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
-                copyMipLevel(currentMipLevel);
+                CopyMipLevel(*texture, currentMipLevel, faceCount, currentDataOffset);
         }
         else
         {
             for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
-                copyMipLevel(currentMipLevel);
+                CopyMipLevel(*texture, currentMipLevel, faceCount, currentDataOffset);
         }
 
         return texture;
