@@ -10,9 +10,9 @@
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadZoneSizes.h"
+#include "Loading/Steps/StepSkipBytes.h"
 #include "Utils/ClassUtils.h"
 
-#include <cassert>
 #include <cstring>
 #include <type_traits>
 
@@ -36,8 +36,9 @@ namespace
     }
 } // namespace
 
-std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
+    const auto& header = filePeek.PeekStruct<ZoneHeader>();
     if (header.m_version != ZoneConstants::ZONE_VERSION)
         return std::nullopt;
 
@@ -58,11 +59,11 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(c
     return std::nullopt;
 }
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
                                                                      const std::string& fileName,
                                                                      std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
 {
-    const auto inspectResult = InspectZoneHeader(header);
+    const auto inspectResult = InspectZoneHeader(filePeek);
     if (!inspectResult)
         return nullptr;
 
@@ -75,6 +76,9 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
     SetupBlock(*zoneLoader);
+
+    // Skip the initial header that we peeked at before
+    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
 
     zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
 

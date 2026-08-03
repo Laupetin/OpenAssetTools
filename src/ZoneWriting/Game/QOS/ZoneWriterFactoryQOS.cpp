@@ -7,6 +7,8 @@
 #include "Writing/IWritingStep.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
+#include "Writing/Steps/StepWriteXBlockSizes.h"
+#include "Writing/Steps/StepWriteZero.h"
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 
@@ -37,22 +39,11 @@ namespace
     public:
         void PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream) override
         {
-            assert(zoneWriter->m_blocks.size() == QOS::MAX_XFILE_COUNT);
-
-            ZoneHeader header{};
-
-            const auto version = static_cast<uint32_t>(ZoneConstants::ZONE_VERSION_PC);
-            static_assert(sizeof(version) <= sizeof(header.m_magic));
-            std::memcpy(header.m_magic, &version, sizeof(version));
-            header.m_version = static_cast<uint32_t>(zoneWriter->m_blocks[QOS::XFILE_BLOCK_TEMP]->m_buffer_size);
+            constexpr ZoneHeaderQos header{
+                .version = ZoneConstants::ZONE_VERSION_PC,
+            };
 
             stream->Write(&header, sizeof(header));
-
-            std::array<uint32_t, QOS::MAX_XFILE_COUNT - 1u> remainingBlockSizes{};
-            for (auto blockIndex = 1u; blockIndex < QOS::MAX_XFILE_COUNT; blockIndex++)
-                remainingBlockSizes[blockIndex - 1u] = static_cast<uint32_t>(zoneWriter->m_blocks[blockIndex]->m_buffer_size);
-
-            stream->Write(remainingBlockSizes.data(), sizeof(remainingBlockSizes));
         }
     };
 } // namespace
@@ -69,6 +60,11 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) co
     writer->AddWritingStep(std::move(contentInMemory));
 
     writer->AddWritingStep(std::make_unique<StepWriteQosHeader>());
+
+    // Probably external size, the game does not care, so we don't care
+    writer->AddWritingStep(std::make_unique<StepWriteZero>(4));
+
+    writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(zone));
     writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::make_unique<OutputProcessorDeflate>(ZoneConstants::AUTHED_CHUNK_SIZE)));
     writer->AddWritingStep(std::make_unique<StepWriteZoneContentToFile>(contentInMemoryPtr));
 

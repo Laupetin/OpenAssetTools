@@ -68,6 +68,11 @@ namespace QOS
         SUB_ASSET_TYPE_COUNT
     };
 
+    struct ZoneHeaderQos
+    {
+        uint32_t version;
+    };
+
     struct ScriptStringList
     {
         int count;

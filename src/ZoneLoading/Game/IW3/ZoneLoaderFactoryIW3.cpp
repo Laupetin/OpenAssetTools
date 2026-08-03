@@ -124,8 +124,9 @@ namespace
     }
 } // namespace
 
-std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
+    const auto& header = filePeek.PeekStruct<ZoneHeader>();
     if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
     {
         if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
@@ -172,11 +173,11 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(c
     return std::nullopt;
 }
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
                                                                      const std::string& fileName,
                                                                      std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
 {
-    const auto inspectResult = InspectZoneHeader(header);
+    const auto inspectResult = InspectZoneHeader(filePeek);
     if (!inspectResult)
         return nullptr;
 
@@ -189,6 +190,9 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
     SetupBlock(*zoneLoader);
+
+    // Skip the initial header that we peeked at before
+    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     AddAuthHeaderSteps(*inspectResult, *zoneLoader, fileName);
