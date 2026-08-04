@@ -47,3 +47,6 @@ set string name;
 // GfxPixelShaderLoadDef
 use GfxPixelShaderLoadDef;
 set count program programSize;
+
+// MaterialVertexStreamRouting
+set condition MaterialVertexStreamRouting::decl never;

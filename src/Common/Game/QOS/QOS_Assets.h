@@ -385,6 +385,9 @@ namespace QOS
         vec3_t xyz;
         float binormalSign;
         GfxColor color;
+        // This is one of those values:
+        // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 17
+        // The vertexdecl seems to ignore this
         unsigned int unknown0; // Offset 20; Greyhound treats this as padding.
         vec2_t texCoord;       // QOS stores model UVs as two full floats at offsets 24 and 28.
         PackedUnitVec normal;
@@ -393,7 +396,9 @@ namespace QOS
 
     struct type_align(16) GfxPackedVertex16
     {
-        unsigned int data[4];
+        // Based on vertex decl this is a float4, same as vertex0 offset 0
+        vec3_t xyz;
+        float binormalSign;
     };
 
     struct XSurfaceVertexInfo
@@ -565,9 +570,48 @@ namespace QOS
         PhysConstraints* physConstraints;
     };
 
+    struct MaterialStreamRouting
+    {
+        unsigned char source;
+        unsigned char dest;
+    };
+
+    enum MaterialVertexDeclType
+    {
+        VERTDECL_GENERIC = 0x0,
+        VERTDECL_PACKED = 0x1,
+        VERTDECL_WORLD = 0x2,
+        VERTDECL_3 = 0x3,
+        VERTDECL_4 = 0x4,
+        VERTDECL_5 = 0x5,
+        VERTDECL_6 = 0x6,
+        VERTDECL_7 = 0x7,
+        VERTDECL_8 = 0x8,
+        VERTDECL_9 = 0x9,
+        VERTDECL_A = 0xA,
+        VERTDECL_B = 0xB,
+        VERTDECL_C = 0xC,
+        VERTDECL_D = 0xD,
+        VERTDECL_E = 0xE,
+        VERTDECL_F = 0xF,
+        VERTDECL_10 = 0x10,
+        VERTDECL_11 = 0x11,
+        VERTDECL_12 = 0x12,
+
+        VERTDECL_COUNT
+    };
+
+    struct MaterialVertexStreamRouting
+    {
+        MaterialStreamRouting data[16];
+        void* decl[VERTDECL_COUNT];
+    };
+
     struct MaterialVertexDeclaration
     {
-        unsigned int data[28];
+        unsigned char streamCount;
+        bool hasOptionalSource;
+        MaterialVertexStreamRouting routing;
     };
 
     struct GfxVertexShaderLoadDef
@@ -594,6 +638,21 @@ namespace QOS
     {
         const char* name;
         GfxPixelShaderLoadDef loadDef;
+    };
+
+    enum ShaderCodeConstants
+    {
+        // Unknown
+
+        CONST_SRC_CODE_ALWAYS_DIRTY_PS_END = 0x21,
+        CONST_SRC_CODE_NEVER_DIRTY_PS_BEGIN = 0x21,
+
+        // Unknown
+
+        CONST_SRC_CODE_COUNT_FLOAT4 = 0x58,
+        CONST_SRC_FIRST_CODE_MATRIX = 0x58,
+
+        // Unknown
     };
 
     enum MaterialShaderArgumentType
@@ -640,6 +699,62 @@ namespace QOS
         unsigned char stableArgCount;
         unsigned char customSamplerFlags;
         MaterialShaderArgument* args;
+    };
+
+    enum MaterialTechniqueType
+    {
+        TECHNIQUE_DEPTH_PREPASS = 0x0,
+        TECHNIQUE_BUILD_FLOAT_Z = 0x1,
+        TECHNIQUE_BUILD_SHADOWMAP_DEPTH = 0x2,
+        TECHNIQUE_BUILD_SHADOWMAP_COLOR = 0x3,
+        TECHNIQUE_UNLIT = 0x4,
+        TECHNIQUE_EMISSIVE = 0x5,
+        TECHNIQUE_EMISSIVE_SHADOW = 0x6,
+
+        TECHNIQUE_LIT_BEGIN = 0x7,
+
+        TECHNIQUE_LIT = 0x7,
+        TECHNIQUE_LIT_SUN = 0x8,
+        TECHNIQUE_LIT_SUN_SHADOW = 0x9,
+        TECHNIQUE_LIT_SPOT = 0xA,
+        TECHNIQUE_LIT_SPOT_SHADOW = 0xB,
+        TECHNIQUE_LIT_OMNI = 0xC,
+        TECHNIQUE_LIT_OMNI_SHADOW = 0xD,
+        TECHNIQUE_LIT_INSTANCED = 0xE,
+        TECHNIQUE_LIT_INSTANCED_SUN = 0xF,
+        TECHNIQUE_LIT_INSTANCED_SUN_SHADOW = 0x10,
+        TECHNIQUE_LIT_INSTANCED_SPOT = 0x11,
+        TECHNIQUE_LIT_INSTANCED_SPOT_SHADOW = 0x12,
+        TECHNIQUE_LIT_INSTANCED_OMNI = 0x13,
+        TECHNIQUE_LIT_INSTANCED_OMNI_SHADOW = 0x14,
+
+        TECHNIQUE_LIT_END = 0x15,
+
+        TECHNIQUE_LIGHT_SPOT = 0x15,
+        TECHNIQUE_LIGHT_OMNI = 0x16,
+        TECHNIQUE_LIGHT_SPOT_SHADOW = 0x17,
+        TECHNIQUE_FAKELIGHT_NORMAL = 0x18,
+        TECHNIQUE_FAKELIGHT_VIEW = 0x19,
+        TECHNIQUE_SUNLIGHT_PREVIEW = 0x1A,
+        TECHNIQUE_CASE_TEXTURE = 0x1B,
+        TECHNIQUE_WIREFRAME_SOLID = 0x1C,
+        TECHNIQUE_WIREFRAME_SHADED = 0x1D,
+        TECHNIQUE_SHADOWCOOKIE_CASTER = 0x1E,
+        TECHNIQUE_SHADOWCOOKIE_RECEIVER = 0x1F,
+        TECHNIQUE_DEBUG_BUMPMAP = 0x20, // confirmed
+        TECHNIQUE_DEBUG_BUMPMAP_INSTANCED = 0x21,
+
+        TECHNIQUE_UNKNOWN22 = 0x22,
+        TECHNIQUE_UNKNOWN23 = 0x23,
+        TECHNIQUE_UNKNOWN24 = 0x24,
+        TECHNIQUE_UNKNOWN25 = 0x25,
+        TECHNIQUE_UNKNOWN26 = 0x26,
+        TECHNIQUE_UNKNOWN27 = 0x27,
+        TECHNIQUE_UNKNOWN28 = 0x28,
+        TECHNIQUE_UNKNOWN29 = 0x29,
+        TECHNIQUE_UNKNOWN2A = 0x2A,
+
+        TECHNIQUE_COUNT
     };
 
     struct MaterialTechnique
