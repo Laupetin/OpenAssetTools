@@ -1,6 +1,7 @@
 #include "ZoneLoading.h"
 
 #include "Loading/IZoneLoaderFactory.h"
+#include "Loading/ZoneDataPeeking.h"
 #include "Loading/ZoneLoader.h"
 
 #include <filesystem>
@@ -20,24 +21,24 @@ std::expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const st
     if (!file.is_open())
         return std::unexpected(std::format("Could not open file '{}'.", path));
 
-    ZoneHeader header{};
-    file.read(reinterpret_cast<char*>(&header), sizeof(header));
-    if (file.gcount() != sizeof(header))
-        return std::unexpected(std::format("Failed to read zone header from file '{}'.", path));
-
+    ZoneDataPeeking dataPeeking(file);
     std::unique_ptr<ZoneLoader> zoneLoader;
     for (auto game = 0u; game < static_cast<unsigned>(GameId::COUNT); game++)
     {
         const auto* factory = IZoneLoaderFactory::GetZoneLoaderFactoryForGame(static_cast<GameId>(game));
-        if (factory->InspectZoneHeader(header))
+        if (factory->InspectZoneHeader(dataPeeking))
         {
-            zoneLoader = factory->CreateLoaderForHeader(header, zoneName, std::move(progressCallback));
+            zoneLoader = factory->CreateLoaderForHeader(dataPeeking, zoneName, std::move(progressCallback));
             break;
         }
     }
 
     if (!zoneLoader)
         return std::unexpected(std::format("Could not create factory for zone '{}'.", zoneName));
+
+    // Revert to beginning to make sure no peeking has advanced the read position.
+    // (As different peeking logic may advance by different amounts of bytes).
+    file.seekg(0, std::ios::beg);
 
     auto loadedZone = zoneLoader->LoadZone(file);
 

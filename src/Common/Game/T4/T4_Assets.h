@@ -448,8 +448,8 @@ namespace T4
         void /*IDirect3DVertexBuffer9*/* vb0;
         unsigned int vertListCount;
         XRigidVertList* vertList;
-        int partBits[4];
         void /*IDirect3DIndexBuffer9*/* indexBuffer;
+        int partBits[4];
     };
 
     struct XModelLodInfo
@@ -1356,10 +1356,33 @@ namespace T4
         unsigned char dest;
     };
 
+    enum MaterialVertexDeclType
+    {
+        VERTDECL_GENERIC = 0x0,
+        VERTDECL_PACKED = 0x1,
+        VERTDECL_WORLD = 0x2,
+        VERTDECL_3 = 0x3,
+        VERTDECL_4 = 0x4,
+        VERTDECL_5 = 0x5,
+        VERTDECL_6 = 0x6,
+        VERTDECL_7 = 0x7,
+        VERTDECL_8 = 0x8,
+        VERTDECL_9 = 0x9,
+        VERTDECL_A = 0xA,
+        VERTDECL_B = 0xB,
+        VERTDECL_C = 0xC,
+        VERTDECL_D = 0xD,
+        VERTDECL_E = 0xE,
+        VERTDECL_F = 0xF,
+        VERTDECL_10 = 0x10,
+
+        VERTDECL_COUNT
+    };
+
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        void /*IDirect3DVertexDeclaration9*/* decl[17];
+        void /*IDirect3DVertexDeclaration9*/* decl[VERTDECL_COUNT];
     };
 
     struct MaterialVertexDeclaration

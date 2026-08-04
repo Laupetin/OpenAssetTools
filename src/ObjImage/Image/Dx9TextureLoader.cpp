@@ -2,12 +2,26 @@
 
 #include <cstring>
 
+namespace
+{
+    void CopyMipLevel(image::Texture& texture, const int currentMipLevel, const int faceCount, const uint8_t*& currentDataOffset)
+    {
+        for (auto currentFace = 0; currentFace < faceCount; currentFace++)
+        {
+            const auto mipSize = texture.GetSizeOfMipLevel(currentMipLevel);
+            memcpy(texture.GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
+            currentDataOffset += mipSize;
+        }
+    }
+} // namespace
+
 namespace image
 {
     Dx9TextureLoader::Dx9TextureLoader()
         : m_format(oat::D3DFMT_UNKNOWN),
           m_type(TextureType::T_2D),
           m_has_mip_maps(false),
+          m_mip_map_order(MipMapDataOrder::LargestToSmallest),
           m_width(1u),
           m_height(1u),
           m_depth(1u)
@@ -40,6 +54,12 @@ namespace image
     Dx9TextureLoader& Dx9TextureLoader::HasMipMaps(const bool hasMipMaps)
     {
         m_has_mip_maps = hasMipMaps;
+        return *this;
+    }
+
+    Dx9TextureLoader& Dx9TextureLoader::MipMapOrder(const MipMapDataOrder mipMapOrder)
+    {
+        m_mip_map_order = mipMapOrder;
         return *this;
     }
 
@@ -90,16 +110,17 @@ namespace image
         texture->Allocate();
         const auto mipMapCount = m_has_mip_maps ? texture->GetMipMapCount() : 1;
         const auto faceCount = m_type == TextureType::T_CUBE ? 6 : 1;
-        const void* currentDataOffset = data;
+        auto* currentDataOffset = static_cast<const uint8_t*>(data);
 
-        for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
+        if (m_mip_map_order == MipMapDataOrder::LargestToSmallest)
         {
-            for (auto currentFace = 0; currentFace < faceCount; currentFace++)
-            {
-                const auto mipSize = texture->GetSizeOfMipLevel(currentMipLevel);
-                memcpy(texture->GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
-                currentDataOffset = reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(currentDataOffset) + mipSize);
-            }
+            for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
+                CopyMipLevel(*texture, currentMipLevel, faceCount, currentDataOffset);
+        }
+        else
+        {
+            for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+                CopyMipLevel(*texture, currentMipLevel, faceCount, currentDataOffset);
         }
 
         return texture;
