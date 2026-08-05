@@ -761,6 +761,24 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure can use empty final parameter value in nested macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define inner(param1, param2) param1+param2+end",
+            "#define outer(param1) inner(param1, )",
+            "outer(begin)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "begin++end");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure throws error on unclosed parenthesis in params", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
