@@ -17,8 +17,8 @@ jobs:
   build-test-linux:
     strategy:
       matrix:
-        build_arch: [x86, x64]
-        toolset: [gcc, clang]
+        build_arch: [ x86, x64 ]
+        toolset: [ gcc, clang ]
         include:
           - build_arch: x86
             gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
@@ -105,13 +105,14 @@ jobs:
           ./ObjWritingTests
           ./ParserTests
           ./SystemTests
+          ./UnlinkingTests
           ./ZoneCodeGeneratorLibTests
           ./ZoneCommonTests
 
   build-test-windows:
     strategy:
       matrix:
-        build_arch: [x86, x64]
+        build_arch: [ x86, x64 ]
         include:
           - build_arch: x86
             msbuild_config: Win32
@@ -199,6 +200,8 @@ jobs:
           ./ParserTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./SystemTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
+          ./UnlinkingTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ZoneCodeGeneratorLibTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
