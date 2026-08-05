@@ -67,7 +67,7 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextNoChain() const
     }));
 }
 
-MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextOrNumericNoChain() const
+MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextNoChainOrNumeric() const
 {
     return Or({
         TextNoChain(),
