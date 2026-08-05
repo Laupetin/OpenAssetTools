@@ -27,6 +27,7 @@ namespace menu
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Text() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextOrNumeric() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextNoChain() const;
+        [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextNoChainOrNumeric() const;
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
 
         [[nodiscard]] MatcherFactoryWrapper<SimpleParserValue> TextExpression() const;

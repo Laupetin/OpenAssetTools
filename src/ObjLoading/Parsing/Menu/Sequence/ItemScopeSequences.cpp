@@ -385,7 +385,7 @@ namespace
                 create.OptionalLoop(create.And({
                     create.TextNoChain().Capture(CAPTURE_STEP_NAME),
                     create.Optional(create.Char(';')),
-                    create.TextNoChain().Capture(CAPTURE_STEP_VALUE),
+                    create.TextNoChainOrNumeric().Capture(CAPTURE_STEP_VALUE),
                     create.Optional(create.Char(';')),
                 })),
                 create.Char('}'),
