@@ -134,7 +134,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | Material             | ❌              | ❌              |                                                                              |
 | MaterialTechniqueSet | ❌              | ❌              |                                                                              |
 | GfxImage             | ✅              | ❌              |                                                                              |
-| snd_alias_list_t     | ❌              | ❌              |                                                                              |
+| Sound                | ✅              | ❌              |                                                                              |
 | SndCurve             | ❌              | ❌              |                                                                              |
 | clipMap_t            | ❌              | ❌              |                                                                              |
 | ComWorld             | ❌              | ❌              |                                                                              |

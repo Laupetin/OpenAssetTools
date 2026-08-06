@@ -1014,6 +1014,10 @@ namespace QOS
         SAT_COUNT = 0x4,
     };
 
+#ifndef __zonecodegenerator
+    constexpr int SOUND_PACKAGE_INDEX_LOOSE = 99;
+#endif
+
     enum QosSoundFormat : int
     {
         QOS_SOUND_FORMAT_PCM = 0x1,
