@@ -44,7 +44,7 @@ namespace
         mssSound->info.rate = 8000;
         mssSound->info.bits = 16;
         mssSound->info.channels = 1;
-        mssSound->info.samples = pcmData.size() / 2;
+        mssSound->info.samples = static_cast<unsigned int>(pcmData.size() / 2);
         std::ranges::copy(pcmData, mssSound->data);
 
         SoundFile soundFile{};
