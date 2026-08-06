@@ -73,7 +73,7 @@ namespace
     [[nodiscard]] bool ReadRange(SearchPathOpenFile& file, const uint32_t offset, const uint32_t size, std::vector<unsigned char>& data)
     {
         if (!file.IsOpen() || size == 0 || offset > static_cast<uint64_t>(file.m_length) || size > static_cast<uint64_t>(file.m_length) - offset
-            || size > static_cast<uint64_t>(std::numeric_limits<std::streamsize>::max()))
+            || !std::in_range<std::streamsize>(size))
         {
             return false;
         }
