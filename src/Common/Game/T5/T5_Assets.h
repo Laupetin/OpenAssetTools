@@ -600,7 +600,7 @@ namespace T5
 
     struct XModelHighMipBounds
     {
-        float center[3];
+        vec3_t center;
         float himipRadiusSq;
     };
 
