@@ -66,7 +66,9 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithShortName("o")
     .WithLongName("output-folder")
-    .WithDescription(std::format("Specifies the output folder containing the contents of the unlinked zones. Defaults to \"{}\"", UnlinkerArgs::DEFAULT_OUTPUT_FOLDER))
+    .WithDescription(std::format("Specifies the output folder containing the contents of the unlinked zones. Supports ?game? and ?zone? placeholders. "
+                                 "Defaults to \"{}\"",
+                                 UnlinkerArgs::DEFAULT_OUTPUT_FOLDER))
     .WithParameter("outputFolderPath")
     .Build();
 
@@ -148,6 +150,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 
 UnlinkerArgs::UnlinkerArgs()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
+      m_game_pattern(R"(\?game\?)"),
       m_zone_pattern(R"(\?zone\?)"),
       m_task(ProcessingTask::DUMP),
       m_minimal_zone_def(false),
@@ -390,5 +393,10 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
 
 std::string UnlinkerArgs::GetOutputFolderPathForZone(const Zone& zone) const
 {
-    return std::regex_replace(m_output_folder, m_zone_pattern, zone.m_name);
+    auto outputPath = std::regex_replace(m_output_folder, m_zone_pattern, zone.m_name);
+
+    auto gameName = IGame::GetGameById(zone.m_game_id)->GetShortName();
+    utils::MakeStringLowerCase(gameName);
+
+    return std::regex_replace(outputPath, m_game_pattern, gameName);
 }
