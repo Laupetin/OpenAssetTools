@@ -57,6 +57,12 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     .WithParameter("outputFolderPath")
     .Build();
 
+const CommandLineOption* const OPTION_NO_ASSET_LIST =
+    CommandLineOption::Builder::Create()
+    .WithLongName("no-assetlist")
+    .WithDescription("Disables generating an assetlist after successfully linking a zone.")
+    .Build();
+
 const CommandLineOption* const OPTION_ADD_ASSET_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("add-asset-search-path")
@@ -125,6 +131,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_NO_COLOR,
     OPTION_BASE_FOLDER,
     OPTION_OUTPUT_FOLDER,
+    OPTION_NO_ASSET_LIST,
     OPTION_ADD_ASSET_SEARCH_PATH,
     OPTION_ASSET_SEARCH_PATH,
     OPTION_GDT_SEARCH_PATH,
@@ -136,7 +143,8 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 LinkerArgs::LinkerArgs()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
+    : m_generate_asset_lists(true),
+      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -221,6 +229,9 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
         m_out_folder = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
     else
         m_out_folder = DEFAULT_OUTPUT_FOLDER;
+
+    // --no-assetlist
+    m_generate_asset_lists = !m_argument_parser.IsOptionSpecified(OPTION_NO_ASSET_LIST);
 
     // --asset-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_ASSET_SEARCH_PATH))

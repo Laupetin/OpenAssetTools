@@ -23,6 +23,7 @@ public:
     std::string m_bin_folder;
     std::string m_base_folder;
     std::string m_out_folder;
+    bool m_generate_asset_lists;
 
     std::set<std::string> m_asset_search_paths;
     std::set<std::string> m_gdt_search_paths;
