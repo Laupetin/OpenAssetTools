@@ -20,7 +20,7 @@ namespace
         REQUIRE(args.m_output_folder == UnlinkerArgs::DEFAULT_OUTPUT_FOLDER);
 
         const Zone zone("test_zone", 0, GameId::IW4, GamePlatform::PC);
-        REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/zone_raw/test_zone");
+        REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/iw4/test_zone");
     }
 
     TEST_CASE("Unlinker output folder remains unchanged without placeholders", "[unlinker][arguments]")
@@ -36,10 +36,10 @@ namespace
     TEST_CASE("Unlinker output folder replaces game and zone placeholders", "[unlinker][arguments]")
     {
         UnlinkerArgs args;
-        args.m_output_folder = "zone_dump/?game?/?zone?";
+        args.m_output_folder = "zone_dump/?game?/?game?/?zone?";
 
         const Zone zone("test_zone", 0, GameId::IW4, GamePlatform::PC);
 
-        REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/iw4/test_zone");
+        REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/iw4/iw4/test_zone");
     }
 } // namespace

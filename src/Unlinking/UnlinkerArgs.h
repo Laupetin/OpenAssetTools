@@ -13,7 +13,7 @@
 class UnlinkerArgs
 {
 public:
-    static constexpr const char* DEFAULT_OUTPUT_FOLDER = "zone_dump/zone_raw/?zone?";
+    static constexpr const char* DEFAULT_OUTPUT_FOLDER = "zone_dump/?game?/?zone?";
 
 private:
     ArgumentParser m_argument_parser;
