@@ -967,20 +967,42 @@ namespace QOS
         char unknown0[68];
     };
 
-    enum QosSoundFileType
+    enum snd_alias_type_t
     {
-        // Only the primed branch is identified so far. Other values use the inline MssSound branch.
-        QOS_SOUND_FILE_TYPE_PRIMED = 3,
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_PRIMED = 0x3,
+        SAT_COUNT = 0x4,
     };
 
-    struct QosMssSound
+#ifndef __zonecodegenerator
+    constexpr int SOUND_PACKAGE_INDEX_LOOSE = 99;
+#endif
+
+    enum QosSoundFormat : int
     {
-        // Largely matches an MSS sound info block, but only the embedded data size is confirmed.
-        int unknown0;
-        unsigned char* unknownDataPtr0;
-        unsigned int dataSize;
-        char unknown1[24];
-        unsigned char* unknownDataPtr1;
+        QOS_SOUND_FORMAT_PCM = 0x1,
+        QOS_SOUND_FORMAT_IMA_ADPCM = 0x11,
+    };
+
+    struct AILSOUNDINFO
+    {
+        QosSoundFormat format;
+        const void* data_ptr;
+        unsigned int data_len;
+        unsigned int rate;
+        int bits;
+        int channels;
+        unsigned int channel_mask;
+        unsigned int samples;
+        unsigned int block_size;
+        const void* initial_ptr;
+    };
+
+    struct MssSound
+    {
+        AILSOUNDINFO info;
         unsigned char data[1];
     };
 
@@ -995,18 +1017,22 @@ namespace QOS
 
     union QosSoundFileRef
     {
-        QosMssSound* mssSound;
+        MssSound* mssSound;
         QosPrimedSound* primeSnd;
     };
 
     struct SoundFile
     {
-        const char* unknownString0;
-        const char* unknownString1;
+        const char* dir;
+        const char* name;
         QosSoundFileRef u;
-        // Scalar fields between the file reference and the type discriminator.
-        char unknown0[184];
-        QosSoundFileType type;
+        // Nonzero when the referenced streamed sound was found at load time.
+        unsigned int exists;
+        // Per-language package index; 99 selects a loose sound file instead of bxpackNNN.bin.
+        int packageIndex[15];
+        unsigned int packageOffset[15];
+        unsigned int packageSize[15];
+        snd_alias_type_t type;
     };
 
     struct snd_alias_t
