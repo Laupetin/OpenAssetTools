@@ -64,7 +64,7 @@ jobs:
           node-version: 24
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
+        uses: mozilla-actions/sccache-action@v0.0.11
         with:
           version: v0.15.0
 
@@ -130,7 +130,7 @@ jobs:
         uses: microsoft/setup-msbuild@v3.0.0
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
+        uses: mozilla-actions/sccache-action@v0.0.11
         with:
           version: v0.15.0
 
