@@ -2,9 +2,11 @@
 
 #include "Game/T6/Font/FontCompilerT6.h"
 #include "Game/T6/T6.h"
+#include "Game/T6/Techset/PixelShaderCompilerT6.h"
 #include "Game/T6/Techset/TechniqueCompilerT6.h"
 #include "Game/T6/Techset/TechsetCompilerT6.h"
 #include "Game/T6/Techset/VertexDeclCompilerT6.h"
+#include "Game/T6/Techset/VertexShaderCompilerT6.h"
 #include "Image/ImageIPakPostProcessor.h"
 #include "Image/ImageIwdPostProcessor.h"
 #include "KeyValuePairs/KeyValuePairsCompilerT6.h"
@@ -29,6 +31,8 @@ namespace
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT6(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT6(memory));
+        collection.AddSubAssetCreator(techset::CreateVertexShaderCompilerT6(memory, searchPath));
+        collection.AddSubAssetCreator(techset::CreatePixelShaderCompilerT6(memory, searchPath));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
