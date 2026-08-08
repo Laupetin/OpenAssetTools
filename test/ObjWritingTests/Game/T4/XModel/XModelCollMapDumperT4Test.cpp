@@ -128,4 +128,28 @@ namespace
         REQUIRE(output.find("( 0 42 0 )") == std::string_view::npos);
         REQUIRE(output.find(") ( 64 5.") != std::string_view::npos);
     }
+
+    TEST_CASE("XModelCollMapDumperT4: Dumps xmodel physics geometry to phys_collmaps", "[t4][xmodel][physcollmap][assetdumper]")
+    {
+        PhysGeomInfo geom{};
+        geom.type = PHYS_GEOM_CYLINDER;
+        geom.orientation[0][1] = 1.0f;
+        geom.halfLengths[0] = 7.0f;
+        geom.halfLengths[1] = 11.947635f;
+
+        PhysGeomList physGeoms{};
+        physGeoms.count = 1u;
+        physGeoms.geoms = &geom;
+
+        Zone zone("common_mp", 0, GameId::T4, GamePlatform::PC);
+        MockSearchPath mockObjPath;
+        MockOutputPath mockOutput;
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
+
+        xmodel::DumpXModelPhysCollMapT4("com_junktire", context, &physGeoms);
+
+        const auto* file = mockOutput.GetMockedFile("phys_collmaps/com_junktire.map");
+        REQUIRE(file != nullptr);
+        REQUIRE(file->AsString().find("physics_cylinder") != std::string::npos);
+    }
 } // namespace

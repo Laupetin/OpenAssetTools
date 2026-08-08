@@ -448,6 +448,7 @@ namespace xmodel
         DumpXModelSurfs(context, asset);
 #ifdef FEATURE_T4
         DumpXModelCollMapT4(asset.m_name, context, asset.Asset()->collmap);
+        DumpXModelPhysCollMapT4(asset.m_name, context, asset.Asset()->physGeoms);
 #endif
     }
 }

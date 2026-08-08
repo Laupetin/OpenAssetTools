@@ -8,4 +8,5 @@
 namespace xmodel
 {
     void DumpXModelCollMapT4(const std::string& xmodelName, const AssetDumpingContext& context, const T4::PhysGeomList* collMap);
+    void DumpXModelPhysCollMapT4(const std::string& xmodelName, const AssetDumpingContext& context, const T4::PhysGeomList* physGeoms);
 } // namespace xmodel

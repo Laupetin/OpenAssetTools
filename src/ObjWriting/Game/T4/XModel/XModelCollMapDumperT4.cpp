@@ -4,6 +4,7 @@
 #include "Utils/Logging/Log.h"
 
 #include <format>
+#include <string_view>
 
 using namespace T4;
 
@@ -106,27 +107,43 @@ namespace xmodel
         }
     } // namespace
 
+    namespace
+    {
+        void DumpXModelCollMap(const std::string& xmodelName, const AssetDumpingContext& context, const PhysGeomList* collMap, const std::string_view directory)
+        {
+            if (!collMap || collMap->count == 0u || !collMap->geoms)
+                return;
+
+            const auto assetFile = context.OpenAssetFile(std::format("{}/{}.map", directory, xmodelName));
+            if (!assetFile)
+                return;
+
+            MapFileDumper mapFileDumper(*assetFile);
+            mapFileDumper.Init();
+            mapFileDumper.BeginEntity();
+            mapFileDumper.WriteKeyValue("classname", "worldspawn");
+
+            for (auto geomIndex = 0u; geomIndex < collMap->count; geomIndex++)
+            {
+                if (!WriteGeom(mapFileDumper, collMap->geoms[geomIndex]))
+                    con::warn("Cannot dump {} geometry {} of xmodel \"{}\": unsupported or invalid type {}",
+                              directory,
+                              geomIndex,
+                              xmodelName,
+                              collMap->geoms[geomIndex].type);
+            }
+
+            mapFileDumper.EndEntity();
+        }
+    } // namespace
+
     void DumpXModelCollMapT4(const std::string& xmodelName, const AssetDumpingContext& context, const PhysGeomList* collMap)
     {
-        if (!collMap || collMap->count == 0u || !collMap->geoms)
-            return;
+        DumpXModelCollMap(xmodelName, context, collMap, "collmaps");
+    }
 
-        const auto assetFile = context.OpenAssetFile(std::format("collmaps/{}.map", xmodelName));
-        if (!assetFile)
-            return;
-
-        MapFileDumper mapFileDumper(*assetFile);
-        mapFileDumper.Init();
-        mapFileDumper.BeginEntity();
-        mapFileDumper.WriteKeyValue("classname", "worldspawn");
-
-        for (auto geomIndex = 0u; geomIndex < collMap->count; geomIndex++)
-        {
-            if (!WriteGeom(mapFileDumper, collMap->geoms[geomIndex]))
-                con::warn(
-                    "Cannot dump collmap geometry {} of xmodel \"{}\": unsupported or invalid type {}", geomIndex, xmodelName, collMap->geoms[geomIndex].type);
-        }
-
-        mapFileDumper.EndEntity();
+    void DumpXModelPhysCollMapT4(const std::string& xmodelName, const AssetDumpingContext& context, const PhysGeomList* physGeoms)
+    {
+        DumpXModelCollMap(xmodelName, context, physGeoms, "phys_collmaps");
     }
 } // namespace xmodel
