@@ -7,16 +7,21 @@ TARGET='all'
 ARCHITECTURE='x86'
 CONFIG='debug'
 host_system="$(uname -s)"
+host_machine="$(uname -m)"
 
 if [ "${host_system}" = "Darwin" ]; then
-    ARCHITECTURE='x64'
+    if [ "${host_machine}" = "arm64" ]; then
+        ARCHITECTURE='arm64'
+    else
+        ARCHITECTURE='x64'
+    fi
 fi
 
 for var in "$@"
 do
     if [ "$var" == "debug" ] || [ "$var" == "release" ]; then
         CONFIG="$var"
-    elif [ "$var" == "x86" ] || [ "$var" == "x64" ]; then
+    elif [ "$var" == "x86" ] || [ "$var" == "x64" ] || [ "$var" == "arm64" ]; then
         ARCHITECTURE="$var"
     else
         TARGET="$var"
@@ -28,7 +33,7 @@ build_jobs=1
 case "${host_system}" in
     Darwin)
         if [ "${ARCHITECTURE}" = "x86" ]; then
-            echo "macOS builds support only the x64 architecture" >&2
+            echo "macOS builds support only the x64 and arm64 architectures" >&2
             exit 2
         fi
 

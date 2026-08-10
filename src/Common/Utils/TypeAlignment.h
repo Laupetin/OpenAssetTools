@@ -47,7 +47,7 @@
 #define type_align64(x)
 #define tdef_align64(x)
 #define gcc_align64(x)
-#elif defined(ARCH_x64)
+#elif defined(ARCH_x64) || defined(ARCH_arm64)
 #define type_align32(x)
 #define tdef_align32(x)
 #define gcc_align32(x)

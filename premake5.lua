@@ -26,7 +26,8 @@ workspace "OpenAssetTools"
 
     platforms {
         "x86",
-        "x64"
+        "x64",
+        "arm64"
     }
     defaultplatform "x86"
 
@@ -50,6 +51,11 @@ workspace "OpenAssetTools"
         defines "ARCH_x64"
     filter {}
 
+    filter "platforms:arm64"
+        architecture "ARM64"
+        defines "ARCH_arm64"
+    filter {}
+
     filter "configurations:Debug"
         defines "_DEBUG"
         optimize "Debug"
@@ -68,6 +74,7 @@ workspace "OpenAssetTools"
     filter {}
 
     filter "system:macosx"
+        -- Apple's SDK has case-only header-name differences; keep these warnings non-fatal.
         buildoptions { "-Wno-error=nonportable-include-path" }
     filter {}
 
