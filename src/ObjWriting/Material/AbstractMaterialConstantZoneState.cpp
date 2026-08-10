@@ -5,6 +5,7 @@
 #include "Shader/D3D9ShaderAnalyser.h"
 #include "Utils/Logging/Log.h"
 
+#include <algorithm>
 #include <chrono>
 #include <utility>
 

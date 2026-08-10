@@ -1,5 +1,7 @@
 #include "SimpleMatcherAnyCharacterBesides.h"
 
+#include <algorithm>
+
 SimpleMatcherAnyCharacterBesides::SimpleMatcherAnyCharacterBesides(std::vector<char> chars)
     : m_chars(std::move(chars))
 {

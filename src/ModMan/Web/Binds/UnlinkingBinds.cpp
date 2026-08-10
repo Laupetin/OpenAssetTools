@@ -8,6 +8,7 @@
 #include "Web/UiCommunication.h"
 
 #include "Json/JsonExtension.h"
+#include <algorithm>
 #include <filesystem>
 
 namespace fs = std::filesystem;

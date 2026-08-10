@@ -15,7 +15,6 @@ workspace "OpenAssetTools"
     location "build"
     objdir "%{wks.location}/obj"
     symbols "On"
-    systemversion "latest"
     cppdialect "C++23"
     largeaddressaware "on"
     multiprocessorcompile "on"
@@ -35,6 +34,10 @@ workspace "OpenAssetTools"
         disablewarnings {
             "26812" -- Prefer enum class over unscoped
         }
+    filter {}
+
+    filter "system:windows"
+        systemversion "latest"
     filter {}
 
     filter "platforms:x86"
@@ -62,6 +65,10 @@ workspace "OpenAssetTools"
         optimize "Full"
         symbols "Off"
         fatalwarnings { "All" }
+    filter {}
+
+    filter "system:macosx"
+        buildoptions { "-Wno-error=nonportable-include-path" }
     filter {}
 
     defines {

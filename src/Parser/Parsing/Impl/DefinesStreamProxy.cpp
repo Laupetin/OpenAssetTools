@@ -7,6 +7,7 @@
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <regex>
 #include <sstream>
 #include <utility>

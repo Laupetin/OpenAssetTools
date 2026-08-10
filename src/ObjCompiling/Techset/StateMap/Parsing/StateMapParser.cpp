@@ -3,6 +3,8 @@
 #include "Matcher/StateMapExpressionMatchers.h"
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
+#include <algorithm>
+
 using namespace state_map;
 
 namespace state_map

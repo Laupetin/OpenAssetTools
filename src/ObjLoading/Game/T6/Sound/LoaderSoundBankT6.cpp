@@ -10,6 +10,7 @@
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <format>

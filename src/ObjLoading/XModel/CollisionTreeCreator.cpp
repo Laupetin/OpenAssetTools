@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <numeric>
 
 namespace
 {
@@ -94,7 +95,7 @@ namespace
             m_sorted_maxs = std::vector<float>(m_items.size());
             m_sorted_coplanar = std::vector<float>(m_items.size());
 
-            std::ranges::iota(remap, 0);
+            std::iota(remap.begin(), remap.end(), 0);
 
             // Insert root node
             m_nodes.emplace_back(GenericAabbTree{

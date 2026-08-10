@@ -6,6 +6,7 @@
 #include "Techset/TechsetCommon.h"
 #include "Utils/Logging/Log.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 
