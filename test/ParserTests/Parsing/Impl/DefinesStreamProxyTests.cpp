@@ -589,6 +589,28 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Can negate spaced defined operator", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#if defined( CONSOLE ) && !defined( SPLITSCREEN )",
+            "Console",
+            "#else",
+            "PC",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "PC");
+        ExpectLine(&proxy, 5, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure can use elif", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
@@ -739,6 +761,24 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure can use empty final parameter value in nested macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define inner(param1, param2) param1+param2+end",
+            "#define outer(param1) inner(param1, )",
+            "outer(begin)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "begin++end");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure throws error on unclosed parenthesis in params", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
@@ -813,6 +853,24 @@ namespace test::parsing::impl::defines_stream_proxy
         ExpectLine(&proxy, 3, "");
         ExpectLine(&proxy, 4, "");
         ExpectLine(&proxy, 5, "1 + 2 - 3");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Function macro call can have space before arguments", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define CHOICE_X(itemIndex) itemIndex",
+            "CHOICE_X(2)",
+            "CHOICE_X (2)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "2");
+        ExpectLine(&proxy, 3, "2");
 
         REQUIRE(proxy.Eof());
     }

@@ -158,22 +158,6 @@ namespace IW4
         "4:1",
     };
 
-    inline const char* s_vehicleClassNames[]{
-        "4 wheel",
-        "tank",
-        "plane",
-        "boat",
-        "artillery",
-        "helicopter",
-        "snowmobile",
-    };
-
-    inline const char* s_vehicleAxleTypeNames[]{
-        "front",
-        "rear",
-        "all",
-    };
-
     inline const char* bounceSoundSuffixes[]{
         "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",          "_flesh",       "_foliage", "_glass", "_grass",
         "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",          "_sand",        "_snow",    "_water", "_wood",

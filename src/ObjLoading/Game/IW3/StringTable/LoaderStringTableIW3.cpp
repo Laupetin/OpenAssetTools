@@ -1,9 +1,7 @@
-#include "AssetLoaderStringTableIW3.h"
+#include "LoaderStringTableIW3.h"
 
 #include "Game/IW3/IW3.h"
 #include "StringTable/StringTableLoader.h"
-
-#include <cstring>
 
 using namespace IW3;
 

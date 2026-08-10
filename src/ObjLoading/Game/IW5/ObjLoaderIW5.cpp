@@ -11,6 +11,8 @@
 #include "Game/IW5/Techset/VertexShaderLoaderIW5.h"
 #include "Game/IW5/Tracer/GdtLoaderTracerIW5.h"
 #include "Game/IW5/Tracer/RawLoaderTracerIW5.h"
+#include "Game/IW5/Vehicle/GdtLoaderVehicleIW5.h"
+#include "Game/IW5/Vehicle/RawLoaderVehicleIW5.h"
 #include "Game/IW5/Weapon/AccuracyGraphLoaderIW5.h"
 #include "Game/IW5/XAnim/XAnimLoaderIW5.h"
 #include "Game/IW5/XModel/LoaderXModelIW5.h"
@@ -174,7 +176,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderStructuredDataDef>(memory));
         collection.AddAssetCreator(tracer::CreateRawLoaderIW5(memory, searchPath, zone));
         collection.AddAssetCreator(tracer::CreateGdtLoaderIW5(memory, gdt, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
+        collection.AddAssetCreator(vehicle::CreateRawLoaderIW5(memory, searchPath, zone));
+        collection.AddAssetCreator(vehicle::CreateGdtLoaderIW5(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
 
         collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW5(memory, searchPath));

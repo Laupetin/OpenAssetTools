@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T4, T5, T6)
+#options GAME (IW3, IW4, IW5, QOS, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Image/ImageDumper" + GAME + ".cpp"
 
@@ -18,6 +18,10 @@
 #define FEATURE_IW5
 #define DX9
 #define IWI8
+#elif GAME == "QOS"
+#define FEATURE_QOS
+#define DX9
+#define IWI6
 #elif GAME == "T4"
 #define FEATURE_T4
 #define DX9

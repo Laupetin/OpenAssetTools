@@ -1,8 +1,13 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
+#include "Parsing/ParsingException.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+
+using namespace Catch::Matchers;
 
 namespace test::parsing::impl::comment_removing_stream_proxy
 {
@@ -190,6 +195,19 @@ namespace test::parsing::impl::comment_removing_stream_proxy
         }
 
         REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("CommentRemovingStreamProxy: Unclosed multiline comment at end of file throws an error", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{"before /* comment", "still comment"};
+
+        MockParserLineStream mockStream(lines);
+        CommentRemovingStreamProxy proxy(&mockStream);
+
+        REQUIRE(proxy.NextLine().m_line == "before ");
+        REQUIRE(proxy.NextLine().m_line.empty());
+        REQUIRE_THROWS_MATCHES(
+            proxy.NextLine(), ParsingException, MessageMatches(ContainsSubstring("L1:8") && ContainsSubstring("Unclosed multi-line comment")));
     }
 
     TEST_CASE("CommentRemovingStreamProxy: Can have multiple comment blocks in one line", "[parsing][parsingstream]")

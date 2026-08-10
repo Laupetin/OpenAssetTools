@@ -20,7 +20,7 @@
 #include "PhysPreset/RawLoaderPhysPresetIW3.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
-#include "StringTable/AssetLoaderStringTableIW3.h"
+#include "StringTable/LoaderStringTableIW3.h"
 #include "Weapon/WeaponGdtLoaderIW3.h"
 #include "Weapon/WeaponRawLoaderIW3.h"
 

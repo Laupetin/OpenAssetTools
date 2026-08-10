@@ -542,10 +542,14 @@ bool DefinesStreamProxy::FindMacroForIdentifier(const std::string& input,
 void DefinesStreamProxy::ExtractParametersFromMacroUsage(
     const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
-    if (input[inputPos] != '(')
+    auto parameterStart = inputPos;
+    while (parameterStart < input.size() && isspace(input[parameterStart]))
+        parameterStart++;
+
+    if (parameterStart >= input.size() || input[parameterStart] != '(')
         return;
 
-    inputPos++;
+    inputPos = parameterStart + 1u;
     state.m_parameter_state = ParameterState::AFTER_OPEN;
     state.m_parameters = std::vector<std::string>();
     state.m_current_parameter.clear();
@@ -560,6 +564,9 @@ bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, size_t& 
     auto currentPos = pos;
 
     if (!MatchNextCharacter(line, currentPos, '('))
+        return false;
+
+    if (!SkipWhitespace(line, currentPos))
         return false;
 
     const auto nameStartPos = currentPos;
@@ -587,7 +594,7 @@ void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
 
         currentPos = definedPos;
 
-        if (definedPos > 0 && !isspace(line.m_line[definedPos - 1]))
+        if (definedPos > 0 && (isalnum(line.m_line[definedPos - 1]) || line.m_line[definedPos - 1] == '_'))
         {
             currentPos += std::char_traits<char>::length(DEFINED_KEYWORD);
             continue;
@@ -927,7 +934,8 @@ void DefinesStreamProxy::ContinueMacroParameters(
             }
             else if (state.m_parameter_state == ParameterState::AFTER_COMMA)
             {
-                throw ParsingException(CreatePos(line, linePos), "Cannot close macro parameters after comma");
+                state.m_parameters.emplace_back();
+                state.m_parameter_state = ParameterState::NOT_IN_PARAMETERS;
             }
             else
             {

@@ -5,7 +5,7 @@
 
 using namespace menu;
 
-namespace menu::no_scope_sequences
+namespace
 {
     class SequenceOpenGlobalScope final : public MenuFileParser::sequence_t
     {
@@ -25,9 +25,7 @@ namespace menu::no_scope_sequences
             state->m_in_global_scope = true;
         }
     };
-} // namespace menu::no_scope_sequences
-
-using namespace no_scope_sequences;
+} // namespace
 
 NoScopeSequences::NoScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
                                    std::vector<MenuFileParser::sequence_t*>& scopeSequences)
@@ -35,7 +33,7 @@ NoScopeSequences::NoScopeSequences(std::vector<std::unique_ptr<MenuFileParser::s
 {
 }
 
-void NoScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
+void NoScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceOpenGlobalScope>());
 }

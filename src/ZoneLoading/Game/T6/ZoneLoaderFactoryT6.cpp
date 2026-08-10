@@ -47,8 +47,9 @@ namespace
         ZoneCompressionTypeT6 m_compression_type;
     };
 
-    std::optional<ZoneLoaderInspectionResultT6> InspectZoneHeaderT6(const ZoneHeader& header)
+    std::optional<ZoneLoaderInspectionResultT6> InspectZoneHeaderT6(ZoneDataPeeking& filePeek)
     {
+        const auto& header = filePeek.PeekStruct<ZoneHeader>();
         if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
@@ -304,20 +305,20 @@ namespace
     }
 } // namespace
 
-std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
-    auto resultT6 = InspectZoneHeaderT6(header);
+    auto resultT6 = InspectZoneHeaderT6(filePeek);
     if (!resultT6)
         return std::nullopt;
 
     return resultT6->m_generic_result;
 }
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
                                                                      const std::string& fileName,
                                                                      std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
 {
-    const auto inspectResult = InspectZoneHeaderT6(header);
+    const auto inspectResult = InspectZoneHeaderT6(filePeek);
     if (!inspectResult)
         return nullptr;
 
@@ -330,6 +331,9 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
     SetupBlock(*zoneLoader);
+
+    // Skip the initial header that we peeked at before
+    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
 
     // If file is signed setup a RSA instance.
     auto rsa = inspectResult->m_generic_result.m_is_signed ? SetupRsa(inspectResult->m_generic_result.m_is_official) : nullptr;

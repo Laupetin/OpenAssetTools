@@ -3,6 +3,7 @@
 #include "IW5.h"
 
 #include <cassert>
+#include <type_traits>
 
 namespace IW5
 {
@@ -10,7 +11,7 @@ namespace IW5
 
     CommonAssetType CommonAssetTypeMapper::GameToCommonAssetType(const asset_type_t gameAssetType) const
     {
-        static CommonAssetType lookupTable[static_cast<unsigned>(ASSET_TYPE_COUNT)]{
+        static CommonAssetType lookupTable[]{
             CommonAssetType::PHYS_PRESET,          // ASSET_TYPE_PHYSPRESET
             CommonAssetType::PHYS_COLL_MAP,        // ASSET_TYPE_PHYSCOLLMAP
             CommonAssetType::XANIM,                // ASSET_TYPE_XANIMPARTS
@@ -58,6 +59,7 @@ namespace IW5
             CommonAssetType::VEHICLE,              // ASSET_TYPE_VEHICLE
             CommonAssetType::ADDON_MAP_ENTS,       // ASSET_TYPE_ADDON_MAP_ENTS
         };
+        static_assert(std::extent_v<decltype(lookupTable)> == static_cast<unsigned>(ASSET_TYPE_COUNT));
 
         assert(gameAssetType < ASSET_TYPE_COUNT);
         return lookupTable[gameAssetType];

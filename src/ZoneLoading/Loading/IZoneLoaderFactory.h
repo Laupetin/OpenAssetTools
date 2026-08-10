@@ -3,6 +3,7 @@
 #include "Game/IGame.h"
 #include "Utils/ProgressCallback.h"
 #include "Zone/ZoneTypes.h"
+#include "ZoneDataPeeking.h"
 #include "ZoneLoader.h"
 
 #include <memory>
@@ -36,8 +37,8 @@ public:
     IZoneLoaderFactory& operator=(const IZoneLoaderFactory& other) = default;
     IZoneLoaderFactory& operator=(IZoneLoaderFactory&& other) noexcept = default;
 
-    [[nodiscard]] virtual std::optional<ZoneLoaderInspectionResult> InspectZoneHeader(const ZoneHeader& header) const = 0;
-    [[nodiscard]] virtual std::unique_ptr<ZoneLoader> CreateLoaderForHeader(const ZoneHeader& header,
+    [[nodiscard]] virtual std::optional<ZoneLoaderInspectionResult> InspectZoneHeader(ZoneDataPeeking& filePeek) const = 0;
+    [[nodiscard]] virtual std::unique_ptr<ZoneLoader> CreateLoaderForHeader(ZoneDataPeeking& filePeek,
                                                                             const std::string& fileName,
                                                                             std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const = 0;
 

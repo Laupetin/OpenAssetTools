@@ -30,7 +30,6 @@
 #include <cassert>
 #include <cstring>
 #include <filesystem>
-#include <iostream>
 #include <type_traits>
 
 using namespace IW4;
@@ -44,8 +43,9 @@ namespace
         bool m_is_iw4x;
     };
 
-    std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(const ZoneHeader& header)
+    std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(ZoneDataPeeking& filePeek)
     {
+        const auto& header = filePeek.PeekStruct<ZoneHeader>();
         if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_PC)
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
@@ -248,20 +248,20 @@ namespace
     }
 } // namespace
 
-std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(const ZoneHeader& header) const
+std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
-    auto resultIw4 = InspectZoneHeaderIw4(header);
+    auto resultIw4 = InspectZoneHeaderIw4(filePeek);
     if (!resultIw4)
         return std::nullopt;
 
     return resultIw4->m_generic_result;
 }
 
-std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneHeader& header,
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
                                                                      const std::string& fileName,
                                                                      std::optional<std::unique_ptr<ProgressCallback>> progressCallback) const
 {
-    const auto inspectResult = InspectZoneHeaderIw4(header);
+    const auto inspectResult = InspectZoneHeaderIw4(filePeek);
     if (!inspectResult)
         return nullptr;
 
@@ -274,6 +274,9 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(const ZoneH
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
     SetupBlock(*zoneLoader);
+
+    // Skip the initial header that we peeked at before
+    zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
 
     // Skip unknown 1 byte field that the game ignores as well
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(1));
