@@ -13,7 +13,7 @@ using `Linker`):
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
 | PhysPreset           | ✅               | ✅               |                                                                              |
-| XAnimParts           | ✅               | ✅               |                                                                              |
+| XAnimParts           | ✅               | ✅               | Animations can be dumped and loaded as `MOD_TOOLS`, `GLB`, or `GLTF`.        |
 | XModel               | ✅               | ✅               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅               | ✅               |                                                                              |
 | MaterialTechniqueSet | ✅               | ✅               | For shaders: only dumps/loads shader bytecode.                               |

@@ -42,6 +42,12 @@
 #include "XAnim/FlatXAnimDataWriter.h"
 #include "XAnim/XAnimCommon.h"
 
+#if defined(FEATURE_IW3)
+#include "XAnim/GltfXAnimLoader.h"
+#include "XModel/Gltf/GltfBinInput.h"
+#include "XModel/Gltf/GltfTextInput.h"
+#endif
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -451,17 +457,58 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(xanim::GetCompiledFileNameForAssetName(assetName));
-            if (!file.IsOpen())
-                return AssetCreationResult::NoAction();
+            std::unique_ptr<xanim::CommonXAnimParts> commonParts;
 
-            auto maybeCommonParts = xanim::LoadCompiledXAnim(*file.m_stream);
-            if (!maybeCommonParts.has_value())
+#if defined(FEATURE_IW3)
+            const auto gltfFile = m_search_path.Open(xanim::GetGltfFileNameForAssetName(assetName));
+            if (gltfFile.IsOpen())
             {
-                con::error("Failed to load xanim \"{}\": {}", assetName, maybeCommonParts.error());
-                return AssetCreationResult::Failure();
+                gltf::TextInput input;
+                if (!input.ReadGltfData(*gltfFile.m_stream))
+                    return AssetCreationResult::Failure();
+
+                auto maybeCommonParts = xanim_gltf::Load(input);
+                if (!maybeCommonParts)
+                {
+                    con::error("Failed to load GLTF xanim \"{}\": {}", assetName, maybeCommonParts.error());
+                    return AssetCreationResult::Failure();
+                }
+                commonParts = std::move(maybeCommonParts).value();
             }
-            const auto commonParts = std::move(maybeCommonParts).value();
+            else
+            {
+                const auto glbFile = m_search_path.Open(xanim::GetGlbFileNameForAssetName(assetName));
+                if (glbFile.IsOpen())
+                {
+                    gltf::BinInput input;
+                    if (!input.ReadGltfData(*glbFile.m_stream))
+                        return AssetCreationResult::Failure();
+
+                    auto maybeCommonParts = xanim_gltf::Load(input);
+                    if (!maybeCommonParts)
+                    {
+                        con::error("Failed to load GLB xanim \"{}\": {}", assetName, maybeCommonParts.error());
+                        return AssetCreationResult::Failure();
+                    }
+                    commonParts = std::move(maybeCommonParts).value();
+                }
+            }
+#endif
+
+            if (!commonParts)
+            {
+                const auto file = m_search_path.Open(xanim::GetCompiledFileNameForAssetName(assetName));
+                if (!file.IsOpen())
+                    return AssetCreationResult::NoAction();
+
+                auto maybeCommonParts = xanim::LoadCompiledXAnim(*file.m_stream);
+                if (!maybeCommonParts.has_value())
+                {
+                    con::error("Failed to load xanim \"{}\": {}", assetName, maybeCommonParts.error());
+                    return AssetCreationResult::Failure();
+                }
+                commonParts = std::move(maybeCommonParts).value();
+            }
 
             auto* parts = m_memory.Alloc<XAnimParts>();
             parts->name = m_memory.Dup(assetName.c_str());
