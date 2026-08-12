@@ -21,8 +21,8 @@ namespace
     constexpr auto XANIM_EXTRAS_KEY = "OAT_xanim";
     constexpr auto DELTA_NODE_NAME = "_oat_delta";
     constexpr auto COORDINATE_ROOT_NODE_NAME = "_oat_xanim";
-    constexpr auto NEGATIVE_SQRT_HALF = -0.7071067811865475244f;
-    constexpr auto POSITIVE_SQRT_HALF = 0.7071067811865475244f;
+    constexpr float SQRT_HALF = 0.7071067811865475244f;
+    constexpr std::array<float, 4> GAME_TO_GLTF_ROTATION{-SQRT_HALF, 0.0f, 0.0f, SQRT_HALF};
 
     template<size_t N> using FloatValues = std::vector<std::array<float, N>>;
 
@@ -128,7 +128,7 @@ namespace
             gltf::JsonScene scene;
             gltf::JsonNode coordinateRoot;
             coordinateRoot.name = COORDINATE_ROOT_NODE_NAME;
-            coordinateRoot.rotation = std::array<float, 4>{NEGATIVE_SQRT_HALF, 0.0f, 0.0f, POSITIVE_SQRT_HALF};
+            coordinateRoot.rotation = GAME_TO_GLTF_ROTATION;
             coordinateRoot.children.emplace();
             scene.nodes.emplace_back(0u);
             root.nodes->emplace_back(std::move(coordinateRoot));
