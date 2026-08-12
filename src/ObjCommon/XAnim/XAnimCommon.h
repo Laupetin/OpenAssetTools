@@ -160,4 +160,6 @@ namespace xanim
     };
 
     [[nodiscard]] std::string GetCompiledFileNameForAssetName(const std::string& assetName);
+    [[nodiscard]] std::string GetGltfFileNameForAssetName(const std::string& assetName);
+    [[nodiscard]] std::string GetGlbFileNameForAssetName(const std::string& assetName);
 } // namespace xanim
