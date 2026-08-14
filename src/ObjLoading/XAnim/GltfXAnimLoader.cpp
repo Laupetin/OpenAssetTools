@@ -77,6 +77,8 @@ namespace
 
             if (!root.animations || root.animations->empty())
                 throw LoadException("GLTF does not contain an animation");
+            if (root.animations->size() > 1uz)
+                throw LoadException("GLTF contains multiple animations; exactly one is supported");
             if (!root.nodes)
                 throw LoadException("GLTF animation does not contain nodes");
 
