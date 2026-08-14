@@ -44,7 +44,7 @@ using `Linker`):
 |---------------------------|-----------------|-----------------|------------------------------------------------------------------------------|
 | PhysPreset                | ✅               | ✅               |                                                                              |
 | PhysCollmap               | ❌               | ❌               |                                                                              |
-| XAnimParts                | ✅               | ✅               |                                                                              |
+| XAnimParts                | ✅               | ✅               | Animations can be dumped and loaded as `MOD_TOOLS`, `GLB`, or `GLTF`.        |
 | XModel                    | ✅               | ✅               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material                  | ✅               | ✅               |                                                                              |
 | MaterialPixelShader       | ✅               | ✅               | Only dumps/loads shader bytecode.                                            |
@@ -84,7 +84,7 @@ using `Linker`):
 |---------------------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | PhysPreset                | ✅               | ✅               |                                                                                                               |
 | PhysCollmap               | ❌               | ❌               |                                                                                                               |
-| XAnimParts                | ✅               | ✅               |                                                                                                               |
+| XAnimParts                | ✅               | ✅               | Animations can be dumped and loaded as `MOD_TOOLS`, `GLB`, or `GLTF`.                                         |
 | XModelSurfs               | ❌               | ❌               |                                                                                                               |
 | XModel                    | ✅               | ✅               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`.                                  |
 | Material                  | ✅               | ✅               |                                                                                                               |
@@ -166,7 +166,7 @@ using `Linker`):
 | PhysPreset           | ✅               | ✅               |                                                                              |
 | PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
-| XAnimParts           | ✅               | ✅               |                                                                              |
+| XAnimParts           | ✅               | ✅               | Animations can be dumped and loaded as `MOD_TOOLS`, `GLB`, or `GLTF`.        |
 | XModel               | ✅               | ❌               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅               | ✅               |                                                                              |
 | MaterialTechniqueSet | ❌               | ❌               |                                                                              |
