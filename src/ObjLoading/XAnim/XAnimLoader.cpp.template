@@ -21,6 +21,10 @@
 #define HAS_DELTA_QUAT_3D
 #endif
 
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
+#define SUPPORTS_GLTF_XANIM
+#endif
+
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
 #define SET_IS_LOOPED() parts.flags |= ANIM_LOOP
 #define SET_HAS_DELTA() parts.flags |= ANIM_DELTA
@@ -42,7 +46,7 @@
 #include "XAnim/FlatXAnimDataWriter.h"
 #include "XAnim/XAnimCommon.h"
 
-#if defined(FEATURE_IW3)
+#ifdef SUPPORTS_GLTF_XANIM
 #include "XAnim/GltfXAnimLoader.h"
 #include "XModel/Gltf/GltfBinInput.h"
 #include "XModel/Gltf/GltfTextInput.h"
@@ -459,7 +463,7 @@ namespace
         {
             std::unique_ptr<xanim::CommonXAnimParts> commonParts;
 
-#if defined(FEATURE_IW3)
+#ifdef SUPPORTS_GLTF_XANIM
             const auto gltfFile = m_search_path.Open(xanim::GetGltfFileNameForAssetName(assetName));
             if (gltfFile.IsOpen())
             {

@@ -21,6 +21,10 @@
 #define HAS_DELTA_QUAT_3D
 #endif
 
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
+#define SUPPORTS_GLTF_XANIM
+#endif
+
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
 #define IS_LOOPED static_cast<bool>(parts.flags & ANIM_LOOP)
 #define HAS_DELTA static_cast<bool>(parts.flags & ANIM_DELTA)
@@ -41,7 +45,7 @@
 #include "XAnim/FlatXAnimReader.h"
 #include "XAnim/XAnimCommon.h"
 
-#if defined(FEATURE_IW3)
+#ifdef SUPPORTS_GLTF_XANIM
 #include "ObjWriting.h"
 #include "XAnim/GltfXAnimWriter.h"
 #include "XModel/Gltf/GltfBinOutput.h"
@@ -348,7 +352,7 @@ namespace xanim
         commonParts.m_notifies = ConvertNotifies(parts, asset);
         commonParts.m_delta_track = ConvertDeltaTrack(parts, useByteIndices, numLoopFrames);
 
-#if defined(FEATURE_IW3)
+#ifdef SUPPORTS_GLTF_XANIM
         if (ObjWriting::Configuration.XAnimOutputFormat == XAnimOutputFormat_e::GLTF)
         {
             const auto assetFile = context.OpenAssetFile(GetGltfFileNameForAssetName(asset.m_name));
