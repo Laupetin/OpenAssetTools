@@ -70,8 +70,8 @@ namespace
 
             LINE("")
 
-            LINEF("REQUIRE({0}u == sizeof({1}));", structure->m_definition->GetSize(), structure->m_definition->GetFullName())
-            LINEF("REQUIRE({0}u == alignof({1}));", structure->m_definition->GetAlignment(), structure->m_definition->GetFullName())
+            LINEF("REQUIRE({0}u == sizeof({1}));", structure->m_definition->GetSize(m_env.m_word_size), structure->m_definition->GetFullName())
+            LINEF("REQUIRE({0}u == alignof({1}));", structure->m_definition->GetAlignment(m_env.m_word_size), structure->m_definition->GetFullName())
             m_intendation--;
             LINE("}")
         }

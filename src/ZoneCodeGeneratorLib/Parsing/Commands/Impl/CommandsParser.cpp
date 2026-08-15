@@ -16,7 +16,7 @@
 #include "Parsing/Commands/Sequence/SequenceSetBlock.h"
 #include "Parsing/Commands/Sequence/SequenceString.h"
 #include "Parsing/Commands/Sequence/SequenceUse.h"
-#include "Parsing/Commands/Sequence/SequenceWordSize.h"
+#include "Parsing/Commands/Sequence/SequenceVariant.h"
 
 CommandsParser::CommandsParser(CommandsLexer* lexer, IDataRepository* targetRepository)
     : AbstractParser(lexer, std::make_unique<CommandsParserState>(targetRepository)),
@@ -43,7 +43,7 @@ const std::vector<CommandsParser::sequence_t*>& CommandsParser::GetTestsForState
         new SequenceSetBlock(),
         new SequenceString(),
         new SequenceUse(),
-        new SequenceWordSize(),
+        new SequenceVariant(),
     });
 
     return tests;

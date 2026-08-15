@@ -1,6 +1,7 @@
 // Game: 007 Quantum of Solace (QOS)
 game QOS;
-wordsize 32;
+
+variant pc 32 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

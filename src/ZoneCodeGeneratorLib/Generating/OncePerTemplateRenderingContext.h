@@ -9,13 +9,14 @@
 class OncePerTemplateRenderingContext : public BaseRenderingContext
 {
 public:
-    static std::unique_ptr<OncePerTemplateRenderingContext> BuildContext(const IDataRepository* repository);
+    static std::unique_ptr<OncePerTemplateRenderingContext> BuildContext(const IDataRepository* repository, const GameVariant* variant);
 
     std::vector<StructureInformation*> m_assets;
 
 private:
     OncePerTemplateRenderingContext(std::string game,
                                     WordSize gameWordSize,
+                                    std::endian endianness,
                                     std::vector<const FastFileBlock*> fastFileBlocks,
                                     std::vector<StructureInformation*> assets);
 };
