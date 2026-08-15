@@ -18,6 +18,7 @@ private:
     void PrintVariable(Variable* variable) const;
     void PrintTypedefPointerToArray(TypedefDefinition* typedefDefinition) const;
     void PrintTypedefArrayOfPointers(TypedefDefinition* typedefDefinition) const;
+    void PrintSizeAndAlignment(DataDefinition& dataDefinition) const;
 
     void PrintEnums() const;
     void PrintStructs() const;

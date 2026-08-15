@@ -1,9 +1,15 @@
 #include "BaseRenderingContext.h"
 
-BaseRenderingContext::BaseRenderingContext(std::string game, const WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks)
+BaseRenderingContext::BaseRenderingContext(std::string game,
+                                           const WordSize gameWordSize,
+                                           const std::endian endianness,
+                                           std::vector<const FastFileBlock*> fastFileBlocks)
     : m_game(std::move(game)),
       m_word_size_mismatch(gameWordSize != OWN_WORD_SIZE),
+      m_word_size(gameWordSize),
       m_pointer_size(GetPointerSizeForWordSize(gameWordSize)),
+      m_endianness_mismatch(std::endian::native != endianness),
+      m_endianness(endianness),
       m_blocks(std::move(fastFileBlocks)),
       m_default_normal_block(nullptr),
       m_default_temp_block(nullptr)
