@@ -183,6 +183,17 @@ void PrettyPrinter::PrintTypedefArrayOfPointers(TypedefDefinition* typedefDefini
     m_stream << "\n";
 }
 
+void PrettyPrinter::PrintSizeAndAlignment(DataDefinition& dataDefinition) const
+{
+    for (auto wordSizeNum = 0u; wordSizeNum < WORD_SIZE_COUNT; wordSizeNum++)
+    {
+        const auto wordSize = static_cast<WordSize>(wordSizeNum);
+        const auto bitWordSizeValue = GetPointerSizeForWordSize(wordSize) * 8;
+        m_stream << std::format(" Alignment ({}bit): {}\n", bitWordSizeValue, dataDefinition.GetAlignment(wordSize));
+        m_stream << std::format(" Size ({}bit): {}\n", bitWordSizeValue, dataDefinition.GetSize(wordSize));
+    }
+}
+
 void PrettyPrinter::PrintEnums() const
 {
     const auto& allEnums = m_repository->GetAllEnums();
@@ -191,8 +202,7 @@ void PrettyPrinter::PrintEnums() const
     for (auto* enumDefinition : allEnums)
     {
         m_stream << std::format(" Name: {}\n", enumDefinition->GetFullName());
-        m_stream << std::format(" Alignment: {}\n", enumDefinition->GetAlignment());
-        m_stream << std::format(" Size: {}\n", enumDefinition->GetSize());
+        PrintSizeAndAlignment(*enumDefinition);
 
         for (const auto& enumMember : enumDefinition->m_members)
         {
@@ -211,8 +221,7 @@ void PrettyPrinter::PrintStructs() const
     for (auto* structDefinition : allStructs)
     {
         m_stream << std::format(" Name: {}\n", structDefinition->GetFullName());
-        m_stream << std::format(" Alignment: {}\n", structDefinition->GetAlignment());
-        m_stream << std::format(" Size: {}\n", structDefinition->GetSize());
+        PrintSizeAndAlignment(*structDefinition);
 
         for (const auto& variable : structDefinition->m_members)
         {
@@ -231,8 +240,7 @@ void PrettyPrinter::PrintUnions() const
     for (auto* unionDefinition : allUnions)
     {
         m_stream << std::format(" Name: {}\n", unionDefinition->GetFullName());
-        m_stream << std::format(" Alignment: {}\n", unionDefinition->GetAlignment());
-        m_stream << std::format(" Size: {}\n", unionDefinition->GetSize());
+        PrintSizeAndAlignment(*unionDefinition);
 
         for (const auto& variable : unionDefinition->m_members)
         {
@@ -251,8 +259,7 @@ void PrettyPrinter::PrintTypedefs() const
     for (auto* typedefDefinition : allTypedefs)
     {
         m_stream << std::format(" Name: {}\n", typedefDefinition->GetFullName());
-        m_stream << std::format(" Alignment: {}\n", typedefDefinition->GetAlignment());
-        m_stream << std::format(" Size: {}\n", typedefDefinition->GetSize());
+        PrintSizeAndAlignment(*typedefDefinition);
 
         const auto& declarationModifiers = typedefDefinition->m_type_declaration->m_declaration_modifiers;
         if (declarationModifiers.empty())

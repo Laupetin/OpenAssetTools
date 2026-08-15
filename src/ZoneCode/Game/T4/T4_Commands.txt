@@ -1,6 +1,7 @@
 // Game: World at War (T4)
 game T4;
-wordsize 32;
+
+variant pc 32 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

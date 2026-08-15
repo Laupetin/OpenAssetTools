@@ -68,7 +68,8 @@ void HeaderBlockUnion::OnClose(HeaderParserState* state)
 
     if (m_has_custom_align)
     {
-        unionDefinition->m_alignment = static_cast<unsigned>(m_custom_alignment);
+        for (auto& alignment : unionDefinition->m_alignment)
+            alignment = static_cast<unsigned>(m_custom_alignment);
         unionDefinition->m_flags |= DefinitionWithMembers::FLAG_ALIGNMENT_FORCED;
     }
 

@@ -263,7 +263,7 @@ bool DeclarationModifierComputations::HasPointerModifier() const
                                });
 }
 
-unsigned DeclarationModifierComputations::GetAlignment() const
+unsigned DeclarationModifierComputations::GetAlignment(const WordSize wordSize) const
 {
     const auto following = GetFollowingDeclarationModifiers();
 
@@ -272,6 +272,6 @@ unsigned DeclarationModifierComputations::GetAlignment() const
                                {
                                    return modifier->GetType() == DeclarationModifierType::POINTER;
                                })
-               ? m_information->m_member->GetAlignment()
-               : m_information->m_member->m_type_declaration->m_type->GetAlignment();
+               ? m_information->m_member->GetAlignment(wordSize)
+               : m_information->m_member->m_type_declaration->m_type->GetAlignment(wordSize);
 }

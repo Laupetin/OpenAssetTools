@@ -13,9 +13,9 @@ public:
     EnumDefinition(std::string _namespace, std::string name, const BaseTypeDefinition* parentType);
 
     [[nodiscard]] DataDefinitionType GetType() const override;
-    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const override;
     [[nodiscard]] bool GetForceAlignment() const override;
-    [[nodiscard]] unsigned GetSize() const override;
+    [[nodiscard]] unsigned GetSize(WordSize wordSize) const override;
 
     void AddEnumMember(EnumMember enumMember);
 

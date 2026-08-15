@@ -14,9 +14,9 @@ DataDefinitionType EnumDefinition::GetType() const
     return DataDefinitionType::ENUM;
 }
 
-unsigned EnumDefinition::GetAlignment() const
+unsigned EnumDefinition::GetAlignment(const WordSize wordSize) const
 {
-    return m_parent_type->GetAlignment();
+    return m_parent_type->GetAlignment(wordSize);
 }
 
 bool EnumDefinition::GetForceAlignment() const
@@ -24,9 +24,9 @@ bool EnumDefinition::GetForceAlignment() const
     return m_parent_type->GetForceAlignment();
 }
 
-unsigned EnumDefinition::GetSize() const
+unsigned EnumDefinition::GetSize(const WordSize wordSize) const
 {
-    return m_parent_type->GetSize();
+    return m_parent_type->GetSize(wordSize);
 }
 
 void EnumDefinition::AddEnumMember(EnumMember enumMember)

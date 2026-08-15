@@ -1,6 +1,7 @@
 // Game: Black Ops 2 (T6)
 game T6;
-wordsize 32;
+
+variant pc 32 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

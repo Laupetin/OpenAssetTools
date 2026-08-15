@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Domain/WordSize.h"
+
 #include <string>
 
 enum class DataDefinitionType
@@ -25,9 +27,9 @@ public:
     DataDefinition& operator=(DataDefinition&& other) noexcept = default;
 
     [[nodiscard]] virtual DataDefinitionType GetType() const = 0;
-    [[nodiscard]] virtual unsigned GetAlignment() const = 0;
+    [[nodiscard]] virtual unsigned GetAlignment(WordSize wordSize) const = 0;
     [[nodiscard]] virtual bool GetForceAlignment() const = 0;
-    [[nodiscard]] virtual unsigned GetSize() const = 0;
+    [[nodiscard]] virtual unsigned GetSize(WordSize wordSize) const = 0;
 
     [[nodiscard]] std::string GetFullName() const;
 

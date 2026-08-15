@@ -2,7 +2,7 @@
 
 #include "Domain/Definition/Variable.h"
 #include "Domain/Evaluation/IEvaluation.h"
-#include "Domain/FastFile/FastFileBlock.h"
+#include "Domain/FastFileBlock.h"
 #include "StructureInformation.h"
 #include "TypeInformation.h"
 

@@ -74,9 +74,9 @@ void CommandsParserState::AddBlock(std::unique_ptr<FastFileBlock> block) const
     m_repository->Add(std::move(block));
 }
 
-void CommandsParserState::SetWordSize(const WordSize wordSize) const
+void CommandsParserState::AddGameVariant(std::string variantName, const WordSize wordSize, const std::endian endianness) const
 {
-    m_repository->SetWordSize(wordSize);
+    m_repository->AddGameVariant(std::make_unique<GameVariant>(std::move(variantName), wordSize, endianness));
 }
 
 void CommandsParserState::SetGame(std::string gameName) const

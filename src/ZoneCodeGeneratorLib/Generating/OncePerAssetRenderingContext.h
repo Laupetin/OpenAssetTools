@@ -28,7 +28,8 @@ public:
 class OncePerAssetRenderingContext : public BaseRenderingContext
 {
 public:
-    static std::unique_ptr<OncePerAssetRenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
+    static std::unique_ptr<OncePerAssetRenderingContext>
+        BuildContext(const IDataRepository* repository, StructureInformation* asset, const GameVariant* variant);
 
     StructureInformation* m_asset;
 
@@ -38,7 +39,7 @@ public:
     bool m_has_actions;
 
 private:
-    OncePerAssetRenderingContext(std::string game, WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks);
+    OncePerAssetRenderingContext(std::string game, WordSize gameWordSize, std::endian endianness, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);

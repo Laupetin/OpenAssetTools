@@ -10,7 +10,7 @@ class Variable
 public:
     Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration);
 
-    [[nodiscard]] unsigned GetAlignment() const;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const;
     [[nodiscard]] bool GetForceAlignment() const;
 
     std::string m_name;
