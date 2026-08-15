@@ -141,38 +141,41 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
             return false;
         }
 
-        for (auto* asset : assets)
+        for (auto* variant : repository->GetGameVariants())
         {
-            auto context = OncePerAssetRenderingContext::BuildContext(repository, asset);
-            const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
-            switch (result)
+            for (auto* asset : assets)
             {
-            case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
-                con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                break;
-            case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
-                con::info("Code was up to date for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                break;
-            case utils::TextFileCheckDirtyResult::FAILURE:
-                con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                return false;
+                auto context = OncePerAssetRenderingContext::BuildContext(repository, asset, variant);
+                const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
+                switch (result)
+                {
+                case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+                    con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                    break;
+                case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+                    con::info("Code was up to date for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                    break;
+                case utils::TextFileCheckDirtyResult::FAILURE:
+                    con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                    return false;
+                }
             }
-        }
 
-        {
-            auto context = OncePerTemplateRenderingContext::BuildContext(repository);
-            const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
-            switch (result)
             {
-            case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
-                con::info("Successfully generated code with preset '{}'", foundTemplate->first);
-                break;
-            case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
-                con::info("Code was up to date for preset '{}'", foundTemplate->first);
-                break;
-            case utils::TextFileCheckDirtyResult::FAILURE:
-                con::error("Failed to generate code with preset '{}'", foundTemplate->first);
-                return false;
+                auto context = OncePerTemplateRenderingContext::BuildContext(repository, variant);
+                const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
+                switch (result)
+                {
+                case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+                    con::info("Successfully generated code with preset '{}'", foundTemplate->first);
+                    break;
+                case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+                    con::info("Code was up to date for preset '{}'", foundTemplate->first);
+                    break;
+                case utils::TextFileCheckDirtyResult::FAILURE:
+                    con::error("Failed to generate code with preset '{}'", foundTemplate->first);
+                    return false;
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 
 #include "DataDefinition.h"
 #include "DeclarationModifier.h"
+#include "Domain/WordSize.h"
 
 #include <memory>
 #include <vector>
@@ -14,8 +15,8 @@ public:
 
     explicit TypeDeclaration(const DataDefinition* type);
 
-    [[nodiscard]] unsigned GetSize() const;
-    [[nodiscard]] unsigned GetAlignment() const;
+    [[nodiscard]] unsigned GetSize(WordSize wordSize) const;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const;
     [[nodiscard]] bool GetForceAlignment() const;
 
     std::vector<std::unique_ptr<DeclarationModifier>> m_declaration_modifiers;
@@ -27,6 +28,6 @@ public:
     unsigned m_custom_bit_size;
 
     unsigned m_flags;
-    unsigned m_size;
-    unsigned m_alignment;
+    unsigned m_size[WORD_SIZE_COUNT];
+    unsigned m_alignment[WORD_SIZE_COUNT];
 };

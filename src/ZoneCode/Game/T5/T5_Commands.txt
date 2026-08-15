@@ -1,6 +1,7 @@
 // Game: Black Ops (T5)
 game T5;
-wordsize 32;
+
+variant pc 32 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;

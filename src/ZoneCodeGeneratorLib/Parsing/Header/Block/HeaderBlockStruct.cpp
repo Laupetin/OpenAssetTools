@@ -68,7 +68,8 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
 
     if (m_has_custom_align)
     {
-        structDefinition->m_alignment = static_cast<unsigned>(m_custom_alignment);
+        for (auto& alignment : structDefinition->m_alignment)
+            alignment = static_cast<unsigned>(m_custom_alignment);
         structDefinition->m_flags |= DefinitionWithMembers::FLAG_ALIGNMENT_FORCED;
     }
 

@@ -1,9 +1,6 @@
 #include "InMemoryRepository.h"
 
-InMemoryRepository::InMemoryRepository()
-    : m_word_size(WordSize::UNKNOWN)
-{
-}
+InMemoryRepository::InMemoryRepository() = default;
 
 InMemoryRepository::~InMemoryRepository()
 {
@@ -19,6 +16,8 @@ InMemoryRepository::~InMemoryRepository()
         delete structureInformation;
     for (const auto* fastFileBlock : m_fast_file_blocks)
         delete fastFileBlock;
+    for (const auto* gameVariant : m_game_variants)
+        delete gameVariant;
 }
 
 void InMemoryRepository::Add(std::unique_ptr<EnumDefinition> enumsDefinition)
@@ -83,14 +82,14 @@ void InMemoryRepository::SetGame(std::string gameName)
     m_game_name = std::move(gameName);
 }
 
-WordSize InMemoryRepository::GetWordSize() const
+[[nodiscard]] const std::vector<GameVariant*>& InMemoryRepository::GetGameVariants() const
 {
-    return m_word_size;
+    return m_game_variants;
 }
 
-void InMemoryRepository::SetWordSize(const WordSize wordSize)
+void InMemoryRepository::AddGameVariant(std::unique_ptr<GameVariant> gameVariant)
 {
-    m_word_size = wordSize;
+    m_game_variants.emplace_back(gameVariant.release());
 }
 
 const std::vector<EnumDefinition*>& InMemoryRepository::GetAllEnums() const

@@ -256,12 +256,12 @@ void BaseTemplate::MakeEvaluationInternal(const IEvaluation* evaluation, std::os
         MakeOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation), str);
 }
 
-std::string BaseTemplate::MakeAllocAlignment(const StructureInformation& info)
+std::string BaseTemplate::MakeAllocAlignment(const StructureInformation& info) const
 {
     if (info.m_alloc_alignment)
         return MakeEvaluation(info.m_alloc_alignment.get());
 
-    return std::to_string(info.m_definition->GetAlignment());
+    return std::to_string(info.m_definition->GetAlignment(m_env.m_word_size));
 }
 
 std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
@@ -284,12 +284,12 @@ size_t BaseTemplate::SizeForDeclModifierLevel(const MemberInformation& memberInf
 {
     const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
     if (declModifiers.empty())
-        return memberInfo.m_member->m_type_declaration->GetSize();
+        return memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size);
 
     if (level == 0)
-        return memberInfo.m_member->m_type_declaration->GetSize();
+        return memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size);
 
-    size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
+    size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size);
     const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
     for (auto i = declModifiers.rbegin(); i != end; ++i)
     {

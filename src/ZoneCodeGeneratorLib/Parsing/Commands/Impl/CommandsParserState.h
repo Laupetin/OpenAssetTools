@@ -13,8 +13,8 @@ public:
     [[nodiscard]] const IDataRepository* GetRepository() const;
 
     void AddBlock(std::unique_ptr<FastFileBlock> block) const;
-    void SetWordSize(WordSize wordSize) const;
     void SetGame(std::string gameName) const;
+    void AddGameVariant(std::string variantName, WordSize wordSize, std::endian endianness) const;
 
     [[nodiscard]] StructureInformation* GetInUse() const;
     void SetInUse(StructureInformation* structure);

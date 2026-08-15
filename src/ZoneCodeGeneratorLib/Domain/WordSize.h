@@ -1,13 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <utility>
 
 enum class WordSize : std::uint8_t
 {
-    UNKNOWN,
     BITS_32,
-    BITS_64
+    BITS_64,
+
+    COUNT
 };
+static constexpr auto WORD_SIZE_COUNT = std::to_underlying(WordSize::COUNT);
 
 static constexpr WordSize OWN_WORD_SIZE =
 #if defined(ARCH_x86)

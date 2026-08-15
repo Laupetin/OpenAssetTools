@@ -40,18 +40,10 @@ bool CrossPlatformStructurePostProcessor::PostProcess(IDataRepository* repositor
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    if (repository->GetWordSize() == OWN_WORD_SIZE)
+    std::unordered_set<const void*> visitedStructures;
+    for (const auto& info : allInfos)
     {
-        for (const auto& info : allInfos)
-            info->m_has_matching_cross_platform_structure = true;
-    }
-    else
-    {
-        std::unordered_set<const void*> visitedStructures;
-        for (const auto& info : allInfos)
-        {
-            CalculateHasMatchingCrossPlatformStructure(visitedStructures, info);
-        }
+        CalculateHasMatchingCrossPlatformStructure(visitedStructures, info);
     }
 
     return true;

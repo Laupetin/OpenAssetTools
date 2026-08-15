@@ -11,10 +11,12 @@
 
 namespace
 {
-    bool CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition);
-    bool CalculateFields(IDataRepository* repository, TypeDeclaration* declaration);
+    constexpr auto CLEAR_FLAGS_MASK = ~(DefinitionWithMembers::FLAG_FIELDS_CALCULATING | DefinitionWithMembers::FLAG_FIELDS_CALCULATED);
 
-    bool CalculateAlign(IDataRepository* repository, TypeDeclaration* declaration)
+    bool CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition, WordSize wordSize);
+    bool CalculateFields(IDataRepository* repository, TypeDeclaration* declaration, WordSize wordSize);
+
+    bool CalculateAlign(IDataRepository* repository, TypeDeclaration* declaration, const WordSize wordSize)
     {
         auto hasPointerModifier = false;
         for (const auto& declarationModifier : declaration->m_declaration_modifiers)
@@ -28,13 +30,14 @@ namespace
 
         if (hasPointerModifier)
         {
-            declaration->m_alignment = GetPointerSizeForWordSize(repository->GetWordSize());
+            declaration->m_alignment[std::to_underlying(wordSize)] = GetPointerSizeForWordSize(wordSize);
         }
         else
         {
-            if (!CalculateFieldsIfNecessary(repository, declaration->m_type))
+            if (!CalculateFieldsIfNecessary(repository, declaration->m_type, wordSize))
                 return false;
-            declaration->m_alignment = declaration->m_type->GetAlignment();
+
+            declaration->m_alignment[std::to_underlying(wordSize)] = declaration->m_type->GetAlignment(wordSize);
             if (declaration->m_type->GetForceAlignment())
                 declaration->m_flags |= TypeDeclaration::FLAG_ALIGNMENT_FORCED;
         }
@@ -42,31 +45,32 @@ namespace
         return true;
     }
 
-    bool CalculateAlign(IDataRepository* repository, DefinitionWithMembers* definition)
+    bool CalculateAlign(IDataRepository* repository, DefinitionWithMembers* definition, const WordSize wordSize)
     {
         if (!definition->GetForceAlignment())
         {
-            definition->m_alignment = 0;
+            auto& definitionAlignment = definition->m_alignment[std::to_underlying(wordSize)];
+            definitionAlignment = 0;
             for (const auto& member : definition->m_members)
             {
-                if (!CalculateFields(repository, member->m_type_declaration.get()))
+                if (!CalculateFields(repository, member->m_type_declaration.get(), wordSize))
                     return false;
 
-                const auto memberAlignment = member->GetAlignment();
-                definition->m_alignment = std::max(memberAlignment, definition->m_alignment);
+                const auto memberAlignment = member->GetAlignment(wordSize);
+                definitionAlignment = std::max(memberAlignment, definitionAlignment);
             }
         }
 
         return true;
     }
 
-    bool CalculateSize(IDataRepository* repository, TypeDeclaration* declaration)
+    bool CalculateSize(IDataRepository* repository, TypeDeclaration* declaration, const WordSize wordSize)
     {
         if (declaration->m_declaration_modifiers.empty())
         {
-            if (!CalculateFieldsIfNecessary(repository, declaration->m_type))
+            if (!CalculateFieldsIfNecessary(repository, declaration->m_type, wordSize))
                 return false;
-            declaration->m_size = declaration->m_type->GetSize();
+            declaration->m_size[std::to_underlying(wordSize)] = declaration->m_type->GetSize(wordSize);
         }
         else
         {
@@ -75,9 +79,9 @@ namespace
             // If the first modifier is a pointer we do not need the actual type size
             if (declaration->m_declaration_modifiers.back()->GetType() != DeclarationModifierType::POINTER)
             {
-                if (!CalculateFieldsIfNecessary(repository, declaration->m_type))
+                if (!CalculateFieldsIfNecessary(repository, declaration->m_type, wordSize))
                     return false;
-                currentSize = declaration->m_type->GetSize();
+                currentSize = declaration->m_type->GetSize(wordSize);
             }
 
             for (auto i = declaration->m_declaration_modifiers.size(); i > 0; i--)
@@ -87,7 +91,7 @@ namespace
                 switch (declarationModifier->GetType())
                 {
                 case DeclarationModifierType::POINTER:
-                    currentSize = GetPointerSizeForWordSize(repository->GetWordSize());
+                    currentSize = GetPointerSizeForWordSize(wordSize);
                     break;
 
                 case DeclarationModifierType::ARRAY:
@@ -96,25 +100,26 @@ namespace
                 }
             }
 
-            declaration->m_size = currentSize;
+            declaration->m_size[std::to_underlying(wordSize)] = currentSize;
         }
 
         return true;
     }
 
-    bool CalculateSize(IDataRepository* repository, StructDefinition* definition)
+    bool CalculateSize(IDataRepository* repository, StructDefinition* definition, const WordSize wordSize)
     {
-        definition->m_size = 0;
+        auto& definitionSize = definition->m_size[std::to_underlying(wordSize)];
+        definitionSize = 0;
         auto currentBitOffset = 0u;
 
         for (const auto& member : definition->m_members)
         {
-            if (!CalculateFields(repository, member->m_type_declaration.get()))
+            if (!CalculateFields(repository, member->m_type_declaration.get(), wordSize))
                 return false;
 
             if (member->m_type_declaration->m_has_custom_bit_size)
             {
-                member->m_offset = definition->m_size + currentBitOffset / 8;
+                member->m_offset = definitionSize + currentBitOffset / 8;
                 currentBitOffset += member->m_type_declaration->m_custom_bit_size;
             }
             else
@@ -122,64 +127,66 @@ namespace
                 if (currentBitOffset > 0)
                 {
                     currentBitOffset = utils::Align(currentBitOffset, 8u);
-                    definition->m_size += currentBitOffset / 8;
+                    definitionSize += currentBitOffset / 8;
                     currentBitOffset = 0;
                 }
 
-                definition->m_size = utils::Align(definition->m_size,
-                                                  member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
+                definitionSize =
+                    utils::Align(definitionSize,
+                                 member->GetForceAlignment() ? member->GetAlignment(wordSize) : std::min(member->GetAlignment(wordSize), definition->m_pack));
 
-                member->m_offset = definition->m_size;
+                member->m_offset = definitionSize;
 
-                definition->m_size += member->m_type_declaration->GetSize();
+                definitionSize += member->m_type_declaration->GetSize(wordSize);
             }
         }
 
         if (currentBitOffset > 0)
         {
             currentBitOffset = utils::Align(currentBitOffset, 8u);
-            definition->m_size += currentBitOffset / 8;
+            definitionSize += currentBitOffset / 8;
         }
 
-        definition->m_size = utils::Align(definition->m_size, definition->m_alignment);
+        definitionSize = utils::Align(definitionSize, definition->m_alignment[std::to_underlying(wordSize)]);
 
         return true;
     }
 
-    bool CalculateSize(IDataRepository* repository, UnionDefinition* definition)
+    bool CalculateSize(IDataRepository* repository, UnionDefinition* definition, const WordSize wordSize)
     {
-        definition->m_size = 0;
+        auto& definitionSize = definition->m_size[std::to_underlying(wordSize)];
+        definitionSize = 0;
 
         for (const auto& member : definition->m_members)
         {
-            if (!CalculateFields(repository, member->m_type_declaration.get()))
+            if (!CalculateFields(repository, member->m_type_declaration.get(), wordSize))
                 return false;
 
             member->m_offset = 0;
 
-            const auto memberSize = member->m_type_declaration->GetSize();
-            if (memberSize > definition->m_size)
-                definition->m_size = memberSize;
+            const auto memberSize = member->m_type_declaration->GetSize(wordSize);
+            if (memberSize > definitionSize)
+                definitionSize = memberSize;
         }
 
-        definition->m_size = utils::Align(definition->m_size, definition->m_alignment);
+        definitionSize = utils::Align(definitionSize, definition->m_alignment[std::to_underlying(wordSize)]);
 
         return true;
     }
 
-    bool CalculateFields(IDataRepository* repository, TypeDeclaration* declaration)
+    bool CalculateFields(IDataRepository* repository, TypeDeclaration* declaration, const WordSize wordSize)
     {
         if (declaration->m_flags & TypeDeclaration::FLAG_FIELDS_CALCULATED)
             return true;
 
-        if (!CalculateAlign(repository, declaration) || !CalculateSize(repository, declaration))
+        if (!CalculateAlign(repository, declaration, wordSize) || !CalculateSize(repository, declaration, wordSize))
             return false;
 
         declaration->m_flags |= TypeDeclaration::FLAG_FIELDS_CALCULATED;
         return true;
     }
 
-    bool CalculateFields(IDataRepository* repository, StructDefinition* structDefinition)
+    bool CalculateFields(IDataRepository* repository, StructDefinition* structDefinition, const WordSize wordSize)
     {
         if (structDefinition->m_flags & DefinitionWithMembers::FLAG_FIELDS_CALCULATED)
             return true;
@@ -191,7 +198,7 @@ namespace
 
         structDefinition->m_flags |= DefinitionWithMembers::FLAG_FIELDS_CALCULATING;
 
-        if (!CalculateAlign(repository, structDefinition) || !CalculateSize(repository, structDefinition))
+        if (!CalculateAlign(repository, structDefinition, wordSize) || !CalculateSize(repository, structDefinition, wordSize))
         {
             return false;
         }
@@ -202,7 +209,7 @@ namespace
         return true;
     }
 
-    bool CalculateFields(IDataRepository* repository, UnionDefinition* unionDefinition)
+    bool CalculateFields(IDataRepository* repository, UnionDefinition* unionDefinition, const WordSize wordSize)
     {
         if (unionDefinition->m_flags & DefinitionWithMembers::FLAG_FIELDS_CALCULATED)
             return true;
@@ -214,7 +221,7 @@ namespace
 
         unionDefinition->m_flags |= DefinitionWithMembers::FLAG_FIELDS_CALCULATING;
 
-        if (!CalculateAlign(repository, unionDefinition) || !CalculateSize(repository, unionDefinition))
+        if (!CalculateAlign(repository, unionDefinition, wordSize) || !CalculateSize(repository, unionDefinition, wordSize))
         {
             return false;
         }
@@ -225,56 +232,75 @@ namespace
         return true;
     }
 
-    bool CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition)
+    bool CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition, const WordSize wordSize)
     {
         if (definition->GetType() == DataDefinitionType::STRUCT)
         {
             // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
-            return CalculateFields(repository, dynamic_cast<StructDefinition*>(const_cast<DataDefinition*>(definition)));
+            return CalculateFields(repository, dynamic_cast<StructDefinition*>(const_cast<DataDefinition*>(definition)), wordSize);
         }
 
         if (definition->GetType() == DataDefinitionType::UNION)
         {
             // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
-            return CalculateFields(repository, dynamic_cast<UnionDefinition*>(const_cast<DataDefinition*>(definition)));
+            return CalculateFields(repository, dynamic_cast<UnionDefinition*>(const_cast<DataDefinition*>(definition)), wordSize);
         }
 
         if (definition->GetType() == DataDefinitionType::TYPEDEF)
         {
             // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
-            return CalculateFields(repository, dynamic_cast<TypedefDefinition*>(const_cast<DataDefinition*>(definition))->m_type_declaration.get());
+            return CalculateFields(repository, dynamic_cast<TypedefDefinition*>(const_cast<DataDefinition*>(definition))->m_type_declaration.get(), wordSize);
         }
 
         return true;
+    }
+
+    void ClearDefinitionFlags(DefinitionWithMembers& definition)
+    {
+        definition.m_flags &= CLEAR_FLAGS_MASK;
+
+        for (const auto& member : definition.m_members)
+            member->m_type_declaration->m_flags &= CLEAR_FLAGS_MASK;
+    }
+
+    void ClearDefinitionFlags(IDataRepository& repository)
+    {
+        for (auto* structDefinition : repository.GetAllStructs())
+            ClearDefinitionFlags(*structDefinition);
+
+        for (auto* unionDefinition : repository.GetAllUnions())
+            ClearDefinitionFlags(*unionDefinition);
+
+        for (auto* typedefDeclaration : repository.GetAllTypedefs())
+            typedefDeclaration->m_type_declaration->m_flags &= CLEAR_FLAGS_MASK;
     }
 } // namespace
 
 bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository)
 {
-    if (repository->GetWordSize() == WordSize::UNKNOWN)
+    for (auto wordSizeNum = 0; wordSizeNum < WORD_SIZE_COUNT; wordSizeNum++)
     {
-        con::error("You must set a word size!");
-        return false;
-    }
+        const auto wordSize = static_cast<WordSize>(wordSizeNum);
+        for (auto* structDefinition : repository->GetAllStructs())
+        {
+            if (!CalculateFields(repository, structDefinition, wordSize))
+                return false;
+        }
 
-    for (auto* structDefinition : repository->GetAllStructs())
-    {
-        if (!CalculateFields(repository, structDefinition))
+        for (auto* unionDefinition : repository->GetAllUnions())
+        {
+            if (!CalculateFields(repository, unionDefinition, wordSize))
+                return false;
+        }
 
-            return false;
-    }
+        for (auto* typedefDeclaration : repository->GetAllTypedefs())
+        {
+            if (!CalculateFields(repository, typedefDeclaration->m_type_declaration.get(), wordSize))
+                return false;
+        }
 
-    for (auto* unionDefinition : repository->GetAllUnions())
-    {
-        if (!CalculateFields(repository, unionDefinition))
-
-            return false;
-    }
-
-    for (auto* typedefDeclaration : repository->GetAllTypedefs())
-    {
-        if (!CalculateFields(repository, typedefDeclaration->m_type_declaration.get()))
-            return false;
+        if (wordSizeNum + 1 < WORD_SIZE_COUNT)
+            ClearDefinitionFlags(*repository);
     }
 
     return true;

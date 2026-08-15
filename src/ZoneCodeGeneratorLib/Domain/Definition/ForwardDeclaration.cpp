@@ -12,7 +12,7 @@ DataDefinitionType ForwardDeclaration::GetType() const
     return DataDefinitionType::FORWARD_DECLARATION;
 }
 
-unsigned ForwardDeclaration::GetAlignment() const
+unsigned ForwardDeclaration::GetAlignment(const WordSize wordSize) const
 {
     return 0;
 }
@@ -22,7 +22,7 @@ bool ForwardDeclaration::GetForceAlignment() const
     return false;
 }
 
-unsigned ForwardDeclaration::GetSize() const
+unsigned ForwardDeclaration::GetSize(const WordSize wordSize) const
 {
     return 0;
 }
