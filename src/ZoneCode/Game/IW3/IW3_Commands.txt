@@ -1,6 +1,7 @@
 // Game: Modern Warfare (IW3)
 game IW3;
-wordsize 32;
+
+variant pc 32 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;
