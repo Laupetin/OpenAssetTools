@@ -397,14 +397,14 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->GetSize())
+                      memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size))
             }
             else
             {
                 LINEF("fillAccessor.Fill({0}[i], {1} + i * {2});",
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->GetSize())
+                      memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size))
             }
             m_intendation--;
             LINE("}")
@@ -463,7 +463,7 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -718,7 +718,7 @@ namespace
             if (memberComputations.HasDynamicArraySize())
             {
                 LINEF("const auto dynamicArrayEntries = static_cast<size_t>({0});", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
-                LINEF("m_stream.AppendToFill(dynamicArrayEntries * {0});", member.m_member->m_type_declaration->m_type->GetSize())
+                LINEF("m_stream.AppendToFill(dynamicArrayEntries * {0});", member.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 LINEF("return dynamicArrayEntries * sizeof({0}{1}) + offsetof({2}, {3});",
                       MakeTypeDecl(member.m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
@@ -735,7 +735,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream.AppendToFill({0});", member.m_member->m_type_declaration->GetSize())
+                LINEF("m_stream.AppendToFill({0});", member.m_member->m_type_declaration->GetSize(m_env.m_word_size))
                 LINEF("return sizeof({0}{1}) + offsetof({2}, {3});",
                       MakeTypeDecl(member.m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
@@ -888,7 +888,7 @@ namespace
 
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
-            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment(m_env.m_word_size));
             if (info && !info->m_has_matching_cross_platform_structure && StructureComputations(info).GetDynamicMember())
             {
                 assert(def == info->m_definition);
@@ -1043,7 +1043,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count);", def->GetSize())
+                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count);", def->GetSize(m_env.m_word_size))
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
                 LINE("for (size_t index = 0; index < count; index++)")
@@ -1051,7 +1051,7 @@ namespace
                 m_intendation++;
 
                 LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
-                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize(m_env.m_word_size))
                 LINE("var++;")
 
                 m_intendation--;
@@ -1162,14 +1162,14 @@ namespace
             else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
             {
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
-                LINEF("const auto fill = m_stream.LoadWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                LINEF("const auto fill = m_stream.LoadWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 LINE("for (auto i = 0uz; i < fillArraySize; i++)")
                 LINE("{")
                 m_intendation++;
                 LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
                       MakeSafeTypeName(member->m_type->m_definition),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -1337,7 +1337,7 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
             }
             else
             {
@@ -1460,7 +1460,7 @@ namespace
                 }
                 else
                 {
-                    LINEF("m_stream.Alloc({0});", modifier.GetAlignment())
+                    LINEF("m_stream.Alloc({0});", modifier.GetAlignment(m_env.m_word_size))
                 }
 
                 LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(member->m_type->m_definition))
@@ -1491,7 +1491,7 @@ namespace
                 }
                 else
                 {
-                    LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                    LINE_MIDDLEF("{0}", modifier.GetAlignment(m_env.m_word_size))
                 }
 
                 if (allocOutOfBlock && modifier.IsArrayPointer())
@@ -1617,7 +1617,7 @@ namespace
                     if (loadType == MemberLoadType::POINTER_ARRAY)
                     {
                         LINE_MIDDLEF(".OrNulled({0}uz * ({1}), sizeof({2}{3}) * ({1}), m_memory)",
-                                     member->m_member->m_type_declaration->GetSize(),
+                                     member->m_member->m_type_declaration->GetSize(m_env.m_word_size),
                                      MakeEvaluation(modifier.GetPointerArrayCountEvaluation()),
                                      MakeTypeDecl(member->m_member->m_type_declaration.get()),
                                      MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()))
@@ -1884,7 +1884,7 @@ namespace
                         LINEF("m_stream.Load<{0}>({1}); // Size: {2}",
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
-                              info->m_definition->GetSize())
+                              info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else
                     {
@@ -1898,7 +1898,8 @@ namespace
                 {
                     if (dynamicMember == nullptr)
                     {
-                        LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+                        LINEF(
+                            "FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else if (info->m_non_embedded_reference_exists)
                     {

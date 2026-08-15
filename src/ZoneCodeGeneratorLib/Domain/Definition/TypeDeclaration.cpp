@@ -10,22 +10,22 @@ TypeDeclaration::TypeDeclaration(const DataDefinition* type)
       m_type(type),
       m_custom_bit_size(0),
       m_flags(0),
-      m_size(0),
-      m_alignment(0)
+      m_size{},
+      m_alignment{}
 {
     assert(m_type != nullptr);
 }
 
-unsigned TypeDeclaration::GetSize() const
+unsigned TypeDeclaration::GetSize(const WordSize wordSize) const
 {
     assert(m_flags & FLAG_FIELDS_CALCULATED);
-    return m_size;
+    return m_size[std::to_underlying(wordSize)];
 }
 
-unsigned TypeDeclaration::GetAlignment() const
+unsigned TypeDeclaration::GetAlignment(const WordSize wordSize) const
 {
     assert(m_flags & FLAG_FIELDS_CALCULATED);
-    return m_alignment;
+    return m_alignment[std::to_underlying(wordSize)];
 }
 
 bool TypeDeclaration::GetForceAlignment() const

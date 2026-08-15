@@ -489,20 +489,21 @@ namespace
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
                 if (!computations.IsInRuntimeBlock())
                 {
-                    LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                    LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);",
+                          member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                     LINE("for (auto i = 0uz; i < fillArraySize; i++)")
                     LINE("{")
                     m_intendation++;
                     LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
                     LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
                           MakeSafeTypeName(member->m_type->m_definition),
-                          member->m_member->m_type_declaration->m_type->GetSize())
+                          member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                     m_intendation--;
                     LINE("}")
                 }
                 else
                 {
-                    LINEF("m_stream->IncBlockPos({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                    LINEF("m_stream->IncBlockPos({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 }
             }
             else
@@ -626,7 +627,7 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream->WriteWithFill({1}));",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
             }
             else
             {
@@ -738,7 +739,7 @@ namespace
             {
                 if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
                 {
-                    LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize())
+                    LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize(m_env.m_word_size))
                 }
 
                 LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
@@ -813,7 +814,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Align({0});", modifier.GetAlignment())
+                LINEF("m_stream->Align({0});", modifier.GetAlignment(m_env.m_word_size))
             }
 
             WriteMember_InsertReuse(info, member, modifier, writeType);
@@ -1115,7 +1116,7 @@ namespace
                               MakeTypeWrittenVarName(info->m_definition),
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
-                              info->m_definition->GetSize())
+                              info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else
                     {
@@ -1132,7 +1133,7 @@ namespace
                     LINE("{")
                     m_intendation++;
                     LINEF("const auto fillAccessor = m_stream->WriteWithFill({0});",
-                          dynamicMember == nullptr ? info->m_definition->GetSize() : dynamicMember->m_member->m_offset)
+                          dynamicMember == nullptr ? info->m_definition->GetSize(m_env.m_word_size) : dynamicMember->m_member->m_offset)
                     LINEF("{0} = fillAccessor.Offset();", MakeTypeWrittenVarName(info->m_definition))
                     LINEF("FillStruct_{0}(fillAccessor);", MakeSafeTypeName(info->m_definition))
                     m_intendation--;
@@ -1265,7 +1266,7 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -1478,7 +1479,7 @@ namespace
 
         void PrintWritePtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info, const bool reusable) const
         {
-            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment(m_env.m_word_size));
             LINEF("m_stream->Align({0});", alignment)
 
             if (reusable)
@@ -1590,7 +1591,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize())
+                LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize(m_env.m_word_size))
                 LINEF("{0} = arrayFill.Offset();", MakeTypeWrittenVarName(def))
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
@@ -1599,7 +1600,7 @@ namespace
                 m_intendation++;
 
                 LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
-                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize(m_env.m_word_size))
                 LINE("var++;")
 
                 m_intendation--;
@@ -1625,7 +1626,7 @@ namespace
             LINEF("{0} = varWritten;", MakeTypeWrittenVarName(info->m_definition))
             LINEF("Write_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
-            LINEF("varWritten.Inc({0});", def->GetSize())
+            LINEF("varWritten.Inc({0});", def->GetSize(m_env.m_word_size))
 
             m_intendation--;
             LINE("}")
