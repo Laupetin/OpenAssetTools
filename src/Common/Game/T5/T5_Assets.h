@@ -600,7 +600,7 @@ namespace T5
 
     struct XModelHighMipBounds
     {
-        float center[3];
+        vec3_t center;
         float himipRadiusSq;
     };
 
@@ -1123,19 +1123,43 @@ namespace T5
 
     struct MaterialStreamRouting
     {
-        char source;
-        char dest;
+        unsigned char source;
+        unsigned char dest;
+    };
+
+    enum MaterialVertexDeclType
+    {
+        VERTDECL_GENERIC = 0x0,
+        VERTDECL_PACKED = 0x1,
+        VERTDECL_WORLD = 0x2,
+        VERTDECL_WORLD_T1N0 = 0x3,
+        VERTDECL_WORLD_T1N1 = 0x4,
+        VERTDECL_WORLD_T2N0 = 0x5,
+        VERTDECL_WORLD_T2N1 = 0x6,
+        VERTDECL_WORLD_T2N2 = 0x7,
+        VERTDECL_WORLD_T3N0 = 0x8,
+        VERTDECL_WORLD_T3N1 = 0x9,
+        VERTDECL_WORLD_T3N2 = 0xA,
+        VERTDECL_WORLD_T4N0 = 0xB,
+        VERTDECL_WORLD_T4N1 = 0xC,
+        VERTDECL_WORLD_T4N2 = 0xD,
+        VERTDECL_POS_TEX = 0xE,
+        VERTDECL_STATICMODELCACHE = 0xF,
+        VERTDECL_WATER = 0x10,
+        VERTDECL_PARTICLECLOUD = 0x11,
+
+        VERTDECL_COUNT
     };
 
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        void /*IDirect3DVertexDeclaration9*/* decl[18];
+        void /*IDirect3DVertexDeclaration9*/* decl[VERTDECL_COUNT];
     };
 
     struct MaterialVertexDeclaration
     {
-        char streamCount;
+        unsigned char streamCount;
         bool hasOptionalSource;
         bool isLoaded;
         MaterialVertexStreamRouting routing;

@@ -254,6 +254,7 @@ namespace
 
                 auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game_id);
 
+                con::info("Dumping zone {} into folder \"{}\"", zone.m_name, outputFolderPath.string());
                 auto result = objWriter->DumpZone(context);
 
                 if (m_args.m_use_gdt)

@@ -49,6 +49,11 @@
 #include "XModel/TangentData.h"
 #include "XModel/Tangentspace.h"
 
+#ifdef FEATURE_T5
+#set HIGH_MIPS_HEADER "\"Game/" + GAME + "/XModel/XModelHighMipVolume" + GAME + ".h\""
+#include HIGH_MIPS_HEADER
+#endif
+
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -1238,6 +1243,10 @@ namespace
             xmodel.lightingOriginOffset.y = jXModel.lightingOriginOffset.y;
             xmodel.lightingOriginOffset.z = jXModel.lightingOriginOffset.z;
             xmodel.lightingOriginRange = jXModel.lightingOriginRange;
+#endif
+
+#ifdef FEATURE_T5
+            xmodel.streamInfo.highMipBounds = xmodel::GenerateHighMipVolumeT5(xmodel, m_memory);
 #endif
 
             return true;

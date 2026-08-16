@@ -1,0 +1,13 @@
+// =========================================
+// CustomCamera
+// =========================================
+use CustomCamera;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count cameras cameraCount;
+
+// CustomCameraDef
+use CustomCameraDef;
+set string name;
+set string unknownString0;
+set string unknownString1;

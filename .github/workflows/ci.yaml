@@ -17,8 +17,8 @@ jobs:
   build-test-linux:
     strategy:
       matrix:
-        build_arch: [x86, x64]
-        toolset: [gcc, clang]
+        build_arch: [ x86, x64 ]
+        toolset: [ gcc, clang ]
         include:
           - build_arch: x86
             gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
@@ -64,7 +64,7 @@ jobs:
           node-version: 24
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
+        uses: mozilla-actions/sccache-action@v0.0.11
         with:
           version: v0.15.0
 
@@ -105,13 +105,14 @@ jobs:
           ./ObjWritingTests
           ./ParserTests
           ./SystemTests
+          ./UnlinkingTests
           ./ZoneCodeGeneratorLibTests
           ./ZoneCommonTests
 
   build-test-windows:
     strategy:
       matrix:
-        build_arch: [x86, x64]
+        build_arch: [ x86, x64 ]
         include:
           - build_arch: x86
             msbuild_config: Win32
@@ -129,7 +130,7 @@ jobs:
         uses: microsoft/setup-msbuild@v3.0.0
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
+        uses: mozilla-actions/sccache-action@v0.0.11
         with:
           version: v0.15.0
 
@@ -199,6 +200,8 @@ jobs:
           ./ParserTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./SystemTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
+          ./UnlinkingTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ZoneCodeGeneratorLibTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)

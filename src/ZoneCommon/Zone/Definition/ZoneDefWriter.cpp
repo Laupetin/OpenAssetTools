@@ -3,6 +3,7 @@
 #include "Game/IW3/Zone/Definition/ZoneDefWriterIW3.h"
 #include "Game/IW4/Zone/Definition/ZoneDefWriterIW4.h"
 #include "Game/IW5/Zone/Definition/ZoneDefWriterIW5.h"
+#include "Game/QOS/Zone/Definition/ZoneDefWriterQOS.h"
 #include "Game/T4/Zone/Definition/ZoneDefWriterT4.h"
 #include "Game/T5/Zone/Definition/ZoneDefWriterT5.h"
 #include "Game/T6/Zone/Definition/ZoneDefWriterT6.h"
@@ -48,6 +49,7 @@ const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
         new IW3::ZoneDefWriter(),
         new IW4::ZoneDefWriter(),
         new IW5::ZoneDefWriter(),
+        new QOS::ZoneDefWriter(),
         new T4::ZoneDefWriter(),
         new T5::ZoneDefWriter(),
         new T6::ZoneDefWriter(),
