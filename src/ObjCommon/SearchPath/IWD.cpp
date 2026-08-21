@@ -78,7 +78,8 @@ namespace
 
             const auto result = unzReadCurrentFile(m_container, &m_peek_symbol, 1u);
 
-            if (result >= 0)
+            // minizip returns zero at the end of the current archive entry.
+            if (result > 0)
             {
                 m_peeked = true;
                 return m_peek_symbol;
@@ -96,21 +97,30 @@ namespace
             }
 
             const auto result = unzReadCurrentFile(m_container, &m_peek_symbol, 1u);
-            return result >= 0 ? m_peek_symbol : EOF;
+            return result > 0 ? m_peek_symbol : EOF;
         }
 
         std::streamsize xsgetn(char* ptr, std::streamsize count) override
         {
+            auto result = std::streamsize{};
+
             if (m_peeked && count >= 1)
             {
                 *ptr = static_cast<char>(m_peek_symbol);
+                m_peeked = false;
                 ptr++;
                 count--;
+                result++;
             }
 
-            const auto result = unzReadCurrentFile(m_container, ptr, static_cast<unsigned>(count));
+            if (count <= 0)
+                return result;
 
-            return result >= 0 ? static_cast<std::streamsize>(result) : 0;
+            const auto readResult = unzReadCurrentFile(m_container, ptr, static_cast<unsigned>(count));
+            if (readResult > 0)
+                result += static_cast<std::streamsize>(readResult);
+
+            return result;
         }
 
         pos_type seekoff(const off_type off, const std::ios_base::seekdir dir, const std::ios_base::openmode mode) override
