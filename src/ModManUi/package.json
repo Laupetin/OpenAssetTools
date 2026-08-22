@@ -17,14 +17,14 @@
     "@fontsource/inter": "5.3.0",
     "@primeuix/themes": "2.0.3",
     "@vueuse/core": "14.4.0",
-    "pinia": "4.0.2",
+    "pinia": "4.0.3",
     "primevue": "4.5.5",
     "three": "0.185.1",
     "vue": "3.5.41",
     "vue-router": "5.2.0"
   },
   "devDependencies": {
-    "@tsconfig/node24": "24.0.4",
+    "@tsconfig/node24": "24.0.5",
     "@types/jsdom": "30.0.0",
     "@types/node": "26.2.0",
     "@types/three": "0.185.4",
@@ -46,7 +46,7 @@
     "typescript": "7.0.2",
     "vite": "8.2.1",
     "vite-plugin-vue-devtools": "8.2.1",
-    "vitest": "4.1.10",
-    "vue-tsc": "3.3.9"
+    "vitest": "4.1.11",
+    "vue-tsc": "3.3.10"
   }
 }
