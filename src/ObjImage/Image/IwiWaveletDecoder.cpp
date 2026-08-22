@@ -33,8 +33,8 @@ namespace
     // These are the unique, LSB-first codewords from the IW wavelet decoder's
     // three 4096-entry lookup tables. The full lookup tables are generated at
     // compile time below.
-    constexpr std::array<HuffmanCodeword, 180> BLUE_CODEWORDS{
-        {
+    // clang-format off
+    constexpr auto BLUE_CODEWORDS = std::to_array<HuffmanCodeword>({
          {0x001, 3, 0},    {0x004, 5, 4},    {0x005, 5, 2},    {0x007, 5, 1},    {0x00A, 5, 3},    {0x014, 5, -4},
          {0x015, 5, -2},   {0x017, 5, -1},   {0x01A, 5, -3},   {0x000, 6, 12},   {0x002, 6, 10},   {0x003, 6, 7},
          {0x006, 6, 9},    {0x00B, 6, 6},    {0x018, 6, 11},   {0x01E, 6, 8},    {0x01F, 6, 5},    {0x020, 6, -12},
@@ -65,11 +65,10 @@ namespace
          {0x74E, 11, -72}, {0x78C, 11, -78}, {0x0F3, 12, 85},  {0x14D, 12, 89},  {0x253, 12, 87},  {0x26F, 12, 83},
          {0x4F3, 12, 84},  {0x54D, 12, 88},  {0x653, 12, 86},  {0x66F, 12, 82},  {0x8F3, 12, -85}, {0x94D, 12, -89},
          {0xA53, 12, -87}, {0xA6F, 12, -83}, {0xCF3, 12, -84}, {0xD4D, 12, -88}, {0xE53, 12, -86}, {0xE6F, 12, -82},
-         }
-    };
+    });
+    static_assert(BLUE_CODEWORDS.size() == 180);
 
-    constexpr std::array<HuffmanCodeword, 80> RED_GREEN_CODEWORDS{
-        {
+    constexpr auto RED_GREEN_CODEWORDS = std::to_array<HuffmanCodeword>({
          {0x003, 2, 0},    {0x002, 3, 1},    {0x006, 3, -1},   {0x001, 4, 2},    {0x009, 4, -2},   {0x004, 5, 4},
          {0x00D, 5, 3},    {0x014, 5, -4},   {0x01D, 5, -3},   {0x00C, 6, 6},    {0x010, 6, 7},    {0x015, 6, 5},
          {0x02C, 6, -6},   {0x030, 6, -7},   {0x035, 6, -5},   {0x018, 7, 10},   {0x01C, 7, 9},    {0x020, 7, 11},
@@ -84,11 +83,10 @@ namespace
          {0x208, 11, 36},  {0x228, 11, 34},  {0x378, 11, 32},  {0x405, 11, -31}, {0x408, 11, -37}, {0x428, 11, -35},
          {0x578, 11, -33}, {0x608, 11, -36}, {0x628, 11, -34}, {0x778, 11, -32}, {0x205, 12, 39},  {0x605, 12, 38},
          {0xA05, 12, -39}, {0xE05, 12, -38},
-         }
-    };
+    });
+    static_assert(RED_GREEN_CODEWORDS.size() == 80);
 
-    constexpr std::array<HuffmanCodeword, 108> ALPHA_CODEWORDS{
-        {
+    constexpr auto ALPHA_CODEWORDS = std::to_array<HuffmanCodeword>({
          {0x001, 1, 0},     {0x000, 4, ESCAPE_VALUE}, {0x002, 4, 1},     {0x00A, 4, -1},   {0x00C, 5, 2},    {0x01C, 5, -2},   {0x016, 6, 3},
          {0x018, 6, 4},     {0x036, 6, -3},           {0x038, 6, -4},    {0x004, 7, 7},    {0x02E, 7, 5},    {0x034, 7, 6},    {0x044, 7, -7},
          {0x06E, 7, -5},    {0x074, 7, -6},           {0x006, 8, 11},    {0x008, 8, 14},   {0x014, 8, 12},   {0x01E, 8, 9},    {0x048, 8, 15},
@@ -105,8 +103,9 @@ namespace
          {0x30E, 11, 46},   {0x34E, 11, 45},          {0x3BE, 11, 38},   {0x43E, 11, -41}, {0x45E, 11, -43}, {0x4A6, 11, -50}, {0x4CE, 11, -48},
          {0x50E, 11, -49},  {0x54E, 11, -64},         {0x5BE, 11, -39},  {0x63E, 11, -40}, {0x65E, 11, -42}, {0x6A6, 11, -47}, {0x6CE, 11, -44},
          {0x70E, 11, -46},  {0x74E, 11, -45},         {0x7BE, 11, -38},
-         }
-    };
+    });
+    static_assert(ALPHA_CODEWORDS.size() == 108);
+    // clang-format on
 
     template<std::size_t CodewordCount>
     consteval std::array<HuffmanDecode, HUFFMAN_LOOKUP_SIZE> CreateHuffmanLookup(const std::array<HuffmanCodeword, CodewordCount>& codewords)
@@ -115,9 +114,26 @@ namespace
 
         for (const auto codeword : codewords)
         {
+            if (codeword.bit_count == 0 || codeword.bit_count > HUFFMAN_LOOKUP_BITS)
+                throw "Invalid Huffman codeword bit count";
+
             const auto step = 1u << codeword.bit_count;
+            if (codeword.code >= step)
+                throw "Huffman codeword does not fit its bit count";
+
             for (auto index = static_cast<unsigned>(codeword.code); index < result.size(); index += step)
+            {
+                if (result[index].bit_count != 0)
+                    throw "Overlapping Huffman codewords";
+
                 result[index] = HuffmanDecode{codeword.value, codeword.bit_count};
+            }
+        }
+
+        for (const auto entry : result)
+        {
+            if (entry.bit_count == 0)
+                throw "Incomplete Huffman lookup";
         }
 
         return result;
