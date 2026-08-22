@@ -82,7 +82,7 @@ namespace
                 }
 
                 const auto operation = entry->data.op;
-                if (operation < 0 || static_cast<size_t>(operation) >= g_expFunctionNames.size())
+                if (operation < 0 || static_cast<size_t>(operation) >= std::extent_v<decltype(g_expFunctionNames)>)
                 {
                     m_stream << "0";
                     continue;

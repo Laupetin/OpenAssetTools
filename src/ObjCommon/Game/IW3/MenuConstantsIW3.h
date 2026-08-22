@@ -2,11 +2,11 @@
 
 #include "Game/IW3/IW3.h"
 
-#include <array>
+#include <type_traits>
 
 namespace IW3
 {
-    inline constexpr std::array<const char*, NUM_OPERATORS> g_expFunctionNames{
+    inline constexpr const char* g_expFunctionNames[]{
         "NOOP",
         ")",
         "*",
@@ -89,4 +89,6 @@ namespace IW3
         "acceptinginvite",
         "isintermission",
     };
+
+    static_assert(std::extent_v<decltype(g_expFunctionNames)> == static_cast<unsigned>(NUM_OPERATORS));
 } // namespace IW3

@@ -59,7 +59,7 @@ const std::map<std::string, size_t>& MenuExpressionMatchers::GetBaseFunctionMapF
 
         if (!iw3FunctionMapInitialized)
         {
-            for (size_t i = IW3::OP_FIRSTFUNCTIONCALL; i < IW3::g_expFunctionNames.size(); i++)
+            for (size_t i = IW3::OP_FIRSTFUNCTIONCALL; i < std::extent_v<decltype(IW3::g_expFunctionNames)>; i++)
             {
                 std::string functionName(IW3::g_expFunctionNames[i]);
                 utils::MakeStringLowerCase(functionName);
