@@ -4,6 +4,8 @@
 #include "MenuWriterIW3.h"
 #include "ObjWriting.h"
 
+#include <string>
+
 using namespace IW3;
 
 namespace
@@ -15,9 +17,7 @@ namespace
         if (menuDumpingState != zoneState->m_menu_dumping_state_map.end())
             return menuDumpingState->second.m_path;
 
-        const auto* menuName = asset.Asset()->window.name;
-        const std::string fallbackName = menuName ? menuName : asset.m_name;
-        return "ui_mp/" + fallbackName + ".menu";
+        return "ui_mp/" + std::string(asset.Asset()->window.name) + ".menu";
     }
 } // namespace
 
