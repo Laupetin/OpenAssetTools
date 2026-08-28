@@ -652,7 +652,6 @@ void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
                                                                 [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
                                                                 {
                                                                     state->m_current_item->m_text = value;
-                                                                    state->m_current_item->m_has_text = true;
                                                                 }));
     // textfile
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("textsavegame",

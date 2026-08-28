@@ -478,7 +478,7 @@ namespace
         {
             auto* item = m_memory.Alloc<itemDef_s>();
             item->window.name = ConvertString(common.m_name);
-            item->text = common.m_has_text ? m_memory.Dup(common.m_text.c_str()) : nullptr;
+            item->text = common.m_text ? m_memory.Dup(common.m_text->c_str()) : nullptr;
             item->window.group = ConvertString(common.m_group);
             item->window.rectClient = ConvertRectDef(common.m_rect);
             item->window.rect = ConvertRectDefRelativeTo(common.m_rect, menu.m_rect);

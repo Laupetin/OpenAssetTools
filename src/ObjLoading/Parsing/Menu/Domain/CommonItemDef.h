@@ -5,6 +5,7 @@
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -92,8 +93,7 @@ namespace menu
         };
 
         std::string m_name;
-        std::string m_text;
-        bool m_has_text = false;
+        std::optional<std::string> m_text;
         bool m_text_save_game = false;
         bool m_text_cinematic_subtitle = false;
         std::string m_group;
