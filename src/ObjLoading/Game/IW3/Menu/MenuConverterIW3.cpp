@@ -19,18 +19,6 @@ using namespace menu;
 
 namespace
 {
-    constexpr auto WINDOW_FLAG_VISIBLE = 0x4;
-    constexpr auto WINDOW_FLAG_NON_DEFAULT_FORECOLOR = 0x00010000;
-    constexpr auto WINDOW_FLAG_DECORATION = 0x00100000;
-    constexpr auto WINDOW_FLAG_HORIZONTAL_SCROLL = 0x00200000;
-    constexpr auto WINDOW_FLAG_AUTO_WRAPPED = 0x00800000;
-    constexpr auto WINDOW_FLAG_POPUP = 0x01000000;
-    constexpr auto WINDOW_FLAG_OUT_OF_BOUNDS_CLICK = 0x02000000;
-    constexpr auto WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x04000000;
-    constexpr auto WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000;
-    constexpr auto WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000;
-    constexpr auto WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000;
-
     class MenuConverter final : public AbstractMenuConverter, public IMenuConverter
     {
         [[nodiscard]] static rectDef_s ConvertRectDef(const CommonRect& rect)
