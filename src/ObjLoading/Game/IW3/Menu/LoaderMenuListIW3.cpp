@@ -140,7 +140,10 @@ namespace
                 auto* menuAsset = m_memory.Alloc<menuDef_t>();
                 AssetRegistration<AssetMenu> menuRegistration(commonMenu->m_name, menuAsset);
                 if (!converter->ConvertMenu(*commonMenu, *menuAsset, menuRegistration))
+                {
+                    con::error("Failed to convert menu file \"{}\"", commonMenu->m_name);
                     return false;
+                }
 
                 menus.emplace_back(menuAsset);
                 auto* menuInfo = context.AddAsset(std::move(menuRegistration));
