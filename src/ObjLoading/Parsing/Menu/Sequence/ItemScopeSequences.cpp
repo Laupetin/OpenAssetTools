@@ -24,7 +24,7 @@ namespace
 
     class ItemScopeOperations
     {
-        inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]{
+        inline static const CommonItemFeatureType IW3_IW4_FEATURE_TYPE_BY_TYPE[0x18]{
             CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
             CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
             CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
@@ -84,9 +84,9 @@ namespace
             {
             case FeatureLevel::IW3:
             case FeatureLevel::IW4:
-                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
+                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW3_IW4_FEATURE_TYPE_BY_TYPE)>)
                     throw ParsingException(pos, "Invalid item type");
-                return IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+                return IW3_IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
 
             case FeatureLevel::IW5:
             default:
@@ -464,8 +464,8 @@ namespace
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
 
-        static constexpr const char* SYNTAX_IW4 = "<xpos> <width> <maxChars> [alignment]";
-        static constexpr auto BASE_COLUMN_COUNT_IW4 = 3;
+        static constexpr const char* SYNTAX_IW3_IW4 = "<xpos> <width> <maxChars> [alignment]";
+        static constexpr auto BASE_COLUMN_COUNT_IW3_IW4 = 3;
 
         static constexpr const char* SYNTAX_IW5 = "<xpos> <ypos> <width> <height> <maxChars> [alignment]";
         static constexpr auto BASE_COLUMN_COUNT_IW5 = 5;
@@ -502,8 +502,8 @@ namespace
             bool hasHeightValues;
             if (state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4)
             {
-                baseColumnCount = BASE_COLUMN_COUNT_IW4;
-                syntax = SYNTAX_IW4;
+                baseColumnCount = BASE_COLUMN_COUNT_IW3_IW4;
+                syntax = SYNTAX_IW3_IW4;
                 hasHeightValues = false;
             }
             else
