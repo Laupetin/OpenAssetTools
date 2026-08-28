@@ -26,7 +26,7 @@ namespace
         {
             std::vector<menuDef_t*> menus;
             AssetRegistration<AssetMenuList> registration(assetName);
-            auto& parsingState = context.GetZoneAssetCreationState<menu::MenuAssetZoneState>();
+            auto& zoneState = context.GetZoneAssetCreationState<menu::MenuAssetZoneState>();
             auto& conversionState = context.GetZoneAssetCreationState<MenuConversionZoneState>();
             std::deque<std::string> menuLoadQueue;
 
@@ -41,18 +41,18 @@ namespace
                 if (!file.IsOpen())
                     return AssetCreationResult::NoAction();
 
-                auto result = ParseMenuFile(*file.m_stream, assetName, parsingState);
-                if (!result || !ProcessParsedResults(assetName, context, *result, parsingState, conversionState, menus, registration))
+                auto result = ParseMenuFile(*file.m_stream, assetName, zoneState);
+                if (!result || !ProcessParsedResults(assetName, context, *result, zoneState, conversionState, menus, registration))
                     return AssetCreationResult::Failure();
 
                 for (const auto& menuToLoad : result->m_menus_to_load)
                     menuLoadQueue.emplace_back(menuToLoad);
-                parsingState.AddMenusToLoad(assetName, std::move(result->m_menus_to_load));
+                zoneState.AddMenusToLoad(assetName, std::move(result->m_menus_to_load));
             }
 
             while (!menuLoadQueue.empty())
             {
-                if (!LoadMenuFile(menuLoadQueue.front(), context, parsingState, conversionState, menus, registration))
+                if (!LoadMenuFile(menuLoadQueue.front(), context, zoneState, conversionState, menus, registration))
                     return AssetCreationResult::Failure();
                 menuLoadQueue.pop_front();
             }
@@ -85,7 +85,7 @@ namespace
 
         bool LoadMenuFile(const std::string& fileName,
                           AssetCreationContext& context,
-                          menu::MenuAssetZoneState& parsingState,
+                          menu::MenuAssetZoneState& zoneState,
                           MenuConversionZoneState& conversionState,
                           std::vector<menuDef_t*>& menus,
                           AssetRegistration<AssetMenuList>& registration) const
@@ -105,7 +105,7 @@ namespace
                 return false;
             }
 
-            auto result = ParseMenuFile(*file.m_stream, fileName, parsingState);
+            auto result = ParseMenuFile(*file.m_stream, fileName, zoneState);
             if (!result)
             {
                 con::error("Could not read menu file \"{}\"", fileName);
@@ -114,13 +114,13 @@ namespace
             if (!result->m_menus_to_load.empty())
                 con::warn("Menu file has menus to load even though it is not a menu list, ignoring: \"{}\"", fileName);
 
-            return ProcessParsedResults(fileName, context, *result, parsingState, conversionState, menus, registration);
+            return ProcessParsedResults(fileName, context, *result, zoneState, conversionState, menus, registration);
         }
 
         bool ProcessParsedResults(const std::string& fileName,
                                   AssetCreationContext& context,
                                   menu::ParsingResult& result,
-                                  menu::MenuAssetZoneState& parsingState,
+                                  menu::MenuAssetZoneState& zoneState,
                                   MenuConversionZoneState& conversionState,
                                   std::vector<menuDef_t*>& menus,
                                   AssetRegistration<AssetMenuList>& registration) const
@@ -149,18 +149,17 @@ namespace
                     menusOfFile.emplace_back(menuInfo);
                     registration.AddDependency(menuInfo);
                 }
-                parsingState.AddMenu(std::move(commonMenu));
+                zoneState.AddMenu(std::move(commonMenu));
             }
 
             conversionState.AddLoadedFile(fileName, std::move(menusOfFile));
             return true;
         }
 
-        std::unique_ptr<menu::ParsingResult>
-            ParseMenuFile(std::istream& stream, const std::string& fileName, const menu::MenuAssetZoneState& parsingState) const
+        std::unique_ptr<menu::ParsingResult> ParseMenuFile(std::istream& stream, const std::string& fileName, const menu::MenuAssetZoneState& zoneState) const
         {
             menu::MenuFileReader reader(stream, fileName, menu::FeatureLevel::IW3, m_search_path);
-            reader.IncludeZoneState(parsingState);
+            reader.IncludeZoneState(zoneState);
             reader.SetPermissiveMode(ObjLoading::Configuration.MenuPermissiveParsing);
             return reader.ReadMenuFile();
         }
