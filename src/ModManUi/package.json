@@ -26,7 +26,7 @@
   "devDependencies": {
     "@tsconfig/node24": "24.0.5",
     "@types/jsdom": "30.0.0",
-    "@types/node": "26.2.0",
+    "@types/node": "26.3.0",
     "@types/three": "0.185.4",
     "@vitejs/plugin-vue": "6.0.8",
     "@vitest/eslint-plugin": "1.6.27",
@@ -36,17 +36,17 @@
     "@vue/tsconfig": "0.9.1",
     "@webwindowed/vite-plugin-cpp-header": "1.1.0",
     "@webwindowed/web-api": "1.0.0",
-    "eslint": "10.8.1",
+    "eslint": "10.9.1",
     "eslint-plugin-vue": "10.10.0",
     "jiti": "2.7.0",
     "jsdom": "30.0.1",
     "npm-run-all2": "9.0.3",
     "prettier": "3.9.6",
-    "sass": "1.102.0",
+    "sass": "1.103.1",
     "typescript": "7.0.2",
-    "vite": "8.2.1",
+    "vite": "8.2.2",
     "vite-plugin-vue-devtools": "8.2.1",
     "vitest": "4.1.11",
-    "vue-tsc": "3.3.10"
+    "vue-tsc": "3.3.11"
   }
 }
