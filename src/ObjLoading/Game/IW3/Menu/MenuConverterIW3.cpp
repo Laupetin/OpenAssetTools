@@ -53,10 +53,12 @@ namespace
             output[3] = static_cast<float>(input.a);
         }
 
-        static void ApplyFlag(int& flags, const bool shouldApply, const int flag)
+        static void ApplyFlag(int& flags, const bool shouldApply, const int flagValue)
         {
-            if (shouldApply)
-                flags |= flag;
+            if (!shouldApply)
+                return;
+
+            flags |= flagValue;
         }
 
         [[nodiscard]] Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
@@ -64,11 +66,11 @@ namespace
             if (materialName.empty())
                 return nullptr;
 
-            auto* dependency = m_context.LoadDependency<AssetMaterial>(materialName);
-            if (!dependency)
+            auto* materialDependency = m_context.LoadDependency<AssetMaterial>(materialName);
+            if (!materialDependency)
                 throw MenuConversionException(std::format("Failed to load material \"{}\"", materialName), menu, item);
 
-            return dependency->Asset();
+            return materialDependency->Asset();
         }
 
         [[nodiscard]] snd_alias_list_t* ConvertSound(const std::string& soundName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
@@ -76,11 +78,11 @@ namespace
             if (soundName.empty())
                 return nullptr;
 
-            auto* dependency = m_context.LoadDependency<AssetSound>(soundName);
-            if (!dependency)
+            auto* soundDependency = m_context.LoadDependency<AssetSound>(soundName);
+            if (!soundDependency)
                 throw MenuConversionException(std::format("Failed to load sound \"{}\"", soundName), menu, item);
 
-            return dependency->Asset();
+            return soundDependency->Asset();
         }
 
         constexpr static operationEnum UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]{
@@ -351,218 +353,258 @@ namespace
             return script.empty() ? nullptr : m_memory.Dup(script.c_str());
         }
 
-        [[nodiscard]] ItemKeyHandler* ConvertKeyHandlers(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& handlers,
-                                                         const CommonMenuDef* menu,
-                                                         const CommonItemDef* item = nullptr) const
+        [[nodiscard]] ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
-            if (handlers.empty())
+            if (keyHandlers.empty())
                 return nullptr;
 
-            auto* output = m_memory.Alloc<ItemKeyHandler>(handlers.size());
-            auto current = handlers.cbegin();
-            for (auto i = 0u; i < handlers.size(); i++, ++current)
+            const auto keyHandlerCount = keyHandlers.size();
+            auto* output = m_memory.Alloc<ItemKeyHandler>(keyHandlerCount);
+            auto currentKeyHandler = keyHandlers.cbegin();
+            for (auto i = 0u; i < keyHandlerCount; i++)
             {
-                output[i].key = current->first;
-                output[i].action = ConvertEventHandlerSet(current->second.get(), menu, item);
-                output[i].next = i + 1 < handlers.size() ? &output[i + 1] : nullptr;
+                output[i].key = currentKeyHandler->first;
+                output[i].action = ConvertEventHandlerSet(currentKeyHandler->second.get(), menu, item);
+
+                if (i + 1 < keyHandlerCount)
+                    output[i].next = &output[i + 1];
+                else
+                    output[i].next = nullptr;
+                ++currentKeyHandler;
             }
+
             return output;
         }
 
-        [[nodiscard]] const char* CreateEnableDvarString(const std::vector<std::string>& elements) const
+        [[nodiscard]] const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
         {
-            std::ostringstream stream;
-            for (const auto& element : elements)
-                stream << '"' << element << "\" ";
-            return m_memory.Dup(stream.str().c_str());
+            std::ostringstream ss;
+
+            for (const auto& element : stringElements)
+            {
+                ss << "\"" << element << "\" ";
+            }
+
+            return m_memory.Dup(ss.str().c_str());
         }
 
-        [[nodiscard]] const char* ConvertEnableDvar(const CommonItemDef& item, int& flags) const
+        [[nodiscard]] const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
         {
-            flags = 0;
-            if (!item.m_enable_dvar.empty())
+            dvarFlags = 0;
+
+            if (!commonItem.m_enable_dvar.empty())
             {
-                flags = ITEM_DVAR_FLAG_ENABLE;
-                return CreateEnableDvarString(item.m_enable_dvar);
+                dvarFlags |= ITEM_DVAR_FLAG_ENABLE;
+                return CreateEnableDvarString(commonItem.m_enable_dvar);
             }
-            if (!item.m_disable_dvar.empty())
+
+            if (!commonItem.m_disable_dvar.empty())
             {
-                flags = ITEM_DVAR_FLAG_DISABLE;
-                return CreateEnableDvarString(item.m_disable_dvar);
+                dvarFlags |= ITEM_DVAR_FLAG_DISABLE;
+                return CreateEnableDvarString(commonItem.m_disable_dvar);
             }
-            if (!item.m_show_dvar.empty())
+
+            if (!commonItem.m_show_dvar.empty())
             {
-                flags = ITEM_DVAR_FLAG_SHOW;
-                return CreateEnableDvarString(item.m_show_dvar);
+                dvarFlags |= ITEM_DVAR_FLAG_SHOW;
+                return CreateEnableDvarString(commonItem.m_show_dvar);
             }
-            if (!item.m_hide_dvar.empty())
+
+            if (!commonItem.m_hide_dvar.empty())
             {
-                flags = ITEM_DVAR_FLAG_HIDE;
-                return CreateEnableDvarString(item.m_hide_dvar);
+                dvarFlags |= ITEM_DVAR_FLAG_HIDE;
+                return CreateEnableDvarString(commonItem.m_hide_dvar);
             }
-            if (!item.m_focus_dvar.empty())
+
+            if (!commonItem.m_focus_dvar.empty())
             {
-                flags = ITEM_DVAR_FLAG_FOCUS;
-                return CreateEnableDvarString(item.m_focus_dvar);
+                dvarFlags |= ITEM_DVAR_FLAG_FOCUS;
+                return CreateEnableDvarString(commonItem.m_focus_dvar);
             }
+
             return nullptr;
         }
 
-        [[nodiscard]] listBoxDef_s* ConvertListBox(const CommonItemDef& commonItem, const CommonMenuDef& menu, itemDef_s& item) const
+        [[nodiscard]] listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
+                                                           CommonItemFeaturesListBox* commonListBox,
+                                                           const CommonMenuDef& parentMenu,
+                                                           const CommonItemDef& commonItem) const
         {
-            const auto* common = commonItem.m_list_box_features.get();
-            if (!common)
+            if (commonListBox == nullptr)
                 return nullptr;
 
-            auto* output = m_memory.Alloc<listBoxDef_s>();
-            output->elementWidth = static_cast<float>(common->m_element_width);
-            output->elementHeight = static_cast<float>(common->m_element_height);
-            output->elementStyle = common->m_element_style;
-            output->notselectable = common->m_not_selectable ? 1 : 0;
-            output->noScrollBars = common->m_no_scrollbars ? 1 : 0;
-            output->usePaging = common->m_use_paging ? 1 : 0;
-            output->doubleClick = ConvertEventHandlerSet(common->m_on_double_click.get(), &menu, &commonItem);
-            ConvertColor(output->selectBorder, common->m_select_border);
-            ConvertColor(output->disableColor, commonItem.m_disable_color);
-            output->selectIcon = ConvertMaterial(common->m_select_icon, &menu, &commonItem);
-            item.special = static_cast<float>(common->m_feeder);
+            auto* listBox = m_memory.Alloc<listBoxDef_s>();
+            listBox->notselectable = commonListBox->m_not_selectable ? 1 : 0;
+            listBox->noScrollBars = commonListBox->m_no_scrollbars ? 1 : 0;
+            listBox->usePaging = commonListBox->m_use_paging ? 1 : 0;
+            listBox->elementWidth = static_cast<float>(commonListBox->m_element_width);
+            listBox->elementHeight = static_cast<float>(commonListBox->m_element_height);
+            item->special = static_cast<float>(commonListBox->m_feeder);
+            listBox->elementStyle = commonListBox->m_element_style;
+            listBox->doubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
+            ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
+            ConvertColor(listBox->disableColor, commonItem.m_disable_color);
+            listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);
 
-            output->numColumns = static_cast<int>(std::min(std::size(output->columnInfo), common->m_columns.size()));
-            for (auto i = 0; i < output->numColumns; i++)
+            listBox->numColumns = static_cast<int>(std::min(std::size(listBox->columnInfo), commonListBox->m_columns.size()));
+            for (auto i = 0; i < listBox->numColumns; i++)
             {
-                output->columnInfo[i].pos = common->m_columns[i].m_x_pos;
-                output->columnInfo[i].width = common->m_columns[i].m_width;
-                output->columnInfo[i].maxChars = common->m_columns[i].m_max_chars;
-                output->columnInfo[i].alignment = common->m_columns[i].m_alignment;
+                auto& col = listBox->columnInfo[i];
+                const auto& commonCol = commonListBox->m_columns[i];
+
+                col.pos = commonCol.m_x_pos;
+                col.width = commonCol.m_width;
+                col.maxChars = commonCol.m_max_chars;
+                col.alignment = commonCol.m_alignment;
             }
-            return output;
+
+            return listBox;
         }
 
-        [[nodiscard]] editFieldDef_s* ConvertEditField(const CommonItemDef& commonItem) const
+        [[nodiscard]] editFieldDef_s* ConvertEditFieldFeatures(CommonItemFeaturesEditField* commonEditField) const
         {
-            const auto* common = commonItem.m_edit_field_features.get();
-            if (!common)
+            if (commonEditField == nullptr)
                 return nullptr;
 
-            auto* output = m_memory.Alloc<editFieldDef_s>();
-            output->defVal = static_cast<float>(common->m_def_val);
-            output->minVal = static_cast<float>(common->m_min_val);
-            output->maxVal = static_cast<float>(common->m_max_val);
-            output->maxChars = common->m_max_chars;
-            output->maxCharsGotoNext = common->m_max_chars_goto_next ? 1 : 0;
-            output->maxPaintChars = common->m_max_paint_chars;
-            return output;
+            auto* editField = m_memory.Alloc<editFieldDef_s>();
+            editField->defVal = static_cast<float>(commonEditField->m_def_val);
+            editField->minVal = static_cast<float>(commonEditField->m_min_val);
+            editField->maxVal = static_cast<float>(commonEditField->m_max_val);
+            editField->maxChars = commonEditField->m_max_chars;
+            editField->maxCharsGotoNext = commonEditField->m_max_chars_goto_next ? 1 : 0;
+            editField->maxPaintChars = commonEditField->m_max_paint_chars;
+
+            return editField;
         }
 
-        [[nodiscard]] multiDef_s* ConvertMultiValue(const CommonItemDef& commonItem) const
+        [[nodiscard]] multiDef_s* ConvertMultiValueFeatures(CommonItemFeaturesMultiValue* commonMultiValue) const
         {
-            const auto* common = commonItem.m_multi_value_features.get();
-            if (!common)
+            if (commonMultiValue == nullptr)
                 return nullptr;
 
-            auto* output = m_memory.Alloc<multiDef_s>();
-            output->count = static_cast<int>(std::min(std::size(output->dvarList), common->m_step_names.size()));
-            output->strDef = common->m_string_values.empty() ? 0 : 1;
-            for (auto i = 0; i < output->count; i++)
+            auto* multiValue = m_memory.Alloc<multiDef_s>();
+            multiValue->count = static_cast<int>(std::min(std::size(multiValue->dvarList), commonMultiValue->m_step_names.size()));
+            multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
+
+            for (auto i = 0; i < multiValue->count; i++)
             {
-                output->dvarList[i] = ConvertString(common->m_step_names[i]);
-                if (output->strDef && static_cast<unsigned>(i) < common->m_string_values.size())
-                    output->dvarStr[i] = ConvertString(common->m_string_values[i]);
-                else if (!output->strDef && static_cast<unsigned>(i) < common->m_double_values.size())
-                    output->dvarValue[i] = static_cast<float>(common->m_double_values[i]);
+                multiValue->dvarList[i] = ConvertString(commonMultiValue->m_step_names[i]);
+
+                if (multiValue->strDef)
+                {
+                    if (commonMultiValue->m_string_values.size() > static_cast<unsigned>(i))
+                        multiValue->dvarStr[i] = ConvertString(commonMultiValue->m_string_values[i]);
+                }
+                else
+                {
+                    if (commonMultiValue->m_double_values.size() > static_cast<unsigned>(i))
+                        multiValue->dvarValue[i] = static_cast<float>(commonMultiValue->m_double_values[i]);
+                }
             }
-            return output;
+
+            return multiValue;
         }
 
-        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& menu, const CommonItemDef& common) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& commonParentMenu, menuDef_t& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory.Alloc<itemDef_s>();
-            item->window.name = ConvertString(common.m_name);
-            item->text = common.m_text ? m_memory.Dup(common.m_text->c_str()) : nullptr;
-            item->window.group = ConvertString(common.m_group);
-            item->window.rectClient = ConvertRectDef(common.m_rect);
-            item->window.rect = ConvertRectDefRelativeTo(common.m_rect, menu.m_rect);
-            item->window.style = common.m_style;
-            ApplyFlag(item->window.staticFlags, common.m_decoration, WINDOW_FLAG_DECORATION);
-            ApplyFlag(item->window.staticFlags, common.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
-            ApplyFlag(item->window.staticFlags, common.m_horizontal_scroll, WINDOW_FLAG_HORIZONTAL_SCROLL);
-            item->type = common.m_type;
-            item->dataType = common.m_type;
-            item->window.border = common.m_border;
-            item->window.borderSize = static_cast<float>(common.m_border_size);
-            ConvertVisibleExpression(item->window, item->visibleExp, common.m_visible_expression.get(), &menu, &common);
-            item->window.ownerDraw = common.m_owner_draw;
-            item->window.ownerDrawFlags = common.m_owner_draw_flags;
-            item->alignment = common.m_align;
-            item->textAlignMode = common.m_text_align;
-            item->textalignx = static_cast<float>(common.m_text_align_x);
-            item->textaligny = static_cast<float>(common.m_text_align_y);
-            item->textscale = static_cast<float>(common.m_text_scale);
-            item->textStyle = common.m_text_style;
-            item->fontEnum = common.m_text_font;
-            ConvertColor(item->window.backColor, common.m_back_color);
-            ConvertColor(item->window.foreColor, common.m_fore_color);
-            ApplyFlag(item->window.dynamicFlags[0], !common.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)), WINDOW_FLAG_NON_DEFAULT_FORECOLOR);
-            ConvertColor(item->window.borderColor, common.m_border_color);
-            ConvertColor(item->window.outlineColor, common.m_outline_color);
-            item->window.background = ConvertMaterial(common.m_background, &menu, &common);
-            item->onFocus = ConvertEventHandlerSet(common.m_on_focus.get(), &menu, &common);
-            item->leaveFocus = ConvertEventHandlerSet(common.m_on_leave_focus.get(), &menu, &common);
-            item->mouseEnter = ConvertEventHandlerSet(common.m_on_mouse_enter.get(), &menu, &common);
-            item->mouseExit = ConvertEventHandlerSet(common.m_on_mouse_exit.get(), &menu, &common);
-            item->mouseEnterText = ConvertEventHandlerSet(common.m_on_mouse_enter_text.get(), &menu, &common);
-            item->mouseExitText = ConvertEventHandlerSet(common.m_on_mouse_exit_text.get(), &menu, &common);
-            item->action = ConvertEventHandlerSet(common.m_on_action.get(), &menu, &common);
-            item->onAccept = ConvertEventHandlerSet(common.m_on_accept.get(), &menu, &common);
-            item->focusSound = ConvertSound(common.m_focus_sound, &menu, &common);
-            item->dvar = ConvertString(common.m_dvar);
-            item->dvarTest = ConvertString(common.m_dvar_test);
-            item->enableDvar = ConvertEnableDvar(common, item->dvarFlags);
-            item->onKey = ConvertKeyHandlers(common.m_key_handlers, &menu, &common);
-            ConvertOrApplyStatement(item->text, item->textExp, common.m_text_expression.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.background, item->materialExp, common.m_material_expression.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.rectClient.x, item->rectXExp, common.m_rect_x_exp.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.rectClient.y, item->rectYExp, common.m_rect_y_exp.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.rectClient.w, item->rectWExp, common.m_rect_w_exp.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.rectClient.h, item->rectHExp, common.m_rect_h_exp.get(), &menu, &common);
-            ConvertOrApplyStatement(item->window.foreColor[3], item->forecolorAExp, common.m_forecolor_expressions.m_a_exp.get(), &menu, &common);
-            item->gameMsgWindowIndex = common.m_game_message_window_index;
-            item->gameMsgWindowMode = common.m_game_message_window_mode;
+            item->window.name = ConvertString(commonItem.m_name);
+            item->text = commonItem.m_text ? m_memory.Dup(commonItem.m_text->c_str()) : nullptr;
+            item->window.group = ConvertString(commonItem.m_group);
+            item->window.rectClient = ConvertRectDef(commonItem.m_rect);
+            item->window.rect = ConvertRectDefRelativeTo(commonItem.m_rect, commonParentMenu.m_rect);
+            item->window.style = commonItem.m_style;
+            ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
+            ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
+            ApplyFlag(item->window.staticFlags, commonItem.m_horizontal_scroll, WINDOW_FLAG_HORIZONTAL_SCROLL);
+            item->type = commonItem.m_type;
+            item->dataType = commonItem.m_type;
+            item->window.border = commonItem.m_border;
+            item->window.borderSize = static_cast<float>(commonItem.m_border_size);
+            ConvertVisibleExpression(item->window, item->visibleExp, commonItem.m_visible_expression.get(), &commonParentMenu, &commonItem);
+            item->window.ownerDraw = commonItem.m_owner_draw;
+            item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
+            item->alignment = commonItem.m_align;
+            item->textAlignMode = commonItem.m_text_align;
+            item->textalignx = static_cast<float>(commonItem.m_text_align_x);
+            item->textaligny = static_cast<float>(commonItem.m_text_align_y);
+            item->textscale = static_cast<float>(commonItem.m_text_scale);
+            item->textStyle = commonItem.m_text_style;
+            item->fontEnum = commonItem.m_text_font;
+            ConvertColor(item->window.backColor, commonItem.m_back_color);
+            ConvertColor(item->window.foreColor, commonItem.m_fore_color);
+            ApplyFlag(item->window.dynamicFlags[0], !commonItem.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)), WINDOW_FLAG_NON_DEFAULT_FORECOLOR);
+            ConvertColor(item->window.borderColor, commonItem.m_border_color);
+            ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
+            item->window.background = ConvertMaterial(commonItem.m_background, &commonParentMenu, &commonItem);
+            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &commonParentMenu, &commonItem);
+            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &commonParentMenu, &commonItem);
+            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &commonParentMenu, &commonItem);
+            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &commonParentMenu, &commonItem);
+            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &commonParentMenu, &commonItem);
+            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &commonParentMenu, &commonItem);
+            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &commonParentMenu, &commonItem);
+            item->onAccept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &commonParentMenu, &commonItem);
+            item->focusSound = ConvertSound(commonItem.m_focus_sound, &commonParentMenu, &commonItem);
+            item->dvar = ConvertString(commonItem.m_dvar);
+            item->dvarTest = ConvertString(commonItem.m_dvar_test);
+            item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
+            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->text, item->textExp, commonItem.m_text_expression.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->window.background, item->materialExp, commonItem.m_material_expression.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->window.rectClient.x, item->rectXExp, commonItem.m_rect_x_exp.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->window.rectClient.y, item->rectYExp, commonItem.m_rect_y_exp.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->window.rectClient.w, item->rectWExp, commonItem.m_rect_w_exp.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(item->window.rectClient.h, item->rectHExp, commonItem.m_rect_h_exp.get(), &commonParentMenu, &commonItem);
+            ConvertOrApplyStatement(
+                item->window.foreColor[3], item->forecolorAExp, commonItem.m_forecolor_expressions.m_a_exp.get(), &commonParentMenu, &commonItem);
+            item->gameMsgWindowIndex = commonItem.m_game_message_window_index;
+            item->gameMsgWindowMode = commonItem.m_game_message_window_mode;
 
-            switch (common.m_feature_type)
+            switch (commonItem.m_feature_type)
             {
             case CommonItemFeatureType::LISTBOX:
-                item->typeData.listBox = ConvertListBox(common, menu, *item);
+                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), commonParentMenu, commonItem);
                 break;
+
             case CommonItemFeatureType::EDIT_FIELD:
-                item->typeData.editField = ConvertEditField(common);
+                item->typeData.editField = ConvertEditFieldFeatures(commonItem.m_edit_field_features.get());
                 break;
+
             case CommonItemFeatureType::MULTI_VALUE:
-                item->typeData.multi = ConvertMultiValue(common);
+                item->typeData.multi = ConvertMultiValueFeatures(commonItem.m_multi_value_features.get());
                 break;
+
             case CommonItemFeatureType::ENUM_DVAR:
-                item->typeData.enumDvarName = ConvertString(common.m_enum_dvar_name);
+                item->typeData.enumDvarName = ConvertString(commonItem.m_enum_dvar_name);
                 break;
+
+            case CommonItemFeatureType::NONE:
             default:
                 break;
             }
 
-            item->parent = nullptr;
+            item->parent = &parentMenu;
+
             return item;
         }
 
-        [[nodiscard]] itemDef_s** ConvertItems(const CommonMenuDef& common, menuDef_t& menu) const
+        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, menuDef_t& menu, int& itemCount) const
         {
-            if (common.m_items.empty())
-                return nullptr;
-
-            auto* items = m_memory.Alloc<itemDef_s*>(common.m_items.size());
-            for (auto i = 0u; i < common.m_items.size(); i++)
+            if (commonMenu.m_items.empty())
             {
-                items[i] = ConvertItem(common, *common.m_items[i]);
-                items[i]->parent = &menu;
+                itemCount = 0;
+                return nullptr;
             }
-            menu.itemCount = static_cast<int>(common.m_items.size());
+
+            auto* items = m_memory.Alloc<itemDef_s*>(commonMenu.m_items.size());
+            for (auto i = 0u; i < commonMenu.m_items.size(); i++)
+                items[i] = ConvertItem(commonMenu, menu, *commonMenu.m_items[i]);
+
+            itemCount = static_cast<int>(commonMenu.m_items.size());
+
             return items;
         }
 
@@ -572,54 +614,54 @@ namespace
         {
         }
 
-        bool ConvertMenu(const CommonMenuDef& common, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
+        bool ConvertMenu(const CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
         {
             try
             {
-                menu.window.name = m_memory.Dup(common.m_name.c_str());
-                menu.fullScreen = common.m_full_screen ? 1 : 0;
-                ApplyFlag(menu.window.staticFlags, common.m_decoration, WINDOW_FLAG_DECORATION);
-                menu.window.rect = ConvertRectDef(common.m_rect);
+                menu.window.name = m_memory.Dup(commonMenu.m_name.c_str());
+                menu.fullScreen = commonMenu.m_full_screen ? 1 : 0;
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_decoration, WINDOW_FLAG_DECORATION);
+                menu.window.rect = ConvertRectDef(commonMenu.m_rect);
                 menu.window.rectClient = menu.window.rect;
-                menu.window.style = common.m_style;
-                menu.window.border = common.m_border;
-                menu.window.borderSize = static_cast<float>(common.m_border_size);
-                ConvertColor(menu.window.backColor, common.m_back_color);
-                ConvertColor(menu.window.foreColor, common.m_fore_color);
-                ApplyFlag(menu.window.dynamicFlags[0], !common.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)), WINDOW_FLAG_NON_DEFAULT_FORECOLOR);
-                ConvertColor(menu.window.borderColor, common.m_border_color);
-                ConvertColor(menu.window.outlineColor, common.m_outline_color);
-                ConvertColor(menu.focusColor, common.m_focus_color);
-                ConvertColor(menu.disableColor, common.m_disable_color);
-                menu.window.background = ConvertMaterial(common.m_background, &common);
-                menu.window.ownerDraw = common.m_owner_draw;
-                menu.window.ownerDrawFlags = common.m_owner_draw_flags;
-                ApplyFlag(menu.window.staticFlags, common.m_out_of_bounds_click, WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
-                ApplyFlag(menu.window.staticFlags, common.m_popup, WINDOW_FLAG_POPUP);
-                ApplyFlag(menu.window.staticFlags, common.m_legacy_split_screen_scale, WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
-                ApplyFlag(menu.window.staticFlags, common.m_hidden_during_scope, WINDOW_FLAG_HIDDEN_DURING_SCOPE);
-                ApplyFlag(menu.window.staticFlags, common.m_hidden_during_flashbang, WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
-                ApplyFlag(menu.window.staticFlags, common.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
-                menu.soundName = ConvertString(common.m_sound_loop);
-                menu.fadeClamp = static_cast<float>(common.m_fade_clamp);
-                menu.fadeCycle = common.m_fade_cycle;
-                menu.fadeAmount = static_cast<float>(common.m_fade_amount);
-                menu.fadeInAmount = static_cast<float>(common.m_fade_in_amount);
-                menu.blurRadius = static_cast<float>(common.m_blur_radius);
-                menu.allowedBinding = ConvertString(common.m_allowed_binding);
-                ConvertVisibleExpression(menu.window, menu.visibleExp, common.m_visible_expression.get(), &common);
-                ConvertOrApplyStatement(menu.window.rect.x, menu.rectXExp, common.m_rect_x_exp.get(), &common);
-                ConvertOrApplyStatement(menu.window.rect.y, menu.rectYExp, common.m_rect_y_exp.get(), &common);
-                menu.onOpen = ConvertEventHandlerSet(common.m_on_open.get(), &common);
-                menu.onClose = ConvertEventHandlerSet(common.m_on_close.get(), &common);
-                menu.onESC = ConvertEventHandlerSet(common.m_on_esc.get(), &common);
-                menu.onKey = ConvertKeyHandlers(common.m_key_handlers, &common);
-                menu.items = ConvertItems(common, menu);
+                menu.window.style = commonMenu.m_style;
+                menu.window.border = commonMenu.m_border;
+                menu.window.borderSize = static_cast<float>(commonMenu.m_border_size);
+                ConvertColor(menu.window.backColor, commonMenu.m_back_color);
+                ConvertColor(menu.window.foreColor, commonMenu.m_fore_color);
+                ApplyFlag(menu.window.dynamicFlags[0], !commonMenu.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)), WINDOW_FLAG_NON_DEFAULT_FORECOLOR);
+                ConvertColor(menu.window.borderColor, commonMenu.m_border_color);
+                ConvertColor(menu.window.outlineColor, commonMenu.m_outline_color);
+                ConvertColor(menu.focusColor, commonMenu.m_focus_color);
+                ConvertColor(menu.disableColor, commonMenu.m_disable_color);
+                menu.window.background = ConvertMaterial(commonMenu.m_background, &commonMenu);
+                menu.window.ownerDraw = commonMenu.m_owner_draw;
+                menu.window.ownerDrawFlags = commonMenu.m_owner_draw_flags;
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_out_of_bounds_click, WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
+                menu.soundName = ConvertString(commonMenu.m_sound_loop);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_popup, WINDOW_FLAG_POPUP);
+                menu.fadeClamp = static_cast<float>(commonMenu.m_fade_clamp);
+                menu.fadeCycle = commonMenu.m_fade_cycle;
+                menu.fadeAmount = static_cast<float>(commonMenu.m_fade_amount);
+                menu.fadeInAmount = static_cast<float>(commonMenu.m_fade_in_amount);
+                menu.blurRadius = static_cast<float>(commonMenu.m_blur_radius);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_legacy_split_screen_scale, WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_scope, WINDOW_FLAG_HIDDEN_DURING_SCOPE);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_flashbang, WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
+                menu.allowedBinding = ConvertString(commonMenu.m_allowed_binding);
+                ConvertVisibleExpression(menu.window, menu.visibleExp, commonMenu.m_visible_expression.get(), &commonMenu);
+                ConvertOrApplyStatement(menu.window.rect.x, menu.rectXExp, commonMenu.m_rect_x_exp.get(), &commonMenu);
+                ConvertOrApplyStatement(menu.window.rect.y, menu.rectYExp, commonMenu.m_rect_y_exp.get(), &commonMenu);
+                menu.onOpen = ConvertEventHandlerSet(commonMenu.m_on_open.get(), &commonMenu);
+                menu.onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
+                menu.onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
+                menu.onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
+                menu.items = ConvertMenuItems(commonMenu, menu, menu.itemCount);
                 return true;
             }
-            catch (const MenuConversionException& exception)
+            catch (const MenuConversionException& e)
             {
-                PrintConversionExceptionDetails(exception);
+                PrintConversionExceptionDetails(e);
                 return false;
             }
         }
