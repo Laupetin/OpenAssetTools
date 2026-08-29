@@ -24,24 +24,24 @@ namespace
         [[nodiscard]] static rectDef_s ConvertRectDef(const CommonRect& rect)
         {
             return rectDef_s{
-                static_cast<float>(rect.x),
-                static_cast<float>(rect.y),
-                static_cast<float>(rect.w),
-                static_cast<float>(rect.h),
-                rect.horizontalAlign,
-                rect.verticalAlign,
+                .x = static_cast<float>(rect.x),
+                .y = static_cast<float>(rect.y),
+                .w = static_cast<float>(rect.w),
+                .h = static_cast<float>(rect.h),
+                .horzAlign = rect.horizontalAlign,
+                .vertAlign = rect.verticalAlign,
             };
         }
 
-        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& relativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const rectDef_s& relativeTo)
         {
             return rectDef_s{
-                static_cast<float>(relativeTo.x + rect.x),
-                static_cast<float>(relativeTo.y + rect.y),
-                static_cast<float>(rect.w),
-                static_cast<float>(rect.h),
-                rect.horizontalAlign,
-                rect.verticalAlign,
+                .x = relativeTo.x + rect.x,
+                .y = relativeTo.y + rect.y,
+                .w = static_cast<float>(rect.w),
+                .h = static_cast<float>(rect.h),
+                .horzAlign = rect.horzAlign,
+                .vertAlign = rect.vertAlign,
             };
         }
 
@@ -514,7 +514,6 @@ namespace
             item->text = commonItem.m_text ? m_memory.Dup(commonItem.m_text->c_str()) : nullptr;
             item->window.group = ConvertString(commonItem.m_group);
             item->window.rectClient = ConvertRectDef(commonItem.m_rect);
-            item->window.rect = ConvertRectDefRelativeTo(commonItem.m_rect, commonParentMenu.m_rect);
             item->window.style = commonItem.m_style;
             ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
             ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
@@ -585,6 +584,9 @@ namespace
             default:
                 break;
             }
+
+            // Do this last so any optimizations are considered
+            item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.window.rect);
 
             item->parent = &parentMenu;
 

@@ -3,6 +3,7 @@
 #include "Game/IW3/GameIW3.h"
 #include "SearchPath/MockSearchPath.h"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <memory>
@@ -10,6 +11,7 @@
 
 using namespace IW3;
 using namespace std::literals;
+using namespace Catch;
 using namespace Catch::Matchers;
 
 namespace
@@ -202,5 +204,44 @@ namespace
 
         REQUIRE(popupMenu->window.staticFlags & 0x01000000);
         REQUIRE(popupMenu->onESC == R"("close" "self" ; )"s);
+    }
+
+    TEST_CASE("MenuListLoaderIW3: Ensure optimizing item rect considers relative positions", "[iw3][menu][assetloader]")
+    {
+        MenuLoadingTestHelper helper;
+
+        helper.AddFile("ui_mp/test.menu", R"MENU({
+    menuDef
+    {
+        name "test"
+        rect 2 4 100 100
+        itemDef
+        {
+            rect 1 2 20 20
+            exp rect x (5)
+            exp rect y (7)
+        }
+    }
+}
+)MENU");
+
+        const auto result = helper.LoadMenuList("ui_mp/test.menu");
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* testMenu = helper.GetMenu("test");
+
+        REQUIRE(testMenu->window.rectClient.x == Approx(2));
+        REQUIRE(testMenu->window.rectClient.y == Approx(4));
+        REQUIRE(testMenu->window.rect.x == Approx(2));
+        REQUIRE(testMenu->window.rect.y == Approx(4));
+
+        REQUIRE(testMenu->itemCount == 1);
+        const auto* item = testMenu->items[0];
+        REQUIRE(item->rectXExp.numEntries == 0);
+        REQUIRE(item->rectYExp.numEntries == 0);
+        REQUIRE(item->window.rectClient.x == Approx(5));
+        REQUIRE(item->window.rectClient.y == Approx(7));
+        REQUIRE(item->window.rect.x == Approx(7));
+        REQUIRE(item->window.rect.y == Approx(11));
     }
 } // namespace
