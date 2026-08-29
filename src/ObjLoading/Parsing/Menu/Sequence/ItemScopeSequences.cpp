@@ -134,14 +134,14 @@ namespace
 
         static void EnsureHasEditFieldFeatures(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos)
         {
+            // Due to default item types, edit field capabilities might not have been initialized
             if (item.m_feature_type == CommonItemFeatureType::NONE
                 && GetFeatureTypeForItemType(featureLevel, pos, item.m_type) == CommonItemFeatureType::EDIT_FIELD)
             {
                 item.m_feature_type = CommonItemFeatureType::EDIT_FIELD;
                 item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
             }
-
-            if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
+            else if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
                 throw ParsingException(pos, "Item must have be edit field to use this declaration");
         }
 
