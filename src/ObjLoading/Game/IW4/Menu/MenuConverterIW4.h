@@ -6,6 +6,8 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
+#include <memory>
+
 namespace IW4
 {
     class IMenuConverter
@@ -14,7 +16,7 @@ namespace IW4
         IMenuConverter() = default;
         virtual ~IMenuConverter() = default;
 
-        virtual void ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) = 0;
+        virtual bool ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) = 0;
 
         static std::unique_ptr<IMenuConverter> Create(bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context);
     };

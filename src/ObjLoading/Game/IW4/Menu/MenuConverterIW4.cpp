@@ -23,25 +23,25 @@ using namespace menu;
 
 namespace
 {
-    class MenuConverter : public AbstractMenuConverter, public IMenuConverter
+    class MenuConverter final : public AbstractMenuConverter, public IMenuConverter
     {
         [[nodiscard]] static rectDef_s ConvertRectDef(const CommonRect& rect)
         {
             return rectDef_s{
-                static_cast<float>(rect.x),
-                static_cast<float>(rect.y),
-                static_cast<float>(rect.w),
-                static_cast<float>(rect.h),
-                static_cast<unsigned char>(rect.horizontalAlign),
-                static_cast<unsigned char>(rect.verticalAlign),
+                .x = static_cast<float>(rect.x),
+                .y = static_cast<float>(rect.y),
+                .w = static_cast<float>(rect.w),
+                .h = static_cast<float>(rect.h),
+                .horzAlign = static_cast<unsigned char>(rect.horizontalAlign),
+                .vertAlign = static_cast<unsigned char>(rect.verticalAlign),
             };
         }
 
-        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const rectDef_s& rectRelativeTo)
+        [[nodiscard]] static rectDef_s ConvertRectDefRelativeTo(const rectDef_s& rect, const rectDef_s& relativeTo)
         {
             return rectDef_s{
-                .x = rectRelativeTo.x + rect.x,
-                .y = rectRelativeTo.y + rect.y,
+                .x = relativeTo.x + rect.x,
+                .y = relativeTo.y + rect.y,
                 .w = static_cast<float>(rect.w),
                 .h = static_cast<float>(rect.h),
                 .horzAlign = static_cast<unsigned char>(rect.horzAlign),
@@ -57,22 +57,12 @@ namespace
             output[3] = static_cast<float>(input.a);
         }
 
-        static void ApplyFlag(int& flags, const bool shouldApply, const int flagValue)
+        static void ApplyFlag(unsigned& flags, const bool shouldApply, const unsigned flagValue)
         {
             if (!shouldApply)
                 return;
 
             flags |= flagValue;
-        }
-
-        static int ConvertItemType(const int input)
-        {
-            return input;
-        }
-
-        static int ConvertTextFont(const int input)
-        {
-            return input;
         }
 
         [[nodiscard]] Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
@@ -98,6 +88,34 @@ namespace
 
             return soundDependency->Asset();
         }
+
+        constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[]{
+            OP_NOT,
+            OP_BITWISENOT,
+            OP_SUBTRACT,
+        };
+        static_assert(std::size(UNARY_OPERATION_MAPPING) == static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
+
+        constexpr static expressionOperatorType_e BINARY_OPERATION_MAPPING[]{
+            OP_ADD,
+            OP_SUBTRACT,
+            OP_MULTIPLY,
+            OP_DIVIDE,
+            OP_MODULUS,
+            OP_BITWISEAND,
+            OP_BITWISEOR,
+            OP_BITSHIFTLEFT,
+            OP_BITSHIFTRIGHT,
+            OP_GREATERTHAN,
+            OP_GREATERTHANEQUALTO,
+            OP_LESSTHAN,
+            OP_LESSTHANEQUALTO,
+            OP_EQUALS,
+            OP_NOTEQUAL,
+            OP_AND,
+            OP_OR,
+        };
+        static_assert(std::size(BINARY_OPERATION_MAPPING) == static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
 
         bool HandleStaticDvarFunctionCall(Statement_s* gameStatement,
                                           std::vector<expressionEntry>& entries,
@@ -229,18 +247,13 @@ namespace
             gameStatement->supportingData = m_conversion_zone_state.m_supporting_data;
         }
 
-        constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]{
-            OP_NOT,
-            OP_BITWISENOT,
-            OP_SUBTRACT,
-        };
-
-        bool IsOperation(const ISimpleExpression* expression) const
+        [[nodiscard]] bool IsOperation(const ISimpleExpression* expression) const
         {
             if (!m_disable_optimizations && expression->IsStatic())
                 return false;
 
-            return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression);
+            return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) != nullptr
+                   || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression) != nullptr;
         }
 
         void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement,
@@ -272,26 +285,6 @@ namespace
             else
                 ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
         }
-
-        constexpr static expressionOperatorType_e BINARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleBinaryOperationId::COUNT)]{
-            OP_ADD,
-            OP_SUBTRACT,
-            OP_MULTIPLY,
-            OP_DIVIDE,
-            OP_MODULUS,
-            OP_BITWISEAND,
-            OP_BITWISEOR,
-            OP_BITSHIFTLEFT,
-            OP_BITSHIFTRIGHT,
-            OP_GREATERTHAN,
-            OP_GREATERTHANEQUALTO,
-            OP_LESSTHAN,
-            OP_LESSTHANEQUALTO,
-            OP_EQUALS,
-            OP_NOTEQUAL,
-            OP_AND,
-            OP_OR,
-        };
 
         void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement,
                                                    std::vector<expressionEntry>& entries,
@@ -342,25 +335,25 @@ namespace
                 ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand2.get(), menu, item);
         }
 
-        void ConvertExpressionEntryExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue* expressionValue) const
+        void ConvertExpressionEntryExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue& value) const
         {
             expressionEntry entry{};
             entry.type = EET_OPERAND;
 
-            if (expressionValue->m_type == SimpleExpressionValue::Type::INT)
+            switch (value.m_type)
             {
+            case SimpleExpressionValue::Type::INT:
                 entry.data.operand.dataType = VAL_INT;
-                entry.data.operand.internals.intVal = expressionValue->m_int_value;
-            }
-            else if (expressionValue->m_type == SimpleExpressionValue::Type::DOUBLE)
-            {
+                entry.data.operand.internals.intVal = value.m_int_value;
+                break;
+            case SimpleExpressionValue::Type::DOUBLE:
                 entry.data.operand.dataType = VAL_FLOAT;
-                entry.data.operand.internals.floatVal = static_cast<float>(expressionValue->m_double_value);
-            }
-            else if (expressionValue->m_type == SimpleExpressionValue::Type::STRING)
-            {
+                entry.data.operand.internals.floatVal = static_cast<float>(value.m_double_value);
+                break;
+            case SimpleExpressionValue::Type::STRING:
                 entry.data.operand.dataType = VAL_STRING;
-                entry.data.operand.internals.stringVal.string = m_conversion_zone_state.AddString(*expressionValue->m_string_value);
+                entry.data.operand.internals.stringVal.string = m_conversion_zone_state.AddString(*value.m_string_value);
+                break;
             }
 
             entries.emplace_back(entry);
@@ -375,11 +368,11 @@ namespace
             if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto expressionStaticValue = expression->EvaluateStatic();
-                ConvertExpressionEntryExpressionValue(entries, &expressionStaticValue);
+                ConvertExpressionEntryExpressionValue(entries, expressionStaticValue);
             }
             else if (const auto* expressionValue = dynamic_cast<const SimpleExpressionValue*>(expression))
             {
-                ConvertExpressionEntryExpressionValue(entries, expressionValue);
+                ConvertExpressionEntryExpressionValue(entries, *expressionValue);
             }
             else if (const auto* binaryOperation = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
             {
@@ -414,10 +407,6 @@ namespace
                 return nullptr;
 
             auto* statement = m_memory.Alloc<Statement_s>();
-            statement->lastResult = Operand{};
-            statement->lastExecuteTime = 0;
-            statement->supportingData = nullptr; // Supporting data is set upon using it
-
             std::vector<expressionEntry> expressionEntries;
             ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
@@ -435,26 +424,20 @@ namespace
                                                            const CommonMenuDef* menu,
                                                            const CommonItemDef* item = nullptr) const
         {
-            if (m_disable_optimizations)
-                return ConvertExpression(expression, menu, item);
-
             if (!expression)
                 return nullptr;
 
-            if (expression->IsStatic())
+            if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto value = expression->EvaluateStatic();
-                switch (value.m_type)
-                {
-                case SimpleExpressionValue::Type::DOUBLE:
-                    staticValue = static_cast<float>(value.m_double_value);
-                    break;
-                case SimpleExpressionValue::Type::INT:
+
+                if (value.m_type == SimpleExpressionValue::Type::INT)
                     staticValue = static_cast<float>(value.m_int_value);
-                    break;
-                case SimpleExpressionValue::Type::STRING:
+                else if (value.m_type == SimpleExpressionValue::Type::DOUBLE)
+                    staticValue = static_cast<float>(value.m_double_value);
+                else
                     throw MenuConversionException("Cannot convert string expression value to floating point", menu, item);
-                }
+
                 return nullptr;
             }
 
@@ -466,25 +449,17 @@ namespace
                                                            const CommonMenuDef* menu,
                                                            const CommonItemDef* item = nullptr) const
         {
-            if (m_disable_optimizations)
-                return ConvertExpression(expression, menu, item);
-
             if (!expression)
                 return nullptr;
 
-            if (expression->IsStatic())
+            if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto value = expression->EvaluateStatic();
-                switch (value.m_type)
-                {
-                case SimpleExpressionValue::Type::STRING:
-                    staticValue = m_memory.Dup(value.m_string_value->c_str());
-                    break;
-
-                case SimpleExpressionValue::Type::DOUBLE:
-                case SimpleExpressionValue::Type::INT:
+                if (value.m_type != SimpleExpressionValue::Type::STRING)
                     throw MenuConversionException("Cannot convert numeric expression value to string", menu, item);
-                }
+
+                staticValue = m_memory.Dup(value.m_string_value->c_str());
+
                 return nullptr;
             }
 
@@ -496,37 +471,29 @@ namespace
                                                            const CommonMenuDef* menu,
                                                            const CommonItemDef* item = nullptr) const
         {
-            if (m_disable_optimizations)
-                return ConvertExpression(expression, menu, item);
-
             if (!expression)
                 return nullptr;
 
-            if (expression->IsStatic())
+            if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto value = expression->EvaluateStatic();
-                switch (value.m_type)
-                {
-                case SimpleExpressionValue::Type::STRING:
-                    staticValue = ConvertMaterial(*value.m_string_value, menu, item);
-                    break;
+                if (value.m_type != SimpleExpressionValue::Type::STRING)
+                    throw MenuConversionException("Cannot convert numeric expression value to material", menu, item);
 
-                case SimpleExpressionValue::Type::DOUBLE:
-                case SimpleExpressionValue::Type::INT:
-                    throw MenuConversionException("Cannot convert numeric expression value to string", menu, item);
-                }
+                staticValue = ConvertMaterial(*value.m_string_value, menu, item);
+
                 return nullptr;
             }
 
             return ConvertExpression(expression, menu, item);
         }
 
-        [[nodiscard]] Statement_s* ConvertVisibleExpression(windowDef_t* window,
+        [[nodiscard]] Statement_s* ConvertVisibleExpression(windowDef_t& window,
                                                             const ISimpleExpression* expression,
                                                             const CommonMenuDef* commonMenu,
                                                             const CommonItemDef* commonItem = nullptr) const
         {
-            if (expression == nullptr)
+            if (!expression)
                 return nullptr;
 
             bool isStatic;
@@ -547,11 +514,11 @@ namespace
             if (isStatic)
             {
                 if (isTruthy)
-                    window->dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+                    window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
                 return nullptr;
             }
 
-            window->dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+            window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
             return ConvertExpression(expression, commonMenu, commonItem);
         }
 
@@ -1011,11 +978,11 @@ namespace
         }
 
         [[nodiscard]] listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
-                                                           CommonItemFeaturesListBox* commonListBox,
+                                                           const CommonItemFeaturesListBox* commonListBox,
                                                            const CommonMenuDef& parentMenu,
                                                            const CommonItemDef& commonItem) const
         {
-            if (commonListBox == nullptr)
+            if (!commonListBox)
                 return nullptr;
 
             auto* listBox = m_memory.Alloc<listBoxDef_s>();
@@ -1030,7 +997,7 @@ namespace
             ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
             listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);
 
-            listBox->numColumns = static_cast<int>(std::min(std::extent_v<decltype(listBoxDef_s::columnInfo)>, commonListBox->m_columns.size()));
+            listBox->numColumns = static_cast<int>(std::min(std::size(listBox->columnInfo), commonListBox->m_columns.size()));
             for (auto i = 0; i < listBox->numColumns; i++)
             {
                 auto& col = listBox->columnInfo[i];
@@ -1045,12 +1012,9 @@ namespace
             return listBox;
         }
 
-        [[nodiscard]] editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
-                                                               CommonItemFeaturesEditField* commonEditField,
-                                                               const CommonMenuDef& parentMenu,
-                                                               const CommonItemDef& commonItem) const
+        [[nodiscard]] editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item, const CommonItemFeaturesEditField* commonEditField) const
         {
-            if (commonEditField == nullptr)
+            if (!commonEditField)
                 return nullptr;
 
             auto* editField = m_memory.Alloc<editFieldDef_s>();
@@ -1065,16 +1029,13 @@ namespace
             return editField;
         }
 
-        [[nodiscard]] multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
-                                                            CommonItemFeaturesMultiValue* commonMultiValue,
-                                                            const CommonMenuDef& parentMenu,
-                                                            const CommonItemDef& commonItem) const
+        [[nodiscard]] multiDef_s* ConvertMultiValueFeatures(const CommonItemFeaturesMultiValue* commonMultiValue) const
         {
-            if (commonMultiValue == nullptr)
+            if (!commonMultiValue)
                 return nullptr;
 
             auto* multiValue = m_memory.Alloc<multiDef_s>();
-            multiValue->count = static_cast<int>(std::min(std::extent_v<decltype(multiDef_s::dvarList)>, commonMultiValue->m_step_names.size()));
+            multiValue->count = static_cast<int>(std::min(std::size(multiValue->dvarList), commonMultiValue->m_step_names.size()));
             multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
 
             for (auto i = 0; i < multiValue->count; i++)
@@ -1096,10 +1057,7 @@ namespace
             return multiValue;
         }
 
-        [[nodiscard]] newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
-                                                                 CommonItemFeaturesNewsTicker* commonNewsTicker,
-                                                                 const CommonMenuDef& parentMenu,
-                                                                 const CommonItemDef& commonItem) const
+        [[nodiscard]] newsTickerDef_s* ConvertNewsTickerFeatures(const CommonItemFeaturesNewsTicker* commonNewsTicker) const
         {
             if (commonNewsTicker == nullptr)
                 return nullptr;
@@ -1112,7 +1070,7 @@ namespace
             return newsTicker;
         }
 
-        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& commonParentMenu, const menuDef_t& parentMenu, const CommonItemDef& commonItem) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& commonParentMenu, menuDef_t& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory.Alloc<itemDef_s>();
 
@@ -1126,11 +1084,11 @@ namespace
             ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
             ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
             ApplyFlag(item->window.staticFlags, commonItem.m_horizontal_scroll, WINDOW_FLAG_HORIZONTAL_SCROLL);
-            item->type = ConvertItemType(commonItem.m_type);
-            item->dataType = item->type;
+            item->type = commonItem.m_type;
+            item->dataType = commonItem.m_type;
             item->window.border = commonItem.m_border;
             item->window.borderSize = static_cast<float>(commonItem.m_border_size);
-            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &commonParentMenu, &commonItem);
+            item->visibleExp = ConvertVisibleExpression(item->window, commonItem.m_visible_expression.get(), &commonParentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &commonParentMenu, &commonItem);
             item->window.ownerDraw = commonItem.m_owner_draw;
             item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
@@ -1140,12 +1098,11 @@ namespace
             item->textaligny = static_cast<float>(commonItem.m_text_align_y);
             item->textscale = static_cast<float>(commonItem.m_text_scale);
             item->textStyle = commonItem.m_text_style;
-            item->fontEnum = ConvertTextFont(commonItem.m_text_font);
+            item->fontEnum = commonItem.m_text_font;
             ConvertColor(item->window.backColor, commonItem.m_back_color);
 
             ConvertColor(item->window.foreColor, commonItem.m_fore_color);
-            if (!commonItem.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)))
-                item->window.dynamicFlags[0] |= WINDOW_FLAG_NON_DEFAULT_FORECOLOR;
+            ApplyFlag(item->window.dynamicFlags[0], !commonItem.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)), WINDOW_FLAG_NON_DEFAULT_FORECOLOR);
 
             ConvertColor(item->window.borderColor, commonItem.m_border_color);
             ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
@@ -1159,8 +1116,9 @@ namespace
             item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get(), &commonParentMenu, &commonItem);
             item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &commonParentMenu, &commonItem);
             item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &commonParentMenu, &commonItem);
-            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &commonParentMenu, &commonItem);
+            item->onAccept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &commonParentMenu, &commonItem);
             item->focusSound = ConvertSound(commonItem.m_focus_sound, &commonParentMenu, &commonItem);
+            item->dvar = ConvertString(commonItem.m_dvar);
             item->dvarTest = ConvertString(commonItem.m_dvar_test);
             item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
             item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &commonParentMenu, &commonItem);
@@ -1173,7 +1131,6 @@ namespace
             item->fxLetterTime = commonItem.m_fx_letter_time;
             item->fxDecayStartTime = commonItem.m_fx_decay_start_time;
             item->fxDecayDuration = commonItem.m_fx_decay_duration;
-            item->dvar = ConvertString(commonItem.m_dvar);
 
             switch (commonItem.m_feature_type)
             {
@@ -1182,11 +1139,11 @@ namespace
                 break;
 
             case CommonItemFeatureType::EDIT_FIELD:
-                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), commonParentMenu, commonItem);
+                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get());
                 break;
 
             case CommonItemFeatureType::MULTI_VALUE:
-                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), commonParentMenu, commonItem);
+                item->typeData.multi = ConvertMultiValueFeatures(commonItem.m_multi_value_features.get());
                 break;
 
             case CommonItemFeatureType::ENUM_DVAR:
@@ -1194,7 +1151,7 @@ namespace
                 break;
 
             case CommonItemFeatureType::NEWS_TICKER:
-                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), commonParentMenu, commonItem);
+                item->typeData.ticker = ConvertNewsTickerFeatures(commonItem.m_news_ticker_features.get());
                 break;
 
             case CommonItemFeatureType::NONE:
@@ -1208,10 +1165,12 @@ namespace
             // Do this last so any optimizations are considered
             item->window.rect = ConvertRectDefRelativeTo(item->window.rectClient, parentMenu.window.rect);
 
+            item->parent = &parentMenu;
+
             return item;
         }
 
-        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, const menuDef_t& menu, int& itemCount) const
+        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, menuDef_t& menu, int& itemCount) const
         {
             if (commonMenu.m_items.empty())
             {
@@ -1236,15 +1195,16 @@ namespace
         {
         }
 
-        void ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
+        bool ConvertMenu(const CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
         {
             try
             {
                 menu.window.name = m_memory.Dup(commonMenu.m_name.c_str());
-                menu.fullScreen = commonMenu.m_full_screen;
+                menu.fullScreen = commonMenu.m_full_screen ? 1 : 0;
                 ApplyFlag(menu.window.staticFlags, commonMenu.m_screen_space, WINDOW_FLAG_SCREEN_SPACE);
                 ApplyFlag(menu.window.staticFlags, commonMenu.m_decoration, WINDOW_FLAG_DECORATION);
                 menu.window.rect = ConvertRectDef(commonMenu.m_rect);
+                menu.window.rectClient = menu.window.rect;
                 menu.window.style = commonMenu.m_style;
                 menu.window.border = commonMenu.m_border;
                 menu.window.borderSize = static_cast<float>(commonMenu.m_border_size);
@@ -1269,7 +1229,7 @@ namespace
                 ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
                 menu.allowedBinding = ConvertString(commonMenu.m_allowed_binding);
                 ApplyFlag(menu.window.staticFlags, commonMenu.m_text_only_focus, WINDOW_FLAG_TEXT_ONLY_FOCUS);
-                menu.visibleExp = ConvertVisibleExpression(&menu.window, commonMenu.m_visible_expression.get(), &commonMenu);
+                menu.visibleExp = ConvertVisibleExpression(menu.window, commonMenu.m_visible_expression.get(), &commonMenu);
                 menu.rectXExp = ConvertOrApplyStatement(menu.window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
                 menu.rectYExp = ConvertOrApplyStatement(menu.window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
                 menu.rectWExp = ConvertOrApplyStatement(menu.window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);
@@ -1287,7 +1247,10 @@ namespace
             catch (const MenuConversionException& e)
             {
                 PrintConversionExceptionDetails(e);
+                return false;
             }
+
+            return true;
         }
 
         MenuConversionZoneState& m_conversion_zone_state;
@@ -1295,7 +1258,8 @@ namespace
     };
 } // namespace
 
-std::unique_ptr<IMenuConverter> IMenuConverter::Create(bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context)
+std::unique_ptr<IMenuConverter>
+    IMenuConverter::Create(const bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context)
 {
     return std::make_unique<MenuConverter>(disableOptimizations, searchPath, memory, context);
 }
