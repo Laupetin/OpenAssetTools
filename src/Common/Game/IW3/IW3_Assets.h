@@ -2555,8 +2555,8 @@ namespace IW3
         int ownerDraw;
         int ownerDrawFlags;
         float borderSize;
-        int staticFlags;
-        int dynamicFlags[1];
+        unsigned int staticFlags;
+        unsigned int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
