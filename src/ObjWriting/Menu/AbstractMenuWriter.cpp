@@ -120,9 +120,9 @@ namespace menu
 
         // The menu linker concatenates adjacent quoted numeric arguments. For example,
         // `"0.1" "0.1" "0.12" "0.5"` becomes `"0.10.10.120.5"` instead of four
-        // colour components.
+        // color components.
         char* numericEnd;
-        std::strtof(token.c_str(), &numericEnd);
+        (void)std::strtof(token.c_str(), &numericEnd);
         if (numericEnd == token.c_str() + token.size())
             return false;
 

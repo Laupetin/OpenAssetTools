@@ -122,22 +122,33 @@ namespace
 
             Indent();
             WriteKey(propertyKey);
+
             if (isBooleanStatement)
+            {
                 m_stream << "when(";
-
-            WriteStatement(statement);
-
-            if (isBooleanStatement)
-                m_stream << ")";
-            m_stream << ";\n";
+                WriteStatement(statement);
+                m_stream << ");\n";
+            }
+            else
+            {
+                WriteStatement(statement);
+                m_stream << ";\n";
+            }
         }
 
+        // #define WRITE_ORIGINAL_SCRIPT
         void WriteUnconditionalScript(const char* script) const
         {
-            const auto tokens = CreateScriptTokenList(script);
-            auto isNewStatement = true;
+#ifdef WRITE_ORIGINAL_SCRIPT
+            Indent();
+            m_stream << script << "\n";
+            return;
+#endif
 
-            for (const auto& token : tokens)
+            const auto tokenList = CreateScriptTokenList(script);
+
+            auto isNewStatement = true;
+            for (const auto& token : tokenList)
             {
                 if (isNewStatement)
                 {
@@ -210,15 +221,15 @@ namespace
 
         void WriteItemKeyHandlers(const ItemKeyHandler* handler)
         {
-            for (auto* current = handler; current; current = current->next)
+            for (const auto* current = handler; current; current = current->next)
             {
-                std::ostringstream key;
+                std::string key;
                 if (current->key >= '!' && current->key <= '~' && current->key != '"')
-                    key << "execKey \"" << static_cast<char>(current->key) << "\"";
+                    key = std::format("execKey \"{}\"", static_cast<char>(current->key));
                 else
-                    key << "execKeyInt " << current->key;
+                    key = std::format("execKeyInt {}", current->key);
 
-                WriteScriptProperty(key.str(), current->action);
+                WriteScriptProperty(key, current->action);
             }
         }
 
@@ -231,15 +242,17 @@ namespace
             WriteKey(propertyKey);
             m_stream << "{ ";
 
+            const auto tokenList = CreateScriptTokenList(value);
             auto firstToken = true;
-            for (const auto& token : CreateScriptTokenList(value))
+            for (const auto& token : tokenList)
             {
-                if (!firstToken)
+                if (firstToken)
+                    firstToken = false;
+                else
                     m_stream << ";";
-                WriteEscapedString(token);
-                firstToken = false;
-            }
 
+                WriteEscapedString(token);
+            }
             if (!firstToken)
                 m_stream << " ";
             m_stream << "}\n";
@@ -252,13 +265,19 @@ namespace
 
             Indent();
             WriteKey("columns");
-            m_stream << listBox.numColumns;
-            for (auto columnIndex = 0; columnIndex < listBox.numColumns && columnIndex < 16; columnIndex++)
+            m_stream << listBox.numColumns << "\n";
+
+            const auto columnCount = std::min<size_t>(listBox.numColumns, std::size(listBox.columnInfo));
+            for (size_t columnIndex = 0u; columnIndex < columnCount; columnIndex++)
             {
                 const auto& column = listBox.columnInfo[columnIndex];
-                m_stream << " " << column.pos << " " << column.width << " " << column.maxChars << " " << column.alignment;
+
+                Indent();
+                for (auto i = 0u; i < MENU_KEY_SPACING; i++)
+                    m_stream << " ";
+
+                m_stream << column.pos << " " << column.width << " " << column.maxChars << " " << column.alignment << "\n";
             }
-            m_stream << "\n";
         }
 
         void WriteListBoxProperties(const itemDef_s& item)
@@ -275,7 +294,7 @@ namespace
             WriteFloatProperty("feeder", item.special, 0.0f);
             WriteIntProperty("elementtype", listBox.elementStyle, 0);
             WriteColumnProperty(listBox);
-            WriteScriptProperty("doubleclick", listBox.doubleClick);
+            WriteScriptProperty("doubleclick", listBox.onDoubleClick);
             WriteColorProperty("selectBorder", listBox.selectBorder, COLOR_0000);
             WriteColorProperty("disableColor", listBox.disableColor, COLOR_0000);
             WriteMaterialProperty("selectIcon", listBox.selectIcon);
@@ -339,7 +358,8 @@ namespace
             Indent();
             WriteKey(multi.strDef ? "dvarStrList" : "dvarFloatList");
             m_stream << "{";
-            for (auto valueIndex = 0; valueIndex < multi.count && valueIndex < 32; valueIndex++)
+            const auto valueCount = std::min<size_t>(multi.count, std::size(multi.dvarValue));
+            for (size_t valueIndex = 0u; valueIndex < valueCount; valueIndex++)
             {
                 if (!multi.dvarList[valueIndex] || (multi.strDef && !multi.dvarStr[valueIndex]))
                     continue;
@@ -405,7 +425,7 @@ namespace
                 WriteIntProperty("visible", 1, 0);
 
             WriteIntProperty("ownerdraw", item.window.ownerDraw, 0);
-            WriteIntProperty("ownerdrawFlag", item.window.ownerDrawFlags, 0);
+            WriteFlagsProperty("ownerdrawFlag", item.window.ownerDrawFlags);
             WriteIntProperty("align", item.alignment, 0);
             WriteIntProperty("textalign", item.textAlignMode, 0);
             WriteFloatProperty("textalignx", item.textalignx, 0.0f);
@@ -457,18 +477,19 @@ namespace
             WriteEnumDvarProperties(item);
         }
 
-        void WriteItemDefs(itemDef_s* const* items, const int itemCount)
+        void WriteItemDefs(const itemDef_s* const* items, const size_t itemCount)
         {
             if (!items || itemCount <= 0)
                 return;
 
-            for (auto itemIndex = 0; itemIndex < itemCount; itemIndex++)
+            for (size_t itemIndex = 0u; itemIndex < itemCount; itemIndex++)
             {
-                if (!items[itemIndex])
+                const auto* item = items[itemIndex];
+                if (!item)
                     continue;
 
                 StartItemDefScope();
-                WriteItemData(*items[itemIndex]);
+                WriteItemData(*item);
                 EndScope();
             }
         }
@@ -490,7 +511,7 @@ namespace
             WriteColorProperty("outlinecolor", menu.window.outlineColor, COLOR_0000);
             WriteMaterialProperty("background", menu.window.background);
             WriteIntProperty("ownerdraw", menu.window.ownerDraw, 0);
-            WriteIntProperty("ownerdrawFlag", menu.window.ownerDrawFlags, 0);
+            WriteFlagsProperty("ownerdrawFlag", menu.window.ownerDrawFlags);
             WriteKeywordProperty("outOfBoundsClick", menu.window.staticFlags & WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
             WriteStringProperty("soundLoop", menu.soundName);
             WriteKeywordProperty("popup", menu.window.staticFlags & WINDOW_FLAG_POPUP);

@@ -3,6 +3,7 @@
 #include "MenuWriterIW3.h"
 
 #include <filesystem>
+#include <format>
 
 namespace fs = std::filesystem;
 
@@ -35,7 +36,7 @@ namespace
 
     std::string PathForMenu(const std::string& menuListParentPath, const menuDef_t* menu)
     {
-        auto* menuAssetName = menu->window.name;
+        const auto* menuAssetName = menu->window.name;
 
         if (!menuAssetName)
             return {};
@@ -43,7 +44,7 @@ namespace
         if (menuAssetName[0] == ',')
             menuAssetName = &menuAssetName[1];
 
-        return menuListParentPath + menuAssetName + ".menu";
+        return std::format("{}{}.menu", menuListParentPath, menuAssetName);
     }
 } // namespace
 
@@ -62,7 +63,7 @@ namespace menu
 
         for (auto i = 0; i < menuList->menuCount; i++)
         {
-            auto* menu = menuList->menus[i];
+            const auto* menu = menuList->menus[i];
 
             if (!menu)
                 continue;
@@ -99,7 +100,7 @@ namespace menu
 
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        auto menuWriter = CreateMenuWriterIW3(*assetFile);
+        const auto menuWriter = CreateMenuWriterIW3(*assetFile);
 
         menuWriter->Start();
         DumpMenus(*menuWriter, zoneState, menuList);

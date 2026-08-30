@@ -195,7 +195,7 @@ namespace
         REQUIRE(listItem->typeData.listBox->usePaging == 1);
         REQUIRE_THAT(listItem->typeData.listBox->disableColor[0], WithinRel(0.6f));
         REQUIRE(listItem->typeData.listBox->selectIcon == selectMaterial);
-        REQUIRE(listItem->typeData.listBox->doubleClick == R"("play" "mouse_click" ; )"s);
+        REQUIRE(listItem->typeData.listBox->onDoubleClick == R"("play" "mouse_click" ; )"s);
 
         const auto* defaultTextItem = mainMenu->items[2];
         REQUIRE(defaultTextItem->type == 0);

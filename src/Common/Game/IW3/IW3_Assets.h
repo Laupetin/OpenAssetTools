@@ -2724,7 +2724,7 @@ namespace IW3
         int elementStyle;
         int numColumns;
         columnInfo_s columnInfo[16];
-        const char* doubleClick;
+        const char* onDoubleClick;
         int notselectable;
         int noScrollBars;
         int usePaging;

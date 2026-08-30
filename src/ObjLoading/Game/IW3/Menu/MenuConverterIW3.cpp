@@ -464,7 +464,7 @@ namespace
             listBox->elementHeight = static_cast<float>(commonListBox->m_element_height);
             item->special = static_cast<float>(commonListBox->m_feeder);
             listBox->elementStyle = commonListBox->m_element_style;
-            listBox->doubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
+            listBox->onDoubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
             ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
             ConvertColor(listBox->disableColor, commonItem.m_disable_color);
             listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);

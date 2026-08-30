@@ -70,7 +70,7 @@ set condition multi itemDef_s::type == ITEM_TYPE_MULTI;
 set condition enumDvarName itemDef_s::type == ITEM_TYPE_DVARENUM;
 
 // listBoxDef_s
-set string listBoxDef_s::doubleClick;
+set string listBoxDef_s::onDoubleClick;
 
 // multiDef_s
 use multiDef_s;
