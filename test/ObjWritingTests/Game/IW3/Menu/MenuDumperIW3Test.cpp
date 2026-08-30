@@ -55,36 +55,57 @@ namespace
         constexpr auto UI_SHOW_FAVORITE_SERVERS = 0x00000004;
         constexpr auto UI_SHOW_NOT_FAVORITE_SERVERS = 0x00001000;
 
-        auto menuVisibleValues = std::array{Operator(OP_DVARBOOL), StringOperand("ui_test"), Operator(OP_RIGHTPAREN)};
+        std::array menuVisibleValues{
+            Operator(OP_DVARBOOL),
+            StringOperand("ui_test"),
+            Operator(OP_RIGHTPAREN),
+        };
         auto menuVisibleEntries = EntryPointers(menuVisibleValues);
 
-        auto buttonVisibleValues = std::array{Operator(OP_LEFTPAREN),
-                                              Operator(OP_LOCALVARINT),
-                                              StringOperand("ui_highlight"),
-                                              Operator(OP_RIGHTPAREN),
-                                              Operator(OP_EQUALS),
-                                              IntOperand(5),
-                                              Operator(OP_AND),
-                                              Operator(OP_LOCALVARSTRING),
-                                              StringOperand("ui_choicegroup"),
-                                              Operator(OP_RIGHTPAREN),
-                                              Operator(OP_EQUALS),
-                                              StringOperand("popmenu"),
-                                              Operator(OP_RIGHTPAREN)};
+        std::array buttonVisibleValues{
+            Operator(OP_LEFTPAREN),
+            Operator(OP_LOCALVARINT),
+            StringOperand("ui_highlight"),
+            Operator(OP_RIGHTPAREN),
+            Operator(OP_EQUALS),
+            IntOperand(5),
+            Operator(OP_AND),
+            Operator(OP_LOCALVARSTRING),
+            StringOperand("ui_choicegroup"),
+            Operator(OP_RIGHTPAREN),
+            Operator(OP_EQUALS),
+            StringOperand("popmenu"),
+            Operator(OP_RIGHTPAREN),
+        };
         auto buttonVisibleEntries = EntryPointers(buttonVisibleValues);
 
-        auto materialExpressionValues = std::array{Operator(OP_LEFTPAREN), StringOperand("expression_material"), Operator(OP_RIGHTPAREN)};
+        std::array materialExpressionValues{
+            Operator(OP_LEFTPAREN),
+            StringOperand("expression_material"),
+            Operator(OP_RIGHTPAREN),
+        };
         auto materialExpressionEntries = EntryPointers(materialExpressionValues);
 
         Material backgroundMaterial{};
         backgroundMaterial.info.name = "background_material";
 
-        ItemKeyHandler buttonKeyHandler{'a', "open advanced;", nullptr};
+        ItemKeyHandler buttonKeyHandler{
+            .key = 'a',
+            .action = "open advanced;",
+            .next = nullptr,
+        };
 
         itemDef_s button{};
         button.window.name = "button_test";
         button.window.group = "buttons";
-        button.window.rectClient = {10.0f, 20.0f, 180.0f, 24.0f, 1, 2};
+        button.window.rectClient = {
+            .x = 10.0f,
+            .y = 20.0f,
+            .w = 180.0f,
+            .h = 24.0f,
+            .horzAlign = 1,
+            .vertAlign = 2,
+        };
         button.window.style = 1;
         button.window.ownerDrawFlags = UI_SHOW_NOT_FAVORITE_SERVERS;
         button.window.backColor[0] = 0.1f;
@@ -105,11 +126,11 @@ namespace
         button.fontEnum = 1;
         button.onFocus = "play mouse_over; setlocalvarint ui_highlight 5;";
         button.leaveFocus = "setlocalvarint ui_highlight 0;";
-        button.mouseExit = "setitemcolor button_test bordercolor \"0.1\" \"0.1\" \"0.12\" \"0.5\";";
+        button.mouseExit = R"(setitemcolor button_test bordercolor "0.1" "0.1" "0.12" "0.5";)";
         button.action = "play mouse_click; open options;";
         button.onKey = &buttonKeyHandler;
-        button.visibleExp = {static_cast<int>(buttonVisibleEntries.size()), buttonVisibleEntries.data()};
-        button.materialExp = {static_cast<int>(materialExpressionEntries.size()), materialExpressionEntries.data()};
+        button.visibleExp = {.numEntries = static_cast<int>(buttonVisibleEntries.size()), .entries = buttonVisibleEntries.data()};
+        button.materialExp = {.numEntries = static_cast<int>(materialExpressionEntries.size()), .entries = materialExpressionEntries.data()};
 
         editFieldDef_s editField{};
         editField.minVal = -1.0f;
@@ -121,7 +142,7 @@ namespace
         itemDef_s editItem{};
         editItem.window.name = "name_field";
         editItem.window.group = "fields";
-        editItem.window.rectClient = {10.0f, 56.0f, 180.0f, 24.0f, 1, 2};
+        editItem.window.rectClient = {.x = 10.0f, .y = 56.0f, .w = 180.0f, .h = 24.0f, .horzAlign = 1, .vertAlign = 2};
         editItem.window.style = 1;
         editItem.window.border = 1;
         editItem.window.borderSize = 1.0f;
@@ -150,11 +171,15 @@ namespace
         editItem.typeData.editField = &editField;
 
         itemDef_s* items[]{&button, &editItem};
-        ItemKeyHandler menuKeyHandler{13, "open key_help;", nullptr};
+        ItemKeyHandler menuKeyHandler{
+            .key = 13,
+            .action = "open key_help;",
+            .next = nullptr,
+        };
 
         menuDef_t menu{};
         menu.window.name = "test_menu";
-        menu.window.rect = {0.0f, 0.0f, 640.0f, 480.0f, 0, 0};
+        menu.window.rect = {.x = 0.0f, .y = 0.0f, .w = 640.0f, .h = 480.0f, .horzAlign = 0, .vertAlign = 0};
         menu.window.style = 1;
         menu.window.ownerDrawFlags = UI_SHOW_FAVORITE_SERVERS;
         menu.window.border = 1;
@@ -177,7 +202,7 @@ namespace
         menu.onClose = "play mouse_close;";
         menu.onESC = "close self;";
         menu.onKey = &menuKeyHandler;
-        menu.visibleExp = {static_cast<int>(menuVisibleEntries.size()), menuVisibleEntries.data()};
+        menu.visibleExp = {.numEntries = static_cast<int>(menuVisibleEntries.size()), .entries = menuVisibleEntries.data()};
         menu.allowedBinding = "+activate";
         menu.soundName = "menu_music";
         menu.focusColor[0] = 1.0f;
@@ -246,7 +271,7 @@ namespace
             rect                        10 20 180 24 1 2
             style                       1
             type                        1
-            visible                     when((localvarint("ui_highlight")==5&&localvarstring("ui_choicegroup")=="popmenu"));
+            visible                     when(localvarint("ui_highlight") == 5 && localvarstring("ui_choicegroup") == "popmenu");
             ownerdrawFlag               4096
             textalign                   10
             textalignx                  -6
@@ -356,5 +381,137 @@ namespace
 
         REQUIRE(mockOutput.GetMockedFile("ui/test_menu.menu"));
         REQUIRE_FALSE(mockOutput.GetMockedFile("ui_mp/test_menu.menu"));
+    }
+
+    TEST_CASE("MenuDumperIW3: Expressions are valid when dumped", "[iw3][menu][assetdumper]")
+    {
+        std::array item0VisibleValues{
+            Operator(OP_LEFTPAREN),
+            Operator(OP_LOCALVARSTRING),
+            StringOperand("ui_highlight"),
+            Operator(OP_RIGHTPAREN),
+            Operator(OP_RIGHTPAREN),
+        };
+        auto item0Entries = EntryPointers(item0VisibleValues);
+
+        itemDef_s item0{};
+        item0.window.foreColor[0] = 1.0f;
+        item0.window.foreColor[1] = 1.0f;
+        item0.window.foreColor[2] = 1.0f;
+        item0.window.foreColor[3] = 1.0f;
+        item0.window.rectClient = {.x = 1, .y = 2, .w = 3, .h = 4, .horzAlign = 0, .vertAlign = 0};
+        item0.textExp = {.numEntries = static_cast<int>(item0Entries.size()), .entries = item0Entries.data()};
+
+        std::array item1VisibleValues{
+            Operator(OP_LEFTPAREN),
+            IntOperand(2),
+            Operator(OP_RIGHTPAREN),
+        };
+        auto item1Entries = EntryPointers(item1VisibleValues);
+
+        itemDef_s item1{};
+        item1.window.foreColor[0] = 1.0f;
+        item1.window.foreColor[1] = 1.0f;
+        item1.window.foreColor[2] = 1.0f;
+        item1.window.foreColor[3] = 1.0f;
+        item1.window.rectClient = {.x = 1, .y = 2, .w = 3, .h = 4, .horzAlign = 0, .vertAlign = 0};
+        item1.textExp = {.numEntries = static_cast<int>(item1Entries.size()), .entries = item1Entries.data()};
+
+        std::array item2VisibleValues{
+            Operator(OP_LEFTPAREN),
+            IntOperand(3),
+            Operator(OP_ADD),
+            IntOperand(7),
+            Operator(OP_RIGHTPAREN),
+        };
+        auto item2Entries = EntryPointers(item2VisibleValues);
+
+        itemDef_s item2{};
+        item2.window.foreColor[0] = 1.0f;
+        item2.window.foreColor[1] = 1.0f;
+        item2.window.foreColor[2] = 1.0f;
+        item2.window.foreColor[3] = 1.0f;
+        item2.window.rectClient = {.x = 1, .y = 2, .w = 3, .h = 4, .horzAlign = 0, .vertAlign = 0};
+        item2.textExp = {.numEntries = static_cast<int>(item2Entries.size()), .entries = item2Entries.data()};
+
+        std::array item3VisibleValues{
+            Operator(OP_LEFTPAREN),
+            IntOperand(-3),
+            Operator(OP_ADD),
+            IntOperand(7),
+            Operator(OP_MULTIPLY),
+            Operator(OP_NOT),
+            Operator(OP_SIN),
+            Operator(OP_COS),
+            IntOperand(7),
+            Operator(OP_RIGHTPAREN),
+            Operator(OP_RIGHTPAREN),
+            Operator(OP_RIGHTPAREN),
+        };
+        auto item3Entries = EntryPointers(item3VisibleValues);
+
+        itemDef_s item3{};
+        item3.window.foreColor[0] = 1.0f;
+        item3.window.foreColor[1] = 1.0f;
+        item3.window.foreColor[2] = 1.0f;
+        item3.window.foreColor[3] = 1.0f;
+        item3.window.rectClient = {.x = 1, .y = 2, .w = 3, .h = 4, .horzAlign = 0, .vertAlign = 0};
+        item3.textExp = {.numEntries = static_cast<int>(item3Entries.size()), .entries = item3Entries.data()};
+
+        itemDef_s* items[]{&item0, &item1, &item2, &item3};
+
+        menuDef_t menu{};
+        menu.window.name = "test_menu";
+        menu.window.foreColor[0] = 1.0f;
+        menu.window.foreColor[1] = 1.0f;
+        menu.window.foreColor[2] = 1.0f;
+        menu.window.foreColor[3] = 1.0f;
+        menu.window.rect = {.x = 1, .y = 2, .w = 3, .h = 4, .horzAlign = 0, .vertAlign = 0};
+        menu.itemCount = static_cast<int>(std::size(items));
+        menu.items = items;
+
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
+
+        MockSearchPath mockObjPath;
+        MockOutputPath mockOutput;
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
+
+        menu::MenuDumperIW3 dumper;
+        dumper.Dump(context);
+
+        const auto* file = mockOutput.GetMockedFile("ui_mp/test_menu.menu");
+        REQUIRE(file);
+
+        const auto output = file->AsString();
+        constexpr auto expectedOutput = R"({
+    menuDef
+    {
+        name                        "test_menu"
+        rect                        1 2 3 4 0 0
+        itemDef
+        {
+            rect                        1 2 3 4 0 0
+            exp text                    (localvarstring("ui_highlight"));
+        }
+        itemDef
+        {
+            rect                        1 2 3 4 0 0
+            exp text                    (2);
+        }
+        itemDef
+        {
+            rect                        1 2 3 4 0 0
+            exp text                    (3 + 7);
+        }
+        itemDef
+        {
+            rect                        1 2 3 4 0 0
+            exp text                    (-3 + 7 * !sin(cos(7)));
+        }
+    }
+}
+)";
+        REQUIRE(output == expectedOutput);
     }
 } // namespace

@@ -2,7 +2,9 @@
 
 #include "Game/IW3/MenuConstantsIW3.h"
 #include "Menu/AbstractMenuWriter.h"
+#include "ObjWriting.h"
 
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <sstream>
@@ -11,6 +13,42 @@ using namespace IW3;
 
 namespace
 {
+    // Set this to true to skip interpretative expression dumping
+    constexpr auto DUMP_NAIVE = false;
+
+    size_t FindStatementClosingParenthesis(const statement_s& statement, const size_t openingParenthesisPosition)
+    {
+        assert(statement.numEntries >= 0);
+        assert(openingParenthesisPosition < static_cast<size_t>(statement.numEntries));
+
+        const auto statementEnd = static_cast<size_t>(statement.numEntries);
+
+        // The openingParenthesisPosition does not necessarily point to an actual opening parenthesis operator. That's fine though.
+        // We will pretend it does since the game does sometimes leave out opening parenthesis from the entries.
+        auto currentParenthesisDepth = 1;
+        for (auto currentSearchPosition = openingParenthesisPosition + 1; currentSearchPosition < statementEnd; currentSearchPosition++)
+        {
+            const auto* expEntry = statement.entries[currentSearchPosition];
+            if (!expEntry || expEntry->type != EET_OPERATOR)
+                continue;
+
+            // Any function means a "left out" left paren
+            if (expEntry->data.op == OP_LEFTPAREN || expEntry->data.op >= OP_FIRSTFUNCTIONCALL)
+            {
+                currentParenthesisDepth++;
+            }
+            else if (expEntry->data.op == OP_RIGHTPAREN)
+            {
+                if (currentParenthesisDepth > 0)
+                    currentParenthesisDepth--;
+                if (currentParenthesisDepth == 0)
+                    return currentSearchPosition;
+            }
+        }
+
+        return statementEnd;
+    }
+
     class MenuWriter final : public menu::AbstractBaseWriter, public menu::IWriterIW3
     {
     public:
@@ -47,71 +85,157 @@ namespace
             return statement.numEntries > 0 && statement.entries;
         }
 
-        void WriteStatement(const statement_s& statement) const
+        void WriteStatementNaive(const statement_s& statement) const
         {
-            auto parenthesisDepth = 0;
+            const auto entryCount = static_cast<size_t>(statement.numEntries);
 
-            for (auto entryIndex = 0; entryIndex < statement.numEntries; entryIndex++)
+            const auto missingClosingParenthesis = statement.numEntries > 0 && statement.entries[0]->type == EET_OPERATOR
+                                                   && statement.entries[0]->data.op == OP_LEFTPAREN
+                                                   && FindStatementClosingParenthesis(statement, 0) >= static_cast<size_t>(statement.numEntries);
+
+            for (auto i = 0uz; i < entryCount; i++)
             {
-                const auto* entry = statement.entries[entryIndex];
-                if (!entry)
-                    continue;
-
+                const auto& entry = statement.entries[i];
                 if (entry->type == EET_OPERAND)
                 {
-                    switch (entry->data.operand.dataType)
-                    {
-                    case VAL_INT:
-                        m_stream << entry->data.operand.internals.intVal;
-                        break;
-
-                    case VAL_FLOAT:
-                        m_stream << entry->data.operand.internals.floatVal;
-                        break;
-
-                    case VAL_STRING:
-                        WriteEscapedString(entry->data.operand.internals.stringVal ? entry->data.operand.internals.stringVal : "");
-                        break;
-
-                    default:
-                        m_stream << "0";
-                        break;
-                    }
-
-                    continue;
-                }
-
-                const auto operation = entry->data.op;
-                if (operation < 0 || static_cast<size_t>(operation) >= std::extent_v<decltype(g_expFunctionNames)>)
-                {
-                    m_stream << "0";
-                    continue;
-                }
-
-                if (operation == OP_NOOP)
-                {
-                    m_stream << "0";
-                }
-                else if (operation >= OP_SIN)
-                {
-                    m_stream << g_expFunctionNames[operation] << "(";
-                    parenthesisDepth++;
+                    size_t pos = i;
+                    bool discard = false;
+                    WriteStatementOperand(statement, pos, discard);
                 }
                 else
                 {
-                    m_stream << g_expFunctionNames[operation];
-
-                    if (operation == OP_LEFTPAREN)
-                        parenthesisDepth++;
-                    else if (operation == OP_RIGHTPAREN && parenthesisDepth > 0)
-                        parenthesisDepth--;
+                    assert(entry->data.op >= 0 && static_cast<unsigned>(entry->data.op) < std::extent_v<decltype(g_expFunctionNames)>);
+                    if (entry->data.op >= 0 && static_cast<unsigned>(entry->data.op) < std::extent_v<decltype(g_expFunctionNames)>)
+                        m_stream << g_expFunctionNames[entry->data.op];
+                    if (entry->data.op >= OP_FIRSTFUNCTIONCALL)
+                        m_stream << "(";
                 }
             }
 
-            while (parenthesisDepth > 0)
-            {
+            if (missingClosingParenthesis)
                 m_stream << ")";
-                parenthesisDepth--;
+        }
+
+        void WriteStatementOperator(const statement_s& statement, size_t& currentPos, bool& spaceNext) const
+        {
+            const auto& expEntry = statement.entries[currentPos];
+
+            if (spaceNext && expEntry->data.op != OP_COMMA)
+                m_stream << " ";
+
+            if (expEntry->data.op == OP_LEFTPAREN)
+            {
+                const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
+                m_stream << "(";
+                WriteStatementEntryRange(statement, currentPos + 1, closingParenPos);
+                m_stream << ")";
+
+                currentPos = closingParenPos + 1;
+                spaceNext = true;
+            }
+            else
+            {
+                if (expEntry->data.op >= 0 && static_cast<unsigned>(expEntry->data.op) < std::extent_v<decltype(g_expFunctionNames)>)
+                    m_stream << g_expFunctionNames[expEntry->data.op];
+
+                if (expEntry->data.op >= OP_FIRSTFUNCTIONCALL)
+                {
+                    // Functions do not have opening parenthesis in the entries. We can just pretend they do though
+                    const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
+                    m_stream << "(";
+                    WriteStatementEntryRange(statement, currentPos + 1, closingParenPos);
+                    m_stream << ")";
+                    currentPos = closingParenPos + 1;
+                }
+                else
+                    currentPos++;
+
+                spaceNext = expEntry->data.op != OP_NOT;
+            }
+        }
+
+        void WriteStatementOperand(const statement_s& statement, size_t& currentPos, bool& spaceNext) const
+        {
+            const auto& expEntry = statement.entries[currentPos];
+
+            if (spaceNext)
+                m_stream << " ";
+
+            const auto& operand = expEntry->data.operand;
+
+            switch (operand.dataType)
+            {
+            case VAL_FLOAT:
+                m_stream << operand.internals.floatVal;
+                break;
+
+            case VAL_INT:
+                m_stream << operand.internals.intVal;
+                break;
+
+            case VAL_STRING:
+                WriteEscapedString(operand.internals.stringVal);
+                break;
+
+            default:
+                break;
+            }
+
+            currentPos++;
+            spaceNext = true;
+        }
+
+        void WriteStatementEntryRange(const statement_s& statement, const size_t startOffset, const size_t endOffset) const
+        {
+            assert(startOffset <= endOffset);
+            assert(endOffset <= static_cast<size_t>(statement.numEntries));
+
+            auto currentPos = startOffset;
+            auto spaceNext = false;
+            while (currentPos < endOffset)
+            {
+                const auto& expEntry = statement.entries[currentPos];
+
+                if (expEntry->type == EET_OPERATOR)
+                {
+                    WriteStatementOperator(statement, currentPos, spaceNext);
+                }
+                else
+                {
+                    WriteStatementOperand(statement, currentPos, spaceNext);
+                }
+            }
+        }
+
+        void WriteStatement(const statement_s& statement) const
+        {
+            if (!HasStatement(statement))
+                return;
+
+            WriteStatementEntryRange(statement, 0, static_cast<size_t>(statement.numEntries));
+        }
+
+        void WriteStatementSkipInitialUnnecessaryParenthesis(const statement_s& statement) const
+        {
+            if (!HasStatement(statement))
+                return;
+
+            const auto statementEnd = static_cast<size_t>(statement.numEntries);
+
+            if (statement.numEntries >= 1 && statement.entries[0]->type == EET_OPERATOR && statement.entries[0]->data.op == OP_LEFTPAREN)
+            {
+                const auto parenthesisEnd = FindStatementClosingParenthesis(statement, 0);
+
+                if (parenthesisEnd >= statementEnd)
+                    WriteStatementEntryRange(statement, 1, statementEnd);
+                else if (parenthesisEnd == statementEnd - 1)
+                    WriteStatementEntryRange(statement, 1, statementEnd - 1);
+                else
+                    WriteStatementEntryRange(statement, 0, statementEnd);
+            }
+            else
+            {
+                WriteStatementEntryRange(statement, 0, statementEnd);
             }
         }
 
@@ -126,12 +250,18 @@ namespace
             if (isBooleanStatement)
             {
                 m_stream << "when(";
-                WriteStatement(statement);
+                if constexpr (DUMP_NAIVE)
+                    WriteStatementNaive(statement);
+                else
+                    WriteStatementSkipInitialUnnecessaryParenthesis(statement);
                 m_stream << ");\n";
             }
             else
             {
-                WriteStatement(statement);
+                if constexpr (DUMP_NAIVE)
+                    WriteStatementNaive(statement);
+                else
+                    WriteStatement(statement);
                 m_stream << ";\n";
             }
         }
