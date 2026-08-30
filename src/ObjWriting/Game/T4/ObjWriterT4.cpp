@@ -7,6 +7,8 @@
 #include "Game/T4/XAnim/XAnimDumperT4.h"
 #include "Game/T4/XModel/XModelDumperT4.h"
 #include "Localize/LocalizeDumperT4.h"
+#include "Menu/MenuDumperT4.h"
+#include "Menu/MenuListDumperT4.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT4.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT4.h"
 #include "RawFile/RawFileDumperT4.h"
@@ -27,6 +29,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperT4>());
     RegisterAssetDumper(std::make_unique<map_ents::DumperT4>());
     RegisterAssetDumper(std::make_unique<font::JsonDumperT4>());
+    RegisterAssetDumper(std::make_unique<menu::MenuListDumperT4>());
+    RegisterAssetDumper(std::make_unique<menu::MenuDumperT4>());
     RegisterAssetDumper(std::make_unique<localize::DumperT4>());
     RegisterAssetDumper(std::make_unique<weapon::DumperT4>());
     RegisterAssetDumper(std::make_unique<raw_file::DumperT4>());
