@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <sstream>
 
 namespace menu
@@ -116,6 +117,14 @@ namespace menu
     {
         if (token.empty())
             return true;
+
+        // The menu linker concatenates adjacent quoted numeric arguments. For example,
+        // `"0.1" "0.1" "0.12" "0.5"` becomes `"0.10.10.120.5"` instead of four
+        // color components.
+        char* numericEnd;
+        (void)std::strtof(token.c_str(), &numericEnd);
+        if (numericEnd == token.c_str() + token.size())
+            return false;
 
         const auto hasAlNumCharacter = std::ranges::any_of(token,
                                                            [](const char& c)
@@ -263,15 +272,16 @@ namespace menu
         m_stream << "\n";
     }
 
-    void AbstractBaseWriter::WriteFlagsProperty(const std::string& propertyKey, const int flagsValue) const
+    void AbstractBaseWriter::WriteFlagsProperty(const std::string& propertyKey, const unsigned flagsValue) const
     {
         for (auto i = 0u; i < sizeof(flagsValue) * 8; i++)
         {
-            if (flagsValue & (1 << i))
+            const unsigned mask = 1u << i;
+            if (flagsValue & mask)
             {
                 Indent();
                 WriteKey(propertyKey);
-                m_stream << i << "\n";
+                m_stream << mask << "\n";
             }
         }
     }

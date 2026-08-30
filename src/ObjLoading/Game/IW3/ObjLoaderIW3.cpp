@@ -7,6 +7,7 @@
 #include "Game/IW3/IW3.h"
 #include "Game/IW3/Image/ImageLoaderEmbeddedIW3.h"
 #include "Game/IW3/Image/ImageLoaderExternalIW3.h"
+#include "Game/IW3/Menu/LoaderMenuListIW3.h"
 #include "Game/IW3/Techset/PixelShaderLoaderIW3.h"
 #include "Game/IW3/Techset/VertexShaderLoaderIW3.h"
 #include "Game/IW3/Weapon/AccuracyGraphLoaderIW3.h"
@@ -121,7 +122,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
         collection.AddAssetCreator(light_def::CreateLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(font::CreateLoaderIW3(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
+        collection.AddAssetCreator(menu::CreateMenuListLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
         collection.AddAssetCreator(localize::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateRawLoaderIW3(memory, searchPath, zone));

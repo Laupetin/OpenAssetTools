@@ -309,6 +309,11 @@ void MenuScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
                                                                {
                                                                    state->m_current_menu->m_focus_color = value;
                                                                }));
+    AddSequence(std::make_unique<GenericColorPropertySequence>("disablecolor",
+                                                               [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+                                                               {
+                                                                   state->m_current_menu->m_disable_color = value;
+                                                               }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("outlinecolor",
                                                                [](const MenuFileParserState* state, const TokenPos&, const CommonColor& value)
                                                                {

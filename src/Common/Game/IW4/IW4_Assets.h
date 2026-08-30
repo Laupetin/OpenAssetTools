@@ -2313,7 +2313,7 @@ namespace IW4
         int style;
         int border;
         int ownerDraw;
-        int ownerDrawFlags;
+        unsigned int ownerDrawFlags;
         float borderSize;
         int staticFlags;
         unsigned int dynamicFlags[1];

@@ -51,7 +51,7 @@ namespace menu
         void WriteFloatProperty(const std::string& propertyKey, float propertyValue, float defaultValue) const;
         void WriteColorProperty(const std::string& propertyKey, const float (&propertyValue)[4], const float (&defaultValue)[4]) const;
         void WriteKeywordProperty(const std::string& propertyKey, bool shouldWrite) const;
-        void WriteFlagsProperty(const std::string& propertyKey, int flagsValue) const;
+        void WriteFlagsProperty(const std::string& propertyKey, unsigned flagsValue) const;
 
         std::ostream& m_stream;
         size_t m_indent;

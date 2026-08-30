@@ -2513,6 +2513,37 @@ namespace IW3
         int vertAlign;
     };
 
+    enum WindowDefStaticFlag : unsigned int
+    {
+        WINDOW_FLAG_DECORATION = 0x100000,
+        WINDOW_FLAG_HORIZONTAL_SCROLL = 0x200000,
+        WINDOW_FLAG_AUTO_WRAPPED = 0x800000,
+        WINDOW_FLAG_POPUP = 0x1000000,
+        WINDOW_FLAG_OUT_OF_BOUNDS_CLICK = 0x2000000,
+        WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
+        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000,
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,
+    };
+
+    enum WindowDefDynamicFlag : unsigned int
+    {
+        WINDOW_FLAG_1 = 0x1,
+        WINDOW_FLAG_FOCUSED = 0x2,
+        WINDOW_FLAG_VISIBLE = 0x4,
+        WINDOW_FLAG_FADING_OUT = 0x10,
+        WINDOW_FLAG_FADING_IN = 0x20,
+        WINDOW_FLAG_HOVERED = 0x40,
+        WINDOW_FLAG_LISTBOX_HOVER_100 = 0x100,
+        WINDOW_FLAG_LISTBOX_HOVER_200 = 0x200,
+        WINDOW_FLAG_LISTBOX_HOVER_400 = 0x400,
+        WINDOW_FLAG_LISTBOX_HOVER_800 = 0x800,
+        WINDOW_FLAG_LISTBOX_HOVER_1000 = 0x1000,
+        WINDOW_FLAG_4000 = 0x4000,
+        WINDOW_FLAG_NON_DEFAULT_BACKCOLOR = 0x8000,
+        WINDOW_FLAG_NON_DEFAULT_FORECOLOR = 0x10000,
+    };
+
     struct windowDef_t
     {
         const char* name;
@@ -2522,10 +2553,10 @@ namespace IW3
         int style;
         int border;
         int ownerDraw;
-        int ownerDrawFlags;
+        unsigned int ownerDrawFlags;
         float borderSize;
-        int staticFlags;
-        int dynamicFlags[1];
+        unsigned int staticFlags;
+        unsigned int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
@@ -2561,10 +2592,99 @@ namespace IW3
         operandInternalDataUnion internals;
     };
 
+    enum operationEnum : int
+    {
+        OP_NOOP,
+        OP_RIGHTPAREN,
+        OP_MULTIPLY,
+        OP_DIVIDE,
+        OP_MODULUS,
+        OP_ADD,
+        OP_SUBTRACT,
+        OP_NOT,
+        OP_LESSTHAN,
+        OP_LESSTHANEQUALTO,
+        OP_GREATERTHAN,
+        OP_GREATERTHANEQUALTO,
+        OP_EQUALS,
+        OP_NOTEQUAL,
+        OP_AND,
+        OP_OR,
+        OP_LEFTPAREN,
+        OP_COMMA,
+        OP_BITWISEAND,
+        OP_BITWISEOR,
+        OP_BITWISENOT,
+        OP_BITSHIFTLEFT,
+        OP_BITSHIFTRIGHT,
+
+        OP_FIRSTFUNCTIONCALL,
+        OP_SIN = OP_FIRSTFUNCTIONCALL,
+        OP_COS,
+        OP_MIN,
+        OP_MAX,
+        OP_MILLISECONDS,
+        OP_DVARINT,
+        OP_DVARBOOL,
+        OP_DVARFLOAT,
+        OP_DVARSTRING,
+        OP_STAT,
+        OP_UIACTIVE,
+        OP_FLASHBANGED,
+        OP_SCOPED,
+        OP_SCOREBOARDVISIBLE,
+        OP_INKILLCAM,
+        OP_PLAYERFIELD,
+        OP_SELECTINGLOCATION,
+        OP_TEAMFIELD,
+        OP_OTHERTEAMFIELD,
+        OP_MARINESFIELD,
+        OP_OPFORFIELD,
+        OP_MENUISOPEN,
+        OP_WRITINGDATA,
+        OP_INLOBBY,
+        OP_INPRIVATEPARTY,
+        OP_PRIVATEPARTYHOST,
+        OP_PRIVATEPARTYHOSTINLOBBY,
+        OP_ALONEINPARTY,
+        OP_ADSJAVELIN,
+        OP_WEAPLOCKBLINK,
+        OP_WEAPATTACKTOP,
+        OP_WEAPATTACKDIRECT,
+        OP_SECONDSASTIME,
+        OP_TABLELOOKUP,
+        OP_LOCALIZESTRING,
+        OP_LOCALVARINT,
+        OP_LOCALVARBOOL,
+        OP_LOCALVARFLOAT,
+        OP_LOCALVARSTRING,
+        OP_TIMELEFT,
+        OP_SECONDSASCOUNTDOWN,
+        OP_GAMEMSGWNDACTIVE,
+        OP_TOINT,
+        OP_TOSTRING,
+        OP_TOFLOAT,
+        OP_GAMETYPENAME,
+        OP_GAMETYPE,
+        OP_GAMETYPEDESCRIPTION,
+        OP_SCORE,
+        OP_FRIENDSONLINE,
+        OP_FOLLOWING,
+        OP_STATRANGEBITSSET,
+        OP_KEYBINDING,
+        OP_ACTIONSLOTUSABLE,
+        OP_HUDFADE,
+        OP_MAXPLAYERS,
+        OP_ACCEPTINGINVITE,
+        OP_ISINTERMISSION,
+
+        NUM_OPERATORS,
+    };
+
     union entryInternalData
     {
         Operand operand;
-        int op;
+        operationEnum op;
     };
 
     enum expressionEntryType : int
@@ -2604,7 +2724,7 @@ namespace IW3
         int elementStyle;
         int numColumns;
         columnInfo_s columnInfo[16];
-        const char* doubleClick;
+        const char* onDoubleClick;
         int notselectable;
         int noScrollBars;
         int usePaging;
@@ -2665,6 +2785,15 @@ namespace IW3
         ITEM_TYPE_DECIMALFIELD = 0x11,
         ITEM_TYPE_UPREDITFIELD = 0x12,
         ITEM_TYPE_GAME_MESSAGE_WINDOW = 0x13
+    };
+
+    enum ItemDefDvarFlag
+    {
+        ITEM_DVAR_FLAG_ENABLE = 0x1,
+        ITEM_DVAR_FLAG_DISABLE = 0x2,
+        ITEM_DVAR_FLAG_SHOW = 0x4,
+        ITEM_DVAR_FLAG_HIDE = 0x8,
+        ITEM_DVAR_FLAG_FOCUS = 0x10,
     };
 
     struct itemDef_s

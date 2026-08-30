@@ -3233,7 +3233,7 @@ namespace IW5
         int style;
         int border;
         int ownerDraw;
-        int ownerDrawFlags;
+        unsigned int ownerDrawFlags;
         float borderSize;
         int staticFlags;
         int dynamicFlags[1];

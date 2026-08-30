@@ -109,7 +109,8 @@ GlobalScopeSequences::GlobalScopeSequences(std::vector<std::unique_ptr<MenuFileP
 void GlobalScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
-    AddSequence(std::make_unique<SequenceFunctionDef>());
+    if (featureLevel != FeatureLevel::IW3)
+        AddSequence(std::make_unique<SequenceFunctionDef>());
     AddSequence(std::make_unique<SequenceMenuDef>());
     AddSequence(std::make_unique<SequenceLoadMenu>());
 }

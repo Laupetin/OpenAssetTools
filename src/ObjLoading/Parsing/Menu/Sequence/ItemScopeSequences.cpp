@@ -24,7 +24,7 @@ namespace
 
     class ItemScopeOperations
     {
-        inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]{
+        inline static const CommonItemFeatureType IW3_IW4_FEATURE_TYPE_BY_TYPE[0x18]{
             CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
             CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
             CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
@@ -78,32 +78,34 @@ namespace
             CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_PASSWORDFIELD
         };
 
-    public:
-        static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
+        static CommonItemFeatureType GetFeatureTypeForItemType(const FeatureLevel featureLevel, const TokenPos& pos, const int type)
         {
-            if (type < 0)
-                throw ParsingException(pos, "Invalid item type");
-
-            if (item.m_feature_type != CommonItemFeatureType::NONE)
-                throw ParsingException(pos, "Item type has already been set");
-
-            item.m_type = type;
-
             switch (featureLevel)
             {
+            case FeatureLevel::IW3:
             case FeatureLevel::IW4:
-                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
+                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW3_IW4_FEATURE_TYPE_BY_TYPE)>)
                     throw ParsingException(pos, "Invalid item type");
-                item.m_feature_type = IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
-                break;
+                return IW3_IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
 
             case FeatureLevel::IW5:
             default:
                 if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW5_FEATURE_TYPE_BY_TYPE)>)
                     throw ParsingException(pos, "Invalid item type");
-                item.m_feature_type = IW5_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
-                break;
+                return IW5_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
             }
+        }
+
+    public:
+        static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
+        {
+            const auto featureType = GetFeatureTypeForItemType(featureLevel, pos, type);
+
+            if (item.m_feature_type != CommonItemFeatureType::NONE)
+                throw ParsingException(pos, "Item type has already been set");
+
+            item.m_type = type;
+            item.m_feature_type = featureType;
 
             switch (item.m_feature_type)
             {
@@ -130,9 +132,16 @@ namespace
                 throw ParsingException(pos, "Item must have be listbox to use this declaration");
         }
 
-        static void EnsureHasEditFieldFeatures(const CommonItemDef& item, const TokenPos& pos)
+        static void EnsureHasEditFieldFeatures(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos)
         {
-            if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
+            // Due to default item types, edit field capabilities might not have been initialized
+            if (item.m_feature_type == CommonItemFeatureType::NONE
+                && GetFeatureTypeForItemType(featureLevel, pos, item.m_type) == CommonItemFeatureType::EDIT_FIELD)
+            {
+                item.m_feature_type = CommonItemFeatureType::EDIT_FIELD;
+                item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
+            }
+            else if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
                 throw ParsingException(pos, "Item must have be edit field to use this declaration");
         }
 
@@ -360,7 +369,7 @@ namespace
         {
             assert(state->m_current_item);
 
-            ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+            ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, state->m_feature_level, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
             state->m_current_item->m_dvar = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_DVAR_NAME));
             state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
             state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
@@ -455,8 +464,8 @@ namespace
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
 
-        static constexpr const char* SYNTAX_IW4 = "<xpos> <width> <maxChars> [alignment]";
-        static constexpr auto BASE_COLUMN_COUNT_IW4 = 3;
+        static constexpr const char* SYNTAX_IW3_IW4 = "<xpos> <width> <maxChars> [alignment]";
+        static constexpr auto BASE_COLUMN_COUNT_IW3_IW4 = 3;
 
         static constexpr const char* SYNTAX_IW5 = "<xpos> <ypos> <width> <height> <maxChars> [alignment]";
         static constexpr auto BASE_COLUMN_COUNT_IW5 = 5;
@@ -478,7 +487,7 @@ namespace
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_item);
-            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+            assert(state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
 
             const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, firstToken.GetPos());
@@ -491,10 +500,10 @@ namespace
             size_t baseColumnCount;
             const char* syntax;
             bool hasHeightValues;
-            if (state->m_feature_level == FeatureLevel::IW4)
+            if (state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4)
             {
-                baseColumnCount = BASE_COLUMN_COUNT_IW4;
-                syntax = SYNTAX_IW4;
+                baseColumnCount = BASE_COLUMN_COUNT_IW3_IW4;
+                syntax = SYNTAX_IW3_IW4;
                 hasHeightValues = false;
             }
             else
@@ -1151,25 +1160,29 @@ void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
     AddSequence(std::make_unique<GenericStringPropertySequence>("localvar",
                                                                 [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
                                                                 {
-                                                                    ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+                                                                    ItemScopeOperations::EnsureHasEditFieldFeatures(
+                                                                        *state->m_current_item, state->m_feature_level, pos);
                                                                     state->m_current_item->m_edit_field_features->m_local_var = value;
                                                                 }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("maxChars",
                                                              [](const MenuFileParserState* state, const TokenPos& pos, const int value)
                                                              {
-                                                                 ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+                                                                 ItemScopeOperations::EnsureHasEditFieldFeatures(
+                                                                     *state->m_current_item, state->m_feature_level, pos);
                                                                  state->m_current_item->m_edit_field_features->m_max_chars = value;
                                                              }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("maxPaintChars",
                                                              [](const MenuFileParserState* state, const TokenPos& pos, const int value)
                                                              {
-                                                                 ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+                                                                 ItemScopeOperations::EnsureHasEditFieldFeatures(
+                                                                     *state->m_current_item, state->m_feature_level, pos);
                                                                  state->m_current_item->m_edit_field_features->m_max_paint_chars = value;
                                                              }));
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("maxCharsGotoNext",
                                                                  [](const MenuFileParserState* state, const TokenPos& pos)
                                                                  {
-                                                                     ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+                                                                     ItemScopeOperations::EnsureHasEditFieldFeatures(
+                                                                         *state->m_current_item, state->m_feature_level, pos);
                                                                      state->m_current_item->m_edit_field_features->m_max_chars_goto_next = true;
                                                                  }));
 

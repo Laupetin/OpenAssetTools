@@ -1117,7 +1117,7 @@ namespace
             auto* item = m_memory.Alloc<itemDef_s>();
 
             item->window.name = ConvertString(commonItem.m_name);
-            item->text = ConvertString(commonItem.m_text);
+            item->text = commonItem.m_text ? m_memory.Dup(commonItem.m_text->c_str()) : nullptr;
             ApplyFlag(item->itemFlags, commonItem.m_text_save_game, ITEM_FLAG_SAVE_GAME_INFO);
             ApplyFlag(item->itemFlags, commonItem.m_text_cinematic_subtitle, ITEM_FLAG_CINEMATIC_SUBTITLE);
             item->window.group = ConvertString(commonItem.m_group);
