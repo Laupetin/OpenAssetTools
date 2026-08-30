@@ -4,7 +4,7 @@
 #include "MenuWriterIW4.h"
 #include "ObjWriting.h"
 
-#include <filesystem>
+#include <format>
 #include <string>
 
 using namespace IW4;
@@ -16,7 +16,7 @@ namespace
         const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(asset.Asset());
 
         if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
-            return "ui_mp/" + std::string(asset.Asset()->window.name) + ".menu";
+            return std::format("ui_mp/{}.menu", asset.Asset()->window.name);
 
         return menuDumpingState->second.m_path;
     }
@@ -32,7 +32,7 @@ namespace menu
         if (!ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
         {
             // Make sure menu paths based on menu lists are created
-            auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+            const auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
             for (auto* menuListAsset : menuListAssets)
                 CreateDumpingStateForMenuListIW4(zoneState, menuListAsset->Asset());
         }
@@ -43,7 +43,7 @@ namespace menu
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateMenuWriterIW4(*assetFile);
+        const auto menuWriter = CreateMenuWriterIW4(*assetFile);
 
         menuWriter->Start();
         menuWriter->WriteMenu(*menu);
