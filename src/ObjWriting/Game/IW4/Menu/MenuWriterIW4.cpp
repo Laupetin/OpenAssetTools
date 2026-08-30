@@ -11,30 +11,24 @@
 
 using namespace IW4;
 
-// Uncomment this macro to skip interpretative expression dumping
-// #define DUMP_NAIVE
-
-#ifdef DUMP_NAIVE
-#define DUMP_FUNC WriteStatementNaive
-#else
-#define DUMP_FUNC WriteStatementSkipInitialUnnecessaryParenthesis
-#endif
-
 namespace
 {
-    size_t FindStatementClosingParenthesis(const Statement_s* statement, const size_t openingParenthesisPosition)
-    {
-        assert(statement->numEntries >= 0);
-        assert(openingParenthesisPosition < static_cast<size_t>(statement->numEntries));
+    // Set this to true to skip interpretative expression dumping
+    constexpr auto DUMP_NAIVE = false;
 
-        const auto statementEnd = static_cast<size_t>(statement->numEntries);
+    size_t FindStatementClosingParenthesis(const Statement_s& statement, const size_t openingParenthesisPosition)
+    {
+        assert(statement.numEntries >= 0);
+        assert(openingParenthesisPosition < static_cast<size_t>(statement.numEntries));
+
+        const auto statementEnd = static_cast<size_t>(statement.numEntries);
 
         // The openingParenthesisPosition does not necessarily point to an actual opening parenthesis operator. That's fine though.
         // We will pretend it does since the game does sometimes leave out opening parenthesis from the entries.
         auto currentParenthesisDepth = 1;
         for (auto currentSearchPosition = openingParenthesisPosition + 1; currentSearchPosition < statementEnd; currentSearchPosition++)
         {
-            const auto& expEntry = statement->entries[currentSearchPosition];
+            const auto& expEntry = statement.entries[currentSearchPosition];
             if (expEntry.type != EET_OPERATOR)
                 continue;
 
@@ -101,17 +95,17 @@ namespace
             return statement && statement->numEntries > 0 && statement->entries;
         }
 
-        void WriteStatementNaive(const Statement_s* statement) const
+        void WriteStatementNaive(const Statement_s& statement) const
         {
-            const auto entryCount = static_cast<size_t>(statement->numEntries);
+            const auto entryCount = static_cast<size_t>(statement.numEntries);
 
-            const auto missingClosingParenthesis = statement->numEntries > 0 && statement->entries[0].type == EET_OPERATOR
-                                                   && statement->entries[0].data.op == OP_LEFTPAREN
-                                                   && FindStatementClosingParenthesis(statement, 0) >= static_cast<size_t>(statement->numEntries);
+            const auto missingClosingParenthesis = statement.numEntries > 0 && statement.entries[0].type == EET_OPERATOR
+                                                   && statement.entries[0].data.op == OP_LEFTPAREN
+                                                   && FindStatementClosingParenthesis(statement, 0) >= static_cast<size_t>(statement.numEntries);
 
             for (auto i = 0uz; i < entryCount; i++)
             {
-                const auto& entry = statement->entries[i];
+                const auto& entry = statement.entries[i];
                 if (entry.type == EET_OPERAND)
                 {
                     size_t pos = i;
@@ -148,14 +142,14 @@ namespace
 
                     if (closingParenPos - i + 1u >= 1u)
                     {
-                        const auto& staticDvarEntry = statement->entries[i + 1];
+                        const auto& staticDvarEntry = statement.entries[i + 1];
                         if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
                         {
-                            if (statement->supportingData && statement->supportingData->staticDvarList.staticDvars
+                            if (statement.supportingData && statement.supportingData->staticDvarList.staticDvars
                                 && staticDvarEntry.data.operand.internals.intVal >= 0
-                                && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
+                                && staticDvarEntry.data.operand.internals.intVal < statement.supportingData->staticDvarList.numStaticDvars)
                             {
-                                const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
+                                const auto* staticDvar = statement.supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
                                 if (staticDvar && staticDvar->dvarName)
                                     m_stream << staticDvar->dvarName;
                             }
@@ -187,9 +181,9 @@ namespace
                 m_stream << ")";
         }
 
-        void WriteStatementOperator(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const
+        void WriteStatementOperator(const Statement_s& statement, size_t& currentPos, bool& spaceNext) const
         {
-            const auto& expEntry = statement->entries[currentPos];
+            const auto& expEntry = statement.entries[currentPos];
 
             if (spaceNext && expEntry.data.op != OP_COMMA)
                 m_stream << " ";
@@ -234,14 +228,14 @@ namespace
 
                 if (closingParenPos - currentPos + 1 >= 1)
                 {
-                    const auto& staticDvarEntry = statement->entries[currentPos + 1];
+                    const auto& staticDvarEntry = statement.entries[currentPos + 1];
                     if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
                     {
-                        if (statement->supportingData && statement->supportingData->staticDvarList.staticDvars
+                        if (statement.supportingData && statement.supportingData->staticDvarList.staticDvars
                             && staticDvarEntry.data.operand.internals.intVal >= 0
-                            && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
+                            && staticDvarEntry.data.operand.internals.intVal < statement.supportingData->staticDvarList.numStaticDvars)
                         {
-                            const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
+                            const auto* staticDvar = statement.supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
                             if (staticDvar && staticDvar->dvarName)
                                 m_stream << staticDvar->dvarName;
                         }
@@ -281,22 +275,22 @@ namespace
             }
         }
 
-        void WriteStatementOperandFunction(const Statement_s* statement, size_t currentPos) const
+        void WriteStatementOperandFunction(const Statement_s& statement, const size_t currentPos) const
         {
-            const auto& operand = statement->entries[currentPos].data.operand;
+            const auto& operand = statement.entries[currentPos].data.operand;
 
-            if (operand.internals.function == nullptr)
+            if (!operand.internals.function)
                 return;
 
             if (!ObjWriting::Configuration.MenuLegacyMode)
             {
                 int functionIndex = -1;
-                if (statement->supportingData && statement->supportingData->uifunctions.functions)
+                if (statement.supportingData && statement.supportingData->uifunctions.functions)
                 {
-                    for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions;
+                    for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement.supportingData->uifunctions.totalFunctions;
                          supportingFunctionIndex++)
                     {
-                        if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
+                        if (statement.supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
                         {
                             functionIndex = supportingFunctionIndex;
                             break;
@@ -313,14 +307,14 @@ namespace
             else
             {
                 m_stream << "(";
-                WriteStatementSkipInitialUnnecessaryParenthesis(operand.internals.function);
+                WriteStatementSkipInitialUnnecessaryParenthesis(*operand.internals.function);
                 m_stream << ")";
             }
         }
 
-        void WriteStatementOperand(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const
+        void WriteStatementOperand(const Statement_s& statement, size_t& currentPos, bool& spaceNext) const
         {
-            const auto& expEntry = statement->entries[currentPos];
+            const auto& expEntry = statement.entries[currentPos];
 
             if (spaceNext)
                 m_stream << " ";
@@ -353,16 +347,16 @@ namespace
             spaceNext = true;
         }
 
-        void WriteStatementEntryRange(const Statement_s* statement, const size_t startOffset, const size_t endOffset) const
+        void WriteStatementEntryRange(const Statement_s& statement, const size_t startOffset, const size_t endOffset) const
         {
             assert(startOffset <= endOffset);
-            assert(endOffset <= static_cast<size_t>(statement->numEntries));
+            assert(endOffset <= static_cast<size_t>(statement.numEntries));
 
             auto currentPos = startOffset;
             auto spaceNext = false;
             while (currentPos < endOffset)
             {
-                const auto& expEntry = statement->entries[currentPos];
+                const auto& expEntry = statement.entries[currentPos];
 
                 if (expEntry.type == EET_OPERATOR)
                 {
@@ -375,35 +369,35 @@ namespace
             }
         }
 
-        void WriteStatement(const Statement_s* statement) const
+        void WriteStatement(const Statement_s& statement) const
         {
-            if (statement == nullptr || statement->numEntries < 0)
+            if (!statement.entries || statement.numEntries < 0)
                 return;
 
-            WriteStatementEntryRange(statement, 0, static_cast<size_t>(statement->numEntries));
+            WriteStatementEntryRange(statement, 0, static_cast<size_t>(statement.numEntries));
         }
 
-        void WriteStatementSkipInitialUnnecessaryParenthesis(const Statement_s* statementValue) const
+        void WriteStatementSkipInitialUnnecessaryParenthesis(const Statement_s& statement) const
         {
-            if (statementValue == nullptr || statementValue->numEntries < 0)
+            if (!statement.entries || statement.numEntries < 0)
                 return;
 
-            const auto statementEnd = static_cast<size_t>(statementValue->numEntries);
+            const auto statementEnd = static_cast<size_t>(statement.numEntries);
 
-            if (statementValue->numEntries >= 1 && statementValue->entries[0].type == EET_OPERATOR && statementValue->entries[0].data.op == OP_LEFTPAREN)
+            if (statement.numEntries >= 1 && statement.entries[0].type == EET_OPERATOR && statement.entries[0].data.op == OP_LEFTPAREN)
             {
-                const auto parenthesisEnd = FindStatementClosingParenthesis(statementValue, 0);
+                const auto parenthesisEnd = FindStatementClosingParenthesis(statement, 0);
 
                 if (parenthesisEnd >= statementEnd)
-                    WriteStatementEntryRange(statementValue, 1, statementEnd);
+                    WriteStatementEntryRange(statement, 1, statementEnd);
                 else if (parenthesisEnd == statementEnd - 1)
-                    WriteStatementEntryRange(statementValue, 1, statementEnd - 1);
+                    WriteStatementEntryRange(statement, 1, statementEnd - 1);
                 else
-                    WriteStatementEntryRange(statementValue, 0, statementEnd);
+                    WriteStatementEntryRange(statement, 0, statementEnd);
             }
             else
             {
-                WriteStatementEntryRange(statementValue, 0, statementEnd);
+                WriteStatementEntryRange(statement, 0, statementEnd);
             }
         }
 
@@ -418,24 +412,30 @@ namespace
             if (isBooleanStatement)
             {
                 m_stream << "when(";
-                DUMP_FUNC(statement);
+                if constexpr (DUMP_NAIVE)
+                    WriteStatementNaive(*statement);
+                else
+                    WriteStatementSkipInitialUnnecessaryParenthesis(*statement);
                 m_stream << ");\n";
             }
             else
             {
-                DUMP_FUNC(statement);
+                if constexpr (DUMP_NAIVE)
+                    WriteStatementNaive(*statement);
+                else
+                    WriteStatement(*statement);
                 m_stream << ";\n";
             }
         }
 
         void WriteSetLocalVarData(const std::string& setFunction, const SetLocalVarData* setLocalVarData) const
         {
-            if (setLocalVarData == nullptr)
+            if (!setLocalVarData || !setLocalVarData->expression)
                 return;
 
             Indent();
             m_stream << setFunction << " " << setLocalVarData->localVarName << " ";
-            WriteStatement(setLocalVarData->expression);
+            WriteStatement(*setLocalVarData->expression);
             m_stream << ";\n";
         }
 
@@ -509,7 +509,7 @@ namespace
 
                     Indent();
                     m_stream << "if (";
-                    WriteStatementSkipInitialUnnecessaryParenthesis(eventHandler->eventData.conditionalScript->eventExpression);
+                    WriteStatementSkipInitialUnnecessaryParenthesis(*eventHandler->eventData.conditionalScript->eventExpression);
                     m_stream << ")\n";
                     WriteMenuEventHandlerSet(eventHandler->eventData.conditionalScript->eventHandlerSet);
                     break;
