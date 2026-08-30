@@ -2553,7 +2553,7 @@ namespace IW3
         int style;
         int border;
         int ownerDraw;
-        int ownerDrawFlags;
+        unsigned int ownerDrawFlags;
         float borderSize;
         unsigned int staticFlags;
         unsigned int dynamicFlags[1];

@@ -272,15 +272,16 @@ namespace menu
         m_stream << "\n";
     }
 
-    void AbstractBaseWriter::WriteFlagsProperty(const std::string& propertyKey, const int flagsValue) const
+    void AbstractBaseWriter::WriteFlagsProperty(const std::string& propertyKey, const unsigned flagsValue) const
     {
         for (auto i = 0u; i < sizeof(flagsValue) * 8; i++)
         {
-            if (flagsValue & (1 << i))
+            const unsigned mask = 1u << i;
+            if (flagsValue & mask)
             {
                 Indent();
                 WriteKey(propertyKey);
-                m_stream << i << "\n";
+                m_stream << mask << "\n";
             }
         }
     }
