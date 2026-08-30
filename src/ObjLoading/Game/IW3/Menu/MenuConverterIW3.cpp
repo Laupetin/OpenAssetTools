@@ -122,6 +122,75 @@ namespace
                    || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression) != nullptr;
         }
 
+        void ConvertExpressionEntryBaseFunctionCall(std::vector<expressionEntry>& entries,
+                                                    const CommonExpressionBaseFunctionCall* baseFunction,
+                                                    const CommonMenuDef* menu,
+                                                    const CommonItemDef* item) const
+        {
+            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = static_cast<operationEnum>(baseFunction->m_function_index)}});
+
+            auto firstArg = true;
+            for (const auto& arg : baseFunction->m_args)
+            {
+                if (firstArg)
+                    firstArg = false;
+                else
+                    entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_COMMA}});
+
+                ConvertExpressionEntry(entries, arg.get(), menu, item);
+            }
+
+            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
+        }
+
+        void ConvertExpressionEntryUnaryOperation(std::vector<expressionEntry>& entries,
+                                                  const SimpleExpressionUnaryOperation* unary,
+                                                  const CommonMenuDef* menu,
+                                                  const CommonItemDef* item) const
+        {
+            assert(static_cast<unsigned>(unary->m_operation_type->m_id) < static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
+
+            entries.emplace_back(expressionEntry{
+                .type = EET_OPERATOR,
+                .data = {.op = UNARY_OPERATION_MAPPING[static_cast<unsigned>(unary->m_operation_type->m_id)]},
+            });
+
+            const auto wrapOperand = IsOperation(unary->m_operand.get());
+            if (wrapOperand)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(entries, unary->m_operand.get(), menu, item);
+            if (wrapOperand)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
+        }
+
+        void ConvertExpressionEntryBinaryOperation(std::vector<expressionEntry>& entries,
+                                                   const SimpleExpressionBinaryOperation* binary,
+                                                   const CommonMenuDef* menu,
+                                                   const CommonItemDef* item) const
+        {
+            // Game needs all nested operations to have parenthesis
+            const auto wrapLeft = IsOperation(binary->m_operand1.get());
+            if (wrapLeft)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(entries, binary->m_operand1.get(), menu, item);
+            if (wrapLeft)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
+
+            assert(static_cast<unsigned>(binary->m_operation_type->m_id) < static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
+            entries.emplace_back(expressionEntry{
+                .type = EET_OPERATOR,
+                .data = {.op = BINARY_OPERATION_MAPPING[static_cast<unsigned>(binary->m_operation_type->m_id)]},
+            });
+
+            // Game needs all nested operations to have parenthesis
+            const auto wrapRight = IsOperation(binary->m_operand2.get());
+            if (wrapRight)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(entries, binary->m_operand2.get(), menu, item);
+            if (wrapRight)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
+        }
+
         void ConvertExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue& value) const
         {
             expressionEntry entry{};
@@ -153,81 +222,38 @@ namespace
         {
             if (!m_disable_optimizations && expression->IsStatic())
             {
-                ConvertExpressionValue(entries, expression->EvaluateStatic());
-                return;
+                const auto staticValue = expression->EvaluateStatic();
+                ConvertExpressionValue(entries, staticValue);
             }
-
-            if (const auto* value = dynamic_cast<const SimpleExpressionValue*>(expression))
+            else if (const auto* value = dynamic_cast<const SimpleExpressionValue*>(expression))
             {
                 ConvertExpressionValue(entries, *value);
-                return;
             }
-
-            if (const auto* unary = dynamic_cast<const SimpleExpressionUnaryOperation*>(expression))
+            else if (const auto* binary = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
             {
-                expressionEntry operation{};
-                operation.type = EET_OPERATOR;
-                operation.data.op = UNARY_OPERATION_MAPPING[static_cast<unsigned>(unary->m_operation_type->m_id)];
-                entries.emplace_back(operation);
-
-                const auto wrapOperand = IsOperation(unary->m_operand.get());
-                if (wrapOperand)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_LEFTPAREN}});
-                ConvertExpressionEntry(entries, unary->m_operand.get(), menu, item);
-                if (wrapOperand)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_RIGHTPAREN}});
-                return;
+                ConvertExpressionEntryBinaryOperation(entries, binary, menu, item);
             }
-
-            if (const auto* binary = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
+            else if (const auto* unary = dynamic_cast<const SimpleExpressionUnaryOperation*>(expression))
             {
-                const auto wrapLeft = IsOperation(binary->m_operand1.get());
-                if (wrapLeft)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_LEFTPAREN}});
-                ConvertExpressionEntry(entries, binary->m_operand1.get(), menu, item);
-                if (wrapLeft)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_RIGHTPAREN}});
-
-                expressionEntry operation{};
-                operation.type = EET_OPERATOR;
-                operation.data.op = BINARY_OPERATION_MAPPING[static_cast<unsigned>(binary->m_operation_type->m_id)];
-                entries.emplace_back(operation);
-
-                const auto wrapRight = IsOperation(binary->m_operand2.get());
-                if (wrapRight)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_LEFTPAREN}});
-                ConvertExpressionEntry(entries, binary->m_operand2.get(), menu, item);
-                if (wrapRight)
-                    entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_RIGHTPAREN}});
-                return;
+                ConvertExpressionEntryUnaryOperation(entries, unary, menu, item);
             }
-
-            if (const auto* function = dynamic_cast<const CommonExpressionBaseFunctionCall*>(expression))
+            else if (const auto* baseFunction = dynamic_cast<const CommonExpressionBaseFunctionCall*>(expression))
             {
-                expressionEntry functionEntry{};
-                functionEntry.type = EET_OPERATOR;
-                functionEntry.data.op = static_cast<operationEnum>(function->m_function_index);
-                entries.emplace_back(functionEntry);
-
-                auto firstArgument = true;
-                for (const auto& argument : function->m_args)
-                {
-                    if (!firstArgument)
-                        entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_COMMA}});
-                    firstArgument = false;
-                    ConvertExpressionEntry(entries, argument.get(), menu, item);
-                }
-
-                entries.emplace_back(expressionEntry{EET_OPERATOR, {.op = OP_RIGHTPAREN}});
-                return;
+                ConvertExpressionEntryBaseFunctionCall(entries, baseFunction, menu, item);
             }
-
-            if (dynamic_cast<const CommonExpressionCustomFunctionCall*>(expression))
+            else if (dynamic_cast<const CommonExpressionCustomFunctionCall*>(expression))
+            {
                 throw MenuConversionException("IW3 does not support custom menu functions", menu, item);
-            if (dynamic_cast<const SimpleExpressionConditionalOperator*>(expression))
-                throw MenuConversionException("IW3 does not support conditional menu expressions", menu, item);
-
-            throw MenuConversionException("Unknown menu expression entry", menu, item);
+            }
+            else if (dynamic_cast<const SimpleExpressionConditionalOperator*>(expression))
+            {
+                throw MenuConversionException("Cannot use conditional expression in menu expressions", menu, item);
+            }
+            else
+            {
+                assert(false);
+                throw MenuConversionException("Unknown expression entry type in menu expressions", menu, item);
+            }
         }
 
         void
@@ -323,8 +349,8 @@ namespace
         void ConvertVisibleExpression(windowDef_t& window,
                                       statement_s& statement,
                                       const ISimpleExpression* expression,
-                                      const CommonMenuDef* menu,
-                                      const CommonItemDef* item = nullptr) const
+                                      const CommonMenuDef* commonMenu,
+                                      const CommonItemDef* commonItem = nullptr) const
         {
             if (!expression)
                 return;
@@ -352,7 +378,7 @@ namespace
             else
             {
                 window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
-                ConvertExpression(statement, expression, menu, item);
+                ConvertExpression(statement, expression, commonMenu, commonItem);
             }
         }
 
@@ -362,15 +388,16 @@ namespace
             if (!handlers)
                 return nullptr;
 
-            std::string script;
+            std::ostringstream ss;
             for (const auto& element : handlers->m_elements)
             {
                 if (element->GetType() != CommonEventHandlerElementType::SCRIPT)
                     throw MenuConversionException("IW3 event handlers must compile to a script string", menu, item);
 
-                script += dynamic_cast<const CommonEventHandlerScript*>(element.get())->m_script;
+                ss << dynamic_cast<const CommonEventHandlerScript*>(element.get())->m_script;
             }
 
+            const auto script = ss.str();
             return script.empty() ? nullptr : m_memory.Dup(script.c_str());
         }
 
