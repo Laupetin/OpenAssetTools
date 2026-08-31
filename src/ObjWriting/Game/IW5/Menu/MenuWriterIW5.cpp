@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <sstream>
 
 using namespace IW5;
@@ -78,9 +79,7 @@ namespace
         void WriteMenu(const menuDef_t& menu) override
         {
             StartMenuDefScope();
-
-            WriteMenuData(&menu);
-
+            WriteMenuData(menu);
             EndScope();
         }
 
@@ -100,6 +99,11 @@ namespace
         }
 
     private:
+        static bool HasStatement(const Statement_s* statement)
+        {
+            return statement && statement->numEntries > 0 && statement->entries;
+        }
+
         void WriteStatementNaive(const Statement_s* statement) const
         {
             const auto entryCount = static_cast<unsigned>(statement->numEntries);
@@ -344,7 +348,7 @@ namespace
             spaceNext = true;
         }
 
-        void WriteStatementEntryRange(const Statement_s* statement, size_t startOffset, size_t endOffset) const
+        void WriteStatementEntryRange(const Statement_s* statement, const size_t startOffset, const size_t endOffset) const
         {
             assert(startOffset <= endOffset);
             assert(endOffset <= static_cast<size_t>(statement->numEntries));
@@ -398,9 +402,9 @@ namespace
             }
         }
 
-        void WriteStatementProperty(const std::string& propertyKey, const Statement_s* statementValue, bool isBooleanStatement) const
+        void WriteStatementProperty(const std::string& propertyKey, const Statement_s* statement, const bool isBooleanStatement) const
         {
-            if (statementValue == nullptr || statementValue->numEntries < 0)
+            if (!HasStatement(statement))
                 return;
 
             Indent();
@@ -409,12 +413,12 @@ namespace
             if (isBooleanStatement)
             {
                 m_stream << "when(";
-                DUMP_FUNC(statementValue);
+                DUMP_FUNC(statement);
                 m_stream << ");\n";
             }
             else
             {
-                DUMP_FUNC(statementValue);
+                DUMP_FUNC(statement);
                 m_stream << ";\n";
             }
         }
@@ -448,7 +452,6 @@ namespace
                 {
                     if (token == ";")
                         continue;
-
                     Indent();
                 }
 
@@ -465,7 +468,7 @@ namespace
                     isNewStatement = false;
 
                 if (DoesTokenNeedQuotationMarks(token))
-                    m_stream << "\"" << token << "\"";
+                    WriteEscapedString(token);
                 else
                     m_stream << token;
             }
@@ -480,10 +483,10 @@ namespace
             m_stream << "{\n";
             IncIndent();
 
-            for (auto i = 0; i < eventHandlerSet->eventHandlerCount; i++)
+            for (auto eventHandlerIndex = 0; eventHandlerIndex < eventHandlerSet->eventHandlerCount; eventHandlerIndex++)
             {
-                const auto* eventHandler = eventHandlerSet->eventHandlers[i];
-                if (eventHandler == nullptr)
+                const auto* eventHandler = eventHandlerSet->eventHandlers[eventHandlerIndex];
+                if (!eventHandler)
                     continue;
 
                 switch (eventHandler->eventType)
@@ -493,8 +496,8 @@ namespace
                     break;
 
                 case EVENT_IF:
-                    if (eventHandler->eventData.conditionalScript == nullptr || eventHandler->eventData.conditionalScript->eventExpression == nullptr
-                        || eventHandler->eventData.conditionalScript->eventHandlerSet == nullptr)
+                    if (!eventHandler->eventData.conditionalScript || !eventHandler->eventData.conditionalScript->eventExpression
+                        || !eventHandler->eventData.conditionalScript->eventHandlerSet)
                     {
                         continue;
                     }
@@ -507,7 +510,7 @@ namespace
                     break;
 
                 case EVENT_ELSE:
-                    if (eventHandler->eventData.elseScript == nullptr)
+                    if (!eventHandler->eventData.elseScript)
                         continue;
 
                     Indent();
@@ -543,7 +546,7 @@ namespace
 
         void WriteMenuEventHandlerSetProperty(const std::string& propertyKey, const MenuEventHandlerSet* eventHandlerSetValue)
         {
-            if (eventHandlerSetValue == nullptr)
+            if (!eventHandlerSetValue)
                 return;
 
             Indent();
@@ -559,51 +562,44 @@ namespace
                      << static_cast<int>(rect.vertAlign) << "\n";
         }
 
-        void WriteMaterialProperty(const std::string& propertyKey, const Material* materialValue) const
+        void WriteMaterialProperty(const std::string& propertyKey, const Material* material) const
         {
-            if (materialValue == nullptr || materialValue->info.name == nullptr)
+            if (!material || !material->info.name)
                 return;
 
-            if (materialValue->info.name[0] == ',')
-                WriteStringProperty(propertyKey, &materialValue->info.name[1]);
-            else
-                WriteStringProperty(propertyKey, materialValue->info.name);
+            const auto* materialName = material->info.name;
+            if (materialName[0] == ',')
+                materialName++;
+            WriteStringProperty(propertyKey, materialName);
         }
 
-        void WriteSoundAliasProperty(const std::string& propertyKey, const snd_alias_list_t* soundAliasValue) const
+        void WriteSoundAliasProperty(const std::string& propertyKey, const snd_alias_list_t* soundAlias) const
         {
-            if (soundAliasValue == nullptr)
-                return;
-
-            WriteStringProperty(propertyKey, soundAliasValue->aliasName);
+            if (soundAlias)
+                WriteStringProperty(propertyKey, soundAlias->aliasName);
         }
 
-        void WriteDecodeEffectProperty(const std::string& propertyKey, const itemDef_s* item) const
+        void WriteDecodeEffectProperty(const std::string& propertyKey, const itemDef_s& item) const
         {
-            if (!item->decayActive)
+            if (!item.decayActive)
                 return;
 
             Indent();
             WriteKey(propertyKey);
-            m_stream << item->fxLetterTime << " " << item->fxDecayStartTime << " " << item->fxDecayDuration << "\n";
+            m_stream << item.fxLetterTime << " " << item.fxDecayStartTime << " " << item.fxDecayDuration << "\n";
         }
 
-        void WriteItemKeyHandlerProperty(const ItemKeyHandler* itemKeyHandlerValue)
+        void WriteItemKeyHandlers(const ItemKeyHandler* handler)
         {
-            for (const auto* currentHandler = itemKeyHandlerValue; currentHandler; currentHandler = currentHandler->next)
+            for (const auto* current = handler; current; current = current->next)
             {
-                if (currentHandler->key >= '!' && currentHandler->key <= '~' && currentHandler->key != '"')
-                {
-                    std::ostringstream ss;
-                    ss << "execKey \"" << static_cast<char>(currentHandler->key) << "\"";
-                    WriteMenuEventHandlerSetProperty(ss.str(), currentHandler->action);
-                }
+                std::string key;
+                if (current->key >= '!' && current->key <= '~' && current->key != '"')
+                    key = std::format("execKey \"{}\"", static_cast<char>(current->key));
                 else
-                {
-                    std::ostringstream ss;
-                    ss << "execKeyInt " << currentHandler->key;
-                    WriteMenuEventHandlerSetProperty(ss.str(), currentHandler->action);
-                }
+                    key = std::format("execKeyInt {}", current->key);
+
+                WriteMenuEventHandlerSetProperty(key, current->action);
             }
         }
 
@@ -614,18 +610,18 @@ namespace
 
             Indent();
             WriteKey(propertyKey);
+            m_stream << "{ ";
 
             const auto tokenList = CreateScriptTokenList(value);
-
             auto firstToken = true;
-            m_stream << "{ ";
             for (const auto& token : tokenList)
             {
                 if (firstToken)
                     firstToken = false;
                 else
                     m_stream << ";";
-                m_stream << "\"" << token << "\"";
+
+                WriteEscapedString(token);
             }
             if (!firstToken)
                 m_stream << " ";
@@ -651,59 +647,63 @@ namespace
             }
         }
 
-        void WriteColumnProperty(const std::string& propertyKey, const listBoxDef_s* listBox) const
+        void WriteColumnProperty(const listBoxDef_s& listBox) const
         {
-            if (listBox->numColumns <= 0)
+            if (listBox.numColumns <= 0)
                 return;
 
             Indent();
-            WriteKey(propertyKey);
-            m_stream << listBox->numColumns << "\n";
+            WriteKey("columns");
+            m_stream << listBox.numColumns << "\n";
 
-            for (auto col = 0; col < listBox->numColumns; col++)
+            const auto columnCount = std::min<size_t>(listBox.numColumns, std::size(listBox.columnInfo));
+            for (size_t columnIndex = 0u; columnIndex < columnCount; columnIndex++)
             {
+                const auto& column = listBox.columnInfo[columnIndex];
+
                 Indent();
                 for (auto i = 0u; i < MENU_KEY_SPACING; i++)
                     m_stream << " ";
 
-                m_stream << listBox->columnInfo[col].xpos << " " << listBox->columnInfo[col].ypos << " " << listBox->columnInfo[col].width << " "
-                         << listBox->columnInfo[col].height << " " << listBox->columnInfo[col].maxChars << " " << listBox->columnInfo[col].alignment << "\n";
+                m_stream << column.xpos << " " << column.ypos << " " << column.width << " " << column.height << " " << column.maxChars << " "
+                         << column.alignment << "\n";
             }
         }
 
-        void WriteListBoxProperties(const itemDef_s* item)
+        void WriteListBoxProperties(const itemDef_s& item)
         {
-            if (item->type != ITEM_TYPE_LISTBOX || item->typeData.listBox == nullptr)
+            if (item.type != ITEM_TYPE_LISTBOX || !item.typeData.listBox)
                 return;
 
-            const auto* listBox = item->typeData.listBox;
-            WriteKeywordProperty("notselectable", listBox->notselectable != 0);
-            WriteKeywordProperty("noscrollbars", listBox->noScrollBars != 0);
-            WriteKeywordProperty("usepaging", listBox->usePaging != 0);
-            WriteFloatProperty("elementwidth", listBox->elementWidth, 0.0f);
-            WriteFloatProperty("elementheight", listBox->elementHeight, 0.0f);
-            WriteFloatProperty("feeder", item->special, 0.0f);
-            WriteIntProperty("elementtype", listBox->elementStyle, 0);
-            WriteColumnProperty("columns", listBox);
-            WriteMenuEventHandlerSetProperty("doubleclick", listBox->onDoubleClick);
-            WriteColorProperty("selectBorder", listBox->selectBorder, COLOR_0000);
-            WriteMaterialProperty("selectIcon", listBox->selectIcon);
-            WriteStatementProperty("exp elementheight", listBox->elementHeightExp, false);
+            const auto& listBox = *item.typeData.listBox;
+            WriteKeywordProperty("notselectable", listBox.notselectable != 0);
+            WriteKeywordProperty("noscrollbars", listBox.noScrollBars != 0);
+            WriteKeywordProperty("usepaging", listBox.usePaging != 0);
+            WriteFloatProperty("elementwidth", listBox.elementWidth, 0.0f);
+            WriteFloatProperty("elementheight", listBox.elementHeight, 0.0f);
+            WriteFloatProperty("feeder", item.special, 0.0f);
+            WriteIntProperty("elementtype", listBox.elementStyle, 0);
+            WriteColumnProperty(listBox);
+            WriteMenuEventHandlerSetProperty("doubleclick", listBox.onDoubleClick);
+            WriteColorProperty("selectBorder", listBox.selectBorder, COLOR_0000);
+            WriteMaterialProperty("selectIcon", listBox.selectIcon);
+            WriteStatementProperty("exp elementheight", listBox.elementHeightExp, false);
         }
 
-        void WriteDvarFloatProperty(const std::string& propertyKey, const itemDef_s* item, const editFieldDef_s* editField) const
+        void WriteDvarFloatProperty(const itemDef_s& item, const editFieldDef_s& editField) const
         {
-            if (item->dvar == nullptr)
+            if (!item.dvar)
                 return;
 
             Indent();
-            WriteKey(propertyKey);
-            m_stream << "\"" << item->dvar << "\" " << editField->stepVal << " " << editField->minVal << " " << editField->maxVal << "\n";
+            WriteKey("dvarFloat");
+            WriteEscapedString(item.dvar);
+            m_stream << " " << editField.stepVal << " " << editField.minVal << " " << editField.maxVal << "\n";
         }
 
-        void WriteEditFieldProperties(const itemDef_s* item) const
+        void WriteEditFieldProperties(const itemDef_s& item) const
         {
-            switch (item->type)
+            switch (item.type)
             {
             case ITEM_TYPE_TEXT:
             case ITEM_TYPE_EDITFIELD:
@@ -722,155 +722,160 @@ namespace
                 return;
             }
 
-            if (item->typeData.editField == nullptr)
+            if (!item.typeData.editField)
                 return;
 
-            const auto* editField = item->typeData.editField;
-            if (std::fabs(-1.0f - editField->stepVal) >= std::numeric_limits<float>::epsilon()
-                || std::fabs(-1.0f - editField->minVal) >= std::numeric_limits<float>::epsilon()
-                || std::fabs(-1.0f - editField->maxVal) >= std::numeric_limits<float>::epsilon())
+            const auto& editField = *item.typeData.editField;
+            if (std::fabs(-1.0f - editField.stepVal) >= std::numeric_limits<float>::epsilon()
+                || std::fabs(-1.0f - editField.minVal) >= std::numeric_limits<float>::epsilon()
+                || std::fabs(-1.0f - editField.maxVal) >= std::numeric_limits<float>::epsilon())
             {
-                WriteDvarFloatProperty("dvarFloat", item, editField);
+                WriteDvarFloatProperty(item, editField);
             }
             else
             {
-                WriteStringProperty("dvar", item->dvar);
+                WriteStringProperty("dvar", item.dvar);
             }
-            WriteStringProperty("localvar", item->localVar);
-            WriteIntProperty("maxChars", editField->maxChars, 0);
-            WriteKeywordProperty("maxCharsGotoNext", editField->maxCharsGotoNext != 0);
-            WriteIntProperty("maxPaintChars", editField->maxPaintChars, 0);
+            WriteStringProperty("localvar", item.localVar);
+            WriteIntProperty("maxChars", editField.maxChars, 0);
+            WriteKeywordProperty("maxCharsGotoNext", editField.maxCharsGotoNext != 0);
+            WriteIntProperty("maxPaintChars", editField.maxPaintChars, 0);
         }
 
-        void WriteMultiValueProperty(const multiDef_s* multiDef) const
+        void WriteMultiValueProperty(const multiDef_s& multi) const
         {
             Indent();
-            if (multiDef->strDef)
-                WriteKey("dvarStrList");
-            else
-                WriteKey("dvarFloatList");
-
+            WriteKey(multi.strDef ? "dvarStrList" : "dvarFloatList");
             m_stream << "{";
-            for (auto i = 0; i < multiDef->count; i++)
+            const auto valueCount = std::min<size_t>(multi.count, std::size(multi.dvarValue));
+            for (size_t valueIndex = 0u; valueIndex < valueCount; valueIndex++)
             {
-                if (multiDef->dvarList[i] == nullptr || multiDef->strDef && multiDef->dvarStr[i] == nullptr)
+                if (!multi.dvarList[valueIndex] || (multi.strDef && !multi.dvarStr[valueIndex]))
                     continue;
 
-                m_stream << " \"" << multiDef->dvarList[i] << "\"";
-
-                if (multiDef->strDef)
-                    m_stream << " \"" << multiDef->dvarStr[i] << "\"";
+                m_stream << " ";
+                WriteEscapedString(multi.dvarList[valueIndex]);
+                m_stream << " ";
+                if (multi.strDef)
+                    WriteEscapedString(multi.dvarStr[valueIndex]);
                 else
-                    m_stream << " " << multiDef->dvarValue[i] << "";
+                    m_stream << multi.dvarValue[valueIndex];
             }
             m_stream << " }\n";
         }
 
-        void WriteMultiProperties(const itemDef_s* item) const
+        void WriteMultiProperties(const itemDef_s& item) const
         {
-            if (item->type != ITEM_TYPE_MULTI || item->typeData.multi == nullptr)
+            if (item.type != ITEM_TYPE_MULTI || !item.typeData.multi)
                 return;
 
-            const auto* multiDef = item->typeData.multi;
-
-            if (multiDef->count <= 0)
-                return;
-
-            WriteStringProperty("dvar", item->dvar);
-            WriteStringProperty("localvar", item->localVar);
-            WriteMultiValueProperty(multiDef);
+            WriteStringProperty("dvar", item.dvar);
+            WriteStringProperty("localvar", item.localVar);
+            WriteMultiValueProperty(*item.typeData.multi);
         }
 
-        void WriteEnumDvarProperties(const itemDef_s* item) const
+        void WriteEnumDvarProperties(const itemDef_s& item) const
         {
-            if (item->type != ITEM_TYPE_DVARENUM)
+            if (item.type != ITEM_TYPE_DVARENUM)
                 return;
 
-            WriteStringProperty("dvar", item->dvar);
-            WriteStringProperty("localvar", item->localVar);
-            WriteStringProperty("dvarEnumList", item->typeData.enumDvarName);
+            WriteStringProperty("dvar", item.dvar);
+            WriteStringProperty("localvar", item.localVar);
+            WriteStringProperty("dvarEnumList", item.typeData.enumDvarName);
         }
 
-        void WriteTickerProperties(const itemDef_s* item) const
+        void WriteTickerProperties(const itemDef_s& item) const
         {
-            if (item->type != ITEM_TYPE_NEWS_TICKER || item->typeData.ticker == nullptr)
+            if (item.type != ITEM_TYPE_NEWS_TICKER || !item.typeData.ticker)
                 return;
 
-            const auto* newsTickerDef = item->typeData.ticker;
+            const auto* newsTickerDef = item.typeData.ticker;
             WriteIntProperty("spacing", newsTickerDef->spacing, 0);
             WriteIntProperty("speed", newsTickerDef->speed, 0);
             WriteIntProperty("newsfeed", newsTickerDef->feedId, 0);
         }
 
-        void WriteItemData(const itemDef_s* item)
+        void WriteItemTextProperty(const char* text) const
         {
-            WriteStringProperty("name", item->window.name);
-            WriteStringProperty("text", item->text);
-            WriteKeywordProperty("textsavegame", item->itemFlags & ITEM_FLAG_SAVE_GAME_INFO);
-            WriteKeywordProperty("textcinematicsubtitle", item->itemFlags & ITEM_FLAG_CINEMATIC_SUBTITLE);
-            WriteStringProperty("group", item->window.group);
-            WriteRectProperty("rect", item->window.rectClient);
-            WriteIntProperty("style", item->window.style, 0);
-            WriteKeywordProperty("decoration", item->window.staticFlags & WINDOW_FLAG_DECORATION);
-            WriteKeywordProperty("autowrapped", item->window.staticFlags & WINDOW_FLAG_AUTO_WRAPPED);
-            WriteKeywordProperty("horizontalscroll", item->window.staticFlags & WINDOW_FLAG_HORIZONTAL_SCROLL);
-            WriteIntProperty("type", item->type, ITEM_TYPE_TEXT);
-            WriteIntProperty("border", item->window.border, 0);
-            WriteFloatProperty("borderSize", item->window.borderSize, 0.0f);
+            // This distinguishes explicitly empty text from null text, which falls back to the item's dvar.
+            if (!text)
+                return;
 
-            if (item->visibleExp)
-                WriteStatementProperty("visible", item->visibleExp, true);
-            else if (item->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+            Indent();
+            WriteKey("text");
+            WriteEscapedString(text);
+            m_stream << "\n";
+        }
+
+        void WriteItemData(const itemDef_s& item)
+        {
+            WriteStringProperty("name", item.window.name);
+            WriteItemTextProperty(item.text);
+            WriteKeywordProperty("textsavegame", item.itemFlags & ITEM_FLAG_SAVE_GAME_INFO);
+            WriteKeywordProperty("textcinematicsubtitle", item.itemFlags & ITEM_FLAG_CINEMATIC_SUBTITLE);
+            WriteStringProperty("group", item.window.group);
+            WriteRectProperty("rect", item.window.rectClient);
+            WriteIntProperty("style", item.window.style, 0);
+            WriteKeywordProperty("decoration", item.window.staticFlags & WINDOW_FLAG_DECORATION);
+            WriteKeywordProperty("autowrapped", item.window.staticFlags & WINDOW_FLAG_AUTO_WRAPPED);
+            WriteKeywordProperty("horizontalscroll", item.window.staticFlags & WINDOW_FLAG_HORIZONTAL_SCROLL);
+            WriteIntProperty("type", item.type, ITEM_TYPE_TEXT);
+            WriteIntProperty("border", item.window.border, 0);
+            WriteFloatProperty("borderSize", item.window.borderSize, 0.0f);
+
+            if (HasStatement(item.visibleExp))
+                WriteStatementProperty("visible", item.visibleExp, true);
+            else if (item.window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
                 WriteIntProperty("visible", 1, 0);
 
-            WriteStatementProperty("disabled", item->disabledExp, true);
-            WriteIntProperty("ownerdraw", item->window.ownerDraw, 0);
-            WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
-            WriteIntProperty("align", item->alignment, 0);
-            WriteIntProperty("textalign", item->textAlignMode, 0);
-            WriteFloatProperty("textalignx", item->textalignx, 0.0f);
-            WriteFloatProperty("textaligny", item->textaligny, 0.0f);
-            WriteFloatProperty("textscale", item->textscale, 0.0f);
-            WriteIntProperty("textstyle", item->textStyle, 0);
-            WriteIntProperty("textfont", item->fontEnum, 0);
-            WriteColorProperty("backcolor", item->window.backColor, COLOR_0000);
-            WriteColorProperty("forecolor", item->window.foreColor, COLOR_1111);
-            WriteColorProperty("bordercolor", item->window.borderColor, COLOR_0000);
-            WriteColorProperty("outlinecolor", item->window.outlineColor, COLOR_0000);
-            WriteColorProperty("disablecolor", item->window.disableColor, COLOR_0000);
-            WriteColorProperty("glowcolor", item->glowColor, COLOR_0000);
-            WriteMaterialProperty("background", item->window.background);
-            WriteMenuEventHandlerSetProperty("onFocus", item->onFocus);
-            WriteMenuEventHandlerSetProperty("hasFocus", item->hasFocus);
-            WriteMenuEventHandlerSetProperty("leaveFocus", item->leaveFocus);
-            WriteMenuEventHandlerSetProperty("mouseEnter", item->mouseEnter);
-            WriteMenuEventHandlerSetProperty("mouseExit", item->mouseExit);
-            WriteMenuEventHandlerSetProperty("mouseEnterText", item->mouseEnterText);
-            WriteMenuEventHandlerSetProperty("mouseExitText", item->mouseExitText);
-            WriteMenuEventHandlerSetProperty("action", item->action);
-            WriteMenuEventHandlerSetProperty("accept", item->accept);
-            // WriteFloatProperty("special", item->special, 0.0f);
-            WriteSoundAliasProperty("focusSound", item->focusSound);
-            WriteStringProperty("dvarTest", item->dvarTest);
+            WriteStatementProperty("disabled", item.disabledExp, true);
+            WriteIntProperty("ownerdraw", item.window.ownerDraw, 0);
+            WriteFlagsProperty("ownerdrawFlag", item.window.ownerDrawFlags);
+            WriteIntProperty("align", item.alignment, 0);
+            WriteIntProperty("textalign", item.textAlignMode, 0);
+            WriteFloatProperty("textalignx", item.textalignx, 0.0f);
+            WriteFloatProperty("textaligny", item.textaligny, 0.0f);
+            WriteFloatProperty("textscale", item.textscale, 0.0f);
+            WriteIntProperty("textstyle", item.textStyle, 0);
+            WriteIntProperty("textfont", item.fontEnum, 0);
+            WriteColorProperty("backcolor", item.window.backColor, COLOR_0000);
+            WriteColorProperty("forecolor", item.window.foreColor, COLOR_1111);
+            WriteColorProperty("bordercolor", item.window.borderColor, COLOR_0000);
+            WriteColorProperty("outlinecolor", item.window.outlineColor, COLOR_0000);
+            WriteColorProperty("disablecolor", item.window.disableColor, COLOR_0000);
+            WriteColorProperty("glowcolor", item.glowColor, COLOR_0000);
+            WriteMaterialProperty("background", item.window.background);
+            WriteMenuEventHandlerSetProperty("onFocus", item.onFocus);
+            WriteMenuEventHandlerSetProperty("hasFocus", item.hasFocus);
+            WriteMenuEventHandlerSetProperty("leaveFocus", item.leaveFocus);
+            WriteMenuEventHandlerSetProperty("mouseEnter", item.mouseEnter);
+            WriteMenuEventHandlerSetProperty("mouseExit", item.mouseExit);
+            WriteMenuEventHandlerSetProperty("mouseEnterText", item.mouseEnterText);
+            WriteMenuEventHandlerSetProperty("mouseExitText", item.mouseExitText);
+            WriteMenuEventHandlerSetProperty("action", item.action);
+            WriteMenuEventHandlerSetProperty("accept", item.onAccept);
+            // WriteFloatProperty("special", item.special, 0.0f);
+            WriteSoundAliasProperty("focusSound", item.focusSound);
+            WriteStringProperty("dvarTest", item.dvarTest);
 
-            if (item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
-                WriteMultiTokenStringProperty("enableDvar", item->enableDvar);
-            else if (item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
-                WriteMultiTokenStringProperty("disableDvar", item->enableDvar);
-            else if (item->dvarFlags & ITEM_DVAR_FLAG_SHOW)
-                WriteMultiTokenStringProperty("showDvar", item->enableDvar);
-            else if (item->dvarFlags & ITEM_DVAR_FLAG_HIDE)
-                WriteMultiTokenStringProperty("hideDvar", item->enableDvar);
-            else if (item->dvarFlags & ITEM_DVAR_FLAG_FOCUS)
-                WriteMultiTokenStringProperty("focusDvar", item->enableDvar);
+            if (item.dvarFlags & ITEM_DVAR_FLAG_ENABLE)
+                WriteMultiTokenStringProperty("enableDvar", item.enableDvar);
+            else if (item.dvarFlags & ITEM_DVAR_FLAG_DISABLE)
+                WriteMultiTokenStringProperty("disableDvar", item.enableDvar);
+            else if (item.dvarFlags & ITEM_DVAR_FLAG_SHOW)
+                WriteMultiTokenStringProperty("showDvar", item.enableDvar);
+            else if (item.dvarFlags & ITEM_DVAR_FLAG_HIDE)
+                WriteMultiTokenStringProperty("hideDvar", item.enableDvar);
+            else if (item.dvarFlags & ITEM_DVAR_FLAG_FOCUS)
+                WriteMultiTokenStringProperty("focusDvar", item.enableDvar);
 
-            WriteItemKeyHandlerProperty(item->onKey);
-            WriteStatementProperty("exp text", item->textExp, false);
-            WriteStatementProperty("exp textaligny", item->textAlignYExp, false);
-            WriteStatementProperty("exp material", item->materialExp, false);
-            WriteFloatExpressionsProperty(item->floatExpressions, item->floatExpressionCount);
-            WriteIntProperty("gamemsgwindowindex", item->gameMsgWindowIndex, 0);
-            WriteIntProperty("gamemsgwindowmode", item->gameMsgWindowMode, 0);
+            WriteItemKeyHandlers(item.onKey);
+            WriteStatementProperty("exp text", item.textExp, false);
+            WriteStatementProperty("exp textaligny", item.textAlignYExp, false);
+            WriteStatementProperty("exp material", item.materialExp, false);
+            WriteFloatExpressionsProperty(item.floatExpressions, item.floatExpressionCount);
+            WriteIntProperty("gamemsgwindowindex", item.gameMsgWindowIndex, 0);
+            WriteIntProperty("gamemsgwindowmode", item.gameMsgWindowMode, 0);
             WriteDecodeEffectProperty("decodeEffect", item);
 
             WriteListBoxProperties(item);
@@ -880,70 +885,75 @@ namespace
             WriteTickerProperties(item);
         }
 
-        void WriteItemDefs(const itemDef_s* const* itemDefs, size_t itemCount)
+        void WriteItemDefs(const itemDef_s* const* items, const size_t itemCount)
         {
-            for (auto i = 0u; i < itemCount; i++)
+            if (!items || itemCount <= 0)
+                return;
+
+            for (size_t itemIndex = 0u; itemIndex < itemCount; itemIndex++)
             {
+                const auto* item = items[itemIndex];
+                if (!item)
+                    continue;
+
                 StartItemDefScope();
-
-                WriteItemData(itemDefs[i]);
-
+                WriteItemData(*item);
                 EndScope();
             }
         }
 
-        void WriteMenuData(const menuDef_t* menu)
+        void WriteMenuData(const menuDef_t& menu)
         {
-            WriteStringProperty("name", menu->window.name);
-            WriteBoolProperty("fullscreen", menu->data->fullScreen, false);
-            WriteKeywordProperty("screenSpace", menu->window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
-            WriteKeywordProperty("decoration", menu->window.staticFlags & WINDOW_FLAG_DECORATION);
-            WriteRectProperty("rect", menu->window.rect);
-            WriteIntProperty("style", menu->window.style, 0);
-            WriteIntProperty("border", menu->window.border, 0);
-            WriteFloatProperty("borderSize", menu->window.borderSize, 0.0f);
-            WriteColorProperty("backcolor", menu->window.backColor, COLOR_0000);
-            WriteColorProperty("forecolor", menu->window.foreColor, COLOR_1111);
-            WriteColorProperty("bordercolor", menu->window.borderColor, COLOR_0000);
-            WriteColorProperty("focuscolor", menu->data->focusColor, COLOR_0000);
-            WriteColorProperty("outlinecolor", menu->window.outlineColor, COLOR_0000);
-            WriteMaterialProperty("background", menu->window.background);
-            WriteIntProperty("ownerdraw", menu->window.ownerDraw, 0);
-            WriteFlagsProperty("ownerdrawFlag", menu->window.ownerDrawFlags);
-            WriteKeywordProperty("outOfBoundsClick", menu->window.staticFlags & WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
-            WriteStringProperty("soundLoop", menu->data->soundName);
-            WriteKeywordProperty("popup", menu->window.staticFlags & WINDOW_FLAG_POPUP);
-            WriteFloatProperty("fadeClamp", menu->data->fadeClamp, 0.0f);
-            WriteIntProperty("fadeCycle", menu->data->fadeCycle, 0);
-            WriteFloatProperty("fadeAmount", menu->data->fadeAmount, 0.0f);
-            WriteFloatProperty("fadeInAmount", menu->data->fadeInAmount, 0.0f);
-            WriteFloatProperty("blurWorld", menu->data->blurRadius, 0.0f);
-            WriteKeywordProperty("legacySplitScreenScale", menu->window.staticFlags & WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
-            WriteKeywordProperty("hiddenDuringScope", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_SCOPE);
-            WriteKeywordProperty("hiddenDuringFlashbang", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
-            WriteKeywordProperty("hiddenDuringUI", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_UI);
-            WriteStringProperty("allowedBinding", menu->data->allowedBinding);
-            WriteKeywordProperty("textOnlyFocus", menu->window.staticFlags & WINDOW_FLAG_TEXT_ONLY_FOCUS);
+            WriteStringProperty("name", menu.window.name);
+            WriteBoolProperty("fullscreen", menu.data->fullScreen, false);
+            WriteKeywordProperty("screenSpace", menu.window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
+            WriteKeywordProperty("decoration", menu.window.staticFlags & WINDOW_FLAG_DECORATION);
+            WriteRectProperty("rect", menu.window.rect);
+            WriteIntProperty("style", menu.window.style, 0);
+            WriteIntProperty("border", menu.window.border, 0);
+            WriteFloatProperty("borderSize", menu.window.borderSize, 0.0f);
+            WriteColorProperty("backcolor", menu.window.backColor, COLOR_0000);
+            WriteColorProperty("forecolor", menu.window.foreColor, COLOR_1111);
+            WriteColorProperty("bordercolor", menu.window.borderColor, COLOR_0000);
+            WriteColorProperty("focuscolor", menu.data->focusColor, COLOR_0000);
+            WriteColorProperty("outlinecolor", menu.window.outlineColor, COLOR_0000);
+            WriteMaterialProperty("background", menu.window.background);
+            WriteIntProperty("ownerdraw", menu.window.ownerDraw, 0);
+            WriteFlagsProperty("ownerdrawFlag", menu.window.ownerDrawFlags);
+            WriteKeywordProperty("outOfBoundsClick", menu.window.staticFlags & WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
+            WriteStringProperty("soundLoop", menu.data->soundName);
+            WriteKeywordProperty("popup", menu.window.staticFlags & WINDOW_FLAG_POPUP);
+            WriteFloatProperty("fadeClamp", menu.data->fadeClamp, 0.0f);
+            WriteIntProperty("fadeCycle", menu.data->fadeCycle, 0);
+            WriteFloatProperty("fadeAmount", menu.data->fadeAmount, 0.0f);
+            WriteFloatProperty("fadeInAmount", menu.data->fadeInAmount, 0.0f);
+            WriteFloatProperty("blurWorld", menu.data->blurRadius, 0.0f);
+            WriteKeywordProperty("legacySplitScreenScale", menu.window.staticFlags & WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
+            WriteKeywordProperty("hiddenDuringScope", menu.window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_SCOPE);
+            WriteKeywordProperty("hiddenDuringFlashbang", menu.window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
+            WriteKeywordProperty("hiddenDuringUI", menu.window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_UI);
+            WriteStringProperty("allowedBinding", menu.data->allowedBinding);
+            WriteKeywordProperty("textOnlyFocus", menu.window.staticFlags & WINDOW_FLAG_TEXT_ONLY_FOCUS);
 
-            if (menu->data->visibleExp)
-                WriteStatementProperty("visible", menu->data->visibleExp, true);
-            else if (menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+            if (HasStatement(menu.data->visibleExp))
+                WriteStatementProperty("visible", menu.data->visibleExp, true);
+            else if (menu.window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
                 WriteIntProperty("visible", 1, 0);
 
-            WriteStatementProperty("exp rect X", menu->data->rectXExp, false);
-            WriteStatementProperty("exp rect Y", menu->data->rectYExp, false);
-            WriteStatementProperty("exp rect W", menu->data->rectWExp, false);
-            WriteStatementProperty("exp rect H", menu->data->rectHExp, false);
-            WriteStatementProperty("exp openSound", menu->data->openSoundExp, false);
-            WriteStatementProperty("exp closeSound", menu->data->closeSoundExp, false);
-            WriteStatementProperty("exp soundLoop", menu->data->soundLoopExp, false);
-            WriteMenuEventHandlerSetProperty("onOpen", menu->data->onOpen);
-            WriteMenuEventHandlerSetProperty("onClose", menu->data->onClose);
-            WriteMenuEventHandlerSetProperty("onRequestClose", menu->data->onCloseRequest);
-            WriteMenuEventHandlerSetProperty("onESC", menu->data->onESC);
-            WriteMenuEventHandlerSetProperty("onFocusDueToClose", menu->data->onFocusDueToClose);
-            WriteItemKeyHandlerProperty(menu->data->onKey);
-            WriteItemDefs(menu->items, menu->itemCount);
+            WriteStatementProperty("exp rect X", menu.data->rectXExp, false);
+            WriteStatementProperty("exp rect Y", menu.data->rectYExp, false);
+            WriteStatementProperty("exp rect W", menu.data->rectWExp, false);
+            WriteStatementProperty("exp rect H", menu.data->rectHExp, false);
+            WriteStatementProperty("exp openSound", menu.data->openSoundExp, false);
+            WriteStatementProperty("exp closeSound", menu.data->closeSoundExp, false);
+            WriteStatementProperty("exp soundLoop", menu.data->soundLoopExp, false);
+            WriteMenuEventHandlerSetProperty("onOpen", menu.data->onOpen);
+            WriteMenuEventHandlerSetProperty("onClose", menu.data->onClose);
+            WriteMenuEventHandlerSetProperty("onRequestClose", menu.data->onCloseRequest);
+            WriteMenuEventHandlerSetProperty("onESC", menu.data->onESC);
+            WriteMenuEventHandlerSetProperty("onFocusDueToClose", menu.data->onFocusDueToClose);
+            WriteItemKeyHandlers(menu.data->onKey);
+            WriteItemDefs(menu.items, menu.itemCount);
         }
     };
 } // namespace
