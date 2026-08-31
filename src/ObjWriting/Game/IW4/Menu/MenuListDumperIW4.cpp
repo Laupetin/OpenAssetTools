@@ -81,8 +81,11 @@ namespace
             if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
                 continue;
 
+            const auto* menuAssetName = menu->window.name;
+            const auto isReference = menuAssetName && menuAssetName[0] == ',';
+
             // If the menu was embedded directly as menu list write its data in the menu list file
-            if (menuDumpingState->second.m_alias_menu_list == menuList)
+            if (!isReference && menuDumpingState->second.m_alias_menu_list == menuList)
                 menuDumper.WriteMenu(*menu);
             else
                 menuDumper.IncludeMenu(menuDumpingState->second.m_path);
