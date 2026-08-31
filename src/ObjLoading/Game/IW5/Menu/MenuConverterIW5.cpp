@@ -13,10 +13,11 @@
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <format>
 #include <sstream>
+#include <vector>
 
 using namespace IW5;
 using namespace menu;
@@ -117,6 +118,15 @@ namespace
         };
         static_assert(std::size(BINARY_OPERATION_MAPPING) == static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
 
+        [[nodiscard]] bool IsOperation(const ISimpleExpression* expression) const
+        {
+            if (!m_disable_optimizations && expression->IsStatic())
+                return false;
+
+            return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) != nullptr
+                   || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression) != nullptr;
+        }
+
         bool HandleStaticDvarFunctionCall(Statement_s* gameStatement,
                                           std::vector<expressionEntry>& entries,
                                           const CommonExpressionBaseFunctionCall* functionCall,
@@ -133,22 +143,12 @@ namespace
             if (staticDvarNameExpressionValue.m_type != SimpleExpressionValue::Type::STRING)
                 return false;
 
-            expressionEntry functionEntry{};
-            functionEntry.type = EET_OPERATOR;
-            functionEntry.data.op = targetFunctionIndex;
-            entries.emplace_back(functionEntry);
+            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = targetFunctionIndex}});
 
-            expressionEntry staticDvarIndexEntry{};
-            staticDvarIndexEntry.type = EET_OPERAND;
-            staticDvarIndexEntry.data.operand.dataType = VAL_INT;
-            staticDvarIndexEntry.data.operand.internals.intVal =
-                static_cast<int>(m_conversion_zone_state.AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
-            entries.emplace_back(staticDvarIndexEntry);
+            const auto dvarIntVal = static_cast<int>(m_conversion_zone_state.AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
+            entries.emplace_back(expressionEntry{.type = EET_OPERAND, .data = {.operand = {.dataType = VAL_INT, .internals = {.intVal = dvarIntVal}}}});
 
-            expressionEntry parenRight{};
-            parenRight.type = EET_OPERATOR;
-            parenRight.data.op = OP_RIGHTPAREN;
-            entries.emplace_back(parenRight);
+            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
 
             gameStatement->supportingData = m_conversion_zone_state.m_supporting_data;
 
@@ -157,20 +157,18 @@ namespace
 
         bool HandleSpecialBaseFunctionCall(Statement_s* gameStatement,
                                            std::vector<expressionEntry>& entries,
-                                           const CommonExpressionBaseFunctionCall* functionCall,
-                                           const CommonMenuDef* menu,
-                                           const CommonItemDef* item) const
+                                           const CommonExpressionBaseFunctionCall* baseFunction) const
         {
-            switch (functionCall->m_function_index)
+            switch (baseFunction->m_function_index)
             {
             case EXP_FUNC_DVAR_INT:
-                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_INT);
+                return HandleStaticDvarFunctionCall(gameStatement, entries, baseFunction, EXP_FUNC_STATIC_DVAR_INT);
             case EXP_FUNC_DVAR_BOOL:
-                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_BOOL);
+                return HandleStaticDvarFunctionCall(gameStatement, entries, baseFunction, EXP_FUNC_STATIC_DVAR_BOOL);
             case EXP_FUNC_DVAR_FLOAT:
-                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_FLOAT);
+                return HandleStaticDvarFunctionCall(gameStatement, entries, baseFunction, EXP_FUNC_STATIC_DVAR_FLOAT);
             case EXP_FUNC_DVAR_STRING:
-                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_STRING);
+                return HandleStaticDvarFunctionCall(gameStatement, entries, baseFunction, EXP_FUNC_STATIC_DVAR_STRING);
             default:
                 break;
             }
@@ -180,162 +178,115 @@ namespace
 
         void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement,
                                                     std::vector<expressionEntry>& entries,
-                                                    const CommonExpressionBaseFunctionCall* functionCall,
+                                                    const CommonExpressionBaseFunctionCall* baseFunction,
                                                     const CommonMenuDef* menu,
                                                     const CommonItemDef* item) const
         {
-            if (!HandleSpecialBaseFunctionCall(gameStatement, entries, functionCall, menu, item))
+            if (!HandleSpecialBaseFunctionCall(gameStatement, entries, baseFunction))
             {
-                expressionEntry functionEntry{};
-                functionEntry.type = EET_OPERATOR;
-                functionEntry.data.op = static_cast<int>(functionCall->m_function_index);
-                entries.emplace_back(functionEntry);
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = static_cast<int>(baseFunction->m_function_index)}});
 
                 auto firstArg = true;
-                for (const auto& arg : functionCall->m_args)
+                for (const auto& arg : baseFunction->m_args)
                 {
-                    if (!firstArg)
-                    {
-                        expressionEntry argSeparator{};
-                        argSeparator.type = EET_OPERATOR;
-                        argSeparator.data.op = OP_COMMA;
-                        entries.emplace_back(argSeparator);
-                    }
-                    else
+                    if (firstArg)
                         firstArg = false;
+                    else
+                        entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_COMMA}});
 
                     ConvertExpressionEntry(gameStatement, entries, arg.get(), menu, item);
                 }
 
-                expressionEntry parenRight{};
-                parenRight.type = EET_OPERATOR;
-                parenRight.data.op = OP_RIGHTPAREN;
-                entries.emplace_back(parenRight);
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
             }
         }
 
         void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement,
                                                       std::vector<expressionEntry>& entries,
-                                                      const CommonExpressionCustomFunctionCall* functionCall,
+                                                      const CommonExpressionCustomFunctionCall* customFunction,
                                                       const CommonMenuDef* menu,
                                                       const CommonItemDef* item) const
         {
-            std::string lowerCaseFunctionName(functionCall->m_function_name);
+            std::string lowerCaseFunctionName(customFunction->m_function_name);
             utils::MakeStringLowerCase(lowerCaseFunctionName);
 
-            Statement_s* functionStatement = m_conversion_zone_state.FindFunction(lowerCaseFunctionName);
+            auto* functionStatement = m_conversion_zone_state.FindFunction(lowerCaseFunctionName);
 
-            if (functionStatement == nullptr)
+            if (!functionStatement)
             {
                 // Function was not converted yet: Convert it now
                 const auto foundCommonFunction = m_parsing_zone_state.m_functions_by_name.find(lowerCaseFunctionName);
 
                 if (foundCommonFunction == m_parsing_zone_state.m_functions_by_name.end())
-                    throw MenuConversionException("Failed to find definition for custom function \"" + functionCall->m_function_name + "\"", menu, item);
+                {
+                    throw MenuConversionException(
+                        std::format("Failed to find definition for custom function \"{}\"", customFunction->m_function_name), menu, item);
+                }
 
                 functionStatement = ConvertExpression(foundCommonFunction->second->m_value.get(), menu, item);
                 functionStatement = m_conversion_zone_state.AddFunction(lowerCaseFunctionName, functionStatement);
             }
 
-            expressionEntry functionEntry{};
-            functionEntry.type = EET_OPERAND;
-            functionEntry.data.operand.dataType = VAL_FUNCTION;
-            functionEntry.data.operand.internals.function = functionStatement;
-            entries.emplace_back(functionEntry);
+            entries.emplace_back(expressionEntry{
+                .type = EET_OPERAND,
+                .data = {.operand = {.dataType = VAL_FUNCTION, .internals = {.function = functionStatement}}},
+            });
 
             // Statement uses custom function so it needs supporting data
             gameStatement->supportingData = m_conversion_zone_state.m_supporting_data;
         }
 
-        [[nodiscard]] bool IsOperation(const ISimpleExpression* expression) const
-        {
-            if (!m_disable_optimizations && expression->IsStatic())
-                return false;
-
-            return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) != nullptr
-                   || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression) != nullptr;
-        }
-
         void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement,
                                                   std::vector<expressionEntry>& entries,
-                                                  const SimpleExpressionUnaryOperation* unaryOperation,
+                                                  const SimpleExpressionUnaryOperation* unary,
                                                   const CommonMenuDef* menu,
                                                   const CommonItemDef* item) const
         {
-            assert(static_cast<unsigned>(unaryOperation->m_operation_type->m_id) < static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
-            expressionEntry operation{};
-            operation.type = EET_OPERATOR;
-            operation.data.op = UNARY_OPERATION_MAPPING[static_cast<unsigned>(unaryOperation->m_operation_type->m_id)];
-            entries.emplace_back(operation);
+            assert(static_cast<unsigned>(unary->m_operation_type->m_id) < static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
 
-            if (IsOperation(unaryOperation->m_operand.get()))
-            {
-                expressionEntry parenLeft{};
-                parenLeft.type = EET_OPERATOR;
-                parenLeft.data.op = OP_LEFTPAREN;
-                entries.emplace_back(parenLeft);
+            entries.emplace_back(expressionEntry{
+                .type = EET_OPERATOR,
+                .data = {.op = UNARY_OPERATION_MAPPING[static_cast<unsigned>(unary->m_operation_type->m_id)]},
+            });
 
-                ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
-
-                expressionEntry parenRight{};
-                parenRight.type = EET_OPERATOR;
-                parenRight.data.op = OP_RIGHTPAREN;
-                entries.emplace_back(parenRight);
-            }
-            else
-                ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
+            const auto wrapOperand = IsOperation(unary->m_operand.get());
+            if (wrapOperand)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(gameStatement, entries, unary->m_operand.get(), menu, item);
+            if (wrapOperand)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
         }
 
         void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement,
                                                    std::vector<expressionEntry>& entries,
-                                                   const SimpleExpressionBinaryOperation* binaryOperation,
+                                                   const SimpleExpressionBinaryOperation* binary,
                                                    const CommonMenuDef* menu,
                                                    const CommonItemDef* item) const
         {
             // Game needs all nested operations to have parenthesis
-            if (IsOperation(binaryOperation->m_operand1.get()))
-            {
-                expressionEntry parenLeft{};
-                parenLeft.type = EET_OPERATOR;
-                parenLeft.data.op = OP_LEFTPAREN;
-                entries.emplace_back(parenLeft);
+            const auto wrapLeft = IsOperation(binary->m_operand1.get());
+            if (wrapLeft)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(gameStatement, entries, binary->m_operand1.get(), menu, item);
+            if (wrapLeft)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
 
-                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand1.get(), menu, item);
-
-                expressionEntry parenRight{};
-                parenRight.type = EET_OPERATOR;
-                parenRight.data.op = OP_RIGHTPAREN;
-                entries.emplace_back(parenRight);
-            }
-            else
-                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand1.get(), menu, item);
-
-            assert(static_cast<unsigned>(binaryOperation->m_operation_type->m_id) < static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
-            expressionEntry operation{};
-            operation.type = EET_OPERATOR;
-            operation.data.op = BINARY_OPERATION_MAPPING[static_cast<unsigned>(binaryOperation->m_operation_type->m_id)];
-            entries.emplace_back(operation);
+            assert(static_cast<unsigned>(binary->m_operation_type->m_id) < static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
+            entries.emplace_back(expressionEntry{
+                .type = EET_OPERATOR,
+                .data = {.op = BINARY_OPERATION_MAPPING[static_cast<unsigned>(binary->m_operation_type->m_id)]},
+            });
 
             // Game needs all nested operations to have parenthesis
-            if (IsOperation(binaryOperation->m_operand2.get()))
-            {
-                expressionEntry parenLeft{};
-                parenLeft.type = EET_OPERATOR;
-                parenLeft.data.op = OP_LEFTPAREN;
-                entries.emplace_back(parenLeft);
-
-                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand2.get(), menu, item);
-
-                expressionEntry parenRight{};
-                parenRight.type = EET_OPERATOR;
-                parenRight.data.op = OP_RIGHTPAREN;
-                entries.emplace_back(parenRight);
-            }
-            else
-                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand2.get(), menu, item);
+            const auto wrapRight = IsOperation(binary->m_operand2.get());
+            if (wrapRight)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_LEFTPAREN}});
+            ConvertExpressionEntry(gameStatement, entries, binary->m_operand2.get(), menu, item);
+            if (wrapRight)
+                entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = OP_RIGHTPAREN}});
         }
 
-        void ConvertExpressionEntryExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue& value) const
+        void ConvertExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue& value) const
         {
             expressionEntry entry{};
             entry.type = EET_OPERAND;
@@ -367,28 +318,28 @@ namespace
         {
             if (!m_disable_optimizations && expression->IsStatic())
             {
-                const auto expressionStaticValue = expression->EvaluateStatic();
-                ConvertExpressionEntryExpressionValue(entries, expressionStaticValue);
+                const auto staticValue = expression->EvaluateStatic();
+                ConvertExpressionValue(entries, staticValue);
             }
-            else if (const auto* expressionValue = dynamic_cast<const SimpleExpressionValue*>(expression))
+            else if (const auto* value = dynamic_cast<const SimpleExpressionValue*>(expression))
             {
-                ConvertExpressionEntryExpressionValue(entries, *expressionValue);
+                ConvertExpressionValue(entries, *value);
             }
-            else if (const auto* binaryOperation = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
+            else if (const auto* binary = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
             {
-                ConvertExpressionEntryBinaryOperation(gameStatement, entries, binaryOperation, menu, item);
+                ConvertExpressionEntryBinaryOperation(gameStatement, entries, binary, menu, item);
             }
-            else if (const auto* unaryOperation = dynamic_cast<const SimpleExpressionUnaryOperation*>(expression))
+            else if (const auto* unary = dynamic_cast<const SimpleExpressionUnaryOperation*>(expression))
             {
-                ConvertExpressionEntryUnaryOperation(gameStatement, entries, unaryOperation, menu, item);
+                ConvertExpressionEntryUnaryOperation(gameStatement, entries, unary, menu, item);
             }
-            else if (const auto* baseFunctionCall = dynamic_cast<const CommonExpressionBaseFunctionCall*>(expression))
+            else if (const auto* baseFunction = dynamic_cast<const CommonExpressionBaseFunctionCall*>(expression))
             {
-                ConvertExpressionEntryBaseFunctionCall(gameStatement, entries, baseFunctionCall, menu, item);
+                ConvertExpressionEntryBaseFunctionCall(gameStatement, entries, baseFunction, menu, item);
             }
-            else if (const auto* customFunctionCall = dynamic_cast<const CommonExpressionCustomFunctionCall*>(expression))
+            else if (const auto* customFunction = dynamic_cast<const CommonExpressionCustomFunctionCall*>(expression))
             {
-                ConvertExpressionEntryCustomFunctionCall(gameStatement, entries, customFunctionCall, menu, item);
+                ConvertExpressionEntryCustomFunctionCall(gameStatement, entries, customFunction, menu, item);
             }
             else if (dynamic_cast<const SimpleExpressionConditionalOperator*>(expression))
             {
@@ -408,14 +359,14 @@ namespace
 
             auto* statement = m_memory.Alloc<Statement_s>();
 
-            std::vector<expressionEntry> expressionEntries;
-            ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
+            std::vector<expressionEntry> entries;
+            ConvertExpressionEntry(statement, entries, expression, menu, item);
 
-            auto* outputExpressionEntries = m_memory.Alloc<expressionEntry>(expressionEntries.size());
-            std::memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
+            auto* outEntries = m_memory.Alloc<expressionEntry>(entries.size());
+            std::memcpy(outEntries, entries.data(), sizeof(expressionEntry) * entries.size());
 
-            statement->entries = outputExpressionEntries;
-            statement->numEntries = static_cast<int>(expressionEntries.size());
+            statement->numEntries = static_cast<int>(entries.size());
+            statement->entries = outEntries;
 
             return statement;
         }
@@ -605,7 +556,7 @@ namespace
                 outputCondition->eventExpression = ConvertExpression(condition->m_condition.get(), menu, item);
                 outputCondition->eventHandlerSet = ConvertEventHandlerSet(condition->m_condition_elements.get(), menu, item);
 
-                elements.push_back(outputHandler);
+                elements.emplace_back(outputHandler);
 
                 if (condition->m_else_elements)
                 {
@@ -613,7 +564,7 @@ namespace
                     outputElseHandler->eventType = EVENT_ELSE;
                     outputElseHandler->eventData.elseScript = ConvertEventHandlerSet(condition->m_else_elements.get(), menu, item);
 
-                    elements.push_back(outputElseHandler);
+                    elements.emplace_back(outputElseHandler);
                 }
             }
         }
@@ -1063,7 +1014,7 @@ namespace
 
         [[nodiscard]] newsTickerDef_s* ConvertNewsTickerFeatures(const CommonItemFeaturesNewsTicker* commonNewsTicker) const
         {
-            if (commonNewsTicker == nullptr)
+            if (!commonNewsTicker)
                 return nullptr;
 
             auto* newsTicker = m_memory.Alloc<newsTickerDef_s>();
