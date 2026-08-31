@@ -111,7 +111,7 @@ namespace menu
     {
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+        const auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
         for (const auto* asset : menuListAssets)
             CreateDumpingStateForMenuListIW3(zoneState, asset->Asset());
 
