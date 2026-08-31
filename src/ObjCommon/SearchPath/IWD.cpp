@@ -102,7 +102,7 @@ namespace
 
         std::streamsize xsgetn(char* ptr, std::streamsize count) override
         {
-            auto result = std::streamsize{};
+            std::streamsize result{};
 
             if (m_peeked && count >= 1)
             {
