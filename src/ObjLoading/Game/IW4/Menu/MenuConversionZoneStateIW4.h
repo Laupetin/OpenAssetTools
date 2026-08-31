@@ -3,26 +3,15 @@
 #include "Asset/IZoneAssetCreationState.h"
 #include "Game/IW4/IW4.h"
 
-#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace IW4
 {
     class MenuConversionZoneState final : public IZoneAssetCreationState
     {
-        Zone* m_zone;
-        std::vector<Statement_s*> m_functions;
-        std::map<std::string, Statement_s*> m_function_by_name;
-
-        std::vector<StaticDvar*> m_static_dvars;
-        std::map<std::string, size_t> m_dvars_by_name;
-
-        std::vector<const char*> m_strings;
-        std::map<std::string, const char*> m_strings_by_value;
-
     public:
-        std::map<std::string, std::vector<XAssetInfo<menuDef_t>*>> m_menus_by_filename;
-        ExpressionSupportingData* m_supporting_data;
-
         MenuConversionZoneState();
         void Inject(ZoneAssetCreationInjection& inject) override;
 
@@ -35,5 +24,19 @@ namespace IW4
         void AddLoadedFile(std::string loadedFileName, std::vector<XAssetInfo<menuDef_t>*> menusOfFile);
 
         void FinalizeSupportingData() const;
+
+        std::unordered_map<std::string, std::vector<XAssetInfo<menuDef_t>*>> m_menus_by_filename;
+        ExpressionSupportingData* m_supporting_data;
+
+    private:
+        Zone* m_zone;
+        std::vector<Statement_s*> m_functions;
+        std::unordered_map<std::string, Statement_s*> m_function_by_name;
+
+        std::vector<StaticDvar*> m_static_dvars;
+        std::unordered_map<std::string, size_t> m_dvars_by_name;
+
+        std::vector<const char*> m_strings;
+        std::unordered_map<std::string, const char*> m_strings_by_value;
     };
 } // namespace IW4

@@ -1,15 +1,12 @@
 #include "LoaderMenuListIW4.h"
 
-#include "Game/IW4/IW4.h"
 #include "Game/IW4/Menu/MenuConversionZoneStateIW4.h"
 #include "Game/IW4/Menu/MenuConverterIW4.h"
 #include "ObjLoading.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "Utils/Logging/Log.h"
 
-#include <cstring>
-#include <format>
-#include <iostream>
+#include <deque>
 
 using namespace IW4;
 
@@ -44,7 +41,8 @@ namespace
                 const auto menuListResult = ParseMenuFile(*file.m_stream, assetName, zoneState);
                 if (menuListResult)
                 {
-                    ProcessParsedResults(assetName, context, *menuListResult, zoneState, conversionState, menus, registration);
+                    if (!ProcessParsedResults(assetName, context, *menuListResult, zoneState, conversionState, menus, registration))
+                        return AssetCreationResult::Failure();
 
                     for (const auto& menuToLoad : menuListResult->m_menus_to_load)
                         menuLoadQueue.emplace_back(menuToLoad);
@@ -59,7 +57,8 @@ namespace
             {
                 const auto& menuFileToLoad = menuLoadQueue.front();
 
-                LoadMenuFileFromQueue(menuFileToLoad, context, zoneState, conversionState, menus, registration);
+                if (!LoadMenuFileFromQueue(menuFileToLoad, context, zoneState, conversionState, menus, registration))
+                    return AssetCreationResult::Failure();
 
                 menuLoadQueue.pop_front();
             }
@@ -108,7 +107,8 @@ namespace
             const auto menuFileResult = ParseMenuFile(*file.m_stream, menuFilePath, zoneState);
             if (menuFileResult)
             {
-                ProcessParsedResults(menuFilePath, context, *menuFileResult, zoneState, conversionState, menus, registration);
+                if (!ProcessParsedResults(menuFilePath, context, *menuFileResult, zoneState, conversionState, menus, registration))
+                    return false;
                 if (!menuFileResult->m_menus_to_load.empty())
                     con::warn("Menu file has menus to load even though it is not a menu list, ignoring: \"{}\"", menuFilePath);
 
@@ -158,8 +158,7 @@ namespace
                 auto* menuAsset = m_memory.Alloc<menuDef_t>();
                 AssetRegistration<AssetMenu> menuRegistration(commonMenu->m_name, menuAsset);
 
-                converter->ConvertMenu(*commonMenu, *menuAsset, menuRegistration);
-                if (menuAsset == nullptr)
+                if (!converter->ConvertMenu(*commonMenu, *menuAsset, menuRegistration))
                 {
                     con::error("Failed to convert menu file \"{}\"", commonMenu->m_name);
                     return false;

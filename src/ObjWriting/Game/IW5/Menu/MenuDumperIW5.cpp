@@ -1,49 +1,24 @@
 #include "MenuDumperIW5.h"
 
+#include "MenuListDumperIW5.h"
 #include "MenuWriterIW5.h"
 #include "ObjWriting.h"
 
-#include <filesystem>
 #include <format>
 #include <string>
-
-namespace fs = std::filesystem;
 
 using namespace IW5;
 
 namespace
 {
-    const MenuList* GetParentMenuList(const XAssetInfo<menuDef_t>& asset)
+    std::string GetPathForMenu(menu::MenuDumpingZoneState* zoneState, const XAssetInfo<menuDef_t>& asset)
     {
-        const auto* menu = asset.Asset();
-        auto zoneMenuListPool = asset.m_zone->m_pools.PoolAssets<AssetMenuList>();
-        for (const auto* menuList : zoneMenuListPool)
-        {
-            const auto* menuListAsset = menuList->Asset();
+        const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(asset.Asset());
 
-            for (auto menuIndex = 0; menuIndex < menuListAsset->menuCount; menuIndex++)
-            {
-                if (menuListAsset->menus[menuIndex] == menu)
-                    return menuListAsset;
-            }
-        }
-
-        return nullptr;
-    }
-
-    std::string GetPathForMenu(const XAssetInfo<menuDef_t>& asset)
-    {
-        const auto* list = GetParentMenuList(asset);
-
-        if (!list)
+        if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
             return std::format("ui_mp/{}.menu", asset.Asset()->window.name);
 
-        const fs::path p(list->name);
-        std::string parentPath;
-        if (p.has_parent_path())
-            parentPath = p.parent_path().string() + "/";
-
-        return std::format("{}{}.menu", parentPath, asset.Asset()->window.name);
+        return menuDumpingState->second.m_path;
     }
 } // namespace
 
@@ -52,22 +27,23 @@ namespace menu
     void MenuDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetMenu::Type>& asset)
     {
         const auto* menu = asset.Asset();
-        const auto menuFilePath = GetPathForMenu(asset);
+        auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
         if (ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
         {
-            // Don't dump menu file separately if the name matches the menu list
-            const auto* menuListParent = GetParentMenuList(asset);
-            if (menuListParent && menuFilePath == menuListParent->name)
-                return;
+            // Make sure menu paths based on menu lists are created
+            const auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+            for (auto* menuListAsset : menuListAssets)
+                CreateDumpingStateForMenuListIW5(zoneState, menuListAsset->Asset());
         }
 
+        const auto menuFilePath = GetPathForMenu(zoneState, asset);
         const auto assetFile = context.OpenAssetFile(menuFilePath);
 
         if (!assetFile)
             return;
 
-        auto menuWriter = CreateMenuWriterIW5(*assetFile);
+        const auto menuWriter = CreateMenuWriterIW5(*assetFile);
 
         menuWriter->Start();
         menuWriter->WriteMenu(*menu);

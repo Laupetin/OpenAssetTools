@@ -3235,8 +3235,8 @@ namespace IW5
         int ownerDraw;
         unsigned int ownerDrawFlags;
         float borderSize;
-        int staticFlags;
-        int dynamicFlags[1];
+        unsigned int staticFlags;
+        unsigned int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
@@ -3419,14 +3419,14 @@ namespace IW5
         int gameMsgWindowIndex;
         int gameMsgWindowMode;
         const char* text;
-        int itemFlags;
+        unsigned int itemFlags;
         menuDef_t* parent;
         MenuEventHandlerSet* mouseEnterText;
         MenuEventHandlerSet* mouseExitText;
         MenuEventHandlerSet* mouseEnter;
         MenuEventHandlerSet* mouseExit;
         MenuEventHandlerSet* action;
-        MenuEventHandlerSet* accept;
+        MenuEventHandlerSet* onAccept;
         MenuEventHandlerSet* onFocus;
         MenuEventHandlerSet* hasFocus;
         MenuEventHandlerSet* leaveFocus;
