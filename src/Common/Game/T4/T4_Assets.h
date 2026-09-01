@@ -2852,7 +2852,6 @@ namespace T4
         OP_ADD,
         OP_SUBTRACT,
         OP_NOT,
-        OP_NEGATE = OP_NOT,
         OP_LESSTHAN,
         OP_LESSTHANEQUALTO,
         OP_GREATERTHAN,
