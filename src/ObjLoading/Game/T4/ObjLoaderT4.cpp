@@ -5,6 +5,7 @@
 #include "Game/T4/Font/FontLoaderT4.h"
 #include "Game/T4/Image/ImageLoaderEmbeddedT4.h"
 #include "Game/T4/Image/ImageLoaderExternalT4.h"
+#include "Game/T4/Menu/LoaderMenuListT4.h"
 #include "Game/T4/T4.h"
 #include "Game/T4/Weapon/AccuracyGraphLoaderT4.h"
 #include "Game/T4/XAnim/XAnimLoaderT4.h"
@@ -104,6 +105,7 @@ namespace
         collection.AddAssetCreator(image::CreateLoaderExternalT4(memory, searchPath));
         collection.AddAssetCreator(material::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(font::CreateLoaderT4(memory, searchPath));
+        collection.AddAssetCreator(menu::CreateMenuListLoaderT4(memory, searchPath));
         collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(map_ents::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(phys_preset::CreateRawLoaderT4(memory, searchPath, zone));

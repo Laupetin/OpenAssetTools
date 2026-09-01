@@ -182,8 +182,8 @@ using `Linker`):
 | GfxWorld             | ❌               | ❌               |                                                                              |
 | GfxLightDef          | ❌               | ❌               |                                                                              |
 | Font_s               | ✅               | ✅               |                                                                              |
-| MenuList             | ✅               | ❌               | The output is decompiled. The result will not be the same as the input.      |
-| menuDef_t            | ✅               | ❌               | See menulist.                                                                |
+| MenuList             | ✅               | ✅               | The output is decompiled. The result will not be the same as the input.      |
+| menuDef_t            | ✅               | ✅               | See menulist.                                                                |
 | LocalizeEntry        | ✅               | ✅               |                                                                              |
 | WeaponDef            | ✅               | ✅               |                                                                              |
 | FxEffectDef          | ❌               | ❌               |                                                                              |

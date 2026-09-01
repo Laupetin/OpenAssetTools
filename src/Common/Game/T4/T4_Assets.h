@@ -2797,6 +2797,7 @@ namespace T4
     enum WindowDefDynamicFlag : unsigned int
     {
         WINDOW_FLAG_VISIBLE = 0x4,
+        WINDOW_FLAG_NON_DEFAULT_FORECOLOR = 0x10000,
     };
 
     struct windowDef_t

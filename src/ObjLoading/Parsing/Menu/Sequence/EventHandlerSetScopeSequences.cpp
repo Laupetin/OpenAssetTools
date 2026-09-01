@@ -929,8 +929,8 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
 {
     AddSequence(std::make_unique<SequenceSkipEmptyStatements>());
 
-    // IW3 stores event handlers as opaque script strings rather than structured handlers.
-    if (featureLevel == FeatureLevel::IW3)
+    // IW3 and T4 store event handlers as opaque script strings rather than structured handlers.
+    if (featureLevel == FeatureLevel::IW3 || featureLevel == FeatureLevel::T4)
     {
         AddSequence(std::make_unique<SequenceCloseBlock>());
         AddSequence(std::make_unique<SequenceSkipScriptToken>());

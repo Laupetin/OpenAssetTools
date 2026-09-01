@@ -1,0 +1,13 @@
+{
+    menuDef
+    {
+        name                        "popup"
+        rect                        40 40 200 100 0 0
+        popup
+        visible                     when(partyismissingmappack());
+        onESC
+        {
+            close self;
+        }
+    }
+}

@@ -43,9 +43,13 @@ namespace menu
         double m_feeder = 0;
         int m_element_style = 0;
         CommonColor m_select_border;
+        CommonColor m_focus_color;
         std::string m_select_icon;
+        std::string m_background_item;
+        std::string m_highlight_texture;
 
         std::unique_ptr<CommonEventHandlerSet> m_on_double_click;
+        std::unique_ptr<CommonEventHandlerSet> m_on_selection_change;
         std::unique_ptr<ISimpleExpression> m_element_height_expression;
         std::vector<Column> m_columns;
     };

@@ -261,6 +261,15 @@ void MenuScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
         {
             return state->m_current_menu->m_on_open;
         }));
+    if (featureLevel == FeatureLevel::T4)
+    {
+        AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>(
+            "onFocus",
+            [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
+            {
+                return state->m_current_menu->m_on_focus;
+            }));
+    }
     AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>(
         "onClose",
         [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
