@@ -181,7 +181,7 @@ namespace
         REQUIRE(mainMenu->visibleExp.entries[0]->type == EET_OPERATOR);
         REQUIRE(mainMenu->visibleExp.entries[0]->data.op == OP_DVARBOOL);
         REQUIRE(mainMenu->visibleExp.entries[1]->data.operand.dataType == VAL_STRING);
-        REQUIRE(mainMenu->visibleExp.entries[1]->data.operand.internals.string == "ui_show_main"s);
+        REQUIRE(mainMenu->visibleExp.entries[1]->data.operand.internals.stringVal == "ui_show_main"s);
         REQUIRE(mainMenu->visibleExp.entries[2]->data.op == OP_RIGHTPAREN);
         REQUIRE(mainMenu->onOpen == R"("play" "menu_open" ; "setLocalVarInt" "ui_highlight" "5" ; )"s);
         REQUIRE(mainMenu->onFocus == R"("setdvar" "ui_menu_focused" "1" ; )"s);

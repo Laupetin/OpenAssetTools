@@ -38,7 +38,7 @@ namespace
         expressionEntry entry{};
         entry.type = EET_OPERAND;
         entry.data.operand.dataType = VAL_STRING;
-        entry.data.operand.internals.string = value;
+        entry.data.operand.internals.stringVal = value;
         return entry;
     }
 

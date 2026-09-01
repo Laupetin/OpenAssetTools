@@ -2832,7 +2832,7 @@ namespace T4
     {
         int intVal;
         float floatVal;
-        const char* string;
+        const char* stringVal;
     };
 
     enum expDataType

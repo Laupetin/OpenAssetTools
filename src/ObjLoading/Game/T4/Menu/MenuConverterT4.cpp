@@ -209,7 +209,7 @@ namespace
                 break;
             case SimpleExpressionValue::Type::STRING:
                 entry.data.operand.dataType = VAL_STRING;
-                entry.data.operand.internals.string = m_memory.Dup(value.m_string_value->c_str());
+                entry.data.operand.internals.stringVal = m_memory.Dup(value.m_string_value->c_str());
                 break;
             }
 

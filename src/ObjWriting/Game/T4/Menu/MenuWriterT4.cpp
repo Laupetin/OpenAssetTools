@@ -174,7 +174,7 @@ namespace
                 break;
 
             case VAL_STRING:
-                WriteEscapedString(operand.internals.string);
+                WriteEscapedString(operand.internals.stringVal);
                 break;
 
             default:

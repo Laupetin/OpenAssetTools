@@ -34,8 +34,8 @@ set condition expressionEntry::data::operand type == EET_OPERAND;
 use Operand;
 set condition internals::intVal dataType == VAL_INT;
 set condition internals::floatVal dataType == VAL_FLOAT;
-set condition internals::string dataType == VAL_STRING;
-set string internals::string;
+set condition internals::stringVal dataType == VAL_STRING;
+set string internals::stringVal;
 
 // itemDef_s
 use itemDef_s;
