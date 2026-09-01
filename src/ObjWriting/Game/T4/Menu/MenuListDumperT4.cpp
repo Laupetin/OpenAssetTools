@@ -26,8 +26,11 @@ namespace
             if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
                 continue;
 
+            const auto* menuAssetName = menu->window.name;
+            const auto isReference = menuAssetName && menuAssetName[0] == ',';
+
             // If the menu was embedded directly as menu list write its data in the menu list file
-            if (menuDumpingState->second.m_alias_menu_list == menuList)
+            if (!isReference && menuDumpingState->second.m_alias_menu_list == menuList)
                 menuDumper.WriteMenu(*menu);
             else
                 menuDumper.IncludeMenu(menuDumpingState->second.m_path);
@@ -111,7 +114,7 @@ namespace menu
     {
         auto* zoneState = context.GetZoneAssetDumperState<MenuDumpingZoneState>();
 
-        auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
+        const auto menuListAssets = context.m_zone.m_pools.PoolAssets<AssetMenuList>();
         for (const auto* asset : menuListAssets)
             CreateDumpingStateForMenuListT4(zoneState, asset->Asset());
 
