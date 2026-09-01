@@ -15,6 +15,7 @@
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "Sound/SndCurveDumperIW3.h"
+#include "Sound/SoundAliasDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
 #include "Weapon/WeaponDumperIW3.h"
 
@@ -34,7 +35,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 #endif
         ));
     RegisterAssetDumper(std::make_unique<image::DumperIW3>());
-    // REGISTER_DUMPER(AssetDumpersnd_alias_list_t)
+    RegisterAssetDumper(std::make_unique<sound_alias::DumperIW3>());
     RegisterAssetDumper(std::make_unique<sound_curve::DumperIW3>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperIW3>());
     // REGISTER_DUMPER(AssetDumperClipMap)
