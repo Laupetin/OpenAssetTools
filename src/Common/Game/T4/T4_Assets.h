@@ -2811,8 +2811,8 @@ namespace T4
         int ownerDraw;
         int ownerDrawFlags;
         float borderSize;
-        int staticFlags;
-        int dynamicFlags[1];
+        unsigned int staticFlags;
+        unsigned int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
@@ -3089,7 +3089,7 @@ namespace T4
         int gameMsgWindowIndex;
         int gameMsgWindowMode;
         const char* text;
-        int itemFlags;
+        unsigned int itemFlags;
         menuDef_t* parent;
         const char* mouseEnterText;
         const char* mouseExitText;

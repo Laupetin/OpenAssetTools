@@ -54,12 +54,12 @@ namespace
             output[3] = static_cast<float>(input.a);
         }
 
-        static void ApplyFlag(int& flags, const bool shouldApply, const unsigned flagValue)
+        static void ApplyFlag(unsigned& flags, const bool shouldApply, const unsigned flagValue)
         {
             if (!shouldApply)
                 return;
 
-            flags |= static_cast<int>(flagValue);
+            flags |= flagValue;
         }
 
         [[nodiscard]] Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
