@@ -16,7 +16,7 @@ using namespace T4;
 
 namespace
 {
-    expressionEntry Operator(const expOperationEnum operation)
+    expressionEntry Operator(const operationEnum operation)
     {
         expressionEntry entry{};
         entry.type = EET_OPERATOR;

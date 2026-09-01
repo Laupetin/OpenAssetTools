@@ -2842,7 +2842,7 @@ namespace T4
         VAL_STRING = 0x2,
     };
 
-    enum expOperationEnum : int
+    enum operationEnum : int
     {
         OP_NOOP = 0x0,
         OP_RIGHTPAREN = 0x1,
@@ -2958,7 +2958,7 @@ namespace T4
     union entryInternalData
     {
         Operand operand;
-        expOperationEnum op;
+        operationEnum op;
     };
 
     enum expressionEntryType : int

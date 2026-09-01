@@ -86,14 +86,14 @@ namespace
             return soundDependency->Asset();
         }
 
-        constexpr static expOperationEnum UNARY_OPERATION_MAPPING[]{
+        constexpr static operationEnum UNARY_OPERATION_MAPPING[]{
             OP_NOT,
             OP_BITWISENOT,
             OP_SUBTRACT,
         };
         static_assert(std::size(UNARY_OPERATION_MAPPING) == static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
 
-        constexpr static expOperationEnum BINARY_OPERATION_MAPPING[]{
+        constexpr static operationEnum BINARY_OPERATION_MAPPING[]{
             OP_ADD,
             OP_SUBTRACT,
             OP_MULTIPLY,
@@ -128,7 +128,7 @@ namespace
                                                     const CommonMenuDef* menu,
                                                     const CommonItemDef* item) const
         {
-            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = static_cast<expOperationEnum>(baseFunction->m_function_index)}});
+            entries.emplace_back(expressionEntry{.type = EET_OPERATOR, .data = {.op = static_cast<operationEnum>(baseFunction->m_function_index)}});
 
             auto firstArg = true;
             for (const auto& arg : baseFunction->m_args)
