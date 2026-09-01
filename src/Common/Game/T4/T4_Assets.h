@@ -2946,9 +2946,6 @@ namespace T4
         OP_ANYNEWMAPPACKS,
 
         NUM_OPERATORS,
-
-        NUM_EXPRESSION_OPERATORS = 0x18,
-        MAX_OPERATOR_VALUE = 0x4000,
     };
 
     struct Operand
