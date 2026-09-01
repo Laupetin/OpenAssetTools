@@ -18,7 +18,7 @@ using `Linker`):
 | Material             | ✅               | ✅               |                                                                              |
 | MaterialTechniqueSet | ✅               | ✅               | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅               | ✅               |                                                                              |
-| snd_alias_list_t     | ❌               | ❌               |                                                                              |
+| snd_alias_list_t     | ⁉️              | ❌               | Dumps one stock SDK-compatible `soundaliases/<zone>.csv` plus referenced speaker maps; source-only fields cannot be recovered. |
 | SndCurve             | ✅               | ✅               |                                                                              |
 | LoadedSound          | ✅               | ❌               |                                                                              |
 | clipMap_t            | ❌               | ❌               |                                                                              |
