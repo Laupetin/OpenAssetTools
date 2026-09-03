@@ -2812,7 +2812,7 @@ namespace IW3
         int gameMsgWindowIndex;
         int gameMsgWindowMode;
         const char* text;
-        int itemFlags;
+        unsigned int itemFlags;
         menuDef_t* parent;
         const char* mouseEnterText;
         const char* mouseExitText;
