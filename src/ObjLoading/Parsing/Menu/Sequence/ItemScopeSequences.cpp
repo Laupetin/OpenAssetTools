@@ -24,7 +24,7 @@ namespace
 
     class ItemScopeOperations
     {
-        inline static const CommonItemFeatureType IW3_IW4_FEATURE_TYPE_BY_TYPE[0x18]{
+        inline static const CommonItemFeatureType IW3_IW4_T4_FEATURE_TYPE_BY_TYPE[0x18]{
             CommonItemFeatureType::EDIT_FIELD,  // ITEM_TYPE_TEXT
             CommonItemFeatureType::NONE,        // ITEM_TYPE_BUTTON
             CommonItemFeatureType::NONE,        // ITEM_TYPE_RADIOBUTTON
@@ -84,9 +84,10 @@ namespace
             {
             case FeatureLevel::IW3:
             case FeatureLevel::IW4:
-                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW3_IW4_FEATURE_TYPE_BY_TYPE)>)
+            case FeatureLevel::T4:
+                if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW3_IW4_T4_FEATURE_TYPE_BY_TYPE)>)
                     throw ParsingException(pos, "Invalid item type");
-                return IW3_IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+                return IW3_IW4_T4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
 
             case FeatureLevel::IW5:
             default:
@@ -464,8 +465,8 @@ namespace
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
 
-        static constexpr const char* SYNTAX_IW3_IW4 = "<xpos> <width> <maxChars> [alignment]";
-        static constexpr auto BASE_COLUMN_COUNT_IW3_IW4 = 3;
+        static constexpr const char* SYNTAX_IW3_IW4_T4 = "<xpos> <width> <maxChars> [alignment]";
+        static constexpr auto BASE_COLUMN_COUNT_IW3_IW4_T4 = 3;
 
         static constexpr const char* SYNTAX_IW5 = "<xpos> <ypos> <width> <height> <maxChars> [alignment]";
         static constexpr auto BASE_COLUMN_COUNT_IW5 = 5;
@@ -487,7 +488,8 @@ namespace
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_item);
-            assert(state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+            assert(state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5
+                   || state->m_feature_level == FeatureLevel::T4);
 
             const auto& firstToken = result.NextCapture(CAPTURE_FIRST_TOKEN);
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, firstToken.GetPos());
@@ -500,10 +502,10 @@ namespace
             size_t baseColumnCount;
             const char* syntax;
             bool hasHeightValues;
-            if (state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4)
+            if (state->m_feature_level == FeatureLevel::IW3 || state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::T4)
             {
-                baseColumnCount = BASE_COLUMN_COUNT_IW3_IW4;
-                syntax = SYNTAX_IW3_IW4;
+                baseColumnCount = BASE_COLUMN_COUNT_IW3_IW4_T4;
+                syntax = SYNTAX_IW3_IW4_T4;
                 hasHeightValues = false;
             }
             else
@@ -1142,6 +1144,35 @@ void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
                                                                     ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
                                                                     state->m_current_item->m_list_box_features->m_select_icon = value;
                                                                 }));
+
+    if (featureLevel == FeatureLevel::T4)
+    {
+        AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>(
+            "onListboxSelectionChange",
+            [](const MenuFileParserState* state, const TokenPos& pos) -> std::unique_ptr<CommonEventHandlerSet>&
+            {
+                ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+                return state->m_current_item->m_list_box_features->m_on_selection_change;
+            }));
+        AddSequence(std::make_unique<GenericColorPropertySequence>("focusColor",
+                                                                   [](const MenuFileParserState* state, const TokenPos& pos, const CommonColor value)
+                                                                   {
+                                                                       ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+                                                                       state->m_current_item->m_list_box_features->m_focus_color = value;
+                                                                   }));
+        AddSequence(std::make_unique<GenericStringPropertySequence>("backgroundItemListbox",
+                                                                    [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
+                                                                    {
+                                                                        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+                                                                        state->m_current_item->m_list_box_features->m_background_item = value;
+                                                                    }));
+        AddSequence(std::make_unique<GenericStringPropertySequence>("highlightTexture",
+                                                                    [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
+                                                                    {
+                                                                        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+                                                                        state->m_current_item->m_list_box_features->m_highlight_texture = value;
+                                                                    }));
+    }
 
     if (featureLevel == FeatureLevel::IW5)
     {

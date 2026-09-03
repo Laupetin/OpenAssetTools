@@ -45,6 +45,7 @@ namespace menu
         std::unique_ptr<ISimpleExpression> m_open_sound_exp;
         std::unique_ptr<ISimpleExpression> m_close_sound_exp;
         std::unique_ptr<CommonEventHandlerSet> m_on_open;
+        std::unique_ptr<CommonEventHandlerSet> m_on_focus;
         std::unique_ptr<CommonEventHandlerSet> m_on_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_request_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_esc;
