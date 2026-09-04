@@ -591,12 +591,6 @@ namespace T4
         XMODEL_LOD_RAMP_COUNT
     };
 
-    struct XModelHighMipBounds
-    {
-        float mins[3];
-        float maxs[3];
-    };
-
     struct XModelStreamInfo
     {
         char pad;
