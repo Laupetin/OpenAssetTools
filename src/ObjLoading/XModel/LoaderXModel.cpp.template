@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".cpp"
 
@@ -15,6 +15,9 @@
 #define EVEN_TRI_COUNT
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define EVEN_TRI_COUNT
+#elif GAME == "T4"
+#define FEATURE_T4
 #define EVEN_TRI_COUNT
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -375,7 +378,7 @@ namespace
             {
                 xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
 
-#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
                 // For some reason some games allocate for a vec4 here. it is treated as a vec3 though?
                 xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
 #else
@@ -429,7 +432,7 @@ namespace
             // Viewhands seem to have nulled trans for some reason?
             if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
             {
-#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
                 memset(xmodel.trans, 0, sizeof(float) * 4 * (xmodel.numBones - xmodel.numRootBones));
 #else
                 memset(xmodel.trans, 0, sizeof(float) * 3 * (xmodel.numBones - xmodel.numRootBones));
@@ -859,7 +862,7 @@ namespace
             const auto maxWeightCount = common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
             const auto surfaceIsRigid = maxWeightCount <= 1;
 
-#if defined(FEATURE_IW3) || defined(FEATURE_IW4)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_T4)
             surface.deformed = !surfaceIsRigid;
 #else
             if (!surfaceIsRigid)
@@ -1114,16 +1117,20 @@ namespace
 #endif
         }
 
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
         static bool HasAnySkinnedSurfs(const XModel& xmodel)
         {
             for (auto lodIndex = 0u; lodIndex < xmodel.numLods; lodIndex++)
             {
                 const auto& lod = xmodel.lodInfo[lodIndex];
-                for (auto surfIndex = lod.surfIndex; surfIndex < lod.numsurfs; surfIndex++)
+                for (auto surfaceOffset = 0u; surfaceOffset < lod.numsurfs; surfaceOffset++)
                 {
-                    const auto& surf = xmodel.surfs[lod.surfIndex + surfIndex];
+                    const auto& surf = xmodel.surfs[lod.surfIndex + surfaceOffset];
+#ifdef FEATURE_T4
+                    if (surf.deformed)
+#else
                     if (surf.flags & XSURFACE_FLAG_DEFORMED)
+#endif
                         return true;
                 }
             }
@@ -1158,7 +1165,7 @@ namespace
 
             xmodel.numsurfs = static_cast<decltype(XModel::numsurfs)>(m_surfaces.size());
 
-#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
 #endif
@@ -1180,7 +1187,7 @@ namespace
             else
                 xmodel.collLod = -1;
 
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             xmodel.lodRampType = HasAnySkinnedSurfs(xmodel) ? XMODEL_LOD_RAMP_SKINNED : XMODEL_LOD_RAMP_RIGID;
 #endif
 
@@ -1218,7 +1225,7 @@ namespace
             }
 #endif
 
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             if (jXModel.physConstraints)
             {
                 auto* physConstraints = context.LoadDependency<AssetPhysConstraints>(jXModel.physConstraints.value());

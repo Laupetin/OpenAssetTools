@@ -9,6 +9,7 @@
 #include "Game/T4/T4.h"
 #include "Game/T4/Weapon/AccuracyGraphLoaderT4.h"
 #include "Game/T4/XAnim/XAnimLoaderT4.h"
+#include "Game/T4/XModel/LoaderXModelT4.h"
 #include "Localize/AssetLoaderLocalizeT4.h"
 #include "Maps/MapEntsLoaderT4.h"
 #include "Material/LoaderMaterialT4.h"
@@ -101,6 +102,7 @@ namespace
         auto& memory = zone.Memory();
 
         collection.AddAssetCreator(xanim::CreateLoaderT4(memory, searchPath, zone));
+        collection.AddAssetCreator(xmodel::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedT4(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalT4(memory, searchPath));
         collection.AddAssetCreator(material::CreateLoaderT4(memory, searchPath));

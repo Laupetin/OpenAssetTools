@@ -376,8 +376,8 @@ namespace T4
 
     struct XSurfaceCollisionTree
     {
-        float trans[3];
-        float scale[3];
+        vec3_t trans;
+        vec3_t scale;
         unsigned int nodeCount;
         XSurfaceCollisionNode* nodes;
         unsigned int leafCount;
@@ -589,12 +589,6 @@ namespace T4
         XMODEL_LOD_RAMP_SKINNED = 0x1,
 
         XMODEL_LOD_RAMP_COUNT
-    };
-
-    struct XModelHighMipBounds
-    {
-        float mins[3];
-        float maxs[3];
     };
 
     struct XModelStreamInfo
