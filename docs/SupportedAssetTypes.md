@@ -167,7 +167,7 @@ using `Linker`):
 | PhysConstraints      | ✅               | ❌               |                                                                              |
 | DestructibleDef      | ❌               | ❌               |                                                                              |
 | XAnimParts           | ✅               | ✅               |                                                                              |
-| XModel               | ✅               | ❌               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
+| XModel               | ✅               | ✅               | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅               | ✅               |                                                                              |
 | MaterialTechniqueSet | ❌               | ❌               |                                                                              |
 | GfxImage             | ✅               | ✅               | A few special image encodings are not yet supported.                         |
