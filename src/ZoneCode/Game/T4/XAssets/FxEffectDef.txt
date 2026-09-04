@@ -28,9 +28,9 @@ set string soundName;
 set condition material FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD
 || FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_ORIENTED
 || FxElemDef::elemType == FX_ELEM_TYPE_TAIL
+|| FxElemDef::elemType == FX_ELEM_TYPE_LINE
 || FxElemDef::elemType == FX_ELEM_TYPE_TRAIL
-|| FxElemDef::elemType == FX_ELEM_TYPE_CLOUD
-|| FxElemDef::elemType == FX_ELEM_TYPE_SPARK_CLOUD;
+|| FxElemDef::elemType == FX_ELEM_TYPE_CLOUD;
 
 // FxEffectDefRef
 use FxEffectDefRef;

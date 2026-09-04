@@ -4171,9 +4171,9 @@ namespace T4
         FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
         FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,
         FX_ELEM_TYPE_TAIL = 0x2,
-        FX_ELEM_TYPE_TRAIL = 0x3,
-        FX_ELEM_TYPE_CLOUD = 0x4,
-        FX_ELEM_TYPE_SPARK_CLOUD = 0x5,
+        FX_ELEM_TYPE_LINE = 0x3,
+        FX_ELEM_TYPE_TRAIL = 0x4,
+        FX_ELEM_TYPE_CLOUD = 0x5,
         FX_ELEM_TYPE_MODEL = 0x6,
         FX_ELEM_TYPE_OMNI_LIGHT = 0x7,
         FX_ELEM_TYPE_SPOT_LIGHT = 0x8,
@@ -4181,7 +4181,7 @@ namespace T4
         FX_ELEM_TYPE_DECAL = 0xA,
         FX_ELEM_TYPE_RUNNER = 0xB,
         FX_ELEM_TYPE_COUNT = 0xC,
-        FX_ELEM_TYPE_LAST_SPRITE = 0x3,
+        FX_ELEM_TYPE_LAST_SPRITE = 0x4,
         FX_ELEM_TYPE_LAST_DRAWN = 0x8,
     };
 
