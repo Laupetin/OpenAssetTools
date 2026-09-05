@@ -104,7 +104,8 @@ namespace
         REQUIRE(zone->m_game_id == GameId::T6);
         REQUIRE(zone->m_platform == GamePlatform::PC);
         REQUIRE(zone->m_name == "CombinedZoneT6");
-        REQUIRE(zone->m_pools.GetTotalAssetCount() == 2);
+        REQUIRE(zone->m_pools.GetTotalAssetCount() == 3);
+        REQUIRE(zone->m_pools.GetAsset<T6::AssetRawFile>("CombinedZoneT6"));
         REQUIRE(zone->m_pools.GetAsset<T6::AssetTechniqueSet>("trivial_floatz_2992w610"));
 
         const auto* material = zone->m_pools.GetAsset<T6::AssetMaterial>("test");
