@@ -208,3 +208,39 @@ jobs:
           ./ZoneCommonTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           exit $combinedExitCode
+
+  build-test-macos:
+    name: Build-Test macOS arm64
+    runs-on: macos-15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.0
+        with:
+          submodules: recursive
+
+      - name: Premake generate
+        working-directory: ${{ github.workspace }}
+        env:
+          PREMAKE_NO_GLOBAL: 1
+          PREMAKE_NO_PROMPT: 1
+        run: ./generate.sh --cc=clang
+
+      - name: Build
+        working-directory: ${{ github.workspace }}
+        run: scripts/build.sh release arm64
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build/lib/Release_arm64/tests
+        run: |
+          ./CommonTests
+          ./ObjCommonTests
+          ./ObjCompilingTests
+          ./ObjLoadingTests
+          ./ObjWritingTests
+          ./ParserTests
+          ./SystemTests
+          ./ZoneCodeGeneratorLibTests
+          ./ZoneCommonTests

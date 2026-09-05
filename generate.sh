@@ -1,28 +1,45 @@
 #!/bin/bash
 
-PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz'
-PREMAKE_HASH='2921a59e267bce1f3e5208b8e04881c94dc23f4849adf0d830875ded23634b1f'
+case "$(uname -s)" in
+    Darwin)
+        PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-macosx.tar.gz'
+        PREMAKE_HASH='2182a75bb6026cd87d4ab7e843c035e0c3a84145dbec2d7955fa7932f1e0fde5'
+        PREMAKE_HASH_COMMAND=(shasum -a 256)
+        ;;
+    Linux)
+        PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz'
+        PREMAKE_HASH='2921a59e267bce1f3e5208b8e04881c94dc23f4849adf0d830875ded23634b1f'
+        PREMAKE_HASH_COMMAND=(sha256sum)
+        ;;
+    *)
+        echo "Unsupported operating system: $(uname -s)" >&2
+        exit 2
+        ;;
+esac
 
 # The following variables can be set:
 #     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
 #     PREMAKE_NO_PROMPT - Download premake5 without prompting
 
 function install_premake {
-    if [[ ! -x "$(command -v wget)" ]]; then
-        echo "Failed: Installation requires wget" >&2
-        exit 2
-    fi
-    if [[ ! -x "$(command -v tar)" ]]; then
+    if ! command -v tar >/dev/null 2>&1; then
         echo "Failed: Installation requires tar" >&2
         exit 2
     fi
-    if [[ ! -x "$(command -v sha256sum)" ]]; then
-        echo "Failed: Installation requires sha256sum" >&2
+    if ! command -v "${PREMAKE_HASH_COMMAND[0]}" >/dev/null 2>&1; then
+        echo "Failed: Installation requires ${PREMAKE_HASH_COMMAND[0]}" >&2
         exit 2
     fi
 
     mkdir -p build
-    wget -nd -O build/premake.tar.gz "$PREMAKE_URL"
+    if command -v wget >/dev/null 2>&1; then
+        wget -nd -O build/premake.tar.gz "$PREMAKE_URL"
+    elif command -v curl >/dev/null 2>&1; then
+        curl --fail --location --output build/premake.tar.gz "$PREMAKE_URL"
+    else
+        echo "Failed: Installation requires wget or curl" >&2
+        exit 2
+    fi
     if [[ $? -ne 0 ]]; then
         echo "Download failed" >&2
         exit 2
@@ -36,7 +53,7 @@ function install_premake {
 
     rm build/premake.tar.gz
 
-    echo "${PREMAKE_HASH} build/premake5" | sha256sum -c
+    printf '%s  %s\n' "${PREMAKE_HASH}" build/premake5 | "${PREMAKE_HASH_COMMAND[@]}" -c
     if [[ $? -ne 0 ]]; then
         echo "Hash verification failed" >&2
         rm build/premake5

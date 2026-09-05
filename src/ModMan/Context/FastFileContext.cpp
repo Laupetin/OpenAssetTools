@@ -6,6 +6,7 @@
 #include "Web/UiCommunication.h"
 #include "ZoneLoading.h"
 
+#include <algorithm>
 #include <filesystem>
 
 namespace fs = std::filesystem;

@@ -5,6 +5,7 @@
 #include "Utils/Endianness.h"
 #include "Utils/Logging/Log.h"
 
+#include <algorithm>
 #include <concepts>
 #include <filesystem>
 #include <format>

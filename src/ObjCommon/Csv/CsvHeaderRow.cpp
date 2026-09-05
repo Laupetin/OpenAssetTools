@@ -1,5 +1,7 @@
 #include "Csv/CsvHeaderRow.h"
 
+#include <algorithm>
+
 CsvHeaderRow::CsvHeaderRow() = default;
 
 bool CsvHeaderRow::Read(const CsvInputStream& inputStream)

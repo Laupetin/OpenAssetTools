@@ -3,6 +3,7 @@
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <sstream>

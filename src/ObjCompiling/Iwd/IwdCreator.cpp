@@ -4,7 +4,7 @@
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
-#include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <format>
 #include <zip.h>
@@ -13,20 +13,31 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    std::tm GetLocalTime()
+    {
+        const auto now = std::time(nullptr);
+        std::tm localTime{};
+
+#ifdef _WIN32
+        localtime_s(&localTime, &now);
+#else
+        localtime_r(&now, &localTime);
+#endif
+
+        return localTime;
+    }
+
     void FillFileInfoTime(zip_fileinfo& fileInfo)
     {
-        const auto localNow = std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}.get_local_time();
-        const auto nowDays = std::chrono::floor<std::chrono::days>(localNow);
-        const std::chrono::year_month_day ymd(std::chrono::floor<std::chrono::days>(localNow));
-        const std::chrono::hh_mm_ss hms(std::chrono::floor<std::chrono::milliseconds>(localNow - nowDays));
+        const auto localTime = GetLocalTime();
 
         fileInfo.dosDate = 0u;
-        fileInfo.tmz_date.tm_year = static_cast<int>(ymd.year());
-        fileInfo.tmz_date.tm_mon = static_cast<int>(static_cast<unsigned>(ymd.month()) - static_cast<unsigned>(std::chrono::January));
-        fileInfo.tmz_date.tm_mday = static_cast<int>(static_cast<unsigned>(ymd.day()));
-        fileInfo.tmz_date.tm_hour = static_cast<int>(hms.hours().count());
-        fileInfo.tmz_date.tm_min = static_cast<int>(hms.minutes().count());
-        fileInfo.tmz_date.tm_sec = static_cast<int>(hms.seconds().count());
+        fileInfo.tmz_date.tm_year = localTime.tm_year + 1900;
+        fileInfo.tmz_date.tm_mon = localTime.tm_mon;
+        fileInfo.tmz_date.tm_mday = localTime.tm_mday;
+        fileInfo.tmz_date.tm_hour = localTime.tm_hour;
+        fileInfo.tmz_date.tm_min = localTime.tm_min;
+        fileInfo.tmz_date.tm_sec = localTime.tm_sec;
     }
 
     void AddCustomUserInclusions(ISearchPath& searchPath, zipFile zipFile, const std::string& iwdName)
@@ -106,19 +117,8 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
             continue;
         }
 
-        auto localNow = std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}.get_local_time();
-        auto nowDays = std::chrono::floor<std::chrono::days>(localNow);
-        std::chrono::year_month_day ymd(std::chrono::floor<std::chrono::days>(localNow));
-        std::chrono::hh_mm_ss hms(std::chrono::floor<std::chrono::milliseconds>(localNow - nowDays));
-
         zip_fileinfo fileInfo{};
-        fileInfo.dosDate = 0u;
-        fileInfo.tmz_date.tm_year = static_cast<int>(ymd.year());
-        fileInfo.tmz_date.tm_mon = static_cast<int>(static_cast<unsigned>(ymd.month()) - static_cast<unsigned>(std::chrono::January));
-        fileInfo.tmz_date.tm_mday = static_cast<int>(static_cast<unsigned>(ymd.day()));
-        fileInfo.tmz_date.tm_hour = static_cast<int>(hms.hours().count());
-        fileInfo.tmz_date.tm_min = static_cast<int>(hms.minutes().count());
-        fileInfo.tmz_date.tm_sec = static_cast<int>(hms.seconds().count());
+        FillFileInfoTime(fileInfo);
         zipOpenNewFileInZip(zipFile, filePath.c_str(), &fileInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
 
         char tempBuffer[0x1000];

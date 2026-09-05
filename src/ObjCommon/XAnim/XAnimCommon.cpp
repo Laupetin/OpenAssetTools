@@ -99,7 +99,7 @@ namespace xanim
     void CommonXAnimParts::SortBoneTracksForQuats()
     {
         std::vector<size_t> boneOrder(m_bone_tracks.size());
-        std::ranges::iota(boneOrder, 0);
+        std::iota(boneOrder.begin(), boneOrder.end(), 0);
 
         std::ranges::sort(boneOrder,
                           [this](const size_t i0, const size_t i1)
@@ -125,7 +125,7 @@ namespace xanim
     {
         // This assumes the bone tracks were already sorted for quats
         std::vector<size_t> boneOrder(m_bone_tracks.size());
-        std::ranges::iota(boneOrder, 0);
+        std::iota(boneOrder.begin(), boneOrder.end(), 0);
 
         std::ranges::sort(boneOrder,
                           [this](const size_t i0, const size_t i1)

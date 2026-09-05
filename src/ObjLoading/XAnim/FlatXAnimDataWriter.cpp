@@ -1,5 +1,6 @@
 #include "FlatXAnimDataWriter.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iterator>
 

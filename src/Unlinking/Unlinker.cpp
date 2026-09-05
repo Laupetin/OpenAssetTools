@@ -13,10 +13,12 @@
 #include "Zone/LoadedZoneInformation.h"
 #include "ZoneLoading.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <ranges>
+#include <sstream>
 
 namespace fs = std::filesystem;
 

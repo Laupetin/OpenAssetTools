@@ -9,6 +9,7 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include <algorithm>
 #include <deque>
 #include <exception>
 #include <format>

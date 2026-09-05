@@ -35,7 +35,7 @@ public:
 
     AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
     {
-        auto* existingAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(m_zone.m_game_id)->GetAsset<Asset_t>(assetName);
+        auto* existingAsset = GameGlobalAssetPools::GetGlobalPoolsForGame(m_zone.m_game_id)->template GetAsset<Asset_t>(assetName);
 
         if (!existingAsset)
             return AssetCreationResult::NoAction();

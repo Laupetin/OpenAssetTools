@@ -15,7 +15,6 @@ workspace "OpenAssetTools"
     location "build"
     objdir "%{wks.location}/obj"
     symbols "On"
-    systemversion "latest"
     cppdialect "C++23"
     largeaddressaware "on"
     multiprocessorcompile "on"
@@ -27,7 +26,8 @@ workspace "OpenAssetTools"
 
     platforms {
         "x86",
-        "x64"
+        "x64",
+        "arm64"
     }
     defaultplatform "x86"
 
@@ -35,6 +35,10 @@ workspace "OpenAssetTools"
         disablewarnings {
             "26812" -- Prefer enum class over unscoped
         }
+    filter {}
+
+    filter "system:windows"
+        systemversion "latest"
     filter {}
 
     filter "platforms:x86"
@@ -45,6 +49,11 @@ workspace "OpenAssetTools"
     filter "platforms:x64"
         architecture "x86_64"
         defines "ARCH_x64"
+    filter {}
+
+    filter "platforms:arm64"
+        architecture "ARM64"
+        defines "ARCH_arm64"
     filter {}
 
     filter "configurations:Debug"
@@ -62,6 +71,11 @@ workspace "OpenAssetTools"
         optimize "Full"
         symbols "Off"
         fatalwarnings { "All" }
+    filter {}
+
+    filter "system:macosx"
+        -- Apple's SDK has case-only header-name differences; keep these warnings non-fatal.
+        buildoptions { "-Wno-error=nonportable-include-path" }
     filter {}
 
     defines {

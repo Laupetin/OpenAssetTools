@@ -49,6 +49,12 @@ function zlib:project()
 				"Z_HAVE_UNISTD_H"
 			}
 		filter {}
+
+		filter "system:macosx"
+			defines {
+				"Z_HAVE_UNISTD_H"
+			}
+		filter {}
 		
 		self:include(includes)
 

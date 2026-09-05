@@ -12,7 +12,7 @@ enum class WordSize : std::uint8_t
 static constexpr WordSize OWN_WORD_SIZE =
 #if defined(ARCH_x86)
     WordSize::BITS_32
-#elif defined(ARCH_x64)
+#elif defined(ARCH_x64) || defined(ARCH_arm64)
     WordSize::BITS_64
 #endif
     ;

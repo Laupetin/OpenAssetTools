@@ -45,6 +45,7 @@
 #include PRECOMPILED_INDEX_HEADER
 #endif
 
+#include <algorithm>
 #include <cassert>
 #include <optional>
 #include <sstream>
