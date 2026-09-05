@@ -72,10 +72,10 @@ namespace
             return std::nullopt;
         }
 
-        auto width = header.dimensions[0];
-        auto height = header.dimensions[1];
-        auto depth = header.dimensions[2];
-        auto hasMipMaps = !(header.flags & iwi6::IwiFlags::IMG_FLAG_NOMIPMAPS);
+        const auto width = header.dimensions[0];
+        const auto height = header.dimensions[1];
+        const auto depth = header.dimensions[2];
+        const auto hasMipMaps = !(header.flags & iwi6::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
         TextureType textureType;
         if (header.flags & iwi6::IwiFlags::IMG_FLAG_CUBEMAP)
@@ -125,12 +125,13 @@ namespace
             }
         }
 
-        CommonIwiMetaData meta{
+        const CommonIwiMetaData meta{
             .m_no_picmip = (header.flags & iwi6::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
             .m_streaming = (header.flags & iwi6::IwiFlags::IMG_FLAG_STREAMING) != 0,
             .m_clamp_u = (header.flags & iwi6::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
             .m_clamp_v = (header.flags & iwi6::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
             .m_dynamic = (header.flags & iwi6::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+            .m_gamma = 0,
         };
 
         return IwiLoaderResult{
@@ -200,10 +201,10 @@ namespace
         if (format == nullptr)
             return std::nullopt;
 
-        auto width = header.dimensions[0];
-        auto height = header.dimensions[1];
-        auto depth = header.dimensions[2];
-        auto hasMipMaps = !(header.flags & iwi8::IwiFlags::IMG_FLAG_NOMIPMAPS);
+        const auto width = header.dimensions[0];
+        const auto height = header.dimensions[1];
+        const auto depth = header.dimensions[2];
+        const auto hasMipMaps = !(header.flags & iwi8::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
         std::unique_ptr<Texture> texture;
         if ((header.flags & iwi8::IwiFlags::IMG_FLAG_MAPTYPE_MASK) == iwi8::IwiFlags::IMG_FLAG_MAPTYPE_CUBE)
@@ -254,12 +255,13 @@ namespace
             }
         }
 
-        CommonIwiMetaData meta{
+        const CommonIwiMetaData meta{
             .m_no_picmip = (header.flags & iwi8::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
             .m_streaming = (header.flags & iwi8::IwiFlags::IMG_FLAG_STREAMING) != 0,
             .m_clamp_u = (header.flags & iwi8::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
             .m_clamp_v = (header.flags & iwi8::IwiFlags::IMG_FLAG_CLAMP_V) != 0,
             .m_dynamic = (header.flags & iwi8::IwiFlags::IMG_FLAG_DYNAMIC) != 0,
+            .m_gamma = 0,
         };
 
         return IwiLoaderResult{
@@ -326,10 +328,10 @@ namespace
         if (format == nullptr)
             return std::nullopt;
 
-        auto width = header.dimensions[0];
-        auto height = header.dimensions[1];
-        auto depth = header.dimensions[2];
-        auto hasMipMaps = !(header.flags & iwi13::IwiFlags::IMG_FLAG_NOMIPMAPS);
+        const auto width = header.dimensions[0];
+        const auto height = header.dimensions[1];
+        const auto depth = header.dimensions[2];
+        const auto hasMipMaps = !(header.flags & iwi13::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
         std::unique_ptr<Texture> texture;
         if (header.flags & iwi13::IwiFlags::IMG_FLAG_CUBEMAP)
@@ -364,7 +366,7 @@ namespace
             }
         }
 
-        CommonIwiMetaData meta{
+        const CommonIwiMetaData meta{
             .m_no_picmip = (header.flags & iwi13::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
             .m_streaming = (header.flags & iwi13::IwiFlags::IMG_FLAG_STREAMING) != 0,
             .m_clamp_u = (header.flags & iwi13::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
@@ -439,10 +441,10 @@ namespace
         if (format == nullptr)
             return std::nullopt;
 
-        auto width = header.dimensions[0];
-        auto height = header.dimensions[1];
-        auto depth = header.dimensions[2];
-        auto hasMipMaps = !(header.flags & iwi27::IwiFlags::IMG_FLAG_NOMIPMAPS);
+        const auto width = header.dimensions[0];
+        const auto height = header.dimensions[1];
+        const auto depth = header.dimensions[2];
+        const auto hasMipMaps = !(header.flags & iwi27::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
         std::unique_ptr<Texture> texture;
         if (header.flags & iwi27::IwiFlags::IMG_FLAG_CUBEMAP)
@@ -477,7 +479,7 @@ namespace
             }
         }
 
-        CommonIwiMetaData meta{
+        const CommonIwiMetaData meta{
             .m_no_picmip = (header.flags & iwi27::IwiFlags::IMG_FLAG_NOPICMIP) != 0,
             .m_streaming = (header.flags & iwi27::IwiFlags::IMG_FLAG_STREAMING) != 0,
             .m_clamp_u = (header.flags & iwi27::IwiFlags::IMG_FLAG_CLAMP_U) != 0,
