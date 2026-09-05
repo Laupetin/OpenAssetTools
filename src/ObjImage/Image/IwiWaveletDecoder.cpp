@@ -6,9 +6,12 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cassert>
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace
@@ -115,25 +118,25 @@ namespace
         for (const auto codeword : codewords)
         {
             if (codeword.bit_count == 0 || codeword.bit_count > HUFFMAN_LOOKUP_BITS)
-                throw "Invalid Huffman codeword bit count";
+                throw std::runtime_error("Invalid Huffman codeword bit count");
 
             const auto step = 1u << codeword.bit_count;
             if (codeword.code >= step)
-                throw "Huffman codeword does not fit its bit count";
+                throw std::runtime_error("Huffman codeword does not fit its bit count");
 
             for (auto index = static_cast<unsigned>(codeword.code); index < result.size(); index += step)
             {
                 if (result[index].bit_count != 0)
-                    throw "Overlapping Huffman codewords";
+                    throw std::runtime_error("Overlapping Huffman codewords");
 
-                result[index] = HuffmanDecode{codeword.value, codeword.bit_count};
+                result[index] = HuffmanDecode{.value = codeword.value, .bit_count = codeword.bit_count};
             }
         }
 
         for (const auto entry : result)
         {
             if (entry.bit_count == 0)
-                throw "Incomplete Huffman lookup";
+                throw std::runtime_error("Incomplete Huffman lookup");
         }
 
         return result;
@@ -215,18 +218,20 @@ namespace
         switch (format)
         {
         case image::IwiWaveletFormat::RGBA:
-            return {&image::format::B8_G8_R8_A8, 4, 4};
+            return {.output_format = &image::format::B8_G8_R8_A8, .channel_count = 4, .bytes_per_pixel = 4};
         case image::IwiWaveletFormat::RGB:
-            return {&image::format::B8_G8_R8_X8, 3, 4};
+            return {.output_format = &image::format::B8_G8_R8_X8, .channel_count = 3, .bytes_per_pixel = 4};
         case image::IwiWaveletFormat::LUMINANCE_ALPHA:
-            return {&image::format::R8_A8, 2, 2};
+            return {.output_format = &image::format::R8_A8, .channel_count = 2, .bytes_per_pixel = 2};
         case image::IwiWaveletFormat::LUMINANCE:
-            return {&image::format::R8, 1, 1};
+            return {.output_format = &image::format::R8, .channel_count = 1, .bytes_per_pixel = 1};
         case image::IwiWaveletFormat::ALPHA:
-            return {&image::format::A8, 1, 1};
+            return {.output_format = &image::format::A8, .channel_count = 1, .bytes_per_pixel = 1};
         }
 
-        return {nullptr, 0, 0};
+        assert(false);
+        con::error("Unexpected wavelet format {}", std::to_underlying(format));
+        return {};
     }
 
     bool DecodeValue(
@@ -369,7 +374,7 @@ namespace
                 if (channelCount != 1)
                 {
                     unsigned parity;
-                    if (!reader.ReadBits(1, parity) || !DecodeCoefficients(BLUE_LOOKUP, 9, 255, reader, blueCoefficients))
+                    if (!reader.ReadBits(1, parity) || !DecodeCoefficients(BLUE_LOOKUP, 9, 0xFF, reader, blueCoefficients))
                         return false;
 
                     ReconstructChannel(sourcePixel, destinationPixel, bytesPerPixel, stride, 0, parity, blueCoefficients);
@@ -379,7 +384,7 @@ namespace
                         for (auto channel = 1u; channel <= 2u; channel++)
                         {
                             std::array<int, 3> coefficients{};
-                            if (!reader.ReadBits(1, parity) || !DecodeCoefficients(RED_GREEN_LOOKUP, 10, 510, reader, coefficients))
+                            if (!reader.ReadBits(1, parity) || !DecodeCoefficients(RED_GREEN_LOOKUP, 10, 0x1FE, reader, coefficients))
                                 return false;
 
                             for (auto coefficientIndex = 0u; coefficientIndex < coefficients.size(); coefficientIndex++)
@@ -401,7 +406,7 @@ namespace
                 {
                     unsigned parity;
                     std::array<int, 3> coefficients{};
-                    if (!reader.ReadBits(1, parity) || !DecodeCoefficients(ALPHA_LOOKUP, 9, 255, reader, coefficients))
+                    if (!reader.ReadBits(1, parity) || !DecodeCoefficients(ALPHA_LOOKUP, 9, 0xFF, reader, coefficients))
                         return false;
 
                     ReconstructChannel(sourcePixel, destinationPixel, bytesPerPixel, stride, channelCount - 1u, parity, coefficients);
