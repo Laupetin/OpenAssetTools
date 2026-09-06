@@ -1,5 +1,8 @@
 #include "WavWriter.h"
 
+#include <limits>
+#include <stdexcept>
+
 WavWriter::WavWriter(std::ostream& stream)
     : m_stream(stream)
 {
@@ -7,8 +10,11 @@ WavWriter::WavWriter(std::ostream& stream)
 
 void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen) const
 {
-    constexpr auto riffMasterChunkSize = static_cast<uint32_t>(sizeof(WAV_CHUNK_ID_RIFF) + sizeof(uint32_t) + sizeof(WAV_WAVE_ID) + sizeof(WavChunkHeader)
-                                                               + sizeof(WavFormatChunkPcm) + sizeof(WavChunkHeader) + sizeof(uint32_t));
+    constexpr auto riffHeaderSize = sizeof(WAV_WAVE_ID) + sizeof(WavChunkHeader) + sizeof(WavFormatChunkPcm) + sizeof(WavChunkHeader);
+    if (dataLen > std::numeric_limits<uint32_t>::max() - riffHeaderSize)
+        throw std::length_error("PCM data is too large for a RIFF/WAV file");
+
+    const auto riffMasterChunkSize = static_cast<uint32_t>(riffHeaderSize + dataLen);
 
     m_stream.write(reinterpret_cast<const char*>(&WAV_CHUNK_ID_RIFF), sizeof(WAV_CHUNK_ID_RIFF));
     m_stream.write(reinterpret_cast<const char*>(&riffMasterChunkSize), sizeof(riffMasterChunkSize));
