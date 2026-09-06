@@ -290,6 +290,25 @@ namespace
         };
     }
 
+    std::optional<IwiWaveletFormat> GetWaveletFormat13(const int8_t format)
+    {
+        switch (static_cast<iwi13::IwiFormat>(format))
+        {
+        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGBA:
+            return IwiWaveletFormat::RGBA;
+        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB:
+            return IwiWaveletFormat::RGB;
+        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
+            return IwiWaveletFormat::LUMINANCE_ALPHA;
+        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
+            return IwiWaveletFormat::LUMINANCE;
+        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
+            return IwiWaveletFormat::ALPHA;
+        default:
+            return std::nullopt;
+        }
+    }
+
     const ImageFormat* GetFormat13(int8_t format)
     {
         switch (static_cast<iwi13::IwiFormat>(format))
@@ -312,11 +331,6 @@ namespace
             return &format::R8_A8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
             return &format::R8;
-        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
-        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
-        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
-        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
-        case iwi13::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB565:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB5A3:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_C8:
@@ -343,45 +357,56 @@ namespace
             return std::nullopt;
         }
 
-        const auto* format = GetFormat13(header.format);
-        if (format == nullptr)
-            return std::nullopt;
-
         const auto width = header.dimensions[0];
         const auto height = header.dimensions[1];
         const auto depth = header.dimensions[2];
         const auto hasMipMaps = !(header.flags & iwi13::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
-        std::unique_ptr<Texture> texture;
+        TextureType textureType;
         if (header.flags & iwi13::IwiFlags::IMG_FLAG_CUBEMAP)
-            texture = std::make_unique<TextureCube>(format, width, height, hasMipMaps);
+            textureType = TextureType::T_CUBE;
         else if (header.flags & iwi13::IwiFlags::IMG_FLAG_VOLMAP)
-            texture = std::make_unique<Texture3D>(format, width, height, depth, hasMipMaps);
+            textureType = TextureType::T_3D;
         else
-            texture = std::make_unique<Texture2D>(format, width, height, hasMipMaps);
+            textureType = TextureType::T_2D;
 
-        texture->Allocate();
-
-        auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersionHeader);
-        const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
-
-        for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+        std::unique_ptr<Texture> texture;
+        if (const auto waveletFormat = GetWaveletFormat13(header.format))
         {
-            const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
-            currentFileSize += sizeOfMipLevel;
-
-            if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi13::IwiHeader::fileSizeForPicmip)>)
-                && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
-            {
-                con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
+            texture = DecodeIwiWavelet(stream, textureType, width, height, hasMipMaps, *waveletFormat);
+            if (!texture)
                 return std::nullopt;
-            }
-
-            stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
-            if (stream.gcount() != sizeOfMipLevel)
-            {
-                con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
+        }
+        else
+        {
+            const auto* format = GetFormat13(header.format);
+            if (format == nullptr)
                 return std::nullopt;
+
+            texture = Texture::CreateForType(textureType, format, width, height, depth, hasMipMaps);
+            texture->Allocate();
+
+            auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersionHeader);
+            const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
+
+            for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+            {
+                const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+                currentFileSize += sizeOfMipLevel;
+
+                if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi13::IwiHeader::fileSizeForPicmip)>)
+                    && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
+                {
+                    con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
+                    return std::nullopt;
+                }
+
+                stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
+                if (stream.gcount() != sizeOfMipLevel)
+                {
+                    con::error("Unexpected eof of iwi in mip level {}", currentMipLevel);
+                    return std::nullopt;
+                }
             }
         }
 
