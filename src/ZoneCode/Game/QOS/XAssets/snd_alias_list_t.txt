@@ -17,16 +17,16 @@ set reusable soundFile;
 
 // SoundFile
 use SoundFile;
-set string unknownString0;
-set string unknownString1;
-set condition u::primeSnd type == QOS_SOUND_FILE_TYPE_PRIMED;
+set string dir;
+set string name;
+set condition u::primeSnd type == SAT_PRIMED;
 set reusable u::primeSnd;
 
-// QosMssSound
-use QosMssSound;
-set arraysize data dataSize;
-set condition unknownDataPtr0 never;
-set condition unknownDataPtr1 never;
+// MssSound
+use MssSound;
+set arraysize data info::data_len;
+set condition info::data_ptr never;
+set condition info::initial_ptr never;
 
 // QosPrimedSound
 use QosPrimedSound;

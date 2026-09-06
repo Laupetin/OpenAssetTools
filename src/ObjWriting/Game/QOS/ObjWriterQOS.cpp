@@ -6,6 +6,7 @@
 #include "Game/QOS/XModel/XModelDumperQOS.h"
 #include "Localize/LocalizeDumperQOS.h"
 #include "RawFile/RawFileDumperQOS.h"
+#include "Sound/SoundDumperQOS.h"
 #include "StringTable/StringTableDumperQOS.h"
 
 using namespace QOS;
@@ -17,6 +18,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<localize::DumperQOS>());
     RegisterAssetDumper(std::make_unique<map_ents::DumperQOS>());
     RegisterAssetDumper(std::make_unique<raw_file::DumperQOS>());
+    RegisterAssetDumper(std::make_unique<sound::DumperQOS>());
     RegisterAssetDumper(std::make_unique<string_table::DumperQOS>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperQOS>());
 }

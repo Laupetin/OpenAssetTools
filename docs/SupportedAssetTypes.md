@@ -135,7 +135,7 @@ using `Linker`):
 | Material             | ❌               | ❌               |                                                                              |
 | MaterialTechniqueSet | ❌               | ❌               |                                                                              |
 | GfxImage             | ✅               | ❌               |                                                                              |
-| snd_alias_list_t     | ❌               | ❌               |                                                                              |
+| Sound                | ✅               | ❌               |                                                                              |
 | SndCurve             | ❌               | ❌               |                                                                              |
 | clipMap_t            | ❌               | ❌               |                                                                              |
 | ComWorld             | ❌               | ❌               |                                                                              |
