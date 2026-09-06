@@ -270,11 +270,6 @@ namespace
         return true;
     }
 
-    constexpr int ShiftRightOne(const int value)
-    {
-        return value >= 0 ? value / 2 : -((-value + 1) / 2);
-    }
-
     void ReconstructChannel(const std::uint8_t* source,
                             std::uint8_t* topLeft,
                             const unsigned bytesPerPixel,
@@ -288,10 +283,10 @@ namespace
         const auto vertical = coefficients[1];
         const auto diagonal = coefficients[2];
 
-        topLeft[channel] = static_cast<std::uint8_t>(parity + ShiftRightOne(diagonal + vertical + horizontal + base));
-        topLeft[bytesPerPixel + channel] = static_cast<std::uint8_t>(ShiftRightOne(horizontal + base - diagonal - vertical));
-        topLeft[stride + channel] = static_cast<std::uint8_t>(ShiftRightOne(vertical - diagonal + base - horizontal));
-        topLeft[stride + bytesPerPixel + channel] = static_cast<std::uint8_t>(ShiftRightOne(base - horizontal - vertical + diagonal));
+        topLeft[channel] = static_cast<std::uint8_t>(parity + ((diagonal + vertical + horizontal + base) >> 1));
+        topLeft[bytesPerPixel + channel] = static_cast<std::uint8_t>((horizontal + base - diagonal - vertical) >> 1);
+        topLeft[stride + channel] = static_cast<std::uint8_t>((vertical - diagonal + base - horizontal) >> 1);
+        topLeft[stride + bytesPerPixel + channel] = static_cast<std::uint8_t>((base - horizontal - vertical + diagonal) >> 1);
     }
 
     bool AddDeltaToMipmap(std::uint8_t* pixels, const unsigned pixelCount, const unsigned channelCount, const unsigned bytesPerPixel, WaveletBitReader& reader)
