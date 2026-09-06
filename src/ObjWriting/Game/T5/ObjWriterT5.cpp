@@ -1,5 +1,6 @@
 #include "ObjWriterT5.h"
 
+#include "DestructibleDef/DestructibleDefInfoStringDumperT5.h"
 #include "Game/T5/Font/FontDumperT5.h"
 #include "Game/T5/Image/ImageDumperT5.h"
 #include "Game/T5/Maps/MapEntsDumperT5.h"
