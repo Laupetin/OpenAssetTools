@@ -19,7 +19,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ⁉️              | ❌               | Dumps one stock SDK-compatible `soundaliases/<zone>.csv` plus referenced speaker maps; source-only fields cannot be recovered. |
 | SndCurve             | ✅              | ✅              |                                                                              |
-| LoadedSound          | ✅              | ❌              |                                                                              |
+| LoadedSound          | ✅               | ⁉️              | Loads mono/stereo 8/16-bit PCM WAV files.                                      |
 | clipMap_t            | ❌              | ❌              |                                                                              |
 | ComWorld             | ❌              | ❌              |                                                                              |
 | GameWorldSp          | ❌              | ❌              |                                                                              |
