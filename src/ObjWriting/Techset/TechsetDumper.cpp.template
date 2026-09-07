@@ -64,7 +64,7 @@ namespace
         shaderFile->write(pixelShader.prog.loadDef.program, pixelShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(pixelShader.prog.loadDef.program),
-                          static_cast<std::streamsize>(pixelShader.prog.loadDef.programSize) * sizeof(GfxPixelShaderLoadDef::program));
+                          static_cast<std::streamsize>(pixelShader.prog.loadDef.programSize) * sizeof(*pixelShader.prog.loadDef.program));
 #endif
     }
 
@@ -79,7 +79,7 @@ namespace
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(vertexShader.prog.loadDef.program),
-                          static_cast<std::streamsize>(vertexShader.prog.loadDef.programSize) * sizeof(GfxVertexShaderLoadDef::program));
+                          static_cast<std::streamsize>(vertexShader.prog.loadDef.programSize) * sizeof(*vertexShader.prog.loadDef.program));
 #endif
     }
 

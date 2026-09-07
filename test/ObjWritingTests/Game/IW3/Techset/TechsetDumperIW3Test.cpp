@@ -12,6 +12,7 @@
 #include <format>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace IW3;
 using namespace Catch;
@@ -33,6 +34,30 @@ namespace
             end = end + 1;
 
         return input.substr(start, end - start);
+    }
+
+    void RequireDumpedShaderMatchesFixture(const MockOutputPath& output, const std::string& fileName)
+    {
+        const auto* dumpedFile = output.GetMockedFile(std::format("shader_bin/{}", fileName));
+        REQUIRE(dumpedFile);
+
+        const auto fixturePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset" / fileName;
+        std::ifstream fixture(fixturePath, std::ios::binary);
+        REQUIRE(fixture.is_open());
+
+        const auto fixtureSize = static_cast<size_t>(fs::file_size(fixturePath));
+        std::vector<std::uint8_t> fixtureData(fixtureSize);
+        fixture.read(reinterpret_cast<char*>(fixtureData.data()), static_cast<std::streamsize>(fixtureData.size()));
+        REQUIRE(fixture.gcount() == static_cast<std::streamsize>(fixtureData.size()));
+        REQUIRE(dumpedFile->m_data == fixtureData);
+    }
+
+    void RequireDumpedShadersMatchFixtures(const MockOutputPath& output)
+    {
+        RequireDumpedShaderMatchesFixture(output, "vs_simple.hlsl.cso");
+        RequireDumpedShaderMatchesFixture(output, "ps_simple.hlsl.cso");
+        RequireDumpedShaderMatchesFixture(output, "vs_advanced.hlsl.cso");
+        RequireDumpedShaderMatchesFixture(output, "ps_advanced.hlsl.cso");
     }
 
     MaterialVertexShader* GivenVertexShader(const std::string& name, MemoryManager& memory)
@@ -260,6 +285,7 @@ TEST_CASE("TechsetDumperIW3", "[iw3][techset][dumper]")
 )TECHSET");
 
         dumper.Dump(context);
+        RequireDumpedShadersMatchFixtures(mockOutput);
 
         const auto* file = mockOutput.GetMockedFile("techsets/example_techset.techset");
         REQUIRE(file);
@@ -287,6 +313,7 @@ TEST_CASE("TechsetDumperIW3", "[iw3][techset][dumper]")
 }
 )TECHNIQUE");
         dumper.Dump(context);
+        RequireDumpedShadersMatchFixtures(mockOutput);
 
         const auto* file = mockOutput.GetMockedFile("techniques/example_zprepass.tech");
         REQUIRE(file);
@@ -330,6 +357,7 @@ TEST_CASE("TechsetDumperIW3", "[iw3][techset][dumper]")
 }
 )TECHNIQUE");
         dumper.Dump(context);
+        RequireDumpedShadersMatchFixtures(mockOutput);
 
         const auto* file = mockOutput.GetMockedFile("techniques/example_lit_spot.tech");
         REQUIRE(file);
