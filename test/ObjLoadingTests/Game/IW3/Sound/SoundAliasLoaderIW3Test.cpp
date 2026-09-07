@@ -193,6 +193,44 @@ test,null.wav,0,0.8
         REQUIRE(info->Asset()->head[1].volMin == Catch::Approx(0.2f));
     }
 
+    TEST_CASE("SoundAliasLoaderIW3: Preserves relative probability weights", "[iw3][sound-alias][assetloader]")
+    {
+        Fixture f;
+        f.search.AddFileData("soundaliases/weights.csv",
+                             R"(name,file,type,sequence,probability
+weighted,a.wav,streamed,0,2
+weighted,b.wav,streamed,1,1
+weighted,c.wav,streamed,2,0
+)");
+        const auto* info = f.context.LoadDependency<AssetSound>("weighted");
+        REQUIRE(info != nullptr);
+        REQUIRE(info->Asset()->count == 3);
+        REQUIRE(info->Asset()->head[0].probability == 2.0f);
+        REQUIRE(info->Asset()->head[1].probability == 1.0f);
+        REQUIRE(info->Asset()->head[2].probability == 0.0f);
+    }
+
+    TEST_CASE("SoundAliasLoaderIW3: Rejects invalid probability weights", "[iw3][sound-alias][assetloader]")
+    {
+        Fixture f;
+        std::string probability;
+        SECTION("Negative weight")
+        {
+            probability = "-1";
+        }
+        SECTION("NaN weight")
+        {
+            probability = "nan";
+        }
+        SECTION("Infinite weight")
+        {
+            probability = "inf";
+        }
+        f.search.AddFileData("soundaliases/weights.csv", std::format("name,file,type,probability\nweighted,a.wav,streamed,{}\n", probability));
+        REQUIRE(f.creators.CreateAsset(ASSET_TYPE_SOUND, "weighted", f.context).HasFailed());
+        REQUIRE(f.zone.m_pools.GetAsset<AssetSound>("weighted") == nullptr);
+    }
+
     TEST_CASE("SoundAliasLoaderIW3: Rejects malformed selected rows", "[iw3][sound-alias][assetloader]")
     {
         Fixture f;

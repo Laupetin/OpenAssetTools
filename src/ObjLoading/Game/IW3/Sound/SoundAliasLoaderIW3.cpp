@@ -237,7 +237,7 @@ namespace
                 {SA_PITCH_MAX,         &snd_alias_t::pitchMax,          false},
                 {SA_DIST_MIN,          &snd_alias_t::distMin,           false},
                 {SA_DIST_MAX,          &snd_alias_t::distMax,           false},
-                {SA_PROBABILITY,       &snd_alias_t::probability,       true },
+                {SA_PROBABILITY,       &snd_alias_t::probability,       false},
                 {SA_LFEPERCENTAGE,     &snd_alias_t::lfePercentage,     true },
                 {SA_CENTERPERCENTAGE,  &snd_alias_t::centerPercentage,  true },
                 {SA_ENVELOPMIN,        &snd_alias_t::envelopMin,        false},
@@ -249,6 +249,8 @@ namespace
                 if (fields[field.field].empty())
                     continue;
                 const auto value = ParseFloat(fields[field.field]);
+                if (field.field == SA_PROBABILITY && value < 0.0f)
+                    throw std::runtime_error("probability must be non-negative");
                 if (field.unitRange && (value < 0.0f || value > 1.0f))
                     throw std::runtime_error(std::format("{} must be in [0, 1]", g_pszSndAliasKeyNames[field.field]));
                 alias.*field.member = value;
