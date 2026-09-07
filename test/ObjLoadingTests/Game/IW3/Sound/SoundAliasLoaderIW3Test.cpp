@@ -193,6 +193,23 @@ test,null.wav,0,0.8
         REQUIRE(info->Asset()->head[1].volMin == Catch::Approx(0.2f));
     }
 
+    TEST_CASE("SoundAliasLoaderIW3: Reordered columns preserve the SDK blank-first-column rule", "[iw3][sound-alias][assetloader]")
+    {
+        Fixture f;
+        f.search.AddFileData("soundaliases/reordered.csv",
+                             R"(sequence,name,file,type
+0,enabled,a.wav,streamed
+,disabled,b.wav,streamed
+)");
+        REQUIRE(f.creators.CreateAsset(ASSET_TYPE_SOUND, "reordered.csv", f.context).HasBeenSuccessful());
+        const auto* enabled = f.zone.m_pools.GetAsset<AssetSound>("enabled");
+        REQUIRE(enabled != nullptr);
+        REQUIRE(enabled->Asset()->count == 1);
+        REQUIRE(enabled->Asset()->head->soundFile->type == SAT_STREAMED);
+        REQUIRE(enabled->Asset()->head->soundFile->u.streamSnd.name == "a.wav"s);
+        REQUIRE(f.zone.m_pools.GetAsset<AssetSound>("disabled") == nullptr);
+    }
+
     TEST_CASE("SoundAliasLoaderIW3: Preserves relative probability weights", "[iw3][sound-alias][assetloader]")
     {
         Fixture f;

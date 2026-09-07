@@ -128,6 +128,7 @@ namespace
                 ++line;
                 for (auto& value : columns)
                     utils::StringTrim(value);
+                // SDK CSV convention: a blank first column disables the row, regardless of header order.
                 if (columns.empty() || columns[0].empty() || columns[0].starts_with('#') || columns[0].starts_with("//"))
                     continue;
                 if (headers.empty())
