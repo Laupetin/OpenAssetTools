@@ -26,21 +26,21 @@ namespace
             auto* map = m_memory.Alloc<SpeakerMap>();
             map->name = m_memory.Dup(assetName.c_str());
             map->isDefault = assetName.empty();
-            for (auto source = 0; source < 2; source++)
+            for (auto sourceMode = 0; sourceMode < 2; sourceMode++)
             {
-                for (auto output = 0; output < 2; output++)
+                for (auto outputMode = 0; outputMode < 2; outputMode++)
                 {
-                    auto& channel = map->channelMaps[source][output];
-                    channel.speakerCount = output ? 6 : 2;
-                    for (auto speaker = 0; speaker < channel.speakerCount; speaker++)
+                    auto& channelMap = map->channelMaps[sourceMode][outputMode];
+                    channelMap.speakerCount = outputMode == 0 ? 2 : 6;
+                    for (auto speaker = 0; speaker < channelMap.speakerCount; speaker++)
                     {
-                        auto& levels = channel.speakers[speaker];
+                        auto& levels = channelMap.speakers[speaker];
                         levels.speaker = speaker;
-                        levels.numLevels = source + 1;
+                        levels.numLevels = sourceMode + 1;
                         // Com_InitDefaultSoundAliasSpeakerMap: mono is split equally; stereo routes left/right directly.
                         if (speaker < 2 && map->isDefault)
                         {
-                            if (!source)
+                            if (sourceMode == 0)
                                 levels.levels[0] = 0.5f;
                             else
                                 levels.levels[speaker] = 1.0f;
@@ -75,14 +75,14 @@ namespace
             if (!(tokens >> token) || token != "SPKRMAP")
                 return false;
             // Stock order: mono/stereo, stereo/stereo, mono/surround, stereo/surround.
-            for (auto output = 0; output < 2; output++)
+            for (auto outputMode = 0; outputMode < 2; outputMode++)
             {
-                for (auto source = 0; source < 2; source++)
+                for (auto sourceMode = 0; sourceMode < 2; sourceMode++)
                 {
-                    auto& channel = map.channelMaps[source][output];
-                    for (auto speaker = 0; speaker < channel.speakerCount; speaker++)
+                    auto& channelMap = map.channelMaps[sourceMode][outputMode];
+                    for (auto speaker = 0; speaker < channelMap.speakerCount; speaker++)
                     {
-                        for (auto input = 0; input <= source; input++)
+                        for (auto inputChannel = 0; inputChannel <= sourceMode; inputChannel++)
                         {
                             std::string inputName, outputName;
                             float level;
@@ -90,10 +90,10 @@ namespace
                                 return false;
                             utils::MakeStringUpperCase(inputName);
                             utils::MakeStringUpperCase(outputName);
-                            if (inputName != SOUND_SPEAKER_MAP_IDENTIFIERS[source ? SA_LEFTSOURCE + input : SA_MONOSOURCE]
+                            if (inputName != SOUND_SPEAKER_MAP_IDENTIFIERS[sourceMode ? SA_LEFTSOURCE + inputChannel : SA_MONOSOURCE]
                                 || outputName != SOUND_SPEAKER_MAP_IDENTIFIERS[SA_LEFTSPEAKER + speaker])
                                 return false;
-                            channel.speakers[speaker].levels[input] = level;
+                            channelMap.speakers[speaker].levels[inputChannel] = level;
                         }
                     }
                 }
