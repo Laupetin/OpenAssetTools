@@ -17,7 +17,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | Material             | ✅              | ✅              |                                                                              |
 | MaterialTechniqueSet | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ✅              |                                                                              |
-| snd_alias_list_t     | ⁉️              | ❌               | Dumps one stock SDK-compatible `soundaliases/<zone>.csv` plus referenced speaker maps; source-only fields cannot be recovered. |
+| snd_alias_list_t     | ⁉️              | ✅               | Loads SDK CSV aliases, speaker maps and curves; loadspec filtering is not supported. Source-only fields cannot be recovered when dumping. |
 | SndCurve             | ✅              | ✅              |                                                                              |
 | LoadedSound          | ✅               | ⁉️              | Loads mono/stereo 8/16-bit PCM WAV files.                                      |
 | clipMap_t            | ❌              | ❌              |                                                                              |

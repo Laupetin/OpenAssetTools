@@ -22,6 +22,7 @@
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoadedSoundLoaderIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
+#include "Sound/SoundAliasLoaderIW3.h"
 #include "Sound/SpeakerMapLoaderIW3.h"
 #include "StringTable/LoaderStringTableIW3.h"
 #include "Weapon/WeaponGdtLoaderIW3.h"
@@ -113,7 +114,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(image::CreateLoaderEmbeddedIW3(memory, searchPath));
         collection.AddAssetCreator(image::CreateLoaderExternalIW3(memory, searchPath));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
+        collection.AddAssetCreator(sound_alias::CreateLoaderIW3(memory, searchPath, zone));
         collection.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, searchPath));
         collection.AddAssetCreator(sound::CreateLoadedSoundLoaderIW3(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
