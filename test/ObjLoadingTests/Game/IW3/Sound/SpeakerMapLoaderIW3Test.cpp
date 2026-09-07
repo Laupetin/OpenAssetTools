@@ -21,7 +21,7 @@ namespace
         AssetCreatorCollection creators(zone);
         IgnoredAssetLookup ignored;
         AssetCreationContext context(zone, &creators, &ignored);
-        creators.AddSubAssetCreator(sound_alias::CreateSpeakerMapLoaderIW3(memory, search));
+        creators.AddSubAssetCreator(speaker_map::CreateSpeakerMapLoaderIW3(memory, search));
         const auto filePath = oat::paths::GetTestDirectory() / "ObjLoadingTests/Game/IW3/Sound/TestSpeakerMap.spkrmap";
         std::ifstream file(filePath);
         REQUIRE(file.is_open());

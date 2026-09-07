@@ -106,10 +106,10 @@ namespace
     };
 } // namespace
 
-namespace sound_alias
+namespace speaker_map
 {
     std::unique_ptr<SubAssetCreator<SubAssetSpeakerMap>> CreateSpeakerMapLoaderIW3(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<SpeakerMapLoader>(memory, searchPath);
     }
-} // namespace sound_alias
+} // namespace speaker_map

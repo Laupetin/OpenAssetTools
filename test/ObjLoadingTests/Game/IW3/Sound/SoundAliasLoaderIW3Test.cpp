@@ -75,7 +75,7 @@ namespace
             creators.AddAssetCreator(sound_alias::CreateLoaderIW3(memory, search, zone));
             creators.AddAssetCreator(sound::CreateLoadedSoundLoaderIW3(memory, search));
             creators.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, search));
-            creators.AddSubAssetCreator(sound_alias::CreateSpeakerMapLoaderIW3(memory, search));
+            creators.AddSubAssetCreator(speaker_map::CreateSpeakerMapLoaderIW3(memory, search));
             search.AddFileData("sound/null.wav", PcmWav());
         }
     };

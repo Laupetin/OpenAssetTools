@@ -117,9 +117,37 @@ namespace
         std::vector<std::string> row;
 
         REQUIRE(csv.NextRow(row));
-        REQUIRE(row.size() == 30);
-        REQUIRE(row[0] == "name");
-        REQUIRE(row[29] == "chainaliasname");
+        const std::vector<std::string> expectedHeaders{"name",
+                                                       "sequence",
+                                                       "file",
+                                                       "vol_min",
+                                                       "vol_max",
+                                                       "vol_mod",
+                                                       "pitch_min",
+                                                       "pitch_max",
+                                                       "dist_min",
+                                                       "dist_max",
+                                                       "channel",
+                                                       "type",
+                                                       "probability",
+                                                       "loop",
+                                                       "masterslave",
+                                                       "loadspec",
+                                                       "subtitle",
+                                                       "compression",
+                                                       "secondaryaliasname",
+                                                       "volumefalloffcurve",
+                                                       "startdelay",
+                                                       "speakermap",
+                                                       "reverb",
+                                                       "lfe percentage",
+                                                       "center percentage",
+                                                       "platform",
+                                                       "envelop_min",
+                                                       "envelop_max",
+                                                       "envelop percentage",
+                                                       "chainaliasname"};
+        REQUIRE(row == expectedHeaders);
 
         REQUIRE(csv.NextRow(row));
         REQUIRE(row.size() == 30);

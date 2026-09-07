@@ -139,7 +139,7 @@ namespace
         collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderIW3(memory, searchPath));
         collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderIW3(memory, searchPath));
         collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW3(memory, searchPath));
-        collection.AddSubAssetCreator(sound_alias::CreateSpeakerMapLoaderIW3(memory, searchPath));
+        collection.AddSubAssetCreator(speaker_map::CreateSpeakerMapLoaderIW3(memory, searchPath));
     }
 } // namespace
 
