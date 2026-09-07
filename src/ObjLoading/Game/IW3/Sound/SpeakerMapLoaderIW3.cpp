@@ -1,11 +1,11 @@
 #include "SpeakerMapLoaderIW3.h"
 
 #include "Game/IW3/SoundConstantsIW3.h"
+#include "Sound/SpeakerMapCommon.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
 
 #include <cmath>
-#include <format>
 #include <sstream>
 
 using namespace IW3;
@@ -50,7 +50,7 @@ namespace
             }
             if (!map->isDefault)
             {
-                const auto fileName = std::format("soundaliases/{}.spkrmap", assetName);
+                const auto fileName = speaker_map::GetFileNameForAssetName(assetName);
                 const auto file = m_search_path.Open(fileName);
                 if (!file.IsOpen())
                     return AssetCreationResult::NoAction();

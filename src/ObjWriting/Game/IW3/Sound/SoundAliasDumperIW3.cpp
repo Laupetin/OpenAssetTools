@@ -2,6 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "Game/IW3/SoundConstantsIW3.h"
+#include "Sound/SpeakerMapCommon.h"
 #include "Utils/Logging/Log.h"
 
 #include <algorithm>
@@ -128,7 +129,7 @@ namespace
 
     void DumpSpeakerMap(AssetDumpingContext& context, const SpeakerMap& speakerMap)
     {
-        const auto assetFile = context.OpenAssetFile(std::format("soundaliases/{}.spkrmap", speakerMap.name));
+        const auto assetFile = context.OpenAssetFile(speaker_map::GetFileNameForAssetName(speakerMap.name));
         if (!assetFile)
         {
             con::error("Could not create IW3 speaker map '{}'", speakerMap.name);
