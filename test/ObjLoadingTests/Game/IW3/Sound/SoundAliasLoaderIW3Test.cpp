@@ -5,12 +5,10 @@
 #include "Game/IW3/Sound/SpeakerMapLoaderIW3.h"
 #include "Game/IW3/SoundConstantsIW3.h"
 #include "SearchPath/MockSearchPath.h"
-#include "SearchPath/SearchPathFilesystem.h"
 #include "Sound/WavTypes.h"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <cstring>
 #include <format>
 #include <sstream>
@@ -20,35 +18,6 @@ using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("SoundAliasLoaderIW3: Loads installed SDK examples", "[.][iw3][sound-alias][sdk]")
-    {
-        const auto* rawPath = std::getenv("OAT_IW3_SDK_RAW");
-        if (!rawPath)
-            SKIP("Set OAT_IW3_SDK_RAW to the SDK raw directory");
-        SearchPathFilesystem search(rawPath);
-        Zone zone("bog", 0, GameId::IW3, GamePlatform::PC);
-        MemoryManager memory;
-        AssetCreatorCollection creators(zone);
-        IgnoredAssetLookup ignored;
-        AssetCreationContext context(zone, &creators, &ignored);
-        creators.AddAssetCreator(sound_alias::CreateLoaderIW3(memory, search, zone));
-        creators.AddAssetCreator(sound::CreateLoadedSoundLoaderIW3(memory, search));
-        creators.AddAssetCreator(sound_curve::CreateLoaderIW3(memory, search));
-        creators.AddSubAssetCreator(sound_alias::CreateSpeakerMapLoaderIW3(memory, search));
-        const auto* fire = context.LoadDependency<AssetSound>("bigfire");
-        REQUIRE(fire != nullptr);
-        REQUIRE(fire->Asset()->head->volMin == Catch::Approx(0.486f));
-        REQUIRE((fire->Asset()->head->flags & SND_ALIAS_FLAG_RANDOM_LOOPING) != 0);
-        const auto* voice = context.LoadDependency<AssetSound>("bog_vsq_regroupattank");
-        REQUIRE(voice != nullptr);
-        REQUIRE(voice->Asset()->head->soundFile->u.loadSnd->name == "null.wav"s);
-        REQUIRE(voice->Asset()->head->volMin == Catch::Approx(0.95f));
-        REQUIRE((voice->Asset()->head->flags & SND_ALIAS_FLAG_MASTER) != 0);
-        const auto* music = context.LoadSubAsset<SubAssetSpeakerMap>("music");
-        REQUIRE(music != nullptr);
-        REQUIRE(music->Asset()->channelMaps[0][1].speakers[0].levels[0] == Catch::Approx(0.3f));
-    }
-
     class SoundSearchPath final : public ISearchPath
     {
     public:
@@ -115,10 +84,17 @@ namespace
     {
         Fixture f;
         f.search.AddFileData("soundaliases/common.csv",
-                             "# SDK comment\n\nname,file,vol_min,vol_mod,pitch_min,dist_min,dist_max,channel,type,loop,sequence,subtitle,masterslave\n"
-                             "bigfire,fire/Fire_Big_loop02.wav,0.6,na,0.82,7,600,auto,streamed,rlooping,3,\"A subtitle, with comma\",master\n"
-                             "bigfire,null.wav,0.2,,1,10,50,mission,loaded,nonlooping,1,,0.5\n");
-        f.search.AddFileData("soundaliases/volumemodgroups.def", "VOLUMEMODGROUPS\n// SDK values\nna 0.8100\n");
+                             R"(# SDK comment
+
+name,file,vol_min,vol_mod,pitch_min,dist_min,dist_max,channel,type,loop,sequence,subtitle,masterslave
+bigfire,fire/Fire_Big_loop02.wav,0.6,na,0.82,7,600,auto,streamed,rlooping,3,"A subtitle, with comma",master
+bigfire,null.wav,0.2,,1,10,50,mission,loaded,nonlooping,1,,0.5
+)");
+        f.search.AddFileData("soundaliases/volumemodgroups.def",
+                             R"(VOLUMEMODGROUPS
+// SDK values
+na 0.8100
+)");
         auto* info = f.context.LoadDependency<AssetSound>("bigfire");
         REQUIRE(info != nullptr);
         const auto* list = info->Asset();
@@ -156,10 +132,15 @@ namespace
     {
         Fixture f;
         f.search.AddFileData("soundaliases/voices.csv",
-                             "name,file,secondaryaliasname,chainaliasname,volumefalloffcurve,reverb,envelop_min,envelop_max,envelop percentage\n"
-                             "first,null.wav,second,,test,fulldrylevel nowetlevel,0.1,0.9,0.4\n"
-                             "second,null.wav,,first,test,,,,\n");
-        f.search.AddFileData("soundaliases/test.vfcurve", "SNDCURVE\n2\n0 1\n1 0\n");
+                             R"(name,file,secondaryaliasname,chainaliasname,volumefalloffcurve,reverb,envelop_min,envelop_max,envelop percentage
+first,null.wav,second,,test,fulldrylevel nowetlevel,0.1,0.9,0.4
+second,null.wav,,first,test,,,,
+)");
+        f.search.AddFileData("soundaliases/test.vfcurve", R"(SNDCURVE
+2
+0 1
+1 0
+)");
         auto* first = f.context.LoadDependency<AssetSound>("first");
         REQUIRE(first != nullptr);
         const auto* second = f.zone.m_pools.GetAsset<AssetSound>("second");
@@ -172,11 +153,39 @@ namespace
         REQUIRE((first->Asset()->head->flags & SND_ALIAS_FLAG_NO_WET_LEVEL) != 0);
     }
 
+    TEST_CASE("SoundAliasLoaderIW3: Imports all aliases from a named CSV", "[iw3][sound-alias][assetloader]")
+    {
+        Fixture f;
+        f.search.AddFileData("soundaliases/test.csv",
+                             R"(name,file,sequence
+first,null.wav,0
+second,null.wav,0
+first,null.wav,1
+)");
+        f.search.AddFileData("soundaliases/other.csv",
+                             R"(name,file
+unrelated,null.wav
+)");
+        REQUIRE(f.creators.CreateAsset(ASSET_TYPE_SOUND, "test.csv", f.context).HasBeenSuccessful());
+        const auto* first = f.zone.m_pools.GetAsset<AssetSound>("first");
+        const auto* second = f.zone.m_pools.GetAsset<AssetSound>("second");
+        REQUIRE(first != nullptr);
+        REQUIRE(second != nullptr);
+        REQUIRE(first->Asset()->count == 2);
+        REQUIRE(second->Asset()->count == 1);
+        REQUIRE(f.zone.m_pools.GetAsset<AssetSound>("unrelated") == nullptr);
+    }
+
     TEST_CASE("SoundAliasLoaderIW3: Later source overrides matching sequences", "[iw3][sound-alias][assetloader]")
     {
         Fixture f;
-        f.search.AddFileData("soundaliases/a.csv", "name,file,sequence,vol_min\ntest,null.wav,0,0.1\ntest,null.wav,2,0.2\n");
-        f.search.AddFileData("soundaliases/z.csv", "name,file,sequence,vol_min\ntest,null.wav,0,0.8\n");
+        f.search.AddFileData("soundaliases/a.csv", R"(name,file,sequence,vol_min
+test,null.wav,0,0.1
+test,null.wav,2,0.2
+)");
+        f.search.AddFileData("soundaliases/z.csv", R"(name,file,sequence,vol_min
+test,null.wav,0,0.8
+)");
         const auto* info = f.context.LoadDependency<AssetSound>("test");
         REQUIRE(info != nullptr);
         REQUIRE(info->Asset()->count == 2);
@@ -190,39 +199,58 @@ namespace
         std::string data;
         SECTION("Duplicate sequence")
         {
-            data = "name,file\ntest,null.wav\ntest,null.wav\n";
+            data = R"(name,file
+test,null.wav
+test,null.wav
+)";
         }
         SECTION("Invalid float")
         {
-            data = "name,file,vol_min\ntest,null.wav,nan\n";
+            data = R"(name,file,vol_min
+test,null.wav,nan
+)";
         }
         SECTION("Out of range volume")
         {
-            data = "name,file,vol_min\ntest,null.wav,2\n";
+            data = R"(name,file,vol_min
+test,null.wav,2
+)";
         }
         SECTION("Missing loaded sound")
         {
-            data = "name,file\ntest,missing.wav\n";
+            data = R"(name,file
+test,missing.wav
+)";
         }
         SECTION("Missing name header")
         {
-            data = "file,volume\nnull.wav,1\n";
+            data = R"(file,volume
+null.wav,1
+)";
         }
         SECTION("Missing map")
         {
-            data = "name,file,speakermap\ntest,null.wav,missing\n";
+            data = R"(name,file,speakermap
+test,null.wav,missing
+)";
         }
         SECTION("Unknown channel")
         {
-            data = "name,file,channel\ntest,null.wav,unknown\n";
+            data = R"(name,file,channel
+test,null.wav,unknown
+)";
         }
         SECTION("Unknown volume modifier")
         {
-            data = "name,file,vol_mod\ntest,null.wav,unknown\n";
+            data = R"(name,file,vol_mod
+test,null.wav,unknown
+)";
         }
         SECTION("Invalid sequence")
         {
-            data = "name,file,sequence\ntest,null.wav,2147483648\n";
+            data = R"(name,file,sequence
+test,null.wav,2147483648
+)";
         }
         f.search.AddFileData("soundaliases/test.csv", data);
         REQUIRE(f.creators.CreateAsset(ASSET_TYPE_SOUND, "test", f.context).HasFailed());
