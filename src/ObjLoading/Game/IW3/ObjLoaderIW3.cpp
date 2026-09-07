@@ -21,6 +21,7 @@
 #include "PhysPreset/RawLoaderPhysPresetIW3.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "Sound/LoaderSoundCurveIW3.h"
+#include "Sound/SpeakerMapLoaderIW3.h"
 #include "StringTable/LoaderStringTableIW3.h"
 #include "Weapon/WeaponGdtLoaderIW3.h"
 #include "Weapon/WeaponRawLoaderIW3.h"
@@ -136,6 +137,7 @@ namespace
         collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderIW3(memory, searchPath));
         collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderIW3(memory, searchPath));
         collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderIW3(memory, searchPath));
+        collection.AddSubAssetCreator(sound_alias::CreateSpeakerMapLoaderIW3(memory, searchPath));
     }
 } // namespace
 
