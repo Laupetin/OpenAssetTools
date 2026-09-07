@@ -37,11 +37,26 @@ namespace
             }
 
             const auto mipCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
-            for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
+            if (m_texture->GetTextureType() == TextureType::T_CUBE)
             {
-                const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
-                const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel) * m_texture->GetFaceCount();
-                m_stream.write(reinterpret_cast<const char*>(buffer), static_cast<std::streamsize>(mipLevelSize));
+                for (auto face = 0; face < m_texture->GetFaceCount(); face++)
+                {
+                    for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
+                    {
+                        const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel, face);
+                        const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel);
+                        m_stream.write(reinterpret_cast<const char*>(buffer), static_cast<std::streamsize>(mipLevelSize));
+                    }
+                }
+            }
+            else
+            {
+                for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
+                {
+                    const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
+                    const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel) * m_texture->GetFaceCount();
+                    m_stream.write(reinterpret_cast<const char*>(buffer), static_cast<std::streamsize>(mipLevelSize));
+                }
             }
         }
 

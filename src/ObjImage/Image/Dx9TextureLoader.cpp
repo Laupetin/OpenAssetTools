@@ -4,14 +4,17 @@
 
 namespace
 {
+    void CopyMipLevelFace(image::Texture& texture, const int currentMipLevel, const int currentFace, const uint8_t*& currentDataOffset)
+    {
+        const auto mipSize = texture.GetSizeOfMipLevel(currentMipLevel);
+        memcpy(texture.GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
+        currentDataOffset += mipSize;
+    }
+
     void CopyMipLevel(image::Texture& texture, const int currentMipLevel, const int faceCount, const uint8_t*& currentDataOffset)
     {
         for (auto currentFace = 0; currentFace < faceCount; currentFace++)
-        {
-            const auto mipSize = texture.GetSizeOfMipLevel(currentMipLevel);
-            memcpy(texture.GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);
-            currentDataOffset += mipSize;
-        }
+            CopyMipLevelFace(texture, currentMipLevel, currentFace, currentDataOffset);
     }
 } // namespace
 
@@ -22,6 +25,7 @@ namespace image
           m_type(TextureType::T_2D),
           m_has_mip_maps(false),
           m_mip_map_order(MipMapDataOrder::LargestToSmallest),
+          m_cube_map_data_order(CubeMapDataOrder::MipMajor),
           m_width(1u),
           m_height(1u),
           m_depth(1u)
@@ -60,6 +64,12 @@ namespace image
     Dx9TextureLoader& Dx9TextureLoader::MipMapOrder(const MipMapDataOrder mipMapOrder)
     {
         m_mip_map_order = mipMapOrder;
+        return *this;
+    }
+
+    Dx9TextureLoader& Dx9TextureLoader::CubeMapOrder(const CubeMapDataOrder cubeMapDataOrder)
+    {
+        m_cube_map_data_order = cubeMapDataOrder;
         return *this;
     }
 
@@ -112,7 +122,23 @@ namespace image
         const auto faceCount = m_type == TextureType::T_CUBE ? 6 : 1;
         auto* currentDataOffset = static_cast<const uint8_t*>(data);
 
-        if (m_mip_map_order == MipMapDataOrder::LargestToSmallest)
+        if (m_type == TextureType::T_CUBE && m_cube_map_data_order == CubeMapDataOrder::FaceMajor)
+        {
+            for (auto currentFace = 0; currentFace < faceCount; currentFace++)
+            {
+                if (m_mip_map_order == MipMapDataOrder::LargestToSmallest)
+                {
+                    for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
+                        CopyMipLevelFace(*texture, currentMipLevel, currentFace, currentDataOffset);
+                }
+                else
+                {
+                    for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+                        CopyMipLevelFace(*texture, currentMipLevel, currentFace, currentDataOffset);
+                }
+            }
+        }
+        else if (m_mip_map_order == MipMapDataOrder::LargestToSmallest)
         {
             for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
                 CopyMipLevel(*texture, currentMipLevel, faceCount, currentDataOffset);
