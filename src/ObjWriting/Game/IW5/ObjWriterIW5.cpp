@@ -15,6 +15,8 @@
 #include "LightDef/LightDefDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"
 #include "Maps/AddonMapEntsDumperIW5.h"
+#include "Maps/ClipMapDumperIW5.h"
+#include "Maps/GfxWorldDumperIW5.h"
 #include "Menu/MenuDumperIW5.h"
 #include "Menu/MenuListDumperIW5.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW5.h"
@@ -55,7 +57,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     // REGISTER_DUMPER(AssetDumperVehicleTrack)
     RegisterAssetDumper(std::make_unique<map_ents::DumperIW5>());
     // REGISTER_DUMPER(AssetDumperFxWorld)
-    // REGISTER_DUMPER(AssetDumperGfxWorld)
+    RegisterAssetDumper(std::make_unique<clip_map::DumperIW5>());
+    RegisterAssetDumper(std::make_unique<gfx_world::DumperIW5>());
     RegisterAssetDumper(std::make_unique<light_def::DumperIW5>());
     RegisterAssetDumper(std::make_unique<font::JsonDumperIW5>());
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW5>());
