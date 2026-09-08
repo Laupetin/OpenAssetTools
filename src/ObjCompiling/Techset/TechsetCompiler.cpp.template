@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetCompiler" + GAME + ".cpp"
 
@@ -12,6 +12,8 @@
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#elif GAME == "T4"
+#define FEATURE_T4
 #elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
@@ -69,11 +71,13 @@ namespace
         return static_cast<MaterialWorldVertexFormat>(0);
     }
 
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
     uint16_t GetLoadForRenderer(const std::string& techniqueSetName)
     {
+#if defined(FEATURE_IW3)
         if (techniqueSetName.starts_with("sm2/"))
             return 0;
+#endif
         return 1;
     }
 
@@ -138,7 +142,7 @@ namespace
                 return failure ? AssetCreationResult::Failure() : AssetCreationResult::NoAction();
 
             auto* techset = ConvertTechniqueSet(*commonTechset, m_memory);
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             const auto loadForRenderer = GetLoadForRenderer(assetName);
 #endif
 #if defined(FEATURE_T6)
@@ -157,10 +161,14 @@ namespace
 
                 techset->techniques[techniqueIndex] = technique->Asset();
 
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
 #if defined(FEATURE_IW3)
                 // IW3 supports both sm2 and sm3.
                 // The shader's loadForRenderer property is set to 0 for sm2 and 1 for sm3.
                 // Which shader model a techset is for is entirely determined by its name according to modtools.
+#else
+                // T4 always sets loadForRenderer, including for sm2 techsets.
+#endif
                 ApplyLoadForRendererToTechnique(*techset->techniques[techniqueIndex], loadForRenderer);
 #endif
 #if defined(FEATURE_T6)

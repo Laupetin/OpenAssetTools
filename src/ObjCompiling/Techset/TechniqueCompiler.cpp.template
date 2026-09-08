@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechniqueCompiler" + GAME + ".cpp"
 
@@ -16,6 +16,10 @@
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #define IS_DX9
+#elif GAME == "T4"
+#define FEATURE_T4
+#define IS_DX9
+#define SHADERS_ARE_SUBASSETS
 #elif GAME == "T5"
 #define FEATURE_T5
 #define IS_DX9
@@ -48,6 +52,7 @@
 #include <cassert>
 #include <optional>
 #include <sstream>
+#include <string_view>
 #include <vector>
 
 using namespace GAME;
@@ -285,7 +290,7 @@ namespace
         std::string lowerTechniqueName(commonTechnique.m_name);
         utils::MakeStringLowerCase(lowerTechniqueName);
 
-#if defined(FEATURE_IW3)
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
         if (lowerTechniqueName == "zprepass")
             technique.flags |= MTL_TECHFLAG_ZPREPASS;
 #elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
@@ -346,10 +351,10 @@ namespace
         return technique;
     }
 
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
     void ApplyTechFlagsFromMaterial(const Material& material, const Zone& zone)
     {
-        if (!material.techniqueSet || !material.techniqueSet->name || !material.stateBitsTable)
+        if (!material.techniqueSet || !material.techniqueSet->name)
             return;
 
         // Find the techniqueset asset from our zone since the material may link to a different one
@@ -357,12 +362,28 @@ namespace
         if (!techniqueSetAsset)
             return;
 
+#if defined(FEATURE_T4)
+        const std::string_view techniqueSetName(material.techniqueSet->name);
+        const bool isTreeCanopy = techniqueSetName == "m_treecanopy" || techniqueSetName == "mc_treecanopy";
+#endif
+
         for (auto techType = 0u; techType < TECHNIQUE_COUNT; techType++)
         {
             auto* technique = techniqueSetAsset->Asset()->techniques[techType];
             const auto stateBitsEntry = material.stateBitsEntry[techType];
 
-            if (!technique || stateBitsEntry < 0 || static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry) >= material.stateBitsCount)
+            if (!technique)
+                continue;
+
+#if defined(FEATURE_T4)
+            if (isTreeCanopy)
+                technique->flags |= MTL_TECHFLAG_TREE_CANOPY;
+#endif
+
+            if (!material.stateBitsTable)
+                continue;
+
+            if (stateBitsEntry < 0 || static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry) >= material.stateBitsCount)
                 continue;
 
             const auto& stateBits = material.stateBitsTable[static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry)].loadBits;
@@ -472,7 +493,7 @@ namespace
 
         void FinalizeZone(AssetCreationContext& context) override
         {
-#if defined(FEATURE_T5) || defined(FEATURE_T6)
+#if defined(FEATURE_T4) || defined(FEATURE_T5) || defined(FEATURE_T6)
             const auto materials = m_zone.m_pools.PoolAssets<AssetMaterial>();
             for (auto* materialAsset : materials)
             {

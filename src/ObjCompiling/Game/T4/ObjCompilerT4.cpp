@@ -2,6 +2,9 @@
 
 #include "Game/T4/Font/FontCompilerT4.h"
 #include "Game/T4/T4.h"
+#include "Game/T4/Techset/TechniqueCompilerT4.h"
+#include "Game/T4/Techset/TechsetCompilerT4.h"
+#include "Game/T4/Techset/VertexDeclCompilerT4.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -14,7 +17,11 @@ namespace
     {
         auto& memory = zone.Memory();
 
+        collection.AddAssetCreator(techset::CreateTechsetCompilerT4(memory, searchPath));
         collection.AddAssetCreator(font::CreateCompilerT4(memory, searchPath));
+
+        collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT4(memory, zone, searchPath));
+        collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT4(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,

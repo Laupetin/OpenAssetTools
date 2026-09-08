@@ -168,7 +168,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | XAnimParts           | ✅              | ✅              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
-| MaterialTechniqueSet | ❌              | ❌              |                                                                              |
+| MaterialTechniqueSet | ✅              | ✅              | For shaders: only dumps/loads shader bytecode.                               |
 | GfxImage             | ✅              | ✅              |                                                                              |
 | snd_alias_list_t     | ❌              | ❌              |                                                                              |
 | SndDriverGlobals     | ❌              | ❌              |                                                                              |
