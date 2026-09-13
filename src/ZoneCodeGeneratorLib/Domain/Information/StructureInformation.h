@@ -2,6 +2,7 @@
 
 #include "Domain/Definition/DefinitionWithMembers.h"
 #include "Domain/Definition/EnumMember.h"
+#include "Domain/Environment/WordSize.h"
 #include "Domain/Extension/CustomAction.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "MemberInformation.h"
@@ -20,6 +21,9 @@ public:
     DefinitionWithMembers* m_definition;
     TypeInformation* m_type_info;
     std::string m_asset_name;
+    WordSize m_word_size;
+    WordSize m_serialized_word_size;
+    unsigned m_serialized_size;
 
     std::unique_ptr<IEvaluation> m_alloc_alignment;
     std::vector<StructureInformation*> m_usages;

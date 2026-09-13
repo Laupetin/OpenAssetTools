@@ -187,8 +187,9 @@ bool OncePerAssetRenderingContext::UsedTypeHasActions(const RenderingUsedType* u
 
 std::unique_ptr<OncePerAssetRenderingContext> OncePerAssetRenderingContext::BuildContext(const IDataRepository* repository, StructureInformation* asset)
 {
-    auto context = std::make_unique<OncePerAssetRenderingContext>(
-        OncePerAssetRenderingContext(repository->GetGameName(), repository->GetWordSize(), repository->GetAllFastFileBlocks()));
+    const auto wordSize = asset->m_word_size == WordSize::UNKNOWN ? repository->GetWordSize() : asset->m_word_size;
+    auto context =
+        std::make_unique<OncePerAssetRenderingContext>(OncePerAssetRenderingContext(repository->GetGameName(), wordSize, repository->GetAllFastFileBlocks()));
 
     context->MakeAsset(repository, asset);
     context->CreateUsedTypeCollections();

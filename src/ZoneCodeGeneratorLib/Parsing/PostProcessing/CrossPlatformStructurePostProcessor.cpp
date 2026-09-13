@@ -1,7 +1,9 @@
 #include "CrossPlatformStructurePostProcessor.h"
 
+#include "Domain/Computations/StructureComputations.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
 
+#include <algorithm>
 #include <unordered_set>
 
 namespace
@@ -34,6 +36,22 @@ namespace
         info->m_has_matching_cross_platform_structure = true;
         return true;
     }
+
+    void CalculateCrossPlatformStructureGraph(std::unordered_set<const void*>& visitedGraph,
+                                              std::unordered_set<const void*>& visitedCalculations,
+                                              StructureInformation* info)
+    {
+        if (!visitedGraph.emplace(info).second)
+            return;
+
+        for (const auto& member : info->m_ordered_members)
+        {
+            if (member->m_type != nullptr && member->m_type != info && !StructureComputations(member->m_type).IsAsset())
+                CalculateCrossPlatformStructureGraph(visitedGraph, visitedCalculations, member->m_type);
+        }
+
+        CalculateHasMatchingCrossPlatformStructure(visitedCalculations, info);
+    }
 } // namespace
 
 bool CrossPlatformStructurePostProcessor::PostProcess(IDataRepository* repository)
@@ -44,6 +62,14 @@ bool CrossPlatformStructurePostProcessor::PostProcess(IDataRepository* repositor
     {
         for (const auto& info : allInfos)
             info->m_has_matching_cross_platform_structure = true;
+
+        std::unordered_set<const void*> visitedGraph;
+        std::unordered_set<const void*> visitedCalculations;
+        for (const auto& info : allInfos)
+        {
+            if (info->m_word_size != WordSize::UNKNOWN && info->m_word_size != OWN_WORD_SIZE)
+                CalculateCrossPlatformStructureGraph(visitedGraph, visitedCalculations, info);
+        }
     }
     else
     {

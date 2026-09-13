@@ -72,6 +72,24 @@ namespace test::parsing::commands::sequence::sequence_word_size
         REQUIRE(helper.m_repository->GetWordSize() == WordSize::BITS_64);
     }
 
+    TEST_CASE("SequenceWordSize: Ensure can set native word size", "[parsing][sequence]")
+    {
+        CommandsSequenceTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            CommandsParserValue::Identifier(pos, new std::string("wordsize")),
+            CommandsParserValue::Identifier(pos, new std::string("native")),
+            CommandsParserValue::Character(pos, ';'),
+            CommandsParserValue::EndOfFile(pos),
+        });
+
+        auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 3);
+        REQUIRE(helper.m_repository->GetWordSize() == OWN_WORD_SIZE);
+    }
+
     TEST_CASE("SequenceWordSize: Ensure cannot match unknown value", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;

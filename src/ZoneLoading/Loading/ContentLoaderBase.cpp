@@ -51,12 +51,20 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
 #else
     if (atStreamStart)
     {
-        const auto fill = m_stream.LoadWithFill(4u * count);
-
-        for (size_t index = 0; index < count; index++)
+        const auto pointerByteCount = m_stream.GetPointerBitCount() / 8u;
+        if (pointerByteCount == sizeof(const char*))
         {
-            fill.FillPtr(varXString[index], 4u * index);
-            m_stream.AddPointerLookup(&varXString[index], fill.BlockBuffer(4u * index));
+            m_stream.Load<const char*>(varXString, count);
+        }
+        else
+        {
+            const auto fill = m_stream.LoadWithFill(pointerByteCount * count);
+
+            for (size_t index = 0; index < count; index++)
+            {
+                fill.FillPtr(varXString[index], pointerByteCount * index);
+                m_stream.AddPointerLookup(&varXString[index], fill.BlockBuffer(pointerByteCount * index));
+            }
         }
     }
 #endif

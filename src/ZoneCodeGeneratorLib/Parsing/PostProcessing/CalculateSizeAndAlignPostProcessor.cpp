@@ -257,6 +257,25 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
         return false;
     }
 
+    // Layout generation can be repeated with a different serialized word size for
+    // assets whose on-disk ABI differs from the rest of the zone.
+    for (auto* structDefinition : repository->GetAllStructs())
+    {
+        structDefinition->m_flags &= ~(DefinitionWithMembers::FLAG_FIELDS_CALCULATED | DefinitionWithMembers::FLAG_FIELDS_CALCULATING);
+        for (const auto& member : structDefinition->m_members)
+            member->m_type_declaration->m_flags &= ~TypeDeclaration::FLAG_FIELDS_CALCULATED;
+    }
+
+    for (auto* unionDefinition : repository->GetAllUnions())
+    {
+        unionDefinition->m_flags &= ~(DefinitionWithMembers::FLAG_FIELDS_CALCULATED | DefinitionWithMembers::FLAG_FIELDS_CALCULATING);
+        for (const auto& member : unionDefinition->m_members)
+            member->m_type_declaration->m_flags &= ~TypeDeclaration::FLAG_FIELDS_CALCULATED;
+    }
+
+    for (auto* typedefDefinition : repository->GetAllTypedefs())
+        typedefDefinition->m_type_declaration->m_flags &= ~TypeDeclaration::FLAG_FIELDS_CALCULATED;
+
     for (auto* structDefinition : repository->GetAllStructs())
     {
         if (!CalculateFields(repository, structDefinition))

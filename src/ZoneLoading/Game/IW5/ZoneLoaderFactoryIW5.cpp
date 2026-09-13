@@ -32,6 +32,12 @@ using namespace IW5;
 
 namespace
 {
+#if defined(ARCH_x86)
+    constexpr auto IW5_WORD_SIZE = GameWordSize::ARCH_32;
+#elif defined(ARCH_x64)
+    constexpr auto IW5_WORD_SIZE = GameWordSize::ARCH_64;
+#endif
+
     void SetupBlock(ZoneLoader& zoneLoader)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
@@ -132,7 +138,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW5,
             .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
+            .m_word_size = IW5_WORD_SIZE,
             .m_platform = GamePlatform::PC,
             .m_is_official = true,
             .m_is_signed = true,
@@ -145,7 +151,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW5,
             .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
+            .m_word_size = IW5_WORD_SIZE,
             .m_platform = GamePlatform::PC,
             .m_is_official = false,
             .m_is_signed = false,
@@ -198,11 +204,12 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         {
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
-        32u,
+        static_cast<unsigned>(sizeof(void*) * 8u),
         ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
         zonePtr->Memory(),
-        std::move(progressCallback)));
+        std::move(progressCallback),
+        sizeof(void*) == 8 ? 32u : 0u));
 
     return zoneLoader;
 }

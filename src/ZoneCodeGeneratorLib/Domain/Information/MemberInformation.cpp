@@ -5,6 +5,8 @@ MemberInformation::MemberInformation(StructureInformation* parent, StructureInfo
       m_type(type),
       m_type_info(typeInfo),
       m_member(member),
+      m_serialized_offset(0),
+      m_serialized_type_size(0),
       m_is_string(false),
       m_is_script_string(false),
       m_is_reusable(false),

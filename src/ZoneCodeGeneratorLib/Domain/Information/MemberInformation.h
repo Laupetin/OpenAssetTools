@@ -19,6 +19,8 @@ public:
     StructureInformation* m_type;
     TypeInformation* m_type_info;
     Variable* m_member;
+    unsigned m_serialized_offset;
+    unsigned m_serialized_type_size;
     bool m_is_string;
     bool m_is_script_string;
     bool m_is_reusable;

@@ -24,11 +24,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
     {
         assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
-#ifdef ARCH_x86
         varScriptStringList->strings = m_stream.Alloc<const char*>(4);
-#else
-        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
-#endif
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
@@ -116,18 +112,7 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
 
     if (atStreamStart)
     {
-#ifdef ARCH_x86
         m_stream.Load<XAsset>(varXAsset, count);
-#else
-        const auto fill = m_stream.LoadWithFill(8u * count);
-
-        for (size_t index = 0; index < count; index++)
-        {
-            fill.Fill(varXAsset[index].type, 8u * index);
-            fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
-            m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
-        }
-#endif
     }
 
     for (size_t index = 0; index < count; index++)
@@ -146,17 +131,7 @@ void ContentLoader::Load()
     XAssetList assetList{};
     varXAssetList = &assetList;
 
-#ifdef ARCH_x86
     m_stream.LoadDataRaw(&assetList, sizeof(assetList));
-#else
-    const auto fillAccessor = m_stream.LoadWithFill(16u);
-    varScriptStringList = &varXAssetList->stringList;
-    fillAccessor.Fill(varScriptStringList->count, 0u);
-    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
-
-    fillAccessor.Fill(varXAssetList->assetCount, 8u);
-    fillAccessor.FillPtr(varXAssetList->assets, 12u);
-#endif
 
     m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
 
@@ -167,11 +142,9 @@ void ContentLoader::Load()
     {
         assert(GetZonePointerType(assetList.assets) == ZonePointerType::FOLLOWING);
 
-#ifdef ARCH_x86
-        assetList.assets = m_stream.Alloc<XAsset>(4);
-#else
-        assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
-#endif
+        // Updated 64-bit IW5 zones place the asset table directly after the
+        // variable-length script strings without inserting padding.
+        assetList.assets = m_stream.Alloc<XAsset>(sizeof(void*) == 8 ? 1 : 4);
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);
     }

@@ -13,7 +13,7 @@ class CodeGenerator
 public:
     explicit CodeGenerator(const ZoneCodeGeneratorArguments* args);
 
-    bool GenerateCode(const IDataRepository* repository);
+    bool GenerateCode(IDataRepository* repository);
 
 private:
     void SetupTemplates();

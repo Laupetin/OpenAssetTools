@@ -2,6 +2,9 @@
 // menuDef_t
 // =========================================
 use menuDef_t;
+use itemDef_s;
+set wordsize 32;
+use menuDef_t;
 set block XFILE_BLOCK_TEMP;
 set string window::name;
 set count items itemCount;

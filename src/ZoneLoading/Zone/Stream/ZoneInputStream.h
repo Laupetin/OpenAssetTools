@@ -24,6 +24,7 @@ public:
 
     [[nodiscard]] ZoneStreamFillReadAccessor AtOffset(size_t offset) const;
     [[nodiscard]] size_t Offset() const;
+    [[nodiscard]] unsigned PointerByteCount() const;
     [[nodiscard]] void* BlockBuffer(size_t offset) const;
 
     template<typename T> void Fill(T& value, const size_t offset) const
@@ -172,7 +173,7 @@ public:
      */
     virtual void LoadDataInBlock(void* dst, size_t size) = 0;
     virtual void LoadNullTerminated(void* dst) = 0;
-    virtual ZoneStreamFillReadAccessor LoadWithFill(size_t size) = 0;
+    virtual ZoneStreamFillReadAccessor LoadWithFill(size_t size, unsigned pointerByteCount = 0) = 0;
     virtual ZoneStreamFillReadAccessor AppendToFill(size_t appendSize) = 0;
     virtual ZoneStreamFillReadAccessor GetLastFill() = 0;
 
@@ -246,5 +247,6 @@ public:
                                                    block_t insertBlock,
                                                    ILoadingStream& stream,
                                                    MemoryManager& memory,
-                                                   std::optional<std::unique_ptr<ProgressCallback>> progressCallback);
+                                                   std::optional<std::unique_ptr<ProgressCallback>> progressCallback,
+                                                   unsigned offsetPointerBitCount = 0);
 };

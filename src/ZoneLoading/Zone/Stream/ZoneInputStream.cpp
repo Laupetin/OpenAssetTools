@@ -35,6 +35,11 @@ size_t ZoneStreamFillReadAccessor::Offset() const
     return m_offset;
 }
 
+unsigned ZoneStreamFillReadAccessor::PointerByteCount() const
+{
+    return m_pointer_byte_count;
+}
+
 void* ZoneStreamFillReadAccessor::BlockBuffer(const size_t offset) const
 {
     return static_cast<uint8_t*>(m_block_buffer) + offset;
@@ -51,15 +56,18 @@ namespace
                           const block_t insertBlock,
                           ILoadingStream& stream,
                           MemoryManager& memory,
-                          std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
+                          std::optional<std::unique_ptr<ProgressCallback>> progressCallback,
+                          const unsigned offsetPointerBitCount)
             : m_blocks(blocks),
               m_block_offsets(blocks.size()),
               m_stream(stream),
               m_memory(memory),
               m_pointer_byte_count(pointerBitCount / 8u),
-              m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount)) << (pointerBitCount - blockBitCount)),
-              m_block_shift(pointerBitCount - blockBitCount),
-              m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
+              m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount))
+                           << ((offsetPointerBitCount ? offsetPointerBitCount : pointerBitCount) - blockBitCount)),
+              m_block_shift((offsetPointerBitCount ? offsetPointerBitCount : pointerBitCount) - blockBitCount),
+              m_offset_mask(std::numeric_limits<uintptr_t>::max()
+                            >> (sizeof(uintptr_t) * 8 - ((offsetPointerBitCount ? offsetPointerBitCount : pointerBitCount) - blockBitCount))),
               m_last_fill_size(0),
               m_has_progress_callback(false),
               m_progress_current_size(0uz),
@@ -211,9 +219,10 @@ namespace
             m_block_offsets[block->m_index] = offset;
         }
 
-        ZoneStreamFillReadAccessor LoadWithFill(const size_t size) override
+        ZoneStreamFillReadAccessor LoadWithFill(const size_t size, const unsigned pointerByteCount) override
         {
             m_last_fill_size = size;
+            const auto fillPointerByteCount = pointerByteCount == 0 ? m_pointer_byte_count : pointerByteCount;
 
             // If no block has been pushed, load raw
             if (!m_block_stack.empty())
@@ -223,12 +232,12 @@ namespace
 
                 LoadDataFromBlock(*block, blockBufferForFill, size);
 
-                return ZoneStreamFillReadAccessor(blockBufferForFill, size, m_pointer_byte_count, 0);
+                return ZoneStreamFillReadAccessor(blockBufferForFill, size, fillPointerByteCount, 0);
             }
 
             m_fill_buffer.resize(size);
             m_stream.Load(m_fill_buffer.data(), size);
-            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), size, m_pointer_byte_count, 0);
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), size, fillPointerByteCount, 0);
         }
 
         ZoneStreamFillReadAccessor AppendToFill(const size_t appendSize) override
@@ -520,7 +529,9 @@ std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(const unsigned pointerB
                                                          const block_t insertBlock,
                                                          ILoadingStream& stream,
                                                          MemoryManager& memory,
-                                                         std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
+                                                         std::optional<std::unique_ptr<ProgressCallback>> progressCallback,
+                                                         const unsigned offsetPointerBitCount)
 {
-    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory, std::move(progressCallback));
+    return std::make_unique<XBlockInputStream>(
+        pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory, std::move(progressCallback), offsetPointerBitCount);
 }

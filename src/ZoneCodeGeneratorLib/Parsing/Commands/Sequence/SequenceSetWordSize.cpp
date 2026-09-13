@@ -1,7 +1,6 @@
-#include "SequenceWordSize.h"
+#include "SequenceSetWordSize.h"
 
 #include "Domain/Environment/WordSize.h"
-#include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 namespace
@@ -9,11 +8,12 @@ namespace
     static constexpr auto CAPTURE_WORD_SIZE = 1;
 }
 
-SequenceWordSize::SequenceWordSize()
+SequenceSetWordSize::SequenceSetWordSize()
 {
     const CommandsMatcherFactory create(this);
 
     AddMatchers({
+        create.Keyword("set"),
         create.Keyword("wordsize"),
         create
             .Or({
@@ -25,24 +25,27 @@ SequenceWordSize::SequenceWordSize()
     });
 }
 
-void SequenceWordSize::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
+void SequenceSetWordSize::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
     const auto& wordSizeToken = result.NextCapture(CAPTURE_WORD_SIZE);
+    auto* structure = state->GetInUse();
+    if (structure == nullptr)
+        throw ParsingException(wordSizeToken.GetPos(), "No structure is in use");
 
     if (wordSizeToken.m_type == CommandsParserValueType::IDENTIFIER)
     {
-        state->SetWordSize(OWN_WORD_SIZE);
+        structure->m_word_size = OWN_WORD_SIZE;
         return;
     }
 
     switch (wordSizeToken.IntegerValue())
     {
     case 32:
-        state->SetWordSize(WordSize::BITS_32);
+        structure->m_word_size = WordSize::BITS_32;
         break;
 
     case 64:
-        state->SetWordSize(WordSize::BITS_64);
+        structure->m_word_size = WordSize::BITS_64;
         break;
 
     default:
