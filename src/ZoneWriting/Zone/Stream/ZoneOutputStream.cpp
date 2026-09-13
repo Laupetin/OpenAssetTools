@@ -38,12 +38,17 @@ namespace
     class InMemoryZoneOutputStream final : public ZoneOutputStream
     {
     public:
-        InMemoryZoneOutputStream(
-            const unsigned pointerBitCount, const unsigned blockBitCount, std::vector<XBlock*>& blocks, const block_t insertBlock, InMemoryZoneData& zoneData)
+        InMemoryZoneOutputStream(const unsigned pointerBitCount,
+                                 const unsigned blockBitCount,
+                                 std::vector<XBlock*>& blocks,
+                                 const block_t insertBlock,
+                                 InMemoryZoneData& zoneData,
+                                 const unsigned offsetPointerBitCount)
             : m_zone_data(zoneData),
               m_blocks(blocks),
               m_block_bit_count(blockBitCount),
               m_pointer_byte_count(pointerBitCount / 8u),
+              m_offset_pointer_bit_count(offsetPointerBitCount ? offsetPointerBitCount : pointerBitCount),
 
               // -1
               m_zone_ptr_following(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)),
@@ -52,6 +57,7 @@ namespace
               m_zone_ptr_insert((std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - pointerBitCount)) - 1u)
         {
             assert(pointerBitCount % 8u == 0u);
+            assert(m_offset_pointer_bit_count <= pointerBitCount);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
 
             m_insert_block = blocks[insertBlock];
@@ -288,8 +294,8 @@ namespace
             assert(m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_NORMAL);
 
             uintptr_t ptr = 0;
-            ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (m_pointer_byte_count * 8 - m_block_bit_count);
-            ptr |= m_block_stack.top()->m_buffer_size & (UINTPTR_MAX >> (m_block_bit_count + (sizeof(uintptr_t) - m_pointer_byte_count) * 8));
+            ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (m_offset_pointer_bit_count - m_block_bit_count);
+            ptr |= m_block_stack.top()->m_buffer_size & (UINTPTR_MAX >> (m_block_bit_count + sizeof(uintptr_t) * 8u - m_offset_pointer_bit_count));
             ptr++;
 
             return ptr;
@@ -316,6 +322,7 @@ namespace
 
         unsigned m_block_bit_count;
         unsigned m_pointer_byte_count;
+        unsigned m_offset_pointer_bit_count;
         XBlock* m_insert_block;
 
         uintptr_t m_zone_ptr_following;
@@ -351,9 +358,14 @@ void* ZoneOutputOffset::Offset() const
 }
 
 std::unique_ptr<ZoneOutputStream>
-    ZoneOutputStream::Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData)
+    ZoneOutputStream::Create(unsigned pointerBitCount,
+                             unsigned blockBitCount,
+                             std::vector<XBlock*>& blocks,
+                             block_t insertBlock,
+                             InMemoryZoneData& zoneData,
+                             unsigned offsetPointerBitCount)
 {
-    return std::make_unique<InMemoryZoneOutputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, zoneData);
+    return std::make_unique<InMemoryZoneOutputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, zoneData, offsetPointerBitCount);
 }
 
 ZoneStreamFillWriteAccessor::ZoneStreamFillWriteAccessor(void* blockBuffer, const size_t bufferSize)

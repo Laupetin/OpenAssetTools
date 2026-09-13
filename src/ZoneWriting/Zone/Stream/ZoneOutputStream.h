@@ -144,5 +144,10 @@ public:
     }
 
     static std::unique_ptr<ZoneOutputStream>
-        Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData);
+        Create(unsigned pointerBitCount,
+               unsigned blockBitCount,
+               std::vector<XBlock*>& blocks,
+               block_t insertBlock,
+               InMemoryZoneData& zoneData,
+               unsigned offsetPointerBitCount = 0);
 };
