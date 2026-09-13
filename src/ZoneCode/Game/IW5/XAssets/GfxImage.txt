@@ -2,6 +2,9 @@
 // GfxImage
 // =========================================
 use GfxImage;
+#if defined(ARCH_x64)
+set allocalign GfxImage 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set action OnImageLoaded(GfxImage);
 set string name;

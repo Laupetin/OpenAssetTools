@@ -2,32 +2,66 @@
 // WeaponCompleteDef
 // =========================================
 use WeaponCompleteDef;
+set aliaswordsize 32;
+#if defined(ARCH_x64)
+set allocalign WeaponCompleteDef 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string szInternalName;
 set reusable weapDef;
+#if defined(ARCH_x64)
+set allocalign WeaponCompleteDef::weapDef 4;
+#endif
 set string szDisplayName;
 set reusable hideTags;
 set scriptstring hideTags;
 set count hideTags 32;
 set reusable scopes;
+#if defined(ARCH_x64)
+set allocalign scopes 4;
+#endif
 set count scopes 6;
 set reusable underBarrels;
+#if defined(ARCH_x64)
+set allocalign underBarrels 4;
+#endif
 set count underBarrels 3;
 set reusable others;
+#if defined(ARCH_x64)
+set allocalign others 4;
+#endif
 set count others 4;
 set string szXAnims;
 set assetref szXAnims AssetXAnim;
 set reusable szXAnims;
+#if defined(ARCH_x64)
+set allocalign szXAnims 4;
+#endif
 set count szXAnims WEAP_ANIM_COUNT;
 set reusable animOverrides;
+#if defined(ARCH_x64)
+set allocalign animOverrides 4;
+#endif
 set count animOverrides numAnimOverrides;
 set reusable soundOverrides;
+#if defined(ARCH_x64)
+set allocalign soundOverrides 4;
+#endif
 set count soundOverrides numSoundOverrides;
 set reusable fxOverrides;
+#if defined(ARCH_x64)
+set allocalign fxOverrides 4;
+#endif
 set count fxOverrides numFxOverrides;
 set reusable reloadOverrides;
+#if defined(ARCH_x64)
+set allocalign reloadOverrides 4;
+#endif
 set count reloadOverrides numReloadStateTimerOverrides;
 set reusable notetrackOverrides;
+#if defined(ARCH_x64)
+set allocalign notetrackOverrides 4;
+#endif
 set count notetrackOverrides numNotetrackOverrides;
 set string szAltWeaponName;
 set reusable aiVsAiAccuracyGraphKnots;
@@ -53,14 +87,27 @@ set count notetrackSoundMapValues 24;
 
 // WeaponDef
 use WeaponDef;
+#if defined(ARCH_x64)
+set allocalign WeaponDef 4;
+#endif
 set string szOverlayName;
 set reusable gunXModel;
+set reusable elements WeaponDef::gunXModel;
+#if defined(ARCH_x64)
+set allocalign WeaponDef::gunXModel 4;
+#endif
 set count gunXModel 16;
 set reusable szXAnimsRightHanded;
+#if defined(ARCH_x64)
+set allocalign szXAnimsRightHanded 4;
+#endif
 set string szXAnimsRightHanded;
 set assetref szXAnimsRightHanded AssetXAnim;
 set count szXAnimsRightHanded WEAP_ANIM_COUNT;
 set reusable szXAnimsLeftHanded;
+#if defined(ARCH_x64)
+set allocalign szXAnimsLeftHanded 4;
+#endif
 set string szXAnimsLeftHanded;
 set assetref szXAnimsLeftHanded AssetXAnim;
 set count szXAnimsLeftHanded WEAP_ANIM_COUNT;
@@ -78,28 +125,53 @@ set reusable notetrackRumbleMapValues;
 set scriptstring notetrackRumbleMapValues;
 set count notetrackRumbleMapValues 16;
 set reusable bounceSound;
+#if defined(ARCH_x64)
+set allocalign WeaponDef::bounceSound 4;
+#endif
 set count bounceSound SURF_TYPE_COUNT;
 set reusable rollingSound;
+#if defined(ARCH_x64)
+set allocalign WeaponDef::rollingSound 4;
+#endif
 set count rollingSound SURF_TYPE_COUNT;
 set reusable worldModel;
+set reusable elements WeaponDef::worldModel;
+#if defined(ARCH_x64)
+set allocalign WeaponDef::worldModel 4;
+#endif
 set count worldModel 16;
 set string szAmmoName;
 set string szClipName;
 set string szSharedAmmoCapName;
 set reusable parallelBounce;
+#if defined(ARCH_x64)
+set allocalign parallelBounce 4;
+#endif
 set count parallelBounce SURF_TYPE_COUNT;
 set reusable perpendicularBounce;
+#if defined(ARCH_x64)
+set allocalign perpendicularBounce 4;
+#endif
 set count perpendicularBounce SURF_TYPE_COUNT;
 set string aiVsAiAccuracyGraphName;
 set string aiVsPlayerAccuracyGraphName;
 set reusable originalAiVsAiAccuracyGraphKnots;
+#if defined(ARCH_x64)
+set allocalign originalAiVsAiAccuracyGraphKnots 4;
+#endif
 set count originalAiVsAiAccuracyGraphKnots WeaponCompleteDef::aiVsAiAccuracyGraphKnotCount;
 set reusable originalAiVsPlayerAccuracyGraphKnots;
+#if defined(ARCH_x64)
+set allocalign originalAiVsPlayerAccuracyGraphKnots 4;
+#endif
 set count originalAiVsPlayerAccuracyGraphKnots WeaponCompleteDef::aiVsPlayerAccuracyGraphKnotCount;
 set string szUseHintString;
 set string dropHintString;
 set string szScript;
 set reusable locationDamageMultipliers;
+#if defined(ARCH_x64)
+set allocalign locationDamageMultipliers 4;
+#endif
 set count locationDamageMultipliers HITLOC_COUNT;
 set string fireRumble;
 set string meleeImpactRumble;
@@ -114,11 +186,20 @@ reorder:
 
 // SndAliasCustom
 use SndAliasCustom;
+#if defined(ARCH_x64)
+set allocalign SndAliasCustom 4;
+#endif
 set count name 1;
 set reusable name;
+#if defined(ARCH_x64)
+set allocalign SndAliasCustom::name 4;
+#endif
 set condition sound never;
 
 // snd_alias_list_name
 use snd_alias_list_name;
+#if defined(ARCH_x64)
+set allocalign snd_alias_list_name 4;
+#endif
 set string soundName;
 set assetref soundName AssetSound;

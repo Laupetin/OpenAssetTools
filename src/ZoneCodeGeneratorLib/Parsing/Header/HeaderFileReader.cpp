@@ -22,6 +22,11 @@ namespace
 {
     constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
     constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+#if defined(ARCH_x64)
+    constexpr const char* ARCHITECTURE_DEFINE_NAME = "ARCH_x64";
+#else
+    constexpr const char* ARCHITECTURE_DEFINE_NAME = "ARCH_x86";
+#endif
 } // namespace
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
@@ -54,6 +59,7 @@ void HeaderFileReader::SetupStreamProxies()
     auto packProxy = std::make_unique<PackDefinitionStreamProxy>(includeProxy.get());
     auto definesProxy = std::make_unique<DefinesStreamProxy>(packProxy.get());
     definesProxy->AddDefine(DefinesStreamProxy::Define(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE));
+    definesProxy->AddDefine(DefinesStreamProxy::Define(ARCHITECTURE_DEFINE_NAME, "1"));
 
     m_pack_value_supplier = packProxy.get();
     m_stream = definesProxy.get();

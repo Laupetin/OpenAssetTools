@@ -52,7 +52,7 @@ namespace
                 if (!CalculateFields(repository, member->m_type_declaration.get()))
                     return false;
 
-                const auto memberAlignment = member->GetAlignment();
+                const auto memberAlignment = member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack);
                 definition->m_alignment = std::max(memberAlignment, definition->m_alignment);
             }
         }

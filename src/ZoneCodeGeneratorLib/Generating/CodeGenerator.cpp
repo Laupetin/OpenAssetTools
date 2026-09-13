@@ -127,6 +127,20 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
     // the surrounding asset. Preserve that layout alongside the native one so
     // generated fill code can select it from the accessor's pointer width.
     const auto repositoryWordSize = repository->GetWordSize();
+
+    // Alias insertion slots can use a narrower word size than otherwise native
+    // structures. The setting is a property of the zone ABI, so one asset-level
+    // declaration applies to every generated structure in that game.
+    for (auto* rootInfo : repository->GetAllStructureInformation())
+    {
+        if (rootInfo->m_alias_word_size == WordSize::UNKNOWN)
+            continue;
+
+        for (auto* info : repository->GetAllStructureInformation())
+            info->m_alias_word_size = rootInfo->m_alias_word_size;
+        break;
+    }
+
     for (auto* rootInfo : repository->GetAllStructureInformation())
     {
         if (rootInfo->m_word_size == WordSize::UNKNOWN || rootInfo->m_word_size == repositoryWordSize)
@@ -174,25 +188,8 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
 
         for (auto* asset : assets)
         {
-            const auto repositoryWordSize = repository->GetWordSize();
-            const auto assetWordSize = asset->m_word_size == WordSize::UNKNOWN ? repositoryWordSize : asset->m_word_size;
-            const auto usesAssetWordSize = assetWordSize != repositoryWordSize;
-            if (usesAssetWordSize)
-            {
-                repository->SetWordSize(assetWordSize);
-                if (!CalculateSizeAndAlignPostProcessor().PostProcess(repository) || !CrossPlatformStructurePostProcessor().PostProcess(repository))
-                    return false;
-            }
-
             auto context = OncePerAssetRenderingContext::BuildContext(repository, asset);
             const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
-
-            if (usesAssetWordSize)
-            {
-                repository->SetWordSize(repositoryWordSize);
-                if (!CalculateSizeAndAlignPostProcessor().PostProcess(repository) || !CrossPlatformStructurePostProcessor().PostProcess(repository))
-                    return false;
-            }
 
             switch (result)
             {

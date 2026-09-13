@@ -22,6 +22,7 @@ public:
     TypeInformation* m_type_info;
     std::string m_asset_name;
     WordSize m_word_size;
+    WordSize m_alias_word_size;
     WordSize m_serialized_word_size;
     unsigned m_serialized_size;
 

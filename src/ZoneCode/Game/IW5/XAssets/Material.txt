@@ -7,18 +7,31 @@ set allocalign Material 4;
 set string info::name;
 set reusable textureTable;
 set count textureTable textureCount;
+#if defined(ARCH_x64)
+set allocalign textureTable 4;
+#endif
 set reusable constantTable;
 set count constantTable constantCount;
 set reusable stateBitsTable;
 set count stateBitsTable stateBitsCount;
+#if !defined(ARCH_x64)
 set condition subMaterials never;
+#endif
 
 // MaterialTextureDef
 use MaterialTextureDef;
 set condition u::water semantic == TS_WATER_MAP;
 set reusable u::water;
+#if defined(ARCH_x64)
+set allocalign u::water 4;
+#endif
 
 // water_t
 use water_t;
+#if defined(ARCH_x64)
+set count H0X N * M;
+set count H0Y N * M;
+#else
 set count H0 N * M;
+#endif
 set count wTerm N * M;

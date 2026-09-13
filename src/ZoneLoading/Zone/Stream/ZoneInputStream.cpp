@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stack>
 #include <unordered_map>
@@ -350,7 +351,69 @@ namespace
             if (block->m_buffer_size <= blockOffset + sizeof(void*))
                 throw InvalidOffsetBlockOffsetException(block, blockOffset);
 
+            const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
+            if (foundPointerLookup != m_pointer_redirect_lookup.end())
+            {
+                void* resolved = nullptr;
+                std::memcpy(&resolved, foundPointerLookup->second, sizeof(resolved));
+                return resolved;
+            }
+
             return *reinterpret_cast<void**>(&block->m_buffer[blockOffset]);
+        }
+
+        bool ResolveOffsetToAliasNative(void** alias) override
+        {
+            assert(alias != nullptr);
+            assert(*alias != nullptr);
+
+            const auto offsetInt = reinterpret_cast<uintptr_t>(*alias) - 1u;
+            const auto blockNum = static_cast<block_t>((offsetInt & m_block_mask) >> m_block_shift);
+            const auto blockOffset = static_cast<size_t>(offsetInt & m_offset_mask);
+
+            if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
+                throw InvalidOffsetBlockException(blockNum);
+
+            auto* block = m_blocks[blockNum];
+            if (block->m_buffer_size < blockOffset + sizeof(void*))
+                throw InvalidOffsetBlockOffsetException(block, blockOffset);
+
+            void** targetSlot;
+            const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
+            if (foundPointerLookup != m_pointer_redirect_lookup.end())
+                targetSlot = static_cast<void**>(foundPointerLookup->second);
+            else
+                targetSlot = reinterpret_cast<void**>(&block->m_buffer[blockOffset]);
+
+            void* target = nullptr;
+            std::memcpy(&target, targetSlot, sizeof(target));
+            const auto targetValue = reinterpret_cast<uintptr_t>(target);
+            const auto serializedPointerMax =
+                m_pointer_byte_count < sizeof(uintptr_t) ? (uintptr_t{1} << (m_pointer_byte_count * 8u)) - 1u : std::numeric_limits<uintptr_t>::max();
+            const auto isPendingMarker = targetValue == std::numeric_limits<uintptr_t>::max() || targetValue == std::numeric_limits<uintptr_t>::max() - 1u;
+            const auto isPendingOffset = m_pointer_byte_count < sizeof(uintptr_t) && targetValue != 0u && targetValue <= serializedPointerMax;
+            if (isPendingMarker || isPendingOffset)
+            {
+                m_pending_native_aliases[targetSlot].emplace_back(alias);
+                *alias = nullptr;
+                return false;
+            }
+
+            *alias = target;
+            NotifyPointerResolved(alias);
+            return true;
+        }
+
+        void NotifyPointerResolved(void** pointer) override
+        {
+            const auto pending = m_pending_native_aliases.find(pointer);
+            if (pending == m_pending_native_aliases.end())
+                return;
+
+            for (auto** alias : pending->second)
+                *alias = *pointer;
+
+            m_pending_native_aliases.erase(pending);
         }
 
         void AddPointerLookup(void* alias, const void* blockPtr) override
@@ -515,6 +578,7 @@ namespace
         // These lookups map a block offset to a pointer in case of a platform mismatch
         std::unordered_map<uintptr_t, void*> m_pointer_redirect_lookup;
         std::unordered_map<uintptr_t, void*> m_alias_redirect_lookup;
+        std::unordered_map<void**, std::vector<void**>> m_pending_native_aliases;
 
         bool m_has_progress_callback;
         std::unique_ptr<ProgressCallback> m_progress_callback;

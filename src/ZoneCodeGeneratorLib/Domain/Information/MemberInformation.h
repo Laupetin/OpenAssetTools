@@ -24,6 +24,8 @@ public:
     bool m_is_string;
     bool m_is_script_string;
     bool m_is_reusable;
+    bool m_pointer_array_elements_are_reusable;
+    WordSize m_pointer_array_word_size;
     bool m_is_leaf;
     std::unique_ptr<IEvaluation> m_condition;
     std::unique_ptr<IEvaluation> m_alloc_alignment;

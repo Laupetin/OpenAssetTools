@@ -2,10 +2,16 @@
 // snd_alias_list_t
 // =========================================
 use snd_alias_list_t;
+#if defined(ARCH_x64)
+set allocalign snd_alias_list_t 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string aliasName;
 set reusable head;
 set count head count;
+#if defined(ARCH_x64)
+set allocalign head 4;
+#endif
 
 // snd_alias_t
 use snd_alias_t;
@@ -15,13 +21,26 @@ set string secondaryAliasName;
 set string chainAliasName;
 set string mixerGroup;
 set reusable soundFile;
+#if defined(ARCH_x64)
+set allocalign soundFile 4;
+#endif
 set reusable speakerMap;
+#if defined(ARCH_x64)
+set allocalign speakerMap 4;
+#endif
 
 // SoundFile
 set condition SoundFile::u::loadSnd type == SAT_LOADED;
 
 // SpeakerMap
 set string SpeakerMap::name;
+
+#if defined(ARCH_x64)
+set count MSSChannelMap::speakers speakerCount;
+#if defined(ARCH_x64)
+set allocalign MSSChannelMap::speakers 4;
+#endif
+#endif
 
 // StreamedSound
 use StreamedSound;

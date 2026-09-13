@@ -3,4 +3,7 @@
 // =========================================
 use SndCurve;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign SndCurve 4;
+#endif
 set string filename;

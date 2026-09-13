@@ -3,5 +3,11 @@
 // =========================================
 use FxImpactTable;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign FxImpactTable 4;
+#endif
 set string name;
 set count table 15;
+#if defined(ARCH_x64)
+set allocalign table 4;
+#endif

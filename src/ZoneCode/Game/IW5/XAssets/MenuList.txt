@@ -2,6 +2,12 @@
 // MenuList
 // =========================================
 use MenuList;
+#if defined(ARCH_x64)
+set allocalign MenuList 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set count menus menuCount;
+#if defined(ARCH_x64)
+set allocalign menus 4;
+#endif

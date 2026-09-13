@@ -47,6 +47,7 @@
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <vector>
 
 using namespace nlohmann;
 using namespace GAME;
@@ -150,8 +151,29 @@ namespace
             const auto expectedH0Size = water.M * water.N * sizeof(complex_s);
             if (expectedH0Size > 0)
             {
+#if GAME == "IW5"
+##if defined(ARCH_x64)
+                const auto count = water.M * water.N;
+                std::vector<complex_s> h0(count);
+                const auto h0Size = base64::DecodeBase64(jWater.h0.data(), jWater.h0.size(), h0.data(), expectedH0Size);
+                if (h0Size == expectedH0Size)
+                {
+                    water.H0X = m_memory.Alloc<float>(count);
+                    water.H0Y = m_memory.Alloc<float>(count);
+                    for (auto index = 0; index < count; index++)
+                    {
+                        water.H0X[index] = h0[index].real;
+                        water.H0Y[index] = h0[index].imag;
+                    }
+                }
+##else
                 water.H0 = m_memory.Alloc<complex_s>(water.M * water.N);
                 const auto h0Size = base64::DecodeBase64(jWater.h0.data(), jWater.h0.size(), water.H0, expectedH0Size);
+##endif
+#else
+                water.H0 = m_memory.Alloc<complex_s>(water.M * water.N);
+                const auto h0Size = base64::DecodeBase64(jWater.h0.data(), jWater.h0.size(), water.H0, expectedH0Size);
+#endif
                 if (h0Size != expectedH0Size)
                 {
                     PrintError(material, std::format("Water h0 size {} does not match expected {}", h0Size, expectedH0Size));

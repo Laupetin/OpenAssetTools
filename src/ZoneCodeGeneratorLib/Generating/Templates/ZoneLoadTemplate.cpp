@@ -309,7 +309,7 @@ namespace
 
         void PrintHeaderPtrArrayLoadMethodDeclaration(const DataDefinition* def) const
         {
-            LINEF("void LoadPtrArray_{0}(bool atStreamStart, size_t count);", MakeSafeTypeName(def))
+            LINEF("void LoadPtrArray_{0}(bool atStreamStart, size_t count, size_t serializedPointerSize);", MakeSafeTypeName(def))
         }
 
         void PrintHeaderArrayLoadMethodDeclaration(const DataDefinition* def) const
@@ -953,7 +953,10 @@ namespace
             {
                 LINEF("*{0} = m_stream.{1}<{2}>({3});",
                       MakeTypePtrVarName(def),
-                      m_env.m_word_size_mismatch ? "AllocOutOfBlock" : "Alloc",
+                      (m_env.m_word_size_mismatch
+                       || (info && info->m_word_size != WordSize::UNKNOWN && GetPointerSizeForWordSize(info->m_word_size) != m_env.m_pointer_size))
+                          ? "AllocOutOfBlock"
+                          : "Alloc",
                       def->GetFullName(),
                       alignment)
             }
@@ -1021,7 +1024,9 @@ namespace
 
         void PrintLoadPtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
-            LINEF("void {0}::LoadPtrArray_{1}(const bool atStreamStart, const size_t count)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(def))
+            LINEF("void {0}::LoadPtrArray_{1}(const bool atStreamStart, const size_t count, const size_t serializedPointerSize)",
+                  LoaderClassName(m_env.m_asset),
+                  MakeSafeTypeName(def))
             LINE("{")
             m_intendation++;
 
@@ -1030,32 +1035,45 @@ namespace
 
             LINE("if (atStreamStart)")
 
-            if (m_env.m_word_size_mismatch || (info && info->m_word_size != WordSize::UNKNOWN))
+            LINE("{")
+            m_intendation++;
+            LINEF("if (serializedPointerSize != sizeof({0}*))", def->GetFullName())
+            LINE("{")
+            m_intendation++;
+            LINE("const auto ptrArrayFill = m_stream.LoadWithFill(serializedPointerSize * count, serializedPointerSize);")
+            LINE("for (size_t index = 0; index < count; index++)")
+            LINE("{")
+            m_intendation++;
+            LINEF("ptrArrayFill.FillPtr({0}[index], serializedPointerSize * index);", MakeTypePtrVarName(def))
+
+            if (reusable || (info && StructureComputations(info).IsAsset()))
             {
-                const auto pointerSize = info && info->m_word_size != WordSize::UNKNOWN ? GetPointerSizeForWordSize(info->m_word_size) : m_env.m_pointer_size;
-                LINE("{")
-                m_intendation++;
-                LINEF("const auto ptrArrayFill = m_stream.LoadWithFill({0} * count, {0});", pointerSize)
-                LINE("for (size_t index = 0; index < count; index++)")
-                LINE("{")
-                m_intendation++;
-                LINEF("ptrArrayFill.FillPtr({0}[index], {1} * index);", MakeTypePtrVarName(def), pointerSize)
-
-                if (reusable || (info && StructureComputations(info).IsAsset()))
-                {
-                    LINEF("m_stream.AddPointerLookup(&{0}[index], ptrArrayFill.BlockBuffer({1} * index));", MakeTypePtrVarName(def), pointerSize)
-                }
-
-                m_intendation--;
-                LINE("}")
-                m_intendation--;
-                LINE("}")
+                LINEF("m_stream.AddPointerLookup(&{0}[index], ptrArrayFill.BlockBuffer(serializedPointerSize * index));", MakeTypePtrVarName(def))
             }
-            else
+
+            m_intendation--;
+            LINE("}")
+            m_intendation--;
+            LINE("}")
+            LINE("else")
+            m_intendation++;
+            LINEF("m_stream.Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
+            m_intendation--;
+            m_intendation--;
+            LINE("}")
+
+            if (reusable)
             {
+                LINE("")
+                LINEF("if (atStreamStart && serializedPointerSize == sizeof({0}*))", def->GetFullName())
+                LINE("{")
                 m_intendation++;
-                LINEF("m_stream.Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
+                LINE("for (size_t index = 0; index < count; index++)")
+                m_intendation++;
+                LINEF("m_stream.AddPointerLookup(&{0}[index], &{0}[index]);", MakeTypePtrVarName(def))
                 m_intendation--;
+                m_intendation--;
+                LINE("}")
             }
 
             LINE("")
@@ -1096,7 +1114,9 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count, {1});", def->GetSize(), m_env.m_pointer_size)
+                const auto serializedSize = info->m_word_size == WordSize::UNKNOWN ? def->GetSize() : info->m_serialized_size;
+                const auto pointerSize = info->m_word_size == WordSize::UNKNOWN ? m_env.m_pointer_size : GetPointerSizeForWordSize(info->m_word_size);
+                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count, {1});", serializedSize, pointerSize)
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
                 LINE("for (size_t index = 0; index < count; index++)")
@@ -1104,7 +1124,7 @@ namespace
                 m_intendation++;
 
                 LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
-                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, serializedSize)
                 LINE("var++;")
 
                 m_intendation--;
@@ -1240,16 +1260,32 @@ namespace
 
         void LoadMember_PointerArray(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier) const
         {
+            auto pointerWordSize = member->m_pointer_array_word_size;
+            if (pointerWordSize == WordSize::UNKNOWN)
+            {
+                const auto* pointerType = member->m_member->m_type_declaration->m_type;
+                for (const auto* usedType : m_env.m_used_types)
+                {
+                    if (usedType->m_type == pointerType && usedType->m_info)
+                    {
+                        pointerWordSize = usedType->m_info->m_word_size;
+                        break;
+                    }
+                }
+            }
+            const auto pointerSize = pointerWordSize == WordSize::UNKNOWN ? m_env.m_pointer_size : GetPointerSizeForWordSize(pointerWordSize);
             LINEF("{0} = {1};", MakeTypePtrVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
             if (modifier.IsArray())
             {
-                LINEF("LoadPtrArray_{0}(false, {1});", MakeSafeTypeName(member->m_member->m_type_declaration->m_type), modifier.GetArraySize())
+                LINEF(
+                    "LoadPtrArray_{0}(false, {1}, {2});", MakeSafeTypeName(member->m_member->m_type_declaration->m_type), modifier.GetArraySize(), pointerSize)
             }
             else
             {
-                LINEF("LoadPtrArray_{0}(true, {1});",
+                LINEF("LoadPtrArray_{0}(true, {1}, {2});",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
+                      MakeEvaluation(modifier.GetPointerArrayCountEvaluation()),
+                      pointerSize)
             }
         }
 
@@ -1479,7 +1515,13 @@ namespace
 
         [[nodiscard]] bool ShouldAllocOutOfBlock(const MemberInformation& member, const MemberLoadType loadType) const
         {
-            return m_env.m_word_size_mismatch
+            if (loadType == MemberLoadType::POINTER_ARRAY && member.m_pointer_array_word_size != WordSize::UNKNOWN
+                && GetPointerSizeForWordSize(member.m_pointer_array_word_size) != m_env.m_pointer_size)
+                return true;
+
+            const auto hasAlternateTargetLayout = member.m_type && member.m_type->m_word_size != WordSize::UNKNOWN
+                                                  && GetPointerSizeForWordSize(member.m_type->m_word_size) != m_env.m_pointer_size;
+            return (m_env.m_word_size_mismatch || hasAlternateTargetLayout)
                    && ((member.m_type && !member.m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
         }
 
@@ -1561,11 +1603,13 @@ namespace
             }
 
             const MemberComputations computations(member);
+            const auto aliasWordSizeMismatch =
+                info->m_alias_word_size != WordSize::UNKNOWN && GetPointerSizeForWordSize(info->m_alias_word_size) != m_env.m_pointer_size;
             if (computations.IsInTempBlock())
             {
                 LINE("")
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINE("uintptr_t toInsertLookupEntry = 0;")
                 else
                     LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
@@ -1573,7 +1617,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
                 else
                     LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
@@ -1590,7 +1634,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINEF(
                         "m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, {0}->{1});", MakeTypeVarName(info->m_definition), member->m_member->m_name)
                 else
@@ -2006,6 +2050,8 @@ namespace
         void PrintLoadPtrMethod(const StructureInformation* info)
         {
             const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
+            const auto aliasWordSizeMismatch =
+                info->m_alias_word_size != WordSize::UNKNOWN && GetPointerSizeForWordSize(info->m_alias_word_size) != m_env.m_pointer_size;
             LINEF("void {0}::LoadPtr_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
             LINE("{")
             m_intendation++;
@@ -2058,7 +2104,7 @@ namespace
             {
                 LINE("")
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINE("uintptr_t toInsertLookupEntry = 0;")
                 else
                     LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
@@ -2066,7 +2112,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
                 else
                     LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
@@ -2101,6 +2147,8 @@ namespace
             {
                 LINE("")
                 LINEF("LoadAsset_{0}({1});", MakeSafeTypeName(info->m_definition), MakeTypePtrVarName(info->m_definition))
+                if (inTemp && info->m_has_matching_cross_platform_structure)
+                    LINEF("m_stream.NotifyPointerResolved({0});", MakeTypePtrVarName(info->m_definition))
             }
 
             if (inTemp)
@@ -2113,7 +2161,7 @@ namespace
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
 
-                if (m_env.m_word_size_mismatch)
+                if (m_env.m_word_size_mismatch || aliasWordSizeMismatch)
                     LINEF("m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, *{0});", MakeTypePtrVarName(info->m_definition))
                 else
                     LINEF("*toInsert = *{0};", MakeTypePtrVarName(info->m_definition))
@@ -2131,7 +2179,7 @@ namespace
             {
                 if (info->m_has_matching_cross_platform_structure)
                 {
-                    LINEF("*{0} = m_stream.ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
+                    LINEF("m_stream.ResolveOffsetToAliasNative({0});", MakeTypePtrVarName(info->m_definition))
                 }
                 else
                 {

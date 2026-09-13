@@ -29,10 +29,29 @@ void ContentLoaderBase::LoadXString(const bool atStreamStart) const
 
     if (*varXString != nullptr)
     {
-        if (GetZonePointerType(*varXString) == ZonePointerType::FOLLOWING)
+        const auto zonePtrType = GetZonePointerType(*varXString);
+        if (zonePtrType == ZonePointerType::FOLLOWING || zonePtrType == ZonePointerType::INSERT)
         {
+            const char** toInsert = nullptr;
+            uintptr_t toInsertLookupEntry = 0;
+            if (zonePtrType == ZonePointerType::INSERT)
+            {
+                if (m_stream.GetPointerBitCount() == sizeof(const char*) * 8u)
+                    toInsert = m_stream.InsertPointerNative<const char>();
+                else
+                    toInsertLookupEntry = m_stream.InsertPointerAliasLookup();
+            }
+
             *varXString = m_stream.Alloc<const char>(1);
             m_stream.LoadNullTerminated(const_cast<char*>(*varXString));
+
+            if (zonePtrType == ZonePointerType::INSERT)
+            {
+                if (toInsert)
+                    *toInsert = *varXString;
+                else
+                    m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, const_cast<char*>(*varXString));
+            }
         }
         else
         {

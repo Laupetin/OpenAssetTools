@@ -216,6 +216,20 @@ public:
         return static_cast<T*>(ConvertOffsetToAliasNative(static_cast<const void*>(offset)));
     }
 
+    virtual bool ResolveOffsetToAliasNative(void** alias) = 0;
+
+    template<typename T> bool ResolveOffsetToAliasNative(T** alias)
+    {
+        return ResolveOffsetToAliasNative(reinterpret_cast<void**>(alias));
+    }
+
+    virtual void NotifyPointerResolved(void** pointer) = 0;
+
+    template<typename T> void NotifyPointerResolved(T** pointer)
+    {
+        NotifyPointerResolved(reinterpret_cast<void**>(pointer));
+    }
+
     /**
      * \brief Adds a lookup from a block pointer to out of block data
      * \param redirectTo A pointer to the out of block data to redirect to

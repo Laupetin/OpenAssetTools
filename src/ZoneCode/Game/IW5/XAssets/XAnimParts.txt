@@ -2,12 +2,18 @@
 // XAnimParts
 // =========================================
 use XAnimParts;
+#if defined(ARCH_x64)
+set allocalign XAnimParts 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set scriptstring names;
 set count names boneCount[9];
 set count notify notifyCount;
 set count deltaPart 1;
+#if defined(ARCH_x64)
+set allocalign deltaPart 4;
+#endif
 set count dataByte dataByteCount;
 set count dataShort dataShortCount;
 set count dataInt dataIntCount;
@@ -39,6 +45,9 @@ use XAnimDeltaPart;
 set count trans 1;
 set count quat2 1;
 set count quat 1;
+#if defined(ARCH_x64)
+set allocalign quat 4;
+#endif
 
 // XAnimPartTrans
 use XAnimPartTrans;

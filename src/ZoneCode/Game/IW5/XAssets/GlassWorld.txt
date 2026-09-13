@@ -3,12 +3,21 @@
 // =========================================
 use GlassWorld;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign GlassWorld 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign g_glassData 4;
+#endif
 set string name;
 
 // G_GlassData
 use G_GlassData;
 set count glassPieces pieceCount;
 set count glassNames glassNameCount;
+#if defined(ARCH_x64)
+set allocalign glassNames 4;
+#endif
 
 // G_GlassName
 use G_GlassName;

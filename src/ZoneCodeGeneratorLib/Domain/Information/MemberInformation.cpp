@@ -10,6 +10,8 @@ MemberInformation::MemberInformation(StructureInformation* parent, StructureInfo
       m_is_string(false),
       m_is_script_string(false),
       m_is_reusable(false),
+      m_pointer_array_elements_are_reusable(false),
+      m_pointer_array_word_size(WordSize::UNKNOWN),
       m_is_leaf(false),
       m_fast_file_block(nullptr)
 {

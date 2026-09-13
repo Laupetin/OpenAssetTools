@@ -2,6 +2,9 @@
 // MaterialTechniqueSet
 // =========================================
 use MaterialTechniqueSet;
+#if defined(ARCH_x64)
+set allocalign MaterialTechniqueSet 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set condition remappedTechniqueSet never;
@@ -9,6 +12,9 @@ set reusable techniques;
 
 // MaterialTechnique
 use MaterialTechnique;
+#if defined(ARCH_x64)
+set allocalign MaterialTechnique 4;
+#endif
 set string name;
 set arraysize passArray passCount;
 reorder:
@@ -18,6 +24,9 @@ reorder:
 // MaterialPass
 use MaterialPass;
 set count args perPrimArgCount + perObjArgCount + stableArgCount;
+#if defined(ARCH_x64)
+set allocalign args 4;
+#endif
 
 // MaterialShaderArgument
 use MaterialShaderArgument;

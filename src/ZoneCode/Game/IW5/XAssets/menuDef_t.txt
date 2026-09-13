@@ -2,12 +2,19 @@
 // menuDef_t
 // =========================================
 use menuDef_t;
-use itemDef_s;
-set wordsize 32;
-use menuDef_t;
+set aliaswordsize 32;
+#if defined(ARCH_x64)
+set allocalign menuDef_t 4;
+#endif
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign data 4;
+#endif
 set string window::name;
 set count items itemCount;
+#if defined(ARCH_x64)
+set allocalign items 4;
+#endif
 
 // windowDef_t
 use windowDef_t;
@@ -16,59 +23,162 @@ set string group;
 
 // menuData_t
 use menuData_t;
+#if defined(ARCH_x64)
+set allocalign menuData_t 4;
+#endif
 set reusable expressionData;
+#if defined(ARCH_x64)
+set allocalign expressionData 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onOpen 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onCloseRequest 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onClose 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onESC 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onFocusDueToClose 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onKey 4;
+#endif
 set reusable visibleExp;
+#if defined(ARCH_x64)
+set allocalign visibleExp 4;
+#endif
 set string allowedBinding;
 set string soundName;
 set reusable rectXExp;
+#if defined(ARCH_x64)
+set allocalign rectXExp 4;
+#endif
 set reusable rectYExp;
+#if defined(ARCH_x64)
+set allocalign rectYExp 4;
+#endif
 set reusable rectWExp;
+#if defined(ARCH_x64)
+set allocalign rectWExp 4;
+#endif
 set reusable rectHExp;
+#if defined(ARCH_x64)
+set allocalign rectHExp 4;
+#endif
 set reusable openSoundExp;
+#if defined(ARCH_x64)
+set allocalign openSoundExp 4;
+#endif
 set reusable closeSoundExp;
+#if defined(ARCH_x64)
+set allocalign closeSoundExp 4;
+#endif
 set reusable soundLoopExp;
+#if defined(ARCH_x64)
+set allocalign soundLoopExp 4;
+#endif
 reorder:
     expressionData
-    onOpen;
+    onOpen
+    onCloseRequest
+    onClose;
 
 // MenuEventHandlerSet
+#if defined(ARCH_x64)
+set allocalign MenuEventHandlerSet 4;
+#endif
 set count MenuEventHandlerSet::eventHandlers eventHandlerCount;
+#if defined(ARCH_x64)
+set allocalign MenuEventHandlerSet::eventHandlers 4;
+#endif
 
 // MenuEventHandler
 use MenuEventHandler;
+#if defined(ARCH_x64)
+set allocalign MenuEventHandler 4;
+#endif
 set string eventData::unconditionalScript;
 set condition eventData::unconditionalScript eventType == EVENT_UNCONDITIONAL;
 set condition eventData::conditionalScript eventType == EVENT_IF;
+#if defined(ARCH_x64)
+set allocalign eventData::conditionalScript 4;
+#endif
 set condition eventData::elseScript eventType == EVENT_ELSE;
+#if defined(ARCH_x64)
+set allocalign eventData::elseScript 4;
+#endif
 set condition eventData::setLocalVarData eventType == EVENT_SET_LOCAL_VAR_BOOL
     || eventType == EVENT_SET_LOCAL_VAR_INT
     || eventType == EVENT_SET_LOCAL_VAR_FLOAT
     || eventType == EVENT_SET_LOCAL_VAR_STRING;
+#if defined(ARCH_x64)
+set allocalign eventData::setLocalVarData 4;
+#endif
 
 // ConditionalScript
 use ConditionalScript;
+#if defined(ARCH_x64)
+set allocalign ConditionalScript 4;
+#endif
 set reusable eventExpression;
+#if defined(ARCH_x64)
+set allocalign eventExpression 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign eventHandlerSet 4;
+#endif
 reorder:
     eventExpression
     eventHandlerSet;
 
 // SetLocalVarData
 use SetLocalVarData;
+#if defined(ARCH_x64)
+set allocalign SetLocalVarData 4;
+#endif
 set string localVarName;
 set reusable expression;
+#if defined(ARCH_x64)
+set allocalign expression 4;
+#endif
 
 // Statement_s
 use Statement_s;
+#if defined(ARCH_x64)
+set allocalign Statement_s 4;
+#endif
 set count entries numEntries;
+#if defined(ARCH_x64)
+set allocalign entries 4;
+#endif
 set reusable supportingData;
+#if defined(ARCH_x64)
+set allocalign supportingData 4;
+#endif
 set condition persistentState never;
 
+#if defined(ARCH_x64)
+set allocalign ExpressionSupportingData 4;
+#endif
+
 // expressionEntry
+#ifdef ARCH_x64
+set condition expressionEntry::data::operand type != EET_OPERATOR;
+#else
 set condition expressionEntry::data::operand type == EET_OPERAND;
+#endif
 
 // Operand
 use Operand;
 set reusable internals::function;
+#if defined(ARCH_x64)
+set allocalign internals::function 4;
+#endif
 set condition internals::intVal dataType == VAL_INT;
 set condition internals::floatVal dataType == VAL_FLOAT;
 set condition internals::stringVal dataType == VAL_STRING;
@@ -79,6 +189,9 @@ set string ExpressionString::string;
 
 // itemDef_s
 use itemDef_s;
+#if defined(ARCH_x64)
+set allocalign itemDef_s 4;
+#endif
 set string text;
 set condition parent never;
 set string dvar;
@@ -86,17 +199,68 @@ set string dvarTest;
 set string enableDvar;
 set string localVar;
 set count floatExpressions floatExpressionCount;
+#if defined(ARCH_x64)
+set allocalign floatExpressions 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign mouseEnterText 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign mouseExitText 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign mouseEnter 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign mouseExit 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign action 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onAccept 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onFocus 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign hasFocus 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign leaveFocus 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign onKey 4;
+#endif
 set reusable visibleExp;
+#if defined(ARCH_x64)
+set allocalign visibleExp 4;
+#endif
 set reusable disabledExp;
+#if defined(ARCH_x64)
+set allocalign disabledExp 4;
+#endif
 set reusable textExp;
+#if defined(ARCH_x64)
+set allocalign textExp 4;
+#endif
 set reusable materialExp;
+#if defined(ARCH_x64)
+set allocalign materialExp 4;
+#endif
 set reusable textAlignYExp;
+#if defined(ARCH_x64)
+set allocalign textAlignYExp 4;
+#endif
 
 // itemDefData_t
 use itemDefData_t;
 set string enumDvarName;
 set condition data never;
 set condition listBox itemDef_s::type == ITEM_TYPE_LISTBOX;
+#if defined(ARCH_x64)
+set allocalign listBox 4;
+#endif
 set condition editField itemDef_s::type == ITEM_TYPE_TEXT
     || itemDef_s::type == ITEM_TYPE_EDITFIELD
     || itemDef_s::type == ITEM_TYPE_NUMERICFIELD
@@ -108,36 +272,89 @@ set condition editField itemDef_s::type == ITEM_TYPE_TEXT
     || itemDef_s::type == ITEM_TYPE_UPREDITFIELD
     || itemDef_s::type == ITEM_TYPE_EMAILFIELD
     || itemDef_s::type == ITEM_TYPE_PASSWORDFIELD;
+#if defined(ARCH_x64)
+set allocalign editField 4;
+#endif
 set condition multi itemDef_s::type == ITEM_TYPE_MULTI;
+#if defined(ARCH_x64)
+set allocalign multi 4;
+#endif
 set condition enumDvarName itemDef_s::type == ITEM_TYPE_DVARENUM;
 set condition ticker itemDef_s::type == ITEM_TYPE_NEWS_TICKER;
+#if defined(ARCH_x64)
+set allocalign ticker 4;
+#endif
 set condition scroll itemDef_s::type == ITEM_TYPE_TEXT_SCROLL;
+#if defined(ARCH_x64)
+set allocalign scroll 4;
+#endif
 
 // listBoxDef_s
+#if defined(ARCH_x64)
+set allocalign listBoxDef_s 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign listBoxDef_s::onDoubleClick 4;
+#endif
 set reusable listBoxDef_s::elementHeightExp;
+#if defined(ARCH_x64)
+set allocalign listBoxDef_s::elementHeightExp 4;
+#endif
 
 // multiDef_s
 use multiDef_s;
+#if defined(ARCH_x64)
+set allocalign multiDef_s 4;
+#endif
 set string dvarList;
 set string dvarStr;
 
 // ItemFloatExpression
+#if defined(ARCH_x64)
+set allocalign ItemFloatExpression 4;
+#endif
 set reusable ItemFloatExpression::expression;
+#if defined(ARCH_x64)
+set allocalign ItemFloatExpression::expression 4;
+#endif
+
+#if defined(ARCH_x64)
+set allocalign ItemKeyHandler 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign ItemKeyHandler::action 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign ItemKeyHandler::next 4;
+#endif
 
 // UIFunctionList
 use UIFunctionList;
 set count functions totalFunctions;
-set reusable functions; // This statement makes both the array of pointers and the pointers in the array reusable. only the second one is correct however this shouldn't be a problem with vanilla fastfiles.
+#if defined(ARCH_x64)
+set allocalign functions 4;
+#endif
+set reusable functions;
+set reusable elements functions;
 
 // StaticDvarList
 set count StaticDvarList::staticDvars numStaticDvars;
+#if defined(ARCH_x64)
+set allocalign StaticDvarList::staticDvars 4;
+#endif
 
 // StaticDvar
 use StaticDvar;
+#if defined(ARCH_x64)
+set allocalign StaticDvar 4;
+#endif
 set condition dvar never;
 set string dvarName;
 
 // StringList
 use StringList;
 set count strings totalStrings;
+#if defined(ARCH_x64)
+set allocalign strings 4;
+#endif
 set string strings;

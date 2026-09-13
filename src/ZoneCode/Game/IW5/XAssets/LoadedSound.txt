@@ -3,6 +3,9 @@
 // =========================================
 use LoadedSound;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign LoadedSound 4;
+#endif
 set string name;
 
 // MssSound

@@ -646,7 +646,9 @@ namespace IW5
         float radius;
         Bounds bounds;
         unsigned short* invHighMipRadius;
+#if !defined(ARCH_x64)
         int memUsage;
+#endif
         PhysPreset* physPreset;
         PhysCollmap* physCollmap;
         float quantization;
@@ -711,7 +713,12 @@ namespace IW5
     struct water_t
     {
         WaterWritable writable;
-        complex_s* H0;
+#if defined(ARCH_x64)
+        float* H0X;
+        float* H0Y;
+#else
+    complex_s* H0;
+#endif
         float* wTerm;
         int M;
         int N;
@@ -966,7 +973,9 @@ namespace IW5
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
         GfxStateBits* stateBitsTable;
+#if !defined(ARCH_x64)
         const char** subMaterials;
+#endif
     };
 
     struct GfxShaderLoadDef
@@ -1585,18 +1594,38 @@ namespace IW5
         const char* name;
     };
 
+#if defined(ARCH_x64)
+    // The updated PC executable retains a 32-bit-style packed metadata prefix,
+    // followed by two native pointer slots. Its loader uses the value at 0x18
+    // as the byte count for the following sample payload.
     struct AILSOUNDINFO
     {
         int format;
-        const void* data_ptr;
-        unsigned int data_len;
+        unsigned int frameCount;
         unsigned int rate;
-        int bits;
-        int channels;
-        unsigned int samples;
-        unsigned int block_size;
+        unsigned short channels;
+        unsigned short bits;
+        unsigned int payloadSize;
+        unsigned int blockSize;
+        unsigned int data_len;
+        unsigned int reserved;
+        const void* data_ptr;
         const void* initial_ptr;
     };
+#else
+struct AILSOUNDINFO
+{
+    int format;
+    const void* data_ptr;
+    unsigned int data_len;
+    unsigned int rate;
+    int bits;
+    int channels;
+    unsigned int samples;
+    unsigned int block_size;
+    const void* initial_ptr;
+};
+#endif
 
     struct MssSound
     {
@@ -1623,18 +1652,38 @@ namespace IW5
         SoundFileRef u;
     };
 
+#if defined(ARCH_x64)
+    // The updated PC format stores eight bytes per speaker entry.
+    // Preserve the payload until its individual fields have been verified.
     struct MSSSpeakerLevels
     {
-        int speaker;
-        int numLevels;
-        float levels[2];
+        unsigned char payload[8];
     };
+
+#pragma pack(push, 4)
 
     struct MSSChannelMap
     {
-        int speakerCount;
-        MSSSpeakerLevels speakers[6];
+        unsigned char speakerCount;
+        unsigned char reserved[3];
+        MSSSpeakerLevels* speakers;
     };
+
+#pragma pack(pop)
+#else
+struct MSSSpeakerLevels
+{
+    int speaker;
+    int numLevels;
+    float levels[2];
+};
+
+struct MSSChannelMap
+{
+    int speakerCount;
+    MSSSpeakerLevels speakers[6];
+};
+#endif
 
     struct SpeakerMap
     {
@@ -1642,6 +1691,13 @@ namespace IW5
         const char* name;
         MSSChannelMap channelMaps[2][2];
     };
+
+#if defined(ARCH_x64) && !defined(__zonecodegenerator) && !defined(__ida)
+    static_assert(sizeof(MSSSpeakerLevels) == 8);
+    static_assert(sizeof(MSSChannelMap) == 12);
+    static_assert(alignof(MSSChannelMap) == 4);
+    static_assert(sizeof(SpeakerMap) == 64);
+#endif
 
     struct SndCurve
     {
@@ -1984,7 +2040,11 @@ namespace IW5
         DynEntityClient* dynEntClientList[2];
         DynEntityColl* dynEntCollList[2];
         unsigned int checksum;
-        unsigned char padding[20];
+#if defined(ARCH_x64)
+        unsigned char padding[44];
+#else
+    unsigned char padding[20];
+#endif
     };
 
     struct ComPrimaryLight

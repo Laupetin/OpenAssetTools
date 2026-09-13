@@ -49,6 +49,7 @@
 #include <cassert>
 #include <iomanip>
 #include <nlohmann/json.hpp>
+#include <vector>
 
 using namespace nlohmann;
 using namespace GAME;
@@ -128,11 +129,33 @@ namespace
             jWater.codeConstant[2] = water.codeConstant[2];
             jWater.codeConstant[3] = water.codeConstant[3];
 
+#if GAME == "IW5"
+##if defined(ARCH_x64)
+            if (water.H0X && water.H0Y)
+            {
+                const auto count = water.M * water.N;
+                std::vector<complex_s> h0(count);
+                for (auto index = 0; index < count; index++)
+                {
+                    h0[index].real = water.H0X[index];
+                    h0[index].imag = water.H0Y[index];
+                }
+                jWater.h0 = base64::EncodeBase64(h0.data(), sizeof(complex_s) * count);
+            }
+##else
             if (water.H0)
             {
                 const auto count = water.M * water.N;
                 jWater.h0 = base64::EncodeBase64(water.H0, sizeof(complex_s) * count);
             }
+##endif
+#else
+            if (water.H0)
+            {
+                const auto count = water.M * water.N;
+                jWater.h0 = base64::EncodeBase64(water.H0, sizeof(complex_s) * count);
+            }
+#endif
 
             if (water.wTerm)
             {
@@ -394,4 +417,3 @@ namespace material
         dumper.Dump(*material);
     }
 } // namespace material
-

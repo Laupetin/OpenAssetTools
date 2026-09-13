@@ -8,6 +8,9 @@ set string name;
 // FxGlassSystem
 use FxGlassSystem;
 set count defs defCount;
+#if defined(ARCH_x64)
+set allocalign defs 4;
+#endif
 set block piecePlaces XFILE_BLOCK_RUNTIME;
 set count piecePlaces pieceLimit;
 set block pieceStates XFILE_BLOCK_RUNTIME;

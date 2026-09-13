@@ -23,6 +23,11 @@ namespace
 {
     constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
     constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+#if defined(ARCH_x64)
+    constexpr const char* ARCHITECTURE_DEFINE_NAME = "ARCH_x64";
+#else
+    constexpr const char* ARCHITECTURE_DEFINE_NAME = "ARCH_x86";
+#endif
 } // namespace
 
 CommandsFileReader::CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
@@ -53,6 +58,7 @@ void CommandsFileReader::SetupStreamProxies()
     auto includeProxy = std::make_unique<IncludingStreamProxy>(commentProxy.get());
     auto definesProxy = std::make_unique<DefinesStreamProxy>(includeProxy.get());
     definesProxy->AddDefine(DefinesStreamProxy::Define(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE));
+    definesProxy->AddDefine(DefinesStreamProxy::Define(ARCHITECTURE_DEFINE_NAME, "1"));
 
     m_stream = definesProxy.get();
 

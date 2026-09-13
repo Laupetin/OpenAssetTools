@@ -3,33 +3,84 @@
 // =========================================
 use clipMap_t;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign clipMap_t 4;
+#endif
 set string name;
 set block pInfo XFILE_BLOCK_TEMP;
 set reusable pInfo;
 set action pInfo ReallocClipInfo(ClipInfo, clipMap_t);
 set count staticModelList numStaticModels;
+#if defined(ARCH_x64)
+set allocalign staticModelList 4;
+#endif
 set count nodes numNodes;
+#if defined(ARCH_x64)
+set allocalign nodes 4;
+#endif
 set count leafs numLeafs;
+#if defined(ARCH_x64)
+set allocalign leafs 4;
+#endif
 set count verts vertCount;
+#if defined(ARCH_x64)
+set allocalign verts 4;
+#endif
 set count triIndices 3 * triCount;
+#if defined(ARCH_x64)
+set allocalign triIndices 2;
+#endif
 set count triEdgeIsWalkable ((3 * triCount + 31) / 32) * 4;
+#if defined(ARCH_x64)
+set allocalign triEdgeIsWalkable 1;
+#endif
 set count borders borderCount;
+#if defined(ARCH_x64)
+set allocalign borders 4;
+#endif
 set count partitions partitionCount;
+#if defined(ARCH_x64)
+set allocalign partitions 4;
+#endif
 set count aabbTrees aabbTreeCount;
+#if defined(ARCH_x64)
+set allocalign aabbTrees 16;
+#endif
 set count cmodels numSubModels;
+#if defined(ARCH_x64)
+set allocalign cmodels 4;
+#endif
 set count smodelNodes smodelNodeCount;
+#if defined(ARCH_x64)
+set allocalign smodelNodes 4;
+#endif
 set count stages stageCount;
+#if defined(ARCH_x64)
+set allocalign stages 4;
+#endif
 set count dynEntDefList[0] dynEntCount[0];
 set count dynEntDefList[1] dynEntCount[1];
+#if defined(ARCH_x64)
+set allocalign dynEntDefList 4;
+#endif
 set block dynEntPoseList XFILE_BLOCK_RUNTIME;
 set count dynEntPoseList[0] dynEntCount[0];
 set count dynEntPoseList[1] dynEntCount[1];
+#if defined(ARCH_x64)
+set allocalign dynEntPoseList 4;
+#endif
 set block dynEntClientList XFILE_BLOCK_RUNTIME;
 set count dynEntClientList[0] dynEntCount[0];
 set count dynEntClientList[1] dynEntCount[1];
+#if defined(ARCH_x64)
+set allocalign dynEntClientList 4;
+#endif
 set block dynEntCollList XFILE_BLOCK_RUNTIME;
 set count dynEntCollList[0] dynEntCount[0];
 set count dynEntCollList[1] dynEntCount[1];
+#if defined(ARCH_x64)
+set allocalign dynEntCollList 4;
+#endif
 reorder:
 ...
 cmodels
@@ -43,12 +94,21 @@ set reusable planes;
 set count planes planeCount;
 set reusable materials;
 set count materials numMaterials;
+#if defined(ARCH_x64)
+set allocalign materials 4;
+#endif
 set reusable brushsides;
 set count brushsides numBrushSides;
+#if defined(ARCH_x64)
+set allocalign brushsides 4;
+#endif
 set reusable brushEdges;
 set count brushEdges numBrushEdges;
 set reusable leafbrushNodes;
 set count leafbrushNodes leafbrushNodesCount;
+#if defined(ARCH_x64)
+set allocalign leafbrushNodes 4;
+#endif
 set reusable leafbrushes;
 set count leafbrushes numLeafBrushes;
 set reusable brushes;

@@ -3,14 +3,23 @@
 // =========================================
 use PathData;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign PathData 4;
+#endif
 set string name;
 set count nodes nodeCount;
+#if defined(ARCH_x64)
+set allocalign nodes 4;
+#endif
 set block basenodes XFILE_BLOCK_RUNTIME;
 set count basenodes nodeCount;
 set count chainNodeForNode nodeCount;
 set count nodeForChainNode nodeCount;
 set count pathVis visBytes;
 set count nodeTree nodeTreeCount;
+#if defined(ARCH_x64)
+set allocalign nodeTree 4;
+#endif
 
 // pathnode_t
 set condition pathnode_t::dynamic never;

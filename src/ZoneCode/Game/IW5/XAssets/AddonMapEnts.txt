@@ -3,10 +3,19 @@
 // =========================================
 use AddonMapEnts;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign AddonMapEnts 4;
+#endif
 set string name;
 set count entityString numEntityChars;
 set reusable info;
+#if defined(ARCH_x64)
+set allocalign info 4;
+#endif
 set count cmodels numSubModels;
+#if defined(ARCH_x64)
+set allocalign cmodels 4;
+#endif
 set count models numSubModels;
 
 // MapTriggers
@@ -17,3 +26,12 @@ set count models numSubModels;
 
 // cmodel2_t
 set reusable cmodel2_t::info;
+#if defined(ARCH_x64)
+set allocalign cmodel2_t::info 4;
+#endif
+
+// cbrush_t
+use cbrush_t;
+#if defined(ARCH_x64)
+set allocalign sides 4;
+#endif

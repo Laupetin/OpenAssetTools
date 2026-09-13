@@ -2,8 +2,14 @@
 // ComWorld
 // =========================================
 use ComWorld;
+#if defined(ARCH_x64)
+set allocalign ComWorld 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
+#if defined(ARCH_x64)
+set allocalign primaryLights 4;
+#endif
 set count primaryLights primaryLightCount;
 
 // ComPrimaryLight

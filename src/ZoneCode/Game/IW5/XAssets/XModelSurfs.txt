@@ -2,13 +2,22 @@
 // XModelSurfs
 // =========================================
 use XModelSurfs;
+#if defined(ARCH_x64)
+set allocalign XModelSurfs 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set count surfs numsurfs;
+#if defined(ARCH_x64)
+set allocalign surfs 4;
+#endif
 
 // XSurface
 use XSurface;
 set reusable vertList;
+#if defined(ARCH_x64)
+set allocalign vertList 4;
+#endif
 set count vertList vertListCount;
 set reusable triIndices;
 set block triIndices XFILE_BLOCK_INDEX;
@@ -33,6 +42,9 @@ set count vertsBlend vertCount[0]
 
 // XRigidVertList
 set reusable XRigidVertList::collisionTree;
+#if defined(ARCH_x64)
+set allocalign XRigidVertList::collisionTree 4;
+#endif
 
 // XSurfaceCollisionTree
 use XSurfaceCollisionTree;

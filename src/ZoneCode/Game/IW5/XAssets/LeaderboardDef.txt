@@ -2,9 +2,15 @@
 // LeaderboardDef
 // =========================================
 use LeaderboardDef;
+#if defined(ARCH_x64)
+set allocalign LeaderboardDef 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set count columns columnCount;
+#if defined(ARCH_x64)
+set allocalign columns 4;
+#endif
 
 // LbColumnDef
 use LbColumnDef;

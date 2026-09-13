@@ -3,8 +3,14 @@
 // =========================================
 use FxEffectDef;
 set block XFILE_BLOCK_TEMP;
+#if defined(ARCH_x64)
+set allocalign FxEffectDef 4;
+#endif
 set string name;
 set count elemDefs elemDefCountEmission + elemDefCountLooping + elemDefCountOneShot;
+#if defined(ARCH_x64)
+set allocalign elemDefs 4;
+#endif
 
 // FxElemDef
 use FxElemDef;
@@ -15,8 +21,14 @@ set count visSamples visStateIntervalCount + 1;
 use FxElemDefVisuals;
 set condition markArray FxElemDef::elemType == FX_ELEM_TYPE_DECAL;
 set count markArray FxElemDef::visualCount;
+#if defined(ARCH_x64)
+set allocalign markArray 4;
+#endif
 set condition array FxElemDef::visualCount > 1;
 set count array FxElemDef::visualCount;
+#if defined(ARCH_x64)
+set allocalign array 4;
+#endif
 
 // FxElemVisuals
 use FxElemVisuals;
@@ -43,6 +55,9 @@ set assetref name AssetFx;
 // FxElemExtendedDefPtr
 use FxElemExtendedDefPtr;
 set condition trailDef FxElemDef::elemType == FX_ELEM_TYPE_TRAIL;
+#if defined(ARCH_x64)
+set allocalign trailDef 4;
+#endif
 set condition sparkFountainDef FxElemDef::elemType == FX_ELEM_TYPE_SPARK_FOUNTAIN;
 set condition spotLightDef FxElemDef::elemType == FX_ELEM_TYPE_SPOT_LIGHT;
 

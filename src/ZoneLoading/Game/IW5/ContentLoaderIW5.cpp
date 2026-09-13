@@ -142,9 +142,7 @@ void ContentLoader::Load()
     {
         assert(GetZonePointerType(assetList.assets) == ZonePointerType::FOLLOWING);
 
-        // Updated 64-bit IW5 zones place the asset table directly after the
-        // variable-length script strings without inserting padding.
-        assetList.assets = m_stream.Alloc<XAsset>(sizeof(void*) == 8 ? 1 : 4);
+        assetList.assets = m_stream.Alloc<XAsset>(4);
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);
     }

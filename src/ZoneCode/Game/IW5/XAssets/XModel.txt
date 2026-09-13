@@ -2,6 +2,10 @@
 // XModel
 // =========================================
 use XModel;
+#if defined(ARCH_x64)
+set allocalign XModel 4;
+#endif
+set aliaswordsize 32;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set scriptstring boneNames;
@@ -18,7 +22,13 @@ set count partClassification numBones;
 set reusable baseMat;
 set count baseMat numBones;
 set count materialHandles numsurfs;
+#if defined(ARCH_x64)
+set allocalign materialHandles 4;
+#endif
 set count collSurfs numCollSurfs;
+#if defined(ARCH_x64)
+set allocalign collSurfs 4;
+#endif
 set count boneInfo numBones;
 set condition invHighMipRadius never;
 

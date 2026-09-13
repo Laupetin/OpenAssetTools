@@ -2,12 +2,30 @@
 // StructuredDataDefSet
 // =========================================
 use StructuredDataDefSet;
+#if defined(ARCH_x64)
+set allocalign StructuredDataDefSet 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign defs 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string name;
 set count defs defCount;
 
 // StructuredDataDef
 use StructuredDataDef;
+#if defined(ARCH_x64)
+set allocalign enums 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign structs 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign indexedArrays 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign enumedArrays 4;
+#endif
 set count enums enumCount;
 set count structs structCount;
 set count indexedArrays indexedArrayCount;
@@ -15,12 +33,18 @@ set count enumedArrays enumedArrayCount;
 
 // StructuredDataEnum
 set count StructuredDataEnum::entries entryCount;
+#if defined(ARCH_x64)
+set allocalign StructuredDataEnum::entries 4;
+#endif
 
 // StructuredDataEnumEntry
 set string StructuredDataEnumEntry::string;
 
 // StructuredDataStruct
 set count StructuredDataStruct::properties propertyCount;
+#if defined(ARCH_x64)
+set allocalign StructuredDataStruct::properties 4;
+#endif
 
 // StructuredDataStructProperty
 set string StructuredDataStructProperty::name;

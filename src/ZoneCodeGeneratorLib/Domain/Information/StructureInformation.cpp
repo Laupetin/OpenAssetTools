@@ -4,6 +4,7 @@ StructureInformation::StructureInformation(DefinitionWithMembers* definition, Ty
     : m_definition(definition),
       m_type_info(typeInfo),
       m_word_size(WordSize::UNKNOWN),
+      m_alias_word_size(WordSize::UNKNOWN),
       m_serialized_word_size(WordSize::UNKNOWN),
       m_serialized_size(0),
       m_is_leaf(false),

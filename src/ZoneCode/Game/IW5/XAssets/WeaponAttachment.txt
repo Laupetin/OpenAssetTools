@@ -2,15 +2,45 @@
 // WeaponAttachment
 // =========================================
 use WeaponAttachment;
+#if defined(ARCH_x64)
+set allocalign WeaponAttachment 4;
+#endif
 set block XFILE_BLOCK_TEMP;
 set string szInternalName;
 set string szDisplayName;
 set reusable worldModels;
+#if defined(ARCH_x64)
+set allocalign worldModels 4;
+#endif
 set count worldModels 16;
 set reusable viewModels;
+#if defined(ARCH_x64)
+set allocalign viewModels 4;
+#endif
 set count viewModels 16;
 set reusable reticleViewModels;
+#if defined(ARCH_x64)
+set allocalign reticleViewModels 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign adsOverlay 4;
+#endif
 set count reticleViewModels 8;
+#if defined(ARCH_x64)
+set allocalign ammoGeneral 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign general 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign ui 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign rumbles 4;
+#endif
+#if defined(ARCH_x64)
+set allocalign projectile 4;
+#endif
 
 // AttRumbles
 use AttRumbles;
