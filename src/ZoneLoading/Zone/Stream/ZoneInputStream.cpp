@@ -378,6 +378,14 @@ namespace
             if (block->m_buffer_size < blockOffset + sizeof(void*))
                 throw InvalidOffsetBlockOffsetException(block, blockOffset);
 
+            const auto foundInsertedAlias = m_alias_redirect_lookup.find(offsetInt);
+            if (foundInsertedAlias != m_alias_redirect_lookup.end())
+            {
+                *alias = foundInsertedAlias->second;
+                NotifyPointerResolved(alias);
+                return true;
+            }
+
             void** targetSlot;
             const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
             if (foundPointerLookup != m_pointer_redirect_lookup.end())
