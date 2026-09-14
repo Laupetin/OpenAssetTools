@@ -1,4 +1,4 @@
-#options GAME(IW3, T4)
+#options GAME(IW3, T4, T5)
 
 #filename "Game/" + GAME + "/Fx/FxEffectDefWriter" + GAME + ".cpp"
 
@@ -6,6 +6,8 @@
 #define FEATURE_IW3
 #elif GAME == "T4"
 #define FEATURE_T4
+#elif GAME == "T5"
+#define FEATURE_T5
 #endif
 
 // This file was templated.
@@ -37,6 +39,7 @@ namespace
         EDITOR,
         NATIVE,
         ATLAS,
+        EFFECT,
     };
 
     struct FxFlagDef
@@ -47,7 +50,8 @@ namespace
         unsigned int value;
     };
 
-    // Mirrors the game's s_allFlagDefs table without its trailing null sentinel.
+    // Uses the game's s_allFlagDefs ordering without its trailing null sentinel. Composite T5 spawn-relative aliases are emitted as their
+    // constituent flags so the output matches the stock effect sources.
     constexpr std::array FX_FLAG_DEFS{
         FxFlagDef{"looping",             FxFlagType::EDITOR, FX_ED_FLAG_LOOPING,                   FX_ED_FLAG_LOOPING                  },
         FxFlagDef{"useRandColor",        FxFlagType::EDITOR, FX_ED_FLAG_USE_RANDOM_COLOR,          FX_ED_FLAG_USE_RANDOM_COLOR         },
@@ -65,13 +69,31 @@ namespace
         FxFlagDef{"playOnTouch",         FxFlagType::EDITOR, FX_ED_FLAG_PLAY_ON_TOUCH,             FX_ED_FLAG_PLAY_ON_TOUCH            },
         FxFlagDef{"playOnDeath",         FxFlagType::EDITOR, FX_ED_FLAG_PLAY_ON_DEATH,             FX_ED_FLAG_PLAY_ON_DEATH            },
         FxFlagDef{"playOnRun",           FxFlagType::EDITOR, FX_ED_FLAG_PLAY_ON_RUN,               FX_ED_FLAG_PLAY_ON_RUN              },
+#ifdef FEATURE_T5
+        FxFlagDef{"playAttached",        FxFlagType::EDITOR, FX_ED_FLAG_PLAY_ATTACHED,             FX_ED_FLAG_PLAY_ATTACHED            },
+#endif
         FxFlagDef{"boundingSphere",      FxFlagType::EDITOR, FX_ED_FLAG_BOUNDING_SPHERE,           FX_ED_FLAG_BOUNDING_SPHERE          },
+#ifndef FEATURE_T5
         FxFlagDef{"useItemClip",         FxFlagType::EDITOR, FX_ED_FLAG_USE_ITEM_CLIP,             FX_ED_FLAG_USE_ITEM_CLIP            },
-#ifdef FEATURE_T4
+#endif
+#ifdef FEATURE_T5
+        FxFlagDef{"useItemClip",         FxFlagType::NATIVE, FX_ELEM_USE_ITEM_CLIP,                FX_ELEM_USE_ITEM_CLIP               },
+#endif
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         FxFlagDef{"isMatureContent",     FxFlagType::NATIVE, FX_ELEM_IS_MATURE_CONTENT,            FX_ELEM_IS_MATURE_CONTENT           },
 #endif
         FxFlagDef{"disabled",            FxFlagType::EDITOR, FX_ED_FLAG_DISABLED,                  FX_ED_FLAG_DISABLED                 },
+#ifdef FEATURE_T5
+        FxFlagDef{"spawnDistributiveX",  FxFlagType::NATIVE, FX_ELEM_SPAWN_DISTRIBUTIVE_X,         FX_ELEM_SPAWN_DISTRIBUTIVE_X        },
+        FxFlagDef{"spawnDistributiveY",  FxFlagType::NATIVE, FX_ELEM_SPAWN_DISTRIBUTIVE_Y,         FX_ELEM_SPAWN_DISTRIBUTIVE_Y        },
+#endif
         FxFlagDef{"spawnRelative",       FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TO_EFFECT,     FX_ELEM_SPAWN_RELATIVE_TO_EFFECT    },
+#ifdef FEATURE_T5
+        FxFlagDef{"spawnRelativeType0",  FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TYPE_0,        FX_ELEM_SPAWN_RELATIVE_TYPE_0       },
+        FxFlagDef{"spawnRelativeType1",  FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TYPE_1,        FX_ELEM_SPAWN_RELATIVE_TYPE_1       },
+        FxFlagDef{"spawnRelativeType2",  FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TYPE_2,        FX_ELEM_SPAWN_RELATIVE_TYPE_2       },
+        FxFlagDef{"spawnRelativeType4",  FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TYPE_4,        FX_ELEM_SPAWN_RELATIVE_TYPE_4       },
+#endif
         FxFlagDef{"spawnFrustumCull",    FxFlagType::NATIVE, FX_ELEM_SPAWN_FRUSTUM_CULL,           FX_ELEM_SPAWN_FRUSTUM_CULL          },
         FxFlagDef{"runnerUsesRandRot",   FxFlagType::NATIVE, FX_ELEM_RUNNER_USES_RAND_ROT,         FX_ELEM_RUNNER_USES_RAND_ROT        },
         FxFlagDef{"spawnOffsetNone",     FxFlagType::NATIVE, FX_ELEM_SPAWN_OFFSET_MASK,            FX_ELEM_SPAWN_OFFSET_NONE           },
@@ -89,13 +111,25 @@ namespace
         FxFlagDef{"modelUsesPhysics",    FxFlagType::NATIVE, FX_ELEM_USE_MODEL_PHYSICS,            FX_ELEM_USE_MODEL_PHYSICS           },
         FxFlagDef{"nonUniformScale",     FxFlagType::NATIVE, FX_ELEM_NONUNIFORM_SCALE,             FX_ELEM_NONUNIFORM_SCALE            },
         FxFlagDef{"startFixed",          FxFlagType::ATLAS,  FX_ATLAS_START_MASK,                  FX_ATLAS_START_FIXED                },
+#ifdef FEATURE_T5
+        FxFlagDef{"startFixedRange",     FxFlagType::ATLAS,  FX_ATLAS_START_MASK,                  FX_ATLAS_START_FIXED_RANGE          },
+#endif
         FxFlagDef{"startRandom",         FxFlagType::ATLAS,  FX_ATLAS_START_MASK,                  FX_ATLAS_START_RANDOM               },
         FxFlagDef{"startIndexed",        FxFlagType::ATLAS,  FX_ATLAS_START_MASK,                  FX_ATLAS_START_INDEXED              },
         FxFlagDef{"playOverLife",        FxFlagType::ATLAS,  FX_ATLAS_PLAY_OVER_LIFE,              FX_ATLAS_PLAY_OVER_LIFE             },
         FxFlagDef{"loopOnlyNTimes",      FxFlagType::ATLAS,  FX_ATLAS_LOOP_ONLY_N_TIMES,           FX_ATLAS_LOOP_ONLY_N_TIMES          },
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         FxFlagDef{"flamechunk",          FxFlagType::NATIVE, FX_ELEM_FLAME_CHUNK,                  FX_ELEM_FLAME_CHUNK                 },
         FxFlagDef{"hasReflection",       FxFlagType::NATIVE, FX_ELEM_HAS_REFLECTION,               FX_ELEM_HAS_REFLECTION              },
+#endif
+#ifdef FEATURE_T5
+        FxFlagDef{"useRotationAxis",     FxFlagType::NATIVE, FX_ELEM_USE_ROTATION_AXIS,            FX_ELEM_USE_ROTATION_AXIS           },
+        FxFlagDef{"useGaussianCloud",    FxFlagType::NATIVE, FX_ELEM_USE_GAUSSIAN_CLOUD,           FX_ELEM_USE_GAUSSIAN_CLOUD          },
+        FxFlagDef{"useBillboardPivot",   FxFlagType::NATIVE, FX_ELEM_USE_BILLBOARD_PIVOT,          FX_ELEM_USE_BILLBOARD_PIVOT         },
+        FxFlagDef{"useWorldUp",          FxFlagType::NATIVE, FX_ELEM_USE_WORLD_UP,                 FX_ELEM_USE_WORLD_UP                },
+        FxFlagDef{"alignViewpoint",      FxFlagType::NATIVE, FX_ELEM_ALIGN_VIEWPOINT,              FX_ELEM_ALIGN_VIEWPOINT             },
+        FxFlagDef{"efUseBoundingBox",    FxFlagType::EFFECT, FX_EFFECT_USE_BOUNDING_BOX,           FX_EFFECT_USE_BOUNDING_BOX          },
+        FxFlagDef{"efLocalBoundingBox",  FxFlagType::EFFECT, FX_EFFECT_USE_LOCAL_BOUNDING_BOX,     FX_EFFECT_USE_LOCAL_BOUNDING_BOX    },
 #endif
     };
 
@@ -177,6 +211,42 @@ namespace
         return result;
     }
 
+#ifdef FEATURE_T5
+    constexpr float UnpackSignedRotationAxisComponent(const unsigned value, const unsigned signBit)
+    {
+        const auto mask = signBit * 2u - 1u;
+        const auto unsignedValue = value & mask;
+        const auto signedValue = unsignedValue >= signBit ? static_cast<int>(unsignedValue) - static_cast<int>(signBit * 2u) : static_cast<int>(unsignedValue);
+        return static_cast<float>(signedValue) / static_cast<float>(signBit - 1u);
+    }
+
+    std::array<float, 4> UnpackRotationAxis(const unsigned int packed)
+    {
+        constexpr auto COMPONENT_0_SIGN_BIT = 0x100u;
+        constexpr auto COMPONENT_1_SIGN_BIT = 0x200u;
+        constexpr auto PACKED_SIGN_BIT = 0x80000000u;
+        constexpr auto FIRST_COMPONENT_SHIFT = 29u;
+        constexpr auto COMPONENT_INDEX_MASK = 0x3u;
+
+        const std::array stored{
+            UnpackSignedRotationAxisComponent(packed, COMPONENT_0_SIGN_BIT),
+            UnpackSignedRotationAxisComponent(packed >> 9u, COMPONENT_1_SIGN_BIT),
+            UnpackSignedRotationAxisComponent(packed >> 19u, COMPONENT_1_SIGN_BIT),
+            1.0f,
+        };
+        const auto length = std::sqrt(stored[0] * stored[0] + stored[1] * stored[1] + stored[2] * stored[2] + stored[3] * stored[3]);
+        const auto scale = (packed & PACKED_SIGN_BIT) != 0u ? -1.0f / length : 1.0f / length;
+        const auto firstComponent = (packed >> FIRST_COMPONENT_SHIFT) & COMPONENT_INDEX_MASK;
+
+        return {
+            stored[firstComponent] * scale,
+            stored[(firstComponent + 1u) & COMPONENT_INDEX_MASK] * scale,
+            stored[(firstComponent + 2u) & COMPONENT_INDEX_MASK] * scale,
+            stored[(firstComponent + 3u) & COMPONENT_INDEX_MASK] * scale,
+        };
+    }
+
+#endif
     bool HasVelocityAmplitude(const FxElemVelStateSample* samples, const unsigned intervalCount, const bool world, const unsigned component)
     {
         if (!samples)
@@ -329,19 +399,25 @@ namespace
 
     bool UsesSize1(const FxElemDef& elem)
     {
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         if (elem.elemType == FX_ELEM_TYPE_LINE)
             return true;
 #endif
 
+#ifdef FEATURE_T5
+        const auto isNonUniformSprite = elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED
+                                        || elem.elemType == FX_ELEM_TYPE_SPRITE_ROTATED || elem.elemType == FX_ELEM_TYPE_TRAIL;
+#else
+        const auto isNonUniformSprite =
+            elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED || elem.elemType == FX_ELEM_TYPE_TRAIL;
+#endif
         return elem.elemType == FX_ELEM_TYPE_TAIL || elem.elemType == FX_ELEM_TYPE_CLOUD
-               || ((elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED || elem.elemType == FX_ELEM_TYPE_TRAIL)
-                   && (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0);
+               || (isNonUniformSprite && (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0);
     }
 
     bool UsesScale(const FxElemDef& elem)
     {
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         if (elem.elemType == FX_ELEM_TYPE_LINE)
             return true;
 #endif
@@ -436,8 +512,11 @@ namespace
         {
         case FX_ELEM_TYPE_SPRITE_BILLBOARD:
         case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
         case FX_ELEM_TYPE_TAIL:
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         case FX_ELEM_TYPE_LINE:
 #endif
         case FX_ELEM_TYPE_TRAIL:
@@ -478,10 +557,15 @@ namespace
         case FX_ELEM_TYPE_SPRITE_ORIENTED:
             WriteVisualArray(stream, "orientedSprite", names);
             break;
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+            WriteVisualArray(stream, "rotatedSprite", names);
+            break;
+#endif
         case FX_ELEM_TYPE_TAIL:
             WriteVisualArray(stream, "tail", names);
             break;
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         case FX_ELEM_TYPE_LINE:
             WriteVisualArray(stream, "line", names);
             break;
@@ -551,7 +635,16 @@ namespace
         void Write(const FxEffectDef& effect) override
         {
             m_stream << std::setprecision(std::numeric_limits<float>::max_digits10);
+#ifdef FEATURE_T5
+            m_stream << "iwfx 3\n\n";
+            const auto effectFlags = GetFlagNames(FxFlagType::EFFECT, static_cast<unsigned>(static_cast<std::uint8_t>(effect.flags)));
+            WriteFlags(m_stream, "efFlags", effectFlags);
+            m_stream << "\tefPriority " << static_cast<unsigned>(static_cast<std::uint8_t>(effect.efPriority)) << ";\n";
+            m_stream << "\tefBoundingBoxDim " << effect.boundingBoxDim[0] << ' ' << effect.boundingBoxDim[1] << ' ' << effect.boundingBoxDim[2] << ";\n";
+            m_stream << "\tefBoundingBoxCentre " << effect.boundingSphere[0] << ' ' << effect.boundingSphere[1] << ' ' << effect.boundingSphere[2] << ";\n";
+#else
             m_stream << "iwfx 2\n\n";
+#endif
 
             const auto loopingCount = std::max(0, effect.elemDefCountLooping);
             const auto oneShotCount = std::max(0, effect.elemDefCountOneShot);
@@ -628,6 +721,10 @@ namespace
                 editorFlagBits |= FX_ED_FLAG_PLAY_ON_DEATH;
             if (elem.effectEmitted.name)
                 editorFlagBits |= FX_ED_FLAG_PLAY_ON_RUN;
+#ifdef FEATURE_T5
+            if (elem.effectAttached.name)
+                editorFlagBits |= FX_ED_FLAG_PLAY_ATTACHED;
+#endif
 
             const auto hasCollisionBounds = std::ranges::any_of(elem.collMins,
                                                                 [](const float value)
@@ -641,8 +738,10 @@ namespace
                                                                    });
             if (hasCollisionBounds)
                 editorFlagBits |= FX_ED_FLAG_BOUNDING_SPHERE;
+#ifndef FEATURE_T5
             if (elem.useItemClip)
                 editorFlagBits |= FX_ED_FLAG_USE_ITEM_CLIP;
+#endif
 
             const auto editorFlags = GetFlagNames(FxFlagType::EDITOR, editorFlagBits);
             const auto flags = GetFlagNames(FxFlagType::NATIVE, static_cast<unsigned int>(elem.flags));
@@ -681,9 +780,13 @@ namespace
             WriteScaledRange(m_stream, "angleVelYaw", elem.angularVelocity[1], 180000.0f / PI);
             WriteScaledRange(m_stream, "angleVelRoll", elem.angularVelocity[2], 180000.0f / PI);
             WriteScaledRange(m_stream, "initialRot", elem.initialRotation, 180.0f / PI);
+#ifdef FEATURE_T5
+            const auto rotationAxis = UnpackRotationAxis(elem.rotationAxis);
+            m_stream << "\trotationAxis " << rotationAxis[0] << ' ' << rotationAxis[1] << ' ' << rotationAxis[2] << ' ' << rotationAxis[3] << ";\n";
+#endif
             WriteScaledRange(m_stream, "gravity", elem.gravity, 100.0f);
             WriteRange(m_stream, "elasticity", elem.reflectionFactor);
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
             m_stream << "\twindinfluence " << elem.windInfluence << ";\n";
 #endif
 
@@ -696,7 +799,15 @@ namespace
             m_stream << "\tatlasLoopCount " << (atlasLoopCount > 0u ? atlasLoopCount - 1u : 0u) << ";\n";
             m_stream << "\tatlasColIndexBits " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.colIndexBits)) << ";\n";
             m_stream << "\tatlasRowIndexBits " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.rowIndexBits)) << ";\n";
+#ifdef FEATURE_T5
+            constexpr auto ATLAS_ENTRY_COUNT_MASK = 0x1FFu;
+            constexpr auto ATLAS_INDEX_RANGE_SHIFT = 9u;
+            const auto entryCountAndIndexRange = static_cast<unsigned>(elem.atlas.entryCountAndIndexRange);
+            m_stream << "\tatlasEntryCount " << (entryCountAndIndexRange & ATLAS_ENTRY_COUNT_MASK) << ";\n";
+            m_stream << "\tatlasIndexRange " << (entryCountAndIndexRange >> ATLAS_INDEX_RANGE_SHIFT) << ";\n";
+#else
             m_stream << "\tatlasEntryCount " << elem.atlas.entryCount << ";\n";
+#endif
 
             for (auto graphIndex = 0u; graphIndex < 2u; graphIndex++)
             {
@@ -803,7 +914,40 @@ namespace
             m_stream << ";\n";
             WriteRange(m_stream, "emitDist", elem.emitDist);
             WriteRange(m_stream, "emitDistVariance", elem.emitDistVariance);
+#ifdef FEATURE_T5
+            m_stream << "\tattachment ";
+            WriteQuotedString(m_stream, AssetName(elem.effectAttached.name));
+            m_stream << ";\n";
+#endif
             WriteTrail(m_stream, elem);
+#ifdef FEATURE_T5
+            m_stream << "\talphafadetimemsec " << elem.alphaFadeTimeMsec << ";\n";
+            m_stream << "\tmaxwind_mag " << elem.maxWindStrength << ";\n";
+            m_stream << "\tmaxwind_life " << elem.lifespanAtMaxWind << ";\n";
+            m_stream << "\tmaxwind_interval " << elem.spawnIntervalAtMaxWind << ";\n";
+            if (elem.elemType == FX_ELEM_TYPE_CLOUD)
+            {
+                m_stream << "\tbillboardTopWidth 1;\n\tbillboardBottomWidth 1;\n";
+            }
+            else
+            {
+                m_stream << "\tbillboardTopWidth " << elem.u.billboard.topWidth << ";\n";
+                m_stream << "\tbillboardBottomWidth " << elem.u.billboard.bottomWidth << ";\n";
+            }
+            m_stream << "\telemSpawnSound\n\t{\n";
+            if (elem.spawnSound.spawnSound && elem.spawnSound.spawnSound[0])
+            {
+                m_stream << "\t\t";
+                WriteQuotedString(m_stream, elem.spawnSound.spawnSound);
+                m_stream << '\n';
+            }
+            m_stream << "\t};\n";
+            if (elem.elemType == FX_ELEM_TYPE_CLOUD)
+                WriteRange(m_stream, "cloudDensity", elem.u.cloudDensityRange);
+            else
+                m_stream << "\tcloudDensity 1024 0;\n";
+            m_stream << "\tbillboardPivot " << elem.billboardPivot[0] * 0.5f << ' ' << elem.billboardPivot[1] * -0.5f << ";\n";
+#endif
             WriteVisuals(m_stream, elem);
             m_stream << "}\n";
         }

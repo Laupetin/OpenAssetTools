@@ -1,4 +1,4 @@
-#options GAME(IW3, T4)
+#options GAME(IW3, T4, T5)
 
 #filename "Game/" + GAME + "/Fx/FxImpactTableDumper" + GAME + ".cpp"
 
@@ -6,6 +6,8 @@
 #define FEATURE_IW3
 #elif GAME == "T4"
 #define FEATURE_T4
+#elif GAME == "T5"
+#define FEATURE_T5
 #endif
 
 // This file was templated.
@@ -31,7 +33,7 @@ namespace
     {
         BULLET_SMALL_NORMAL,
         BULLET_SMALL_EXIT,
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         BULLET_SMALL_UNDERWATER,
 #endif
         BULLET_LARGE_NORMAL,
@@ -40,14 +42,25 @@ namespace
         SHOTGUN_EXIT,
         BULLET_AP_NORMAL,
         BULLET_AP_EXIT,
+#ifdef FEATURE_T5
+        BULLET_XTREME_NORMAL,
+        BULLET_XTREME_EXIT,
+#endif
         GRENADE_BOUNCE,
         GRENADE_EXPLODE,
         ROCKET_EXPLODE,
+#ifdef FEATURE_T5
+        ROCKET_EXPLODE_XTREME,
+#endif
         PROJECTILE_DUD,
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
         MORTAR_SHELL,
         TANK_SHELL,
         PHYSICS_IMPACT,
+#endif
+#ifdef FEATURE_T5
+        BOLT,
+        BLADE,
 #endif
     };
 
@@ -55,41 +68,66 @@ namespace
     {
         const char* name;
         ImpactTableIndex tableIndex;
+        bool supportsFlesh;
     };
 
 #ifdef FEATURE_IW3
     constexpr std::array IMPACT_TYPE_DEFS{
-        ImpactTypeDef{"bullet_small_normal", ImpactTableIndex::BULLET_SMALL_NORMAL},
-        ImpactTypeDef{"bullet_small_exit",   ImpactTableIndex::BULLET_SMALL_EXIT  },
-        ImpactTypeDef{"bullet_large_normal", ImpactTableIndex::BULLET_LARGE_NORMAL},
-        ImpactTypeDef{"bullet_large_exit",   ImpactTableIndex::BULLET_LARGE_EXIT  },
-        ImpactTypeDef{"bullet_ap_normal",    ImpactTableIndex::BULLET_AP_NORMAL   },
-        ImpactTypeDef{"bullet_ap_exit",      ImpactTableIndex::BULLET_AP_EXIT     },
-        ImpactTypeDef{"shotgun_normal",      ImpactTableIndex::SHOTGUN_NORMAL     },
-        ImpactTypeDef{"shotgun_exit",        ImpactTableIndex::SHOTGUN_EXIT       },
-        ImpactTypeDef{"grenade_bounce",      ImpactTableIndex::GRENADE_BOUNCE     },
-        ImpactTypeDef{"grenade_explode",     ImpactTableIndex::GRENADE_EXPLODE    },
-        ImpactTypeDef{"rocket_explode",      ImpactTableIndex::ROCKET_EXPLODE     },
-        ImpactTypeDef{"projectile_dud",      ImpactTableIndex::PROJECTILE_DUD     },
+        ImpactTypeDef{"bullet_small_normal", ImpactTableIndex::BULLET_SMALL_NORMAL, true },
+        ImpactTypeDef{"bullet_small_exit",   ImpactTableIndex::BULLET_SMALL_EXIT,   true },
+        ImpactTypeDef{"bullet_large_normal", ImpactTableIndex::BULLET_LARGE_NORMAL, true },
+        ImpactTypeDef{"bullet_large_exit",   ImpactTableIndex::BULLET_LARGE_EXIT,   true },
+        ImpactTypeDef{"bullet_ap_normal",    ImpactTableIndex::BULLET_AP_NORMAL,    true },
+        ImpactTypeDef{"bullet_ap_exit",      ImpactTableIndex::BULLET_AP_EXIT,      true },
+        ImpactTypeDef{"shotgun_normal",      ImpactTableIndex::SHOTGUN_NORMAL,      true },
+        ImpactTypeDef{"shotgun_exit",        ImpactTableIndex::SHOTGUN_EXIT,        true },
+        ImpactTypeDef{"grenade_bounce",      ImpactTableIndex::GRENADE_BOUNCE,      false},
+        ImpactTypeDef{"grenade_explode",     ImpactTableIndex::GRENADE_EXPLODE,     false},
+        ImpactTypeDef{"rocket_explode",      ImpactTableIndex::ROCKET_EXPLODE,      false},
+        ImpactTypeDef{"projectile_dud",      ImpactTableIndex::PROJECTILE_DUD,      false},
     };
 #elif defined(FEATURE_T4)
     constexpr std::array IMPACT_TYPE_DEFS{
-        ImpactTypeDef{"bullet_small_normal",     ImpactTableIndex::BULLET_SMALL_NORMAL    },
-        ImpactTypeDef{"bullet_small_exit",       ImpactTableIndex::BULLET_SMALL_EXIT      },
-        ImpactTypeDef{"bullet_small_underwater", ImpactTableIndex::BULLET_SMALL_UNDERWATER},
-        ImpactTypeDef{"bullet_large_normal",     ImpactTableIndex::BULLET_LARGE_NORMAL    },
-        ImpactTypeDef{"bullet_large_exit",       ImpactTableIndex::BULLET_LARGE_EXIT      },
-        ImpactTypeDef{"bullet_ap_normal",        ImpactTableIndex::BULLET_AP_NORMAL       },
-        ImpactTypeDef{"bullet_ap_exit",          ImpactTableIndex::BULLET_AP_EXIT         },
-        ImpactTypeDef{"shotgun_normal",          ImpactTableIndex::SHOTGUN_NORMAL         },
-        ImpactTypeDef{"shotgun_exit",            ImpactTableIndex::SHOTGUN_EXIT           },
-        ImpactTypeDef{"grenade_bounce",          ImpactTableIndex::GRENADE_BOUNCE         },
-        ImpactTypeDef{"grenade_explode",         ImpactTableIndex::GRENADE_EXPLODE        },
-        ImpactTypeDef{"rocket_explode",          ImpactTableIndex::ROCKET_EXPLODE         },
-        ImpactTypeDef{"projectile_dud",          ImpactTableIndex::PROJECTILE_DUD         },
-        ImpactTypeDef{"physics_impact",          ImpactTableIndex::PHYSICS_IMPACT         },
-        ImpactTypeDef{"mortar_shell",            ImpactTableIndex::MORTAR_SHELL           },
-        ImpactTypeDef{"tank_shell",              ImpactTableIndex::TANK_SHELL             },
+        ImpactTypeDef{"bullet_small_normal",     ImpactTableIndex::BULLET_SMALL_NORMAL,     true },
+        ImpactTypeDef{"bullet_small_exit",       ImpactTableIndex::BULLET_SMALL_EXIT,       true },
+        ImpactTypeDef{"bullet_small_underwater", ImpactTableIndex::BULLET_SMALL_UNDERWATER, true },
+        ImpactTypeDef{"bullet_large_normal",     ImpactTableIndex::BULLET_LARGE_NORMAL,     true },
+        ImpactTypeDef{"bullet_large_exit",       ImpactTableIndex::BULLET_LARGE_EXIT,       true },
+        ImpactTypeDef{"bullet_ap_normal",        ImpactTableIndex::BULLET_AP_NORMAL,        true },
+        ImpactTypeDef{"bullet_ap_exit",          ImpactTableIndex::BULLET_AP_EXIT,          true },
+        ImpactTypeDef{"shotgun_normal",          ImpactTableIndex::SHOTGUN_NORMAL,          true },
+        ImpactTypeDef{"shotgun_exit",            ImpactTableIndex::SHOTGUN_EXIT,            true },
+        ImpactTypeDef{"grenade_bounce",          ImpactTableIndex::GRENADE_BOUNCE,          false},
+        ImpactTypeDef{"grenade_explode",         ImpactTableIndex::GRENADE_EXPLODE,         false},
+        ImpactTypeDef{"rocket_explode",          ImpactTableIndex::ROCKET_EXPLODE,          false},
+        ImpactTypeDef{"projectile_dud",          ImpactTableIndex::PROJECTILE_DUD,          false},
+        ImpactTypeDef{"physics_impact",          ImpactTableIndex::PHYSICS_IMPACT,          false},
+        ImpactTypeDef{"mortar_shell",            ImpactTableIndex::MORTAR_SHELL,            false},
+        ImpactTypeDef{"tank_shell",              ImpactTableIndex::TANK_SHELL,              false},
+    };
+#elif defined(FEATURE_T5)
+    constexpr std::array IMPACT_TYPE_DEFS{
+        ImpactTypeDef{"bullet_small_normal",     ImpactTableIndex::BULLET_SMALL_NORMAL,     true },
+        ImpactTypeDef{"bullet_small_exit",       ImpactTableIndex::BULLET_SMALL_EXIT,       true },
+        ImpactTypeDef{"bullet_small_underwater", ImpactTableIndex::BULLET_SMALL_UNDERWATER, true },
+        ImpactTypeDef{"bullet_large_normal",     ImpactTableIndex::BULLET_LARGE_NORMAL,     true },
+        ImpactTypeDef{"bullet_large_exit",       ImpactTableIndex::BULLET_LARGE_EXIT,       true },
+        ImpactTypeDef{"bullet_ap_normal",        ImpactTableIndex::BULLET_AP_NORMAL,        true },
+        ImpactTypeDef{"bullet_ap_exit",          ImpactTableIndex::BULLET_AP_EXIT,          true },
+        ImpactTypeDef{"bullet_xtreme_normal",    ImpactTableIndex::BULLET_XTREME_NORMAL,    true },
+        ImpactTypeDef{"bullet_xtreme_exit",      ImpactTableIndex::BULLET_XTREME_EXIT,      true },
+        ImpactTypeDef{"shotgun_normal",          ImpactTableIndex::SHOTGUN_NORMAL,          true },
+        ImpactTypeDef{"shotgun_exit",            ImpactTableIndex::SHOTGUN_EXIT,            true },
+        ImpactTypeDef{"grenade_bounce",          ImpactTableIndex::GRENADE_BOUNCE,          false},
+        ImpactTypeDef{"grenade_explode",         ImpactTableIndex::GRENADE_EXPLODE,         false},
+        ImpactTypeDef{"rocket_explode",          ImpactTableIndex::ROCKET_EXPLODE,          false},
+        ImpactTypeDef{"rocket_explode_xtreme",   ImpactTableIndex::ROCKET_EXPLODE_XTREME,   false},
+        ImpactTypeDef{"projectile_dud",          ImpactTableIndex::PROJECTILE_DUD,          false},
+        ImpactTypeDef{"physics_impact",          ImpactTableIndex::PHYSICS_IMPACT,          false},
+        ImpactTypeDef{"mortar_shell",            ImpactTableIndex::MORTAR_SHELL,            false},
+        ImpactTypeDef{"tank_shell",              ImpactTableIndex::TANK_SHELL,              false},
+        ImpactTypeDef{"bolt",                    ImpactTableIndex::BOLT,                    true },
+        ImpactTypeDef{"blade",                   ImpactTableIndex::BLADE,                   true },
     };
 #endif
 
@@ -108,10 +146,31 @@ namespace
         return effect->name[0] == ',' ? &effect->name[1] : effect->name;
     }
 
+#ifdef FEATURE_T5
+    bool IsInternalImpactTableName(const std::string_view name)
+    {
+        return name.empty() || name == "ImpactFx";
+    }
+
+    std::string_view GetImpactTableSourceName(const std::string_view zoneName)
+    {
+        if (zoneName == "common")
+            return "void";
+
+        if (zoneName == "common_mp")
+            return "mp_maps";
+
+        if (zoneName == "common_zombie")
+            return "zombie";
+
+        return zoneName;
+    }
+#else
     bool IsCommonZone(const std::string_view zoneName)
     {
         return zoneName == "common" || zoneName == "common_mp";
     }
+#endif
 } // namespace
 
 namespace fx
@@ -132,8 +191,14 @@ namespace fx
             return;
         }
 
+#ifdef FEATURE_T5
+        const auto sourceName = IsInternalImpactTableName(asset.m_name) ? GetImpactTableSourceName(context.m_zone.m_name) : std::string_view(asset.m_name);
+        const auto isRootTable = sourceName == "void";
+        const auto mapName = sourceName;
+#else
         const auto isRootTable = asset.m_name == "void" || (asset.m_name.empty() && IsCommonZone(context.m_zone.m_name));
-        const auto mapName = asset.m_name.empty() ? context.m_zone.m_name : asset.m_name;
+        const auto mapName = asset.m_name.empty() ? std::string_view(context.m_zone.m_name) : std::string_view(asset.m_name);
+#endif
         const auto fileName = isRootTable ? "fx/iw_impacts.csv" : std::format("fx/maps/{}/iw_impacts.csv", mapName);
         const auto assetFile = context.OpenAssetFile(fileName);
         if (!assetFile)
@@ -153,15 +218,15 @@ namespace fx
                 csv.NextRow();
             };
 
-#ifdef FEATURE_T4
-            // T4 appended these surface types after the flesh entries in the stock CSV format.
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+            // T4 and T5 appended these surface types after the flesh entries in the stock CSV format.
             for (auto surfaceIndex = 0u; surfaceIndex < SURF_TYPE_PLAYER; surfaceIndex++)
 #else
             for (auto surfaceIndex = 0u; surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
 #endif
                 writeNonFleshEntry(surfaceIndex);
 
-            if (impactType.tableIndex < ImpactTableIndex::GRENADE_BOUNCE)
+            if (impactType.supportsFlesh)
             {
                 for (auto fleshIndex = 0u; fleshIndex < FLESH_TYPE_NAMES.size(); fleshIndex++)
                 {
@@ -171,7 +236,7 @@ namespace fx
                     csv.NextRow();
                 }
             }
-#ifdef FEATURE_T4
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
             for (auto surfaceIndex = static_cast<unsigned>(SURF_TYPE_PLAYER); surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
                 writeNonFleshEntry(surfaceIndex);
 #endif
