@@ -1,4 +1,19 @@
-#include "FxEffectDefWriterIW3.h"
+#options GAME(IW3, T4)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefWriter" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "T4"
+#define FEATURE_T4
+#endif
+
+// This file was templated.
+// See FxEffectDefWriter.cpp.template.
+// Do not modify, changes will be lost.
+
+#set WRITER_HEADER "\"FxEffectDefWriter" + GAME + ".h\""
+#include WRITER_HEADER
 
 #include <algorithm>
 #include <array>
@@ -11,7 +26,7 @@
 #include <string_view>
 #include <vector>
 
-using namespace IW3;
+using namespace GAME;
 
 namespace
 {
@@ -32,7 +47,7 @@ namespace
         unsigned int value;
     };
 
-    // Mirrors IW3's s_allFlagDefs table without its trailing null sentinel.
+    // Mirrors the game's s_allFlagDefs table without its trailing null sentinel.
     constexpr std::array FX_FLAG_DEFS{
         FxFlagDef{"looping",             FxFlagType::EDITOR, FX_ED_FLAG_LOOPING,                   FX_ED_FLAG_LOOPING                  },
         FxFlagDef{"useRandColor",        FxFlagType::EDITOR, FX_ED_FLAG_USE_RANDOM_COLOR,          FX_ED_FLAG_USE_RANDOM_COLOR         },
@@ -52,6 +67,9 @@ namespace
         FxFlagDef{"playOnRun",           FxFlagType::EDITOR, FX_ED_FLAG_PLAY_ON_RUN,               FX_ED_FLAG_PLAY_ON_RUN              },
         FxFlagDef{"boundingSphere",      FxFlagType::EDITOR, FX_ED_FLAG_BOUNDING_SPHERE,           FX_ED_FLAG_BOUNDING_SPHERE          },
         FxFlagDef{"useItemClip",         FxFlagType::EDITOR, FX_ED_FLAG_USE_ITEM_CLIP,             FX_ED_FLAG_USE_ITEM_CLIP            },
+#ifdef FEATURE_T4
+        FxFlagDef{"isMatureContent",     FxFlagType::NATIVE, FX_ELEM_IS_MATURE_CONTENT,            FX_ELEM_IS_MATURE_CONTENT           },
+#endif
         FxFlagDef{"disabled",            FxFlagType::EDITOR, FX_ED_FLAG_DISABLED,                  FX_ED_FLAG_DISABLED                 },
         FxFlagDef{"spawnRelative",       FxFlagType::NATIVE, FX_ELEM_SPAWN_RELATIVE_TO_EFFECT,     FX_ELEM_SPAWN_RELATIVE_TO_EFFECT    },
         FxFlagDef{"spawnFrustumCull",    FxFlagType::NATIVE, FX_ELEM_SPAWN_FRUSTUM_CULL,           FX_ELEM_SPAWN_FRUSTUM_CULL          },
@@ -75,6 +93,10 @@ namespace
         FxFlagDef{"startIndexed",        FxFlagType::ATLAS,  FX_ATLAS_START_MASK,                  FX_ATLAS_START_INDEXED              },
         FxFlagDef{"playOverLife",        FxFlagType::ATLAS,  FX_ATLAS_PLAY_OVER_LIFE,              FX_ATLAS_PLAY_OVER_LIFE             },
         FxFlagDef{"loopOnlyNTimes",      FxFlagType::ATLAS,  FX_ATLAS_LOOP_ONLY_N_TIMES,           FX_ATLAS_LOOP_ONLY_N_TIMES          },
+#ifdef FEATURE_T4
+        FxFlagDef{"flamechunk",          FxFlagType::NATIVE, FX_ELEM_FLAME_CHUNK,                  FX_ELEM_FLAME_CHUNK                 },
+        FxFlagDef{"hasReflection",       FxFlagType::NATIVE, FX_ELEM_HAS_REFLECTION,               FX_ELEM_HAS_REFLECTION              },
+#endif
     };
 
     struct ScalarGraph
@@ -307,6 +329,11 @@ namespace
 
     bool UsesSize1(const FxElemDef& elem)
     {
+#ifdef FEATURE_T4
+        if (elem.elemType == FX_ELEM_TYPE_LINE)
+            return true;
+#endif
+
         return elem.elemType == FX_ELEM_TYPE_TAIL || elem.elemType == FX_ELEM_TYPE_CLOUD
                || ((elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED || elem.elemType == FX_ELEM_TYPE_TRAIL)
                    && (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0);
@@ -314,6 +341,11 @@ namespace
 
     bool UsesScale(const FxElemDef& elem)
     {
+#ifdef FEATURE_T4
+        if (elem.elemType == FX_ELEM_TYPE_LINE)
+            return true;
+#endif
+
         return elem.elemType == FX_ELEM_TYPE_CLOUD || elem.elemType == FX_ELEM_TYPE_MODEL || elem.elemType == FX_ELEM_TYPE_SOUND;
     }
 
@@ -405,6 +437,9 @@ namespace
         case FX_ELEM_TYPE_SPRITE_BILLBOARD:
         case FX_ELEM_TYPE_SPRITE_ORIENTED:
         case FX_ELEM_TYPE_TAIL:
+#ifdef FEATURE_T4
+        case FX_ELEM_TYPE_LINE:
+#endif
         case FX_ELEM_TYPE_TRAIL:
         case FX_ELEM_TYPE_CLOUD:
             for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
@@ -446,6 +481,11 @@ namespace
         case FX_ELEM_TYPE_TAIL:
             WriteVisualArray(stream, "tail", names);
             break;
+#ifdef FEATURE_T4
+        case FX_ELEM_TYPE_LINE:
+            WriteVisualArray(stream, "line", names);
+            break;
+#endif
         case FX_ELEM_TYPE_TRAIL:
             WriteVisualArray(stream, "trail", names);
             break;
@@ -499,7 +539,8 @@ namespace
         stream << "\t};\n";
     }
 
-    class EffectDefWriter final : public fx::IEffectDefWriterIW3
+#set INTERFACE_NAME "IEffectDefWriter" + GAME
+    class EffectDefWriter final : public fx::INTERFACE_NAME
     {
     public:
         explicit EffectDefWriter(std::ostream& stream)
@@ -517,11 +558,11 @@ namespace
             // Emission elements are compiler-generated copies of referenced effects and are recreated when this source is linked.
             const auto authoredElemCount = loopingCount + oneShotCount;
             for (auto elemIndex = 0; elemIndex < authoredElemCount; elemIndex++)
-                WriteElem(effect.elemDefs[elemIndex], elemIndex < loopingCount, static_cast<unsigned>(elemIndex));
+                WriteElem(effect, effect.elemDefs[elemIndex], elemIndex < loopingCount, static_cast<unsigned>(elemIndex));
         }
 
     private:
-        void WriteElem(const FxElemDef& elem, const bool looping, const unsigned elemIndex)
+        void WriteElem(const FxEffectDef& effect, const FxElemDef& elem, const bool looping, const unsigned elemIndex)
         {
             const auto hasLocalVelocity = (elem.flags & FX_ELEM_HAS_VELOCITY_GRAPH_LOCAL) != 0;
             const auto hasWorldVelocity = (elem.flags & FX_ELEM_HAS_VELOCITY_GRAPH_WORLD) != 0;
@@ -642,6 +683,9 @@ namespace
             WriteScaledRange(m_stream, "initialRot", elem.initialRotation, 180.0f / PI);
             WriteScaledRange(m_stream, "gravity", elem.gravity, 100.0f);
             WriteRange(m_stream, "elasticity", elem.reflectionFactor);
+#ifdef FEATURE_T4
+            m_stream << "\twindinfluence " << elem.windInfluence << ";\n";
+#endif
 
             const auto atlasBehavior = static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.behavior));
             const auto atlasBehaviorFlags = GetFlagNames(FxFlagType::ATLAS, atlasBehavior);
@@ -750,7 +794,11 @@ namespace
             WriteQuotedString(m_stream, AssetName(elem.effectOnImpact.name));
             m_stream << ";\n\tfxOnDeath ";
             WriteQuotedString(m_stream, AssetName(elem.effectOnDeath.name));
-            m_stream << ";\n\tsortOrder " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.sortOrder)) << ";\n\temission ";
+            m_stream << ";\n\tsortOrder " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.sortOrder)) << ";\n";
+#ifdef FEATURE_T4
+            m_stream << "\tefPriority " << static_cast<unsigned>(static_cast<std::uint8_t>(effect.efPriority)) << ";\n";
+#endif
+            m_stream << "\temission ";
             WriteQuotedString(m_stream, AssetName(elem.effectEmitted.name));
             m_stream << ";\n";
             WriteRange(m_stream, "emitDist", elem.emitDist);
@@ -766,7 +814,9 @@ namespace
 
 namespace fx
 {
-    std::unique_ptr<IEffectDefWriterIW3> CreateEffectDefWriterIW3(std::ostream& stream)
+#set INTERFACE_NAME "IEffectDefWriter" + GAME
+#set FACTORY_NAME "CreateEffectDefWriter" + GAME
+    std::unique_ptr<INTERFACE_NAME> FACTORY_NAME(std::ostream& stream)
     {
         return std::make_unique<EffectDefWriter>(stream);
     }

@@ -1,0 +1,30 @@
+#options GAME(IW3, T4)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefWriter" + GAME + ".h"
+
+// This file was templated.
+// See FxEffectDefWriter.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+#include <memory>
+#include <ostream>
+
+namespace fx
+{
+#set INTERFACE_NAME "IEffectDefWriter" + GAME
+    class INTERFACE_NAME
+    {
+    public:
+        virtual ~INTERFACE_NAME() = default;
+
+        virtual void Write(const GAME::FxEffectDef& effect) = 0;
+    };
+
+#set FACTORY_NAME "CreateEffectDefWriter" + GAME
+    std::unique_ptr<INTERFACE_NAME> FACTORY_NAME(std::ostream& stream);
+} // namespace fx

@@ -1,0 +1,180 @@
+#options GAME(IW3, T4)
+
+#filename "Game/" + GAME + "/Fx/FxImpactTableDumper" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "T4"
+#define FEATURE_T4
+#endif
+
+// This file was templated.
+// See FxImpactTableDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#set DUMPER_HEADER "\"FxImpactTableDumper" + GAME + ".h\""
+#include DUMPER_HEADER
+
+#include "Csv/CsvStream.h"
+#set MATERIAL_CONSTANTS_HEADER "\"Game/" + GAME + "/MaterialConstants" + GAME + ".h\""
+#include MATERIAL_CONSTANTS_HEADER
+
+#include <array>
+#include <format>
+#include <string_view>
+
+using namespace GAME;
+
+namespace
+{
+    enum class ImpactTableIndex : unsigned
+    {
+        BULLET_SMALL_NORMAL,
+        BULLET_SMALL_EXIT,
+#ifdef FEATURE_T4
+        BULLET_SMALL_UNDERWATER,
+#endif
+        BULLET_LARGE_NORMAL,
+        BULLET_LARGE_EXIT,
+        SHOTGUN_NORMAL,
+        SHOTGUN_EXIT,
+        BULLET_AP_NORMAL,
+        BULLET_AP_EXIT,
+        GRENADE_BOUNCE,
+        GRENADE_EXPLODE,
+        ROCKET_EXPLODE,
+        PROJECTILE_DUD,
+#ifdef FEATURE_T4
+        MORTAR_SHELL,
+        TANK_SHELL,
+        PHYSICS_IMPACT,
+#endif
+    };
+
+    struct ImpactTypeDef
+    {
+        const char* name;
+        ImpactTableIndex tableIndex;
+    };
+
+#ifdef FEATURE_IW3
+    constexpr std::array IMPACT_TYPE_DEFS{
+        ImpactTypeDef{"bullet_small_normal", ImpactTableIndex::BULLET_SMALL_NORMAL},
+        ImpactTypeDef{"bullet_small_exit",   ImpactTableIndex::BULLET_SMALL_EXIT  },
+        ImpactTypeDef{"bullet_large_normal", ImpactTableIndex::BULLET_LARGE_NORMAL},
+        ImpactTypeDef{"bullet_large_exit",   ImpactTableIndex::BULLET_LARGE_EXIT  },
+        ImpactTypeDef{"bullet_ap_normal",    ImpactTableIndex::BULLET_AP_NORMAL   },
+        ImpactTypeDef{"bullet_ap_exit",      ImpactTableIndex::BULLET_AP_EXIT     },
+        ImpactTypeDef{"shotgun_normal",      ImpactTableIndex::SHOTGUN_NORMAL     },
+        ImpactTypeDef{"shotgun_exit",        ImpactTableIndex::SHOTGUN_EXIT       },
+        ImpactTypeDef{"grenade_bounce",      ImpactTableIndex::GRENADE_BOUNCE     },
+        ImpactTypeDef{"grenade_explode",     ImpactTableIndex::GRENADE_EXPLODE    },
+        ImpactTypeDef{"rocket_explode",      ImpactTableIndex::ROCKET_EXPLODE     },
+        ImpactTypeDef{"projectile_dud",      ImpactTableIndex::PROJECTILE_DUD     },
+    };
+#elif defined(FEATURE_T4)
+    constexpr std::array IMPACT_TYPE_DEFS{
+        ImpactTypeDef{"bullet_small_normal",     ImpactTableIndex::BULLET_SMALL_NORMAL    },
+        ImpactTypeDef{"bullet_small_exit",       ImpactTableIndex::BULLET_SMALL_EXIT      },
+        ImpactTypeDef{"bullet_small_underwater", ImpactTableIndex::BULLET_SMALL_UNDERWATER},
+        ImpactTypeDef{"bullet_large_normal",     ImpactTableIndex::BULLET_LARGE_NORMAL    },
+        ImpactTypeDef{"bullet_large_exit",       ImpactTableIndex::BULLET_LARGE_EXIT      },
+        ImpactTypeDef{"bullet_ap_normal",        ImpactTableIndex::BULLET_AP_NORMAL       },
+        ImpactTypeDef{"bullet_ap_exit",          ImpactTableIndex::BULLET_AP_EXIT         },
+        ImpactTypeDef{"shotgun_normal",          ImpactTableIndex::SHOTGUN_NORMAL         },
+        ImpactTypeDef{"shotgun_exit",            ImpactTableIndex::SHOTGUN_EXIT           },
+        ImpactTypeDef{"grenade_bounce",          ImpactTableIndex::GRENADE_BOUNCE         },
+        ImpactTypeDef{"grenade_explode",         ImpactTableIndex::GRENADE_EXPLODE        },
+        ImpactTypeDef{"rocket_explode",          ImpactTableIndex::ROCKET_EXPLODE         },
+        ImpactTypeDef{"projectile_dud",          ImpactTableIndex::PROJECTILE_DUD         },
+        ImpactTypeDef{"physics_impact",          ImpactTableIndex::PHYSICS_IMPACT         },
+        ImpactTypeDef{"mortar_shell",            ImpactTableIndex::MORTAR_SHELL           },
+        ImpactTypeDef{"tank_shell",              ImpactTableIndex::TANK_SHELL             },
+    };
+#endif
+
+    constexpr std::array FLESH_TYPE_NAMES{
+        "flesh_body_nonfatal",
+        "flesh_body_fatal",
+        "flesh_head_nonfatal",
+        "flesh_head_fatal",
+    };
+
+    const char* EffectName(const FxEffectDef* effect)
+    {
+        if (!effect || !effect->name)
+            return "";
+
+        return effect->name[0] == ',' ? &effect->name[1] : effect->name;
+    }
+
+    bool IsCommonZone(const std::string_view zoneName)
+    {
+        return zoneName == "common" || zoneName == "common_mp";
+    }
+} // namespace
+
+namespace fx
+{
+#set CLASS_NAME "ImpactTableDumper" + GAME
+    bool CLASS_NAME::ShouldDump(const XAssetInfo<AssetImpactFx::Type>& asset)
+    {
+        // The linker creates this special asset without reading a CSV file.
+        return asset.m_name != "default";
+    }
+
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImpactFx::Type>& asset)
+    {
+        const auto* impactTable = asset.Asset();
+        if (!impactTable->table)
+        {
+            con::error("FxImpactTable \"{}\" has no impact entries", asset.m_name);
+            return;
+        }
+
+        const auto isRootTable = asset.m_name == "void" || (asset.m_name.empty() && IsCommonZone(context.m_zone.m_name));
+        const auto mapName = asset.m_name.empty() ? context.m_zone.m_name : asset.m_name;
+        const auto fileName = isRootTable ? "fx/iw_impacts.csv" : std::format("fx/maps/{}/iw_impacts.csv", mapName);
+        const auto assetFile = context.OpenAssetFile(fileName);
+        if (!assetFile)
+            return;
+
+        *assetFile << "# Decompiled from the resolved impact table.\n";
+        CsvOutputStream csv(*assetFile);
+        for (const auto& impactType : IMPACT_TYPE_DEFS)
+        {
+            const auto impactIndex = static_cast<unsigned>(impactType.tableIndex);
+            const auto& entry = impactTable->table[impactIndex];
+            const auto writeNonFleshEntry = [&](const auto surfaceIndex)
+            {
+                csv.WriteColumn(impactType.name);
+                csv.WriteColumn(surfaceTypeNames[surfaceIndex]);
+                csv.WriteColumn(EffectName(entry.nonflesh[surfaceIndex]));
+                csv.NextRow();
+            };
+
+#ifdef FEATURE_T4
+            // T4 appended these surface types after the flesh entries in the stock CSV format.
+            for (auto surfaceIndex = 0u; surfaceIndex < SURF_TYPE_PLAYER; surfaceIndex++)
+#else
+            for (auto surfaceIndex = 0u; surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
+#endif
+                writeNonFleshEntry(surfaceIndex);
+
+            if (impactType.tableIndex < ImpactTableIndex::GRENADE_BOUNCE)
+            {
+                for (auto fleshIndex = 0u; fleshIndex < FLESH_TYPE_NAMES.size(); fleshIndex++)
+                {
+                    csv.WriteColumn(impactType.name);
+                    csv.WriteColumn(FLESH_TYPE_NAMES[fleshIndex]);
+                    csv.WriteColumn(EffectName(entry.flesh[fleshIndex]));
+                    csv.NextRow();
+                }
+            }
+#ifdef FEATURE_T4
+            for (auto surfaceIndex = static_cast<unsigned>(SURF_TYPE_PLAYER); surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
+                writeNonFleshEntry(surfaceIndex);
+#endif
+        }
+    }
+} // namespace fx

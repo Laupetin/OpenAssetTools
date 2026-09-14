@@ -117,10 +117,16 @@ namespace
         defaultEffect.name = ",impacts/default_hit";
         FxEffectDef fleshEffect{};
         fleshEffect.name = "impacts/flesh_hit";
+        FxEffectDef shotgunEffect{};
+        shotgunEffect.name = "impacts/shotgun";
+        FxEffectDef armorPiercingEffect{};
+        armorPiercingEffect.name = "impacts/armor_piercing";
 
         FxImpactEntry entries[12]{};
         entries[0].nonflesh[0] = &defaultEffect;
         entries[0].flesh[3] = &fleshEffect;
+        entries[4].nonflesh[SURF_TYPE_DEFAULT] = &shotgunEffect;
+        entries[6].nonflesh[SURF_TYPE_DEFAULT] = &armorPiercingEffect;
 
         SECTION("An unnamed compiled map table uses the zone name")
         {
@@ -140,7 +146,14 @@ namespace
             const auto text = dumpedFile->AsString();
             REQUIRE(text.find("bullet_small_normal,default,impacts/default_hit\n") != std::string::npos);
             REQUIRE(text.find("bullet_small_normal,flesh_head_fatal,impacts/flesh_hit\n") != std::string::npos);
+            REQUIRE(text.find("bullet_ap_normal,default,impacts/armor_piercing\n") != std::string::npos);
+            REQUIRE(text.find("shotgun_normal,default,impacts/shotgun\n") != std::string::npos);
             REQUIRE(text.find("projectile_dud,paintedmetal,\n") != std::string::npos);
+
+            const auto armorPiercingPosition = text.find("bullet_ap_normal,default,");
+            const auto shotgunPosition = text.find("shotgun_normal,default,");
+            REQUIRE(armorPiercingPosition < shotgunPosition);
+            REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,") == std::string::npos);
         }
 
         SECTION("An unnamed compiled common table uses the root CSV path")

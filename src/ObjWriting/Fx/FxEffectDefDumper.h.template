@@ -1,0 +1,23 @@
+#options GAME(IW3, T4)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefDumper" + GAME + ".h"
+
+// This file was templated.
+// See FxEffectDefDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+namespace fx
+{
+#set CLASS_NAME "EffectDefDumper" + GAME
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetFx>
+    {
+    protected:
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetFx::Type>& asset) override;
+    };
+} // namespace fx

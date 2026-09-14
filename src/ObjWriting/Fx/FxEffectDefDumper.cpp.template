@@ -1,0 +1,39 @@
+#options GAME(IW3, T4)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefDumper" + GAME + ".cpp"
+
+// This file was templated.
+// See FxEffectDefDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#set DUMPER_HEADER "\"FxEffectDefDumper" + GAME + ".h\""
+#include DUMPER_HEADER
+
+#set WRITER_HEADER "\"FxEffectDefWriter" + GAME + ".h\""
+#include WRITER_HEADER
+
+#include <format>
+
+using namespace GAME;
+
+namespace fx
+{
+#set CLASS_NAME "EffectDefDumper" + GAME
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetFx::Type>& asset)
+    {
+        const auto* effect = asset.Asset();
+        if ((effect->elemDefCountLooping > 0 || effect->elemDefCountOneShot > 0) && !effect->elemDefs)
+        {
+            con::error("FxEffectDef \"{}\" has element counts but no element definitions", asset.m_name);
+            return;
+        }
+
+        const auto assetFile = context.OpenAssetFile(std::format("fx/{}.efx", asset.m_name));
+        if (!assetFile)
+            return;
+
+#set FACTORY_NAME "CreateEffectDefWriter" + GAME
+        const auto writer = FACTORY_NAME(*assetFile);
+        writer->Write(*effect);
+    }
+} // namespace fx
