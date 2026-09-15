@@ -23,6 +23,7 @@
 #include "Weapon/FlameTableLoaderT5.h"
 #include "Weapon/WeaponGdtLoaderT5.h"
 #include "Weapon/WeaponRawLoaderT5.h"
+#include "FxEffect/FxEffectLoaderT5.h"
 
 #include <memory>
 
@@ -140,7 +141,7 @@ namespace
         collection.AddAssetCreator(weapon::CreateRawLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateGdtLoaderT5(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
+        collection.AddAssetCreator(fx_effect::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
         collection.AddAssetCreator(raw_file::CreateLoaderT5(memory, searchPath));
         collection.AddAssetCreator(string_table::CreateLoaderT5(memory, searchPath));
