@@ -3590,12 +3590,12 @@ namespace IW3
 
     struct FxElemAtlas
     {
-        char behavior;
-        char index;
-        char fps;
-        char loopCount;
-        char colIndexBits;
-        char rowIndexBits;
+        unsigned char behavior;
+        unsigned char index;
+        unsigned char fps;
+        unsigned char loopCount;
+        unsigned char colIndexBits;
+        unsigned char rowIndexBits;
         int16_t entryCount;
     };
 
@@ -3619,7 +3619,7 @@ namespace IW3
 
     struct FxElemVisualState
     {
-        char color[4];
+        unsigned char color[4];
         float rotationDelta;
         float rotationTotal;
         float size[2];
@@ -3715,10 +3715,10 @@ namespace IW3
         FxFloatRange gravity;
         FxFloatRange reflectionFactor;
         FxElemAtlas atlas;
-        char elemType;
-        char visualCount;
-        char velIntervalCount;
-        char visStateIntervalCount;
+        unsigned char elemType;
+        unsigned char visualCount;
+        unsigned char velIntervalCount;
+        unsigned char visStateIntervalCount;
         FxElemVelStateSample* velSamples;
         FxElemVisStateSample* visSamples;
         FxElemDefVisuals visuals;
@@ -3730,10 +3730,10 @@ namespace IW3
         FxFloatRange emitDist;
         FxFloatRange emitDistVariance;
         FxTrailDef* trailDef;
-        char sortOrder;
-        char lightingFrac;
-        char useItemClip;
-        char unused[1];
+        unsigned char sortOrder;
+        unsigned char lightingFrac;
+        unsigned char useItemClip;
+        unsigned char unused[1];
     };
 
     struct FxEffectDef

@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <span>
@@ -169,7 +168,7 @@ namespace
 
     ScalarGraph CreateVelocityGraph(const FxElemDef& elem, const bool world, const unsigned component)
     {
-        const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.velIntervalCount)));
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.velIntervalCount));
         ScalarGraph result{
             .scale = 0.0f,
             .base = std::vector<float>(intervalCount + 1u),
@@ -206,7 +205,7 @@ namespace
     ScalarGraph CreateVisualGraph(
         const FxElemDef& elem, const float valueScale, const bool signedValues, BaseAccessor baseAccessor, AmplitudeAccessor amplitudeAccessor)
     {
-        const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)));
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
         ScalarGraph result{
             .scale = 1.0f,
             .base = std::vector<float>(intervalCount + 1u),
@@ -269,7 +268,7 @@ namespace
         if (!elem.visSamples)
             return false;
 
-        const auto intervalCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount));
+        const auto intervalCount = elem.visStateIntervalCount;
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
             if (accessor(elem.visSamples[sampleIndex].amplitude) != 0.0f)
@@ -279,15 +278,15 @@ namespace
         return false;
     }
 
-    fx::RgbaColor UnpackVertexColor(const char* color)
+    fx::RgbaColor UnpackVertexColor(const unsigned char* color)
     {
         constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
 
         return {
-            .r = static_cast<std::uint8_t>(color[2]) * BYTE_TO_FLOAT,
-            .g = static_cast<std::uint8_t>(color[1]) * BYTE_TO_FLOAT,
-            .b = static_cast<std::uint8_t>(color[0]) * BYTE_TO_FLOAT,
-            .a = static_cast<std::uint8_t>(color[3]) * BYTE_TO_FLOAT,
+            .r = color[2] * BYTE_TO_FLOAT,
+            .g = color[1] * BYTE_TO_FLOAT,
+            .b = color[0] * BYTE_TO_FLOAT,
+            .a = color[3] * BYTE_TO_FLOAT,
         };
     }
 
@@ -296,7 +295,7 @@ namespace
         if (!elem.visSamples)
             return false;
 
-        const auto intervalCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount));
+        const auto intervalCount = elem.visStateIntervalCount;
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
             const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
@@ -313,7 +312,7 @@ namespace
         if (!elem.visSamples)
             return false;
 
-        const auto intervalCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount));
+        const auto intervalCount = elem.visStateIntervalCount;
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
             const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
@@ -416,7 +415,7 @@ namespace
 
     void WriteColorGraph(std::ostream& stream, const FxElemDef& elem)
     {
-        const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)));
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
         stream << "\tcolorGraph 1\n\t{\n";
         for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
         {
@@ -439,7 +438,7 @@ namespace
 
     void WriteAlphaGraph(std::ostream& stream, const FxElemDef& elem)
     {
-        const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)));
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
         stream << "\talphaGraph 1\n\t{\n";
         for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
         {
@@ -462,7 +461,7 @@ namespace
 
     const FxElemVisuals* VisualArray(const FxElemDef& elem)
     {
-        const auto visualCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visualCount));
+        const auto visualCount = elem.visualCount;
         if (visualCount == 0u)
             return nullptr;
         return visualCount == 1u ? &elem.visuals.instance : elem.visuals.array;
@@ -482,7 +481,7 @@ namespace
 
     void WriteVisuals(std::ostream& stream, const FxElemDef& elem)
     {
-        const auto visualCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visualCount));
+        const auto visualCount = elem.visualCount;
         const auto* visuals = VisualArray(elem);
         std::vector<std::string> names;
         names.reserve(visualCount);
@@ -603,6 +602,7 @@ namespace
     }
 
 #set INTERFACE_NAME "IEffectDefWriter" + GAME
+
     class EffectDefWriter final : public fx::INTERFACE_NAME
     {
     public:
@@ -616,9 +616,9 @@ namespace
             m_stream << std::setprecision(std::numeric_limits<float>::max_digits10);
 #ifdef FEATURE_T5
             m_stream << "iwfx 3\n\n";
-            const auto effectFlags = GetFlagNames(::fx::FxFlagType::EFFECT, static_cast<unsigned>(static_cast<std::uint8_t>(effect.flags)));
+            const auto effectFlags = GetFlagNames(::fx::FxFlagType::EFFECT, effect.flags);
             WriteFlags(m_stream, "efFlags", effectFlags);
-            m_stream << "\tefPriority " << static_cast<unsigned>(static_cast<std::uint8_t>(effect.efPriority)) << ";\n";
+            m_stream << "\tefPriority " << static_cast<unsigned>(effect.efPriority) << ";\n";
             m_stream << "\tefBoundingBoxDim " << effect.boundingBoxDim[0] << ' ' << effect.boundingBoxDim[1] << ' ' << effect.boundingBoxDim[2] << ";\n";
             m_stream << "\tefBoundingBoxCentre " << effect.boundingSphere[0] << ' ' << effect.boundingSphere[1] << ' ' << effect.boundingSphere[2] << ";\n";
 #else
@@ -640,7 +640,7 @@ namespace
             const auto hasWorldVelocity = (elem.flags & FX_ELEM_HAS_VELOCITY_GRAPH_WORLD) != 0;
             const auto graph0IsWorld = !hasLocalVelocity && hasWorldVelocity;
             const auto graph1IsWorld = hasLocalVelocity && hasWorldVelocity;
-            const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.velIntervalCount)));
+            const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.velIntervalCount));
 
             const auto graph0Random = (hasLocalVelocity || hasWorldVelocity)
                                       && (HasVelocityAmplitude(elem.velSamples, intervalCount, graph0IsWorld, 0u)
@@ -769,19 +769,19 @@ namespace
             m_stream << "\twindinfluence " << elem.windInfluence << ";\n";
 #endif
 
-            const auto atlasBehavior = static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.behavior));
+            const auto atlasBehavior = elem.atlas.behavior;
             const auto atlasBehaviorFlags = GetFlagNames(::fx::FxFlagType::ATLAS, atlasBehavior);
             WriteFlags(m_stream, "atlasBehavior", atlasBehaviorFlags);
-            m_stream << "\tatlasIndex " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.index)) << ";\n";
-            m_stream << "\tatlasFps " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.fps)) << ";\n";
-            const auto atlasLoopCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.loopCount));
+            m_stream << "\tatlasIndex " << static_cast<unsigned>(elem.atlas.index) << ";\n";
+            m_stream << "\tatlasFps " << static_cast<unsigned>(elem.atlas.fps) << ";\n";
+            const auto atlasLoopCount = elem.atlas.loopCount;
             m_stream << "\tatlasLoopCount " << (atlasLoopCount > 0u ? atlasLoopCount - 1u : 0u) << ";\n";
-            m_stream << "\tatlasColIndexBits " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.colIndexBits)) << ";\n";
-            m_stream << "\tatlasRowIndexBits " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.atlas.rowIndexBits)) << ";\n";
+            m_stream << "\tatlasColIndexBits " << static_cast<unsigned>(elem.atlas.colIndexBits) << ";\n";
+            m_stream << "\tatlasRowIndexBits " << static_cast<unsigned>(elem.atlas.rowIndexBits) << ";\n";
 #ifdef FEATURE_T5
             constexpr auto ATLAS_ENTRY_COUNT_MASK = 0x1FFu;
             constexpr auto ATLAS_INDEX_RANGE_SHIFT = 9u;
-            const auto entryCountAndIndexRange = static_cast<unsigned>(elem.atlas.entryCountAndIndexRange);
+            const auto entryCountAndIndexRange = elem.atlas.entryCountAndIndexRange;
             m_stream << "\tatlasEntryCount " << (entryCountAndIndexRange & ATLAS_ENTRY_COUNT_MASK) << ";\n";
             m_stream << "\tatlasIndexRange " << (entryCountAndIndexRange >> ATLAS_INDEX_RANGE_SHIFT) << ";\n";
 #else
@@ -806,8 +806,7 @@ namespace
                 }
             }
 
-            const auto rotationValueScale =
-                static_cast<float>(std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)))) * 1000.0f * 180.0f / PI;
+            const auto rotationValueScale = static_cast<float>(std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount))) * 1000.0f * 180.0f / PI;
             WriteScalarGraph(m_stream,
                              "rotGraph",
                              CreateVisualGraph(
@@ -867,7 +866,7 @@ namespace
             WriteColorGraph(m_stream, elem);
             WriteAlphaGraph(m_stream, elem);
 
-            m_stream << "\tlightingFrac " << static_cast<float>(static_cast<std::uint8_t>(elem.lightingFrac)) / 255.0f << ";\n";
+            m_stream << "\tlightingFrac " << static_cast<float>(elem.lightingFrac) / 255.0f << ";\n";
             if (hasCollisionBounds)
             {
                 const std::array collOffset{
@@ -888,9 +887,9 @@ namespace
             WriteQuotedString(m_stream, AssetName(elem.effectOnImpact.name));
             m_stream << ";\n\tfxOnDeath ";
             WriteQuotedString(m_stream, AssetName(elem.effectOnDeath.name));
-            m_stream << ";\n\tsortOrder " << static_cast<unsigned>(static_cast<std::uint8_t>(elem.sortOrder)) << ";\n";
+            m_stream << ";\n\tsortOrder " << static_cast<unsigned>(elem.sortOrder) << ";\n";
 #ifdef FEATURE_T4
-            m_stream << "\tefPriority " << static_cast<unsigned>(static_cast<std::uint8_t>(effect.efPriority)) << ";\n";
+            m_stream << "\tefPriority " << static_cast<unsigned>(effect.efPriority) << ";\n";
 #endif
             m_stream << "\temission ";
             WriteQuotedString(m_stream, AssetName(elem.effectEmitted.name));
@@ -943,6 +942,7 @@ namespace fx
 {
 #set INTERFACE_NAME "IEffectDefWriter" + GAME
 #set FACTORY_NAME "CreateEffectDefWriter" + GAME
+
     std::unique_ptr<INTERFACE_NAME> FACTORY_NAME(std::ostream& stream)
     {
         return std::make_unique<EffectDefWriter>(stream);

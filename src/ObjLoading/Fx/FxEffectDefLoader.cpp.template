@@ -368,12 +368,12 @@ namespace
         return static_cast<unsigned char>(std::clamp(static_cast<int>(std::floor(value * 255.0f + 0.5f)), 0, 255));
     }
 
-    void PackVertexColor(const fx::RgbaColor& color, char* destination)
+    void PackVertexColor(const fx::RgbaColor& color, unsigned char* destination)
     {
-        destination[0] = static_cast<char>(PackColorComponent(color.b));
-        destination[1] = static_cast<char>(PackColorComponent(color.g));
-        destination[2] = static_cast<char>(PackColorComponent(color.r));
-        destination[3] = static_cast<char>(PackColorComponent(color.a));
+        destination[0] = PackColorComponent(color.b);
+        destination[1] = PackColorComponent(color.g);
+        destination[2] = PackColorComponent(color.r);
+        destination[3] = PackColorComponent(color.a);
     }
 
 #ifdef FEATURE_T5
@@ -412,7 +412,7 @@ namespace
     }
 #endif
 
-    char RuntimeElementType(const fx::FxEditorElemType type)
+    unsigned char RuntimeElementType(const fx::FxEditorElemType type)
     {
         switch (type)
         {
@@ -525,10 +525,10 @@ namespace
             }
 
 #ifdef FEATURE_T5
-            effect->efPriority = static_cast<char>(editorEffect.priority);
+            effect->efPriority = static_cast<unsigned char>(editorEffect.priority);
             auto effectFlags = editorEffect.flags & ~(FX_EFFECT_HAS_LIGHTING | FX_EFFECT_HAS_MARKS);
 #elif defined(FEATURE_T4)
-            effect->efPriority = static_cast<char>(editorEffect.priority);
+            effect->efPriority = static_cast<unsigned char>(editorEffect.priority);
             auto effectFlags = 0u;
 #else
             auto effectFlags = 0u;
@@ -540,7 +540,7 @@ namespace
 #ifdef FEATURE_T5
                 if (effect->elemDefs[index].elemType == FX_ELEM_TYPE_DECAL)
                 {
-                    const auto count = static_cast<unsigned char>(effect->elemDefs[index].visualCount);
+                    const auto count = effect->elemDefs[index].visualCount;
                     for (auto visualIndex = 0u; visualIndex < count; visualIndex++)
                     {
                         const auto* material = effect->elemDefs[index].visuals.markArray[visualIndex].materials[1];
@@ -625,7 +625,7 @@ namespace
 
         std::expected<void, std::string> ConvertVisuals(const fx::FxEditorElem& source, FxElemDef& destination)
         {
-            destination.visualCount = static_cast<char>(source.visuals.size());
+            destination.visualCount = static_cast<unsigned char>(source.visuals.size());
             const auto count = source.visuals.size();
             if (source.type == fx::FxEditorElemType::LIGHT || source.type == fx::FxEditorElemType::SPOT_LIGHT)
             {
@@ -715,28 +715,27 @@ namespace
             if (!UsesAtlas(source.type) || source.visuals.empty())
                 return;
 
-            destination.atlas.behavior = static_cast<char>(source.atlasBehavior);
-            destination.atlas.index = static_cast<char>(source.atlasIndex);
-            destination.atlas.fps = static_cast<char>(source.atlasFps);
-            destination.atlas.loopCount = static_cast<char>(source.atlasLoopCount + 1);
-            destination.atlas.colIndexBits = static_cast<char>(source.atlasColIndexBits);
-            destination.atlas.rowIndexBits = static_cast<char>(source.atlasRowIndexBits);
+            destination.atlas.behavior = static_cast<unsigned char>(source.atlasBehavior);
+            destination.atlas.index = static_cast<unsigned char>(source.atlasIndex);
+            destination.atlas.fps = static_cast<unsigned char>(source.atlasFps);
+            destination.atlas.loopCount = static_cast<unsigned char>(source.atlasLoopCount + 1);
+            destination.atlas.colIndexBits = static_cast<unsigned char>(source.atlasColIndexBits);
+            destination.atlas.rowIndexBits = static_cast<unsigned char>(source.atlasRowIndexBits);
 
             const auto* visuals = source.visuals.size() == 1u ? &destination.visuals.instance : destination.visuals.array;
             const auto* material = visuals ? visuals[0].material : nullptr;
             if (material)
             {
                 destination.atlas.rowIndexBits = 0;
-                while ((1u << static_cast<unsigned char>(destination.atlas.rowIndexBits)) < material->info.textureAtlasRowCount)
+                while ((1u << destination.atlas.rowIndexBits) < material->info.textureAtlasRowCount)
                     destination.atlas.rowIndexBits++;
                 destination.atlas.colIndexBits = 0;
-                while ((1u << static_cast<unsigned char>(destination.atlas.colIndexBits)) < material->info.textureAtlasColumnCount)
+                while ((1u << destination.atlas.colIndexBits) < material->info.textureAtlasColumnCount)
                     destination.atlas.colIndexBits++;
             }
 
 #ifdef FEATURE_T5
-            const auto entryCount =
-                1u << (static_cast<unsigned char>(destination.atlas.colIndexBits) + static_cast<unsigned char>(destination.atlas.rowIndexBits));
+            const auto entryCount = 1u << (destination.atlas.colIndexBits + destination.atlas.rowIndexBits);
             const auto indexRange = static_cast<unsigned>(std::max(source.atlasIndexRange, 1));
             destination.atlas.entryCountAndIndexRange = static_cast<std::uint16_t>(entryCount | ((indexRange & 0x7Fu) << 9u));
 #else
@@ -746,7 +745,7 @@ namespace
 
         void SampleVelocityFrame(const fx::FxEditorElem& source, FxElemDef& destination, const bool world)
         {
-            const auto intervalCount = static_cast<unsigned char>(destination.velIntervalCount);
+            const auto intervalCount = destination.velIntervalCount;
             const std::array useVelocity{
                 (source.editorFlags & FX_ED_FLAG_ABSOLUTE_VELOCITY_0) == (world ? FX_ED_FLAG_ABSOLUTE_VELOCITY_0 : 0u),
                 (source.editorFlags & FX_ED_FLAG_ABSOLUTE_VELOCITY_1) == (world ? FX_ED_FLAG_ABSOLUTE_VELOCITY_1 : 0u),
@@ -852,7 +851,7 @@ namespace
 
         void SampleVisualState(const fx::FxEditorElem& source, FxElemDef& destination) const
         {
-            const auto intervalCount = static_cast<unsigned char>(destination.visStateIntervalCount);
+            const auto intervalCount = destination.visStateIntervalCount;
             if (intervalCount == 0u)
                 return;
 
@@ -1076,8 +1075,8 @@ namespace
             const auto intervalLimit = std::min(MAX_SAMPLE_INTERVAL_COUNT, (source.lifeSpanMsec.base + source.lifeSpanMsec.amplitude / 2) / 100);
             const auto velocitySampleCount = DecideVelocitySampleCount(source, intervalLimit);
             const auto visualSampleCount = DecideVisualSampleCount(source, intervalLimit);
-            destination.velIntervalCount = static_cast<char>(velocitySampleCount - 1);
-            destination.visStateIntervalCount = static_cast<char>(visualSampleCount > 0 ? visualSampleCount - 1 : 0);
+            destination.velIntervalCount = static_cast<unsigned char>(velocitySampleCount - 1);
+            destination.visStateIntervalCount = static_cast<unsigned char>(visualSampleCount > 0 ? visualSampleCount - 1 : 0);
             destination.velSamples = m_memory.Alloc<FxElemVelStateSample>(velocitySampleCount);
             if (visualSampleCount > 0)
                 destination.visSamples = m_memory.Alloc<FxElemVisStateSample>(visualSampleCount);
@@ -1085,7 +1084,7 @@ namespace
             SampleVelocityFrame(source, destination, true);
             SampleVisualState(source, destination);
 
-            destination.lightingFrac = static_cast<char>(std::clamp(static_cast<int>(source.lightingFrac * 255.0f), 0, 255));
+            destination.lightingFrac = static_cast<unsigned char>(std::clamp(static_cast<int>(source.lightingFrac * 255.0f), 0, 255));
 #ifndef FEATURE_T5
             destination.useItemClip = (source.editorFlags & FX_ED_FLAG_USE_ITEM_CLIP) != 0u;
 #endif
@@ -1130,7 +1129,7 @@ namespace
             auto trailResult = ConvertTrail(source, destination);
             if (!trailResult)
                 return std::unexpected(std::move(trailResult).error());
-            destination.sortOrder = static_cast<char>(std::clamp(source.sortOrder, 0, 255));
+            destination.sortOrder = static_cast<unsigned char>(std::clamp(source.sortOrder, 0, 255));
 
 #ifdef FEATURE_T5
             destination.alphaFadeTimeMsec = static_cast<std::uint16_t>(source.alphaFadeTimeMsec);
@@ -1163,17 +1162,17 @@ namespace
             if ((destination.flags & FX_ELEM_RUN_MASK) == FX_ELEM_RUN_RELATIVE_TO_SPAWN)
                 destination.flags &= ~FX_ELEM_RUN_MASK;
 
-            const auto velocitySampleCount = static_cast<unsigned char>(source.velIntervalCount) + 1u;
+            const auto velocitySampleCount = source.velIntervalCount + 1u;
             destination.velSamples = m_memory.Alloc<FxElemVelStateSample>(velocitySampleCount);
             std::memcpy(destination.velSamples, source.velSamples, sizeof(FxElemVelStateSample) * velocitySampleCount);
-            const auto visualSampleCount = source.visStateIntervalCount == 0 ? 0u : static_cast<unsigned char>(source.visStateIntervalCount) + 1u;
+            const auto visualSampleCount = source.visStateIntervalCount == 0 ? 0u : source.visStateIntervalCount + 1u;
             if (visualSampleCount > 0u)
             {
                 destination.visSamples = m_memory.Alloc<FxElemVisStateSample>(visualSampleCount);
                 std::memcpy(destination.visSamples, source.visSamples, sizeof(FxElemVisStateSample) * visualSampleCount);
             }
 
-            const auto visualCount = static_cast<unsigned char>(source.visualCount);
+            const auto visualCount = source.visualCount;
             if (source.elemType == FX_ELEM_TYPE_DECAL && visualCount > 0u)
             {
                 destination.visuals.markArray = m_memory.Alloc<FxElemMarkVisuals>(visualCount);
@@ -1197,10 +1196,10 @@ namespace
             for (auto index = 0; index < elementCount; index++)
             {
                 const auto& element = effect.elemDefs[index];
-                size += sizeof(FxElemVelStateSample) * (static_cast<unsigned char>(element.velIntervalCount) + 1u);
+                size += sizeof(FxElemVelStateSample) * (element.velIntervalCount + 1u);
                 if (element.visStateIntervalCount != 0)
-                    size += sizeof(FxElemVisStateSample) * (static_cast<unsigned char>(element.visStateIntervalCount) + 1u);
-                const auto visualCount = static_cast<unsigned char>(element.visualCount);
+                    size += sizeof(FxElemVisStateSample) * (element.visStateIntervalCount + 1u);
+                const auto visualCount = element.visualCount;
                 if (element.elemType == FX_ELEM_TYPE_DECAL)
                     size += sizeof(FxElemMarkVisuals) * visualCount;
                 else if (visualCount > 1u)

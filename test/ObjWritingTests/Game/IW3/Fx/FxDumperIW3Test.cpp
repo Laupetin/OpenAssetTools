@@ -28,13 +28,13 @@ namespace
         for (auto& sample : visualSamples)
         {
             sample.base.color[0] = 64;
-            sample.base.color[1] = -128;
-            sample.base.color[2] = -1;
+            sample.base.color[1] = 128;
+            sample.base.color[2] = 255;
             sample.base.color[3] = 127;
-            sample.amplitude.color[0] = -128;
-            sample.amplitude.color[1] = -128;
-            sample.amplitude.color[2] = -1;
-            sample.amplitude.color[3] = -1;
+            sample.amplitude.color[0] = 128;
+            sample.amplitude.color[1] = 128;
+            sample.amplitude.color[2] = 255;
+            sample.amplitude.color[3] = 255;
             sample.base.size[0] = 2.0f;
             sample.amplitude.size[0] = 1.0f;
             sample.base.size[1] = 4.0f;
@@ -50,7 +50,7 @@ namespace
         elem.spawnAngles[0] = {1.57079632679489661923f, 0.0f};
         elem.angularVelocity[1] = {0.00314159265358979323846f, 0.0f};
         elem.gravity = {1.0f, 0.5f};
-        elem.atlas.behavior = static_cast<char>(FX_ATLAS_START_RANDOM | FX_ATLAS_PLAY_OVER_LIFE | FX_ATLAS_LOOP_ONLY_N_TIMES);
+        elem.atlas.behavior = static_cast<unsigned char>(FX_ATLAS_START_RANDOM | FX_ATLAS_PLAY_OVER_LIFE | FX_ATLAS_LOOP_ONLY_N_TIMES);
         elem.atlas.loopCount = 3;
         elem.atlas.entryCount = 4;
         elem.elemType = FX_ELEM_TYPE_SPRITE_BILLBOARD;
@@ -68,7 +68,7 @@ namespace
         elem.collMaxs[2] = 1.0f;
         elem.effectOnImpact.name = ",impacts/on_touch";
         elem.effectEmitted.name = ",smoke/emitted";
-        elem.lightingFrac = -128;
+        elem.lightingFrac = 128;
         elem.useItemClip = 1;
 
         FxEffectDef effect{};

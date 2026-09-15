@@ -5090,12 +5090,12 @@ namespace T5
 
     struct FxElemAtlas
     {
-        char behavior;
-        char index;
-        char fps;
-        char loopCount;
-        char colIndexBits;
-        char rowIndexBits;
+        unsigned char behavior;
+        unsigned char index;
+        unsigned char fps;
+        unsigned char loopCount;
+        unsigned char colIndexBits;
+        unsigned char rowIndexBits;
         uint16_t entryCountAndIndexRange;
     };
 
@@ -5113,7 +5113,7 @@ namespace T5
 
     struct FxElemVisualState
     {
-        char color[4];
+        unsigned char color[4];
         float rotationDelta;
         float rotationTotal;
         float size[2];
@@ -5230,10 +5230,10 @@ namespace T5
         FxFloatRange reflectionFactor;
         FxElemAtlas atlas;
         float windInfluence;
-        char elemType;
-        char visualCount;
-        char velIntervalCount;
-        char visStateIntervalCount;
+        unsigned char elemType;
+        unsigned char visualCount;
+        unsigned char velIntervalCount;
+        unsigned char visStateIntervalCount;
         FxElemVelStateSample* velSamples;
         FxElemVisStateSample* visSamples;
         FxElemDefVisuals visuals;
@@ -5246,9 +5246,9 @@ namespace T5
         FxFloatRange emitDistVariance;
         FxEffectDefRef effectAttached;
         FxTrailDef* trailDef;
-        char sortOrder;
-        char lightingFrac;
-        char unused[2];
+        unsigned char sortOrder;
+        unsigned char lightingFrac;
+        unsigned char unused[2];
         uint16_t alphaFadeTimeMsec;
         uint16_t maxWindStrength;
         uint16_t spawnIntervalAtMaxWind;
@@ -5261,9 +5261,9 @@ namespace T5
     struct FxEffectDef
     {
         const char* name;
-        char flags;
-        char efPriority;
-        char reserved[2];
+        unsigned char flags;
+        unsigned char efPriority;
+        unsigned char reserved[2];
         int totalSize;
         int msecLoopingLife;
         int elemDefCountLooping;

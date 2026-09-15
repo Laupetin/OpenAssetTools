@@ -119,11 +119,11 @@ namespace
         REQUIRE((element.flags & IW3::FX_ELEM_HAS_VELOCITY_GRAPH_LOCAL) != 0);
         REQUIRE(element.collMins[0] == Approx(-3.0f));
         REQUIRE(element.collMaxs[2] == Approx(7.0f));
-        REQUIRE(static_cast<unsigned char>(element.lightingFrac) == 127u);
+        REQUIRE(element.lightingFrac == 127u);
         REQUIRE(element.visSamples[0].base.size[0] == Approx(1.0f));
-        REQUIRE(static_cast<unsigned char>(element.visSamples[0].base.color[0]) == 64u);
-        REQUIRE(static_cast<unsigned char>(element.visSamples[0].base.color[1]) == 128u);
-        REQUIRE(static_cast<unsigned char>(element.visSamples[0].base.color[2]) == 255u);
+        REQUIRE(element.visSamples[0].base.color[0] == 64u);
+        REQUIRE(element.visSamples[0].base.color[1] == 128u);
+        REQUIRE(element.visSamples[0].base.color[2] == 255u);
     }
 
     TEST_CASE("FxEffectDef loader converts T4 line fields", "[t4][fx][assetloader]")

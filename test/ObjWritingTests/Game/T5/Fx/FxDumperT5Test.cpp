@@ -41,7 +41,7 @@ namespace
                                          | FX_ELEM_USE_BILLBOARD_PIVOT | FX_ELEM_USE_WORLD_UP | FX_ELEM_ALIGN_VIEWPOINT);
         // Vec4PackQuat({sqrt(0.5), 0, 0, sqrt(0.5)}).
         rotated.rotationAxis = 0x6FF80000u;
-        rotated.atlas.behavior = static_cast<char>(FX_ATLAS_START_FIXED_RANGE | FX_ATLAS_PLAY_OVER_LIFE);
+        rotated.atlas.behavior = static_cast<unsigned char>(FX_ATLAS_START_FIXED_RANGE | FX_ATLAS_PLAY_OVER_LIFE);
         rotated.atlas.loopCount = 4;
         rotated.atlas.entryCountAndIndexRange = static_cast<uint16_t>((5u << 9u) | 8u);
         rotated.windInfluence = 0.25f;
@@ -65,7 +65,7 @@ namespace
 
         FxEffectDef effect{};
         effect.name = "test/effect";
-        effect.flags = static_cast<char>(FX_EFFECT_HAS_LIGHTING | FX_EFFECT_HAS_MARKS | FX_EFFECT_USE_BOUNDING_BOX | FX_EFFECT_USE_LOCAL_BOUNDING_BOX);
+        effect.flags = static_cast<unsigned char>(FX_EFFECT_HAS_LIGHTING | FX_EFFECT_HAS_MARKS | FX_EFFECT_USE_BOUNDING_BOX | FX_EFFECT_USE_LOCAL_BOUNDING_BOX);
         effect.efPriority = 110;
         effect.elemDefCountOneShot = 2;
         effect.elemDefs = elems;
