@@ -50,6 +50,7 @@
 #include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
+#include "FxEffect/FxEffectLoaderT6.h"
 
 #include <format>
 #include <memory>
@@ -419,7 +420,7 @@ namespace T6
             collection.AddAssetCreator(attachment_unique::CreateGdtLoaderT6(memory, searchPath, gdt, zone));
             collection.AddAssetCreator(camo::CreateJsonLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
+            collection.AddAssetCreator(fx_effect::CreateLoaderT6(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
             collection.AddAssetCreator(raw_file::CreateLoaderT6(memory, searchPath));
             collection.AddAssetCreator(string_table::CreateLoaderT6(memory, searchPath));
