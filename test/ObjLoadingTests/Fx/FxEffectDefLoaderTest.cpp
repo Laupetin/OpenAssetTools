@@ -179,7 +179,7 @@ namespace
     TEST_CASE("FxEffectDef loader derives IW3 decal atlas dimensions from mark materials", "[iw3][fx][assetloader]")
     {
         MockSearchPath searchPath;
-        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "", "    decal { \"atlas_decal\" }"));
+        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "    lightingFrac 0;\n", "    decal { \"atlas_decal\" }"));
 
         Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
         IW3::Material modelCameraMaterial{};
@@ -205,6 +205,43 @@ namespace
         REQUIRE(element.elemType == IW3::FX_ELEM_TYPE_DECAL);
         REQUIRE(element.atlas.rowIndexBits == 1);
         REQUIRE(element.atlas.colIndexBits == 2);
+    }
+
+    TEST_CASE("FxEffectDef loader rejects invalid stock IW3 element settings", "[iw3][fx][assetloader]")
+    {
+        struct InvalidElement
+        {
+            std::string_view fields;
+            std::string_view visual;
+        };
+
+        constexpr std::array INVALID_ELEMENTS{
+            InvalidElement{"    flags spawnOffsetNone runRelToOffset;\n",          "light"                   },
+            InvalidElement{"    lightingFrac -0.1;\n",                             "light"                   },
+            InvalidElement{"    lightingFrac 1.1;\n",                              "light"                   },
+            InvalidElement{"",                                                     "    decal { \"unused\" }"},
+            InvalidElement{"    lightingFrac 0;\n",                                "    decal { }"           },
+            InvalidElement{"",                                                     "    runner { }"          },
+            InvalidElement{"",                                                     "    trail { }"           },
+            InvalidElement{"    flags useCollision;\n    elasticity 0.75 0.5;\n",  "light"                   },
+            InvalidElement{"    flags useCollision;\n    elasticity 0.25 -0.5;\n", "light"                   },
+        };
+
+        for (const auto& invalidElement : INVALID_ELEMENTS)
+        {
+            CAPTURE(invalidElement.fields, invalidElement.visual);
+            MockSearchPath searchPath;
+            searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", invalidElement.fields, invalidElement.visual));
+
+            Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+            AssetCreatorCollection creatorCollection(zone);
+            IgnoredAssetLookup ignoredAssetLookup;
+            AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+            const auto loader = fx::CreateLoaderIW3(zone.Memory(), searchPath);
+            const auto result = loader->CreateAsset("test", context);
+
+            REQUIRE(!result.HasBeenSuccessful());
+        }
     }
 
     TEST_CASE("FxEffectDef loader converts T4 line fields", "[t4][fx][assetloader]")

@@ -44,6 +44,7 @@ using namespace GAME;
 namespace
 {
     constexpr auto PI = 3.14159265358979323846f;
+    constexpr auto VALIDATION_EPSILON = 0.001f;
     constexpr auto MAX_SAMPLE_INTERVAL_COUNT = 80;
 
     enum class SampleChannel
@@ -373,6 +374,55 @@ namespace
         return {};
     }
 
+    std::expected<void, std::string> ValidateElement(const fx::FxEditorElem& element)
+    {
+        if ((element.flags & FX_ELEM_RUN_MASK) == FX_ELEM_RUN_RELATIVE_TO_OFFSET && (element.flags & FX_ELEM_SPAWN_OFFSET_MASK) == FX_ELEM_SPAWN_OFFSET_NONE)
+        {
+            return std::unexpected(std::format("element \"{}\" runs relative to offset but has no generation offset", element.name));
+        }
+
+        if (element.type == fx::FxEditorElemType::DECAL)
+        {
+            if (element.lightingFrac != 0.0f)
+                return std::unexpected(std::format("decal element \"{}\" has a non-zero lighting fraction", element.name));
+        }
+        else if (element.lightingFrac < 0.0f || element.lightingFrac > 1.0f)
+        {
+            return std::unexpected(std::format("element \"{}\" has a lighting fraction outside the range 0 to 1", element.name));
+        }
+
+        if ((element.type == fx::FxEditorElemType::DECAL || element.type == fx::FxEditorElemType::RUNNER) && element.visuals.empty())
+            return std::unexpected(std::format("element \"{}\" must have at least one visual", element.name));
+
+        if (element.type == fx::FxEditorElemType::TRAIL)
+        {
+            if (element.trailVertices.empty() || element.trailIndices.empty())
+                return std::unexpected(std::format("trail in element \"{}\" cannot have empty geometry", element.name));
+            if ((element.trailIndices.size() & 1u) != 0u)
+                return std::unexpected(std::format("trail in element \"{}\" has an odd index count", element.name));
+            for (const auto index : element.trailIndices)
+            {
+                if (index >= element.trailVertices.size())
+                    return std::unexpected(std::format("trail index {} in element \"{}\" is out of range", index, element.name));
+            }
+            if (element.trailSplitDist <= 0 || element.trailRepeatDist <= 0)
+                return std::unexpected(std::format("trail distances in element \"{}\" must be positive", element.name));
+        }
+
+        if ((element.flags & FX_ELEM_USE_COLLISION) != 0u)
+        {
+            const auto elasticityMin = element.elasticity.base + std::min(element.elasticity.amplitude, 0.0f);
+            const auto elasticityMax = element.elasticity.base + std::max(element.elasticity.amplitude, 0.0f);
+            if (elasticityMin < -VALIDATION_EPSILON || elasticityMax > 1.0f + VALIDATION_EPSILON)
+            {
+                return std::unexpected(
+                    std::format("element \"{}\" has elasticity {} to {}, outside the range 0 to 1", element.name, elasticityMin, elasticityMax));
+            }
+        }
+
+        return ValidateElementGraphs(element);
+    }
+
     unsigned char PackColorComponent(const float value)
     {
         return static_cast<unsigned char>(std::clamp(static_cast<int>(std::floor(value * 255.0f + 0.5f)), 0, 255));
@@ -494,9 +544,9 @@ namespace
 
                 if ((element.editorFlags & FX_ED_FLAG_DISABLED) != 0u)
                     continue;
-                auto graphValidationResult = ValidateElementGraphs(element);
-                if (!graphValidationResult)
-                    return std::unexpected(std::move(graphValidationResult).error());
+                auto validationResult = ValidateElement(element);
+                if (!validationResult)
+                    return std::unexpected(std::move(validationResult).error());
 
                 ((element.editorFlags & FX_ED_FLAG_LOOPING) != 0u ? loopingElements : oneShotElements).emplace_back(&element);
             }
@@ -950,15 +1000,6 @@ namespace
         {
             if (source.type != fx::FxEditorElemType::TRAIL)
                 return {};
-            if ((source.trailIndices.size() & 1u) != 0u)
-                return std::unexpected(std::format("trail in element \"{}\" has an odd index count", source.name));
-            for (const auto index : source.trailIndices)
-            {
-                if (index >= source.trailVertices.size())
-                    return std::unexpected(std::format("trail index {} in element \"{}\" is out of range", index, source.name));
-            }
-            if (source.trailSplitDist <= 0 || source.trailRepeatDist <= 0)
-                return std::unexpected(std::format("trail distances in element \"{}\" must be positive", source.name));
 
             struct CompiledVertex
             {
