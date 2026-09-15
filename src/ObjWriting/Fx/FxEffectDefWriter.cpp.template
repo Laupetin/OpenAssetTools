@@ -19,6 +19,7 @@
 
 #set FX_CONSTANTS_HEADER "\"Game/" + GAME + "/FxConstants" + GAME + ".h\""
 #include FX_CONSTANTS_HEADER
+#include "Fx/FxCommon.h"
 
 #include <algorithm>
 #include <array>
@@ -355,6 +356,18 @@ namespace
         return elem.elemType <= FX_ELEM_TYPE_TRAIL || elem.elemType == FX_ELEM_TYPE_SPOT_LIGHT || elem.elemType == FX_ELEM_TYPE_DECAL;
     }
 
+    fx::RgbaColor UnpackVertexColor(const char* color)
+    {
+        constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
+
+        return {
+            .r = static_cast<std::uint8_t>(color[2]) * BYTE_TO_FLOAT,
+            .g = static_cast<std::uint8_t>(color[1]) * BYTE_TO_FLOAT,
+            .b = static_cast<std::uint8_t>(color[0]) * BYTE_TO_FLOAT,
+            .a = static_cast<std::uint8_t>(color[3]) * BYTE_TO_FLOAT,
+        };
+    }
+
     void WriteColorGraph(std::ostream& stream, const FxElemDef& elem)
     {
         const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)));
@@ -365,18 +378,13 @@ namespace
             for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
             {
                 const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
-                stream << "\t\t\t" << time;
-                for (auto component = 0u; component < 3u; component++)
+                auto color = fx::RgbaColor{.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+                if (elem.visSamples)
                 {
-                    auto value = std::uint8_t{0xFF};
-                    if (elem.visSamples)
-                    {
-                        const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
-                        value = static_cast<std::uint8_t>(state.color[2u - component]);
-                    }
-                    stream << ' ' << static_cast<float>(value) / 255.0f;
+                    const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
+                    color = UnpackVertexColor(state.color);
                 }
-                stream << '\n';
+                stream << "\t\t\t" << time << ' ' << color.r << ' ' << color.g << ' ' << color.b << '\n';
             }
             stream << "\t\t}\n";
         }
@@ -393,13 +401,13 @@ namespace
             for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
             {
                 const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
-                auto value = std::uint8_t{0xFF};
+                auto alpha = 1.0f;
                 if (elem.visSamples)
                 {
                     const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
-                    value = static_cast<std::uint8_t>(state.color[3]);
+                    alpha = UnpackVertexColor(state.color).a;
                 }
-                stream << "\t\t\t" << time << ' ' << static_cast<float>(value) / 255.0f << '\n';
+                stream << "\t\t\t" << time << ' ' << alpha << '\n';
             }
             stream << "\t\t}\n";
         }

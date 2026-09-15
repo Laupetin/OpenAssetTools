@@ -354,12 +354,12 @@ namespace
         return static_cast<unsigned char>(std::clamp(static_cast<int>(std::floor(value * 255.0f + 0.5f)), 0, 255));
     }
 
-    void PackVertexColor(const std::array<float, 4>& color, char* destination)
+    void PackVertexColor(const fx::RgbaColor& color, char* destination)
     {
-        destination[0] = static_cast<char>(PackColorComponent(color[2]));
-        destination[1] = static_cast<char>(PackColorComponent(color[1]));
-        destination[2] = static_cast<char>(PackColorComponent(color[0]));
-        destination[3] = static_cast<char>(PackColorComponent(color[3]));
+        destination[0] = static_cast<char>(PackColorComponent(color.b));
+        destination[1] = static_cast<char>(PackColorComponent(color.g));
+        destination[2] = static_cast<char>(PackColorComponent(color.r));
+        destination[3] = static_cast<char>(PackColorComponent(color.a));
     }
 
 #ifdef FEATURE_T5
@@ -850,18 +850,18 @@ namespace
                     {
                         const auto colorCurve = randomIndex != 0u && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_COLOR) != 0u ? 1u : 0u;
                         const auto alphaCurve = randomIndex != 0u && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_ALPHA) != 0u ? 1u : 0u;
-                        std::array color{
-                            source.colorGraph.curves[colorCurve].Sample(time, 0u),
-                            source.colorGraph.curves[colorCurve].Sample(time, 1u),
-                            source.colorGraph.curves[colorCurve].Sample(time, 2u),
-                            source.alphaGraph.curves[alphaCurve].Sample(time),
+                        auto color = fx::RgbaColor{
+                            .r = source.colorGraph.curves[colorCurve].Sample(time, 0u),
+                            .g = source.colorGraph.curves[colorCurve].Sample(time, 1u),
+                            .b = source.colorGraph.curves[colorCurve].Sample(time, 2u),
+                            .a = source.alphaGraph.curves[alphaCurve].Sample(time),
                         };
                         if ((source.editorFlags & FX_ED_FLAG_MODULATE_COLOR_BY_ALPHA) != 0u)
                         {
-                            color[0] *= color[3];
-                            color[1] *= color[3];
-                            color[2] *= color[3];
-                            color[3] = 1.0f;
+                            color.r *= color.a;
+                            color.g *= color.a;
+                            color.b *= color.a;
+                            color.a = 1.0f;
                         }
                         PackVertexColor(color, randomIndex == 0u ? sample.base.color : sample.amplitude.color);
                     }
