@@ -372,7 +372,7 @@ namespace
                     if (elem.visSamples)
                     {
                         const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
-                        value = static_cast<std::uint8_t>(state.color[component]);
+                        value = static_cast<std::uint8_t>(state.color[2u - component]);
                     }
                     stream << ' ' << static_cast<float>(value) / 255.0f;
                 }

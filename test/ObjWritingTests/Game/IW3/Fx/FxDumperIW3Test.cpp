@@ -106,6 +106,7 @@ namespace
         REQUIRE(text.find("atlasLoopCount 2;") != std::string::npos);
         REQUIRE(text.find("collOffset 1 0 -1;") != std::string::npos);
         REQUIRE(text.find("collRadius 2;") != std::string::npos);
+        REQUIRE(text.find("\t\t\t0 1 0.501960814 0.250980407") != std::string::npos);
         REQUIRE(text.find("fxOnImpact \"impacts/on_touch\";") != std::string::npos);
         REQUIRE(text.find("emission \"smoke/emitted\";") != std::string::npos);
         REQUIRE(text.find("billboardSprite\n\t{\n\t\t\"fx_test_material\"") != std::string::npos);
