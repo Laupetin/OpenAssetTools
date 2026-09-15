@@ -29,8 +29,10 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <expected>
 #include <format>
 #include <limits>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
@@ -265,47 +267,30 @@ namespace
                && graph.curves[1].KeyCount() >= 2u;
     }
 
-    bool ValidateElementGraphs(const fx::FxEditorElem& element, const std::string& assetName)
+    std::expected<void, std::string> ValidateElementGraphs(const fx::FxEditorElem& element)
     {
         for (const auto& graphSet : element.velocityGraphs)
         {
             for (const auto& graph : graphSet)
             {
                 if (!IsGraphValid(graph, 1u))
-                {
-                    con::error("Cannot load fx \"{}\": element \"{}\" does not define all velocity graphs", assetName, element.name);
-                    return false;
-                }
+                    return std::unexpected(std::format("element \"{}\" does not define all velocity graphs", element.name));
             }
         }
 
         const auto routing = GetVisualSampleRouting(element);
         if (routing[0] == SampleChannel::RGBA && (!IsGraphValid(element.colorGraph, 3u) || !IsGraphValid(element.alphaGraph, 1u)))
-        {
-            con::error("Cannot load fx \"{}\": element \"{}\" does not define its color and alpha graphs", assetName, element.name);
-            return false;
-        }
+            return std::unexpected(std::format("element \"{}\" does not define its color and alpha graphs", element.name));
         if (routing[1] == SampleChannel::SIZE_0 && !IsGraphValid(element.sizeGraphs[0], 1u))
-        {
-            con::error("Cannot load fx \"{}\": element \"{}\" does not define sizeGraph0", assetName, element.name);
-            return false;
-        }
+            return std::unexpected(std::format("element \"{}\" does not define sizeGraph0", element.name));
         if (routing[2] == SampleChannel::SIZE_1 && !IsGraphValid(element.sizeGraphs[1], 1u))
-        {
-            con::error("Cannot load fx \"{}\": element \"{}\" does not define sizeGraph1", assetName, element.name);
-            return false;
-        }
+            return std::unexpected(std::format("element \"{}\" does not define sizeGraph1", element.name));
         if (routing[3] == SampleChannel::SCALE && !IsGraphValid(element.scaleGraph, 1u))
-        {
-            con::error("Cannot load fx \"{}\": element \"{}\" does not define scaleGraph", assetName, element.name);
-            return false;
-        }
+            return std::unexpected(std::format("element \"{}\" does not define scaleGraph", element.name));
         if (routing[4] == SampleChannel::ROTATION && !IsGraphValid(element.rotationGraph, 1u))
-        {
-            con::error("Cannot load fx \"{}\": element \"{}\" does not define rotGraph", assetName, element.name);
-            return false;
-        }
-        return true;
+            return std::unexpected(std::format("element \"{}\" does not define rotGraph", element.name));
+
+        return {};
     }
 
     unsigned char PackColorComponent(const float value)
@@ -407,7 +392,7 @@ namespace
         {
         }
 
-        FxEffectDef* Convert(const fx::FxEditorEffect& editorEffect)
+        std::expected<FxEffectDef*, std::string> Convert(const fx::FxEditorEffect& editorEffect)
         {
             std::vector<const fx::FxEditorElem*> loopingElements;
             std::vector<const fx::FxEditorElem*> oneShotElements;
@@ -415,13 +400,14 @@ namespace
             {
                 if ((element.editorFlags & FX_ED_FLAG_DISABLED) != 0u)
                     continue;
-                if (!ValidateElementGraphs(element, m_asset_name))
-                    return nullptr;
+                auto graphValidationResult = ValidateElementGraphs(element);
+                if (!graphValidationResult)
+                    return std::unexpected(std::move(graphValidationResult).error());
 
                 ((element.editorFlags & FX_ED_FLAG_LOOPING) != 0u ? loopingElements : oneShotElements).emplace_back(&element);
-                FxEffectDef* emission = nullptr;
-                if (!LoadEffect(element.emission, emission))
-                    return nullptr;
+                auto emissionResult = LoadEffect(element.emission);
+                if (!emissionResult)
+                    return std::unexpected(std::move(emissionResult).error());
             }
 
             std::vector<FxEffectDef*> emittedEffects;
@@ -451,13 +437,15 @@ namespace
             auto elementIndex = 0u;
             for (const auto* element : loopingElements)
             {
-                if (!ConvertElement(*element, effect->elemDefs[elementIndex++]))
-                    return nullptr;
+                auto conversionResult = ConvertElement(*element, effect->elemDefs[elementIndex++]);
+                if (!conversionResult)
+                    return std::unexpected(std::move(conversionResult).error());
             }
             for (const auto* element : oneShotElements)
             {
-                if (!ConvertElement(*element, effect->elemDefs[elementIndex++]))
-                    return nullptr;
+                auto conversionResult = ConvertElement(*element, effect->elemDefs[elementIndex++]);
+                if (!conversionResult)
+                    return std::unexpected(std::move(conversionResult).error());
             }
             for (const auto* emittedEffect : emittedEffects)
             {
@@ -519,81 +507,66 @@ namespace
         }
 
     private:
-        bool LoadEffect(const std::string& name, FxEffectDef*& effect)
+        std::expected<FxEffectDef*, std::string> LoadEffect(const std::string& name)
         {
-            effect = nullptr;
             if (name.empty())
-                return true;
+                return nullptr;
 
             const auto existing = m_effect_dependencies.find(name);
             if (existing != m_effect_dependencies.end())
-            {
-                effect = existing->second;
-                return true;
-            }
+                return existing->second;
 
             auto* dependency = m_context.LoadDependency<AssetFx>(name);
             if (!dependency)
-            {
-                con::error("Cannot load fx \"{}\": could not find effect \"{}\"", m_asset_name, name);
-                return false;
-            }
+                return std::unexpected(std::format("could not find effect \"{}\"", name));
 
             m_registration.AddDependency(dependency);
-            effect = dependency->Asset();
+            auto* effect = dependency->Asset();
             m_effect_dependencies.emplace(name, effect);
-            return true;
+            return effect;
         }
 
-        bool LoadMaterial(const std::string& sourceName, Material*& material)
+        std::expected<Material*, std::string> LoadMaterial(const std::string& sourceName)
         {
-            material = nullptr;
             if (sourceName.empty())
-                return true;
+                return nullptr;
 
             const auto name = sourceName == "$default" ? std::string("$default3d") : sourceName;
             auto* dependency = m_context.LoadDependency<AssetMaterial>(name);
             if (!dependency)
-            {
-                con::error("Cannot load fx \"{}\": could not find material \"{}\"", m_asset_name, name);
-                return false;
-            }
+                return std::unexpected(std::format("could not find material \"{}\"", name));
+
             m_registration.AddDependency(dependency);
-            material = dependency->Asset();
-            return true;
+            return dependency->Asset();
         }
 
-        bool LoadModel(const std::string& name, XModel*& model)
+        std::expected<XModel*, std::string> LoadModel(const std::string& name)
         {
-            model = nullptr;
             if (name.empty())
-                return true;
+                return nullptr;
 
             auto* dependency = m_context.LoadDependency<AssetXModel>(name);
             if (!dependency)
-            {
-                con::error("Cannot load fx \"{}\": could not find model \"{}\"", m_asset_name, name);
-                return false;
-            }
+                return std::unexpected(std::format("could not find model \"{}\"", name));
+
             m_registration.AddDependency(dependency);
-            model = dependency->Asset();
-            return true;
+            return dependency->Asset();
         }
 
-        bool ConvertVisuals(const fx::FxEditorElem& source, FxElemDef& destination)
+        std::expected<void, std::string> ConvertVisuals(const fx::FxEditorElem& source, FxElemDef& destination)
         {
             destination.visualCount = static_cast<char>(source.visuals.size());
             const auto count = source.visuals.size();
             if (source.type == fx::FxEditorElemType::LIGHT || source.type == fx::FxEditorElemType::SPOT_LIGHT)
             {
                 destination.visualCount = 1;
-                return true;
+                return {};
             }
             if (count == 0u)
             {
                 if (source.type == fx::FxEditorElemType::MODEL)
                     destination.flags &= ~FX_ELEM_USE_MODEL_PHYSICS;
-                return true;
+                return {};
             }
 
             if (source.type == fx::FxEditorElemType::DECAL)
@@ -602,11 +575,17 @@ namespace
                 for (auto index = 0u; index < count; index++)
                 {
                     auto materialName = source.visuals[index] == "$default" ? std::string("$default3d") : source.visuals[index];
-                    if (!LoadMaterial(std::format("mc/{}", materialName), destination.visuals.markArray[index].materials[0])
-                        || !LoadMaterial(std::format("wc/{}", materialName), destination.visuals.markArray[index].materials[1]))
-                        return false;
+                    auto materialResult = LoadMaterial(std::format("mc/{}", materialName));
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    destination.visuals.markArray[index].materials[0] = materialResult.value();
+
+                    materialResult = LoadMaterial(std::format("wc/{}", materialName));
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    destination.visuals.markArray[index].materials[1] = materialResult.value();
                 }
-                return true;
+                return {};
             }
 
             auto* visuals = count == 1u ? &destination.visuals.instance : m_memory.Alloc<FxElemVisuals>(count);
@@ -624,19 +603,31 @@ namespace
                 case fx::FxEditorElemType::LINE:
                 case fx::FxEditorElemType::TRAIL:
                 case fx::FxEditorElemType::CLOUD:
-                    if (!LoadMaterial(source.visuals[index], visuals[index].material))
-                        return false;
+                {
+                    auto materialResult = LoadMaterial(source.visuals[index]);
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    visuals[index].material = materialResult.value();
                     break;
+                }
 
                 case fx::FxEditorElemType::MODEL:
-                    if (!LoadModel(source.visuals[index], visuals[index].model))
-                        return false;
+                {
+                    auto modelResult = LoadModel(source.visuals[index]);
+                    if (!modelResult)
+                        return std::unexpected(std::move(modelResult).error());
+                    visuals[index].model = modelResult.value();
                     break;
+                }
 
                 case fx::FxEditorElemType::RUNNER:
-                    if (!LoadEffect(source.visuals[index], visuals[index].effectDef.handle))
-                        return false;
+                {
+                    auto effectResult = LoadEffect(source.visuals[index]);
+                    if (!effectResult)
+                        return std::unexpected(std::move(effectResult).error());
+                    visuals[index].effectDef.handle = effectResult.value();
                     break;
+                }
 
                 case fx::FxEditorElemType::SOUND:
                     visuals[index].soundName = source.visuals[index].empty() ? nullptr : m_memory.Dup(source.visuals[index].c_str());
@@ -646,7 +637,7 @@ namespace
                     break;
                 }
             }
-            return true;
+            return {};
         }
 
         void ConvertAtlas(const fx::FxEditorElem& source, FxElemDef& destination) const
@@ -851,28 +842,19 @@ namespace
             }
         }
 
-        bool ConvertTrail(const fx::FxEditorElem& source, FxElemDef& destination)
+        std::expected<void, std::string> ConvertTrail(const fx::FxEditorElem& source, FxElemDef& destination)
         {
             if (source.type != fx::FxEditorElemType::TRAIL)
-                return true;
+                return {};
             if ((source.trailIndices.size() & 1u) != 0u)
-            {
-                con::error("Cannot load fx \"{}\": trail in element \"{}\" has an odd index count", m_asset_name, source.name);
-                return false;
-            }
+                return std::unexpected(std::format("trail in element \"{}\" has an odd index count", source.name));
             for (const auto index : source.trailIndices)
             {
                 if (index >= source.trailVertices.size())
-                {
-                    con::error("Cannot load fx \"{}\": trail index {} in element \"{}\" is out of range", m_asset_name, index, source.name);
-                    return false;
-                }
+                    return std::unexpected(std::format("trail index {} in element \"{}\" is out of range", index, source.name));
             }
             if (source.trailSplitDist <= 0 || source.trailRepeatDist <= 0)
-            {
-                con::error("Cannot load fx \"{}\": trail distances in element \"{}\" must be positive", m_asset_name, source.name);
-                return false;
-            }
+                return std::unexpected(std::format("trail distances in element \"{}\" must be positive", source.name));
 
             struct CompiledVertex
             {
@@ -969,10 +951,10 @@ namespace
             destination.trailDef->inds = indices.empty() ? nullptr : m_memory.Alloc<std::uint16_t>(indices.size());
             if (!indices.empty())
                 std::ranges::copy(indices, destination.trailDef->inds);
-            return true;
+            return {};
         }
 
-        bool ConvertElement(const fx::FxEditorElem& source, FxElemDef& destination)
+        std::expected<void, std::string> ConvertElement(const fx::FxEditorElem& source, FxElemDef& destination)
         {
             destination.flags = static_cast<int>(source.flags);
             CopyCanonicalRange(destination.spawnRange, source.spawnRange);
@@ -1015,8 +997,9 @@ namespace
 #endif
             destination.elemType = RuntimeElementType(source.type);
 
-            if (!ConvertVisuals(source, destination))
-                return false;
+            auto visualsResult = ConvertVisuals(source, destination);
+            if (!visualsResult)
+                return std::unexpected(std::move(visualsResult).error());
             ConvertAtlas(source, destination);
 
             const auto intervalLimit = std::min(MAX_SAMPLE_INTERVAL_COUNT, (source.lifeSpanMsec.base + source.lifeSpanMsec.amplitude / 2) / 100);
@@ -1044,22 +1027,38 @@ namespace
                 }
             }
 
-            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_TOUCH) != 0u && !LoadEffect(source.effectOnImpact, destination.effectOnImpact.handle))
-                return false;
-            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_DEATH) != 0u && !LoadEffect(source.effectOnDeath, destination.effectOnDeath.handle))
-                return false;
-            FxEffectDef* emission = nullptr;
-            if (!LoadEffect(source.emission, emission))
-                return false;
-            destination.effectEmitted.handle = (source.editorFlags & FX_ED_FLAG_PLAY_ON_RUN) != 0u ? emission : nullptr;
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_TOUCH) != 0u)
+            {
+                auto effectResult = LoadEffect(source.effectOnImpact);
+                if (!effectResult)
+                    return std::unexpected(std::move(effectResult).error());
+                destination.effectOnImpact.handle = effectResult.value();
+            }
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_DEATH) != 0u)
+            {
+                auto effectResult = LoadEffect(source.effectOnDeath);
+                if (!effectResult)
+                    return std::unexpected(std::move(effectResult).error());
+                destination.effectOnDeath.handle = effectResult.value();
+            }
+            auto emissionResult = LoadEffect(source.emission);
+            if (!emissionResult)
+                return std::unexpected(std::move(emissionResult).error());
+            destination.effectEmitted.handle = (source.editorFlags & FX_ED_FLAG_PLAY_ON_RUN) != 0u ? emissionResult.value() : nullptr;
             CopyCanonicalRange(destination.emitDist, source.emitDist);
             CopyCanonicalRange(destination.emitDistVariance, source.emitDistVariance);
 #ifdef FEATURE_T5
-            if ((source.editorFlags & FX_ED_FLAG_PLAY_ATTACHED) != 0u && !LoadEffect(source.attachment, destination.effectAttached.handle))
-                return false;
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ATTACHED) != 0u)
+            {
+                auto effectResult = LoadEffect(source.attachment);
+                if (!effectResult)
+                    return std::unexpected(std::move(effectResult).error());
+                destination.effectAttached.handle = effectResult.value();
+            }
 #endif
-            if (!ConvertTrail(source, destination))
-                return false;
+            auto trailResult = ConvertTrail(source, destination);
+            if (!trailResult)
+                return std::unexpected(std::move(trailResult).error());
             destination.sortOrder = static_cast<char>(std::clamp(source.sortOrder, 0, 255));
 
 #ifdef FEATURE_T5
@@ -1084,7 +1083,7 @@ namespace
                 destination.billboardPivot[1] = source.billboardPivot[1] * -2.0f;
             }
 #endif
-            return true;
+            return {};
         }
 
         void CloneEmittedElement(const FxElemDef& source, FxElemDef& destination)
@@ -1207,11 +1206,14 @@ namespace
 
             AssetRegistration<AssetFx> registration(assetName);
             EffectDefConverter converter(m_memory, context, registration, assetName);
-            auto* effect = converter.Convert(editorEffect);
-            if (!effect)
+            auto conversionResult = converter.Convert(editorEffect);
+            if (!conversionResult)
+            {
+                con::error("Cannot load fx \"{}\": {}", assetName, conversionResult.error());
                 return AssetCreationResult::Failure();
+            }
 
-            registration.SetAsset(effect);
+            registration.SetAsset(conversionResult.value());
             return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
         }
 
