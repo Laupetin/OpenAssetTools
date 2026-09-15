@@ -1595,15 +1595,16 @@ namespace IW5
     };
 
 #if defined(ARCH_x64)
-    // The updated PC executable retains a 32-bit-style packed metadata prefix,
-    // followed by two native pointer slots. Its loader uses the value at 0x18
-    // as the byte count for the following sample payload.
+    // The updated PC format starts with the standard 16-byte PCM format
+    // header. Its loader uses the value at 0x18 as the byte count for the
+    // following sample payload.
     struct AILSOUNDINFO
     {
-        int format;
-        unsigned int frameCount;
-        unsigned int rate;
+        unsigned short format;
         unsigned short channels;
+        unsigned int rate;
+        unsigned int bytesPerSecond;
+        unsigned short blockAlign;
         unsigned short bits;
         unsigned int payloadSize;
         unsigned int blockSize;

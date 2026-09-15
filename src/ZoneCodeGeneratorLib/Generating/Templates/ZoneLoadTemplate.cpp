@@ -1040,7 +1040,7 @@ namespace
             LINEF("if (serializedPointerSize != sizeof({0}*))", def->GetFullName())
             LINE("{")
             m_intendation++;
-            LINE("const auto ptrArrayFill = m_stream.LoadWithFill(serializedPointerSize * count, serializedPointerSize);")
+            LINE("const auto ptrArrayFill = m_stream.LoadWithFill(serializedPointerSize * count, static_cast<unsigned>(serializedPointerSize));")
             LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
