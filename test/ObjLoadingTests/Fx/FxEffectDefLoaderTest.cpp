@@ -126,6 +126,25 @@ namespace
         REQUIRE(element.visSamples[0].base.color[2] == 255u);
     }
 
+    TEST_CASE("FxEffectDef loader mirrors the primary size for uniform IW3 sprites", "[iw3][fx][assetloader]")
+    {
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "", "    billboardSprite { }"));
+
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        const auto loader = fx::CreateLoaderIW3(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<IW3::FxEffectDef>*>(result.GetAssetInfo());
+        const auto& sample = assetInfo->Asset()->elemDefs[0].visSamples[0];
+        REQUIRE(sample.base.size[0] == Approx(1.0f));
+        REQUIRE(sample.base.size[1] == Approx(sample.base.size[0]));
+    }
+
     TEST_CASE("FxEffectDef loader converts T4 line fields", "[t4][fx][assetloader]")
     {
         MockSearchPath searchPath;
@@ -145,7 +164,7 @@ namespace
         REQUIRE(effect->elemDefs[0].elemType == T4::FX_ELEM_TYPE_LINE);
         REQUIRE(effect->elemDefs[0].windInfluence == Approx(0.75f));
         REQUIRE(effect->elemDefs[0].visSamples[0].base.size[1] == Approx(1.5f));
-        REQUIRE(effect->elemDefs[0].visSamples[0].base.scale == Approx(1.0f));
+        REQUIRE(effect->elemDefs[0].visSamples[0].base.scale == Approx(0.0f));
     }
 
     TEST_CASE("FxEffectDef loader converts T5 version 3 fields", "[t5][fx][assetloader]")

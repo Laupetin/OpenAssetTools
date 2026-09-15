@@ -128,23 +128,23 @@ namespace
         }
     }
 
-    bool UsesSize1(const fx::FxEditorElem& element)
+    SampleChannel GetSecondarySizeChannel(const fx::FxEditorElem& element)
     {
         switch (element.type)
         {
         case fx::FxEditorElemType::LINE:
         case fx::FxEditorElemType::TAIL:
         case fx::FxEditorElemType::CLOUD:
-            return true;
+            return SampleChannel::SIZE_1;
 
         case fx::FxEditorElemType::BILLBOARD_SPRITE:
         case fx::FxEditorElemType::ORIENTED_SPRITE:
         case fx::FxEditorElemType::ROTATED_SPRITE:
         case fx::FxEditorElemType::TRAIL:
-            return (element.flags & FX_ELEM_NONUNIFORM_SCALE) != 0u;
+            return (element.flags & FX_ELEM_NONUNIFORM_SCALE) != 0u ? SampleChannel::SIZE_1 : SampleChannel::SIZE_0;
 
         default:
-            return false;
+            return SampleChannel::NONE;
         }
     }
 
@@ -152,7 +152,6 @@ namespace
     {
         switch (type)
         {
-        case fx::FxEditorElemType::LINE:
         case fx::FxEditorElemType::CLOUD:
         case fx::FxEditorElemType::MODEL:
         case fx::FxEditorElemType::SOUND:
@@ -206,7 +205,7 @@ namespace
         return {
             .rgba = UsesColor(element.type) ? SampleChannel::RGBA : SampleChannel::NONE,
             .size0 = UsesColor(element.type) ? SampleChannel::SIZE_0 : SampleChannel::NONE,
-            .size1 = UsesSize1(element) ? SampleChannel::SIZE_1 : SampleChannel::NONE,
+            .size1 = GetSecondarySizeChannel(element),
             .scale = UsesScale(element.type) ? SampleChannel::SCALE : SampleChannel::NONE,
             .rotation = UsesRotation(element.type) ? SampleChannel::ROTATION : SampleChannel::NONE,
         };
