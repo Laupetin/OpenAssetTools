@@ -1,0 +1,23 @@
+#options GAME(IW3, T4, T5)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefLoader" + GAME + ".h"
+
+// This file was templated.
+// See FxEffectDefLoader.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+#include "SearchPath/ISearchPath.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+namespace fx
+{
+#set FACTORY_NAME "CreateLoader" + GAME
+    std::unique_ptr<AssetCreator<GAME::AssetFx>> FACTORY_NAME(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace fx
