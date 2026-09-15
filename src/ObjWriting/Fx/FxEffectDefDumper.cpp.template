@@ -12,7 +12,7 @@
 #set WRITER_HEADER "\"FxEffectDefWriter" + GAME + ".h\""
 #include WRITER_HEADER
 
-#include <format>
+#include "Fx/FxCommon.h"
 
 using namespace GAME;
 
@@ -28,7 +28,7 @@ namespace fx
             return;
         }
 
-        const auto assetFile = context.OpenAssetFile(std::format("fx/{}.efx", asset.m_name));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset.m_name));
         if (!assetFile)
             return;
 

@@ -18,6 +18,7 @@
 #include LOADER_HEADER
 
 #include "Asset/AssetRegistration.h"
+#include "Fx/FxCommon.h"
 #include "Fx/FxEffectDefParser.h"
 #set FX_CONSTANTS_HEADER "\"Game/" + GAME + "/FxConstants" + GAME + ".h\""
 #include FX_CONSTANTS_HEADER
@@ -1162,7 +1163,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("fx/{}.efx", assetName);
+            const auto fileName = fx::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
