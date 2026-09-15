@@ -184,38 +184,21 @@ namespace fx
                     component = ReadFloat();
             }
 
-            void ReadFlags(unsigned& editorFlags, unsigned& flags, unsigned& atlasFlags, unsigned& effectFlags, const FxFlagType allowedType) const
+            void ReadFlags(unsigned& output, const FxFlagType type) const
             {
                 while (!IsCharacter(';'))
                 {
                     const auto flagName = ReadIdentifier();
                     const auto flagDef = std::ranges::find_if(m_config.flagDefs,
-                                                              [&flagName, allowedType](const FxFlagDef& value)
+                                                              [&flagName, type](const FxFlagDef& value)
                                                               {
-                                                                  return value.type == allowedType && value.name == flagName;
+                                                                  return value.type == type && value.name == flagName;
                                                               });
                     if (flagDef == m_config.flagDefs.end())
                         Throw(std::format("Unknown flag '{}'", flagName));
 
-                    unsigned* output = nullptr;
-                    switch (flagDef->type)
-                    {
-                    case FxFlagType::EDITOR:
-                        output = &editorFlags;
-                        break;
-                    case FxFlagType::NATIVE:
-                        output = &flags;
-                        break;
-                    case FxFlagType::ATLAS:
-                        output = &atlasFlags;
-                        break;
-                    case FxFlagType::EFFECT:
-                        output = &effectFlags;
-                        break;
-                    }
-
-                    *output &= ~flagDef->mask;
-                    *output |= flagDef->value;
+                    output &= ~flagDef->mask;
+                    output |= flagDef->value;
                 }
             }
 
@@ -344,15 +327,12 @@ namespace fx
                 if (!m_config.supportsEffectFields)
                     Throw(std::format("Unknown effect field '{}'", field));
 
-                unsigned unusedEditorFlags = 0u;
-                unsigned unusedFlags = 0u;
-                unsigned unusedAtlasFlags = 0u;
                 if (field == "efBoundingBoxDim")
                     ReadVector(m_effect.boundingBoxDim);
                 else if (field == "efBoundingBoxCentre")
                     ReadVector(m_effect.boundingBoxCentre);
                 else if (field == "efFlags")
-                    ReadFlags(unusedEditorFlags, unusedFlags, unusedAtlasFlags, m_effect.flags, FxFlagType::EFFECT);
+                    ReadFlags(m_effect.flags, FxFlagType::EFFECT);
                 else if (field == "efPriority")
                     m_effect.priority = ReadInteger();
                 else
@@ -437,12 +417,7 @@ namespace fx
                 else if (field == "windinfluence" && m_config.supportsWind)
                     element.windInfluence = ReadFloat();
                 else if (field == "atlasBehavior")
-                {
-                    unsigned unusedEditorFlags = 0u;
-                    unsigned unusedFlags = 0u;
-                    unsigned unusedEffectFlags = 0u;
-                    ReadFlags(unusedEditorFlags, unusedFlags, element.atlasBehavior, unusedEffectFlags, FxFlagType::ATLAS);
-                }
+                    ReadFlags(element.atlasBehavior, FxFlagType::ATLAS);
                 else if (field == "atlasIndex")
                     element.atlasIndex = ReadInteger();
                 else if (field == "atlasFps")
