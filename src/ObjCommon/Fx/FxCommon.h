@@ -13,4 +13,4 @@ namespace fx
     };
 
     std::string GetFileNameForAssetName(const std::string& assetName);
-}
+} // namespace fx
