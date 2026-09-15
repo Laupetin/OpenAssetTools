@@ -25,6 +25,7 @@
 #include "Vehicle/VehicleDumperT6.h"
 #include "Weapon/AttachmentDumperT6.h"
 #include "Weapon/AttachmentUniqueDumperT6.h"
+#include "FxEffect/FxEffectDumperT6.h"
 #include "Weapon/CamoJsonDumperT6.h"
 #include "Weapon/WeaponDumperT6.h"
 #include "ZBarrier/ZBarrierDumperT6.h"
@@ -66,7 +67,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<attachment_unique::DumperT6>());
     RegisterAssetDumper(std::make_unique<camo::JsonDumperT6>());
     RegisterAssetDumper(std::make_unique<sound::SndDriverGlobalsDumperT6>());
-    // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
+    RegisterAssetDumper(std::make_unique<fx_effect::DumperT6>());
     // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
     RegisterAssetDumper(std::make_unique<raw_file::DumperT6>());
     RegisterAssetDumper(std::make_unique<string_table::DumperT6>());
