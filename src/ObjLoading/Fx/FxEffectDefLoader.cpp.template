@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -110,7 +111,7 @@ namespace
         }
     }
 
-    bool UsesAtlas(const fx::FxEditorElemType type)
+    bool UsesMaterial(const fx::FxEditorElemType type)
     {
         switch (type)
         {
@@ -121,11 +122,21 @@ namespace
         case fx::FxEditorElemType::LINE:
         case fx::FxEditorElemType::TRAIL:
         case fx::FxEditorElemType::CLOUD:
+        case fx::FxEditorElemType::DECAL:
             return true;
 
         default:
             return false;
         }
+    }
+
+    Material* GetVisualMaterial(const fx::FxEditorElem& source, const FxElemDef& destination, const size_t visualIndex)
+    {
+        if (source.type == fx::FxEditorElemType::DECAL)
+            return destination.visuals.markArray[visualIndex].materials[0];
+
+        const auto* visuals = source.visuals.size() == 1u ? &destination.visuals.instance : destination.visuals.array;
+        return visuals[visualIndex].material;
     }
 
     SampleChannel GetSecondarySizeChannel(const fx::FxEditorElem& element)
@@ -704,10 +715,44 @@ namespace
             return {};
         }
 
-        void ConvertAtlas(const fx::FxEditorElem& source, FxElemDef& destination) const
+        std::expected<void, std::string> ConvertAtlas(const fx::FxEditorElem& source, FxElemDef& destination) const
         {
-            if (!UsesAtlas(source.type) || source.visuals.empty())
-                return;
+            if (!UsesMaterial(source.type) || source.visuals.empty())
+                return {};
+
+            const auto* referenceMaterial = GetVisualMaterial(source, destination, 0u);
+            if (!referenceMaterial)
+                return std::unexpected(std::format("element \"{}\" has an empty material visual", source.name));
+
+            const auto referenceRowCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasRowCount);
+            const auto referenceColumnCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasColumnCount);
+            if (!std::has_single_bit(referenceRowCount) || !std::has_single_bit(referenceColumnCount))
+            {
+                return std::unexpected(std::format("element \"{}\" material \"{}\" is a {} x {} atlas, which is not a power of two on both axes",
+                                                   source.name,
+                                                   referenceMaterial->info.name,
+                                                   referenceColumnCount,
+                                                   referenceRowCount));
+            }
+
+            for (auto visualIndex = 1u; visualIndex < source.visuals.size(); visualIndex++)
+            {
+                const auto* material = GetVisualMaterial(source, destination, visualIndex);
+                if (!material)
+                    return std::unexpected(std::format("element \"{}\" has an empty material visual", source.name));
+
+                if (material->info.textureAtlasRowCount != referenceRowCount || material->info.textureAtlasColumnCount != referenceColumnCount)
+                {
+                    return std::unexpected(std::format("element \"{}\" material \"{}\" is a {} x {} atlas, but material \"{}\" is a {} x {} atlas",
+                                                       source.name,
+                                                       referenceMaterial->info.name,
+                                                       referenceColumnCount,
+                                                       referenceRowCount,
+                                                       material->info.name,
+                                                       material->info.textureAtlasColumnCount,
+                                                       material->info.textureAtlasRowCount));
+                }
+            }
 
             destination.atlas.behavior = static_cast<unsigned char>(source.atlasBehavior);
             destination.atlas.index = static_cast<unsigned char>(source.atlasIndex);
@@ -716,17 +761,12 @@ namespace
             destination.atlas.colIndexBits = static_cast<unsigned char>(source.atlasColIndexBits);
             destination.atlas.rowIndexBits = static_cast<unsigned char>(source.atlasRowIndexBits);
 
-            const auto* visuals = source.visuals.size() == 1u ? &destination.visuals.instance : destination.visuals.array;
-            const auto* material = visuals ? visuals[0].material : nullptr;
-            if (material)
-            {
-                destination.atlas.rowIndexBits = 0;
-                while ((1u << destination.atlas.rowIndexBits) < material->info.textureAtlasRowCount)
-                    destination.atlas.rowIndexBits++;
-                destination.atlas.colIndexBits = 0;
-                while ((1u << destination.atlas.colIndexBits) < material->info.textureAtlasColumnCount)
-                    destination.atlas.colIndexBits++;
-            }
+            destination.atlas.rowIndexBits = 0;
+            while ((1u << destination.atlas.rowIndexBits) < referenceRowCount)
+                destination.atlas.rowIndexBits++;
+            destination.atlas.colIndexBits = 0;
+            while ((1u << destination.atlas.colIndexBits) < referenceColumnCount)
+                destination.atlas.colIndexBits++;
 
 #ifdef FEATURE_T5
             const auto entryCount = 1u << (destination.atlas.colIndexBits + destination.atlas.rowIndexBits);
@@ -735,6 +775,7 @@ namespace
 #else
             destination.atlas.entryCount = static_cast<std::int16_t>(source.atlasEntryCount);
 #endif
+            return {};
         }
 
         void SampleVelocityFrame(const fx::FxEditorElem& source, FxElemDef& destination, const bool world)
@@ -1064,7 +1105,9 @@ namespace
             auto visualsResult = ConvertVisuals(source, destination);
             if (!visualsResult)
                 return std::unexpected(std::move(visualsResult).error());
-            ConvertAtlas(source, destination);
+            auto atlasResult = ConvertAtlas(source, destination);
+            if (!atlasResult)
+                return std::unexpected(std::move(atlasResult).error());
 
             const auto intervalLimit = std::min(MAX_SAMPLE_INTERVAL_COUNT, (source.lifeSpanMsec.base + source.lifeSpanMsec.amplitude / 2) / 100);
             const auto velocitySampleCount = DecideVelocitySampleCount(source, intervalLimit);

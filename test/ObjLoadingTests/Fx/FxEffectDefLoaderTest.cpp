@@ -176,6 +176,37 @@ namespace
         REQUIRE(effect->elemDefCountEmission == 1);
     }
 
+    TEST_CASE("FxEffectDef loader derives IW3 decal atlas dimensions from mark materials", "[iw3][fx][assetloader]")
+    {
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "", "    decal { \"atlas_decal\" }"));
+
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        IW3::Material modelCameraMaterial{};
+        modelCameraMaterial.info.name = "mc/atlas_decal";
+        modelCameraMaterial.info.textureAtlasRowCount = 2;
+        modelCameraMaterial.info.textureAtlasColumnCount = 4;
+        IW3::Material worldCameraMaterial{};
+        worldCameraMaterial.info.name = "wc/atlas_decal";
+        worldCameraMaterial.info.textureAtlasRowCount = 2;
+        worldCameraMaterial.info.textureAtlasColumnCount = 4;
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        context.AddAsset<IW3::AssetMaterial>(modelCameraMaterial.info.name, &modelCameraMaterial);
+        context.AddAsset<IW3::AssetMaterial>(worldCameraMaterial.info.name, &worldCameraMaterial);
+
+        const auto loader = fx::CreateLoaderIW3(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<IW3::FxEffectDef>*>(result.GetAssetInfo());
+        const auto& element = assetInfo->Asset()->elemDefs[0];
+        REQUIRE(element.elemType == IW3::FX_ELEM_TYPE_DECAL);
+        REQUIRE(element.atlas.rowIndexBits == 1);
+        REQUIRE(element.atlas.colIndexBits == 2);
+    }
+
     TEST_CASE("FxEffectDef loader converts T4 line fields", "[t4][fx][assetloader]")
     {
         MockSearchPath searchPath;
@@ -281,5 +312,43 @@ efBoundingBoxCentre 1 2 3;
             const auto flags = static_cast<unsigned int>(assetInfo->Asset()->elemDefs[0].flags);
             REQUIRE((flags & T5::FX_ELEM_SPAWN_RELATIVE_TYPE_MASK) == expectedValue);
         }
+    }
+
+    TEST_CASE("FxEffectDef loader rejects invalid T5 material atlas dimensions", "[t5][fx][assetloader]")
+    {
+        auto firstRowCount = 2u;
+        auto secondRowCount = 2u;
+        SECTION("dimensions are not powers of two")
+        {
+            firstRowCount = 3u;
+            secondRowCount = 3u;
+        }
+        SECTION("visual dimensions do not match")
+        {
+            secondRowCount = 4u;
+        }
+
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(3, "", "", "    billboardSprite { \"atlas_a\" \"atlas_b\" }"));
+
+        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        T5::Material firstMaterial{};
+        firstMaterial.info.name = "atlas_a";
+        firstMaterial.info.textureAtlasRowCount = static_cast<unsigned char>(firstRowCount);
+        firstMaterial.info.textureAtlasColumnCount = 4;
+        T5::Material secondMaterial{};
+        secondMaterial.info.name = "atlas_b";
+        secondMaterial.info.textureAtlasRowCount = static_cast<unsigned char>(secondRowCount);
+        secondMaterial.info.textureAtlasColumnCount = 4;
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        context.AddAsset<T5::AssetMaterial>(firstMaterial.info.name, &firstMaterial);
+        context.AddAsset<T5::AssetMaterial>(secondMaterial.info.name, &secondMaterial);
+
+        const auto loader = fx::CreateLoaderT5(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(!result.HasBeenSuccessful());
     }
 } // namespace
