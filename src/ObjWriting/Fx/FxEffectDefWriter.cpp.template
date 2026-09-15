@@ -279,7 +279,19 @@ namespace
         return false;
     }
 
-    bool HasRandomColor(const FxElemDef& elem, const unsigned componentBegin, const unsigned componentEnd)
+    fx::RgbaColor UnpackVertexColor(const char* color)
+    {
+        constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
+
+        return {
+            .r = static_cast<std::uint8_t>(color[2]) * BYTE_TO_FLOAT,
+            .g = static_cast<std::uint8_t>(color[1]) * BYTE_TO_FLOAT,
+            .b = static_cast<std::uint8_t>(color[0]) * BYTE_TO_FLOAT,
+            .a = static_cast<std::uint8_t>(color[3]) * BYTE_TO_FLOAT,
+        };
+    }
+
+    bool HasRandomColor(const FxElemDef& elem)
     {
         if (!elem.visSamples)
             return false;
@@ -287,13 +299,27 @@ namespace
         const auto intervalCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount));
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
-            for (auto component = componentBegin; component < componentEnd; component++)
-            {
-                const auto base = static_cast<std::uint8_t>(elem.visSamples[sampleIndex].base.color[component]);
-                const auto amplitude = static_cast<std::uint8_t>(elem.visSamples[sampleIndex].amplitude.color[component]);
-                if (base != amplitude)
-                    return true;
-            }
+            const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
+            const auto amplitude = UnpackVertexColor(elem.visSamples[sampleIndex].amplitude.color);
+            if (base.r != amplitude.r || base.g != amplitude.g || base.b != amplitude.b)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool HasRandomAlpha(const FxElemDef& elem)
+    {
+        if (!elem.visSamples)
+            return false;
+
+        const auto intervalCount = static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount));
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
+            const auto amplitude = UnpackVertexColor(elem.visSamples[sampleIndex].amplitude.color);
+            if (base.a != amplitude.a)
+                return true;
         }
 
         return false;
@@ -301,13 +327,27 @@ namespace
 
     bool UsesColor(const FxElemDef& elem)
     {
-        return elem.elemType <= FX_ELEM_TYPE_CLOUD || elem.elemType == FX_ELEM_TYPE_OMNI_LIGHT || elem.elemType == FX_ELEM_TYPE_SPOT_LIGHT
-               || elem.elemType == FX_ELEM_TYPE_DECAL;
-    }
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+        case FX_ELEM_TYPE_CLOUD:
+        case FX_ELEM_TYPE_OMNI_LIGHT:
+        case FX_ELEM_TYPE_SPOT_LIGHT:
+        case FX_ELEM_TYPE_DECAL:
+            return true;
 
-    bool UsesSize0(const FxElemDef& elem)
-    {
-        return UsesColor(elem);
+        default:
+            return false;
+        }
     }
 
     bool UsesSize1(const FxElemDef& elem)
@@ -353,19 +393,25 @@ namespace
 
     bool UsesRotation(const FxElemDef& elem)
     {
-        return elem.elemType <= FX_ELEM_TYPE_TRAIL || elem.elemType == FX_ELEM_TYPE_SPOT_LIGHT || elem.elemType == FX_ELEM_TYPE_DECAL;
-    }
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+        case FX_ELEM_TYPE_SPOT_LIGHT:
+        case FX_ELEM_TYPE_DECAL:
+            return true;
 
-    fx::RgbaColor UnpackVertexColor(const char* color)
-    {
-        constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
-
-        return {
-            .r = static_cast<std::uint8_t>(color[2]) * BYTE_TO_FLOAT,
-            .g = static_cast<std::uint8_t>(color[1]) * BYTE_TO_FLOAT,
-            .b = static_cast<std::uint8_t>(color[0]) * BYTE_TO_FLOAT,
-            .a = static_cast<std::uint8_t>(color[3]) * BYTE_TO_FLOAT,
-        };
+        default:
+            return false;
+        }
     }
 
     void WriteColorGraph(std::ostream& stream, const FxElemDef& elem)
@@ -608,11 +654,11 @@ namespace
             auto editorFlagBits = 0u;
             if (looping)
                 editorFlagBits |= FX_ED_FLAG_LOOPING;
-            if (UsesColor(elem) && HasRandomColor(elem, 0u, 3u))
+            if (UsesColor(elem) && HasRandomColor(elem))
                 editorFlagBits |= FX_ED_FLAG_USE_RANDOM_COLOR;
-            if (UsesColor(elem) && HasRandomColor(elem, 3u, 4u))
+            if (UsesColor(elem) && HasRandomAlpha(elem))
                 editorFlagBits |= FX_ED_FLAG_USE_RANDOM_ALPHA;
-            if (UsesSize0(elem)
+            if (UsesColor(elem)
                 && HasVisualAmplitude(elem,
                                       [](const FxElemVisualState& state)
                                       {

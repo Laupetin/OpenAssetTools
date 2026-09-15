@@ -55,6 +55,20 @@ namespace
         NONE,
     };
 
+    struct VisualSampleRouting
+    {
+        SampleChannel rgba;
+        SampleChannel size0;
+        SampleChannel size1;
+        SampleChannel scale;
+        SampleChannel rotation;
+
+        std::array<SampleChannel, 5> GetChannels() const
+        {
+            return {rgba, size0, size1, scale, rotation};
+        }
+    };
+
     template<typename To, typename From> void CopyCanonicalRange(To& destination, const From& source)
     {
         if (source.amplitude >= 0)
@@ -187,14 +201,14 @@ namespace
     }
 #endif
 
-    std::array<SampleChannel, 5> GetVisualSampleRouting(const fx::FxEditorElem& element)
+    VisualSampleRouting GetVisualSampleRouting(const fx::FxEditorElem& element)
     {
         return {
-            UsesColor(element.type) ? SampleChannel::RGBA : SampleChannel::NONE,
-            UsesColor(element.type) ? SampleChannel::SIZE_0 : SampleChannel::NONE,
-            UsesSize1(element) ? SampleChannel::SIZE_1 : SampleChannel::NONE,
-            UsesScale(element.type) ? SampleChannel::SCALE : SampleChannel::NONE,
-            UsesRotation(element.type) ? SampleChannel::ROTATION : SampleChannel::NONE,
+            .rgba = UsesColor(element.type) ? SampleChannel::RGBA : SampleChannel::NONE,
+            .size0 = UsesColor(element.type) ? SampleChannel::SIZE_0 : SampleChannel::NONE,
+            .size1 = UsesSize1(element) ? SampleChannel::SIZE_1 : SampleChannel::NONE,
+            .scale = UsesScale(element.type) ? SampleChannel::SCALE : SampleChannel::NONE,
+            .rotation = UsesRotation(element.type) ? SampleChannel::ROTATION : SampleChannel::NONE,
         };
     }
 
@@ -272,7 +286,7 @@ namespace
     {
         std::array<const fx::FxEditorCurve*, 12> curves{};
         auto curveCount = 0u;
-        for (const auto channel : GetVisualSampleRouting(element))
+        for (const auto channel : GetVisualSampleRouting(element).GetChannels())
         {
             switch (channel)
             {
@@ -335,15 +349,15 @@ namespace
         }
 
         const auto routing = GetVisualSampleRouting(element);
-        if (routing[0] == SampleChannel::RGBA && (!IsGraphValid(element.colorGraph, 3u) || !IsGraphValid(element.alphaGraph, 1u)))
+        if (routing.rgba == SampleChannel::RGBA && (!IsGraphValid(element.colorGraph, 3u) || !IsGraphValid(element.alphaGraph, 1u)))
             return std::unexpected(std::format("element \"{}\" does not define its color and alpha graphs", element.name));
-        if (routing[1] == SampleChannel::SIZE_0 && !IsGraphValid(element.sizeGraphs[0], 1u))
+        if (routing.size0 == SampleChannel::SIZE_0 && !IsGraphValid(element.sizeGraphs[0], 1u))
             return std::unexpected(std::format("element \"{}\" does not define sizeGraph0", element.name));
-        if (routing[2] == SampleChannel::SIZE_1 && !IsGraphValid(element.sizeGraphs[1], 1u))
+        if (routing.size1 == SampleChannel::SIZE_1 && !IsGraphValid(element.sizeGraphs[1], 1u))
             return std::unexpected(std::format("element \"{}\" does not define sizeGraph1", element.name));
-        if (routing[3] == SampleChannel::SCALE && !IsGraphValid(element.scaleGraph, 1u))
+        if (routing.scale == SampleChannel::SCALE && !IsGraphValid(element.scaleGraph, 1u))
             return std::unexpected(std::format("element \"{}\" does not define scaleGraph", element.name));
-        if (routing[4] == SampleChannel::ROTATION && !IsGraphValid(element.rotationGraph, 1u))
+        if (routing.rotation == SampleChannel::ROTATION && !IsGraphValid(element.rotationGraph, 1u))
             return std::unexpected(std::format("element \"{}\" does not define rotGraph", element.name));
 
         return {};
@@ -807,26 +821,30 @@ namespace
             const fx::FxEditorGraph* graph = nullptr;
             unsigned randomFlag = 0u;
             auto scaleFactor = 1.0f;
-            if (channel == SampleChannel::SIZE_0)
+
+            switch (channel)
             {
+            case SampleChannel::SIZE_0:
                 graph = &source.sizeGraphs[0];
                 randomFlag = FX_ED_FLAG_USE_RANDOM_SIZE_0;
                 scaleFactor = 0.5f;
-            }
-            else if (channel == SampleChannel::SIZE_1)
-            {
+                break;
+
+            case SampleChannel::SIZE_1:
                 graph = &source.sizeGraphs[1];
                 randomFlag = FX_ED_FLAG_USE_RANDOM_SIZE_1;
                 scaleFactor = 0.5f;
-            }
-            else if (channel == SampleChannel::SCALE)
-            {
+                break;
+
+            case SampleChannel::SCALE:
                 graph = &source.scaleGraph;
                 randomFlag = FX_ED_FLAG_USE_RANDOM_SCALE;
+                break;
+
+            default:
+                return;
             }
 
-            if (!graph)
-                return;
             base = graph->curves[0].Sample(time) * graph->scale * scaleFactor;
             if ((source.editorFlags & randomFlag) != 0u)
                 amplitude = graph->curves[1].Sample(time) * graph->scale * scaleFactor - base;
@@ -844,7 +862,7 @@ namespace
             {
                 const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
                 auto& sample = destination.visSamples[sampleIndex];
-                if (routing[0] == SampleChannel::RGBA)
+                if (routing.rgba == SampleChannel::RGBA)
                 {
                     for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
                     {
@@ -872,7 +890,7 @@ namespace
                     std::memset(sample.amplitude.color, 0xFF, sizeof(sample.amplitude.color));
                 }
 
-                if (routing[4] == SampleChannel::ROTATION)
+                if (routing.rotation == SampleChannel::ROTATION)
                 {
                     sample.base.rotationDelta = source.rotationGraph.curves[0].Sample(time) * rotationScale;
                     if (sampleIndex > 0u)
@@ -888,9 +906,9 @@ namespace
                     }
                 }
 
-                SampleVisualScalar(source, routing[1], time, sample.base.size[0], sample.amplitude.size[0]);
-                SampleVisualScalar(source, routing[2], time, sample.base.size[1], sample.amplitude.size[1]);
-                SampleVisualScalar(source, routing[3], time, sample.base.scale, sample.amplitude.scale);
+                SampleVisualScalar(source, routing.size0, time, sample.base.size[0], sample.amplitude.size[0]);
+                SampleVisualScalar(source, routing.size1, time, sample.base.size[1], sample.amplitude.size[1]);
+                SampleVisualScalar(source, routing.scale, time, sample.base.scale, sample.amplitude.scale);
             }
         }
 
