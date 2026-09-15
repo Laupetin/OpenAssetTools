@@ -169,7 +169,11 @@ namespace
     ScalarGraph CreateVelocityGraph(const FxElemDef& elem, const bool world, const unsigned component)
     {
         const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.velIntervalCount)));
-        ScalarGraph result{0.0f, std::vector<float>(intervalCount + 1u), std::vector<float>(intervalCount + 1u)};
+        ScalarGraph result{
+            .scale = 0.0f,
+            .base = std::vector<float>(intervalCount + 1u),
+            .amplitude = std::vector<float>(intervalCount + 1u),
+        };
 
         if (!elem.velSamples)
             return result;
@@ -202,7 +206,11 @@ namespace
         const FxElemDef& elem, const float valueScale, const bool signedValues, BaseAccessor baseAccessor, AmplitudeAccessor amplitudeAccessor)
     {
         const auto intervalCount = std::max(1u, static_cast<unsigned>(static_cast<std::uint8_t>(elem.visStateIntervalCount)));
-        ScalarGraph result{1.0f, std::vector<float>(intervalCount + 1u), std::vector<float>(intervalCount + 1u)};
+        ScalarGraph result{
+            .scale = 1.0f,
+            .base = std::vector<float>(intervalCount + 1u),
+            .amplitude = std::vector<float>(intervalCount + 1u),
+        };
 
         if (!elem.visSamples)
             return result;
@@ -720,7 +728,11 @@ namespace
                 for (auto component = 0u; component < 3u; component++)
                 {
                     const auto graph = enabled ? CreateVelocityGraph(elem, world, component)
-                                               : ScalarGraph{0.0f, std::vector<float>(intervalCount + 1u), std::vector<float>(intervalCount + 1u)};
+                                               : ScalarGraph{
+                                                     .scale = 0.0f,
+                                                     .base = std::vector<float>(intervalCount + 1u),
+                                                     .amplitude = std::vector<float>(intervalCount + 1u),
+                                                 };
                     const std::array componentNames{'X', 'Y', 'Z'};
                     const auto graphName = std::string("velGraph") + std::to_string(graphIndex) + componentNames[component];
                     WriteScalarGraph(m_stream, graphName.c_str(), graph);

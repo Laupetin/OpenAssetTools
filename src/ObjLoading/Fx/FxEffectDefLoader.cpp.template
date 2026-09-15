@@ -891,7 +891,10 @@ namespace
                 for (auto end = 0u; end < 2u; end++)
                 {
                     const auto& sourceVertex = source.trailVertices[source.trailIndices[edge + end]];
-                    CompiledVertex vertex{sourceVertex.pos, {}, sourceVertex.texCoord};
+                    CompiledVertex vertex{
+                        .pos = sourceVertex.pos,
+                        .texCoord = sourceVertex.texCoord,
+                    };
                     for (auto secondaryEdge = 0u; secondaryEdge < source.trailIndices.size(); secondaryEdge += 2u)
                     {
                         const auto& first = source.trailVertices[source.trailIndices[secondaryEdge]].pos;
@@ -1170,32 +1173,32 @@ namespace
             fx::FxEditorEffect editorEffect;
             const fx::FxEffectDefParserConfig parserConfig{
 #ifdef FEATURE_IW3
-                2,
-                false,
-                false,
-                false,
-                false,
-                GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
-                GAME::FX_ELEM_RUN_MASK,
-                GAME::FX_FLAG_DEFS,
+                .maxVersion = 2,
+                .supportsEffectFields = false,
+                .supportsWind = false,
+                .supportsLine = false,
+                .supportsT5Fields = false,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
 #elif defined(FEATURE_T4)
-                2,
-                false,
-                true,
-                true,
-                false,
-                GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
-                GAME::FX_ELEM_RUN_MASK,
-                GAME::FX_FLAG_DEFS,
+                .maxVersion = 2,
+                .supportsEffectFields = false,
+                .supportsWind = true,
+                .supportsLine = true,
+                .supportsT5Fields = false,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
 #else
-                3,
-                true,
-                true,
-                true,
-                true,
-                GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
-                GAME::FX_ELEM_RUN_MASK,
-                GAME::FX_FLAG_DEFS,
+                .maxVersion = 3,
+                .supportsEffectFields = true,
+                .supportsWind = true,
+                .supportsLine = true,
+                .supportsT5Fields = true,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
 #endif
             };
             if (!fx::ParseEffectDef(*file.m_stream, fileName, parserConfig, editorEffect))
