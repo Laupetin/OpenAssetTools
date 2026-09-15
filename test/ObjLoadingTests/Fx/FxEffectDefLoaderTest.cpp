@@ -256,4 +256,30 @@ efBoundingBoxCentre 1 2 3;
         REQUIRE(element.billboardPivot[0] == Approx(4.0f));
         REQUIRE(element.billboardPivot[1] == Approx(6.0f));
     }
+
+    TEST_CASE("FxEffectDef loader accepts all stock T5 spawn-relative types", "[t5][fx][assetloader]")
+    {
+        constexpr std::array CASES{
+            std::pair{"spawnRelativeType3", T5::FX_ELEM_SPAWN_RELATIVE_TYPE_3},
+            std::pair{"spawnRelativeType5", T5::FX_ELEM_SPAWN_RELATIVE_TYPE_5},
+        };
+
+        for (const auto& [flagName, expectedValue] : CASES)
+        {
+            MockSearchPath searchPath;
+            searchPath.AddFileData("fx/test.efx", MakeEffect(3, "", "    flags " + std::string(flagName) + ";\n", "light"));
+
+            Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+            AssetCreatorCollection creatorCollection(zone);
+            IgnoredAssetLookup ignoredAssetLookup;
+            AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+            const auto loader = fx::CreateLoaderT5(zone.Memory(), searchPath);
+            const auto result = loader->CreateAsset("test", context);
+
+            REQUIRE(result.HasBeenSuccessful());
+            const auto* assetInfo = reinterpret_cast<XAssetInfo<T5::FxEffectDef>*>(result.GetAssetInfo());
+            const auto flags = static_cast<unsigned int>(assetInfo->Asset()->elemDefs[0].flags);
+            REQUIRE((flags & T5::FX_ELEM_SPAWN_RELATIVE_TYPE_MASK) == expectedValue);
+        }
+    }
 } // namespace

@@ -36,9 +36,9 @@ namespace
         FxElemDef elems[2]{};
         auto& rotated = elems[0];
         rotated.flags = static_cast<int>(FX_ELEM_USE_ITEM_CLIP | FX_ELEM_IS_MATURE_CONTENT | FX_ELEM_SPAWN_DISTRIBUTIVE_X | FX_ELEM_SPAWN_DISTRIBUTIVE_Y
-                                         | FX_ELEM_SPAWN_RELATIVE_TO_EFFECT | FX_ELEM_SPAWN_RELATIVE_TYPE_1 | FX_ELEM_SPAWN_RELATIVE_TYPE_4
-                                         | FX_ELEM_FLAME_CHUNK | FX_ELEM_HAS_REFLECTION | FX_ELEM_USE_ROTATION_AXIS | FX_ELEM_USE_GAUSSIAN_CLOUD
-                                         | FX_ELEM_USE_BILLBOARD_PIVOT | FX_ELEM_USE_WORLD_UP | FX_ELEM_ALIGN_VIEWPOINT);
+                                         | FX_ELEM_SPAWN_RELATIVE_TO_EFFECT | FX_ELEM_SPAWN_RELATIVE_TYPE_5 | FX_ELEM_FLAME_CHUNK | FX_ELEM_HAS_REFLECTION
+                                         | FX_ELEM_USE_ROTATION_AXIS | FX_ELEM_USE_GAUSSIAN_CLOUD | FX_ELEM_USE_BILLBOARD_PIVOT | FX_ELEM_USE_WORLD_UP
+                                         | FX_ELEM_ALIGN_VIEWPOINT);
         // Vec4PackQuat({sqrt(0.5), 0, 0, sqrt(0.5)}).
         rotated.rotationAxis = 0x6FF80000u;
         rotated.atlas.behavior = static_cast<unsigned char>(FX_ATLAS_START_FIXED_RANGE | FX_ATLAS_PLAY_OVER_LIFE);
@@ -95,8 +95,8 @@ namespace
         REQUIRE(text.find("efBoundingBoxDim 1 2 3;") != std::string::npos);
         REQUIRE(text.find("efBoundingBoxCentre 4 5 6;") != std::string::npos);
         REQUIRE(text.find("editorFlags playAttached;") != std::string::npos);
-        REQUIRE(text.find("flags useItemClip isMatureContent spawnDistributiveX spawnDistributiveY spawnRelative spawnRelativeType0 spawnRelativeType1 "
-                          "spawnRelativeType4 spawnOffsetNone runRelToWorld flamechunk hasReflection useRotationAxis useGaussianCloud useBillboardPivot "
+        REQUIRE(text.find("flags useItemClip isMatureContent spawnDistributiveX spawnDistributiveY spawnRelative spawnRelativeType5 spawnOffsetNone "
+                          "runRelToWorld flamechunk hasReflection useRotationAxis useGaussianCloud useBillboardPivot "
                           "useWorldUp alignViewpoint;")
                 != std::string::npos);
         REQUIRE(text.find("rotationAxis 0.707106769 0 0 0.707106769;") != std::string::npos);
