@@ -311,30 +311,43 @@ namespace
 
     bool UsesSize1(const FxElemDef& elem)
     {
+        switch (elem.elemType)
+        {
 #if defined(FEATURE_T4) || defined(FEATURE_T5)
-        if (elem.elemType == FX_ELEM_TYPE_LINE)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+        case FX_ELEM_TYPE_CLOUD:
             return true;
-#endif
 
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
 #ifdef FEATURE_T5
-        const auto isNonUniformSprite = elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED
-                                        || elem.elemType == FX_ELEM_TYPE_SPRITE_ROTATED || elem.elemType == FX_ELEM_TYPE_TRAIL;
-#else
-        const auto isNonUniformSprite =
-            elem.elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD || elem.elemType == FX_ELEM_TYPE_SPRITE_ORIENTED || elem.elemType == FX_ELEM_TYPE_TRAIL;
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
 #endif
-        return elem.elemType == FX_ELEM_TYPE_TAIL || elem.elemType == FX_ELEM_TYPE_CLOUD
-               || (isNonUniformSprite && (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0);
+        case FX_ELEM_TYPE_TRAIL:
+            return (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0;
+
+        default:
+            return false;
+        }
     }
 
     bool UsesScale(const FxElemDef& elem)
     {
+        switch (elem.elemType)
+        {
 #if defined(FEATURE_T4) || defined(FEATURE_T5)
-        if (elem.elemType == FX_ELEM_TYPE_LINE)
-            return true;
+        case FX_ELEM_TYPE_LINE:
 #endif
+        case FX_ELEM_TYPE_CLOUD:
+        case FX_ELEM_TYPE_MODEL:
+        case FX_ELEM_TYPE_SOUND:
+            return true;
 
-        return elem.elemType == FX_ELEM_TYPE_CLOUD || elem.elemType == FX_ELEM_TYPE_MODEL || elem.elemType == FX_ELEM_TYPE_SOUND;
+        default:
+            return false;
+        }
     }
 
     bool UsesRotation(const FxElemDef& elem)

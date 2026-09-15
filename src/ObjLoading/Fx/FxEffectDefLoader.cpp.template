@@ -96,20 +96,57 @@ namespace
         }
     }
 
-    bool UsesSize1(const fx::FxEditorElem& element)
+    bool UsesAtlas(const fx::FxEditorElemType type)
     {
-        if (element.type == fx::FxEditorElemType::LINE || element.type == fx::FxEditorElemType::TAIL || element.type == fx::FxEditorElemType::CLOUD)
+        switch (type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TRAIL:
+        case fx::FxEditorElemType::CLOUD:
             return true;
 
-        const auto supportsNonUniformScale = element.type == fx::FxEditorElemType::BILLBOARD_SPRITE || element.type == fx::FxEditorElemType::ORIENTED_SPRITE
-                                             || element.type == fx::FxEditorElemType::ROTATED_SPRITE || element.type == fx::FxEditorElemType::TRAIL;
-        return supportsNonUniformScale && (element.flags & FX_ELEM_NONUNIFORM_SCALE) != 0u;
+        default:
+            return false;
+        }
+    }
+
+    bool UsesSize1(const fx::FxEditorElem& element)
+    {
+        switch (element.type)
+        {
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::CLOUD:
+            return true;
+
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TRAIL:
+            return (element.flags & FX_ELEM_NONUNIFORM_SCALE) != 0u;
+
+        default:
+            return false;
+        }
     }
 
     bool UsesScale(const fx::FxEditorElemType type)
     {
-        return type == fx::FxEditorElemType::LINE || type == fx::FxEditorElemType::CLOUD || type == fx::FxEditorElemType::MODEL
-               || type == fx::FxEditorElemType::SOUND;
+        switch (type)
+        {
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::CLOUD:
+        case fx::FxEditorElemType::MODEL:
+        case fx::FxEditorElemType::SOUND:
+            return true;
+
+        default:
+            return false;
+        }
     }
 
     bool UsesRotation(const fx::FxEditorElemType type)
@@ -130,6 +167,25 @@ namespace
             return false;
         }
     }
+
+#ifdef FEATURE_T5
+    bool UsesRotationAxis(const fx::FxEditorElem& element)
+    {
+        if ((element.flags & FX_ELEM_USE_ROTATION_AXIS) == 0u)
+            return false;
+
+        switch (element.type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+            return false;
+
+        default:
+            return true;
+        }
+    }
+#endif
 
     std::array<SampleChannel, 5> GetVisualSampleRouting(const fx::FxEditorElem& element)
     {
@@ -642,11 +698,7 @@ namespace
 
         void ConvertAtlas(const fx::FxEditorElem& source, FxElemDef& destination) const
         {
-            const auto materialType = source.type == fx::FxEditorElemType::BILLBOARD_SPRITE || source.type == fx::FxEditorElemType::ORIENTED_SPRITE
-                                      || source.type == fx::FxEditorElemType::ROTATED_SPRITE || source.type == fx::FxEditorElemType::TAIL
-                                      || source.type == fx::FxEditorElemType::LINE || source.type == fx::FxEditorElemType::TRAIL
-                                      || source.type == fx::FxEditorElemType::CLOUD;
-            if (!materialType || source.visuals.empty())
+            if (!UsesAtlas(source.type) || source.visuals.empty())
                 return;
 
             destination.atlas.behavior = static_cast<char>(source.atlasBehavior);
@@ -984,9 +1036,7 @@ namespace
             CopyCanonicalRange(destination.spawnOffsetHeight, source.spawnOffsetHeight);
             CopyScaledRange(destination.initialRotation, source.initialRotation, PI / 180.0f);
 #ifdef FEATURE_T5
-            const auto forceIdentity = source.type == fx::FxEditorElemType::BILLBOARD_SPRITE || source.type == fx::FxEditorElemType::TAIL
-                                       || source.type == fx::FxEditorElemType::LINE || (source.flags & FX_ELEM_USE_ROTATION_AXIS) == 0u;
-            destination.rotationAxis = PackRotationAxis(forceIdentity ? std::array{0.0f, 0.0f, 0.0f, 1.0f} : source.rotationAxis);
+            destination.rotationAxis = PackRotationAxis(UsesRotationAxis(source) ? source.rotationAxis : std::array{0.0f, 0.0f, 0.0f, 1.0f});
 #endif
             CopyScaledRange(destination.gravity, source.gravity, 0.01f);
             if (destination.gravity.base != 0.0f || destination.gravity.amplitude != 0.0f)
