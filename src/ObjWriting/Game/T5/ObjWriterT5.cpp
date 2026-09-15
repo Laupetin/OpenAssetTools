@@ -14,6 +14,7 @@
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
 #include "Weapon/WeaponDumperT5.h"
+#include "FxEffect/FxEffectDumperT5.h"
 
 using namespace T5;
 
@@ -48,7 +49,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<localize::DumperT5>());
     RegisterAssetDumper(std::make_unique<weapon::DumperT5>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals, m_snd_driver_globals)
-    // REGISTER_DUMPER(AssetDumperFxEffectDef, m_fx)
+    RegisterAssetDumper(std::make_unique<fx_effect::DumperT5>());
     // REGISTER_DUMPER(AssetDumperFxImpactTable, m_fx_impact_table)
     RegisterAssetDumper(std::make_unique<raw_file::DumperT5>());
     RegisterAssetDumper(std::make_unique<string_table::DumperT5>());
