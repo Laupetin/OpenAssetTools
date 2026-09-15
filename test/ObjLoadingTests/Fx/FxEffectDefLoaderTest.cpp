@@ -205,6 +205,7 @@ namespace
         REQUIRE(element.elemType == IW3::FX_ELEM_TYPE_DECAL);
         REQUIRE(element.atlas.rowIndexBits == 1);
         REQUIRE(element.atlas.colIndexBits == 2);
+        REQUIRE(element.atlas.entryCount == 8);
     }
 
     TEST_CASE("FxEffectDef loader rejects invalid stock IW3 element settings", "[iw3][fx][assetloader]")

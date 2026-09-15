@@ -808,8 +808,6 @@ namespace
             destination.atlas.index = static_cast<unsigned char>(source.atlasIndex);
             destination.atlas.fps = static_cast<unsigned char>(source.atlasFps);
             destination.atlas.loopCount = static_cast<unsigned char>(source.atlasLoopCount + 1);
-            destination.atlas.colIndexBits = static_cast<unsigned char>(source.atlasColIndexBits);
-            destination.atlas.rowIndexBits = static_cast<unsigned char>(source.atlasRowIndexBits);
 
             destination.atlas.rowIndexBits = 0;
             while ((1u << destination.atlas.rowIndexBits) < referenceRowCount)
@@ -818,12 +816,12 @@ namespace
             while ((1u << destination.atlas.colIndexBits) < referenceColumnCount)
                 destination.atlas.colIndexBits++;
 
-#ifdef FEATURE_T5
             const auto entryCount = 1u << (destination.atlas.colIndexBits + destination.atlas.rowIndexBits);
+#ifdef FEATURE_T5
             const auto indexRange = static_cast<unsigned>(std::max(source.atlasIndexRange, 1));
             destination.atlas.entryCountAndIndexRange = static_cast<std::uint16_t>(entryCount | ((indexRange & 0x7Fu) << 9u));
 #else
-            destination.atlas.entryCount = static_cast<std::int16_t>(source.atlasEntryCount);
+            destination.atlas.entryCount = static_cast<std::int16_t>(entryCount);
 #endif
             return {};
         }
