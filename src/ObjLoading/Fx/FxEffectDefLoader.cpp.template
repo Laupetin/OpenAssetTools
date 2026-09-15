@@ -465,8 +465,22 @@ namespace
         {
             std::vector<const fx::FxEditorElem*> loopingElements;
             std::vector<const fx::FxEditorElem*> oneShotElements;
+            std::vector<FxEffectDef*> emittedEffects;
+            auto emittedElementCount = 0u;
+            std::unordered_set<FxEffectDef*> seenEmittedEffects;
             for (const auto& element : editorEffect.elements)
             {
+                auto emissionResult = LoadEffect(element.emission);
+                if (!emissionResult)
+                    return std::unexpected(std::move(emissionResult).error());
+
+                auto* emission = emissionResult.value();
+                if (emission && emission->elemDefCountOneShot > 0 && seenEmittedEffects.emplace(emission).second)
+                {
+                    emittedEffects.emplace_back(emission);
+                    emittedElementCount += static_cast<unsigned>(emission->elemDefCountOneShot);
+                }
+
                 if ((element.editorFlags & FX_ED_FLAG_DISABLED) != 0u)
                     continue;
                 auto graphValidationResult = ValidateElementGraphs(element);
@@ -474,25 +488,6 @@ namespace
                     return std::unexpected(std::move(graphValidationResult).error());
 
                 ((element.editorFlags & FX_ED_FLAG_LOOPING) != 0u ? loopingElements : oneShotElements).emplace_back(&element);
-                auto emissionResult = LoadEffect(element.emission);
-                if (!emissionResult)
-                    return std::unexpected(std::move(emissionResult).error());
-            }
-
-            std::vector<FxEffectDef*> emittedEffects;
-            auto emittedElementCount = 0u;
-            std::unordered_set<FxEffectDef*> seenEmittedEffects;
-            for (const auto& element : editorEffect.elements)
-            {
-                if (element.emission.empty())
-                    continue;
-
-                auto* emission = m_effect_dependencies.at(element.emission);
-                if (emission && emission->elemDefCountOneShot > 0 && seenEmittedEffects.emplace(emission).second)
-                {
-                    emittedEffects.emplace_back(emission);
-                    emittedElementCount += static_cast<unsigned>(emission->elemDefCountOneShot);
-                }
             }
 
             auto* effect = m_memory.Alloc<FxEffectDef>();

@@ -145,6 +145,37 @@ namespace
         REQUIRE(sample.base.size[1] == Approx(sample.base.size[0]));
     }
 
+    TEST_CASE("FxEffectDef loader includes emissions referenced by disabled IW3 elements", "[iw3][fx][assetloader]")
+    {
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "    editorFlags disabled;\n    emission \"emitted\";\n", "light"));
+
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        IW3::FxElemVelStateSample emittedVelocitySample{};
+        IW3::FxElemDef emittedElement{
+            .velSamples = &emittedVelocitySample,
+        };
+        IW3::FxEffectDef emittedEffect{
+            .name = "emitted",
+            .elemDefCountOneShot = 1,
+            .elemDefs = &emittedElement,
+        };
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        context.AddAsset<IW3::AssetFx>("emitted", &emittedEffect);
+
+        const auto loader = fx::CreateLoaderIW3(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<IW3::FxEffectDef>*>(result.GetAssetInfo());
+        const auto* effect = assetInfo->Asset();
+        REQUIRE(effect->elemDefCountLooping == 0);
+        REQUIRE(effect->elemDefCountOneShot == 0);
+        REQUIRE(effect->elemDefCountEmission == 1);
+    }
+
     TEST_CASE("FxEffectDef loader converts T4 line fields", "[t4][fx][assetloader]")
     {
         MockSearchPath searchPath;
