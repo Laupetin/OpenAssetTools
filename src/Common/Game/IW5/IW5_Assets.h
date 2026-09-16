@@ -317,7 +317,11 @@ namespace IW5
         uint16_t _2[1];
     };
 
-    struct type_align32(4) XAnimPartTransFrames
+#if defined(ARCH_x64)
+    struct XAnimPartTransFrames
+#else
+struct type_align32(4) XAnimPartTransFrames
+#endif
     {
         vec3_t mins;
         vec3_t size;
@@ -349,7 +353,11 @@ namespace IW5
         int16_t value[2];
     };
 
-    struct type_align32(4) XAnimDeltaPartQuatDataFrames2
+#if defined(ARCH_x64)
+    struct XAnimDeltaPartQuatDataFrames2
+#else
+struct type_align32(4) XAnimDeltaPartQuatDataFrames2
+#endif
     {
         XQuat2* frames;
         XAnimDynamicIndicesQuat2 indices;
