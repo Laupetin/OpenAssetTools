@@ -8,20 +8,34 @@
 #include "Weapon/WeaponCommon.h"
 #include "WeaponInfoStringLoaderT4.h"
 
-#include <array>
 #include <format>
+#include <string_view>
+#include <vector>
 
 using namespace T4;
 
 namespace
 {
-    SearchPathOpenFile OpenWeaponFile(ISearchPath& searchPath, const std::string& assetName, std::string& fileName)
+    bool HasWeaponDirectoryPrefix(const std::string_view assetName)
     {
-        const std::array candidates{
+        return assetName.size() > 3 && (assetName[2] == '/' || assetName[2] == '\\')
+               && (utils::StringEqualsIgnoreCase(assetName.substr(0, 2), "sp") || utils::StringEqualsIgnoreCase(assetName.substr(0, 2), "mp"));
+    }
+
+    std::vector<std::string> GetWeaponFileCandidates(const std::string& assetName)
+    {
+        if (HasWeaponDirectoryPrefix(assetName))
+            return {std::format("weapons/{}", assetName)};
+
+        return {
             weapon::GetFileNameForAssetName(assetName),
             std::format("weapons/sp/{}", assetName),
             std::format("weapons/mp/{}", assetName),
         };
+    }
+
+    SearchPathOpenFile OpenWeaponFile(ISearchPath& searchPath, const std::vector<std::string>& candidates, std::string& fileName)
+    {
 
         for (const auto& candidate : candidates)
         {
@@ -35,23 +49,27 @@ namespace
 
         // The game and its Windows filesystem treat archive paths
         // case-insensitively, while our IWD lookup preserves case.
+        std::vector<std::string> caseInsensitiveMatches(candidates.size());
         searchPath.Find(
-            [&candidates, &fileName](const std::string& candidate)
+            [&candidates, &caseInsensitiveMatches](const std::string& candidate)
             {
-                if (!fileName.empty())
-                    return;
-
-                for (const auto& expected : candidates)
+                for (auto candidateIndex = 0u; candidateIndex < candidates.size(); candidateIndex++)
                 {
-                    if (utils::StringEqualsIgnoreCase(candidate, expected))
-                    {
-                        fileName = candidate;
-                        return;
-                    }
+                    if (caseInsensitiveMatches[candidateIndex].empty() && utils::StringEqualsIgnoreCase(candidate, candidates[candidateIndex]))
+                        caseInsensitiveMatches[candidateIndex] = candidate;
                 }
             });
 
-        return fileName.empty() ? SearchPathOpenFile() : searchPath.Open(fileName);
+        for (const auto& match : caseInsensitiveMatches)
+        {
+            if (!match.empty())
+            {
+                fileName = match;
+                return searchPath.Open(fileName);
+            }
+        }
+
+        return {};
     }
 
     class RawLoaderWeapon final : public AssetCreator<AssetWeapon>
@@ -65,8 +83,9 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
+            const auto candidates = GetWeaponFileCandidates(assetName);
             std::string fileName;
-            auto file = OpenWeaponFile(m_search_path, assetName, fileName);
+            auto file = OpenWeaponFile(m_search_path, candidates, fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -78,7 +97,8 @@ namespace
             }
 
             file.m_stream.reset();
-            return m_info_string_loader.CreateAsset(assetName, infoString, context);
+            const auto actualAssetName = HasWeaponDirectoryPrefix(assetName) ? assetName.substr(3) : assetName;
+            return m_info_string_loader.CreateAsset(actualAssetName, infoString, context);
         }
 
     private:
