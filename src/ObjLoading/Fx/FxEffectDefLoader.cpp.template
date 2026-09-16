@@ -685,6 +685,17 @@ namespace
             return dependency->Asset();
         }
 
+        std::expected<void, std::string> SetDefaultPhysPreset(XModel& model)
+        {
+            auto* dependency = m_context.LoadDependency<AssetPhysPreset>("default");
+            if (!dependency)
+                return std::unexpected("could not find phys preset \"default\"");
+
+            m_registration.AddDependency(dependency);
+            model.physPreset = dependency->Asset();
+            return {};
+        }
+
         std::expected<void, std::string> ConvertVisuals(const fx::FxEditorElem& source, FxElemDef& destination)
         {
             destination.visualCount = static_cast<unsigned char>(source.visuals.size());
@@ -749,6 +760,12 @@ namespace
                     if (!modelResult)
                         return std::unexpected(std::move(modelResult).error());
                     visuals[index].model = modelResult.value();
+                    if (visuals[index].model && !visuals[index].model->physPreset && (destination.flags & FX_ELEM_USE_MODEL_PHYSICS) != 0u)
+                    {
+                        auto physPresetResult = SetDefaultPhysPreset(*visuals[index].model);
+                        if (!physPresetResult)
+                            return std::unexpected(std::move(physPresetResult).error());
+                    }
                     break;
                 }
 

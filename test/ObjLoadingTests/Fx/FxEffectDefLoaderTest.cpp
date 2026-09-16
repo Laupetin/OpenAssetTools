@@ -3,6 +3,7 @@
 #include "Game/T5/Fx/FxEffectDefLoaderT5.h"
 #include "SearchPath/MockSearchPath.h"
 
+#include <algorithm>
 #include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -388,6 +389,33 @@ efBoundingBoxCentre 1 2 3;
         REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, deathEffect.name));
         REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, emittedEffect.name));
         REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, attachedEffect.name));
+    }
+
+    TEST_CASE("FxEffectDef loader assigns the default phys preset to physics models", "[t5][fx][assetloader]")
+    {
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(3, "", "    flags modelUsesPhysics;\n", "    model { \"test_model\" }"));
+
+        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        T5::XModel model{.name = "test_model"};
+        T5::PhysPreset defaultPhysPreset{.name = "default"};
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        const auto* modelInfo = context.AddAsset<T5::AssetXModel>(model.name, &model);
+        const auto* physPresetInfo = context.AddAsset<T5::AssetPhysPreset>(defaultPhysPreset.name, &defaultPhysPreset);
+
+        const auto loader = fx::CreateLoaderT5(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<T5::FxEffectDef>*>(result.GetAssetInfo());
+        const auto& element = assetInfo->Asset()->elemDefs[0];
+        REQUIRE((element.flags & T5::FX_ELEM_USE_MODEL_PHYSICS) != 0u);
+        REQUIRE(element.visuals.instance.model == &model);
+        REQUIRE(model.physPreset == &defaultPhysPreset);
+        REQUIRE(std::ranges::find(assetInfo->m_dependencies, modelInfo) != assetInfo->m_dependencies.end());
+        REQUIRE(std::ranges::find(assetInfo->m_dependencies, physPresetInfo) != assetInfo->m_dependencies.end());
     }
 
     TEST_CASE("FxEffectDef loader accepts all stock T5 spawn-relative types", "[t5][fx][assetloader]")
