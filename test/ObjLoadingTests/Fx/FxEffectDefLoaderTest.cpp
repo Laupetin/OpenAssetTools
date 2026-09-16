@@ -121,9 +121,9 @@ namespace
         REQUIRE(element.collMaxs[2] == Approx(7.0f));
         REQUIRE(element.lightingFrac == 127u);
         REQUIRE(element.visSamples[0].base.size[0] == Approx(1.0f));
-        REQUIRE(element.visSamples[0].base.color[0] == 64u);
-        REQUIRE(element.visSamples[0].base.color[1] == 128u);
-        REQUIRE(element.visSamples[0].base.color[2] == 255u);
+        REQUIRE(element.visSamples[0].base.color.b == 64u);
+        REQUIRE(element.visSamples[0].base.color.g == 128u);
+        REQUIRE(element.visSamples[0].base.color.r == 255u);
     }
 
     TEST_CASE("FxEffectDef loader mirrors the primary size for uniform IW3 sprites", "[iw3][fx][assetloader]")

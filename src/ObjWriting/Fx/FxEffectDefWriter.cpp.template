@@ -278,15 +278,15 @@ namespace
         return false;
     }
 
-    fx::RgbaColor UnpackVertexColor(const unsigned char* color)
+    fx::RgbaColor UnpackVertexColor(const FxColor& color)
     {
         constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
 
         return {
-            .r = color[2] * BYTE_TO_FLOAT,
-            .g = color[1] * BYTE_TO_FLOAT,
-            .b = color[0] * BYTE_TO_FLOAT,
-            .a = color[3] * BYTE_TO_FLOAT,
+            .r = color.r * BYTE_TO_FLOAT,
+            .g = color.g * BYTE_TO_FLOAT,
+            .b = color.b * BYTE_TO_FLOAT,
+            .a = color.a * BYTE_TO_FLOAT,
         };
     }
 

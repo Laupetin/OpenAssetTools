@@ -428,12 +428,12 @@ namespace
         return static_cast<unsigned char>(std::clamp(static_cast<int>(std::floor(value * 255.0f + 0.5f)), 0, 255));
     }
 
-    void PackVertexColor(const fx::RgbaColor& color, unsigned char* destination)
+    void PackVertexColor(const fx::RgbaColor& color, FxColor& destination)
     {
-        destination[0] = PackColorComponent(color.b);
-        destination[1] = PackColorComponent(color.g);
-        destination[2] = PackColorComponent(color.r);
-        destination[3] = PackColorComponent(color.a);
+        destination.b = PackColorComponent(color.b);
+        destination.g = PackColorComponent(color.g);
+        destination.r = PackColorComponent(color.r);
+        destination.a = PackColorComponent(color.a);
     }
 
 #ifdef FEATURE_T5
@@ -968,8 +968,8 @@ namespace
                 }
                 else
                 {
-                    std::memset(sample.base.color, 0xFF, sizeof(sample.base.color));
-                    std::memset(sample.amplitude.color, 0xFF, sizeof(sample.amplitude.color));
+                    std::memset(&sample.base.color, 0xFF, sizeof(sample.base.color));
+                    std::memset(&sample.amplitude.color, 0xFF, sizeof(sample.amplitude.color));
                 }
 
                 if (routing.rotation == SampleChannel::ROTATION)

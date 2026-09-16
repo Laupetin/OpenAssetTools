@@ -3617,9 +3617,17 @@ namespace IW3
         FxElemVelStateInFrame world;
     };
 
+    struct FxColor
+    {
+        unsigned char b;
+        unsigned char g;
+        unsigned char r;
+        unsigned char a;
+    };
+
     struct FxElemVisualState
     {
-        unsigned char color[4];
+        FxColor color;
         float rotationDelta;
         float rotationTotal;
         float size[2];

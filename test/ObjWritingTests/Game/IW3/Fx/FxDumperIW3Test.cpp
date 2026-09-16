@@ -27,14 +27,14 @@ namespace
         FxElemVisStateSample visualSamples[2]{};
         for (auto& sample : visualSamples)
         {
-            sample.base.color[0] = 64;
-            sample.base.color[1] = 128;
-            sample.base.color[2] = 255;
-            sample.base.color[3] = 127;
-            sample.amplitude.color[0] = 128;
-            sample.amplitude.color[1] = 128;
-            sample.amplitude.color[2] = 255;
-            sample.amplitude.color[3] = 255;
+            sample.base.color.b = 64;
+            sample.base.color.g = 128;
+            sample.base.color.r = 255;
+            sample.base.color.a = 127;
+            sample.amplitude.color.b = 128;
+            sample.amplitude.color.g = 128;
+            sample.amplitude.color.r = 255;
+            sample.amplitude.color.a = 255;
             sample.base.size[0] = 2.0f;
             sample.amplitude.size[0] = 1.0f;
             sample.base.size[1] = 4.0f;
