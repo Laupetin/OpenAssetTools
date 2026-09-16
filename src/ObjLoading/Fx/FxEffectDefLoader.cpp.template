@@ -651,6 +651,13 @@ namespace
             return effect;
         }
 
+        void SetEffectReference(FxEffectDefRef& destination, const std::string& name)
+        {
+            destination.name = name.empty() ? nullptr : m_memory.Dup(name.c_str());
+            if (!name.empty())
+                m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetFx>(name));
+        }
+
         std::expected<Material*, std::string> LoadMaterial(const std::string& sourceName)
         {
             if (sourceName.empty())
@@ -746,13 +753,8 @@ namespace
                 }
 
                 case fx::FxEditorElemType::RUNNER:
-                {
-                    auto effectResult = LoadEffect(source.visuals[index]);
-                    if (!effectResult)
-                        return std::unexpected(std::move(effectResult).error());
-                    visuals[index].effectDef.handle = effectResult.value();
+                    SetEffectReference(visuals[index].effectDef, source.visuals[index]);
                     break;
-                }
 
                 case fx::FxEditorElemType::SOUND:
                     visuals[index].soundName = source.visuals[index].empty() ? nullptr : m_memory.Dup(source.visuals[index].c_str());
@@ -1174,33 +1176,16 @@ namespace
             }
 
             if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_TOUCH) != 0u)
-            {
-                auto effectResult = LoadEffect(source.effectOnImpact);
-                if (!effectResult)
-                    return std::unexpected(std::move(effectResult).error());
-                destination.effectOnImpact.handle = effectResult.value();
-            }
+                SetEffectReference(destination.effectOnImpact, source.effectOnImpact);
             if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_DEATH) != 0u)
-            {
-                auto effectResult = LoadEffect(source.effectOnDeath);
-                if (!effectResult)
-                    return std::unexpected(std::move(effectResult).error());
-                destination.effectOnDeath.handle = effectResult.value();
-            }
-            auto emissionResult = LoadEffect(source.emission);
-            if (!emissionResult)
-                return std::unexpected(std::move(emissionResult).error());
-            destination.effectEmitted.handle = (source.editorFlags & FX_ED_FLAG_PLAY_ON_RUN) != 0u ? emissionResult.value() : nullptr;
+                SetEffectReference(destination.effectOnDeath, source.effectOnDeath);
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_RUN) != 0u)
+                SetEffectReference(destination.effectEmitted, source.emission);
             CopyCanonicalRange(destination.emitDist, source.emitDist);
             CopyCanonicalRange(destination.emitDistVariance, source.emitDistVariance);
 #ifdef FEATURE_T5
             if ((source.editorFlags & FX_ED_FLAG_PLAY_ATTACHED) != 0u)
-            {
-                auto effectResult = LoadEffect(source.attachment);
-                if (!effectResult)
-                    return std::unexpected(std::move(effectResult).error());
-                destination.effectAttached.handle = effectResult.value();
-            }
+                SetEffectReference(destination.effectAttached, source.attachment);
 #endif
             auto trailResult = ConvertTrail(source, destination);
             if (!trailResult)

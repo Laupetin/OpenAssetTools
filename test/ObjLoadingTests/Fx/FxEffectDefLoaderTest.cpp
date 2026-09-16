@@ -84,6 +84,17 @@ namespace
         return effect;
     }
 
+    bool HasIndirectAssetReference(const XAssetInfoGeneric& assetInfo, const asset_type_t type, const std::string_view name)
+    {
+        for (const auto& reference : assetInfo.m_indirect_asset_references)
+        {
+            if (reference.m_type == type && reference.m_name == name)
+                return true;
+        }
+
+        return false;
+    }
+
     TEST_CASE("FxEffectDef loader converts stock IW3 fields", "[iw3][fx][assetloader]")
     {
         MockSearchPath searchPath;
@@ -324,6 +335,59 @@ efBoundingBoxCentre 1 2 3;
         REQUIRE(std::string(element.spawnSound.spawnSound) == "test_sound");
         REQUIRE(element.billboardPivot[0] == Approx(4.0f));
         REQUIRE(element.billboardPivot[1] == Approx(6.0f));
+    }
+
+    TEST_CASE("FxEffectDef loader stores T5 effect references by name", "[t5][fx][assetloader]")
+    {
+        constexpr auto ELEMENT_FIELDS = R"(
+    editorFlags playOnTouch playOnDeath playOnRun playAttached;
+    fxOnImpact "impact";
+    fxOnDeath "death";
+    emission "emitted";
+    attachment "attached";
+)";
+
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(3, "", ELEMENT_FIELDS, "    runner { \"runner\" }"));
+
+        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        T5::FxEffectDef runnerEffect{.name = "runner"};
+        T5::FxEffectDef impactEffect{.name = "impact"};
+        T5::FxEffectDef deathEffect{.name = "death"};
+        T5::FxElemVelStateSample emittedVelocitySample{};
+        T5::FxElemDef emittedElement{.velSamples = &emittedVelocitySample};
+        T5::FxEffectDef emittedEffect{
+            .name = "emitted",
+            .elemDefCountOneShot = 1,
+            .elemDefs = &emittedElement,
+        };
+        T5::FxEffectDef attachedEffect{.name = "attached"};
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        context.AddAsset<T5::AssetFx>(runnerEffect.name, &runnerEffect);
+        context.AddAsset<T5::AssetFx>(impactEffect.name, &impactEffect);
+        context.AddAsset<T5::AssetFx>(deathEffect.name, &deathEffect);
+        context.AddAsset<T5::AssetFx>(emittedEffect.name, &emittedEffect);
+        context.AddAsset<T5::AssetFx>(attachedEffect.name, &attachedEffect);
+
+        const auto loader = fx::CreateLoaderT5(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<T5::FxEffectDef>*>(result.GetAssetInfo());
+        const auto& element = assetInfo->Asset()->elemDefs[0];
+        REQUIRE(std::string(element.visuals.instance.effectDef.name) == runnerEffect.name);
+        REQUIRE(std::string(element.effectOnImpact.name) == impactEffect.name);
+        REQUIRE(std::string(element.effectOnDeath.name) == deathEffect.name);
+        REQUIRE(std::string(element.effectEmitted.name) == emittedEffect.name);
+        REQUIRE(std::string(element.effectAttached.name) == attachedEffect.name);
+        REQUIRE(assetInfo->m_indirect_asset_references.size() == 5u);
+        REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, runnerEffect.name));
+        REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, impactEffect.name));
+        REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, deathEffect.name));
+        REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, emittedEffect.name));
+        REQUIRE(HasIndirectAssetReference(*assetInfo, T5::AssetFx::EnumEntry, attachedEffect.name));
     }
 
     TEST_CASE("FxEffectDef loader accepts all stock T5 spawn-relative types", "[t5][fx][assetloader]")
