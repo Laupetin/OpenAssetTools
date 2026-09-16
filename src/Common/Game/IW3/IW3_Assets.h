@@ -2787,6 +2787,12 @@ namespace IW3
         ITEM_TYPE_GAME_MESSAGE_WINDOW = 0x13
     };
 
+    enum ItemDefFlag : unsigned int
+    {
+        ITEM_FLAG_SAVE_GAME_INFO = 0x1,
+        ITEM_FLAG_CINEMATIC_SUBTITLE = 0x2,
+    };
+
     enum ItemDefDvarFlag
     {
         ITEM_DVAR_FLAG_ENABLE = 0x1,
