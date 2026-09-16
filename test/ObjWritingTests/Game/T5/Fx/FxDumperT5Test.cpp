@@ -125,11 +125,13 @@ namespace
         FxEffectDef physicsEffect{.name = "impacts/physics"};
         FxEffectDef boltEffect{.name = "impacts/bolt_flesh"};
         FxEffectDef bladeEffect{.name = "impacts/blade_flesh"};
+        FxEffectDef grenadeFleshEffect{.name = "impacts/grenade_flesh"};
 
         FxImpactEntry entries[21]{};
         entries[5].nonflesh[SURF_TYPE_DEFAULT] = &shotgunEffect;
         entries[7].nonflesh[SURF_TYPE_DEFAULT] = &armorPiercingEffect;
         entries[9].nonflesh[SURF_TYPE_DEFAULT] = &extremeEffect;
+        entries[11].flesh[0] = &grenadeFleshEffect;
         entries[18].nonflesh[SURF_TYPE_PLAYER] = &physicsEffect;
         entries[19].flesh[0] = &boltEffect;
         entries[20].flesh[3] = &bladeEffect;
@@ -148,14 +150,14 @@ namespace
         REQUIRE(dumpedFile != nullptr);
         const auto text = dumpedFile->AsString();
 
-        REQUIRE(std::count(text.begin(), text.end(), '\n') == 704);
+        REQUIRE(std::count(text.begin(), text.end(), '\n') == 736);
         REQUIRE(text.find("bullet_ap_normal,default,impacts/armor_piercing\n") != std::string::npos);
         REQUIRE(text.find("bullet_xtreme_normal,default,impacts/extreme\n") != std::string::npos);
         REQUIRE(text.find("shotgun_normal,default,impacts/shotgun\n") != std::string::npos);
         REQUIRE(text.find("physics_impact,player,impacts/physics\n") != std::string::npos);
         REQUIRE(text.find("bolt,flesh_body_nonfatal,impacts/bolt_flesh\n") != std::string::npos);
         REQUIRE(text.find("blade,flesh_head_fatal,impacts/blade_flesh\n") != std::string::npos);
-        REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,") == std::string::npos);
+        REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,impacts/grenade_flesh\n") != std::string::npos);
 
         const auto armorPiercingPosition = text.find("bullet_ap_normal,default,");
         const auto extremePosition = text.find("bullet_xtreme_normal,default,");

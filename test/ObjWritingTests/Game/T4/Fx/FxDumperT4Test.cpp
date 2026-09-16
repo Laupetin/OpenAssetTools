@@ -70,11 +70,14 @@ namespace
         shotgunEffect.name = "impacts/shotgun";
         FxEffectDef armorPiercingEffect{};
         armorPiercingEffect.name = "impacts/armor_piercing";
+        FxEffectDef grenadeFleshEffect{};
+        grenadeFleshEffect.name = "impacts/grenade_flesh";
 
         FxImpactEntry entries[16]{};
         entries[2].nonflesh[SURF_TYPE_TALL_GRASS] = &underwaterEffect;
         entries[5].nonflesh[SURF_TYPE_DEFAULT] = &shotgunEffect;
         entries[7].nonflesh[SURF_TYPE_DEFAULT] = &armorPiercingEffect;
+        entries[9].flesh[0] = &grenadeFleshEffect;
         entries[15].nonflesh[SURF_TYPE_PLAYER] = &physicsEffect;
 
         FxImpactTable impactTable{.name = "", .table = entries};
@@ -108,6 +111,6 @@ namespace
         const auto playerPosition = text.find("bullet_small_normal,player,");
         REQUIRE(paintedMetalPosition < fleshPosition);
         REQUIRE(fleshPosition < playerPosition);
-        REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,") == std::string::npos);
+        REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,impacts/grenade_flesh\n") != std::string::npos);
     }
 } // namespace

@@ -122,12 +122,15 @@ namespace
         shotgunEffect.name = "impacts/shotgun";
         FxEffectDef armorPiercingEffect{};
         armorPiercingEffect.name = "impacts/armor_piercing";
+        FxEffectDef grenadeFleshEffect{};
+        grenadeFleshEffect.name = "impacts/grenade_flesh";
 
         FxImpactEntry entries[12]{};
         entries[0].nonflesh[0] = &defaultEffect;
         entries[0].flesh[3] = &fleshEffect;
         entries[4].nonflesh[SURF_TYPE_DEFAULT] = &shotgunEffect;
         entries[6].nonflesh[SURF_TYPE_DEFAULT] = &armorPiercingEffect;
+        entries[8].flesh[0] = &grenadeFleshEffect;
 
         SECTION("An unnamed compiled map table uses the zone name")
         {
@@ -154,7 +157,7 @@ namespace
             const auto armorPiercingPosition = text.find("bullet_ap_normal,default,");
             const auto shotgunPosition = text.find("shotgun_normal,default,");
             REQUIRE(armorPiercingPosition < shotgunPosition);
-            REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,") == std::string::npos);
+            REQUIRE(text.find("grenade_bounce,flesh_body_nonfatal,impacts/grenade_flesh\n") != std::string::npos);
         }
 
         SECTION("An unnamed compiled common table uses the root CSV path")
