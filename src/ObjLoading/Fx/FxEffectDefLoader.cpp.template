@@ -1122,6 +1122,10 @@ namespace
         std::expected<void, std::string> ConvertElement(const fx::FxEditorElem& source, FxElemDef& destination)
         {
             destination.flags = static_cast<int>(source.flags);
+#ifdef FEATURE_T5
+            if (source.billboardPivot[0] == 0.0f && source.billboardPivot[1] == 0.0f)
+                destination.flags &= ~FX_ELEM_USE_BILLBOARD_PIVOT;
+#endif
             CopyCanonicalRange(destination.spawnRange, source.spawnRange);
             CopyCanonicalRange(destination.fadeInRange, source.fadeInRange);
             CopyCanonicalRange(destination.fadeOutRange, source.fadeOutRange);

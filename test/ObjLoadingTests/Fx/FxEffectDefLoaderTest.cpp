@@ -326,6 +326,7 @@ efBoundingBoxCentre 1 2 3;
 
         const auto& element = effect->elemDefs[0];
         REQUIRE(element.elemType == T5::FX_ELEM_TYPE_SPRITE_ROTATED);
+        REQUIRE((element.flags & T5::FX_ELEM_USE_BILLBOARD_PIVOT) != 0u);
         REQUIRE(element.rotationAxis == 0x20000000u);
         REQUIRE(element.alphaFadeTimeMsec == 250u);
         REQUIRE(element.maxWindStrength == 12u);
@@ -336,6 +337,31 @@ efBoundingBoxCentre 1 2 3;
         REQUIRE(std::string(element.spawnSound.spawnSound) == "test_sound");
         REQUIRE(element.billboardPivot[0] == Approx(4.0f));
         REQUIRE(element.billboardPivot[1] == Approx(6.0f));
+    }
+
+    TEST_CASE("FxEffectDef loader clears the T5 billboard pivot flag for a zero pivot", "[t5][fx][assetloader]")
+    {
+        constexpr auto ELEMENT_FIELDS = R"(
+    flags useBillboardPivot;
+    billboardPivot 0 0;
+)";
+
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", MakeEffect(3, "", ELEMENT_FIELDS, "    billboardSprite { }"));
+
+        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        const auto loader = fx::CreateLoaderT5(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<T5::FxEffectDef>*>(result.GetAssetInfo());
+        const auto& element = assetInfo->Asset()->elemDefs[0];
+        REQUIRE((element.flags & T5::FX_ELEM_USE_BILLBOARD_PIVOT) == 0u);
+        REQUIRE(element.billboardPivot[0] == Approx(0.0f));
+        REQUIRE(element.billboardPivot[1] == Approx(0.0f));
     }
 
     TEST_CASE("FxEffectDef loader stores T5 effect references by name", "[t5][fx][assetloader]")
