@@ -377,9 +377,6 @@ namespace
     {
         switch (elem.elemType)
         {
-#if defined(FEATURE_T4) || defined(FEATURE_T5)
-        case FX_ELEM_TYPE_LINE:
-#endif
         case FX_ELEM_TYPE_CLOUD:
         case FX_ELEM_TYPE_MODEL:
         case FX_ELEM_TYPE_SOUND:

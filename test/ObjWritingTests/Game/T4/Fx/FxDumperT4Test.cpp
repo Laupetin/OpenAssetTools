@@ -53,7 +53,7 @@ namespace
         const auto text = dumpedFile->AsString();
 
         REQUIRE(text.starts_with("iwfx 2\n"));
-        REQUIRE(text.find("editorFlags useRandSize1 useRandScale;") != std::string::npos);
+        REQUIRE(text.find("editorFlags useRandSize1;") != std::string::npos);
         REQUIRE(text.find("flags isMatureContent spawnOffsetNone runRelToWorld flamechunk hasReflection;") != std::string::npos);
         REQUIRE(text.find("windinfluence 0.5;") != std::string::npos);
         REQUIRE(text.find("efPriority 115;") != std::string::npos);
