@@ -353,6 +353,67 @@ namespace
         REQUIRE(parsed->m_menus[0]->m_items[1]->m_dvar == "player_name");
     }
 
+    TEST_CASE("MenuDumperT4: Dumps special item text flags", "[t4][menu][assetdumper]")
+    {
+        itemDef_s saveGameInfo{};
+        saveGameInfo.window.name = "save_game_info";
+        saveGameInfo.text = "savegameinfo";
+        saveGameInfo.itemFlags = ITEM_FLAG_SAVE_GAME_INFO;
+
+        itemDef_s cinematicSubtitle{};
+        cinematicSubtitle.window.name = "cinematic_subtitle";
+        cinematicSubtitle.text = "cinematicsubtitle";
+        cinematicSubtitle.itemFlags = ITEM_FLAG_CINEMATIC_SUBTITLE;
+
+        itemDef_s customSaveGameInfo{};
+        customSaveGameInfo.window.name = "custom_save_game_info";
+        customSaveGameInfo.text = "custom save game text";
+        customSaveGameInfo.itemFlags = ITEM_FLAG_SAVE_GAME_INFO;
+
+        itemDef_s* items[]{&saveGameInfo, &cinematicSubtitle, &customSaveGameInfo};
+
+        menuDef_t menu{};
+        menu.window.name = "special_item_text";
+        menu.itemCount = static_cast<int>(std::size(items));
+        menu.items = items;
+
+        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
+
+        MockSearchPath mockObjPath;
+        MockOutputPath mockOutput;
+        AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
+
+        menu::MenuDumperT4 dumper;
+        dumper.Dump(context);
+
+        const auto* file = mockOutput.GetMockedFile("ui_mp/special_item_text.menu");
+        REQUIRE(file);
+
+        const auto output = file->AsString();
+        const auto saveGameInfoPosition = output.find("save_game_info");
+        const auto cinematicSubtitlePosition = output.find("cinematic_subtitle", saveGameInfoPosition);
+        const auto customSaveGameInfoPosition = output.find("custom_save_game_info", cinematicSubtitlePosition);
+        REQUIRE(saveGameInfoPosition != std::string::npos);
+        REQUIRE(cinematicSubtitlePosition != std::string::npos);
+        REQUIRE(customSaveGameInfoPosition != std::string::npos);
+
+        const auto saveGameInfoOutput = output.substr(saveGameInfoPosition, cinematicSubtitlePosition - saveGameInfoPosition);
+        REQUIRE(saveGameInfoOutput.find("textsavegame") != std::string::npos);
+        REQUIRE(saveGameInfoOutput.find("\"savegameinfo\"") == std::string::npos);
+
+        const auto cinematicSubtitleOutput = output.substr(cinematicSubtitlePosition, customSaveGameInfoPosition - cinematicSubtitlePosition);
+        REQUIRE(cinematicSubtitleOutput.find("textcinematicsubtitle") != std::string::npos);
+        REQUIRE(cinematicSubtitleOutput.find("\"cinematicsubtitle\"") == std::string::npos);
+
+        const auto customSaveGameInfoOutput = output.substr(customSaveGameInfoPosition);
+        const auto customKeywordPosition = customSaveGameInfoOutput.find("textsavegame");
+        const auto customTextPosition = customSaveGameInfoOutput.find("\"custom save game text\"");
+        REQUIRE(customKeywordPosition != std::string::npos);
+        REQUIRE(customTextPosition != std::string::npos);
+        REQUIRE(customKeywordPosition < customTextPosition);
+    }
+
     TEST_CASE("MenuDumperT4: Prefers parent menu list path over ui_mp fallback", "[t4][menu][assetdumper]")
     {
         menuDef_t menu{};

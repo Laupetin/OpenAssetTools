@@ -566,6 +566,16 @@ namespace
 
             item->window.name = ConvertString(commonItem.m_name);
             item->text = commonItem.m_text ? m_memory.Dup(commonItem.m_text->c_str()) : nullptr;
+            if (commonItem.m_text_save_game)
+            {
+                item->text = m_memory.Dup("savegameinfo");
+                item->itemFlags |= ITEM_FLAG_SAVE_GAME_INFO;
+            }
+            if (commonItem.m_text_cinematic_subtitle)
+            {
+                item->text = m_memory.Dup("cinematicsubtitle");
+                item->itemFlags |= ITEM_FLAG_CINEMATIC_SUBTITLE;
+            }
             item->window.group = ConvertString(commonItem.m_group);
             item->window.rectClient = ConvertRectDef(commonItem.m_rect);
             item->window.style = commonItem.m_style;
