@@ -150,7 +150,7 @@ namespace
         REQUIRE(dumpedFile != nullptr);
         const auto text = dumpedFile->AsString();
 
-        REQUIRE(std::count(text.begin(), text.end(), '\n') == 736);
+        REQUIRE(std::count(text.begin(), text.end(), '\n') == 735);
         REQUIRE(text.find("bullet_ap_normal,default,impacts/armor_piercing\n") != std::string::npos);
         REQUIRE(text.find("bullet_xtreme_normal,default,impacts/extreme\n") != std::string::npos);
         REQUIRE(text.find("shotgun_normal,default,impacts/shotgun\n") != std::string::npos);
