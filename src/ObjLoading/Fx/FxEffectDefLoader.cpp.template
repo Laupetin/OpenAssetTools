@@ -585,7 +585,7 @@ namespace
 #elif defined(FEATURE_T4)
             effect->efPriority = static_cast<unsigned char>(editorEffect.priority);
             auto effectFlags = 0u;
-#else
+#elif defined(FEATURE_IW3)
             auto effectFlags = 0u;
 #endif
             for (auto index = 0u; index < totalElementCount; index++)
@@ -839,7 +839,7 @@ namespace
 #ifdef FEATURE_T5
             const auto indexRange = static_cast<unsigned>(std::max(source.atlasIndexRange, 1));
             destination.atlas.entryCountAndIndexRange = static_cast<std::uint16_t>(entryCount | ((indexRange & 0x7Fu) << 9u));
-#else
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
             destination.atlas.entryCount = static_cast<std::int16_t>(entryCount);
 #endif
             return {};
@@ -1184,7 +1184,7 @@ namespace
             SampleVisualState(source, destination);
 
             destination.lightingFrac = static_cast<unsigned char>(std::clamp(static_cast<int>(source.lightingFrac * 255.0f), 0, 255));
-#ifndef FEATURE_T5
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             destination.useItemClip = (source.editorFlags & FX_ED_FLAG_USE_ITEM_CLIP) != 0u;
 #endif
             if ((source.editorFlags & FX_ED_FLAG_BOUNDING_SPHERE) != 0u)
@@ -1339,7 +1339,7 @@ namespace
                 .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
                 .runMask = GAME::FX_ELEM_RUN_MASK,
                 .flagDefs = GAME::FX_FLAG_DEFS,
-#else
+#elif defined(FEATURE_T5)
                 .maxVersion = 3,
                 .supportsEffectFields = true,
                 .supportsWind = true,

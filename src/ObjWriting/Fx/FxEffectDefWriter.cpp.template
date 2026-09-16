@@ -618,7 +618,7 @@ namespace
             m_stream << "\tefPriority " << static_cast<unsigned>(effect.efPriority) << ";\n";
             m_stream << "\tefBoundingBoxDim " << effect.boundingBoxDim[0] << ' ' << effect.boundingBoxDim[1] << ' ' << effect.boundingBoxDim[2] << ";\n";
             m_stream << "\tefBoundingBoxCentre " << effect.boundingSphere[0] << ' ' << effect.boundingSphere[1] << ' ' << effect.boundingSphere[2] << ";\n";
-#else
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
             m_stream << "iwfx 2\n\n";
 #endif
 
@@ -714,7 +714,7 @@ namespace
                                                                    });
             if (hasCollisionBounds)
                 editorFlagBits |= FX_ED_FLAG_BOUNDING_SPHERE;
-#ifndef FEATURE_T5
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
             if (elem.useItemClip)
                 editorFlagBits |= FX_ED_FLAG_USE_ITEM_CLIP;
 #endif
@@ -781,7 +781,7 @@ namespace
             const auto entryCountAndIndexRange = elem.atlas.entryCountAndIndexRange;
             m_stream << "\tatlasEntryCount " << (entryCountAndIndexRange & ATLAS_ENTRY_COUNT_MASK) << ";\n";
             m_stream << "\tatlasIndexRange " << (entryCountAndIndexRange >> ATLAS_INDEX_RANGE_SHIFT) << ";\n";
-#else
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
             m_stream << "\tatlasEntryCount " << elem.atlas.entryCount << ";\n";
 #endif
 

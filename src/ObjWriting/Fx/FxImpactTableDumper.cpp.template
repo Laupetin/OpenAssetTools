@@ -65,7 +65,7 @@ namespace
 
         return zoneName;
     }
-#else
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
     bool IsCommonZone(const std::string_view zoneName)
     {
         return zoneName == "common" || zoneName == "common_mp";
@@ -95,7 +95,7 @@ namespace fx
         const auto sourceName = IsInternalImpactTableName(asset.m_name) ? GetImpactTableSourceName(context.m_zone.m_name) : std::string_view(asset.m_name);
         const auto isRootTable = sourceName == "void";
         const auto mapName = sourceName;
-#else
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
         const auto isRootTable = asset.m_name == "void" || (asset.m_name.empty() && IsCommonZone(context.m_zone.m_name));
         const auto mapName = asset.m_name.empty() ? std::string_view(context.m_zone.m_name) : std::string_view(asset.m_name);
 #endif
@@ -120,7 +120,7 @@ namespace fx
 #if defined(FEATURE_T4) || defined(FEATURE_T5)
             // T4 and T5 appended these surface types after the flesh entries in the stock CSV format.
             for (auto surfaceIndex = 0u; surfaceIndex < SURF_TYPE_PLAYER; surfaceIndex++)
-#else
+#elif defined(FEATURE_IW3)
             for (auto surfaceIndex = 0u; surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
 #endif
                 writeNonFleshEntry(surfaceIndex);
