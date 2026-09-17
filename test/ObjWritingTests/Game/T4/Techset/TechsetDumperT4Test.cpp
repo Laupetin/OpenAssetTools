@@ -66,7 +66,7 @@ namespace
         auto* shader = memory.Alloc<MaterialPixelShader>();
         shader->name = memory.Dup(name.c_str());
         shader->prog.loadDef.program = reinterpret_cast<unsigned*>(memory.Alloc<char>(fileSize));
-        shader->prog.loadDef.programSize = static_cast<decltype(GfxVertexShaderLoadDef::programSize)>(fileSize / 4u);
+        shader->prog.loadDef.programSize = static_cast<decltype(GfxPixelShaderLoadDef::programSize)>(fileSize / 4u);
         file.read(reinterpret_cast<char*>(shader->prog.loadDef.program), fileSize);
         REQUIRE(file.gcount() == static_cast<std::streamsize>(fileSize));
 
