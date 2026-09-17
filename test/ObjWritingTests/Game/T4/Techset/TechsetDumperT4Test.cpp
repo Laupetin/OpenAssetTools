@@ -39,7 +39,7 @@ namespace
 
     MaterialVertexShader* GivenVertexShader(const std::string& name, MemoryManager& memory)
     {
-        const auto filePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset" / std::format("vs_{}.cso", name);
+        const auto filePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/T4/Techset" / std::format("vs_{}.cso", name);
         const auto fileSize = static_cast<size_t>(fs::file_size(filePath));
 
         std::ifstream file(filePath, std::ios::binary);
@@ -57,7 +57,7 @@ namespace
 
     MaterialPixelShader* GivenPixelShader(const std::string& name, MemoryManager& memory)
     {
-        const auto filePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset" / std::format("ps_{}.cso", name);
+        const auto filePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/T4/Techset" / std::format("ps_{}.cso", name);
         const auto fileSize = static_cast<size_t>(fs::file_size(filePath));
 
         std::ifstream file(filePath, std::ios::binary);
@@ -342,7 +342,7 @@ TEST_CASE("TechsetDumperT4", "[t4][techset][dumper]")
     {
         dumper.Dump(context);
 
-        const auto expectedVertexShaderPath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset/vs_simple.hlsl.cso";
+        const auto expectedVertexShaderPath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/T4/Techset/vs_simple.hlsl.cso";
         std::ifstream expectedVertexShaderFile(expectedVertexShaderPath, std::ios::binary);
         REQUIRE(expectedVertexShaderFile.is_open());
         const std::string expectedVertexShader(std::istreambuf_iterator<char>(expectedVertexShaderFile), {});
@@ -351,7 +351,7 @@ TEST_CASE("TechsetDumperT4", "[t4][techset][dumper]")
         REQUIRE(vertexShaderFile);
         CHECK(vertexShaderFile->AsString() == expectedVertexShader);
 
-        const auto expectedPixelShaderPath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset/ps_simple.hlsl.cso";
+        const auto expectedPixelShaderPath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/T4/Techset/ps_simple.hlsl.cso";
         std::ifstream expectedPixelShaderFile(expectedPixelShaderPath, std::ios::binary);
         REQUIRE(expectedPixelShaderFile.is_open());
         const std::string expectedPixelShader(std::istreambuf_iterator<char>(expectedPixelShaderFile), {});
