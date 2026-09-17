@@ -26,7 +26,7 @@ namespace
 {
     void GivenVertexShaderFile(const std::string& name, MockSearchPath& searchPath)
     {
-        const auto filePath = oat::paths::GetTestDirectory() / "ObjCompilingTests/Game/IW3/Techset" / std::format("vs_{}.cso", name);
+        const auto filePath = oat::paths::GetTestDirectory() / "ObjCompilingTests/Game/T4/Techset" / std::format("vs_{}.cso", name);
         const auto fileSize = static_cast<size_t>(fs::file_size(filePath));
 
         std::ifstream file(filePath, std::ios::binary);
@@ -41,7 +41,7 @@ namespace
 
     void GivenPixelShaderFile(const std::string& name, MockSearchPath& searchPath)
     {
-        const auto filePath = oat::paths::GetTestDirectory() / "ObjCompilingTests/Game/IW3/Techset" / std::format("ps_{}.cso", name);
+        const auto filePath = oat::paths::GetTestDirectory() / "ObjCompilingTests/Game/T4/Techset" / std::format("ps_{}.cso", name);
         const auto fileSize = static_cast<size_t>(fs::file_size(filePath));
 
         std::ifstream file(filePath, std::ios::binary);
