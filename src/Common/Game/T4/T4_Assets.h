@@ -1508,6 +1508,11 @@ namespace T4
         MTL_TECHFLAG_USES_LIGHT_SPOT_FACTORS = 0x10,
         MTL_TECHFLAG_USES_GRASS = 0x20,
         MTL_TECHFLAG_USES_FLOATZ = 0x40,
+
+        // Any material that has statebits according to any of the following sets this:
+        // - GFXS1_DEPTHWRITE set
+        // - Any depth test (No GFXS1_DEPTHTEST_DISABLE set)
+        // - Any polygon offset that is not GFXS1_POLYGON_OFFSET_0
         TECHNIQUE_FLAG_80 = 0x80,
         MTL_TECHFLAG_USES_MARKS_HIT_NORMAL = 0x100,
         MTL_TECHFLAG_TREE_CANOPY = 0x200,
