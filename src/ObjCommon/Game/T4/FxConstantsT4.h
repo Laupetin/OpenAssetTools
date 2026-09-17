@@ -38,22 +38,22 @@ namespace T4
     };
 
     inline constexpr std::array FX_IMPACT_TYPE_DEFS{
-        FxImpactTypeDef{"bullet_small_normal",     FxImpactTableIndex::BULLET_SMALL_NORMAL},
-        FxImpactTypeDef{"bullet_small_exit",       FxImpactTableIndex::BULLET_SMALL_EXIT},
+        FxImpactTypeDef{"bullet_small_normal",     FxImpactTableIndex::BULLET_SMALL_NORMAL    },
+        FxImpactTypeDef{"bullet_small_exit",       FxImpactTableIndex::BULLET_SMALL_EXIT      },
         FxImpactTypeDef{"bullet_small_underwater", FxImpactTableIndex::BULLET_SMALL_UNDERWATER},
-        FxImpactTypeDef{"bullet_large_normal",     FxImpactTableIndex::BULLET_LARGE_NORMAL},
-        FxImpactTypeDef{"bullet_large_exit",       FxImpactTableIndex::BULLET_LARGE_EXIT},
-        FxImpactTypeDef{"bullet_ap_normal",        FxImpactTableIndex::BULLET_AP_NORMAL},
-        FxImpactTypeDef{"bullet_ap_exit",          FxImpactTableIndex::BULLET_AP_EXIT},
-        FxImpactTypeDef{"shotgun_normal",          FxImpactTableIndex::SHOTGUN_NORMAL},
-        FxImpactTypeDef{"shotgun_exit",            FxImpactTableIndex::SHOTGUN_EXIT},
-        FxImpactTypeDef{"grenade_bounce",          FxImpactTableIndex::GRENADE_BOUNCE},
-        FxImpactTypeDef{"grenade_explode",         FxImpactTableIndex::GRENADE_EXPLODE},
-        FxImpactTypeDef{"rocket_explode",          FxImpactTableIndex::ROCKET_EXPLODE},
-        FxImpactTypeDef{"projectile_dud",          FxImpactTableIndex::PROJECTILE_DUD},
-        FxImpactTypeDef{"physics_impact",          FxImpactTableIndex::PHYSICS_IMPACT},
-        FxImpactTypeDef{"mortar_shell",            FxImpactTableIndex::MORTAR_SHELL},
-        FxImpactTypeDef{"tank_shell",              FxImpactTableIndex::TANK_SHELL},
+        FxImpactTypeDef{"bullet_large_normal",     FxImpactTableIndex::BULLET_LARGE_NORMAL    },
+        FxImpactTypeDef{"bullet_large_exit",       FxImpactTableIndex::BULLET_LARGE_EXIT      },
+        FxImpactTypeDef{"bullet_ap_normal",        FxImpactTableIndex::BULLET_AP_NORMAL       },
+        FxImpactTypeDef{"bullet_ap_exit",          FxImpactTableIndex::BULLET_AP_EXIT         },
+        FxImpactTypeDef{"shotgun_normal",          FxImpactTableIndex::SHOTGUN_NORMAL         },
+        FxImpactTypeDef{"shotgun_exit",            FxImpactTableIndex::SHOTGUN_EXIT           },
+        FxImpactTypeDef{"grenade_bounce",          FxImpactTableIndex::GRENADE_BOUNCE         },
+        FxImpactTypeDef{"grenade_explode",         FxImpactTableIndex::GRENADE_EXPLODE        },
+        FxImpactTypeDef{"rocket_explode",          FxImpactTableIndex::ROCKET_EXPLODE         },
+        FxImpactTypeDef{"projectile_dud",          FxImpactTableIndex::PROJECTILE_DUD         },
+        FxImpactTypeDef{"physics_impact",          FxImpactTableIndex::PHYSICS_IMPACT         },
+        FxImpactTypeDef{"mortar_shell",            FxImpactTableIndex::MORTAR_SHELL           },
+        FxImpactTypeDef{"tank_shell",              FxImpactTableIndex::TANK_SHELL             },
     };
     static_assert(std::size(FX_IMPACT_TYPE_DEFS) == static_cast<unsigned>(FxImpactTableIndex::COUNT));
 
