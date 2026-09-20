@@ -12,6 +12,7 @@
 #include <format>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace IW3;
 using namespace Catch;
@@ -233,6 +234,23 @@ namespace
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<MaterialTechniqueSet>>(ASSET_TYPE_TECHNIQUE_SET, techset->name, techset));
         return techset;
     }
+
+    void EnsureDumpedShaderMatchesInputData(const MockOutputPath& output, const std::string& fileName)
+    {
+        const auto* dumpedFile = output.GetMockedFile(std::format("shader_bin/{}", fileName));
+        REQUIRE(dumpedFile);
+
+        const auto inputFilePath = oat::paths::GetTestDirectory() / "ObjWritingTests/Game/IW3/Techset" / fileName;
+        std::ifstream inputFileStream(inputFilePath, std::ios::binary);
+        REQUIRE(inputFileStream.is_open());
+
+        const auto inputDataSize = static_cast<size_t>(fs::file_size(inputFilePath));
+        std::vector<std::uint8_t> inputData(inputDataSize);
+        inputFileStream.read(reinterpret_cast<char*>(inputData.data()), static_cast<std::streamsize>(inputData.size()));
+        REQUIRE(inputFileStream.gcount() == static_cast<std::streamsize>(inputData.size()));
+        REQUIRE(dumpedFile->m_data.size() == inputData.size());
+        REQUIRE(std::memcmp(dumpedFile->m_data.data(), inputData.data(), inputData.size()) == 0);
+    }
 } // namespace
 
 TEST_CASE("TechsetDumperIW3", "[iw3][techset][dumper]")
@@ -334,5 +352,14 @@ TEST_CASE("TechsetDumperIW3", "[iw3][techset][dumper]")
         const auto* file = mockOutput.GetMockedFile("techniques/example_lit_spot.tech");
         REQUIRE(file);
         REQUIRE(Trimmed(file->AsString()) == Trimmed(expected));
+    }
+
+    SECTION("Can dump shaders")
+    {
+        dumper.Dump(context);
+        EnsureDumpedShaderMatchesInputData(mockOutput, "vs_simple.hlsl.cso");
+        EnsureDumpedShaderMatchesInputData(mockOutput, "ps_simple.hlsl.cso");
+        EnsureDumpedShaderMatchesInputData(mockOutput, "vs_advanced.hlsl.cso");
+        EnsureDumpedShaderMatchesInputData(mockOutput, "ps_advanced.hlsl.cso");
     }
 }
