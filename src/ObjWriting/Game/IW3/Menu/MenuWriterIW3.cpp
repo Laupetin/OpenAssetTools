@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <limits>
 #include <sstream>
 
@@ -535,10 +536,29 @@ namespace
             m_stream << "\n";
         }
 
+        void WriteItemTextProperties(const itemDef_s& item) const
+        {
+            const char* implicitText = nullptr;
+
+            if (item.itemFlags & ITEM_FLAG_SAVE_GAME_INFO)
+            {
+                WriteKeywordProperty("textsavegame", true);
+                implicitText = "savegameinfo";
+            }
+            if (item.itemFlags & ITEM_FLAG_CINEMATIC_SUBTITLE)
+            {
+                WriteKeywordProperty("textcinematicsubtitle", true);
+                implicitText = "cinematicsubtitle";
+            }
+
+            if (!implicitText || (item.text && std::strcmp(item.text, implicitText) != 0))
+                WriteItemTextProperty(item.text);
+        }
+
         void WriteItemData(const itemDef_s& item)
         {
             WriteStringProperty("name", item.window.name);
-            WriteItemTextProperty(item.text);
+            WriteItemTextProperties(item);
             WriteStringProperty("group", item.window.group);
             WriteRectProperty("rect", item.window.rectClient);
             WriteIntProperty("style", item.window.style, 0);

@@ -111,6 +111,16 @@ namespace
         }
         itemDef
         {
+            name "save_game_info"
+            textsavegame
+        }
+        itemDef
+        {
+            name "cinematic_subtitle"
+            textcinematicsubtitle
+        }
+        itemDef
+        {
             name "server_list"
             rect 20 60 300 200 0 0
             type 6
@@ -186,7 +196,7 @@ namespace
         REQUIRE(mainMenu->onOpen == R"("play" "menu_open" ; "setLocalVarInt" "ui_highlight" "5" ; )"s);
         REQUIRE(mainMenu->onFocus == R"("setdvar" "ui_menu_focused" "1" ; )"s);
 
-        REQUIRE(mainMenu->itemCount == 3);
+        REQUIRE(mainMenu->itemCount == 5);
         const auto* emptyTextItem = mainMenu->items[0];
         REQUIRE(emptyTextItem->parent == mainMenu);
         REQUIRE(emptyTextItem->text != nullptr);
@@ -200,7 +210,15 @@ namespace
         REQUIRE(emptyTextItem->materialExp.numEntries == 3);
         REQUIRE(emptyTextItem->materialExp.entries[0]->data.op == OP_LOCALVARSTRING);
 
-        const auto* listItem = mainMenu->items[1];
+        const auto* saveGameInfoItem = mainMenu->items[1];
+        REQUIRE(saveGameInfoItem->text == "savegameinfo"s);
+        REQUIRE(saveGameInfoItem->itemFlags == ITEM_FLAG_SAVE_GAME_INFO);
+
+        const auto* cinematicSubtitleItem = mainMenu->items[2];
+        REQUIRE(cinematicSubtitleItem->text == "cinematicsubtitle"s);
+        REQUIRE(cinematicSubtitleItem->itemFlags == ITEM_FLAG_CINEMATIC_SUBTITLE);
+
+        const auto* listItem = mainMenu->items[3];
         REQUIRE(listItem->typeData.listBox);
         REQUIRE(listItem->typeData.listBox->numColumns == 2);
         REQUIRE(listItem->typeData.listBox->columnInfo[1].pos == 120);
@@ -216,7 +234,7 @@ namespace
         REQUIRE(listItem->typeData.listBox->onDoubleClick == R"("play" "mouse_click" ; )"s);
         REQUIRE(listItem->onListboxSelectionChange == R"("setdvar" "ui_server_selected" "1" ; )"s);
 
-        const auto* defaultTextItem = mainMenu->items[2];
+        const auto* defaultTextItem = mainMenu->items[4];
         REQUIRE(defaultTextItem->type == 0);
         REQUIRE(defaultTextItem->typeData.editField);
         REQUIRE(defaultTextItem->typeData.editField->maxChars == 2);
