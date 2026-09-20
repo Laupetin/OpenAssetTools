@@ -93,6 +93,8 @@ sifting through AI generated code and text is very tiring and not fun for me at 
   necessary but avoid excessive commenting of simple things for example. This of course is a bit subjective, so just
   make sure the code does not aggressively look like it was AI generated.
 
+If a pull request or issue does not follow these rules, it may happen that it is closed directly.
+
 ## License and derivates
 
 The OpenAssetTools project is free software licensed under the [GPLv3 license](./LICENSE).
