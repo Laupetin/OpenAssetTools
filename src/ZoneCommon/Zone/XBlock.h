@@ -13,6 +13,11 @@ enum class XBlockType : std::uint8_t
     BLOCK_TYPE_NORMAL
 };
 
+struct XBlockBufferDeleter
+{
+    void operator()(std::uint8_t* buffer) const noexcept;
+};
+
 class XBlock
 {
 public:
@@ -24,6 +29,6 @@ public:
     unsigned m_index;
     XBlockType m_type;
 
-    std::unique_ptr<uint8_t[]> m_buffer;
+    std::unique_ptr<uint8_t[], XBlockBufferDeleter> m_buffer;
     size_t m_buffer_size;
 };
