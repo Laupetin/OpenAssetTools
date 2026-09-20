@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💡 Feature Request
+    url: https://github.com/Laupetin/OpenAssetTools/discussions/new?category=ideas-feature-requests
+    about: Please use GitHub discussions to make a feature request.
+  - name: 📘 Documentation
+    url: https://github.com/OpenAssetTools/Docs
+    about: You can edit and submit user documentation in the OpenAssetTools/Docs repository.
+  - name: 💬 Other
+    url: https://github.com/Laupetin/OpenAssetTools/discussions
+    about: For anything, feel free to reach out via GitHub discussions or discord.

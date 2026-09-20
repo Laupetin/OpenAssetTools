@@ -120,6 +120,7 @@ and work.
 
 ## Getting In Touch
 
-The main communication platform for getting in touch regarding OAT is GitHub discussions right now. There is no
-dedicated Discord server for the project, however I am member in a bunch of CoD modding related servers, so discussions
-can also happen there. Additionally, you can also reach out via Discord PM.
+The main communication platform for getting in touch regarding OAT
+is [GitHub discussions](https://github.com/Laupetin/OpenAssetTools/discussions) right now. There is no dedicated Discord
+server for the project, however I am member in a bunch of CoD modding related servers, so discussions can also happen
+there. Additionally, you can also reach out via Discord PM.
