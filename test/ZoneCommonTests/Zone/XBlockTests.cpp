@@ -8,13 +8,15 @@ namespace
 {
     TEST_CASE("Zone block buffers provide the maximum asset alignment", "[zone-loading][stream]")
     {
+        static constexpr std::uintptr_t REQUIRED_ALIGNMENT = 4096u;
+
         XBlock block("test", 0, XBlockType::BLOCK_TYPE_NORMAL);
-        constexpr std::array<size_t, 4> sizes{1u, 7u, 16u, 65537u};
+        constexpr size_t sizes[]{1u, 7u, 16u, 4096u, 65537u};
 
         for (const auto size : sizes)
         {
             block.Alloc(size);
-            REQUIRE(reinterpret_cast<std::uintptr_t>(block.m_buffer.get()) % 16u == 0u);
+            REQUIRE(reinterpret_cast<std::uintptr_t>(block.m_buffer.get()) % REQUIRED_ALIGNMENT == 0u);
             REQUIRE(block.m_buffer_size == size);
         }
 

@@ -4,8 +4,10 @@
 
 namespace
 {
-    constexpr std::align_val_t XBLOCK_BUFFER_ALIGNMENT{16u};
-}
+    // This must be higher or equal to the highest alignment value in any game struct.
+    // The games always seem to align to 4096 up to T6 so we'll keep parity.
+    constexpr std::align_val_t XBLOCK_BUFFER_ALIGNMENT{4096u};
+} // namespace
 
 void XBlockBufferDeleter::operator()(std::uint8_t* buffer) const noexcept
 {
