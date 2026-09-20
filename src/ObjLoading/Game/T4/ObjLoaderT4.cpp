@@ -7,6 +7,8 @@
 #include "Game/T4/Image/ImageLoaderExternalT4.h"
 #include "Game/T4/Menu/LoaderMenuListT4.h"
 #include "Game/T4/T4.h"
+#include "Game/T4/Techset/PixelShaderLoaderT4.h"
+#include "Game/T4/Techset/VertexShaderLoaderT4.h"
 #include "Game/T4/Weapon/AccuracyGraphLoaderT4.h"
 #include "Game/T4/XAnim/XAnimLoaderT4.h"
 #include "Game/T4/XModel/LoaderXModelT4.h"
@@ -117,6 +119,8 @@ namespace
         collection.AddAssetCreator(weapon::CreateRawLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateGdtLoaderT4(memory, searchPath, gdt, zone));
 
+        collection.AddSubAssetCreator(techset::CreateVertexShaderLoaderT4(memory, searchPath));
+        collection.AddSubAssetCreator(techset::CreatePixelShaderLoaderT4(memory, searchPath));
         collection.AddSubAssetCreator(weapon::CreateAccuracyGraphLoaderT4(memory, searchPath));
         collection.AddSubAssetCreator(weapon::CreateFlameTableLoaderT4(memory, searchPath, zone));
     }

@@ -1,4 +1,4 @@
-#options GAME(IW3, IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T4, T5, T6)
 
 #filename "Game/" + GAME + "/Techset/TechsetDumper" + GAME + ".cpp"
 
@@ -16,6 +16,10 @@
 #elif GAME == "IW5"
 #define FEATURE_IW5
 #define IS_DX9
+#elif GAME == "T4"
+#define FEATURE_T4
+#define IS_DX9
+#define DUMP_SHADERS "1"
 #elif GAME == "T5"
 #define FEATURE_T5
 #define IS_DX9
@@ -47,6 +51,7 @@
 
 #include <cassert>
 #include <format>
+#include <type_traits>
 
 using namespace GAME;
 
@@ -64,7 +69,8 @@ namespace
         shaderFile->write(pixelShader.prog.loadDef.program, pixelShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(pixelShader.prog.loadDef.program),
-                          static_cast<std::streamsize>(pixelShader.prog.loadDef.programSize) * sizeof(GfxPixelShaderLoadDef::program));
+                          static_cast<std::streamsize>(pixelShader.prog.loadDef.programSize)
+                              * sizeof(std::remove_pointer_t<decltype(GfxPixelShaderLoadDef::program)>));
 #endif
     }
 
@@ -79,7 +85,8 @@ namespace
         shaderFile->write(vertexShader.prog.loadDef.program, vertexShader.prog.loadDef.programSize);
 #else
         shaderFile->write(reinterpret_cast<const char*>(vertexShader.prog.loadDef.program),
-                          static_cast<std::streamsize>(vertexShader.prog.loadDef.programSize) * sizeof(GfxVertexShaderLoadDef::program));
+                          static_cast<std::streamsize>(vertexShader.prog.loadDef.programSize)
+                              * sizeof(std::remove_pointer_t<decltype(GfxVertexShaderLoadDef::program)>));
 #endif
     }
 
