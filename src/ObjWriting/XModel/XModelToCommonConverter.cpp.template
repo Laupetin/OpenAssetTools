@@ -37,6 +37,7 @@
 #include <cassert>
 #include <format>
 #include <string_view>
+#include <utility>
 
 using namespace GAME;
 
@@ -260,10 +261,16 @@ namespace
             if (boneNum >= model.numRootBones)
             {
                 const auto parentIndex = static_cast<int>(boneNum) - static_cast<int>(model.parentList[boneNum - model.numRootBones]);
-                if (parentIndex >= 0)
+                if (parentIndex >= 0 && std::cmp_less(parentIndex, model.numBones))
+                {
                     bone.parentIndex = static_cast<unsigned>(parentIndex);
+                }
                 else
+                {
+                    // This means that the parent index is invalid. Which should never happen... but it does.
+                    // For some custom maps... We will pretend it is a root bone in that case.
                     bone.parentIndex = std::nullopt;
+                }
             }
             else
                 bone.parentIndex = std::nullopt;
