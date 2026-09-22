@@ -274,7 +274,7 @@ std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
 bool BaseTemplate::ShouldGenerateFillMethod(const RenderingUsedType& type)
 {
     const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
-    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
+    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_memory_layout;
     const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
 
     return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
@@ -318,4 +318,9 @@ size_t BaseTemplate::OffsetForMemberModifier(const MemberInformation& memberInfo
     }
 
     return curOffset + nestedBaseOffset;
+}
+
+bool BaseTemplate::MemoryLayoutMatches(const StructureInformation& structureInfo) const
+{
+    return !m_env.m_word_size_mismatch || structureInfo.m_has_matching_cross_platform_memory_layout;
 }

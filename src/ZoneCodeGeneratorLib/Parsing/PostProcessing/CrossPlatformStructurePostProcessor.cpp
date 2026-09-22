@@ -9,7 +9,7 @@ namespace
     bool CalculateHasMatchingCrossPlatformStructure(std::unordered_set<const void*>& visitedStructures, StructureInformation* info)
     {
         if (visitedStructures.find(info) != visitedStructures.end())
-            return info->m_has_matching_cross_platform_structure;
+            return info->m_has_matching_cross_platform_memory_layout;
 
         visitedStructures.emplace(info);
 
@@ -19,19 +19,19 @@ namespace
             {
                 if (modifier->GetType() == DeclarationModifierType::POINTER)
                 {
-                    info->m_has_matching_cross_platform_structure = false;
+                    info->m_has_matching_cross_platform_memory_layout = false;
                     return false;
                 }
             }
 
             if (member->m_type != nullptr && member->m_type != info && !CalculateHasMatchingCrossPlatformStructure(visitedStructures, member->m_type))
             {
-                info->m_has_matching_cross_platform_structure = false;
+                info->m_has_matching_cross_platform_memory_layout = false;
                 return false;
             }
         }
 
-        info->m_has_matching_cross_platform_structure = true;
+        info->m_has_matching_cross_platform_memory_layout = true;
         return true;
     }
 } // namespace
