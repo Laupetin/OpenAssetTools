@@ -1,7 +1,8 @@
 // Game: Modern Warfare 2 (IW4)
 game IW4;
 
-variant pc 32 le;
+variant pc32 32 le;
+variant pc64 64 le;
 
 // Game Assets
 asset PhysPreset AssetPhysPreset;
