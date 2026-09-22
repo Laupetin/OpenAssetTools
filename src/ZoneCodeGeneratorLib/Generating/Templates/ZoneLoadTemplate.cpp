@@ -256,9 +256,9 @@ namespace
             SINGLE_POINTER
         };
 
-        static std::string LoaderClassName(const StructureInformation* asset)
+        std::string LoaderClassName(const StructureInformation* asset) const
         {
-            return std::format("Loader_{0}", asset->m_definition->m_name);
+            return std::format("Loader_{0}_{1}", asset->m_definition->m_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)

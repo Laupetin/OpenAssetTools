@@ -32,7 +32,7 @@ namespace
             LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
-            LINEF("namespace game::{0}::xassets::asset_{1}", m_env.m_game, Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("namespace game::{0}::{1}::xassets::asset_{1}", m_env.m_game, m_env.m_variant->m_name, Lower(m_env.m_asset->m_definition->m_name))
             LINE("{")
             m_intendation++;
 
