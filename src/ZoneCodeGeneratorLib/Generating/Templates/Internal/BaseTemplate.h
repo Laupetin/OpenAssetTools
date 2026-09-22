@@ -45,6 +45,11 @@ protected:
     [[nodiscard]] size_t
         OffsetForMemberModifier(const MemberInformation& memberInfo, const DeclarationModifierComputations& modifier, size_t nestedBaseOffset) const;
 
+    /**
+     * Evaluates whether the struct/union has matching memory layouts between the generated code and game.
+     */
+    [[nodiscard]] bool MemoryLayoutMatches(const StructureInformation& structureInfo) const;
+
     std::ostream& m_out;
     unsigned m_intendation;
 
