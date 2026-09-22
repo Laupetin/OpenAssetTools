@@ -19,6 +19,8 @@ public:
     const FastFileBlock* m_default_normal_block;
     const FastFileBlock* m_default_temp_block;
 
+    const GameVariant* m_variant;
+
 protected:
-    BaseRenderingContext(std::string game, WordSize gameWordSize, std::endian endianness, std::vector<const FastFileBlock*> fastFileBlocks);
+    BaseRenderingContext(std::string game, const GameVariant* variant, std::vector<const FastFileBlock*> fastFileBlocks);
 };

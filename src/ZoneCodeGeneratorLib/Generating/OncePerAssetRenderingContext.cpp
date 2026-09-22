@@ -18,11 +18,8 @@ RenderingUsedType::RenderingUsedType(const DataDefinition* type, StructureInform
 {
 }
 
-OncePerAssetRenderingContext::OncePerAssetRenderingContext(std::string game,
-                                                           const WordSize gameWordSize,
-                                                           const std::endian endianness,
-                                                           std::vector<const FastFileBlock*> fastFileBlocks)
-    : BaseRenderingContext(std::move(game), gameWordSize, endianness, std::move(fastFileBlocks)),
+OncePerAssetRenderingContext::OncePerAssetRenderingContext(std::string game, const GameVariant* variant, std::vector<const FastFileBlock*> fastFileBlocks)
+    : BaseRenderingContext(std::move(game), variant, std::move(fastFileBlocks)),
       m_asset(nullptr),
       m_has_actions(false)
 {
@@ -47,7 +44,8 @@ RenderingUsedType* OncePerAssetRenderingContext::AddUsedType(std::unique_ptr<Ren
     return result;
 }
 
-RenderingUsedType* OncePerAssetRenderingContext::GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType)
+RenderingUsedType*
+    OncePerAssetRenderingContext::GetBaseType(const IDataRepository* repository, const MemberComputations* computations, RenderingUsedType* usedType)
 {
     if (usedType->m_type->GetType() == DataDefinitionType::TYPEDEF)
     {
@@ -75,7 +73,7 @@ RenderingUsedType* OncePerAssetRenderingContext::GetBaseType(const IDataReposito
     return nullptr;
 }
 
-void OncePerAssetRenderingContext::AddMembersToContext(const IDataRepository* repository, StructureInformation* info)
+void OncePerAssetRenderingContext::AddMembersToContext(const IDataRepository* repository, const StructureInformation* info)
 {
     for (const auto& member : info->m_ordered_members)
     {
@@ -119,7 +117,7 @@ void OncePerAssetRenderingContext::AddMembersToContext(const IDataRepository* re
     }
 }
 
-void OncePerAssetRenderingContext::ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType)
+void OncePerAssetRenderingContext::ScanUsedTypeIfNeeded(const IDataRepository* repository, const MemberComputations* computations, RenderingUsedType* usedType)
 {
     if (usedType->m_info != nullptr && !StructureComputations(usedType->m_info).IsAsset() && !computations->IsInRuntimeBlock() && !usedType->m_members_loaded)
     {
@@ -163,7 +161,7 @@ void OncePerAssetRenderingContext::CreateUsedTypeCollections()
     }
 }
 
-bool OncePerAssetRenderingContext::UsedTypeHasActions(const RenderingUsedType* usedType) const
+bool OncePerAssetRenderingContext::UsedTypeHasActions(const RenderingUsedType* usedType)
 {
     const StructureComputations computations(usedType->m_info);
 
@@ -191,8 +189,8 @@ bool OncePerAssetRenderingContext::UsedTypeHasActions(const RenderingUsedType* u
 std::unique_ptr<OncePerAssetRenderingContext>
     OncePerAssetRenderingContext::BuildContext(const IDataRepository* repository, StructureInformation* asset, const GameVariant* variant)
 {
-    auto context = std::make_unique<OncePerAssetRenderingContext>(
-        OncePerAssetRenderingContext(repository->GetGameName(), variant->m_word_size, variant->m_endianness, repository->GetAllFastFileBlocks()));
+    auto context =
+        std::make_unique<OncePerAssetRenderingContext>(OncePerAssetRenderingContext(repository->GetGameName(), variant, repository->GetAllFastFileBlocks()));
 
     context->MakeAsset(repository, asset);
     context->CreateUsedTypeCollections();
