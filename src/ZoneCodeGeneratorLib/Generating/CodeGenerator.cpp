@@ -141,7 +141,7 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
             return false;
         }
 
-        for (auto* variant : repository->GetGameVariants())
+        for (const auto* variant : repository->GetGameVariants())
         {
             for (auto* asset : assets)
             {
