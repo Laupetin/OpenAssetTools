@@ -18,8 +18,9 @@ public:
 private:
     void SetupTemplates();
 
-    utils::TextFileCheckDirtyResult GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
-    utils::TextFileCheckDirtyResult GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    utils::TextFileCheckDirtyResult GenerateCodeOncePerTemplate(const PerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    utils::TextFileCheckDirtyResult GenerateCodeOncePerVariant(const PerVariantRenderingContext& context, ICodeTemplate* codeTemplate) const;
+    utils::TextFileCheckDirtyResult GenerateCodeOncePerAsset(const PerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const;
 
     static bool GetAssetWithName(const IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 

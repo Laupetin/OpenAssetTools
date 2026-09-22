@@ -1,6 +1,7 @@
 #include "AssetStructTestsTemplate.h"
 
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -11,11 +12,11 @@ namespace
 {
     constexpr int TAG_SOURCE = 1;
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -76,11 +77,11 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -98,7 +99,7 @@ std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerA
     return files;
 }
 
-void AssetStructTestsTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void AssetStructTestsTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

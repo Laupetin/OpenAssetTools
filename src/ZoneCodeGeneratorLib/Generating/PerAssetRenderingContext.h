@@ -1,11 +1,10 @@
 #pragma once
 
-#include "BaseRenderingContext.h"
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Information/StructureInformation.h"
+#include "PerVariantRenderingContext.h"
 #include "Persistence/IDataRepository.h"
 
-#include <string>
 #include <unordered_map>
 
 class RenderingUsedType
@@ -25,11 +24,10 @@ public:
     bool m_pointer_array_reference_is_reusable;
 };
 
-class OncePerAssetRenderingContext : public BaseRenderingContext
+class PerAssetRenderingContext : public PerVariantRenderingContext
 {
 public:
-    static std::unique_ptr<OncePerAssetRenderingContext>
-        BuildContext(const IDataRepository* repository, StructureInformation* asset, const GameVariant* variant);
+    PerAssetRenderingContext(const IDataRepository* repository, StructureInformation* asset, const GameVariant* variant);
 
     StructureInformation* m_asset;
 
@@ -39,8 +37,6 @@ public:
     bool m_has_actions;
 
 private:
-    OncePerAssetRenderingContext(std::string game, const GameVariant* variant, std::vector<const FastFileBlock*> fastFileBlocks);
-
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(const IDataRepository* repository, const MemberComputations* computations, RenderingUsedType* usedType);
     void AddMembersToContext(const IDataRepository* repository, const StructureInformation* info);

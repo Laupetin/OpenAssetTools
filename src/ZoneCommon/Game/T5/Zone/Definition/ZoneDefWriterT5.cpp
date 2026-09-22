@@ -1,6 +1,6 @@
 #include "ZoneDefWriterT5.h"
 
-#include "Game/T5/AssetMarkerT5.h"
+#include "Game/T5/T5.h"
 
 using namespace T5;
 
