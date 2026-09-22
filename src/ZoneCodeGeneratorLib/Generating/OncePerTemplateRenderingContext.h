@@ -15,8 +15,7 @@ public:
 
 private:
     OncePerTemplateRenderingContext(std::string game,
-                                    WordSize gameWordSize,
-                                    std::endian endianness,
+                                    const GameVariant* variant,
                                     std::vector<const FastFileBlock*> fastFileBlocks,
                                     std::vector<StructureInformation*> assets);
 };

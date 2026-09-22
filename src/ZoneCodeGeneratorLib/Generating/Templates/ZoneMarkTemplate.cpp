@@ -32,7 +32,11 @@ namespace
 
             for (const auto* asset : m_env.m_assets)
             {
-                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_mark_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_mark_db.h\"",
+                      m_env.m_game,
+                      Lower(asset->m_definition->m_name),
+                      Lower(m_env.m_game),
+                      Lower(m_env.m_variant->m_name))
             }
         }
 
@@ -139,7 +143,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
+            LINEF("#include \"{0}_{1}_{2}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -147,7 +151,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_mark_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_mark_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
             LINE("")
@@ -813,8 +817,11 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(con
     auto gameName = context.m_game;
     utils::MakeStringLowerCase(gameName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.h", assetName, gameName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.cpp", assetName, gameName), TAG_SOURCE);
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_mark_db.h", assetName, gameName, variantName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_mark_db.cpp", assetName, gameName, variantName), TAG_SOURCE);
 
     return files;
 }
