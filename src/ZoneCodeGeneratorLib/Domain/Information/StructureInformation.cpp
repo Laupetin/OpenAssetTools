@@ -5,7 +5,7 @@ StructureInformation::StructureInformation(DefinitionWithMembers* definition, Ty
       m_type_info(typeInfo),
       m_is_leaf(false),
       m_requires_marking(false),
-      m_has_matching_cross_platform_structure(false),
+      m_has_matching_cross_platform_memory_layout(false),
       m_embedded_reference_exists(false),
       m_non_embedded_reference_exists(false),
       m_single_pointer_reference_exists(false),
