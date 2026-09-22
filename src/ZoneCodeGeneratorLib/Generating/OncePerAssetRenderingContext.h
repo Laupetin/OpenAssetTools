@@ -39,15 +39,15 @@ public:
     bool m_has_actions;
 
 private:
-    OncePerAssetRenderingContext(std::string game, WordSize gameWordSize, std::endian endianness, std::vector<const FastFileBlock*> fastFileBlocks);
+    OncePerAssetRenderingContext(std::string game, const GameVariant* variant, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
-    RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
-    void AddMembersToContext(const IDataRepository* repository, StructureInformation* info);
-    void ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
+    RenderingUsedType* GetBaseType(const IDataRepository* repository, const MemberComputations* computations, RenderingUsedType* usedType);
+    void AddMembersToContext(const IDataRepository* repository, const StructureInformation* info);
+    void ScanUsedTypeIfNeeded(const IDataRepository* repository, const MemberComputations* computations, RenderingUsedType* usedType);
     void MakeAsset(const IDataRepository* repository, StructureInformation* asset);
     void CreateUsedTypeCollections();
-    bool UsedTypeHasActions(const RenderingUsedType* usedType) const;
+    static bool UsedTypeHasActions(const RenderingUsedType* usedType);
 
     std::unordered_map<const DataDefinition*, std::unique_ptr<RenderingUsedType>> m_used_types_lookup;
 };
