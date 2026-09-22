@@ -1,7 +1,7 @@
 #include "ObjLoaderQOS.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "Game/QOS/AssetMarkerQOS.h"
+#include "Game/QOS/AssetMarkerQOS_pc.h"
 #include "Game/QOS/QOS.h"
 #include "Localize/AssetLoaderLocalizeQOS.h"
 #include "RawFile/AssetLoaderRawFileQOS.h"

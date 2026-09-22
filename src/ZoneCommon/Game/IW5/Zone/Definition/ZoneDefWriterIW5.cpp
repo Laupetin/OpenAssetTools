@@ -1,6 +1,6 @@
 #include "ZoneDefWriterIW5.h"
 
-#include "Game/IW5/AssetMarkerIW5.h"
+#include "Game/IW5/IW5.h"
 
 using namespace IW5;
 
