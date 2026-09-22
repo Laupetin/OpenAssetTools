@@ -1,6 +1,6 @@
 #include "ContentLoaderIW4.h"
 
-#include "Game/IW4/AssetLoaderIW4.h"
+#include "Game/IW4/AssetLoaderIW4_pc32.h"
 #include "Game/IW4/IW4.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
@@ -44,7 +44,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        Loader_##typeName##_pc32 loader(m_zone, m_stream);                                                                                                     \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
