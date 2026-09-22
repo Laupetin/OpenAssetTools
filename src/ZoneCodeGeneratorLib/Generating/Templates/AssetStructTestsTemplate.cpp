@@ -36,13 +36,13 @@ namespace
             LINE("{")
             m_intendation++;
 
-            if (m_env.m_asset->m_has_matching_cross_platform_structure)
+            if (MemoryLayoutMatches(*m_env.m_asset))
                 TestMethod(m_env.m_asset);
 
             for (const auto* structure : m_env.m_used_structures)
             {
                 StructureComputations computations(structure->m_info);
-                if (!structure->m_info->m_definition->IsAnonymous() && !computations.IsAsset() && structure->m_info->m_has_matching_cross_platform_structure)
+                if (!structure->m_info->m_definition->IsAnonymous() && !computations.IsAsset() && MemoryLayoutMatches(*structure->m_info))
                     TestMethod(structure->m_info);
             }
 

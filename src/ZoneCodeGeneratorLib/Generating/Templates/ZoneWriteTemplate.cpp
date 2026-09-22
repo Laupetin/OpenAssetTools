@@ -128,8 +128,8 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                     LINE(VariableDecl(type->m_type))
             }
             for (const auto* type : m_env.m_used_types)
@@ -374,8 +374,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                     PrintVariableInitialization(type->m_type);
             }
             for (const auto* type : m_env.m_used_types)
@@ -488,7 +488,7 @@ namespace
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
                       MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
                 if (!computations.IsInRuntimeBlock())
@@ -626,7 +626,7 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("Write_{0}(true);", MakeSafeTypeName(member->m_type->m_definition))
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream->WriteWithFill({1}));",
@@ -741,7 +741,7 @@ namespace
 
             if (writeType == MemberWriteType::ARRAY_POINTER)
             {
-                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                if (member->m_type && !MemoryLayoutMatches(*member->m_type))
                 {
                     LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize(m_env.m_word_size))
                 }
@@ -750,7 +750,7 @@ namespace
             }
             else if (writeType == MemberWriteType::POINTER_ARRAY)
             {
-                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                if (member->m_type && !MemoryLayoutMatches(*member->m_type))
                 {
                     LINE_MIDDLEF(", {0}", m_env.m_pointer_size)
                 }
@@ -1111,7 +1111,7 @@ namespace
             {
                 LINE("if (atStreamStart)")
 
-                if (info->m_has_matching_cross_platform_structure)
+                if (MemoryLayoutMatches(*info))
                 {
                     m_intendation++;
                     if (dynamicMember == nullptr)
@@ -1261,7 +1261,7 @@ namespace
                                                   const DeclarationModifierComputations& modifier,
                                                   const size_t nestedBaseOffset)
         {
-            if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+            if (memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type))
             {
                 LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
                 LINE("{")
@@ -1291,7 +1291,7 @@ namespace
 
             if (!hasAnonymousType)
             {
-                const auto hasMismatchingStructure = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+                const auto hasMismatchingStructure = memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type);
                 const auto hasDynamicMember = memberInfo.m_type && StructureComputations(memberInfo.m_type).GetDynamicMember();
                 if (hasMismatchingStructure || hasDynamicMember)
                 {
@@ -1584,7 +1584,7 @@ namespace
             LINE("")
             LINE("if (atStreamStart)")
 
-            if (info->m_has_matching_cross_platform_structure)
+            if (MemoryLayoutMatches(*info))
             {
                 m_intendation++;
                 LINEF("{0} = m_stream->Write<{1}>({2}, count);", MakeTypeWrittenVarName(def), def->GetFullName(), MakeTypeVarName(def))
