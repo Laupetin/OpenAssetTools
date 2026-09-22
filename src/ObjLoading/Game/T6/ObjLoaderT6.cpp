@@ -3,7 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "FontIcon/CsvLoaderFontIconT6.h"
 #include "FontIcon/JsonLoaderFontIconT6.h"
-#include "Game/T6/AssetMarkerT6.h"
+#include "Game/T6/AssetMarkerT6_pc.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Font/FontLoaderT6.h"
 #include "Game/T6/GameT6.h"

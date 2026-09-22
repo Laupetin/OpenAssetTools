@@ -1,7 +1,7 @@
 #include "ObjLoaderIW4.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "Game/IW4/AssetMarkerIW4.h"
+#include "Game/IW4/AssetMarkerIW4_pc32.h"
 #include "Game/IW4/Font/FontLoaderIW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/IW4.h"

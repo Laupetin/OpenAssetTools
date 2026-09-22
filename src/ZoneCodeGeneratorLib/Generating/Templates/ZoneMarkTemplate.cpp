@@ -2,6 +2,7 @@
 
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -14,11 +15,11 @@ namespace
     constexpr int TAG_SOURCE = 2;
     constexpr int TAG_ALL_MARKERS = 3;
 
-    class PerTemplate final : BaseTemplate
+    class PerVariant final : BasePerVariantTemplate
     {
     public:
-        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerVariant(std::ostream& stream, const PerVariantRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -30,7 +31,7 @@ namespace
             LINE("#pragma once")
             LINE("")
 
-            for (const auto* asset : m_env.m_assets)
+            for (const auto* asset : m_env.m_all_assets)
             {
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_mark_db.h\"",
                       m_env.m_game,
@@ -41,14 +42,14 @@ namespace
         }
 
     private:
-        const OncePerTemplateRenderingContext& m_env;
+        const PerVariantRenderingContext& m_env;
     };
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -786,28 +787,28 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetMarker{0}.h", context.m_game), TAG_ALL_MARKERS);
+    files.emplace_back(std::format("AssetMarker{0}_{1}.h", context.m_game, context.m_variant->m_name), TAG_ALL_MARKERS);
 
     return files;
 }
 
-void ZoneMarkTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+void ZoneMarkTemplate::RenderOncePerVariantFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context)
 {
     assert(fileTag == TAG_ALL_MARKERS);
 
-    const PerTemplate t(stream, context);
+    const PerVariant t(stream, context);
     t.AllMarkers();
 }
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -826,7 +827,7 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(con
     return files;
 }
 
-void ZoneMarkTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void ZoneMarkTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 
