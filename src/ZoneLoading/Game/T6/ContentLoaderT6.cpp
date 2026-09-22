@@ -1,6 +1,6 @@
 #include "ContentLoaderT6.h"
 
-#include "Game/T6/AssetLoaderT6.h"
+#include "Game/T6/AssetLoaderT6_pc.h"
 #include "Game/T6/T6.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
@@ -44,7 +44,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        Loader_##typeName##_pc loader(m_zone, m_stream);                                                                                                       \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }

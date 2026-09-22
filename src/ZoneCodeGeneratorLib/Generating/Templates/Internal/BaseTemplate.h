@@ -5,8 +5,8 @@
 #include "Domain/Evaluation/OperandDynamic.h"
 #include "Domain/Evaluation/OperandStatic.h"
 #include "Domain/Evaluation/Operation.h"
-#include "Generating/BaseRenderingContext.h"
-#include "Generating/OncePerAssetRenderingContext.h"
+#include "Generating/PerAssetRenderingContext.h"
+#include "Generating/PerTemplateRenderingContext.h"
 
 #include <format>
 #include <ostream>
@@ -16,7 +16,7 @@ class BaseTemplate
 protected:
     static constexpr auto INTENDATION = "    ";
 
-    explicit BaseTemplate(std::ostream& stream, const BaseRenderingContext& context);
+    explicit BaseTemplate(std::ostream& stream, const PerTemplateRenderingContext& context);
 
     void DoIntendation() const;
 
@@ -33,22 +33,12 @@ protected:
     static std::string MakeArrayIndices(const DeclarationModifierComputations& modifierComputations);
     static std::string MakeCustomActionCall(const CustomAction* action);
     static std::string MakeArrayCount(const ArrayDeclarationModifier* arrayModifier);
-    std::string MakeAllocAlignment(const StructureInformation& info) const;
     static std::string MakeEvaluation(const IEvaluation* evaluation);
 
     static bool ShouldGenerateFillMethod(const RenderingUsedType& type);
 
     static void MakeSafeTypeNameInternal(const DataDefinition* def, std::ostringstream& str);
     static void MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str);
-
-    [[nodiscard]] size_t SizeForDeclModifierLevel(const MemberInformation& memberInfo, size_t level) const;
-    [[nodiscard]] size_t
-        OffsetForMemberModifier(const MemberInformation& memberInfo, const DeclarationModifierComputations& modifier, size_t nestedBaseOffset) const;
-
-    /**
-     * Evaluates whether the struct/union has matching memory layouts between the generated code and game.
-     */
-    [[nodiscard]] bool MemoryLayoutMatches(const StructureInformation& structureInfo) const;
 
     std::ostream& m_out;
     unsigned m_intendation;
@@ -61,7 +51,7 @@ private:
     static void MakeOperation(const Operation* operation, std::ostringstream& str);
     static void MakeEvaluationInternal(const IEvaluation* evaluation, std::ostringstream& str);
 
-    const BaseRenderingContext& m_env;
+    const PerTemplateRenderingContext& m_env;
 };
 
 #define LINE(x)                                                                                                                                                \

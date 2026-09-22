@@ -15,6 +15,25 @@
 
 namespace fs = std::filesystem;
 
+namespace
+{
+    void LogDirtyCheckResult(const utils::TextFileCheckDirtyResult result, const std::string_view forWhat)
+    {
+        switch (result)
+        {
+        case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
+            con::info("Successfully generated code for {}", forWhat);
+            break;
+        case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
+            con::info("Code was up to date for {}", forWhat);
+            break;
+        case utils::TextFileCheckDirtyResult::FAILURE:
+            con::error("Failed to generate code for {}", forWhat);
+            break;
+        }
+    }
+} // namespace
+
 CodeGenerator::CodeGenerator(const ZoneCodeGeneratorArguments* args)
     : m_args(args)
 {
@@ -29,7 +48,7 @@ void CodeGenerator::SetupTemplates()
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
 
-utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerTemplate(const OncePerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
+utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerTemplate(const PerTemplateRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
     bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerTemplate(context))
@@ -60,7 +79,38 @@ utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerTemplate(const
     return wroteAtLeastOneFile ? utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN : utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE;
 }
 
-utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerAsset(const OncePerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
+utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerVariant(const PerVariantRenderingContext& context, ICodeTemplate* codeTemplate) const
+{
+    bool wroteAtLeastOneFile = false;
+    for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerVariant(context))
+    {
+        fs::path outputPath(m_args->m_output_directory);
+        outputPath.append(codeFile.m_file_name);
+
+        utils::TextFileCheckDirtyOutput out(outputPath);
+        if (!out.Open())
+        {
+            con::error("Failed to open file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
+        }
+
+        codeTemplate->RenderOncePerVariantFile(out.Stream(), codeFile.m_tag, context);
+
+        const auto fileResult = out.Close();
+        if (fileResult == utils::TextFileCheckDirtyResult::FAILURE)
+        {
+            con::error("Failed to write file '{}'", outputPath.string());
+            return utils::TextFileCheckDirtyResult::FAILURE;
+        }
+
+        if (fileResult == utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN)
+            wroteAtLeastOneFile = true;
+    }
+
+    return wroteAtLeastOneFile ? utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN : utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE;
+}
+
+utils::TextFileCheckDirtyResult CodeGenerator::GenerateCodeOncePerAsset(const PerAssetRenderingContext& context, ICodeTemplate* codeTemplate) const
 {
     bool wroteAtLeastOneFile = false;
     for (const auto& codeFile : codeTemplate->GetFilesToRenderOncePerAsset(context))
@@ -145,38 +195,30 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
         {
             for (auto* asset : assets)
             {
-                auto context = OncePerAssetRenderingContext::BuildContext(repository, asset, variant);
+                auto context = std::make_unique<PerAssetRenderingContext>(repository, asset, variant);
                 const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
-                switch (result)
-                {
-                case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
-                    con::info("Successfully generated code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                    break;
-                case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
-                    con::info("Code was up to date for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
-                    break;
-                case utils::TextFileCheckDirtyResult::FAILURE:
-                    con::error("Failed to generate code for asset '{}' with preset '{}'", asset->m_definition->GetFullName(), foundTemplate->first);
+                LogDirtyCheckResult(
+                    result,
+                    std::format("for asset '{}' with variant '{}' and preset '{}'", asset->m_definition->GetFullName(), variant->m_name, foundTemplate->first));
+                if (result == utils::TextFileCheckDirtyResult::FAILURE)
                     return false;
-                }
             }
 
             {
-                auto context = OncePerTemplateRenderingContext::BuildContext(repository, variant);
-                const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
-                switch (result)
-                {
-                case utils::TextFileCheckDirtyResult::OUTPUT_WRITTEN:
-                    con::info("Successfully generated code with preset '{}'", foundTemplate->first);
-                    break;
-                case utils::TextFileCheckDirtyResult::OUTPUT_WAS_UP_TO_DATE:
-                    con::info("Code was up to date for preset '{}'", foundTemplate->first);
-                    break;
-                case utils::TextFileCheckDirtyResult::FAILURE:
-                    con::error("Failed to generate code with preset '{}'", foundTemplate->first);
+                auto context = std::make_unique<PerVariantRenderingContext>(repository, variant);
+                const auto result = GenerateCodeOncePerVariant(*context, foundTemplate->second.get());
+                LogDirtyCheckResult(result, std::format("for variant '{}' with preset '{}'", variant->m_name, foundTemplate->first));
+                if (result == utils::TextFileCheckDirtyResult::FAILURE)
                     return false;
-                }
             }
+        }
+
+        {
+            auto context = std::make_unique<PerTemplateRenderingContext>(repository);
+            const auto result = GenerateCodeOncePerTemplate(*context, foundTemplate->second.get());
+            LogDirtyCheckResult(result, std::format("for preset '{}'", foundTemplate->first));
+            if (result == utils::TextFileCheckDirtyResult::FAILURE)
+                return false;
         }
     }
     const auto end = std::chrono::steady_clock::now();

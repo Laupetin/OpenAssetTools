@@ -1,6 +1,6 @@
 #include "ContentWriterIW4.h"
 
-#include "Game/IW4/AssetWriterIW4.h"
+#include "Game/IW4/AssetWriterIW4_pc32.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>
@@ -80,7 +80,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 #define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                            \
+        Writer_##typeName##_pc32 writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                     \
         writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                             \
         break;                                                                                                                                                 \
     }

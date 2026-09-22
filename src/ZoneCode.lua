@@ -306,6 +306,8 @@ function ZoneCode:allTestFiles()
 
         for i, variantName in ipairs(gameData.Variants) do
             local variantLower = string.lower(variantName)
+
+            -- Per asset
             for j, assetName in ipairs(gameData.Assets) do
                 local assetNameLower = string.lower(assetName)
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_struct_test.cpp")
@@ -324,15 +326,17 @@ function ZoneCode:allMarkFiles()
 
         for i, variantName in ipairs(gameData.Variants) do
             local variantLower = string.lower(variantName)
+
+            -- Per asset
             for j, assetName in ipairs(gameData.Assets) do
                 local assetNameLower = string.lower(assetName)
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_mark_db.cpp")
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_mark_db.h")
             end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker" .. game .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker" .. game .. ".h")
     end
     
     return result
@@ -346,16 +350,17 @@ function ZoneCode:allLoadFiles()
 
         for i, variantName in ipairs(gameData.Variants) do
             local variantLower = string.lower(variantName)
-            -- Per Asset/Variant
+
+            -- Per asset
             for j, assetName in ipairs(gameData.Assets) do
                 local assetNameLower = string.lower(assetName)
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_load_db.cpp")
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_load_db.h")
             end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader" .. game .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader" .. game .. ".h")
     end
     
     return result
@@ -369,16 +374,17 @@ function ZoneCode:allWriteFiles()
 
         for i, variantName in ipairs(gameData.Variants) do
             local variantLower = string.lower(variantName)
-            -- Per Asset/Variant
+
+            -- Per asset
             for j, assetName in ipairs(gameData.Assets) do
                 local assetNameLower = string.lower(assetName)
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_write_db.cpp")
                 table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_write_db.h")
             end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter" .. game .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter" .. game .. ".h")
     end
     
     return result

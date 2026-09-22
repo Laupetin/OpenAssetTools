@@ -2,6 +2,7 @@
 
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -14,11 +15,11 @@ namespace
     constexpr int TAG_SOURCE = 2;
     constexpr int TAG_ALL_LOADERS = 3;
 
-    class PerTemplate final : BaseTemplate
+    class PerVariant final : BasePerVariantTemplate
     {
     public:
-        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerVariant(std::ostream& stream, const PerVariantRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -30,7 +31,7 @@ namespace
             LINE("#pragma once")
             LINE("")
 
-            for (const auto* asset : m_env.m_assets)
+            for (const auto* asset : m_env.m_all_assets)
             {
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_load_db.h\"",
                       m_env.m_game,
@@ -41,14 +42,14 @@ namespace
         }
 
     private:
-        const OncePerTemplateRenderingContext& m_env;
+        const PerVariantRenderingContext& m_env;
     };
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -168,7 +169,7 @@ namespace
 
             LINEF("#include \"{0}_{1}_{2}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
-            LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
+            LINEF("#include \"Game/{0}/AssetMarker{0}_{1}.h\"", m_env.m_game, Lower(m_env.m_variant->m_name))
             LINE("")
             LINE("#include \"Loading/AssetInfoCollector.h\"")
 
@@ -2157,28 +2158,28 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetLoader{0}.h", context.m_game), TAG_ALL_LOADERS);
+    files.emplace_back(std::format("AssetLoader{0}_{1}.h", context.m_game, context.m_variant->m_name), TAG_ALL_LOADERS);
 
     return files;
 }
 
-void ZoneLoadTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+void ZoneLoadTemplate::RenderOncePerVariantFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context)
 {
     assert(fileTag == TAG_ALL_LOADERS);
 
-    const PerTemplate t(stream, context);
+    const PerVariant t(stream, context);
     t.AllLoaders();
 }
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
@@ -2197,7 +2198,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(con
     return files;
 }
 
-void ZoneLoadTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void ZoneLoadTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

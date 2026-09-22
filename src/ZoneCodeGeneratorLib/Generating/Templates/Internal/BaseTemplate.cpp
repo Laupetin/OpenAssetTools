@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-BaseTemplate::BaseTemplate(std::ostream& stream, const BaseRenderingContext& context)
+BaseTemplate::BaseTemplate(std::ostream& stream, const PerTemplateRenderingContext& context)
     : m_out(stream),
       m_intendation(0u),
       m_env(context)
@@ -256,14 +256,6 @@ void BaseTemplate::MakeEvaluationInternal(const IEvaluation* evaluation, std::os
         MakeOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation), str);
 }
 
-std::string BaseTemplate::MakeAllocAlignment(const StructureInformation& info) const
-{
-    if (info.m_alloc_alignment)
-        return MakeEvaluation(info.m_alloc_alignment.get());
-
-    return std::to_string(info.m_definition->GetAlignment(m_env.m_word_size));
-}
-
 std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
 {
     std::ostringstream str;
@@ -278,49 +270,4 @@ bool BaseTemplate::ShouldGenerateFillMethod(const RenderingUsedType& type)
     const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
 
     return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
-}
-
-size_t BaseTemplate::SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
-{
-    const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-    if (declModifiers.empty())
-        return memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size);
-
-    if (level == 0)
-        return memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size);
-
-    size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size);
-    const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
-    for (auto i = declModifiers.rbegin(); i != end; ++i)
-    {
-        if ((*i)->GetType() == DeclarationModifierType::POINTER)
-            currentSize = m_env.m_pointer_size;
-        else
-            currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
-    }
-
-    return currentSize;
-}
-
-size_t BaseTemplate::OffsetForMemberModifier(const MemberInformation& memberInfo,
-                                             const DeclarationModifierComputations& modifier,
-                                             const size_t nestedBaseOffset) const
-{
-    size_t curOffset = memberInfo.m_member->m_offset;
-
-    auto curLevel = 0u;
-    for (const auto index : modifier.GetArrayIndices())
-    {
-        if (index > 0)
-            curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
-
-        curLevel++;
-    }
-
-    return curOffset + nestedBaseOffset;
-}
-
-bool BaseTemplate::MemoryLayoutMatches(const StructureInformation& structureInfo) const
-{
-    return !m_env.m_word_size_mismatch || structureInfo.m_has_matching_cross_platform_memory_layout;
 }

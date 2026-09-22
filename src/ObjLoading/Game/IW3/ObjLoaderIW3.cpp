@@ -1,7 +1,7 @@
 #include "ObjLoaderIW3.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "Game/IW3/AssetMarkerIW3.h"
+#include "Game/IW3/AssetMarkerIW3_pc.h"
 #include "Game/IW3/Font/FontLoaderIW3.h"
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
