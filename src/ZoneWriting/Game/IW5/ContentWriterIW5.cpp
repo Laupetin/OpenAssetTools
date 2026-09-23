@@ -1,6 +1,6 @@
 #include "ContentWriterIW5.h"
 
-#include "Game/IW5/AssetWriterIW5_pc32.h"
+#include "Game/IW5/AssetWriter_iw5_pc32.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>

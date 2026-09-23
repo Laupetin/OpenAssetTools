@@ -1,6 +1,6 @@
 #include "ContentLoaderIW4.h"
 
-#include "Game/IW4/AssetLoaderIW4_pc32.h"
+#include "Game/IW4/AssetLoader_iw4_pc32.h"
 #include "Game/IW4/IW4.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 

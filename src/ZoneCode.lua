@@ -335,7 +335,7 @@ function ZoneCode:allMarkFiles()
             end
             
             -- Per variant
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker" .. game .. "_" .. variantLower .. ".h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker_" .. gameLower .. "_" .. variantLower .. ".h")
         end
     end
     
@@ -359,7 +359,7 @@ function ZoneCode:allLoadFiles()
             end
             
             -- Per variant
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader" .. game .. "_" .. variantLower .. ".h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader_" .. gameLower .. "_" .. variantLower .. ".h")
         end
     end
     
@@ -383,7 +383,7 @@ function ZoneCode:allWriteFiles()
             end
             
             -- Per variant
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter" .. game .. "_" .. variantLower .. ".h")
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter_" .. gameLower .. "_" .. variantLower .. ".h")
         end
     end
     
