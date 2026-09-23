@@ -1,6 +1,6 @@
 #include "ContentWriterQOS.h"
 
-#include "Game/QOS/AssetWriterQOS_pc.h"
+#include "Game/QOS/AssetWriter_qos_pc.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>

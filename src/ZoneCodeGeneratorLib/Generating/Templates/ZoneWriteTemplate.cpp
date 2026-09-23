@@ -1648,7 +1648,13 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerVariant(
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetWriter{0}_{1}.h", context.m_game, context.m_variant->m_name), TAG_ALL_WRITERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetWriter_{0}_{1}.h", gameName, variantName), TAG_ALL_WRITERS);
 
     return files;
 }
