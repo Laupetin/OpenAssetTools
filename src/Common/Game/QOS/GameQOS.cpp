@@ -85,4 +85,12 @@ namespace QOS
         static std::string shortName = "QOS";
         return shortName;
     }
+
+    const std::vector<IGameVariant*>& Game::GetVariants() const
+    {
+        static std::vector<IGameVariant*> variants = {
+            new GameVariant(std::to_underlying(VariantId::PC), "pc", GameEndianness::LE, GameWordSize::ARCH_32, GamePlatform::PC),
+        };
+        return variants;
+    }
 } // namespace QOS
