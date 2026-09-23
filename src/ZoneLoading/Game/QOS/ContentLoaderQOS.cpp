@@ -1,6 +1,6 @@
 #include "ContentLoaderQOS.h"
 
-#include "Game/QOS/AssetLoaderQOS_pc.h"
+#include "Game/QOS/AssetLoader_qos_pc.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
 #include <cassert>

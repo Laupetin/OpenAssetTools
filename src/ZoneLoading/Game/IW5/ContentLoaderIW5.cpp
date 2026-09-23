@@ -1,6 +1,6 @@
 #include "ContentLoaderIW5.h"
 
-#include "Game/IW5/AssetLoaderIW5_pc32.h"
+#include "Game/IW5/AssetLoader_iw5_pc32.h"
 #include "Game/IW5/IW5.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 

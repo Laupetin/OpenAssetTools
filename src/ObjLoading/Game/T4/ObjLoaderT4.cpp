@@ -1,7 +1,7 @@
 #include "ObjLoaderT4.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "Game/T4/AssetMarkerT4_pc.h"
+#include "Game/T4/AssetMarker_t4_pc.h"
 #include "Game/T4/Font/FontLoaderT4.h"
 #include "Game/T4/Image/ImageLoaderEmbeddedT4.h"
 #include "Game/T4/Image/ImageLoaderExternalT4.h"

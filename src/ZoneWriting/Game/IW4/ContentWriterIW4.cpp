@@ -1,6 +1,6 @@
 #include "ContentWriterIW4.h"
 
-#include "Game/IW4/AssetWriterIW4_pc32.h"
+#include "Game/IW4/AssetWriter_iw4_pc32.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>

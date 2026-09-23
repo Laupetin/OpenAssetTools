@@ -1,6 +1,6 @@
 #include "ContentLoaderIW3.h"
 
-#include "Game/IW3/AssetLoaderIW3_pc.h"
+#include "Game/IW3/AssetLoader_iw3_pc.h"
 #include "Game/IW3/IW3.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 

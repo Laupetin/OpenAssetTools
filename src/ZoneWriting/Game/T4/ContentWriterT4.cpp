@@ -1,6 +1,6 @@
 #include "ContentWriterT4.h"
 
-#include "Game/T4/AssetWriterT4_pc.h"
+#include "Game/T4/AssetWriter_t4_pc.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>

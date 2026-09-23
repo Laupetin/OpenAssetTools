@@ -795,7 +795,13 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerVariant(c
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetMarker{0}_{1}.h", context.m_game, context.m_variant->m_name), TAG_ALL_MARKERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetMarker_{0}_{1}.h", gameName, variantName), TAG_ALL_MARKERS);
 
     return files;
 }

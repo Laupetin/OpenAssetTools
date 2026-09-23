@@ -1,6 +1,6 @@
 #include "ContentLoaderT4.h"
 
-#include "Game/T4/AssetLoaderT4_pc.h"
+#include "Game/T4/AssetLoader_t4_pc.h"
 #include "Game/T4/T4.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
