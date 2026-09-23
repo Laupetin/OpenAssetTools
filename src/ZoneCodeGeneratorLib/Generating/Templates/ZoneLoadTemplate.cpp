@@ -169,7 +169,7 @@ namespace
 
             LINEF("#include \"{0}_{1}_{2}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
-            LINEF("#include \"Game/{0}/AssetMarker{0}_{1}.h\"", m_env.m_game, Lower(m_env.m_variant->m_name))
+            LINEF("#include \"Game/{0}/AssetMarker_{0}_{1}.h\"", Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
             LINE("#include \"Loading/AssetInfoCollector.h\"")
 
@@ -2166,7 +2166,13 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerVariant(c
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetLoader{0}_{1}.h", context.m_game, context.m_variant->m_name), TAG_ALL_LOADERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetLoader_{0}_{1}.h", gameName, variantName), TAG_ALL_LOADERS);
 
     return files;
 }

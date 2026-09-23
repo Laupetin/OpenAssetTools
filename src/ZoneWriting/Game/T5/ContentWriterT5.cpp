@@ -1,6 +1,6 @@
 #include "ContentWriterT5.h"
 
-#include "Game/T5/AssetWriterT5_pc.h"
+#include "Game/T5/AssetWriter_t5_pc.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>
