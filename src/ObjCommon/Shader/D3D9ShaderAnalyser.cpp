@@ -2,7 +2,6 @@
 
 #include "Utils/FileUtils.h"
 
-#include <cassert>
 #include <cstring>
 
 using namespace d3d9;
@@ -61,12 +60,50 @@ namespace d3d9
         uint32_t TypeInfo;
     };
 
+    bool CanRead(const size_t offset, const size_t readSize, const size_t bufferSize)
+    {
+        return offset <= bufferSize && readSize <= bufferSize - offset;
+    }
+
+    bool ReadUint32(const uint8_t* data, const size_t dataSize, const size_t offset, uint32_t& value)
+    {
+        if (!CanRead(offset, sizeof(value), dataSize))
+            return false;
+
+        std::memcpy(&value, data + offset, sizeof(value));
+        return true;
+    }
+
+    template<typename T> bool ReadStruct(const char* data, const size_t dataSize, const size_t offset, T& value)
+    {
+        if (!CanRead(offset, sizeof(T), dataSize))
+            return false;
+
+        std::memcpy(&value, data + offset, sizeof(T));
+        return true;
+    }
+
+    bool ReadString(const char* data, const size_t dataSize, const size_t offset, std::string& value)
+    {
+        if (offset >= dataSize)
+            return false;
+
+        const auto remainingSize = dataSize - offset;
+        const auto* terminator = static_cast<const char*>(std::memchr(data + offset, '\0', remainingSize));
+        if (!terminator)
+            return false;
+
+        value.assign(data + offset, terminator);
+        return true;
+    }
+
     bool PopulateVersionInfo(ShaderInfo& shaderInfo, const void* shaderByteCode, const size_t shaderByteCodeSize)
     {
         if (shaderByteCodeSize < sizeof(uint32_t))
             return false;
 
-        const auto version = *static_cast<const uint32_t*>(shaderByteCode);
+        uint32_t version;
+        std::memcpy(&version, shaderByteCode, sizeof(version));
         shaderInfo.m_version_minor = version & 0xFF;
         shaderInfo.m_version_major = (version & 0xFF00) >> 8;
 
@@ -93,42 +130,40 @@ namespace d3d9
 
     bool FindComment(const uint8_t* shaderByteCode, const size_t shaderByteCodeSize, const uint32_t magic, const char*& commentStart, size_t& commentSize)
     {
-        const auto* currentPos = reinterpret_cast<const uint32_t*>(shaderByteCode + sizeof(uint32_t));
         auto currentOffset = sizeof(uint32_t);
-        while (*currentPos != OPCODE_END && (currentOffset + sizeof(uint32_t) - 1) < shaderByteCodeSize)
+        while (CanRead(currentOffset, sizeof(uint32_t), shaderByteCodeSize))
         {
-            const auto currentValue = *currentPos;
+            uint32_t currentValue;
+            if (!ReadUint32(shaderByteCode, shaderByteCodeSize, currentOffset, currentValue))
+                return false;
+            if (currentValue == OPCODE_END)
+                return false;
+
             if ((currentValue & OPCODE_MASK) == OPCODE_COMMENT)
             {
-                assert(currentOffset + sizeof(uint32_t) < shaderByteCodeSize);
-                if (currentOffset + sizeof(uint32_t) >= shaderByteCodeSize)
+                const auto currentCommentSize = (currentValue & COMMENT_SIZE_MASK) >> COMMENT_SIZE_SHIFT;
+                if (currentCommentSize == 0 || currentCommentSize > (shaderByteCodeSize - currentOffset - sizeof(uint32_t)) / sizeof(uint32_t))
                     return false;
 
-                const auto currentCommentSize = (currentValue & COMMENT_SIZE_MASK) >> COMMENT_SIZE_SHIFT;
+                uint32_t currentMagic;
+                if (!ReadUint32(shaderByteCode, shaderByteCodeSize, currentOffset + sizeof(uint32_t), currentMagic))
+                    return false;
 
-                if (currentPos[1] == magic)
+                if (currentMagic == magic)
                 {
-                    commentStart = reinterpret_cast<const char*>(currentPos + 2);
+                    commentStart = reinterpret_cast<const char*>(shaderByteCode + currentOffset + 2u * sizeof(uint32_t));
                     commentSize = (currentCommentSize - 1) * sizeof(uint32_t);
-                    return currentOffset + sizeof(uint32_t) * (currentCommentSize + 1) <= shaderByteCodeSize;
+                    return true;
                 }
 
-                currentPos += currentCommentSize;
-                currentOffset += currentCommentSize * sizeof(uint32_t);
+                currentOffset += (static_cast<size_t>(currentCommentSize) + 1u) * sizeof(uint32_t);
+                continue;
             }
 
-            currentPos++;
             currentOffset += sizeof(uint32_t);
-            assert((currentOffset + sizeof(uint32_t) - 1) < shaderByteCodeSize);
         }
 
         return false;
-    }
-
-    bool StringFitsInComment(const char* str, const char* commentStart, const size_t commentSize)
-    {
-        const auto strLen = strnlen(str, commentSize - (str - commentStart));
-        return str[strLen] == '\0';
     }
 
     bool PopulateShaderConstantFromConstantInfo(ShaderConstant& shaderConstant,
@@ -138,10 +173,8 @@ namespace d3d9
     {
         if (constantInfo.Name)
         {
-            const auto* constantName = commentStart + constantInfo.Name;
-            if (!StringFitsInComment(constantName, commentStart, commentSize))
+            if (!ReadString(commentStart, commentSize, constantInfo.Name, shaderConstant.m_name))
                 return false;
-            shaderConstant.m_name = std::string(constantName);
         }
 
         shaderConstant.m_register_set = static_cast<RegisterSet>(constantInfo.RegisterSet);
@@ -153,23 +186,21 @@ namespace d3d9
 
         if (constantInfo.TypeInfo)
         {
-            assert(commentStart + constantInfo.TypeInfo + sizeof(TypeInfo) <= commentStart + commentSize);
-            if (commentStart + constantInfo.TypeInfo + sizeof(TypeInfo) > commentStart + commentSize)
+            TypeInfo typeInfo;
+            if (!ReadStruct(commentStart, commentSize, constantInfo.TypeInfo, typeInfo))
                 return false;
 
-            const auto* typeInfo = reinterpret_cast<const TypeInfo*>(commentStart + constantInfo.TypeInfo);
-
-            shaderConstant.m_class = static_cast<ParameterClass>(typeInfo->Class);
+            shaderConstant.m_class = static_cast<ParameterClass>(typeInfo.Class);
             if (shaderConstant.m_class >= ParameterClass::MAX)
                 return false;
 
-            shaderConstant.m_type = static_cast<ParameterType>(typeInfo->Type);
+            shaderConstant.m_type = static_cast<ParameterType>(typeInfo.Type);
             if (shaderConstant.m_type >= ParameterType::MAX)
                 return false;
 
-            shaderConstant.m_type_rows = typeInfo->Rows;
-            shaderConstant.m_type_columns = typeInfo->Columns;
-            shaderConstant.m_type_elements = typeInfo->Elements;
+            shaderConstant.m_type_rows = typeInfo.Rows;
+            shaderConstant.m_type_columns = typeInfo.Columns;
+            shaderConstant.m_type_elements = typeInfo.Elements;
         }
 
         return true;
@@ -182,31 +213,30 @@ namespace d3d9
 
         if (constantTable.Creator)
         {
-            const auto* creatorName = commentStart + constantTable.Creator;
-            if (!StringFitsInComment(creatorName, commentStart, commentSize))
+            if (!ReadString(commentStart, commentSize, constantTable.Creator, shaderInfo.m_creator))
                 return false;
-            shaderInfo.m_creator = std::string(creatorName);
         }
 
         if (constantTable.Target)
         {
-            const auto* targetName = commentStart + constantTable.Target;
-            if (!StringFitsInComment(targetName, commentStart, commentSize))
+            if (!ReadString(commentStart, commentSize, constantTable.Target, shaderInfo.m_target))
                 return false;
-            shaderInfo.m_target = std::string(targetName);
         }
 
         if (constantTable.Constants > 0 && constantTable.ConstantInfo)
         {
-            assert(commentStart + constantTable.ConstantInfo + sizeof(ConstantInfo) * constantTable.Constants <= commentStart + commentSize);
-            if (commentStart + constantTable.ConstantInfo + sizeof(ConstantInfo) * constantTable.Constants > commentStart + commentSize)
+            if (constantTable.ConstantInfo > commentSize || constantTable.Constants > (commentSize - constantTable.ConstantInfo) / sizeof(ConstantInfo))
                 return false;
 
-            const auto* constantInfos = reinterpret_cast<const ConstantInfo*>(commentStart + constantTable.ConstantInfo);
             for (auto constantInfoIndex = 0u; constantInfoIndex < constantTable.Constants; constantInfoIndex++)
             {
+                ConstantInfo constantInfo;
+                const auto offset = static_cast<size_t>(constantTable.ConstantInfo) + static_cast<size_t>(constantInfoIndex) * sizeof(ConstantInfo);
+                if (!ReadStruct(commentStart, commentSize, offset, constantInfo))
+                    return false;
+
                 ShaderConstant constant;
-                if (!PopulateShaderConstantFromConstantInfo(constant, commentStart, commentSize, constantInfos[constantInfoIndex]))
+                if (!PopulateShaderConstantFromConstantInfo(constant, commentStart, commentSize, constantInfo))
                     return false;
                 shaderInfo.m_constants.emplace_back(std::move(constant));
             }
@@ -228,8 +258,9 @@ namespace d3d9
         if (constantTableCommentSize < sizeof(ConstantTable))
             return false;
 
-        const auto* constantTable = reinterpret_cast<const ConstantTable*>(constantTableComment);
-        if (!PopulateShaderInfoFromConstantTable(shaderInfo, constantTableComment, constantTableCommentSize, *constantTable))
+        ConstantTable constantTable;
+        if (!ReadStruct(constantTableComment, constantTableCommentSize, 0, constantTable)
+            || !PopulateShaderInfoFromConstantTable(shaderInfo, constantTableComment, constantTableCommentSize, constantTable))
             return false;
 
         return true;
