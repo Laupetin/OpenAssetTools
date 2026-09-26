@@ -28,17 +28,15 @@ namespace sound
     void LoadedSoundDumperIW5::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetLoadedSound::Type>& asset)
     {
         const auto* loadedSound = asset.Asset();
-        const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset.m_name));
-
-        if (!assetFile)
-            return;
-
-        auto& stream = *assetFile;
         switch (static_cast<WavFormat>(loadedSound->sound.info.format))
         {
         case WavFormat::PCM:
-            DumpWavPcm(loadedSound, stream);
+        {
+            const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset.m_name));
+            if (assetFile)
+                DumpWavPcm(loadedSound, *assetFile);
             break;
+        }
 
         default:
             con::error("Unknown format {} for loaded sound: {}", loadedSound->sound.info.format, loadedSound->name);
