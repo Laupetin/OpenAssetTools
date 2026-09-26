@@ -3,8 +3,6 @@
 
   vertexShader 3.0 "trivial_vertcol_simple.hlsl"
   {
-    worldMatrix = constant.transposeWorldMatrix;
-    viewProjectionMatrix = constant.transposeViewProjectionMatrix;
   }
 
   pixelShader 3.0 "trivial_vertcol_simple.hlsl"

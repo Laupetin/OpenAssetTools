@@ -5,6 +5,11 @@
 #include <format>
 #include <string>
 
+// Thanks wingdi.h
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace con
 {
     enum class LogLevel : std::uint8_t

@@ -48,17 +48,17 @@
 
   vertexShader 3.0 VERTEX_SHADER
   {
-    worldViewMatrix = constant.transposeWorldViewMatrix;
+    worldViewMatrix = constant.worldViewMatrix;
 #if MODE == "spark"
-    worldViewMatrix1 = constant.transposeWorldViewMatrix1;
-    worldViewMatrix2 = constant.transposeWorldViewMatrix2;
+    worldViewMatrix1 = constant.worldViewMatrix1;
+    worldViewMatrix2 = constant.worldViewMatrix2;
 #endif
 #ifdef OUTDOOR
-    worldOutdoorLookupMatrix = constant.transposeWorldOutdoorLookupMatrix;
+    worldOutdoorLookupMatrix = constant.worldOutdoorLookupMatrix;
 #endif
-    projectionMatrix = constant.transposeProjectionMatrix;
+    projectionMatrix = constant.projectionMatrix;
 #ifdef SPOT
-    inverseViewMatrix = constant.inverseTransposeViewMatrix;
+    inverseViewMatrix = constant.inverseViewMatrix;
 #endif
   }
 
@@ -72,10 +72,10 @@
     shadowmapSamplerSpot = sampler.shadowmapSpot;
 #endif
 #ifdef SPOT
-    lightSpotDir = constant.light.spotDir;
-    lightSpotFactors = constant.light.spotFactors;
-    lightPosition = constant.light.position;
-    lightDiffuse = constant.light.diffuse;
+    lightSpotDir = constant.lightSpotDir;
+    lightSpotFactors = constant.lightSpotFactors;
+    lightPosition = constant.lightPosition;
+    lightDiffuse = constant.lightDiffuse;
 #endif
   }
 
