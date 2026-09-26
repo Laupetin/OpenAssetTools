@@ -67,6 +67,56 @@ namespace
         return data;
     }
 
+    std::string MakeIwi8(const iwi8::IwiFormat format, const std::vector<std::uint8_t>& payload)
+    {
+        std::string data{'I', 'W', 'i', static_cast<char>(IwiVersion::IWI_8)};
+        AppendUint32(data, iwi8::IwiFlags::IMG_FLAG_MAPTYPE_2D);
+        data.push_back(static_cast<char>(format));
+        data.push_back(0);
+        AppendUint16(data, 2);
+        AppendUint16(data, 2);
+        AppendUint16(data, 1);
+
+        const auto fileSize = static_cast<std::uint32_t>(sizeof(IwiVersionHeader) + sizeof(iwi8::IwiHeader) + payload.size());
+        for (auto picmip = 0u; picmip < 4u; picmip++)
+            AppendUint32(data, fileSize);
+
+        data.append(reinterpret_cast<const char*>(payload.data()), payload.size());
+        return data;
+    }
+
+    void WriteZeroWaveletLevel(BitWriter& bits, const unsigned channelCount)
+    {
+        bits.WriteBits(0, 1); // No predictor delta.
+
+        if (channelCount != 1)
+        {
+            bits.WriteBits(0, 1); // Blue/luminance parity and zero coefficients.
+            bits.WriteBits(0x001, 3);
+            bits.WriteBits(0x001, 3);
+            bits.WriteBits(0x001, 3);
+
+            if (channelCount >= 3)
+            {
+                for (auto channel = 1u; channel <= 2u; channel++)
+                {
+                    bits.WriteBits(0, 1); // Red/green parity and zero residual coefficients.
+                    bits.WriteBits(0x003, 2);
+                    bits.WriteBits(0x003, 2);
+                    bits.WriteBits(0x003, 2);
+                }
+            }
+        }
+
+        if (channelCount != 3)
+        {
+            bits.WriteBits(0, 1); // Independent channel parity and zero coefficients.
+            bits.WriteBits(0x001, 1);
+            bits.WriteBits(0x001, 1);
+            bits.WriteBits(0x001, 1);
+        }
+    }
+
     std::optional<IwiLoaderResult> Load(const std::string& data)
     {
         std::istringstream stream(data);
@@ -186,5 +236,60 @@ namespace
             REQUIRE(largestMip[pixel * 4u + 2u] == RED);
             REQUIRE(largestMip[pixel * 4u + 3u] == 0xFF);
         }
+    }
+
+    TEST_CASE("IwiLoader: Can decode all IWI8 wavelet formats", "[image][iwi][wavelet]")
+    {
+        struct TestCase
+        {
+            iwi8::IwiFormat m_iwi_format;
+            ImageFormatId m_image_format;
+            std::vector<std::uint8_t> m_source_pixel;
+            std::vector<std::uint8_t> m_expected_pixel;
+        };
+
+        const std::vector<TestCase> testCases{
+            {iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGBA,            ImageFormatId::B8_G8_R8_A8, {0x10, 0x20, 0x30, 0x40}, {0x10, 0x20, 0x30, 0x40}},
+            {iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGB,             ImageFormatId::B8_G8_R8_X8, {0x10, 0x20, 0x30},       {0x10, 0x20, 0x30, 0xFF}},
+            {iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA, ImageFormatId::R8_A8,       {0x20, 0x40},             {0x20, 0x40}            },
+            {iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE,       ImageFormatId::R8,          {0x30},                   {0x30}                  },
+            {iwi8::IwiFormat::IMG_FORMAT_WAVELET_ALPHA,           ImageFormatId::A8,          {0x40},                   {0x40}                  },
+        };
+
+        for (const auto& testCase : testCases)
+        {
+            BitWriter bits;
+            WriteZeroWaveletLevel(bits, static_cast<unsigned>(testCase.m_source_pixel.size()));
+
+            auto payload = testCase.m_source_pixel;
+            payload.insert(payload.end(), bits.Data().begin(), bits.Data().end());
+
+            const auto result = Load(MakeIwi8(testCase.m_iwi_format, payload));
+
+            REQUIRE(result.has_value());
+            REQUIRE(result->m_version == IwiVersion::IWI_8);
+            REQUIRE(result->m_texture->GetFormat()->GetId() == testCase.m_image_format);
+            REQUIRE(result->m_texture->GetWidth() == 2);
+            REQUIRE(result->m_texture->GetHeight() == 2);
+            REQUIRE(result->m_texture->GetMipMapCount() == 2);
+
+            const auto* largestMip = result->m_texture->GetBufferForMipLevel(0);
+            for (auto pixel = 0u; pixel < 4u; pixel++)
+            {
+                for (auto channel = 0u; channel < testCase.m_expected_pixel.size(); channel++)
+                    REQUIRE(largestMip[pixel * testCase.m_expected_pixel.size() + channel] == testCase.m_expected_pixel[channel]);
+            }
+
+            const auto* smallestMip = result->m_texture->GetBufferForMipLevel(1);
+            for (auto channel = 0u; channel < testCase.m_expected_pixel.size(); channel++)
+                REQUIRE(smallestMip[channel] == testCase.m_expected_pixel[channel]);
+        }
+    }
+
+    TEST_CASE("IwiLoader: Rejects truncated IWI8 wavelet data", "[image][iwi][wavelet][malformed]")
+    {
+        const std::vector<std::uint8_t> payload{0x40};
+
+        REQUIRE_FALSE(Load(MakeIwi8(iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE, payload)).has_value());
     }
 } // namespace
