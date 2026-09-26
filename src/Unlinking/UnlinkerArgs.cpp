@@ -93,6 +93,13 @@ const CommandLineOption* const OPTION_MODEL_FORMAT =
     .WithParameter("modelFormatValue")
     .Build();
 
+const CommandLineOption* const OPTION_XANIM_FORMAT =
+    CommandLineOption::Builder::Create()
+    .WithLongName("xanim-format")
+    .WithDescription("Specifies the format of dumped IW3 XAnim files. Valid values are: MOD_TOOLS, GLTF, GLB")
+    .WithParameter("xanimFormatValue")
+    .Build();
+
 const CommandLineOption* const OPTION_SKIP_OBJ =
     CommandLineOption::Builder::Create()
     .WithLongName("skip-obj")
@@ -141,6 +148,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_SEARCH_PATH,
     OPTION_IMAGE_FORMAT,
     OPTION_MODEL_FORMAT,
+    OPTION_XANIM_FORMAT,
     OPTION_SKIP_OBJ,
     OPTION_GDT,
     OPTION_EXCLUDE_ASSETS,
@@ -239,6 +247,34 @@ bool UnlinkerArgs::SetModelDumpingMode() const
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
     con::error("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.", originalValue);
+    return false;
+}
+
+bool UnlinkerArgs::SetXAnimDumpingMode() const
+{
+    auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_XANIM_FORMAT);
+    utils::MakeStringLowerCase(specifiedValue);
+
+    if (specifiedValue == "mod_tools")
+    {
+        ObjWriting::Configuration.XAnimOutputFormat = XAnimOutputFormat_e::MOD_TOOLS;
+        return true;
+    }
+
+    if (specifiedValue == "gltf")
+    {
+        ObjWriting::Configuration.XAnimOutputFormat = XAnimOutputFormat_e::GLTF;
+        return true;
+    }
+
+    if (specifiedValue == "glb")
+    {
+        ObjWriting::Configuration.XAnimOutputFormat = XAnimOutputFormat_e::GLB;
+        return true;
+    }
+
+    const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_XANIM_FORMAT);
+    con::error("Illegal value: \"{}\" is not a valid XAnim output format. Use -? to see usage information.", originalValue);
     return false;
 }
 
@@ -352,6 +388,15 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     if (m_argument_parser.IsOptionSpecified(OPTION_MODEL_FORMAT))
     {
         if (!SetModelDumpingMode())
+        {
+            return false;
+        }
+    }
+
+    // --xanim-format
+    if (m_argument_parser.IsOptionSpecified(OPTION_XANIM_FORMAT))
+    {
+        if (!SetXAnimDumpingMode())
         {
             return false;
         }
