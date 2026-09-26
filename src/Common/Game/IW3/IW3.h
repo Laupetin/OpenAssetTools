@@ -57,6 +57,7 @@ namespace IW3
         SUB_ASSET_TYPE_VERTEX_SHADER,
         SUB_ASSET_TYPE_PIXEL_SHADER,
         SUB_ASSET_TYPE_ACCURACY_GRAPH,
+        SUB_ASSET_TYPE_SPEAKER_MAP,
 
         SUB_ASSET_TYPE_COUNT
     };
@@ -202,6 +203,7 @@ namespace IW3
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
     using SubAssetAccuracyGraph = SubAsset<SUB_ASSET_TYPE_ACCURACY_GRAPH, AccuracyGraph>;
+    using SubAssetSpeakerMap = SubAsset<SUB_ASSET_TYPE_SPEAKER_MAP, SpeakerMap>;
 } // namespace IW3
 
 DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetPhysPreset, name);

@@ -1581,6 +1581,56 @@ namespace IW3
         SAT_COUNT = 0x3,
     };
 
+    enum snd_alias_members_t
+    {
+        SA_INVALID = 0x0,
+        SA_NAME = 0x1,
+        SA_SEQUENCE = 0x2,
+        SA_FILE = 0x3,
+        SA_SUBTITLE = 0x4,
+        SA_VOL_MIN = 0x5,
+        SA_VOL_MAX = 0x6,
+        SA_VOL_MOD = 0x7,
+        SA_PITCH_MIN = 0x8,
+        SA_PITCH_MAX = 0x9,
+        SA_DIST_MIN = 0xA,
+        SA_DIST_MAX = 0xB,
+        SA_CHANNEL = 0xC,
+        SA_TYPE = 0xD,
+        SA_LOOP = 0xE,
+        SA_PROBABILITY = 0xF,
+        SA_LOADSPEC = 0x10,
+        SA_MASTERSLAVE = 0x11,
+        SA_SECONDARYALIASNAME = 0x12,
+        SA_CHAINALIASNAME = 0x13,
+        SA_VOLUMEFALLOFFCURVE = 0x14,
+        SA_STARTDELAY = 0x15,
+        SA_SPEAKERMAP = 0x16,
+        SA_REVERB = 0x17,
+        SA_LFEPERCENTAGE = 0x18,
+        SA_CENTERPERCENTAGE = 0x19,
+        SA_ENVELOPMIN = 0x1A,
+        SA_ENVELOPMAX = 0x1B,
+        SA_ENVELOPPERCENTAGE = 0x1C,
+
+        SA_NUMFIELDS
+    };
+
+    enum SA_SPKRMAPIDENTIFIERS
+    {
+        SA_MONOSOURCE = 0x0,
+        SA_LEFTSOURCE = 0x1,
+        SA_RIGHTSOURCE = 0x2,
+        SA_LEFTSPEAKER = 0x3,
+        SA_RIGHTSPEAKER = 0x4,
+        SA_CENTERSPEAKER = 0x5,
+        SA_LFESPEAKER = 0x6,
+        SA_LEFTSURROUNDSPEAKER = 0x7,
+        SA_RIGHTSURROUNDSPEAKER = 0x8,
+
+        SA_SPKRMAPIDENTIFIERCOUNT
+    };
+
     struct SoundFile
     {
         char type;

@@ -7,8 +7,9 @@ WavWriter::WavWriter(std::ostream& stream)
 
 void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen) const
 {
-    constexpr auto riffMasterChunkSize = static_cast<uint32_t>(sizeof(WAV_CHUNK_ID_RIFF) + sizeof(uint32_t) + sizeof(WAV_WAVE_ID) + sizeof(WavChunkHeader)
-                                                               + sizeof(WavFormatChunkPcm) + sizeof(WavChunkHeader) + sizeof(uint32_t));
+    // RIFF size excludes its own eight-byte header and includes the padded data chunk.
+    const auto riffMasterChunkSize =
+        static_cast<uint32_t>(sizeof(WAV_WAVE_ID) + sizeof(WavChunkHeader) + sizeof(WavFormatChunkPcm) + sizeof(WavChunkHeader) + dataLen + (dataLen & 1u));
 
     m_stream.write(reinterpret_cast<const char*>(&WAV_CHUNK_ID_RIFF), sizeof(WAV_CHUNK_ID_RIFF));
     m_stream.write(reinterpret_cast<const char*>(&riffMasterChunkSize), sizeof(riffMasterChunkSize));
@@ -34,4 +35,6 @@ void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen
 void WavWriter::WritePcmData(const void* data, const size_t dataLen) const
 {
     m_stream.write(static_cast<const char*>(data), static_cast<std::streamsize>(dataLen));
+    if (dataLen & 1u)
+        m_stream.put('\0');
 }
