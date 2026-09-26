@@ -1,6 +1,8 @@
 #include "ObjWriterT4.h"
 
 #include "Game/T4/Font/FontDumperT4.h"
+#include "Game/T4/Fx/FxEffectDefDumperT4.h"
+#include "Game/T4/Fx/FxImpactTableDumperT4.h"
 #include "Game/T4/Image/ImageDumperT4.h"
 #include "Game/T4/Maps/MapEntsDumperT4.h"
 #include "Game/T4/Material/MaterialJsonDumperT4.h"
@@ -33,6 +35,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<menu::MenuDumperT4>());
     RegisterAssetDumper(std::make_unique<localize::DumperT4>());
     RegisterAssetDumper(std::make_unique<weapon::DumperT4>());
+    RegisterAssetDumper(std::make_unique<fx::EffectDefDumperT4>());
+    RegisterAssetDumper(std::make_unique<fx::ImpactTableDumperT4>());
     RegisterAssetDumper(std::make_unique<raw_file::DumperT4>());
     RegisterAssetDumper(std::make_unique<string_table::DumperT4>());
 }

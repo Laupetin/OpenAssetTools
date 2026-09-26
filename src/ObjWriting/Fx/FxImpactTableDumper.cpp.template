@@ -1,0 +1,141 @@
+#options GAME(IW3, T4, T5)
+
+#filename "Game/" + GAME + "/Fx/FxImpactTableDumper" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "T4"
+#define FEATURE_T4
+#elif GAME == "T5"
+#define FEATURE_T5
+#endif
+
+// This file was templated.
+// See FxImpactTableDumper.cpp.template.
+// Do not modify, changes will be lost.
+
+#set DUMPER_HEADER "\"FxImpactTableDumper" + GAME + ".h\""
+#include DUMPER_HEADER
+
+#include "Csv/CsvStream.h"
+#set FX_CONSTANTS_HEADER "\"Game/" + GAME + "/FxConstants" + GAME + ".h\""
+#include FX_CONSTANTS_HEADER
+#set MATERIAL_CONSTANTS_HEADER "\"Game/" + GAME + "/MaterialConstants" + GAME + ".h\""
+#include MATERIAL_CONSTANTS_HEADER
+
+#include <array>
+#include <format>
+#include <string_view>
+
+using namespace GAME;
+
+namespace
+{
+    constexpr std::array FLESH_TYPE_NAMES{
+        "flesh_body_nonfatal",
+        "flesh_body_fatal",
+        "flesh_head_nonfatal",
+        "flesh_head_fatal",
+    };
+
+    const char* EffectName(const FxEffectDef* effect)
+    {
+        if (!effect || !effect->name)
+            return "";
+
+        return effect->name[0] == ',' ? &effect->name[1] : effect->name;
+    }
+
+#ifdef FEATURE_T5
+    bool IsInternalImpactTableName(const std::string_view name)
+    {
+        return name.empty() || name == "ImpactFx";
+    }
+
+    std::string_view GetImpactTableSourceName(const std::string_view zoneName)
+    {
+        if (zoneName == "common")
+            return "void";
+
+        if (zoneName == "common_mp")
+            return "mp_maps";
+
+        if (zoneName == "common_zombie")
+            return "zombie";
+
+        return zoneName;
+    }
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
+    bool IsCommonZone(const std::string_view zoneName)
+    {
+        return zoneName == "common" || zoneName == "common_mp";
+    }
+#endif
+} // namespace
+
+namespace fx
+{
+#set CLASS_NAME "ImpactTableDumper" + GAME
+    bool CLASS_NAME::ShouldDump(const XAssetInfo<AssetImpactFx::Type>& asset)
+    {
+        // The linker creates this special asset without reading a CSV file.
+        return asset.m_name != "default";
+    }
+
+    void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImpactFx::Type>& asset)
+    {
+        const auto* impactTable = asset.Asset();
+        if (!impactTable->table)
+        {
+            con::error("FxImpactTable \"{}\" has no impact entries", asset.m_name);
+            return;
+        }
+
+#ifdef FEATURE_T5
+        const auto sourceName = IsInternalImpactTableName(asset.m_name) ? GetImpactTableSourceName(context.m_zone.m_name) : std::string_view(asset.m_name);
+        const auto isRootTable = sourceName == "void";
+        const auto mapName = sourceName;
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
+        const auto isRootTable = asset.m_name == "void" || (asset.m_name.empty() && IsCommonZone(context.m_zone.m_name));
+        const auto mapName = asset.m_name.empty() ? std::string_view(context.m_zone.m_name) : std::string_view(asset.m_name);
+#endif
+        const auto fileName = isRootTable ? "fx/iw_impacts.csv" : std::format("fx/maps/{}/iw_impacts.csv", mapName);
+        const auto assetFile = context.OpenAssetFile(fileName);
+        if (!assetFile)
+            return;
+
+        CsvOutputStream csv(*assetFile);
+        for (const auto& impactType : GAME::FX_IMPACT_TYPE_DEFS)
+        {
+            const auto impactIndex = static_cast<unsigned>(impactType.tableIndex);
+            const auto& entry = impactTable->table[impactIndex];
+            const auto writeNonFleshEntry = [&](const auto surfaceIndex)
+            {
+                csv.WriteColumn(impactType.name);
+                csv.WriteColumn(surfaceTypeNames[surfaceIndex]);
+                csv.WriteColumn(EffectName(entry.nonflesh[surfaceIndex]));
+                csv.NextRow();
+            };
+
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+            // T4 and T5 appended these surface types after the flesh entries in the stock CSV format.
+            for (auto surfaceIndex = 0u; surfaceIndex < SURF_TYPE_PLAYER; surfaceIndex++)
+#elif defined(FEATURE_IW3)
+            for (auto surfaceIndex = 0u; surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
+#endif
+                writeNonFleshEntry(surfaceIndex);
+
+            for (auto fleshIndex = 0u; fleshIndex < FLESH_TYPE_NAMES.size(); fleshIndex++)
+            {
+                csv.WriteColumn(impactType.name);
+                csv.WriteColumn(FLESH_TYPE_NAMES[fleshIndex]);
+                csv.WriteColumn(EffectName(entry.flesh[fleshIndex]));
+                csv.NextRow();
+            }
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+            for (auto surfaceIndex = static_cast<unsigned>(SURF_TYPE_PLAYER); surfaceIndex < std::size(surfaceTypeNames); surfaceIndex++)
+                writeNonFleshEntry(surfaceIndex);
+#endif
+        }
+    }
+} // namespace fx

@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T5/AssetMarkerT5.h"
 #include "Game/T5/Font/FontLoaderT5.h"
+#include "Game/T5/Fx/FxEffectDefLoaderT5.h"
 #include "Game/T5/GameT5.h"
 #include "Game/T5/Image/ImageLoaderEmbeddedT5.h"
 #include "Game/T5/Image/ImageLoaderExternalT5.h"
@@ -140,7 +141,7 @@ namespace
         collection.AddAssetCreator(weapon::CreateRawLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(weapon::CreateGdtLoaderT5(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
+        collection.AddAssetCreator(fx::CreateLoaderT5(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
         collection.AddAssetCreator(raw_file::CreateLoaderT5(memory, searchPath));
         collection.AddAssetCreator(string_table::CreateLoaderT5(memory, searchPath));
