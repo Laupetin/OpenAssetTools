@@ -119,7 +119,7 @@ namespace
 
             if (member->m_type_declaration->m_has_custom_bit_size)
             {
-                member->m_offset = definitionSize + currentBitOffset / 8;
+                member->m_offset[std::to_underlying(wordSize)] = definitionSize + currentBitOffset / 8;
                 currentBitOffset += member->m_type_declaration->m_custom_bit_size;
             }
             else
@@ -135,7 +135,7 @@ namespace
                     utils::Align(definitionSize,
                                  member->GetForceAlignment() ? member->GetAlignment(wordSize) : std::min(member->GetAlignment(wordSize), definition->m_pack));
 
-                member->m_offset = definitionSize;
+                member->m_offset[std::to_underlying(wordSize)] = definitionSize;
 
                 definitionSize += member->m_type_declaration->GetSize(wordSize);
             }
@@ -162,11 +162,10 @@ namespace
             if (!CalculateFields(repository, member->m_type_declaration.get(), wordSize))
                 return false;
 
-            member->m_offset = 0;
+            member->m_offset[std::to_underlying(wordSize)] = 0;
 
             const auto memberSize = member->m_type_declaration->GetSize(wordSize);
-            if (memberSize > definitionSize)
-                definitionSize = memberSize;
+            definitionSize = std::max(memberSize, definitionSize);
         }
 
         definitionSize = utils::Align(definitionSize, definition->m_alignment[std::to_underlying(wordSize)]);
