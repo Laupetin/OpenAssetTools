@@ -195,6 +195,18 @@ namespace
         return std::nullopt;
     }
 
+    bool CanLoadZone(const ZoneLoaderInspectionResultIW4& inspectionResult)
+    {
+#ifdef ARCH_x86
+        if (GameVariant::GetVariantById(inspectionResult.m_generic_result.m_variant_id)->GetWordSize() == GameWordSize::ARCH_64)
+        {
+            con::warn("x64 zones are only supported by a x64 OAT build!");
+            return false;
+        }
+#endif
+        return true;
+    }
+
     void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
@@ -301,7 +313,7 @@ namespace
 std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
     auto resultIw4 = InspectZoneHeaderIw4(filePeek);
-    if (!resultIw4)
+    if (!resultIw4 || !CanLoadZone(*resultIw4))
         return std::nullopt;
 
     return resultIw4->m_generic_result;
