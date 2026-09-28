@@ -21,15 +21,15 @@ namespace
 
     static_assert(REMAINING_FILE_HEADER_SIZE == sizeof(uint32_t) * 4u);
 
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -66,7 +66,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeaderQos)));
@@ -74,7 +74,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     // Maybe external data size?
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(4));
 
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
     zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
         [zonePtr](ZoneInputStream& stream)
@@ -84,7 +84,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         32u,
         ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
+        zonePtr,
         std::move(progressCallback)));
 
     return zoneLoader;
