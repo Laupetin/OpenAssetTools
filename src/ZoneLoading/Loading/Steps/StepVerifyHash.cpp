@@ -21,7 +21,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             const uint8_t* dataToHash = nullptr;
             size_t dataToHashSize = 0;

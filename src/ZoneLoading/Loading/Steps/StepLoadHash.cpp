@@ -16,7 +16,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             if (stream.Load(m_hashes.get(), m_hash_size * m_hash_count) != m_hash_size * m_hash_count)
                 throw UnexpectedEndOfFileException();

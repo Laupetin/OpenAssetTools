@@ -2,7 +2,6 @@
 
 #include "ILoadingStep.h"
 #include "StreamProcessor.h"
-#include "Zone/XBlock.h"
 #include "Zone/Zone.h"
 
 #include <istream>
@@ -11,28 +10,34 @@
 
 class ILoadingStep;
 
-class ZoneLoader
+class ZoneReader
 {
 public:
-    explicit ZoneLoader(std::unique_ptr<Zone> zone);
+    ZoneReader();
 
-    void AddXBlock(std::unique_ptr<XBlock> block);
     void AddLoadingStep(std::unique_ptr<ILoadingStep> step);
     void AddStreamProcessor(std::unique_ptr<StreamProcessor> streamProcessor);
 
     void RemoveStreamProcessor(const StreamProcessor* streamProcessor);
 
-    std::unique_ptr<Zone> LoadZone(std::istream& stream);
+    bool Run(std::istream& stream);
 
-    std::vector<XBlock*> m_blocks;
-
-private:
+protected:
     ILoadingStream* BuildLoadingChain(ILoadingStream* rootStream);
 
     std::vector<std::unique_ptr<ILoadingStep>> m_steps;
     std::vector<std::unique_ptr<StreamProcessor>> m_processors;
 
     bool m_processor_chain_dirty;
+};
 
+class ZoneLoader : public ZoneReader
+{
+public:
+    explicit ZoneLoader(std::unique_ptr<Zone> zone);
+
+    std::unique_ptr<Zone> LoadZone(std::istream& stream);
+
+private:
     std::unique_ptr<Zone> m_zone;
 };

@@ -11,7 +11,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             stream.Load(&m_size, sizeof(m_size));
             stream.Load(&m_external_size, sizeof(m_external_size));

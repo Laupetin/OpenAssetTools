@@ -12,11 +12,11 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             assert(m_stream_processor != nullptr);
 
-            zoneLoader.AddStreamProcessor(std::move(m_stream_processor));
+            zoneReader.AddStreamProcessor(std::move(m_stream_processor));
             m_stream_processor = nullptr;
         }
 

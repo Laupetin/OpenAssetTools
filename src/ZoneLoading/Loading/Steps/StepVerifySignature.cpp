@@ -18,7 +18,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             assert(m_algorithm != nullptr);
             assert(m_signature_provider != nullptr);
