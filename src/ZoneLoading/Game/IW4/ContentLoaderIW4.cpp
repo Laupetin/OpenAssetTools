@@ -1,6 +1,7 @@
 #include "ContentLoaderIW4.h"
 
 #include "Game/IW4/AssetLoader_iw4_pc32.h"
+#include "Game/IW4/AssetLoader_iw4_pc64.h"
 #include "Game/IW4/IW4.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
@@ -27,7 +28,10 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 #ifdef ARCH_x86
         varScriptStringList->strings = m_stream.Alloc<const char*>(4);
 #else
-        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
+        if (m_word_size == GameWordSize::ARCH_64)
+            varScriptStringList->strings = m_stream.Alloc<const char*>(4);
+        else
+            varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
 #endif
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
@@ -44,8 +48,16 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName##_pc32 loader(m_zone, m_stream);                                                                                                     \
-        loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
+        if (m_word_size == GameWordSize::ARCH_64)                                                                                                              \
+        {                                                                                                                                                      \
+            Loader_##typeName##_pc64 loader(m_zone, m_stream);                                                                                                 \
+            loader.Load(&varXAsset->header.headerEntry);                                                                                                       \
+        }                                                                                                                                                      \
+        else                                                                                                                                                   \
+        {                                                                                                                                                      \
+            Loader_##typeName##_pc32 loader(m_zone, m_stream);                                                                                                 \
+            loader.Load(&varXAsset->header.headerEntry);                                                                                                       \
+        }                                                                                                                                                      \
         break;                                                                                                                                                 \
     }
 #define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
@@ -115,13 +127,20 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
 #ifdef ARCH_x86
         m_stream.Load<XAsset>(varXAsset, count);
 #else
-        const auto fill = m_stream.LoadWithFill(8u * count);
-
-        for (size_t index = 0; index < count; index++)
+        if (m_word_size == GameWordSize::ARCH_64)
         {
-            fill.Fill(varXAsset[index].type, 8u * index);
-            fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
-            m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
+            m_stream.Load<XAsset>(varXAsset, count);
+        }
+        else
+        {
+            const auto fill = m_stream.LoadWithFill(8u * count);
+
+            for (size_t index = 0; index < count; index++)
+            {
+                fill.Fill(varXAsset[index].type, 8u * index);
+                fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
+                m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
+            }
         }
 #endif
     }
@@ -145,13 +164,20 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
     m_stream.LoadDataRaw(&assetList, sizeof(assetList));
 #else
-    const auto fillAccessor = m_stream.LoadWithFill(16u);
-    varScriptStringList = &varXAssetList->stringList;
-    fillAccessor.Fill(varScriptStringList->count, 0u);
-    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
+    if (m_word_size == GameWordSize::ARCH_64)
+    {
+        m_stream.LoadDataRaw(&assetList, sizeof(assetList));
+    }
+    else
+    {
+        const auto fillAccessor = m_stream.LoadWithFill(16u);
+        varScriptStringList = &varXAssetList->stringList;
+        fillAccessor.Fill(varScriptStringList->count, 0u);
+        fillAccessor.FillPtr(varScriptStringList->strings, 4u);
 
-    fillAccessor.Fill(varXAssetList->assetCount, 8u);
-    fillAccessor.FillPtr(varXAssetList->assets, 12u);
+        fillAccessor.Fill(varXAssetList->assetCount, 8u);
+        fillAccessor.FillPtr(varXAssetList->assets, 12u);
+    }
 #endif
 
     m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
@@ -166,7 +192,10 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
         assetList.assets = m_stream.Alloc<XAsset>(4);
 #else
-        assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
+        if (m_word_size == GameWordSize::ARCH_64)
+            assetList.assets = m_stream.Alloc<XAsset>(4);
+        else
+            assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
 #endif
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);

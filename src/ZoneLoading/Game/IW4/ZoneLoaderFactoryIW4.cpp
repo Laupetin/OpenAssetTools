@@ -327,8 +327,10 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
+    const auto* variant = GameVariant::GetVariantById(inspectResult->m_generic_result.m_variant_id);
+
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_generic_result.m_variant_id);
+    auto zone = std::make_unique<Zone>(fileName, 0, variant->GetId());
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
@@ -361,7 +363,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(1));
     }
 
-    if (inspectResult->m_generic_result.m_variant_id != GameVariantId::IW4_XBOX)
+    if (variant->GetPlatform() == GamePlatform::PC)
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
@@ -373,7 +375,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             {
                 return std::make_unique<ContentLoader>(*zonePtr, stream);
             },
-            32u,
+            variant->GetWordSize() == GameWordSize::ARCH_64 ? 64u : 32u,
             ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
             zonePtr,
