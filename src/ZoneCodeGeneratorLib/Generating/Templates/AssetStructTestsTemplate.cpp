@@ -65,7 +65,7 @@ namespace
             {
                 if (!member->m_member->m_name.empty() && !member->m_member->m_type_declaration->m_has_custom_bit_size)
                 {
-                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});", structure->m_definition->GetFullName(), member->m_member->m_name, member->m_member->m_offset)
+                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});", structure->m_definition->GetFullName(), member->m_member->m_name, member->m_member->GetOffset(m_env.m_word_size))
                 }
             }
 

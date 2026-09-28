@@ -844,7 +844,7 @@ namespace
         std::string MakeReusableInnerOffset(const DataDefinition* dataDefinition, const Variable* member) const
         {
             if (m_env.m_word_size_mismatch)
-                return std::to_string(member->m_offset);
+                return std::to_string(member->GetOffset(m_env.m_word_size));
 
             return std::format("offsetof({0}, {1})", dataDefinition->GetFullName(), member->m_name);
         }
@@ -1138,7 +1138,7 @@ namespace
                     LINE("{")
                     m_intendation++;
                     LINEF("const auto fillAccessor = m_stream->WriteWithFill({0});",
-                          dynamicMember == nullptr ? info->m_definition->GetSize(m_env.m_word_size) : dynamicMember->m_member->m_offset)
+                          dynamicMember == nullptr ? info->m_definition->GetSize(m_env.m_word_size) : dynamicMember->m_member->GetOffset(m_env.m_word_size))
                     LINEF("{0} = fillAccessor.Offset();", MakeTypeWrittenVarName(info->m_definition))
                     LINEF("FillStruct_{0}(fillAccessor);", MakeSafeTypeName(info->m_definition))
                     m_intendation--;
@@ -1310,7 +1310,7 @@ namespace
             }
             else if (memberInfo.m_member->m_name.empty())
             {
-                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                const auto anonymousMemberOffset = memberInfo.m_member->GetOffset(m_env.m_word_size) + nestedBaseOffset;
                 for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
                 {
                     PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);

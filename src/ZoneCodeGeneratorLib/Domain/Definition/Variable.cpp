@@ -21,3 +21,8 @@ bool Variable::GetForceAlignment() const
 {
     return m_has_alignment_override || m_type_declaration->GetForceAlignment();
 }
+
+unsigned Variable::GetOffset(const WordSize wordSize) const
+{
+    return m_offset[std::to_underlying(wordSize)];
+}

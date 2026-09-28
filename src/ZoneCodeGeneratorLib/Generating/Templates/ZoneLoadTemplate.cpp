@@ -390,7 +390,8 @@ namespace
             }
             else
             {
-                LINEF("fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->m_offset)
+                LINEF(
+                    "fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->GetOffset(m_env.m_word_size))
             }
 
             LINEF("for (auto i = 1uz; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
@@ -507,7 +508,7 @@ namespace
             }
             else if (memberInfo.m_member->m_name.empty())
             {
-                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                const auto anonymousMemberOffset = memberInfo.m_member->GetOffset(m_env.m_word_size) + nestedBaseOffset;
                 for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
                 {
                     PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);
@@ -734,7 +735,7 @@ namespace
             {
                 LINEF("return LoadDynamicFill_{0}(fillAccessor.AtOffset({1})) + offsetof({2}, {3});",
                       MakeSafeTypeName(member.m_type->m_definition),
-                      member.m_member->m_offset,
+                      member.m_member->GetOffset(m_env.m_word_size),
                       info.m_definition->GetFullName(),
                       member.m_member->m_name)
             }
@@ -774,7 +775,7 @@ namespace
             const StructureComputations structureComputations(&info);
             const auto dynamicMember = structureComputations.GetDynamicMember();
 
-            LINEF("const auto fillAccessor = m_stream.AppendToFill({0}).AtOffset(parentFill.Offset());", dynamicMember->m_member->m_offset)
+            LINEF("const auto fillAccessor = m_stream.AppendToFill({0}).AtOffset(parentFill.Offset());", dynamicMember->m_member->GetOffset(m_env.m_word_size))
             LINE("")
 
             for (const auto& member : info.m_ordered_members)
