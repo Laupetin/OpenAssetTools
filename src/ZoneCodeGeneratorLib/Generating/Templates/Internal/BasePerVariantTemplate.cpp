@@ -45,7 +45,7 @@ size_t BasePerVariantTemplate::OffsetForMemberModifier(const MemberInformation& 
                                                        const DeclarationModifierComputations& modifier,
                                                        const size_t nestedBaseOffset) const
 {
-    size_t curOffset = memberInfo.m_member->m_offset;
+    size_t curOffset = memberInfo.m_member->GetOffset(m_env.m_word_size);
 
     auto curLevel = 0u;
     for (const auto index : modifier.GetArrayIndices())

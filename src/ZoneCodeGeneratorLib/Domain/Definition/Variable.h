@@ -12,10 +12,11 @@ public:
 
     [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const;
     [[nodiscard]] bool GetForceAlignment() const;
+    [[nodiscard]] unsigned GetOffset(WordSize wordSize) const;
 
     std::string m_name;
     bool m_has_alignment_override;
     unsigned m_alignment_override;
-    unsigned m_offset;
+    unsigned m_offset[WORD_SIZE_COUNT];
     std::unique_ptr<TypeDeclaration> m_type_declaration;
 };
