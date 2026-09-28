@@ -45,7 +45,7 @@ namespace
         searchPath.AddFileData("triangle.glb", modelData.str());
         searchPath.AddFileData("xmodel/triangle.json", metadata.dump());
         searchPath.AddFileData("partclassification.csv", "");
-        Zone zone("bounds", 0, GameId::IW4, GamePlatform::PC);
+        Zone zone("bounds", 0, GameVariantId::IW4_PC32);
         AssetCreatorCollection creators(zone);
         GdtLookup gdt;
         IObjLoader::GetObjLoaderForGame(GameId::IW4)->ConfigureCreatorCollection(creators, zone, searchPath, gdt);

@@ -31,7 +31,7 @@ namespace
 
         searchPath.AddFileData("xanim/test_anim", std::string(data.get(), fileSize));
 
-        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T5_PC);
         AssetCreatorCollection creatorCollection(zone);
         IgnoredAssetLookup ignoredAssetLookup;
         MemoryManager memoryManager;

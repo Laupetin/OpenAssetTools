@@ -51,12 +51,4 @@ namespace IW3
         static std::string shortName = "IW3";
         return shortName;
     }
-
-    const std::vector<IGameVariant*>& Game::GetVariants() const
-    {
-        static std::vector<IGameVariant*> variants = {
-            new GameVariant(std::to_underlying(VariantId::PC), "pc", GameEndianness::LE, GameWordSize::ARCH_32, GamePlatform::PC),
-        };
-        return variants;
-    }
 } // namespace IW3

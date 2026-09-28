@@ -64,7 +64,7 @@ namespace
 
     std::string DumpVehicle(VehicleDef& vehicle)
     {
-        Zone dumpingZone("DumpingZone", 0, GameId::IW4, GamePlatform::PC);
+        Zone dumpingZone("DumpingZone", 0, GameVariantId::IW4_PC32);
         vehicle.trophyTags[0] = dumpingZone.m_script_strings.AddOrGetScriptString("tag_trophy_left");
         vehicle.trophyTags[1] = dumpingZone.m_script_strings.AddOrGetScriptString("tag_trophy_right");
         dumpingZone.m_pools.AddAsset(ASSET_TYPE_VEHICLE, vehicle.name, &vehicle, {}, {}, {});
