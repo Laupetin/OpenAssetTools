@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <functional>
 #include <istream>
 #include <vector>
 
@@ -15,6 +16,8 @@ public:
 
         return *reinterpret_cast<const T*>(m_data.data());
     }
+
+    void PeekWithStream(const std::function<void(std::istream& stream)>& cb) const;
 
 private:
     void EnsureHasEnoughData(size_t size);
