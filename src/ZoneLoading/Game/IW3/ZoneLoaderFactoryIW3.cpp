@@ -35,19 +35,19 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -185,7 +185,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -199,7 +199,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
         // Start of the zone content
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -210,7 +210,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             32u,
             ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
-            zonePtr->Memory(),
+            zonePtr,
             std::move(progressCallback)));
     }
     else

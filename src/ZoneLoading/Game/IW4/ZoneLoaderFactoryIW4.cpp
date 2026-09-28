@@ -138,18 +138,18 @@ namespace
         return std::nullopt;
     }
 
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -192,7 +192,7 @@ namespace
         }
     }
 
-    void AddAuthHeaderSteps(const ZoneLoaderInspectionResultIW4& inspectResult, ZoneLoader& zoneLoader, const std::string& fileName)
+    void AddAuthHeaderSteps(const ZoneLoaderInspectionResultIW4& inspectResult, ZoneReader& zoneReader, const std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!inspectResult.m_generic_result.m_is_signed)
@@ -201,38 +201,38 @@ namespace
         // If file is signed setup a RSA instance.
         auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official, inspectResult.m_generic_result.m_variant_id);
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
+        zoneReader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
         auto subHeaderHash = step::CreateStepLoadHash(sizeof(DB_AuthHash::bytes), 1);
         auto* subHeaderHashPtr = subHeaderHash.get();
-        zoneLoader.AddLoadingStep(std::move(subHeaderHash));
+        zoneReader.AddLoadingStep(std::move(subHeaderHash));
 
         auto subHeaderHashSignature = step::CreateStepLoadSignature(sizeof(DB_AuthSignature::bytes));
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
-        zoneLoader.AddLoadingStep(std::move(subHeaderHashSignature));
+        zoneReader.AddLoadingStep(std::move(subHeaderHashSignature));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
+        zoneReader.AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
 
         auto subHeaderCapture = processor::CreateProcessorCaptureData(sizeof(DB_AuthSubHeader));
         auto* subHeaderCapturePtr = subHeaderCapture.get();
-        zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(std::move(subHeaderCapture)));
+        zoneReader.AddLoadingStep(step::CreateStepAddProcessor(std::move(subHeaderCapture)));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyFileName(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
+        zoneReader.AddLoadingStep(step::CreateStepVerifyFileName(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
         auto masterBlockHashes =
             step::CreateStepLoadHash(sizeof(DB_AuthHash::bytes), static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>));
         auto* masterBlockHashesPtr = masterBlockHashes.get();
-        zoneLoader.AddLoadingStep(std::move(masterBlockHashes));
+        zoneReader.AddLoadingStep(std::move(masterBlockHashes));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyHash(cryptography::CreateSha256(), 0, subHeaderHashPtr, subHeaderCapturePtr));
-        zoneLoader.AddLoadingStep(step::CreateStepRemoveProcessor(subHeaderCapturePtr));
+        zoneReader.AddLoadingStep(step::CreateStepVerifyHash(cryptography::CreateSha256(), 0, subHeaderHashPtr, subHeaderCapturePtr));
+        zoneReader.AddLoadingStep(step::CreateStepRemoveProcessor(subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
-        zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(
+        zoneReader.AddLoadingStep(step::CreateStepAddProcessor(
             processor::CreateProcessorAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
                                                    ZoneConstants::AUTHED_CHUNK_SIZE,
                                                    static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
@@ -266,7 +266,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -296,7 +296,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
         // Start of the zone content
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -307,7 +307,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             32u,
             ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
-            zonePtr->Memory(),
+            zonePtr,
             std::move(progressCallback)));
     }
     else
