@@ -91,6 +91,49 @@ namespace
         return GameVariantId::IW5_PC32;
     }
 
+    std::optional<ZoneLoaderInspectionResult> InspectZoneHeaderIw5(ZoneDataPeeking& filePeek)
+    {
+        const auto& header = filePeek.PeekStruct<ZoneHeader>();
+        if (header.m_version != ZoneConstants::ZONE_VERSION)
+            return std::nullopt;
+
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
+        {
+            return ZoneLoaderInspectionResult{
+                .m_game_id = GameId::IW5,
+                .m_variant_id = DeterminePcVariant(filePeek, true),
+                .m_is_official = true,
+                .m_is_signed = true,
+                .m_is_encrypted = false,
+            };
+        }
+
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
+        {
+            return ZoneLoaderInspectionResult{
+                .m_game_id = GameId::IW5,
+                .m_variant_id = DeterminePcVariant(filePeek, false),
+                .m_is_official = false,
+                .m_is_signed = false,
+                .m_is_encrypted = false,
+            };
+        }
+
+        return std::nullopt;
+    }
+
+    bool CanLoadZone(const ZoneLoaderInspectionResult& inspectionResult)
+    {
+#ifdef ARCH_x86
+        if (GameVariant::GetVariantById(inspectionResult.m_variant_id)->GetWordSize() == GameWordSize::ARCH_64)
+        {
+            con::warn("x64 zones are only supported by a x64 OAT build!");
+            return false;
+        }
+#endif
+        return true;
+    }
+
     void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
@@ -182,33 +225,11 @@ namespace
 
 std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
-    const auto& header = filePeek.PeekStruct<ZoneHeader>();
-    if (header.m_version != ZoneConstants::ZONE_VERSION)
+    const auto result = InspectZoneHeaderIw5(filePeek);
+    if (!result || !CanLoadZone(*result))
         return std::nullopt;
 
-    if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
-    {
-        return ZoneLoaderInspectionResult{
-            .m_game_id = GameId::IW5,
-            .m_variant_id = DeterminePcVariant(filePeek, true),
-            .m_is_official = true,
-            .m_is_signed = true,
-            .m_is_encrypted = false,
-        };
-    }
-
-    if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
-    {
-        return ZoneLoaderInspectionResult{
-            .m_game_id = GameId::IW5,
-            .m_variant_id = DeterminePcVariant(filePeek, false),
-            .m_is_official = false,
-            .m_is_signed = false,
-            .m_is_encrypted = false,
-        };
-    }
-
-    return std::nullopt;
+    return result;
 }
 
 std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
