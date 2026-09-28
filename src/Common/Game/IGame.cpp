@@ -11,41 +11,7 @@
 
 #include <cassert>
 
-GameVariant::GameVariant(const GameVariantId id, std::string name, const GameEndianness endianness, const GameWordSize wordSize, const GamePlatform platform)
-    : m_id(id),
-      m_name(std::move(name)),
-      m_endianness(endianness),
-      m_word_size(wordSize),
-      m_platform(platform)
-{
-}
-
-GameVariantId GameVariant::GetId() const
-{
-    return m_id;
-}
-
-const std::string& GameVariant::GetName() const
-{
-    return m_name;
-}
-
-GameEndianness GameVariant::GetEndianness() const
-{
-    return m_endianness;
-}
-
-GameWordSize GameVariant::GetWordSize() const
-{
-    return m_word_size;
-}
-
-GamePlatform GameVariant::GetPlatform() const
-{
-    return m_platform;
-}
-
-IGame* IGame::GetGameById(GameId gameId)
+IGame* IGame::GetGameById(const GameId gameId)
 {
     static IGame* games[]{
         new IW3::Game(),
@@ -85,15 +51,6 @@ const std::vector<GameLanguagePrefix>& AbstractGame::GetLanguagePrefixes() const
 {
     static std::vector<GameLanguagePrefix> prefixes;
     return prefixes;
-}
-
-const IGameVariant* AbstractGame::GetVariantById(const GameVariantId id) const
-{
-    const auto& variants = GetVariants();
-
-    assert(id < variants.size());
-
-    return variants[id];
 }
 
 asset_type_t AbstractGame::GetAssetTypeCount() const

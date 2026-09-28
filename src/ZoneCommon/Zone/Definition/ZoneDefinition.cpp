@@ -34,6 +34,14 @@ void ZoneDefinitionProperties::Include(const ZoneDefinitionProperties& otherProp
 }
 
 ZoneDefinition::ZoneDefinition()
-    : m_game(GameId::COUNT)
+    : m_variant(GameVariantId::COUNT)
 {
+}
+
+GameId ZoneDefinition::GetGameId() const
+{
+    if (m_variant < GameVariantId::COUNT)
+        return IGameVariant::GetVariantById(m_variant)->GetGameId();
+
+    return GameId::COUNT;
 }

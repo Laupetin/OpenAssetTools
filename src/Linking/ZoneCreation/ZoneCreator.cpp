@@ -9,9 +9,9 @@
 
 namespace
 {
-    std::unique_ptr<Zone> CreateZone(const ZoneCreationContext& context, const GameId gameId)
+    std::unique_ptr<Zone> CreateZone(const ZoneCreationContext& context, const GameVariantId variantId)
     {
-        return std::make_unique<Zone>(context.m_definition->m_name, 0, gameId, GamePlatform::PC);
+        return std::make_unique<Zone>(context.m_definition->m_name, 0, variantId);
     }
 
     std::vector<Gdt*> CreateGdtList(const ZoneCreationContext& context)
@@ -51,9 +51,9 @@ namespace zone_creator
         lookup.Initialize(gdtFiles);
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(GameId gameId, ZoneCreationContext& context)
+    std::unique_ptr<Zone> CreateZoneForDefinition(const GameId gameId, const GameVariantId variantId, ZoneCreationContext& context)
     {
-        auto zone = CreateZone(context, gameId);
+        auto zone = CreateZone(context, variantId);
 
         IgnoreReferencesFromAssets(context);
         IgnoredAssetLookup ignoredAssetLookup(context.m_ignored_assets);

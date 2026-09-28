@@ -54,7 +54,7 @@ namespace
         auto zone = std::move(*maybeZone);
 
         REQUIRE(zone->m_game_id == GameId::IW5);
-        REQUIRE(zone->m_platform == GamePlatform::PC);
+        REQUIRE(zone->m_variant_id == GameVariantId::IW5_PC32);
         REQUIRE(zone->m_name == "SimpleZoneIW5");
         REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
         REQUIRE(zone->m_pools.GetAsset<IW5::AssetRawFile>("SimpleZone.txt"));

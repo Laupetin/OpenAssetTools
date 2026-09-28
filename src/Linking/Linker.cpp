@@ -268,7 +268,7 @@ namespace
                 if (ignore == targetName)
                     continue;
 
-                if (!ReadIgnoreEntries(paths, ignore, context.m_definition->m_game, context.m_ignored_assets))
+                if (!ReadIgnoreEntries(paths, ignore, context.m_definition->GetGameId(), context.m_ignored_assets))
                 {
                     con::error("Failed to read asset listing for ignoring assets of project \"{}\".", ignore);
                     return false;
@@ -311,7 +311,7 @@ namespace
             if (!LoadGdtFilesFromZoneDefinition(context.m_gdt_files, zoneDefinition, &paths.m_gdt_paths.GetSearchPaths()))
                 return nullptr;
 
-            return zone_creator::CreateZoneForDefinition(zoneDefinition.m_game, context);
+            return zone_creator::CreateZoneForDefinition(zoneDefinition.GetGameId(), zoneDefinition.m_variant, context);
         }
 
         static bool WriteZoneToFile(IOutputPath& outPath, const Zone& zone)
@@ -338,11 +338,11 @@ namespace
 
         bool BuildFastFile(LinkerPathManager& paths, const std::string& projectName, const std::string& targetName, ZoneDefinition& zoneDefinition) const
         {
-            const fs::path outDir(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
+            const fs::path outDir(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.GetGameId()));
 
             OutputPathFilesystem outputPath(outDir);
 
-            const fs::path cacheDir(paths.m_linker_paths->BuildCacheFolderPath(projectName, zoneDefinition.m_game));
+            const fs::path cacheDir(paths.m_linker_paths->BuildCacheFolderPath(projectName, zoneDefinition.GetGameId()));
             SoundBankWriter::OutputPath = outDir;
 
             const auto zone = CreateZoneForDefinition(paths, outDir, cacheDir, targetName, zoneDefinition);
@@ -372,7 +372,7 @@ namespace
                 if (!zoneDefinition)
                     return false;
 
-                PathGameContext gameContext(paths, projectName, zoneDefinition->m_game);
+                PathGameContext gameContext(paths, projectName, zoneDefinition->GetGameId());
 
                 if (!zoneDefinition->m_assets.empty())
                 {

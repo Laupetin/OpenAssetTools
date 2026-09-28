@@ -19,7 +19,7 @@ namespace
     public:
         TestContext()
             : m_memory(),
-              m_zone("test", 0, GameId::T6, GamePlatform::PC),
+              m_zone("test", 0, GameVariantId::T6_PC),
               m_zone_definition(),
               m_zone_states(m_zone),
               m_creators(m_zone),
