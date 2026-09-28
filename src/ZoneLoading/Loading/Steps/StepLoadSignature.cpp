@@ -15,7 +15,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             if (stream.Load(m_signature.get(), m_signature_size) != m_signature_size)
                 throw UnexpectedEndOfFileException();

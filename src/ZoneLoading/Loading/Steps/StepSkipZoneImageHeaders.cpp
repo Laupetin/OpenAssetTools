@@ -11,9 +11,8 @@ namespace
     class StepSkipZoneImageHeaders final : public ILoadingStep
     {
     public:
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
-
             // Xbox fastfiles have additional header data before the auth header:
             // - 4 bytes: language flags bitmask
             // - 4 bytes: image count
