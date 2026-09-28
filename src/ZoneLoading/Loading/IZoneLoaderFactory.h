@@ -13,12 +13,9 @@ struct ZoneLoaderInspectionResult
 {
     // The game this zone is created for.
     GameId m_game_id;
-    // Whether the zone is meant for a little-endian or big-endian loader.
-    GameEndianness m_endianness;
-    // Whether the zone is meant for a 32bit or 64bit loader.
-    GameWordSize m_word_size;
-    // The platform this zone is for.
-    GamePlatform m_platform;
+    // The id of the game variant of this zone.
+    // The game variant informs about more architectural background like endianness, word size and platform.
+    GameVariantId m_variant_id;
     // Whether this zone is confirmed official. False if not official or unknown.
     bool m_is_official;
     // Whether this zone contains a signature confirming the identity of the creator.

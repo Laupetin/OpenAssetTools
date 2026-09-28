@@ -24,7 +24,7 @@ namespace
         MockSearchPath loadingSearchPath;
         loadingSearchPath.AddFileData("physic/test_phys_preset", RAW_PHYS_PRESET);
 
-        Zone loadingZone("LoadingZone", 0, GameId::IW5, GamePlatform::PC);
+        Zone loadingZone("LoadingZone", 0, GameVariantId::IW5_PC32);
         AssetCreatorCollection creatorCollection(loadingZone);
         IgnoredAssetLookup ignoredAssetLookup;
         AssetCreationContext loadingContext(loadingZone, &creatorCollection, &ignoredAssetLookup);

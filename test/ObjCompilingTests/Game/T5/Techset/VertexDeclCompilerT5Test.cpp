@@ -11,7 +11,7 @@ using namespace std::literals;
 
 TEST_CASE("VertexDeclCompilerT5", "[t5][techset][compiler]")
 {
-    Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+    Zone zone("MockZone", 0, GameVariantId::T5_PC);
     zone.Register();
 
     MemoryManager memory;

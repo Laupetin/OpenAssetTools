@@ -49,7 +49,7 @@ namespace
 
     std::string DumpTracer(TracerDef& tracerDef)
     {
-        Zone dumpingZone("DumpingZone", 0, GameId::IW4, GamePlatform::PC);
+        Zone dumpingZone("DumpingZone", 0, GameVariantId::IW4_PC32);
         dumpingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<TracerDef>>(ASSET_TYPE_TRACER, tracerDef.name, &tracerDef));
 
         MockSearchPath dumpingObjPath;
@@ -112,7 +112,7 @@ namespace
         MockSearchPath loadingSearchPath;
         loadingSearchPath.AddFileData("tracer/test_tracer", DumpTracer(*testTracer.tracer));
 
-        Zone loadingZone("LoadingZone", 0, GameId::IW4, GamePlatform::PC);
+        Zone loadingZone("LoadingZone", 0, GameVariantId::IW4_PC32);
         auto loadingMaterial = std::make_unique<Material>();
         loadingMaterial->info.name = MATERIAL_NAME;
         auto* loadingMaterialInfo =

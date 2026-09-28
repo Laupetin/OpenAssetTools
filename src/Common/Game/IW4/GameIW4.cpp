@@ -54,13 +54,4 @@ namespace IW4
         static std::string shortName = "IW4";
         return shortName;
     }
-
-    const std::vector<IGameVariant*>& Game::GetVariants() const
-    {
-        static std::vector<IGameVariant*> variants = {
-            new GameVariant(std::to_underlying(VariantId::PC32), "pc32", GameEndianness::LE, GameWordSize::ARCH_32, GamePlatform::PC),
-            new GameVariant(std::to_underlying(VariantId::PC32), "pc64", GameEndianness::LE, GameWordSize::ARCH_64, GamePlatform::PC),
-        };
-        return variants;
-    }
 } // namespace IW4

@@ -131,9 +131,8 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW5,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            // Assume 32bit at first until we may know better later
+            .m_variant_id = GameVariantId::IW5_PC32,
             .m_is_official = true,
             .m_is_signed = true,
             .m_is_encrypted = false,
@@ -144,9 +143,8 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::IW5,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            // Assume 32bit at first until we may know better later
+            .m_variant_id = GameVariantId::IW5_PC32,
             .m_is_official = false,
             .m_is_signed = false,
             .m_is_encrypted = false,
@@ -165,7 +163,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW5, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 

@@ -4,12 +4,6 @@
 
 namespace IW5
 {
-    enum class VariantId : std::uint8_t
-    {
-        PC32,
-        PC64,
-    };
-
     class Game final : public AbstractGame
     {
     public:
@@ -18,6 +12,5 @@ namespace IW5
         [[nodiscard]] GameId GetId() const override;
         [[nodiscard]] const std::string& GetFullName() const override;
         [[nodiscard]] const std::string& GetShortName() const override;
-        [[nodiscard]] const std::vector<IGameVariant*>& GetVariants() const override;
     };
 } // namespace IW5

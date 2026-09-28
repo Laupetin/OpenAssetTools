@@ -16,7 +16,7 @@ SequenceZoneDefinitionAssetList::SequenceZoneDefinitionAssetList()
 
 void SequenceZoneDefinitionAssetList::ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
-    if (state->m_definition->m_game == GameId::COUNT)
+    if (!state->m_game)
     {
         const auto& assetListKeywordToken = result.NextCapture(CAPTURE_ASSET_LIST_KEYWORD);
         throw ParsingException(assetListKeywordToken.GetPos(), "Must define game before using assetlist");
@@ -24,7 +24,7 @@ void SequenceZoneDefinitionAssetList::ProcessMatch(ZoneDefinitionParserState* st
 
     const auto& assetListNameToken = result.NextCapture(CAPTURE_ASSET_LIST_NAME);
 
-    AssetListReader assetListReader(state->m_search_path, state->m_definition->m_game);
+    const AssetListReader assetListReader(state->m_search_path, (*state->m_game)->GetId());
     const auto maybeAssetList = assetListReader.ReadAssetList(assetListNameToken.FieldValue());
 
     if (!maybeAssetList)
