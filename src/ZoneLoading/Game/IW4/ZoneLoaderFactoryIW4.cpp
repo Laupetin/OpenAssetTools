@@ -9,6 +9,7 @@
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorIW4xDecryption.h"
 #include "Loading/Processor/ProcessorInflate.h"
+#include "Loading/Processor/ProcessorSkipAuthedBlocks.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepDumpData.h"
@@ -23,6 +24,7 @@
 #include "Loading/Steps/StepVerifyHash.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
+#include "Loading/WordSizeDeterminator.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/Logging/Log.h"
@@ -43,6 +45,63 @@ namespace
         bool m_is_iw4x;
     };
 
+    GameVariantId DeterminePcVariant(const ZoneDataPeeking& filePeek, const bool isSigned)
+    {
+        std::optional<GameWordSize> wordSize;
+        filePeek.PeekWithStream(
+            [&wordSize, isSigned](std::istream& stream)
+            {
+                auto zoneReader = std::make_unique<ZoneReader>();
+
+                size_t skipSizePreInflate = sizeof(ZoneHeader) //
+                                            + 1                // unknown
+                                            + 8                // timestamp
+                    ;
+                if (isSigned)
+                {
+                    skipSizePreInflate += sizeof(DB_AuthHeader)                                      // header
+                                          + ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader) // rest of the first chunk
+                        ;
+                }
+
+                constexpr size_t skipSizePostInflate = 8       // Zone sizes
+                                                       + 4 * 8 // Xblock sizes
+                    ;
+
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePreInflate));
+                if (isSigned)
+                {
+                    zoneReader->AddLoadingStep(step::CreateStepAddProcessor(
+                        processor::CreateProcessorSkipAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                                   ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                                   static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
+                                                                   32u)));
+                }
+                zoneReader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePostInflate));
+
+                wordSize = DetermineWordSizeFromXAssetList(stream,
+                                                           std::move(zoneReader),
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 4,
+                                                               .offsetAssetCount = 8,
+                                                               .offsetAssetPointer = 12,
+                                                           },
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 8,
+                                                               .offsetAssetCount = 16,
+                                                               .offsetAssetPointer = 24,
+                                                           });
+            });
+
+        if (wordSize && *wordSize == GameWordSize::ARCH_64)
+            return GameVariantId::IW4_PC64;
+
+        return GameVariantId::IW4_PC32;
+    }
+
     std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(ZoneDataPeeking& filePeek)
     {
         const auto& header = filePeek.PeekStruct<ZoneHeader>();
@@ -55,7 +114,7 @@ namespace
                 {
                     constexpr ZoneLoaderInspectionResult generic{
                         .m_game_id = GameId::IW4,
-                        // Assume 32bit at first until we may know better later
+                        // IW4x magic zones are always 32bit
                         .m_variant_id = GameVariantId::IW4_PC32,
                         .m_is_official = false,
                         .m_is_signed = false,
@@ -72,10 +131,9 @@ namespace
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
             {
-                constexpr ZoneLoaderInspectionResult generic{
+                const ZoneLoaderInspectionResult generic{
                     .m_game_id = GameId::IW4,
-                    // Assume 32bit at first until we may know better later
-                    .m_variant_id = GameVariantId::IW4_PC32,
+                    .m_variant_id = DeterminePcVariant(filePeek, true),
                     .m_is_official = true,
                     .m_is_signed = true,
                     .m_is_encrypted = false,
@@ -88,10 +146,9 @@ namespace
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
             {
-                constexpr ZoneLoaderInspectionResult generic{
+                const ZoneLoaderInspectionResult generic{
                     .m_game_id = GameId::IW4,
-                    // Assume 32bit at first until we may know better later
-                    .m_variant_id = GameVariantId::IW4_PC32,
+                    .m_variant_id = DeterminePcVariant(filePeek, false),
                     .m_is_official = false,
                     .m_is_signed = false,
                     .m_is_encrypted = false,
