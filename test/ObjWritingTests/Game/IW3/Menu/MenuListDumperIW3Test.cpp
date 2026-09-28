@@ -29,7 +29,7 @@ namespace
         menuList.menuCount = static_cast<int>(std::size(menus));
         menuList.menus = menus;
 
-        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::IW3_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<MenuList>>(ASSET_TYPE_MENULIST, menuList.name, &menuList));
 
         MockSearchPath mockObjPath;

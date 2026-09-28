@@ -32,7 +32,7 @@ namespace
 
         searchPath.AddFileData("images/_testimage.dds", std::string(data.get(), fileSize));
 
-        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::IW3_PC);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

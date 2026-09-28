@@ -56,7 +56,7 @@ namespace
 TEST_CASE("TechniqueCompilerIW4", "[iw4][techset][compiler]")
 {
 
-    Zone zone("MockZone", 0, GameId::IW4, GamePlatform::PC);
+    Zone zone("MockZone", 0, GameVariantId::IW4_PC32);
     zone.Register();
 
     MemoryManager memory;

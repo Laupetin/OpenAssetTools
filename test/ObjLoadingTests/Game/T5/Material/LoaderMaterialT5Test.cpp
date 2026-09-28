@@ -358,7 +358,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, GameId::T5, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T5_PC);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);

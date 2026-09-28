@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Game/IGame.h"
+#include "Game/GameVariant.h"
 #include "Loading/StreamProcessor.h"
 #include "Zone/XChunk/IXChunkProcessor.h"
 
