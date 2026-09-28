@@ -2,6 +2,7 @@
 
 #include "ContentLoaderT4.h"
 #include "Game/GameLanguage.h"
+#include "Game/T4/GameT4.h"
 #include "Game/T4/T4.h"
 #include "Game/T4/ZoneConstantsT4.h"
 #include "Loading/Processor/ProcessorInflate.h"
@@ -43,9 +44,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::T4,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            .m_variant_id = GameVariantId::T4_PC,
             // There is no way to know whether unsigned zones are official.
             .m_is_official = false,
             .m_is_signed = false,
@@ -65,7 +64,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T4, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 

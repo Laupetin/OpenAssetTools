@@ -133,9 +133,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
         {
             return ZoneLoaderInspectionResult{
                 .m_game_id = GameId::IW3,
-                .m_endianness = GameEndianness::LE,
-                .m_word_size = GameWordSize::ARCH_32,
-                .m_platform = GamePlatform::PC,
+                .m_variant_id = GameVariantId::IW3_PC,
                 .m_is_official = true,
                 .m_is_signed = false,
                 .m_is_encrypted = false,
@@ -148,9 +146,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
         {
             return ZoneLoaderInspectionResult{
                 .m_game_id = GameId::IW3,
-                .m_endianness = GameEndianness::BE,
-                .m_word_size = GameWordSize::ARCH_32,
-                .m_platform = GamePlatform::XBOX,
+                .m_variant_id = GameVariantId::IW3_XBOX,
                 .m_is_official = true,
                 .m_is_signed = false,
                 .m_is_encrypted = false,
@@ -160,9 +156,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
         {
             return ZoneLoaderInspectionResult{
                 .m_game_id = GameId::IW3,
-                .m_endianness = GameEndianness::BE,
-                .m_word_size = GameWordSize::ARCH_32,
-                .m_platform = GamePlatform::XBOX,
+                .m_variant_id = GameVariantId::IW3_XBOX,
                 .m_is_official = true,
                 .m_is_signed = true,
                 .m_is_encrypted = false,
@@ -181,8 +175,10 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
+    const auto variant = IGameVariant::GetVariantById(inspectResult->m_variant_id);
+
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW3, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
@@ -199,7 +195,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
 
     zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
 
-    if (inspectResult->m_endianness == GameEndianness::LE)
+    if (variant->GetEndianness() == GameEndianness::LE)
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());

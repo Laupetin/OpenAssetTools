@@ -2,6 +2,20 @@
 
 #include <algorithm>
 
+namespace
+{
+    constexpr GameVariantId DEFAULT_VARIANT_FOR_GAME[]{
+        GameVariantId::IW3_PC,
+        GameVariantId::IW4_PC32,
+        GameVariantId::IW5_PC32,
+        GameVariantId::QOS_PC,
+        GameVariantId::T4_PC,
+        GameVariantId::T5_PC,
+        GameVariantId::T6_PC,
+    };
+    static_assert(std::size(DEFAULT_VARIANT_FOR_GAME) == std::to_underlying(GameId::COUNT));
+} // namespace
+
 ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream)
     : m_search_path(searchPath),
       m_underlying_stream(underlyingStream),
@@ -14,8 +28,14 @@ ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISe
 
 void ZoneDefinitionParserState::SetGame(const GameId gameId)
 {
-    m_definition->m_game = gameId;
+    m_definition->m_variant = DEFAULT_VARIANT_FOR_GAME[static_cast<unsigned>(gameId)];
     m_game = IGame::GetGameById(gameId);
+}
+
+void ZoneDefinitionParserState::SetVariant(const GameVariantId variantId)
+{
+    m_definition->m_variant = variantId;
+    m_variant = IGameVariant::GetVariantById(variantId);
 }
 
 namespace
