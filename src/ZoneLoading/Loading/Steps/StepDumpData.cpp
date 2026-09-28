@@ -13,7 +13,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             uint8_t tempBuffer[0x1000];
             auto dumpedBytes = 0uz;
