@@ -24,6 +24,13 @@ enum class ModelOutputFormat_e
     GLB
 };
 
+enum class XAnimOutputFormat_e
+{
+    MOD_TOOLS,
+    GLTF,
+    GLB
+};
+
 class ObjWriting
 {
 public:
@@ -34,6 +41,7 @@ public:
 
         ImageOutputFormat_e ImageOutputFormat = ImageOutputFormat_e::DDS;
         ModelOutputFormat_e ModelOutputFormat = ModelOutputFormat_e::GLB;
+        XAnimOutputFormat_e XAnimOutputFormat = XAnimOutputFormat_e::MOD_TOOLS;
         bool MenuLegacyMode = false;
 
     } Configuration;
