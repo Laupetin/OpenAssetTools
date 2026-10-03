@@ -37,7 +37,7 @@ private:
 class CsvOutputStream
 {
 public:
-    explicit CsvOutputStream(std::ostream& stream);
+    explicit CsvOutputStream(std::ostream& stream, bool padColumns = true);
 
     void WriteColumn(const std::string& value);
     void NextRow();
@@ -47,4 +47,5 @@ private:
     unsigned m_column_count;
     unsigned m_current_column;
     bool m_first_row;
+    bool m_pad_columns;
 };
