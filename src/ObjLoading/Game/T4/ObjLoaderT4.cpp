@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T4/AssetMarkerT4.h"
 #include "Game/T4/Font/FontLoaderT4.h"
+#include "Game/T4/Fx/FxEffectDefLoaderT4.h"
 #include "Game/T4/Image/ImageLoaderEmbeddedT4.h"
 #include "Game/T4/Image/ImageLoaderExternalT4.h"
 #include "Game/T4/Menu/LoaderMenuListT4.h"
@@ -107,6 +108,7 @@ namespace
         collection.AddAssetCreator(image::CreateLoaderExternalT4(memory, searchPath));
         collection.AddAssetCreator(material::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(font::CreateLoaderT4(memory, searchPath));
+        collection.AddAssetCreator(fx::CreateLoaderT4(memory, searchPath));
         collection.AddAssetCreator(menu::CreateMenuListLoaderT4(memory, searchPath));
         collection.AddAssetCreator(localize::CreateLoaderT4(memory, searchPath, zone));
         collection.AddAssetCreator(map_ents::CreateLoaderT4(memory, searchPath));

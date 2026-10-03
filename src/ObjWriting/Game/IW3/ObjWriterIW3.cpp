@@ -1,6 +1,8 @@
 #include "ObjWriterIW3.h"
 
 #include "Game/IW3/Font/FontDumperIW3.h"
+#include "Game/IW3/Fx/FxEffectDefDumperIW3.h"
+#include "Game/IW3/Fx/FxImpactTableDumperIW3.h"
 #include "Game/IW3/Image/ImageDumperIW3.h"
 #include "Game/IW3/Maps/MapEntsDumperIW3.h"
 #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
@@ -50,8 +52,8 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<localize::DumperIW3>());
     RegisterAssetDumper(std::make_unique<weapon::DumperIW3>());
     // REGISTER_DUMPER(AssetDumperSndDriverGlobals)
-    // REGISTER_DUMPER(AssetDumperFxEffectDef)
-    // REGISTER_DUMPER(AssetDumperFxImpactTable)
+    RegisterAssetDumper(std::make_unique<fx::EffectDefDumperIW3>());
+    RegisterAssetDumper(std::make_unique<fx::ImpactTableDumperIW3>());
     RegisterAssetDumper(std::make_unique<raw_file::DumperIW3>());
     RegisterAssetDumper(std::make_unique<string_table::DumperIW3>());
 }
