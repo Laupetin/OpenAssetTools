@@ -250,18 +250,38 @@ namespace
 
             result->Allocate();
 
-            for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
+            if (m_texture_type == TextureType::T_CUBE)
             {
-                const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
-
                 for (auto face = 0; face < faceCount; face++)
                 {
-                    m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
-
-                    if (m_stream.gcount() != mipSize)
+                    for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
                     {
-                        con::error("Failed to read texture data from dds");
-                        return nullptr;
+                        const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
+                        m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
+
+                        if (m_stream.gcount() != mipSize)
+                        {
+                            con::error("Failed to read texture data from dds");
+                            return nullptr;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
+                {
+                    const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
+
+                    for (auto face = 0; face < faceCount; face++)
+                    {
+                        m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
+
+                        if (m_stream.gcount() != mipSize)
+                        {
+                            con::error("Failed to read texture data from dds");
+                            return nullptr;
+                        }
                     }
                 }
             }
