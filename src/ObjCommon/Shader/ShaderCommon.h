@@ -4,6 +4,8 @@
 
 namespace shader
 {
+    std::string GetSourceFileNameForShaderAssetName(const std::string& assetName);
+
     std::string GetFileNameForPixelShaderAssetName(const std::string& assetName);
     std::string GetFileNameForVertexShaderAssetName(const std::string& assetName);
 } // namespace shader
