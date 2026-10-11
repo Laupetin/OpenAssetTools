@@ -51,6 +51,10 @@
 #include "XModel/Obj/ObjWriter.h"
 #include "XModel/XModelWriter.h"
 
+#ifdef FEATURE_T4
+#include "Game/T4/XModel/XModelCollMapDumperT4.h"
+#endif
+
 #include <cassert>
 #include <format>
 
@@ -445,5 +449,9 @@ namespace xmodel
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);
+#ifdef FEATURE_T4
+        DumpXModelCollMapT4(asset.m_name, context, asset.Asset()->collmap);
+        DumpXModelPhysCollMapT4(asset.m_name, context, asset.Asset()->physGeoms);
+#endif
     }
 }
