@@ -1,0 +1,1386 @@
+#options GAME(IW3, T4, T5)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefLoader" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "T4"
+#define FEATURE_T4
+#elif GAME == "T5"
+#define FEATURE_T5
+#endif
+
+// This file was templated.
+// See FxEffectDefLoader.cpp.template.
+// Do not modify, changes will be lost.
+
+#set LOADER_HEADER "\"FxEffectDefLoader" + GAME + ".h\""
+#include LOADER_HEADER
+
+#include "Asset/AssetRegistration.h"
+#include "Fx/FxCommon.h"
+#include "Fx/FxEffectDefParser.h"
+#set FX_CONSTANTS_HEADER "\"Game/" + GAME + "/FxConstants" + GAME + ".h\""
+#include FX_CONSTANTS_HEADER
+#include "Utils/Logging/Log.h"
+
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <expected>
+#include <format>
+#include <limits>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+using namespace GAME;
+
+namespace
+{
+    constexpr auto PI = 3.14159265358979323846f;
+    constexpr auto VALIDATION_EPSILON = 0.001f;
+    constexpr auto MAX_SAMPLE_INTERVAL_COUNT = 80;
+
+    enum class SampleChannel
+    {
+        RGBA,
+        SIZE_0,
+        SIZE_1,
+        SCALE,
+        ROTATION,
+        NONE,
+    };
+
+    struct VisualSampleRouting
+    {
+        SampleChannel rgba;
+        SampleChannel size0;
+        SampleChannel size1;
+        SampleChannel scale;
+        SampleChannel rotation;
+
+        std::array<SampleChannel, 5> GetChannels() const
+        {
+            return {rgba, size0, size1, scale, rotation};
+        }
+    };
+
+    template<typename To, typename From> void CopyCanonicalRange(To& destination, const From& source)
+    {
+        if (source.amplitude >= 0)
+        {
+            destination.base = source.base;
+            destination.amplitude = source.amplitude;
+        }
+        else
+        {
+            destination.base = source.base + source.amplitude;
+            destination.amplitude = -source.amplitude;
+        }
+    }
+
+    void CopyScaledRange(FxFloatRange& destination, const fx::FxEditorRange<float>& source, const float scale)
+    {
+        destination.base = source.base * scale;
+        destination.amplitude = source.amplitude * scale;
+    }
+
+    bool UsesColor(const fx::FxEditorElemType type)
+    {
+        switch (type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TRAIL:
+        case fx::FxEditorElemType::CLOUD:
+        case fx::FxEditorElemType::LIGHT:
+        case fx::FxEditorElemType::SPOT_LIGHT:
+        case fx::FxEditorElemType::DECAL:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    bool UsesMaterial(const fx::FxEditorElemType type)
+    {
+        switch (type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TRAIL:
+        case fx::FxEditorElemType::CLOUD:
+        case fx::FxEditorElemType::DECAL:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    Material* GetVisualMaterial(const fx::FxEditorElem& source, const FxElemDef& destination, const size_t visualIndex)
+    {
+        if (source.type == fx::FxEditorElemType::DECAL)
+            return destination.visuals.markArray[visualIndex].materials[0];
+
+        const auto* visuals = source.visuals.size() == 1u ? &destination.visuals.instance : destination.visuals.array;
+        return visuals[visualIndex].material;
+    }
+
+    SampleChannel GetSecondarySizeChannel(const fx::FxEditorElem& element)
+    {
+        switch (element.type)
+        {
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::CLOUD:
+            return SampleChannel::SIZE_1;
+
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TRAIL:
+            return (element.flags & FX_ELEM_NONUNIFORM_SCALE) != 0u ? SampleChannel::SIZE_1 : SampleChannel::SIZE_0;
+
+        default:
+            return SampleChannel::NONE;
+        }
+    }
+
+    bool UsesScale(const fx::FxEditorElemType type)
+    {
+        switch (type)
+        {
+        case fx::FxEditorElemType::CLOUD:
+        case fx::FxEditorElemType::MODEL:
+        case fx::FxEditorElemType::SOUND:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    bool UsesRotation(const fx::FxEditorElemType type)
+    {
+        switch (type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+        case fx::FxEditorElemType::TRAIL:
+        case fx::FxEditorElemType::SPOT_LIGHT:
+        case fx::FxEditorElemType::DECAL:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+#ifdef FEATURE_T5
+    bool UsesRotationAxis(const fx::FxEditorElem& element)
+    {
+        if ((element.flags & FX_ELEM_USE_ROTATION_AXIS) == 0u)
+            return false;
+
+        switch (element.type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+        case fx::FxEditorElemType::TAIL:
+        case fx::FxEditorElemType::LINE:
+            return false;
+
+        default:
+            return true;
+        }
+    }
+#endif
+
+    VisualSampleRouting GetVisualSampleRouting(const fx::FxEditorElem& element)
+    {
+        return {
+            .rgba = UsesColor(element.type) ? SampleChannel::RGBA : SampleChannel::NONE,
+            .size0 = UsesColor(element.type) ? SampleChannel::SIZE_0 : SampleChannel::NONE,
+            .size1 = GetSecondarySizeChannel(element),
+            .scale = UsesScale(element.type) ? SampleChannel::SCALE : SampleChannel::NONE,
+            .rotation = UsesRotation(element.type) ? SampleChannel::ROTATION : SampleChannel::NONE,
+        };
+    }
+
+    float MaxErrorForIntervalCount(const fx::FxEditorCurve& curve, const int intervalCount, const float errorCutoff)
+    {
+        const auto keyCount = curve.KeyCount();
+        const auto keySize = curve.dimensionCount + 1u;
+        auto maxError = 0.0f;
+
+        for (auto keyIndex = 0u; keyIndex < keyCount; keyIndex++)
+        {
+            const auto time = curve.keys[keyIndex * keySize];
+            const auto interval = std::min(intervalCount - 1, static_cast<int>(time * static_cast<float>(intervalCount)));
+            const auto time0 = static_cast<float>(interval) / static_cast<float>(intervalCount);
+            const auto time1 = static_cast<float>(interval + 1) / static_cast<float>(intervalCount);
+            const auto fraction = (time - time0) / (time1 - time0);
+
+            for (auto dimension = 0u; dimension < curve.dimensionCount; dimension++)
+            {
+                const auto value0 = curve.Sample(time0, dimension);
+                const auto value1 = curve.Sample(time1, dimension);
+                const auto approximated = value0 + (value1 - value0) * fraction;
+                const auto error = std::abs(curve.keys[keyIndex * keySize + dimension + 1u] - approximated);
+                maxError = std::max(maxError, error);
+                if (maxError > errorCutoff)
+                    return maxError;
+            }
+        }
+
+        return maxError;
+    }
+
+    int DecideSampleCount(const std::span<const fx::FxEditorCurve* const> curves, const int intervalLimit)
+    {
+        auto bestError = std::numeric_limits<float>::max();
+        auto bestIntervalCount = 1;
+        for (auto intervalCount = 1; intervalCount <= intervalLimit; intervalCount++)
+        {
+            auto cumulativeError = 0.0f;
+            for (const auto* curve : curves)
+            {
+                cumulativeError = std::max(cumulativeError, MaxErrorForIntervalCount(*curve, intervalCount, bestError));
+                if (cumulativeError > bestError)
+                    break;
+            }
+
+            if (cumulativeError < bestError)
+            {
+                bestIntervalCount = intervalCount;
+                bestError = cumulativeError - 0.02f;
+                if (bestError <= 0.0f)
+                    break;
+            }
+        }
+
+        return bestIntervalCount + 1;
+    }
+
+    int DecideVelocitySampleCount(const fx::FxEditorElem& element, const int intervalLimit)
+    {
+        std::array<const fx::FxEditorCurve*, 12> curves{};
+        auto curveIndex = 0u;
+        for (const auto& graphSet : element.velocityGraphs)
+        {
+            for (const auto& graph : graphSet)
+            {
+                curves[curveIndex++] = &graph.curves[0];
+                curves[curveIndex++] = &graph.curves[1];
+            }
+        }
+        return DecideSampleCount(curves, intervalLimit);
+    }
+
+    int DecideVisualSampleCount(const fx::FxEditorElem& element, const int intervalLimit)
+    {
+        std::array<const fx::FxEditorCurve*, 12> curves{};
+        auto curveCount = 0u;
+        for (const auto channel : GetVisualSampleRouting(element).GetChannels())
+        {
+            switch (channel)
+            {
+            case SampleChannel::RGBA:
+                curves[curveCount++] = &element.colorGraph.curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_COLOR) != 0u)
+                    curves[curveCount++] = &element.colorGraph.curves[1];
+                curves[curveCount++] = &element.alphaGraph.curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_ALPHA) != 0u)
+                    curves[curveCount++] = &element.alphaGraph.curves[1];
+                break;
+
+            case SampleChannel::SIZE_0:
+                curves[curveCount++] = &element.sizeGraphs[0].curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_SIZE_0) != 0u)
+                    curves[curveCount++] = &element.sizeGraphs[0].curves[1];
+                break;
+
+            case SampleChannel::SIZE_1:
+                curves[curveCount++] = &element.sizeGraphs[1].curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_SIZE_1) != 0u)
+                    curves[curveCount++] = &element.sizeGraphs[1].curves[1];
+                break;
+
+            case SampleChannel::SCALE:
+                curves[curveCount++] = &element.scaleGraph.curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_SCALE) != 0u)
+                    curves[curveCount++] = &element.scaleGraph.curves[1];
+                break;
+
+            case SampleChannel::ROTATION:
+                curves[curveCount++] = &element.rotationGraph.curves[0];
+                if ((element.editorFlags & FX_ED_FLAG_USE_RANDOM_ROTATION_DELTA) != 0u)
+                    curves[curveCount++] = &element.rotationGraph.curves[1];
+                break;
+
+            case SampleChannel::NONE:
+                break;
+            }
+        }
+
+        return curveCount > 0u ? DecideSampleCount(std::span(curves.data(), curveCount), intervalLimit) : 0;
+    }
+
+    bool IsGraphValid(const fx::FxEditorGraph& graph, const size_t dimensions)
+    {
+        return graph.curves[0].dimensionCount == dimensions && graph.curves[0].KeyCount() >= 2u && graph.curves[1].dimensionCount == dimensions
+               && graph.curves[1].KeyCount() >= 2u;
+    }
+
+    std::expected<void, std::string> ValidateElementGraphs(const fx::FxEditorElem& element)
+    {
+        for (const auto& graphSet : element.velocityGraphs)
+        {
+            for (const auto& graph : graphSet)
+            {
+                if (!IsGraphValid(graph, 1u))
+                    return std::unexpected(std::format("element \"{}\" does not define all velocity graphs", element.name));
+            }
+        }
+
+        const auto routing = GetVisualSampleRouting(element);
+        if (routing.rgba == SampleChannel::RGBA && (!IsGraphValid(element.colorGraph, 3u) || !IsGraphValid(element.alphaGraph, 1u)))
+            return std::unexpected(std::format("element \"{}\" does not define its color and alpha graphs", element.name));
+        if (routing.size0 == SampleChannel::SIZE_0 && !IsGraphValid(element.sizeGraphs[0], 1u))
+            return std::unexpected(std::format("element \"{}\" does not define sizeGraph0", element.name));
+        if (routing.size1 == SampleChannel::SIZE_1 && !IsGraphValid(element.sizeGraphs[1], 1u))
+            return std::unexpected(std::format("element \"{}\" does not define sizeGraph1", element.name));
+        if (routing.scale == SampleChannel::SCALE && !IsGraphValid(element.scaleGraph, 1u))
+            return std::unexpected(std::format("element \"{}\" does not define scaleGraph", element.name));
+        if (routing.rotation == SampleChannel::ROTATION && !IsGraphValid(element.rotationGraph, 1u))
+            return std::unexpected(std::format("element \"{}\" does not define rotGraph", element.name));
+
+        return {};
+    }
+
+    std::expected<void, std::string> ValidateElement(const fx::FxEditorElem& element)
+    {
+        if ((element.flags & FX_ELEM_RUN_MASK) == FX_ELEM_RUN_RELATIVE_TO_OFFSET && (element.flags & FX_ELEM_SPAWN_OFFSET_MASK) == FX_ELEM_SPAWN_OFFSET_NONE)
+        {
+            return std::unexpected(std::format("element \"{}\" runs relative to offset but has no generation offset", element.name));
+        }
+
+        if (element.type == fx::FxEditorElemType::DECAL)
+        {
+            if (element.lightingFrac != 0.0f)
+                return std::unexpected(std::format("decal element \"{}\" has a non-zero lighting fraction", element.name));
+        }
+        else if (element.lightingFrac < 0.0f || element.lightingFrac > 1.0f)
+        {
+            return std::unexpected(std::format("element \"{}\" has a lighting fraction outside the range 0 to 1", element.name));
+        }
+
+        if ((element.type == fx::FxEditorElemType::DECAL || element.type == fx::FxEditorElemType::RUNNER) && element.visuals.empty())
+            return std::unexpected(std::format("element \"{}\" must have at least one visual", element.name));
+
+        if (element.type == fx::FxEditorElemType::TRAIL)
+        {
+            if (element.trailVertices.empty() || element.trailIndices.empty())
+                return std::unexpected(std::format("trail in element \"{}\" cannot have empty geometry", element.name));
+            if ((element.trailIndices.size() & 1u) != 0u)
+                return std::unexpected(std::format("trail in element \"{}\" has an odd index count", element.name));
+            for (const auto index : element.trailIndices)
+            {
+                if (index >= element.trailVertices.size())
+                    return std::unexpected(std::format("trail index {} in element \"{}\" is out of range", index, element.name));
+            }
+            if (element.trailSplitDist <= 0 || element.trailRepeatDist <= 0)
+                return std::unexpected(std::format("trail distances in element \"{}\" must be positive", element.name));
+        }
+
+        if ((element.flags & FX_ELEM_USE_COLLISION) != 0u)
+        {
+            const auto elasticityMin = element.elasticity.base + std::min(element.elasticity.amplitude, 0.0f);
+            const auto elasticityMax = element.elasticity.base + std::max(element.elasticity.amplitude, 0.0f);
+            if (elasticityMin < -VALIDATION_EPSILON || elasticityMax > 1.0f + VALIDATION_EPSILON)
+            {
+                return std::unexpected(
+                    std::format("element \"{}\" has elasticity {} to {}, outside the range 0 to 1", element.name, elasticityMin, elasticityMax));
+            }
+        }
+
+        return ValidateElementGraphs(element);
+    }
+
+    unsigned char PackColorComponent(const float value)
+    {
+        return static_cast<unsigned char>(std::clamp(static_cast<int>(std::floor(value * 255.0f + 0.5f)), 0, 255));
+    }
+
+    void PackVertexColor(const fx::RgbaColor& color, FxColor& destination)
+    {
+        destination.b = PackColorComponent(color.b);
+        destination.g = PackColorComponent(color.g);
+        destination.r = PackColorComponent(color.r);
+        destination.a = PackColorComponent(color.a);
+    }
+
+#ifdef FEATURE_T5
+    unsigned PackSignedComponent(const float value, const unsigned magnitude)
+    {
+        const auto packed =
+            std::clamp(static_cast<int>(std::round(value * static_cast<float>(magnitude))), -static_cast<int>(magnitude) - 1, static_cast<int>(magnitude));
+        return static_cast<unsigned>(packed) & (magnitude * 2u + 1u);
+    }
+
+    unsigned PackRotationAxis(const std::array<float, 4>& source)
+    {
+        auto value = source;
+        const auto length = std::sqrt(value[0] * value[0] + value[1] * value[1] + value[2] * value[2] + value[3] * value[3]);
+        if (length == 0.0f)
+            value = {0.0f, 0.0f, 0.0f, 1.0f};
+        else
+        {
+            for (auto& component : value)
+                component /= length;
+        }
+
+        auto maxIndex = 0u;
+        for (auto index = 1u; index < value.size(); index++)
+        {
+            if (std::abs(value[index]) > std::abs(value[maxIndex]))
+                maxIndex = index;
+        }
+
+        const auto maximum = value[maxIndex];
+        const auto sign = maximum < 0.0f ? 0x80000000u : 0u;
+        const auto x = PackSignedComponent(value[(maxIndex + 1u) & 3u] / maximum, 0xFFu);
+        const auto y = PackSignedComponent(value[(maxIndex + 2u) & 3u] / maximum, 0x1FFu);
+        const auto z = PackSignedComponent(value[(maxIndex + 3u) & 3u] / maximum, 0x1FFu);
+        return sign | (((3u - maxIndex) & 3u) << 29u) | (z << 19u) | (y << 9u) | x;
+    }
+#endif
+
+    unsigned char RuntimeElementType(const fx::FxEditorElemType type)
+    {
+        switch (type)
+        {
+        case fx::FxEditorElemType::BILLBOARD_SPRITE:
+            return FX_ELEM_TYPE_SPRITE_BILLBOARD;
+        case fx::FxEditorElemType::ORIENTED_SPRITE:
+            return FX_ELEM_TYPE_SPRITE_ORIENTED;
+#ifdef FEATURE_T5
+        case fx::FxEditorElemType::ROTATED_SPRITE:
+            return FX_ELEM_TYPE_SPRITE_ROTATED;
+#endif
+        case fx::FxEditorElemType::TAIL:
+            return FX_ELEM_TYPE_TAIL;
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case fx::FxEditorElemType::LINE:
+            return FX_ELEM_TYPE_LINE;
+#endif
+        case fx::FxEditorElemType::TRAIL:
+            return FX_ELEM_TYPE_TRAIL;
+        case fx::FxEditorElemType::CLOUD:
+            return FX_ELEM_TYPE_CLOUD;
+        case fx::FxEditorElemType::MODEL:
+            return FX_ELEM_TYPE_MODEL;
+        case fx::FxEditorElemType::LIGHT:
+            return FX_ELEM_TYPE_OMNI_LIGHT;
+        case fx::FxEditorElemType::SPOT_LIGHT:
+            return FX_ELEM_TYPE_SPOT_LIGHT;
+        case fx::FxEditorElemType::SOUND:
+            return FX_ELEM_TYPE_SOUND;
+        case fx::FxEditorElemType::DECAL:
+            return FX_ELEM_TYPE_DECAL;
+        case fx::FxEditorElemType::RUNNER:
+            return FX_ELEM_TYPE_RUNNER;
+        default:
+            return FX_ELEM_TYPE_COUNT;
+        }
+    }
+
+    class EffectDefConverter
+    {
+    public:
+        EffectDefConverter(MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetFx>& registration, std::string assetName)
+            : m_memory(memory),
+              m_context(context),
+              m_registration(registration),
+              m_asset_name(std::move(assetName))
+        {
+        }
+
+        std::expected<FxEffectDef*, std::string> Convert(const fx::FxEditorEffect& editorEffect)
+        {
+            std::vector<const fx::FxEditorElem*> loopingElements;
+            std::vector<const fx::FxEditorElem*> oneShotElements;
+            std::vector<FxEffectDef*> emittedEffects;
+            auto emittedElementCount = 0u;
+            std::unordered_set<FxEffectDef*> seenEmittedEffects;
+            for (const auto& element : editorEffect.elements)
+            {
+                auto emissionResult = LoadEffect(element.emission);
+                if (!emissionResult)
+                    return std::unexpected(std::move(emissionResult).error());
+
+                auto* emission = emissionResult.value();
+                if (emission && emission->elemDefCountOneShot > 0 && seenEmittedEffects.emplace(emission).second)
+                {
+                    emittedEffects.emplace_back(emission);
+                    emittedElementCount += static_cast<unsigned>(emission->elemDefCountOneShot);
+                }
+
+                if ((element.editorFlags & FX_ED_FLAG_DISABLED) != 0u)
+                    continue;
+                auto validationResult = ValidateElement(element);
+                if (!validationResult)
+                    return std::unexpected(std::move(validationResult).error());
+
+                ((element.editorFlags & FX_ED_FLAG_LOOPING) != 0u ? loopingElements : oneShotElements).emplace_back(&element);
+            }
+
+            auto* effect = m_memory.Alloc<FxEffectDef>();
+            effect->name = m_memory.Dup(m_asset_name.c_str());
+            effect->elemDefCountLooping = static_cast<int>(loopingElements.size());
+            effect->elemDefCountOneShot = static_cast<int>(oneShotElements.size());
+            effect->elemDefCountEmission = static_cast<int>(emittedElementCount);
+            const auto totalElementCount = loopingElements.size() + oneShotElements.size() + emittedElementCount;
+            effect->elemDefs = totalElementCount > 0u ? m_memory.Alloc<FxElemDef>(totalElementCount) : nullptr;
+
+            auto elementIndex = 0u;
+            for (const auto* element : loopingElements)
+            {
+                auto conversionResult = ConvertElement(*element, effect->elemDefs[elementIndex++]);
+                if (!conversionResult)
+                    return std::unexpected(std::move(conversionResult).error());
+            }
+            for (const auto* element : oneShotElements)
+            {
+                auto conversionResult = ConvertElement(*element, effect->elemDefs[elementIndex++]);
+                if (!conversionResult)
+                    return std::unexpected(std::move(conversionResult).error());
+            }
+            for (const auto* emittedEffect : emittedEffects)
+            {
+                const auto stop = emittedEffect->elemDefCountLooping + emittedEffect->elemDefCountOneShot;
+                for (auto sourceIndex = emittedEffect->elemDefCountLooping; sourceIndex < stop; sourceIndex++)
+                    CloneEmittedElement(emittedEffect->elemDefs[sourceIndex], effect->elemDefs[elementIndex++]);
+            }
+
+#ifdef FEATURE_T5
+            effect->efPriority = static_cast<unsigned char>(editorEffect.priority);
+            auto effectFlags = editorEffect.flags & ~(FX_EFFECT_HAS_LIGHTING | FX_EFFECT_HAS_MARKS);
+#elif defined(FEATURE_T4)
+            effect->efPriority = static_cast<unsigned char>(editorEffect.priority);
+            auto effectFlags = 0u;
+#elif defined(FEATURE_IW3)
+            auto effectFlags = 0u;
+#endif
+            for (auto index = 0u; index < totalElementCount; index++)
+            {
+                if (effect->elemDefs[index].lightingFrac != 0)
+                    effectFlags |= 1u;
+#ifdef FEATURE_T5
+                if (effect->elemDefs[index].elemType == FX_ELEM_TYPE_DECAL)
+                {
+                    const auto count = effect->elemDefs[index].visualCount;
+                    for (auto visualIndex = 0u; visualIndex < count; visualIndex++)
+                    {
+                        const auto* material = effect->elemDefs[index].visuals.markArray[visualIndex].materials[1];
+                        if (material && material->techniqueSet && material->techniqueSet->techniques[TECHNIQUE_IMPACT_MASK])
+                            effectFlags |= FX_EFFECT_HAS_MARKS;
+                    }
+                }
+#endif
+            }
+            effect->flags = static_cast<decltype(effect->flags)>(effectFlags);
+
+#ifdef FEATURE_T5
+            if ((editorEffect.flags & FX_EFFECT_USE_BOUNDING_BOX) != 0u)
+            {
+                std::ranges::copy(editorEffect.boundingBoxDim, effect->boundingBoxDim);
+                std::ranges::copy(editorEffect.boundingBoxCentre, effect->boundingSphere);
+                effect->boundingSphere[3] = std::ranges::max(editorEffect.boundingBoxDim) * 1.4142137f;
+            }
+#endif
+
+            effect->msecLoopingLife = 0;
+            for (auto index = 0; index < effect->elemDefCountLooping; index++)
+            {
+                const auto& element = effect->elemDefs[index];
+                if (element.spawn.looping.count == std::numeric_limits<int>::max())
+                {
+                    effect->msecLoopingLife = std::numeric_limits<int>::max();
+                    break;
+                }
+                effect->msecLoopingLife = std::max(effect->msecLoopingLife, element.spawn.looping.intervalMsec * (element.spawn.looping.count - 1));
+            }
+            effect->totalSize = CalculateTotalSize(*effect, loopingElements.size() + oneShotElements.size());
+            return effect;
+        }
+
+    private:
+        std::expected<FxEffectDef*, std::string> LoadEffect(const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+
+            const auto existing = m_effect_dependencies.find(name);
+            if (existing != m_effect_dependencies.end())
+                return existing->second;
+
+            auto* dependency = m_context.LoadDependency<AssetFx>(name);
+            if (!dependency)
+                return std::unexpected(std::format("could not find effect \"{}\"", name));
+
+            m_registration.AddDependency(dependency);
+            auto* effect = dependency->Asset();
+            m_effect_dependencies.emplace(name, effect);
+            return effect;
+        }
+
+        void SetEffectReference(FxEffectDefRef& destination, const std::string& name)
+        {
+            destination.name = name.empty() ? nullptr : m_memory.Dup(name.c_str());
+            if (!name.empty())
+                m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetFx>(name));
+        }
+
+        std::expected<Material*, std::string> LoadMaterial(const std::string& sourceName)
+        {
+            if (sourceName.empty())
+                return nullptr;
+
+            const auto name = sourceName == "$default" ? std::string("$default3d") : sourceName;
+            auto* dependency = m_context.LoadDependency<AssetMaterial>(name);
+            if (!dependency)
+                return std::unexpected(std::format("could not find material \"{}\"", name));
+
+            m_registration.AddDependency(dependency);
+            return dependency->Asset();
+        }
+
+        std::expected<XModel*, std::string> LoadModel(const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+
+            auto* dependency = m_context.LoadDependency<AssetXModel>(name);
+            if (!dependency)
+                return std::unexpected(std::format("could not find model \"{}\"", name));
+
+            m_registration.AddDependency(dependency);
+            return dependency->Asset();
+        }
+
+        std::expected<void, std::string> SetDefaultPhysPreset(XModel& model)
+        {
+            auto* dependency = m_context.LoadDependency<AssetPhysPreset>("default");
+            if (!dependency)
+                return std::unexpected("could not find phys preset \"default\"");
+
+            m_registration.AddDependency(dependency);
+            model.physPreset = dependency->Asset();
+            return {};
+        }
+
+        std::expected<void, std::string> ConvertVisuals(const fx::FxEditorElem& source, FxElemDef& destination)
+        {
+            destination.visualCount = static_cast<unsigned char>(source.visuals.size());
+            const auto count = source.visuals.size();
+            if (source.type == fx::FxEditorElemType::LIGHT || source.type == fx::FxEditorElemType::SPOT_LIGHT)
+            {
+                destination.visualCount = 1;
+                return {};
+            }
+            if (count == 0u)
+            {
+                if (source.type == fx::FxEditorElemType::MODEL)
+                    destination.flags &= ~FX_ELEM_USE_MODEL_PHYSICS;
+                return {};
+            }
+
+            if (source.type == fx::FxEditorElemType::DECAL)
+            {
+                destination.visuals.markArray = m_memory.Alloc<FxElemMarkVisuals>(count);
+                for (auto index = 0u; index < count; index++)
+                {
+                    auto materialName = source.visuals[index] == "$default" ? std::string("$default3d") : source.visuals[index];
+                    auto materialResult = LoadMaterial(std::format("mc/{}", materialName));
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    destination.visuals.markArray[index].materials[0] = materialResult.value();
+
+                    materialResult = LoadMaterial(std::format("wc/{}", materialName));
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    destination.visuals.markArray[index].materials[1] = materialResult.value();
+                }
+                return {};
+            }
+
+            auto* visuals = count == 1u ? &destination.visuals.instance : m_memory.Alloc<FxElemVisuals>(count);
+            if (count > 1u)
+                destination.visuals.array = visuals;
+
+            for (auto index = 0u; index < count; index++)
+            {
+                switch (source.type)
+                {
+                case fx::FxEditorElemType::BILLBOARD_SPRITE:
+                case fx::FxEditorElemType::ORIENTED_SPRITE:
+                case fx::FxEditorElemType::ROTATED_SPRITE:
+                case fx::FxEditorElemType::TAIL:
+                case fx::FxEditorElemType::LINE:
+                case fx::FxEditorElemType::TRAIL:
+                case fx::FxEditorElemType::CLOUD:
+                {
+                    auto materialResult = LoadMaterial(source.visuals[index]);
+                    if (!materialResult)
+                        return std::unexpected(std::move(materialResult).error());
+                    visuals[index].material = materialResult.value();
+                    break;
+                }
+
+                case fx::FxEditorElemType::MODEL:
+                {
+                    auto modelResult = LoadModel(source.visuals[index]);
+                    if (!modelResult)
+                        return std::unexpected(std::move(modelResult).error());
+                    visuals[index].model = modelResult.value();
+                    if (visuals[index].model && !visuals[index].model->physPreset && (destination.flags & FX_ELEM_USE_MODEL_PHYSICS) != 0u)
+                    {
+                        auto physPresetResult = SetDefaultPhysPreset(*visuals[index].model);
+                        if (!physPresetResult)
+                            return std::unexpected(std::move(physPresetResult).error());
+                    }
+                    break;
+                }
+
+                case fx::FxEditorElemType::RUNNER:
+                    SetEffectReference(visuals[index].effectDef, source.visuals[index]);
+                    break;
+
+                case fx::FxEditorElemType::SOUND:
+                    visuals[index].soundName = source.visuals[index].empty() ? nullptr : m_memory.Dup(source.visuals[index].c_str());
+                    break;
+
+                default:
+                    break;
+                }
+            }
+            return {};
+        }
+
+        std::expected<void, std::string> ConvertAtlas(const fx::FxEditorElem& source, FxElemDef& destination) const
+        {
+            if (!UsesMaterial(source.type) || source.visuals.empty())
+                return {};
+
+            const auto* referenceMaterial = GetVisualMaterial(source, destination, 0u);
+            if (!referenceMaterial)
+                return std::unexpected(std::format("element \"{}\" has an empty material visual", source.name));
+
+            const auto referenceRowCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasRowCount);
+            const auto referenceColumnCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasColumnCount);
+            if (!std::has_single_bit(referenceRowCount) || !std::has_single_bit(referenceColumnCount))
+            {
+                return std::unexpected(std::format("element \"{}\" material \"{}\" is a {} x {} atlas, which is not a power of two on both axes",
+                                                   source.name,
+                                                   referenceMaterial->info.name,
+                                                   referenceColumnCount,
+                                                   referenceRowCount));
+            }
+
+            for (auto visualIndex = 1u; visualIndex < source.visuals.size(); visualIndex++)
+            {
+                const auto* material = GetVisualMaterial(source, destination, visualIndex);
+                if (!material)
+                    return std::unexpected(std::format("element \"{}\" has an empty material visual", source.name));
+
+                if (material->info.textureAtlasRowCount != referenceRowCount || material->info.textureAtlasColumnCount != referenceColumnCount)
+                {
+                    return std::unexpected(std::format("element \"{}\" material \"{}\" is a {} x {} atlas, but material \"{}\" is a {} x {} atlas",
+                                                       source.name,
+                                                       referenceMaterial->info.name,
+                                                       referenceColumnCount,
+                                                       referenceRowCount,
+                                                       material->info.name,
+                                                       material->info.textureAtlasColumnCount,
+                                                       material->info.textureAtlasRowCount));
+                }
+            }
+
+            destination.atlas.behavior = static_cast<unsigned char>(source.atlasBehavior);
+            destination.atlas.index = static_cast<unsigned char>(source.atlasIndex);
+            destination.atlas.fps = static_cast<unsigned char>(source.atlasFps);
+            destination.atlas.loopCount = static_cast<unsigned char>(source.atlasLoopCount + 1);
+
+            destination.atlas.rowIndexBits = 0;
+            while ((1u << destination.atlas.rowIndexBits) < referenceRowCount)
+                destination.atlas.rowIndexBits++;
+            destination.atlas.colIndexBits = 0;
+            while ((1u << destination.atlas.colIndexBits) < referenceColumnCount)
+                destination.atlas.colIndexBits++;
+
+            const auto entryCount = 1u << (destination.atlas.colIndexBits + destination.atlas.rowIndexBits);
+#ifdef FEATURE_T5
+            const auto indexRange = static_cast<unsigned>(std::max(source.atlasIndexRange, 1));
+            destination.atlas.entryCountAndIndexRange = static_cast<std::uint16_t>(entryCount | ((indexRange & 0x7Fu) << 9u));
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
+            destination.atlas.entryCount = static_cast<std::int16_t>(entryCount);
+#endif
+            return {};
+        }
+
+        void SampleVelocityFrame(const fx::FxEditorElem& source, FxElemDef& destination, const bool world)
+        {
+            const auto intervalCount = destination.velIntervalCount;
+            const std::array useVelocity{
+                (source.editorFlags & FX_ED_FLAG_ABSOLUTE_VELOCITY_0) == (world ? FX_ED_FLAG_ABSOLUTE_VELOCITY_0 : 0u),
+                (source.editorFlags & FX_ED_FLAG_ABSOLUTE_VELOCITY_1) == (world ? FX_ED_FLAG_ABSOLUTE_VELOCITY_1 : 0u),
+            };
+            const std::array useRandom{
+                useVelocity[0] && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_VELOCITY_0) != 0u,
+                useVelocity[1] && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_VELOCITY_1) != 0u,
+            };
+            const auto backCompat = (source.editorFlags & FX_ED_FLAG_BACKCOMPAT_VELOCITY) != 0u;
+            std::array<std::array<float, 3>, 2> scale{};
+            for (auto graph = 0u; graph < 2u; graph++)
+            {
+                for (auto component = 0u; component < 3u; component++)
+                    scale[graph][component] = source.velocityGraphs[graph][component].scale / (static_cast<float>(intervalCount) * 1000.0f);
+            }
+
+            auto velocityEpsilonSquared = 0.0f;
+            for (auto graph = 0u; graph < 2u; graph++)
+            {
+                if (!useVelocity[graph])
+                    continue;
+                for (const auto componentScale : scale[graph])
+                    velocityEpsilonSquared += componentScale * componentScale;
+            }
+            velocityEpsilonSquared *= 0.000001f;
+
+            auto anyNonZero = false;
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
+                auto& frame = world ? destination.velSamples[sampleIndex].world : destination.velSamples[sampleIndex].local;
+                for (auto graph = 0u; graph < 2u; graph++)
+                {
+                    if (!useVelocity[graph])
+                        continue;
+                    for (auto component = 0u; component < 3u; component++)
+                    {
+                        const auto base = source.velocityGraphs[graph][component].curves[0].Sample(time) * scale[graph][component];
+                        frame.velocity.base[component] += base;
+                        if (useRandom[graph == 1u && backCompat ? 0u : graph])
+                            frame.velocity.amplitude[component] -= base;
+                        if (useRandom[graph])
+                            frame.velocity.amplitude[component] += source.velocityGraphs[graph][component].curves[1].Sample(time) * scale[graph][component];
+                    }
+                }
+
+                if (sampleIndex > 0u)
+                {
+                    const auto& previous = world ? destination.velSamples[sampleIndex - 1u].world : destination.velSamples[sampleIndex - 1u].local;
+                    for (auto component = 0u; component < 3u; component++)
+                    {
+                        frame.totalDelta.base[component] =
+                            previous.totalDelta.base[component] + (previous.velocity.base[component] + frame.velocity.base[component]) * 0.5f;
+                        frame.totalDelta.amplitude[component] =
+                            previous.totalDelta.amplitude[component] + (previous.velocity.amplitude[component] + frame.velocity.amplitude[component]) * 0.5f;
+                    }
+                    const auto baseLengthSquared = frame.totalDelta.base[0] * frame.totalDelta.base[0] + frame.totalDelta.base[1] * frame.totalDelta.base[1]
+                                                   + frame.totalDelta.base[2] * frame.totalDelta.base[2];
+                    const auto amplitudeLengthSquared = frame.totalDelta.amplitude[0] * frame.totalDelta.amplitude[0]
+                                                        + frame.totalDelta.amplitude[1] * frame.totalDelta.amplitude[1]
+                                                        + frame.totalDelta.amplitude[2] * frame.totalDelta.amplitude[2];
+                    anyNonZero = anyNonZero || baseLengthSquared > velocityEpsilonSquared || amplitudeLengthSquared > velocityEpsilonSquared;
+                }
+            }
+
+            if (anyNonZero)
+                destination.flags |= world ? FX_ELEM_HAS_VELOCITY_GRAPH_WORLD : FX_ELEM_HAS_VELOCITY_GRAPH_LOCAL;
+        }
+
+        static void SampleVisualScalar(const fx::FxEditorElem& source, const SampleChannel channel, const float time, float& base, float& amplitude)
+        {
+            const fx::FxEditorGraph* graph = nullptr;
+            unsigned randomFlag = 0u;
+            auto scaleFactor = 1.0f;
+
+            switch (channel)
+            {
+            case SampleChannel::SIZE_0:
+                graph = &source.sizeGraphs[0];
+                randomFlag = FX_ED_FLAG_USE_RANDOM_SIZE_0;
+                scaleFactor = 0.5f;
+                break;
+
+            case SampleChannel::SIZE_1:
+                graph = &source.sizeGraphs[1];
+                randomFlag = FX_ED_FLAG_USE_RANDOM_SIZE_1;
+                scaleFactor = 0.5f;
+                break;
+
+            case SampleChannel::SCALE:
+                graph = &source.scaleGraph;
+                randomFlag = FX_ED_FLAG_USE_RANDOM_SCALE;
+                break;
+
+            default:
+                return;
+            }
+
+            base = graph->curves[0].Sample(time) * graph->scale * scaleFactor;
+            if ((source.editorFlags & randomFlag) != 0u)
+                amplitude = graph->curves[1].Sample(time) * graph->scale * scaleFactor - base;
+        }
+
+        void SampleVisualState(const fx::FxEditorElem& source, FxElemDef& destination) const
+        {
+            const auto intervalCount = destination.visStateIntervalCount;
+            if (intervalCount == 0u)
+                return;
+
+            const auto routing = GetVisualSampleRouting(source);
+            const auto rotationScale = source.rotationGraph.scale * PI / 180.0f / (static_cast<float>(intervalCount) * 1000.0f);
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
+                auto& sample = destination.visSamples[sampleIndex];
+                if (routing.rgba == SampleChannel::RGBA)
+                {
+                    for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
+                    {
+                        const auto colorCurve = randomIndex != 0u && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_COLOR) != 0u ? 1u : 0u;
+                        const auto alphaCurve = randomIndex != 0u && (source.editorFlags & FX_ED_FLAG_USE_RANDOM_ALPHA) != 0u ? 1u : 0u;
+                        auto color = fx::RgbaColor{
+                            .r = source.colorGraph.curves[colorCurve].Sample(time, 0u),
+                            .g = source.colorGraph.curves[colorCurve].Sample(time, 1u),
+                            .b = source.colorGraph.curves[colorCurve].Sample(time, 2u),
+                            .a = source.alphaGraph.curves[alphaCurve].Sample(time),
+                        };
+                        if ((source.editorFlags & FX_ED_FLAG_MODULATE_COLOR_BY_ALPHA) != 0u)
+                        {
+                            color.r *= color.a;
+                            color.g *= color.a;
+                            color.b *= color.a;
+                            color.a = 1.0f;
+                        }
+                        PackVertexColor(color, randomIndex == 0u ? sample.base.color : sample.amplitude.color);
+                    }
+                }
+                else
+                {
+                    std::memset(&sample.base.color, 0xFF, sizeof(sample.base.color));
+                    std::memset(&sample.amplitude.color, 0xFF, sizeof(sample.amplitude.color));
+                }
+
+                if (routing.rotation == SampleChannel::ROTATION)
+                {
+                    sample.base.rotationDelta = source.rotationGraph.curves[0].Sample(time) * rotationScale;
+                    if (sampleIndex > 0u)
+                        sample.base.rotationTotal = destination.visSamples[sampleIndex - 1u].base.rotationTotal
+                                                    + (destination.visSamples[sampleIndex - 1u].base.rotationDelta + sample.base.rotationDelta) * 0.5f;
+                    if ((source.editorFlags & FX_ED_FLAG_USE_RANDOM_ROTATION_DELTA) != 0u)
+                    {
+                        sample.amplitude.rotationDelta = source.rotationGraph.curves[1].Sample(time) * rotationScale - sample.base.rotationDelta;
+                        if (sampleIndex > 0u)
+                            sample.amplitude.rotationTotal =
+                                destination.visSamples[sampleIndex - 1u].amplitude.rotationTotal
+                                + (destination.visSamples[sampleIndex - 1u].amplitude.rotationDelta + sample.amplitude.rotationDelta) * 0.5f;
+                    }
+                }
+
+                SampleVisualScalar(source, routing.size0, time, sample.base.size[0], sample.amplitude.size[0]);
+                SampleVisualScalar(source, routing.size1, time, sample.base.size[1], sample.amplitude.size[1]);
+                SampleVisualScalar(source, routing.scale, time, sample.base.scale, sample.amplitude.scale);
+            }
+        }
+
+        std::expected<void, std::string> ConvertTrail(const fx::FxEditorElem& source, FxElemDef& destination)
+        {
+            if (source.type != fx::FxEditorElemType::TRAIL)
+                return {};
+
+            struct CompiledVertex
+            {
+                std::array<float, 2> pos{};
+                std::array<float, 2> normal{};
+                float texCoord{};
+            };
+
+            auto segmentNormal = [&source](const size_t edge)
+            {
+                const auto& first = source.trailVertices[source.trailIndices[edge]].pos;
+                const auto& second = source.trailVertices[source.trailIndices[edge + 1u]].pos;
+                std::array normal{first[1] - second[1], second[0] - first[0]};
+                const auto length = std::sqrt(normal[0] * normal[0] + normal[1] * normal[1]);
+                if (length > 0.0f)
+                {
+                    normal[0] /= length;
+                    normal[1] /= length;
+                }
+                return normal;
+            };
+            auto distance = [](const std::array<float, 2>& left, const std::array<float, 2>& right)
+            {
+                const auto x = left[0] - right[0];
+                const auto y = left[1] - right[1];
+                return std::sqrt(x * x + y * y);
+            };
+
+            std::vector<CompiledVertex> expanded;
+            expanded.reserve(source.trailIndices.size());
+            for (auto edge = 0u; edge < source.trailIndices.size(); edge += 2u)
+            {
+                const auto primaryNormal = segmentNormal(edge);
+                for (auto end = 0u; end < 2u; end++)
+                {
+                    const auto& sourceVertex = source.trailVertices[source.trailIndices[edge + end]];
+                    CompiledVertex vertex{
+                        .pos = sourceVertex.pos,
+                        .texCoord = sourceVertex.texCoord,
+                    };
+                    for (auto secondaryEdge = 0u; secondaryEdge < source.trailIndices.size(); secondaryEdge += 2u)
+                    {
+                        const auto& first = source.trailVertices[source.trailIndices[secondaryEdge]].pos;
+                        const auto& second = source.trailVertices[source.trailIndices[secondaryEdge + 1u]].pos;
+                        if (distance(sourceVertex.pos, first) > 0.01f && distance(sourceVertex.pos, second) > 0.01f)
+                            continue;
+                        const auto secondaryNormal = segmentNormal(secondaryEdge);
+                        if (primaryNormal[0] * secondaryNormal[0] + primaryNormal[1] * secondaryNormal[1] > 0.0f)
+                        {
+                            vertex.normal[0] += secondaryNormal[0];
+                            vertex.normal[1] += secondaryNormal[1];
+                        }
+                    }
+                    const auto length = std::sqrt(vertex.normal[0] * vertex.normal[0] + vertex.normal[1] * vertex.normal[1]);
+                    if (length > 0.0f)
+                    {
+                        vertex.normal[0] /= length;
+                        vertex.normal[1] /= length;
+                    }
+                    expanded.emplace_back(vertex);
+                }
+            }
+
+            std::vector<CompiledVertex> vertices;
+            std::vector<std::uint16_t> indices;
+            indices.reserve(expanded.size());
+            for (const auto& vertex : expanded)
+            {
+                auto existing = vertices.begin();
+                for (; existing != vertices.end(); ++existing)
+                {
+                    if (distance(vertex.pos, existing->pos) <= 0.01f && std::abs(vertex.texCoord - existing->texCoord) <= 0.01f
+                        && vertex.normal[0] * existing->normal[0] + vertex.normal[1] * existing->normal[1] >= 0.95f)
+                        break;
+                }
+                if (existing == vertices.end())
+                {
+                    vertices.emplace_back(vertex);
+                    existing = vertices.end() - 1;
+                }
+                indices.emplace_back(static_cast<std::uint16_t>(existing - vertices.begin()));
+            }
+
+            destination.trailDef = m_memory.Alloc<FxTrailDef>();
+            destination.trailDef->scrollTimeMsec = static_cast<int>(source.trailScrollTime * 1000.0f);
+            destination.trailDef->repeatDist = source.trailRepeatDist;
+            destination.trailDef->splitDist = source.trailSplitDist;
+            destination.trailDef->vertCount = static_cast<int>(vertices.size());
+            destination.trailDef->verts = vertices.empty() ? nullptr : m_memory.Alloc<FxTrailVertex>(vertices.size());
+            for (auto index = 0u; index < vertices.size(); index++)
+            {
+                std::ranges::copy(vertices[index].pos, destination.trailDef->verts[index].pos);
+                std::ranges::copy(vertices[index].normal, destination.trailDef->verts[index].normal);
+                destination.trailDef->verts[index].texCoord = vertices[index].texCoord;
+            }
+            destination.trailDef->indCount = static_cast<int>(indices.size());
+            destination.trailDef->inds = indices.empty() ? nullptr : m_memory.Alloc<std::uint16_t>(indices.size());
+            if (!indices.empty())
+                std::ranges::copy(indices, destination.trailDef->inds);
+            return {};
+        }
+
+        std::expected<void, std::string> ConvertElement(const fx::FxEditorElem& source, FxElemDef& destination)
+        {
+            destination.flags = static_cast<int>(source.flags);
+#ifdef FEATURE_T5
+            if (source.billboardPivot[0] == 0.0f && source.billboardPivot[1] == 0.0f)
+                destination.flags &= ~FX_ELEM_USE_BILLBOARD_PIVOT;
+#endif
+            CopyCanonicalRange(destination.spawnRange, source.spawnRange);
+            CopyCanonicalRange(destination.fadeInRange, source.fadeInRange);
+            CopyCanonicalRange(destination.fadeOutRange, source.fadeOutRange);
+            destination.spawnFrustumCullRadius = source.spawnFrustumCullRadius;
+            if ((source.editorFlags & FX_ED_FLAG_LOOPING) != 0u)
+            {
+                destination.spawn.looping.intervalMsec = std::max(1, source.spawnLoopingIntervalMsec);
+                destination.spawn.looping.count = source.spawnLoopingCount == 0 ? std::numeric_limits<int>::max() : source.spawnLoopingCount;
+            }
+            else
+                CopyCanonicalRange(destination.spawn.oneShot.count, source.spawnOneShotCount);
+
+            CopyCanonicalRange(destination.spawnDelayMsec, source.spawnDelayMsec);
+            CopyCanonicalRange(destination.lifeSpanMsec, source.lifeSpanMsec);
+            for (auto component = 0u; component < 3u; component++)
+            {
+                CopyCanonicalRange(destination.spawnOrigin[component], source.spawnOrigin[component]);
+                CopyScaledRange(destination.spawnAngles[component], source.spawnAngles[component], PI / 180.0f);
+                CopyScaledRange(destination.angularVelocity[component], source.angularVelocity[component], PI / 180000.0f);
+            }
+            CopyCanonicalRange(destination.spawnOffsetRadius, source.spawnOffsetRadius);
+            CopyCanonicalRange(destination.spawnOffsetHeight, source.spawnOffsetHeight);
+            CopyScaledRange(destination.initialRotation, source.initialRotation, PI / 180.0f);
+#ifdef FEATURE_T5
+            destination.rotationAxis = PackRotationAxis(UsesRotationAxis(source) ? source.rotationAxis : std::array{0.0f, 0.0f, 0.0f, 1.0f});
+#endif
+            CopyScaledRange(destination.gravity, source.gravity, 0.01f);
+            if (destination.gravity.base != 0.0f || destination.gravity.amplitude != 0.0f)
+                destination.flags |= FX_ELEM_HAS_GRAVITY;
+            CopyCanonicalRange(destination.reflectionFactor, source.elasticity);
+            const auto reflectionEnd = std::clamp(destination.reflectionFactor.base + destination.reflectionFactor.amplitude, 0.0f, 1.0f);
+            destination.reflectionFactor.base = std::clamp(destination.reflectionFactor.base, 0.0f, 1.0f);
+            destination.reflectionFactor.amplitude = std::max(0.0f, reflectionEnd - destination.reflectionFactor.base);
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+            destination.windInfluence = source.windInfluence;
+#endif
+            destination.elemType = RuntimeElementType(source.type);
+
+            auto visualsResult = ConvertVisuals(source, destination);
+            if (!visualsResult)
+                return std::unexpected(std::move(visualsResult).error());
+            auto atlasResult = ConvertAtlas(source, destination);
+            if (!atlasResult)
+                return std::unexpected(std::move(atlasResult).error());
+
+            const auto intervalLimit = std::min(MAX_SAMPLE_INTERVAL_COUNT, (source.lifeSpanMsec.base + source.lifeSpanMsec.amplitude / 2) / 100);
+            const auto velocitySampleCount = DecideVelocitySampleCount(source, intervalLimit);
+            const auto visualSampleCount = DecideVisualSampleCount(source, intervalLimit);
+            destination.velIntervalCount = static_cast<unsigned char>(velocitySampleCount - 1);
+            destination.visStateIntervalCount = static_cast<unsigned char>(visualSampleCount > 0 ? visualSampleCount - 1 : 0);
+            destination.velSamples = m_memory.Alloc<FxElemVelStateSample>(velocitySampleCount);
+            if (visualSampleCount > 0)
+                destination.visSamples = m_memory.Alloc<FxElemVisStateSample>(visualSampleCount);
+            SampleVelocityFrame(source, destination, false);
+            SampleVelocityFrame(source, destination, true);
+            SampleVisualState(source, destination);
+
+            destination.lightingFrac = static_cast<unsigned char>(std::clamp(static_cast<int>(source.lightingFrac * 255.0f), 0, 255));
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+            destination.useItemClip = (source.editorFlags & FX_ED_FLAG_USE_ITEM_CLIP) != 0u;
+#endif
+            if ((source.editorFlags & FX_ED_FLAG_BOUNDING_SPHERE) != 0u)
+            {
+                for (auto component = 0u; component < 3u; component++)
+                {
+                    destination.collMins[component] = source.collOffset[component] - source.collRadius;
+                    destination.collMaxs[component] = source.collOffset[component] + source.collRadius;
+                }
+            }
+
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_TOUCH) != 0u)
+                SetEffectReference(destination.effectOnImpact, source.effectOnImpact);
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_DEATH) != 0u)
+                SetEffectReference(destination.effectOnDeath, source.effectOnDeath);
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ON_RUN) != 0u)
+                SetEffectReference(destination.effectEmitted, source.emission);
+            CopyCanonicalRange(destination.emitDist, source.emitDist);
+            CopyCanonicalRange(destination.emitDistVariance, source.emitDistVariance);
+#ifdef FEATURE_T5
+            if ((source.editorFlags & FX_ED_FLAG_PLAY_ATTACHED) != 0u)
+                SetEffectReference(destination.effectAttached, source.attachment);
+#endif
+            auto trailResult = ConvertTrail(source, destination);
+            if (!trailResult)
+                return std::unexpected(std::move(trailResult).error());
+            destination.sortOrder = static_cast<unsigned char>(std::clamp(source.sortOrder, 0, 255));
+
+#ifdef FEATURE_T5
+            destination.alphaFadeTimeMsec = static_cast<std::uint16_t>(source.alphaFadeTimeMsec);
+            if ((source.editorFlags & FX_ED_FLAG_LOOPING) != 0u)
+            {
+                destination.maxWindStrength = static_cast<std::uint16_t>(source.maxWindMagnitude);
+                destination.lifespanAtMaxWind = static_cast<std::uint16_t>(source.maxWindLife);
+                destination.spawnIntervalAtMaxWind = static_cast<std::uint16_t>(source.maxWindInterval);
+            }
+            if (source.type == fx::FxEditorElemType::CLOUD)
+                CopyCanonicalRange(destination.u.cloudDensityRange, source.cloudDensity);
+            else
+            {
+                destination.u.billboard.topWidth = std::clamp(source.billboardTopWidth, 0.0f, 1.0f);
+                destination.u.billboard.bottomWidth = std::clamp(source.billboardBottomWidth, 0.0f, 1.0f);
+            }
+            destination.spawnSound.spawnSound = source.spawnSound.empty() ? nullptr : m_memory.Dup(source.spawnSound.c_str());
+            if ((source.flags & FX_ELEM_USE_BILLBOARD_PIVOT) != 0u)
+            {
+                destination.billboardPivot[0] = source.billboardPivot[0] * 2.0f;
+                destination.billboardPivot[1] = source.billboardPivot[1] * -2.0f;
+            }
+#endif
+            return {};
+        }
+
+        void CloneEmittedElement(const FxElemDef& source, FxElemDef& destination)
+        {
+            destination = source;
+            if ((destination.flags & FX_ELEM_RUN_MASK) == FX_ELEM_RUN_RELATIVE_TO_SPAWN)
+                destination.flags &= ~FX_ELEM_RUN_MASK;
+
+            const auto velocitySampleCount = source.velIntervalCount + 1u;
+            destination.velSamples = m_memory.Alloc<FxElemVelStateSample>(velocitySampleCount);
+            std::memcpy(destination.velSamples, source.velSamples, sizeof(FxElemVelStateSample) * velocitySampleCount);
+            const auto visualSampleCount = source.visStateIntervalCount == 0 ? 0u : source.visStateIntervalCount + 1u;
+            if (visualSampleCount > 0u)
+            {
+                destination.visSamples = m_memory.Alloc<FxElemVisStateSample>(visualSampleCount);
+                std::memcpy(destination.visSamples, source.visSamples, sizeof(FxElemVisStateSample) * visualSampleCount);
+            }
+
+            const auto visualCount = source.visualCount;
+            if (source.elemType == FX_ELEM_TYPE_DECAL && visualCount > 0u)
+            {
+                destination.visuals.markArray = m_memory.Alloc<FxElemMarkVisuals>(visualCount);
+                std::memcpy(destination.visuals.markArray, source.visuals.markArray, sizeof(FxElemMarkVisuals) * visualCount);
+            }
+            else if (visualCount > 1u)
+            {
+                destination.visuals.array = m_memory.Alloc<FxElemVisuals>(visualCount);
+                std::memcpy(destination.visuals.array, source.visuals.array, sizeof(FxElemVisuals) * visualCount);
+            }
+#ifdef FEATURE_T5
+            if (source.spawnSound.spawnSound)
+                destination.spawnSound.spawnSound = m_memory.Dup(source.spawnSound.spawnSound);
+#endif
+        }
+
+        static int CalculateTotalSize(const FxEffectDef& effect, const size_t authoredElementCount)
+        {
+            const auto elementCount = effect.elemDefCountLooping + effect.elemDefCountOneShot + effect.elemDefCountEmission;
+            auto size = sizeof(FxEffectDef) + sizeof(FxElemDef) * elementCount + std::strlen(effect.name) + 1u;
+            for (auto index = 0; index < elementCount; index++)
+            {
+                const auto& element = effect.elemDefs[index];
+                size += sizeof(FxElemVelStateSample) * (element.velIntervalCount + 1u);
+                if (element.visStateIntervalCount != 0)
+                    size += sizeof(FxElemVisStateSample) * (element.visStateIntervalCount + 1u);
+                const auto visualCount = element.visualCount;
+                if (element.elemType == FX_ELEM_TYPE_DECAL)
+                    size += sizeof(FxElemMarkVisuals) * visualCount;
+                else if (visualCount > 1u)
+                    size += sizeof(FxElemVisuals) * visualCount;
+                if (static_cast<size_t>(index) < authoredElementCount && element.trailDef)
+                    size += sizeof(FxTrailDef) + sizeof(FxTrailVertex) * element.trailDef->vertCount + sizeof(std::uint16_t) * element.trailDef->indCount;
+#ifdef FEATURE_T5
+                if (element.spawnSound.spawnSound)
+                    size += std::strlen(element.spawnSound.spawnSound) + 1u;
+#endif
+            }
+            return static_cast<int>(size);
+        }
+
+        MemoryManager& m_memory;
+        AssetCreationContext& m_context;
+        AssetRegistration<AssetFx>& m_registration;
+        std::string m_asset_name;
+        std::unordered_map<std::string, FxEffectDef*> m_effect_dependencies;
+    };
+
+    class EffectDefLoader final : public AssetCreator<AssetFx>
+    {
+    public:
+        EffectDefLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = fx::GetFileNameForAssetName(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            fx::FxEditorEffect editorEffect;
+            const fx::FxEffectDefParserConfig parserConfig{
+#ifdef FEATURE_IW3
+                .maxVersion = 2,
+                .supportsEffectFields = false,
+                .supportsWind = false,
+                .supportsLine = false,
+                .supportsT5Fields = false,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
+#elif defined(FEATURE_T4)
+                .maxVersion = 2,
+                .supportsEffectFields = false,
+                .supportsWind = true,
+                .supportsLine = true,
+                .supportsT5Fields = false,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
+#elif defined(FEATURE_T5)
+                .maxVersion = 3,
+                .supportsEffectFields = true,
+                .supportsWind = true,
+                .supportsLine = true,
+                .supportsT5Fields = true,
+                .backCompatVelocityFlag = GAME::FX_ED_FLAG_BACKCOMPAT_VELOCITY,
+                .runMask = GAME::FX_ELEM_RUN_MASK,
+                .flagDefs = GAME::FX_FLAG_DEFS,
+#endif
+            };
+            if (!fx::ParseEffectDef(*file.m_stream, fileName, parserConfig, editorEffect))
+            {
+                con::error("Failed to parse fx \"{}\"", assetName);
+                return AssetCreationResult::Failure();
+            }
+
+            AssetRegistration<AssetFx> registration(assetName);
+            EffectDefConverter converter(m_memory, context, registration, assetName);
+            auto conversionResult = converter.Convert(editorEffect);
+            if (!conversionResult)
+            {
+                con::error("Cannot load fx \"{}\": {}", assetName, conversionResult.error());
+                return AssetCreationResult::Failure();
+            }
+
+            registration.SetAsset(conversionResult.value());
+            return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
+} // namespace
+
+namespace fx
+{
+#set FACTORY_NAME "CreateLoader" + GAME
+
+    std::unique_ptr<AssetCreator<AssetFx>> FACTORY_NAME(MemoryManager& memory, ISearchPath& searchPath)
+    {
+        return std::make_unique<EffectDefLoader>(memory, searchPath);
+    }
+} // namespace fx

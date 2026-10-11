@@ -1,0 +1,947 @@
+#options GAME(IW3, T4, T5)
+
+#filename "Game/" + GAME + "/Fx/FxEffectDefWriter" + GAME + ".cpp"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "T4"
+#define FEATURE_T4
+#elif GAME == "T5"
+#define FEATURE_T5
+#endif
+
+// This file was templated.
+// See FxEffectDefWriter.cpp.template.
+// Do not modify, changes will be lost.
+
+#set WRITER_HEADER "\"FxEffectDefWriter" + GAME + ".h\""
+#include WRITER_HEADER
+
+#set FX_CONSTANTS_HEADER "\"Game/" + GAME + "/FxConstants" + GAME + ".h\""
+#include FX_CONSTANTS_HEADER
+#include "Fx/FxCommon.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iomanip>
+#include <limits>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
+
+using namespace GAME;
+
+namespace
+{
+    constexpr auto PI = 3.14159265358979323846f;
+
+    struct ScalarGraph
+    {
+        float scale;
+        std::vector<float> base;
+        std::vector<float> amplitude;
+    };
+
+    const char* AssetName(const char* name)
+    {
+        if (!name)
+            return "";
+
+        return name[0] == ',' ? &name[1] : name;
+    }
+
+    std::string MaterialName(const Material* material)
+    {
+        if (!material || !material->info.name)
+            return {};
+
+        const auto* name = AssetName(material->info.name);
+        return name == std::string_view("$default3d") ? "$default" : name;
+    }
+
+    std::string DecalMaterialName(const FxElemMarkVisuals& visual)
+    {
+        auto name = MaterialName(visual.materials[0] ? visual.materials[0] : visual.materials[1]);
+        if (name.starts_with("mc/") || name.starts_with("wc/"))
+            name.erase(0, 3);
+
+        if (name == "$default3d")
+            name = "$default";
+
+        return name;
+    }
+
+    void WriteQuotedString(std::ostream& stream, const std::string_view value)
+    {
+        stream << '"';
+        for (const auto c : value)
+        {
+            if (c == '"' || c == '\\')
+                stream << '\\';
+            stream << c;
+        }
+        stream << '"';
+    }
+
+    template<typename Range> void WriteRange(std::ostream& stream, const char* name, const Range& range)
+    {
+        stream << '\t' << name << ' ' << range.base << ' ' << range.amplitude << ";\n";
+    }
+
+    void WriteScaledRange(std::ostream& stream, const char* name, const FxFloatRange& range, const float scale)
+    {
+        stream << '\t' << name << ' ' << range.base * scale << ' ' << range.amplitude * scale << ";\n";
+    }
+
+    void WriteFlags(std::ostream& stream, const char* fieldName, const std::span<const char* const> flags)
+    {
+        stream << '\t' << fieldName;
+        for (const auto* flag : flags)
+            stream << ' ' << flag;
+        stream << ";\n";
+    }
+
+    std::vector<const char*> GetFlagNames(const ::fx::FxFlagType type, const unsigned int value)
+    {
+        std::vector<const char*> result;
+        for (const auto& flagDef : GAME::FX_FLAG_DEFS)
+        {
+            if (flagDef.type == type && (value & flagDef.mask) == flagDef.value)
+                result.emplace_back(flagDef.name);
+        }
+
+        return result;
+    }
+
+#ifdef FEATURE_T5
+    constexpr float UnpackSignedRotationAxisComponent(const unsigned value, const unsigned signBit)
+    {
+        const auto mask = signBit * 2u - 1u;
+        const auto unsignedValue = value & mask;
+        const auto signedValue = unsignedValue >= signBit ? static_cast<int>(unsignedValue) - static_cast<int>(signBit * 2u) : static_cast<int>(unsignedValue);
+        return static_cast<float>(signedValue) / static_cast<float>(signBit - 1u);
+    }
+
+    std::array<float, 4> UnpackRotationAxis(const unsigned int packed)
+    {
+        constexpr auto COMPONENT_0_SIGN_BIT = 0x100u;
+        constexpr auto COMPONENT_1_SIGN_BIT = 0x200u;
+        constexpr auto PACKED_SIGN_BIT = 0x80000000u;
+        constexpr auto FIRST_COMPONENT_SHIFT = 29u;
+        constexpr auto COMPONENT_INDEX_MASK = 0x3u;
+
+        const std::array stored{
+            UnpackSignedRotationAxisComponent(packed, COMPONENT_0_SIGN_BIT),
+            UnpackSignedRotationAxisComponent(packed >> 9u, COMPONENT_1_SIGN_BIT),
+            UnpackSignedRotationAxisComponent(packed >> 19u, COMPONENT_1_SIGN_BIT),
+            1.0f,
+        };
+        const auto length = std::sqrt(stored[0] * stored[0] + stored[1] * stored[1] + stored[2] * stored[2] + stored[3] * stored[3]);
+        const auto scale = (packed & PACKED_SIGN_BIT) != 0u ? -1.0f / length : 1.0f / length;
+        const auto firstComponent = (packed >> FIRST_COMPONENT_SHIFT) & COMPONENT_INDEX_MASK;
+
+        return {
+            stored[firstComponent] * scale,
+            stored[(firstComponent + 1u) & COMPONENT_INDEX_MASK] * scale,
+            stored[(firstComponent + 2u) & COMPONENT_INDEX_MASK] * scale,
+            stored[(firstComponent + 3u) & COMPONENT_INDEX_MASK] * scale,
+        };
+    }
+
+#endif
+    bool HasVelocityAmplitude(const FxElemVelStateSample* samples, const unsigned intervalCount, const bool world, const unsigned component)
+    {
+        if (!samples)
+            return false;
+
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto& frame = world ? samples[sampleIndex].world : samples[sampleIndex].local;
+            if (frame.velocity.amplitude[component] != 0.0f)
+                return true;
+        }
+
+        return false;
+    }
+
+    ScalarGraph CreateVelocityGraph(const FxElemDef& elem, const bool world, const unsigned component)
+    {
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.velIntervalCount));
+        ScalarGraph result{
+            .scale = 0.0f,
+            .base = std::vector<float>(intervalCount + 1u),
+            .amplitude = std::vector<float>(intervalCount + 1u),
+        };
+
+        if (!elem.velSamples)
+            return result;
+
+        auto maxMagnitude = 0.0f;
+        const auto sampleScale = static_cast<float>(intervalCount) * 1000.0f;
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto& frame = world ? elem.velSamples[sampleIndex].world : elem.velSamples[sampleIndex].local;
+            result.base[sampleIndex] = frame.velocity.base[component] * sampleScale;
+            result.amplitude[sampleIndex] = (frame.velocity.base[component] + frame.velocity.amplitude[component]) * sampleScale;
+            maxMagnitude = std::max({maxMagnitude, std::abs(result.base[sampleIndex]), std::abs(result.amplitude[sampleIndex])});
+        }
+
+        result.scale = maxMagnitude * 2.0f;
+        if (result.scale > 0.0f)
+        {
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                result.base[sampleIndex] /= result.scale;
+                result.amplitude[sampleIndex] /= result.scale;
+            }
+        }
+
+        return result;
+    }
+
+    template<typename BaseAccessor, typename AmplitudeAccessor>
+    ScalarGraph CreateVisualGraph(
+        const FxElemDef& elem, const float valueScale, const bool signedValues, BaseAccessor baseAccessor, AmplitudeAccessor amplitudeAccessor)
+    {
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
+        ScalarGraph result{
+            .scale = 1.0f,
+            .base = std::vector<float>(intervalCount + 1u),
+            .amplitude = std::vector<float>(intervalCount + 1u),
+        };
+
+        if (!elem.visSamples)
+            return result;
+
+        auto maxMagnitude = 0.0f;
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto base = baseAccessor(elem.visSamples[sampleIndex]) * valueScale;
+            const auto amplitude = amplitudeAccessor(elem.visSamples[sampleIndex]) * valueScale;
+            result.base[sampleIndex] = base;
+            result.amplitude[sampleIndex] = base + amplitude;
+
+            if (signedValues)
+                maxMagnitude = std::max({maxMagnitude, std::abs(result.base[sampleIndex]), std::abs(result.amplitude[sampleIndex])});
+            else
+                maxMagnitude = std::max({maxMagnitude, result.base[sampleIndex], result.amplitude[sampleIndex]});
+        }
+
+        if (signedValues)
+            result.scale = maxMagnitude > 0.0f ? maxMagnitude * 2.0f : 1.0f;
+        else
+            result.scale = maxMagnitude > 0.0f ? maxMagnitude : 1.0f;
+
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            result.base[sampleIndex] /= result.scale;
+            result.amplitude[sampleIndex] /= result.scale;
+        }
+
+        return result;
+    }
+
+    void WriteScalarGraph(std::ostream& stream, const char* name, const ScalarGraph& graph)
+    {
+        const auto intervalCount = graph.base.size() - 1u;
+        stream << '\t' << name << ' ' << graph.scale << "\n\t{\n";
+
+        const std::array curves{&graph.base, &graph.amplitude};
+        for (const auto* curve : curves)
+        {
+            stream << "\t\t{\n";
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
+                stream << "\t\t\t" << time << ' ' << (*curve)[sampleIndex] << '\n';
+            }
+            stream << "\t\t}\n";
+        }
+
+        stream << "\t};\n";
+    }
+
+    template<typename Accessor> bool HasVisualAmplitude(const FxElemDef& elem, Accessor accessor)
+    {
+        if (!elem.visSamples)
+            return false;
+
+        const auto intervalCount = elem.visStateIntervalCount;
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            if (accessor(elem.visSamples[sampleIndex].amplitude) != 0.0f)
+                return true;
+        }
+
+        return false;
+    }
+
+    fx::RgbaColor UnpackVertexColor(const FxColor& color)
+    {
+        constexpr auto BYTE_TO_FLOAT = 1.0f / 255.0f;
+
+        return {
+            .r = color.r * BYTE_TO_FLOAT,
+            .g = color.g * BYTE_TO_FLOAT,
+            .b = color.b * BYTE_TO_FLOAT,
+            .a = color.a * BYTE_TO_FLOAT,
+        };
+    }
+
+    bool HasRandomColor(const FxElemDef& elem)
+    {
+        if (!elem.visSamples)
+            return false;
+
+        const auto intervalCount = elem.visStateIntervalCount;
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
+            const auto amplitude = UnpackVertexColor(elem.visSamples[sampleIndex].amplitude.color);
+            if (base.r != amplitude.r || base.g != amplitude.g || base.b != amplitude.b)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool HasRandomAlpha(const FxElemDef& elem)
+    {
+        if (!elem.visSamples)
+            return false;
+
+        const auto intervalCount = elem.visStateIntervalCount;
+        for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+        {
+            const auto base = UnpackVertexColor(elem.visSamples[sampleIndex].base.color);
+            const auto amplitude = UnpackVertexColor(elem.visSamples[sampleIndex].amplitude.color);
+            if (base.a != amplitude.a)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool UsesColor(const FxElemDef& elem)
+    {
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+        case FX_ELEM_TYPE_CLOUD:
+        case FX_ELEM_TYPE_OMNI_LIGHT:
+        case FX_ELEM_TYPE_SPOT_LIGHT:
+        case FX_ELEM_TYPE_DECAL:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    bool UsesSize1(const FxElemDef& elem)
+    {
+        switch (elem.elemType)
+        {
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+        case FX_ELEM_TYPE_CLOUD:
+            return true;
+
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+            return (elem.flags & FX_ELEM_NONUNIFORM_SCALE) != 0;
+
+        default:
+            return false;
+        }
+    }
+
+    bool UsesScale(const FxElemDef& elem)
+    {
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_CLOUD:
+        case FX_ELEM_TYPE_MODEL:
+        case FX_ELEM_TYPE_SOUND:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    bool UsesRotation(const FxElemDef& elem)
+    {
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+        case FX_ELEM_TYPE_SPOT_LIGHT:
+        case FX_ELEM_TYPE_DECAL:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
+    void WriteColorGraph(std::ostream& stream, const FxElemDef& elem)
+    {
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
+        stream << "\tcolorGraph 1\n\t{\n";
+        for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
+        {
+            stream << "\t\t{\n";
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
+                auto color = fx::RgbaColor{.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+                if (elem.visSamples)
+                {
+                    const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
+                    color = UnpackVertexColor(state.color);
+                }
+                stream << "\t\t\t" << time << ' ' << color.r << ' ' << color.g << ' ' << color.b << '\n';
+            }
+            stream << "\t\t}\n";
+        }
+        stream << "\t};\n";
+    }
+
+    void WriteAlphaGraph(std::ostream& stream, const FxElemDef& elem)
+    {
+        const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount));
+        stream << "\talphaGraph 1\n\t{\n";
+        for (auto randomIndex = 0u; randomIndex < 2u; randomIndex++)
+        {
+            stream << "\t\t{\n";
+            for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
+            {
+                const auto time = static_cast<float>(sampleIndex) / static_cast<float>(intervalCount);
+                auto alpha = 1.0f;
+                if (elem.visSamples)
+                {
+                    const auto& state = randomIndex == 0u ? elem.visSamples[sampleIndex].base : elem.visSamples[sampleIndex].amplitude;
+                    alpha = UnpackVertexColor(state.color).a;
+                }
+                stream << "\t\t\t" << time << ' ' << alpha << '\n';
+            }
+            stream << "\t\t}\n";
+        }
+        stream << "\t};\n";
+    }
+
+    const FxElemVisuals* VisualArray(const FxElemDef& elem)
+    {
+        const auto visualCount = elem.visualCount;
+        if (visualCount == 0u)
+            return nullptr;
+        return visualCount == 1u ? &elem.visuals.instance : elem.visuals.array;
+    }
+
+    void WriteVisualArray(std::ostream& stream, const char* fieldName, const std::span<const std::string> names)
+    {
+        stream << '\t' << fieldName << "\n\t{\n";
+        for (const auto& name : names)
+        {
+            stream << "\t\t";
+            WriteQuotedString(stream, name);
+            stream << '\n';
+        }
+        stream << "\t};\n";
+    }
+
+    void WriteVisuals(std::ostream& stream, const FxElemDef& elem)
+    {
+        const auto visualCount = elem.visualCount;
+        const auto* visuals = VisualArray(elem);
+        std::vector<std::string> names;
+        names.reserve(visualCount);
+
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+#endif
+        case FX_ELEM_TYPE_TAIL:
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+        case FX_ELEM_TYPE_CLOUD:
+            for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
+                names.emplace_back(MaterialName(visuals ? visuals[visualIndex].material : nullptr));
+            break;
+
+        case FX_ELEM_TYPE_MODEL:
+            for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
+                names.emplace_back(visuals && visuals[visualIndex].model ? AssetName(visuals[visualIndex].model->name) : "");
+            break;
+
+        case FX_ELEM_TYPE_SOUND:
+            for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
+                names.emplace_back(visuals ? AssetName(visuals[visualIndex].soundName) : "");
+            break;
+
+        case FX_ELEM_TYPE_RUNNER:
+            for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
+                names.emplace_back(visuals ? AssetName(visuals[visualIndex].effectDef.name) : "");
+            break;
+
+        case FX_ELEM_TYPE_DECAL:
+            for (auto visualIndex = 0u; visualIndex < visualCount; visualIndex++)
+                names.emplace_back(elem.visuals.markArray ? DecalMaterialName(elem.visuals.markArray[visualIndex]) : "");
+            break;
+
+        default:
+            break;
+        }
+
+        switch (elem.elemType)
+        {
+        case FX_ELEM_TYPE_SPRITE_BILLBOARD:
+            WriteVisualArray(stream, "billboardSprite", names);
+            break;
+        case FX_ELEM_TYPE_SPRITE_ORIENTED:
+            WriteVisualArray(stream, "orientedSprite", names);
+            break;
+#ifdef FEATURE_T5
+        case FX_ELEM_TYPE_SPRITE_ROTATED:
+            WriteVisualArray(stream, "rotatedSprite", names);
+            break;
+#endif
+        case FX_ELEM_TYPE_TAIL:
+            WriteVisualArray(stream, "tail", names);
+            break;
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+        case FX_ELEM_TYPE_LINE:
+            WriteVisualArray(stream, "line", names);
+            break;
+#endif
+        case FX_ELEM_TYPE_TRAIL:
+            WriteVisualArray(stream, "trail", names);
+            break;
+        case FX_ELEM_TYPE_CLOUD:
+            WriteVisualArray(stream, "cloud", names);
+            break;
+        case FX_ELEM_TYPE_MODEL:
+            WriteVisualArray(stream, "model", names);
+            break;
+        case FX_ELEM_TYPE_OMNI_LIGHT:
+            stream << "\tlight;\n";
+            break;
+        case FX_ELEM_TYPE_SPOT_LIGHT:
+            stream << "\tspotLight;\n";
+            break;
+        case FX_ELEM_TYPE_SOUND:
+            WriteVisualArray(stream, "sound", names);
+            break;
+        case FX_ELEM_TYPE_DECAL:
+            WriteVisualArray(stream, "decal", names);
+            break;
+        case FX_ELEM_TYPE_RUNNER:
+            WriteVisualArray(stream, "runner", names);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void WriteTrail(std::ostream& stream, const FxElemDef& elem)
+    {
+        if (elem.elemType != FX_ELEM_TYPE_TRAIL || !elem.trailDef)
+        {
+            stream << "\ttrailSplitDist 0;\n\ttrailScrollTime 0;\n\ttrailRepeatDist 0;\n";
+            return;
+        }
+
+        const auto& trail = *elem.trailDef;
+        stream << "\ttrailSplitDist " << trail.splitDist << ";\n";
+        stream << "\ttrailScrollTime " << static_cast<float>(trail.scrollTimeMsec) / 1000.0f << ";\n";
+        stream << "\ttrailRepeatDist " << trail.repeatDist << ";\n";
+        stream << "\ttrailDef\n\t{\n";
+        for (auto vertexIndex = 0; vertexIndex < trail.vertCount; vertexIndex++)
+        {
+            const auto& vertex = trail.verts[vertexIndex];
+            stream << "\t\t" << vertex.pos[0] << ' ' << vertex.pos[1] << ' ' << vertex.texCoord << '\n';
+        }
+        stream << "\t} {\n";
+        for (auto index = 0; index < trail.indCount; index++)
+            stream << "\t\t" << trail.inds[index] << '\n';
+        stream << "\t};\n";
+    }
+
+#set INTERFACE_NAME "IEffectDefWriter" + GAME
+
+    class EffectDefWriter final : public fx::INTERFACE_NAME
+    {
+    public:
+        explicit EffectDefWriter(std::ostream& stream)
+            : m_stream(stream)
+        {
+        }
+
+        void Write(const FxEffectDef& effect) override
+        {
+            m_stream << std::setprecision(std::numeric_limits<float>::max_digits10);
+#ifdef FEATURE_T5
+            m_stream << "iwfx 3\n\n";
+            const auto effectFlags = GetFlagNames(::fx::FxFlagType::EFFECT, effect.flags);
+            WriteFlags(m_stream, "efFlags", effectFlags);
+            m_stream << "\tefPriority " << static_cast<unsigned>(effect.efPriority) << ";\n";
+            m_stream << "\tefBoundingBoxDim " << effect.boundingBoxDim[0] << ' ' << effect.boundingBoxDim[1] << ' ' << effect.boundingBoxDim[2] << ";\n";
+            m_stream << "\tefBoundingBoxCentre " << effect.boundingSphere[0] << ' ' << effect.boundingSphere[1] << ' ' << effect.boundingSphere[2] << ";\n";
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
+            m_stream << "iwfx 2\n\n";
+#endif
+
+            const auto loopingCount = std::max(0, effect.elemDefCountLooping);
+            const auto oneShotCount = std::max(0, effect.elemDefCountOneShot);
+            // Emission elements are compiler-generated copies of referenced effects and are recreated when this source is linked.
+            const auto authoredElemCount = loopingCount + oneShotCount;
+            for (auto elemIndex = 0; elemIndex < authoredElemCount; elemIndex++)
+                WriteElem(effect, effect.elemDefs[elemIndex], elemIndex < loopingCount, static_cast<unsigned>(elemIndex));
+        }
+
+    private:
+        void WriteElem(const FxEffectDef& effect, const FxElemDef& elem, const bool looping, const unsigned elemIndex)
+        {
+            const auto hasLocalVelocity = (elem.flags & FX_ELEM_HAS_VELOCITY_GRAPH_LOCAL) != 0;
+            const auto hasWorldVelocity = (elem.flags & FX_ELEM_HAS_VELOCITY_GRAPH_WORLD) != 0;
+            const auto graph0IsWorld = !hasLocalVelocity && hasWorldVelocity;
+            const auto graph1IsWorld = hasLocalVelocity && hasWorldVelocity;
+            const auto intervalCount = std::max(1u, static_cast<unsigned>(elem.velIntervalCount));
+
+            const auto graph0Random = (hasLocalVelocity || hasWorldVelocity)
+                                      && (HasVelocityAmplitude(elem.velSamples, intervalCount, graph0IsWorld, 0u)
+                                          || HasVelocityAmplitude(elem.velSamples, intervalCount, graph0IsWorld, 1u)
+                                          || HasVelocityAmplitude(elem.velSamples, intervalCount, graph0IsWorld, 2u));
+            const auto graph1Random =
+                graph1IsWorld
+                && (HasVelocityAmplitude(elem.velSamples, intervalCount, true, 0u) || HasVelocityAmplitude(elem.velSamples, intervalCount, true, 1u)
+                    || HasVelocityAmplitude(elem.velSamples, intervalCount, true, 2u));
+
+            auto editorFlagBits = 0u;
+            if (looping)
+                editorFlagBits |= FX_ED_FLAG_LOOPING;
+            if (UsesColor(elem) && HasRandomColor(elem))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_COLOR;
+            if (UsesColor(elem) && HasRandomAlpha(elem))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_ALPHA;
+            if (UsesColor(elem)
+                && HasVisualAmplitude(elem,
+                                      [](const FxElemVisualState& state)
+                                      {
+                                          return state.size[0];
+                                      }))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_SIZE_0;
+            if (UsesSize1(elem)
+                && HasVisualAmplitude(elem,
+                                      [](const FxElemVisualState& state)
+                                      {
+                                          return state.size[1];
+                                      }))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_SIZE_1;
+            if (UsesScale(elem)
+                && HasVisualAmplitude(elem,
+                                      [](const FxElemVisualState& state)
+                                      {
+                                          return state.scale;
+                                      }))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_SCALE;
+            if (UsesRotation(elem)
+                && HasVisualAmplitude(elem,
+                                      [](const FxElemVisualState& state)
+                                      {
+                                          return state.rotationDelta;
+                                      }))
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_ROTATION_DELTA;
+            if (graph0Random)
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_VELOCITY_0;
+            if (graph1Random)
+                editorFlagBits |= FX_ED_FLAG_USE_RANDOM_VELOCITY_1;
+            if (graph0IsWorld)
+                editorFlagBits |= FX_ED_FLAG_ABSOLUTE_VELOCITY_0;
+            if (graph1IsWorld)
+                editorFlagBits |= FX_ED_FLAG_ABSOLUTE_VELOCITY_1;
+            if (elem.effectOnImpact.name)
+                editorFlagBits |= FX_ED_FLAG_PLAY_ON_TOUCH;
+            if (elem.effectOnDeath.name)
+                editorFlagBits |= FX_ED_FLAG_PLAY_ON_DEATH;
+            if (elem.effectEmitted.name)
+                editorFlagBits |= FX_ED_FLAG_PLAY_ON_RUN;
+#ifdef FEATURE_T5
+            if (elem.effectAttached.name)
+                editorFlagBits |= FX_ED_FLAG_PLAY_ATTACHED;
+#endif
+
+            const auto hasCollisionBounds = std::ranges::any_of(elem.collMins,
+                                                                [](const float value)
+                                                                {
+                                                                    return value != 0.0f;
+                                                                })
+                                            || std::ranges::any_of(elem.collMaxs,
+                                                                   [](const float value)
+                                                                   {
+                                                                       return value != 0.0f;
+                                                                   });
+            if (hasCollisionBounds)
+                editorFlagBits |= FX_ED_FLAG_BOUNDING_SPHERE;
+#if defined(FEATURE_IW3) || defined(FEATURE_T4)
+            if (elem.useItemClip)
+                editorFlagBits |= FX_ED_FLAG_USE_ITEM_CLIP;
+#endif
+
+            const auto editorFlags = GetFlagNames(::fx::FxFlagType::EDITOR, editorFlagBits);
+            const auto flags = GetFlagNames(::fx::FxFlagType::NATIVE, static_cast<unsigned int>(elem.flags));
+
+            m_stream << "{\n\tname \"segment " << elemIndex + 1u << "\";\n";
+            WriteFlags(m_stream, "editorFlags", editorFlags);
+            WriteFlags(m_stream, "flags", flags);
+            WriteRange(m_stream, "spawnRange", elem.spawnRange);
+            WriteRange(m_stream, "fadeInRange", elem.fadeInRange);
+            WriteRange(m_stream, "fadeOutRange", elem.fadeOutRange);
+            m_stream << "\tspawnFrustumCullRadius " << elem.spawnFrustumCullRadius << ";\n";
+
+            if (looping)
+            {
+                const auto count = elem.spawn.looping.count == std::numeric_limits<int>::max() ? 0 : elem.spawn.looping.count;
+                m_stream << "\tspawnLooping " << elem.spawn.looping.intervalMsec << ' ' << count << ";\n";
+                m_stream << "\tspawnOneShot 1 0;\n";
+            }
+            else
+            {
+                m_stream << "\tspawnLooping 200 1;\n";
+                WriteRange(m_stream, "spawnOneShot", elem.spawn.oneShot.count);
+            }
+
+            WriteRange(m_stream, "spawnDelayMsec", elem.spawnDelayMsec);
+            WriteRange(m_stream, "lifeSpanMsec", elem.lifeSpanMsec);
+            WriteRange(m_stream, "spawnOrgX", elem.spawnOrigin[0]);
+            WriteRange(m_stream, "spawnOrgY", elem.spawnOrigin[1]);
+            WriteRange(m_stream, "spawnOrgZ", elem.spawnOrigin[2]);
+            WriteRange(m_stream, "spawnOffsetRadius", elem.spawnOffsetRadius);
+            WriteRange(m_stream, "spawnOffsetHeight", elem.spawnOffsetHeight);
+            WriteScaledRange(m_stream, "spawnAnglePitch", elem.spawnAngles[0], 180.0f / PI);
+            WriteScaledRange(m_stream, "spawnAngleYaw", elem.spawnAngles[1], 180.0f / PI);
+            WriteScaledRange(m_stream, "spawnAngleRoll", elem.spawnAngles[2], 180.0f / PI);
+            WriteScaledRange(m_stream, "angleVelPitch", elem.angularVelocity[0], 180000.0f / PI);
+            WriteScaledRange(m_stream, "angleVelYaw", elem.angularVelocity[1], 180000.0f / PI);
+            WriteScaledRange(m_stream, "angleVelRoll", elem.angularVelocity[2], 180000.0f / PI);
+            WriteScaledRange(m_stream, "initialRot", elem.initialRotation, 180.0f / PI);
+#ifdef FEATURE_T5
+            const auto rotationAxis = UnpackRotationAxis(elem.rotationAxis);
+            m_stream << "\trotationAxis " << rotationAxis[0] << ' ' << rotationAxis[1] << ' ' << rotationAxis[2] << ' ' << rotationAxis[3] << ";\n";
+#endif
+            WriteScaledRange(m_stream, "gravity", elem.gravity, 100.0f);
+            WriteRange(m_stream, "elasticity", elem.reflectionFactor);
+#if defined(FEATURE_T4) || defined(FEATURE_T5)
+            m_stream << "\twindinfluence " << elem.windInfluence << ";\n";
+#endif
+
+            const auto atlasBehavior = elem.atlas.behavior;
+            const auto atlasBehaviorFlags = GetFlagNames(::fx::FxFlagType::ATLAS, atlasBehavior);
+            WriteFlags(m_stream, "atlasBehavior", atlasBehaviorFlags);
+            m_stream << "\tatlasIndex " << static_cast<unsigned>(elem.atlas.index) << ";\n";
+            m_stream << "\tatlasFps " << static_cast<unsigned>(elem.atlas.fps) << ";\n";
+            const auto atlasLoopCount = elem.atlas.loopCount;
+            m_stream << "\tatlasLoopCount " << (atlasLoopCount > 0u ? atlasLoopCount - 1u : 0u) << ";\n";
+            m_stream << "\tatlasColIndexBits " << static_cast<unsigned>(elem.atlas.colIndexBits) << ";\n";
+            m_stream << "\tatlasRowIndexBits " << static_cast<unsigned>(elem.atlas.rowIndexBits) << ";\n";
+#ifdef FEATURE_T5
+            constexpr auto ATLAS_ENTRY_COUNT_MASK = 0x1FFu;
+            constexpr auto ATLAS_INDEX_RANGE_SHIFT = 9u;
+            const auto entryCountAndIndexRange = elem.atlas.entryCountAndIndexRange;
+            m_stream << "\tatlasEntryCount " << (entryCountAndIndexRange & ATLAS_ENTRY_COUNT_MASK) << ";\n";
+            m_stream << "\tatlasIndexRange " << (entryCountAndIndexRange >> ATLAS_INDEX_RANGE_SHIFT) << ";\n";
+#elif defined(FEATURE_IW3) || defined(FEATURE_T4)
+            m_stream << "\tatlasEntryCount " << elem.atlas.entryCount << ";\n";
+#endif
+
+            for (auto graphIndex = 0u; graphIndex < 2u; graphIndex++)
+            {
+                const auto enabled = graphIndex == 0u ? (hasLocalVelocity || hasWorldVelocity) : graph1IsWorld;
+                const auto world = graphIndex == 0u ? graph0IsWorld : graph1IsWorld;
+                for (auto component = 0u; component < 3u; component++)
+                {
+                    const auto graph = enabled ? CreateVelocityGraph(elem, world, component)
+                                               : ScalarGraph{
+                                                     .scale = 0.0f,
+                                                     .base = std::vector<float>(intervalCount + 1u),
+                                                     .amplitude = std::vector<float>(intervalCount + 1u),
+                                                 };
+                    const std::array componentNames{'X', 'Y', 'Z'};
+                    const auto graphName = std::string("velGraph") + std::to_string(graphIndex) + componentNames[component];
+                    WriteScalarGraph(m_stream, graphName.c_str(), graph);
+                }
+            }
+
+            const auto rotationValueScale = static_cast<float>(std::max(1u, static_cast<unsigned>(elem.visStateIntervalCount))) * 1000.0f * 180.0f / PI;
+            WriteScalarGraph(m_stream,
+                             "rotGraph",
+                             CreateVisualGraph(
+                                 elem,
+                                 rotationValueScale,
+                                 true,
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.base.rotationDelta;
+                                 },
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.amplitude.rotationDelta;
+                                 }));
+            WriteScalarGraph(m_stream,
+                             "sizeGraph0",
+                             CreateVisualGraph(
+                                 elem,
+                                 2.0f,
+                                 false,
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.base.size[0];
+                                 },
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.amplitude.size[0];
+                                 }));
+            WriteScalarGraph(m_stream,
+                             "sizeGraph1",
+                             CreateVisualGraph(
+                                 elem,
+                                 2.0f,
+                                 false,
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.base.size[1];
+                                 },
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.amplitude.size[1];
+                                 }));
+            WriteScalarGraph(m_stream,
+                             "scaleGraph",
+                             CreateVisualGraph(
+                                 elem,
+                                 1.0f,
+                                 false,
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.base.scale;
+                                 },
+                                 [](const FxElemVisStateSample& sample)
+                                 {
+                                     return sample.amplitude.scale;
+                                 }));
+            WriteColorGraph(m_stream, elem);
+            WriteAlphaGraph(m_stream, elem);
+
+            m_stream << "\tlightingFrac " << static_cast<float>(elem.lightingFrac) / 255.0f << ";\n";
+            if (hasCollisionBounds)
+            {
+                const std::array collOffset{
+                    (elem.collMins[0] + elem.collMaxs[0]) * 0.5f,
+                    (elem.collMins[1] + elem.collMaxs[1]) * 0.5f,
+                    (elem.collMins[2] + elem.collMaxs[2]) * 0.5f,
+                };
+                const auto collRadius = std::max({elem.collMaxs[0] - collOffset[0], elem.collMaxs[1] - collOffset[1], elem.collMaxs[2] - collOffset[2]});
+                m_stream << "\tcollOffset " << collOffset[0] << ' ' << collOffset[1] << ' ' << collOffset[2] << ";\n";
+                m_stream << "\tcollRadius " << collRadius << ";\n";
+            }
+            else
+            {
+                m_stream << "\tcollOffset 0 0 0;\n\tcollRadius 0;\n";
+            }
+
+            m_stream << "\tfxOnImpact ";
+            WriteQuotedString(m_stream, AssetName(elem.effectOnImpact.name));
+            m_stream << ";\n\tfxOnDeath ";
+            WriteQuotedString(m_stream, AssetName(elem.effectOnDeath.name));
+            m_stream << ";\n\tsortOrder " << static_cast<unsigned>(elem.sortOrder) << ";\n";
+#ifdef FEATURE_T4
+            m_stream << "\tefPriority " << static_cast<unsigned>(effect.efPriority) << ";\n";
+#endif
+            m_stream << "\temission ";
+            WriteQuotedString(m_stream, AssetName(elem.effectEmitted.name));
+            m_stream << ";\n";
+            WriteRange(m_stream, "emitDist", elem.emitDist);
+            WriteRange(m_stream, "emitDistVariance", elem.emitDistVariance);
+#ifdef FEATURE_T5
+            m_stream << "\tattachment ";
+            WriteQuotedString(m_stream, AssetName(elem.effectAttached.name));
+            m_stream << ";\n";
+#endif
+            WriteTrail(m_stream, elem);
+#ifdef FEATURE_T5
+            m_stream << "\talphafadetimemsec " << elem.alphaFadeTimeMsec << ";\n";
+            m_stream << "\tmaxwind_mag " << elem.maxWindStrength << ";\n";
+            m_stream << "\tmaxwind_life " << elem.lifespanAtMaxWind << ";\n";
+            m_stream << "\tmaxwind_interval " << elem.spawnIntervalAtMaxWind << ";\n";
+            if (elem.elemType == FX_ELEM_TYPE_CLOUD)
+            {
+                m_stream << "\tbillboardTopWidth 1;\n\tbillboardBottomWidth 1;\n";
+            }
+            else
+            {
+                m_stream << "\tbillboardTopWidth " << elem.u.billboard.topWidth << ";\n";
+                m_stream << "\tbillboardBottomWidth " << elem.u.billboard.bottomWidth << ";\n";
+            }
+            m_stream << "\telemSpawnSound\n\t{\n";
+            if (elem.spawnSound.spawnSound && elem.spawnSound.spawnSound[0])
+            {
+                m_stream << "\t\t";
+                WriteQuotedString(m_stream, elem.spawnSound.spawnSound);
+                m_stream << '\n';
+            }
+            m_stream << "\t};\n";
+            if (elem.elemType == FX_ELEM_TYPE_CLOUD)
+                WriteRange(m_stream, "cloudDensity", elem.u.cloudDensityRange);
+            else
+                m_stream << "\tcloudDensity 1024 0;\n";
+            m_stream << "\tbillboardPivot " << elem.billboardPivot[0] * 0.5f << ' ' << elem.billboardPivot[1] * -0.5f << ";\n";
+#endif
+            WriteVisuals(m_stream, elem);
+            m_stream << "}\n";
+        }
+
+        std::ostream& m_stream;
+    };
+} // namespace
+
+namespace fx
+{
+#set INTERFACE_NAME "IEffectDefWriter" + GAME
+#set FACTORY_NAME "CreateEffectDefWriter" + GAME
+
+    std::unique_ptr<INTERFACE_NAME> FACTORY_NAME(std::ostream& stream)
+    {
+        return std::make_unique<EffectDefWriter>(stream);
+    }
+} // namespace fx

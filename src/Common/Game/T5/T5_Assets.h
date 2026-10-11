@@ -5002,14 +5002,100 @@ namespace T5
         FxSpawnDefOneShot oneShot;
     };
 
+    enum FxEditorElemDefFlags : unsigned int
+    {
+        FX_ED_FLAG_LOOPING = 0x1,
+        FX_ED_FLAG_USE_RANDOM_COLOR = 0x2,
+        FX_ED_FLAG_USE_RANDOM_ALPHA = 0x4,
+        FX_ED_FLAG_USE_RANDOM_SIZE_0 = 0x8,
+        FX_ED_FLAG_USE_RANDOM_SIZE_1 = 0x10,
+        FX_ED_FLAG_USE_RANDOM_SCALE = 0x20,
+        FX_ED_FLAG_USE_RANDOM_ROTATION_DELTA = 0x40,
+        FX_ED_FLAG_MODULATE_COLOR_BY_ALPHA = 0x80,
+        FX_ED_FLAG_USE_RANDOM_VELOCITY_0 = 0x100,
+        FX_ED_FLAG_USE_RANDOM_VELOCITY_1 = 0x200,
+        FX_ED_FLAG_BACKCOMPAT_VELOCITY = 0x400,
+        FX_ED_FLAG_ABSOLUTE_VELOCITY_0 = 0x800,
+        FX_ED_FLAG_ABSOLUTE_VELOCITY_1 = 0x1000,
+        FX_ED_FLAG_PLAY_ON_TOUCH = 0x2000,
+        FX_ED_FLAG_PLAY_ON_DEATH = 0x4000,
+        FX_ED_FLAG_PLAY_ON_RUN = 0x8000,
+        FX_ED_FLAG_BOUNDING_SPHERE = 0x10000,
+        FX_ED_FLAG_PLAY_ATTACHED = 0x40000,
+        FX_ED_FLAG_DISABLED = 0x80000000,
+    };
+
+    enum FxElemDefFlags : unsigned int
+    {
+        FX_ELEM_SPAWN_RELATIVE_TO_EFFECT = 0x2,
+        FX_ELEM_SPAWN_FRUSTUM_CULL = 0x4,
+        FX_ELEM_RUNNER_USES_RAND_ROT = 0x8,
+        FX_ELEM_SPAWN_OFFSET_NONE = 0x0,
+        FX_ELEM_SPAWN_OFFSET_SPHERE = 0x10,
+        FX_ELEM_SPAWN_OFFSET_CYLINDER = 0x20,
+        FX_ELEM_SPAWN_OFFSET_MASK = 0x30,
+        FX_ELEM_RUN_RELATIVE_TO_WORLD = 0x0,
+        FX_ELEM_RUN_RELATIVE_TO_SPAWN = 0x40,
+        FX_ELEM_RUN_RELATIVE_TO_EFFECT = 0x80,
+        FX_ELEM_RUN_RELATIVE_TO_OFFSET = 0xC0,
+        FX_ELEM_RUN_MASK = 0xC0,
+        FX_ELEM_USE_COLLISION = 0x100,
+        FX_ELEM_DIE_ON_TOUCH = 0x200,
+        FX_ELEM_DRAW_PAST_FOG = 0x400,
+        FX_ELEM_DRAW_WITH_VIEWMODEL = 0x800,
+        FX_ELEM_BLOCK_SIGHT = 0x1000,
+        FX_ELEM_USE_ITEM_CLIP = 0x2000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_0 = 0x0,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_1 = 0x4000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_2 = 0x8000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_3 = 0xC000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_4 = 0x10000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_5 = 0x14000,
+        FX_ELEM_SPAWN_RELATIVE_TYPE_MASK = 0x1C000,
+        FX_ELEM_SPAWN_DISTRIBUTIVE_X = 0x20000,
+        FX_ELEM_SPAWN_DISTRIBUTIVE_Y = 0x40000,
+        FX_ELEM_USE_WORLD_UP = 0x80000,
+        FX_ELEM_ALIGN_VIEWPOINT = 0x100000,
+        FX_ELEM_USE_BILLBOARD_PIVOT = 0x200000,
+        FX_ELEM_USE_GAUSSIAN_CLOUD = 0x400000,
+        FX_ELEM_USE_ROTATION_AXIS = 0x800000,
+        FX_ELEM_HAS_VELOCITY_GRAPH_LOCAL = 0x1000000,
+        FX_ELEM_HAS_VELOCITY_GRAPH_WORLD = 0x2000000,
+        FX_ELEM_HAS_GRAVITY = 0x4000000,
+        FX_ELEM_USE_MODEL_PHYSICS = 0x8000000,
+        FX_ELEM_NONUNIFORM_SCALE = 0x10000000,
+        FX_ELEM_FLAME_CHUNK = 0x20000000,
+        FX_ELEM_HAS_REFLECTION = 0x40000000,
+        FX_ELEM_IS_MATURE_CONTENT = 0x80000000,
+    };
+
+    enum FxElemAtlasBehavior : unsigned char
+    {
+        FX_ATLAS_START_FIXED = 0x0,
+        FX_ATLAS_START_RANDOM = 0x1,
+        FX_ATLAS_START_INDEXED = 0x2,
+        FX_ATLAS_START_FIXED_RANGE = 0x3,
+        FX_ATLAS_START_MASK = 0x3,
+        FX_ATLAS_PLAY_OVER_LIFE = 0x4,
+        FX_ATLAS_LOOP_ONLY_N_TIMES = 0x8,
+    };
+
+    enum FxEffectDefFlags : unsigned char
+    {
+        FX_EFFECT_HAS_LIGHTING = 0x1,
+        FX_EFFECT_HAS_MARKS = 0x2,
+        FX_EFFECT_USE_BOUNDING_BOX = 0x4,
+        FX_EFFECT_USE_LOCAL_BOUNDING_BOX = 0x8,
+    };
+
     struct FxElemAtlas
     {
-        char behavior;
-        char index;
-        char fps;
-        char loopCount;
-        char colIndexBits;
-        char rowIndexBits;
+        unsigned char behavior;
+        unsigned char index;
+        unsigned char fps;
+        unsigned char loopCount;
+        unsigned char colIndexBits;
+        unsigned char rowIndexBits;
         uint16_t entryCountAndIndexRange;
     };
 
@@ -5025,9 +5111,17 @@ namespace T5
         FxElemVelStateInFrame world;
     };
 
+    struct FxColor
+    {
+        unsigned char b;
+        unsigned char g;
+        unsigned char r;
+        unsigned char a;
+    };
+
     struct FxElemVisualState
     {
-        char color[4];
+        FxColor color;
         float rotationDelta;
         float rotationTotal;
         float size[2];
@@ -5144,10 +5238,10 @@ namespace T5
         FxFloatRange reflectionFactor;
         FxElemAtlas atlas;
         float windInfluence;
-        char elemType;
-        char visualCount;
-        char velIntervalCount;
-        char visStateIntervalCount;
+        unsigned char elemType;
+        unsigned char visualCount;
+        unsigned char velIntervalCount;
+        unsigned char visStateIntervalCount;
         FxElemVelStateSample* velSamples;
         FxElemVisStateSample* visSamples;
         FxElemDefVisuals visuals;
@@ -5160,9 +5254,9 @@ namespace T5
         FxFloatRange emitDistVariance;
         FxEffectDefRef effectAttached;
         FxTrailDef* trailDef;
-        char sortOrder;
-        char lightingFrac;
-        char unused[2];
+        unsigned char sortOrder;
+        unsigned char lightingFrac;
+        unsigned char unused[2];
         uint16_t alphaFadeTimeMsec;
         uint16_t maxWindStrength;
         uint16_t spawnIntervalAtMaxWind;
@@ -5175,9 +5269,9 @@ namespace T5
     struct FxEffectDef
     {
         const char* name;
-        char flags;
-        char efPriority;
-        char reserved[2];
+        unsigned char flags;
+        unsigned char efPriority;
+        unsigned char reserved[2];
         int totalSize;
         int msecLoopingLife;
         int elemDefCountLooping;
