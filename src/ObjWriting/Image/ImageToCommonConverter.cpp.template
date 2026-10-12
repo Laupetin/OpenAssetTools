@@ -114,6 +114,10 @@ namespace
         // The QOS executable uploads embedded load-def mip data from the smallest mip to the largest.
         textureLoader.MipMapOrder(Dx9TextureLoader::MipMapDataOrder::SmallestToLargest);
 #endif
+#ifdef FEATURE_IW3
+        // IW3 embedded cubemaps store each face's full mip chain contiguously.
+        textureLoader.CubeMapOrder(Dx9TextureLoader::CubeMapDataOrder::FaceMajor);
+#endif
 #else
         textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef.format));
 #endif
