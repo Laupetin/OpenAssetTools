@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -20,7 +21,20 @@ namespace utils
     void MakeStringUpperCase(char* str);
     void MakeStringUpperCase(std::string& str);
 
-    bool StringEqualsIgnoreCase(std::string_view lhs, std::string_view rhs);
+    constexpr char CharToLowerAscii(const char c)
+    {
+        return c >= 'A' && c <= 'Z' ? static_cast<char>(c - 'A' + 'a') : c;
+    }
+
+    constexpr bool StringEqualsIgnoreCase(const std::string_view lhs, const std::string_view rhs)
+    {
+        return std::ranges::equal(lhs,
+                                  rhs,
+                                  [](const char a, const char b)
+                                  {
+                                      return CharToLowerAscii(a) == CharToLowerAscii(b);
+                                  });
+    }
 
     void StringTrimL(std::string& str);
     void StringTrimR(std::string& str);
