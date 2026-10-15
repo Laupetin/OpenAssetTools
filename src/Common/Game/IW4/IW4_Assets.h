@@ -2724,10 +2724,20 @@ namespace IW4
         Glyph* glyphs;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[31];
-        FxEffectDef* flesh[4];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable

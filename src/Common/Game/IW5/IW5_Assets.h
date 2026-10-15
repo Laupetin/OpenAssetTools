@@ -4923,10 +4923,20 @@ namespace IW5
         FxElemDef* elemDefs;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[SURF_TYPE_COUNT];
-        FxEffectDef* flesh[4];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable
