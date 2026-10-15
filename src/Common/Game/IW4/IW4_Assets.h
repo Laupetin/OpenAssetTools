@@ -1733,7 +1733,7 @@ namespace IW4
         bool hasBeenUploaded;
         unsigned char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[48];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     union RawFileBuffer
@@ -4757,18 +4757,18 @@ namespace IW4
         WeaponCompleteDef weapCompleteDef;
         WeaponDef weapDef;
         uint16_t hideTags[32];
-        const char* szXAnims[37];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         XModel* gunXModel[16];
-        const char* szXAnimsRightHanded[37];
-        const char* szXAnimsLeftHanded[37];
+        const char* szXAnimsRightHanded[NUM_WEAP_ANIMS];
+        const char* szXAnimsLeftHanded[NUM_WEAP_ANIMS];
         uint16_t notetrackSoundMapKeys[16];
         uint16_t notetrackSoundMapValues[16];
         uint16_t notetrackRumbleMapKeys[16];
         uint16_t notetrackRumbleMapValues[16];
         XModel* worldModel[16];
-        float parallelBounce[31];
-        float perpendicularBounce[31];
-        float locationDamageMultipliers[20];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
+        float locationDamageMultipliers[HITLOC_COUNT];
     };
 
     enum VehicleAxleType
@@ -4940,7 +4940,7 @@ namespace IW4
         SndAliasCustom speedSnd;
         float speedSndBlendSpeed;
         const char* surfaceSndPrefix;
-        SndAliasCustom surfaceSnds[31];
+        SndAliasCustom surfaceSnds[SURF_TYPE_NUM];
         float surfaceSndBlendSpeed;
         float slideVolume;
         float slideBlendSpeed;

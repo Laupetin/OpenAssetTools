@@ -1444,7 +1444,7 @@ namespace IW3
         bool hasBeenUploaded;
         char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[34];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct CardMemory
@@ -3136,7 +3136,7 @@ namespace IW3
         const char* szOverlayName;
         XModel* gunXModel[16];
         XModel* handXModel;
-        const char* szXAnims[33];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         const char* szModeName;
         uint16_t hideTags[8];
         uint16_t notetrackSoundMapKeys[16];
@@ -3404,8 +3404,8 @@ namespace IW3
         int holdButtonToThrow;
         int freezeMovementWhenFiring;
         float lowAmmoWarningThreshold;
-        float parallelBounce[29];
-        float perpendicularBounce[29];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
         FxEffectDef* projTrailEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
@@ -3494,7 +3494,7 @@ namespace IW3
         float destabilizationRateTime;
         float destabilizationCurvatureMax;
         int destabilizeDistance;
-        float locationDamageMultipliers[19];
+        float locationDamageMultipliers[HITLOC_COUNT];
         const char* fireRumble;
         const char* meleeImpactRumble;
         float adsDofStart;
@@ -3697,7 +3697,7 @@ namespace IW3
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[29];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
         FxEffectDef* flesh[4];
     };
 

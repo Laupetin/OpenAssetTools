@@ -769,7 +769,7 @@ namespace QOS
     {
         const char* name;
         char unknown[8];
-        MaterialTechnique* techniques[43];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct complex_s
@@ -950,7 +950,7 @@ namespace QOS
     struct Material
     {
         MaterialInfo info;
-        char stateBitsEntry[43];
+        char stateBitsEntry[TECHNIQUE_COUNT];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
