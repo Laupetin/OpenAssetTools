@@ -804,7 +804,7 @@ namespace T6
     {
         const char* name;
         MaterialWorldVertexFormat worldVertFormat;
-        MaterialTechnique* techniques[36];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     union GfxTexture
@@ -2344,7 +2344,7 @@ namespace T6
         int isDrivable;
         int numberOfSeats;
         int numberOfGunners;
-        int seatSwitchOrder[11];
+        int seatSwitchOrder[NUM_VEHICLE_POSITIONS];
         int driverControlledGunPos;
         float entryPointRadius[5];
         float texScrollScale;
@@ -2379,9 +2379,9 @@ namespace T6
         float gunnerRotRate;
         vec2_t gunnerRestAngles[4];
         view_limits_t passengerViewLimits[6];
-        const char* sndNames[2];
-        unsigned int sndIndices[2];
-        const char* sndMaterialNames[3];
+        const char* sndNames[NUM_VEHICLE_SNDS];
+        unsigned int sndIndices[NUM_VEHICLE_SNDS];
+        const char* sndMaterialNames[NUM_VEHICLE_MATERIAL_SNDS];
         float skidSpeedMin;
         float skidSpeedMax;
         const char* futzName;
@@ -5182,7 +5182,7 @@ namespace T6
         WeaponAttachment* attachments[63];
         WeaponAttachmentUnique* attachmentUniques[95];
         XModel* gunXModel[16];
-        const char* szXAnims[88];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         uint16_t hideTags[32];
         uint16_t notetrackSoundMapKeys[20];
         uint16_t notetrackSoundMapValues[20];
@@ -5191,9 +5191,9 @@ namespace T6
         XModel* attachWorldModel[8];
         const char* attachViewModelTag[8];
         const char* attachWorldModelTag[8];
-        float parallelBounce[32];
-        float perpendicularBounce[32];
-        float locationDamageMultipliers[21];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
+        float locationDamageMultipliers[HITLOC_COUNT];
         char weaponCamo[64];
     };
 
@@ -5507,7 +5507,7 @@ namespace T6
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[32];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
         FxEffectDef* flesh[4];
     };
 

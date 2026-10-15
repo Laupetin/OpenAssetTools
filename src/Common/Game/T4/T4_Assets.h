@@ -1551,7 +1551,7 @@ namespace T4
         bool hasBeenUploaded;
         char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[59];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct CardMemory
@@ -3611,7 +3611,7 @@ namespace T4
         const char* szOverlayName;
         XModel* gunXModel[16];
         XModel* handXModel;
-        const char* szXAnims[35];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         const char* szModeName;
         uint16_t hideTags[8];
         uint16_t notetrackSoundMapKeys[20];
@@ -3928,8 +3928,8 @@ namespace T4
         int holdButtonToThrow;
         int freezeMovementWhenFiring;
         float lowAmmoWarningThreshold;
-        float parallelBounce[31];
-        float perpendicularBounce[31];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
         FxEffectDef* projTrailEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
@@ -4292,7 +4292,7 @@ namespace T4
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[31];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
         FxEffectDef* flesh[4];
     };
 

@@ -1478,7 +1478,7 @@ namespace IW5
         MaterialWorldVertexFormat worldVertFormat;
         unsigned char unused[2];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[54];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct type_align32(4) GfxImageLoadDef
@@ -4673,18 +4673,18 @@ namespace IW5
         WeaponCompleteDef weapCompleteDef;
         WeaponDef weapDef;
         uint16_t hideTags[32];
-        const char* szXAnims[42];
+        const char* szXAnims[WEAP_ANIM_COUNT];
         XModel* gunXModel[16];
-        const char* szXAnimsRightHanded[42];
-        const char* szXAnimsLeftHanded[42];
+        const char* szXAnimsRightHanded[WEAP_ANIM_COUNT];
+        const char* szXAnimsLeftHanded[WEAP_ANIM_COUNT];
         uint16_t notetrackSoundMapKeys[24];
         uint16_t notetrackSoundMapValues[24];
         uint16_t notetrackRumbleMapKeys[16];
         uint16_t notetrackRumbleMapValues[16];
         XModel* worldModel[16];
-        float parallelBounce[31];
-        float perpendicularBounce[31];
-        float locationDamageMultipliers[20];
+        float parallelBounce[SURF_TYPE_COUNT];
+        float perpendicularBounce[SURF_TYPE_COUNT];
+        float locationDamageMultipliers[HITLOC_COUNT];
         WeaponAttachment* scopes[6];
         WeaponAttachment* underBarrels[3];
         WeaponAttachment* others[4];
@@ -4925,7 +4925,7 @@ namespace IW5
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[31];
+        FxEffectDef* nonflesh[SURF_TYPE_COUNT];
         FxEffectDef* flesh[4];
     };
 
@@ -4937,7 +4937,7 @@ namespace IW5
 
     struct SurfaceFxEntry
     {
-        FxEffectDef* surfaceEffect[31];
+        FxEffectDef* surfaceEffect[SURF_TYPE_COUNT];
     };
 
     struct SurfaceFxTable
@@ -5430,7 +5430,7 @@ namespace IW5
         SndAliasCustom speedSnd;
         float speedSndBlendSpeed;
         const char* surfaceSndPrefix;
-        SndAliasCustom surfaceSnds[31];
+        SndAliasCustom surfaceSnds[SURF_TYPE_COUNT];
         float surfaceSndBlendSpeed;
         float slideVolume;
         float slideBlendSpeed;

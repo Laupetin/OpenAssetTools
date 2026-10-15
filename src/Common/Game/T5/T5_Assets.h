@@ -1788,7 +1788,7 @@ namespace T5
         MaterialWorldVertexFormat worldVertFormat;
         char unused[1];
         uint16_t techsetFlags;
-        MaterialTechnique* techniques[130];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct GfxImageLoadDef
@@ -4848,14 +4848,14 @@ namespace T5
         WeaponVariantDef weapVariantDef;
         WeaponDef weapDef;
         XModel* gunXModel[16];
-        const char* szXAnims[66];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         uint16_t hideTags[32];
         uint16_t notetrackSoundMapKeys[20];
         uint16_t notetrackSoundMapValues[20];
         XModel* worldModel[16];
-        float parallelBounce[31];
-        float perpendicularBounce[31];
-        float locationDamageMultipliers[19];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
+        float locationDamageMultipliers[HITLOC_COUNT];
     };
 
     enum snd_category_t
@@ -5190,7 +5190,7 @@ namespace T5
 
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[31];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
         FxEffectDef* flesh[4];
     };
 
