@@ -61,6 +61,7 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <vector>
 
@@ -1062,7 +1063,9 @@ namespace
                 return;
 
             const auto* surfs = xmodel.lodInfo[0].modelSurfs->surfs;
-            vec3_t minCoordinate, maxCoordinate;
+            constexpr auto coordinateLimit = std::numeric_limits<float>::max();
+            vec3_t minCoordinate{{coordinateLimit, coordinateLimit, coordinateLimit}};
+            vec3_t maxCoordinate{{-coordinateLimit, -coordinateLimit, -coordinateLimit}};
 #else
             if (!xmodel.surfs)
                 return;
@@ -1096,6 +1099,9 @@ namespace
             }
 
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            if (minCoordinate.x > maxCoordinate.x)
+                return;
+
             const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
             const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
             const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
