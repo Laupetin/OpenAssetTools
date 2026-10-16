@@ -46,7 +46,8 @@ namespace
     {
     public:
         XBlockInputStream(const unsigned pointerBitCount,
-                          const unsigned blockBitCount,
+                          const unsigned zonePointerOffsetBitCount,
+                          const unsigned zonePointerBlockBitCount,
                           std::vector<XBlock*>& blocks,
                           const block_t insertBlock,
                           ILoadingStream& stream,
@@ -57,15 +58,17 @@ namespace
               m_stream(stream),
               m_memory(memory),
               m_pointer_byte_count(pointerBitCount / 8u),
-              m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount)) << (pointerBitCount - blockBitCount)),
-              m_block_shift(pointerBitCount - blockBitCount),
-              m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
+              m_zone_pointer_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - zonePointerBlockBitCount))
+                                        << zonePointerOffsetBitCount),
+              m_zone_pointer_block_shift(zonePointerOffsetBitCount),
+              m_zone_pointer_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - zonePointerOffsetBitCount)),
               m_last_fill_size(0),
               m_has_progress_callback(false),
               m_progress_current_size(0uz),
               m_progress_total_size(0uz)
         {
             assert(pointerBitCount % 8u == 0u);
+            assert(zonePointerOffsetBitCount + zonePointerBlockBitCount <= pointerBitCount);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
 
             std::memset(m_block_offsets.data(), 0, sizeof(decltype(m_block_offsets)::value_type) * m_block_offsets.size());
@@ -292,7 +295,7 @@ namespace
 
             const auto blockNum = m_insert_block->m_index;
             const auto blockOffset = static_cast<uintptr_t>(m_block_offsets[m_insert_block->m_index]);
-            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_block_shift) | (blockOffset & m_offset_mask);
+            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_zone_pointer_block_shift) | (blockOffset & m_zone_pointer_offset_mask);
 
             IncBlockPos(*m_insert_block, m_pointer_byte_count);
 
@@ -301,7 +304,7 @@ namespace
 
         void SetInsertedPointerAliasLookup(const uintptr_t zonePtr, void* value) override
         {
-            assert((static_cast<block_t>((zonePtr & m_block_mask) >> m_block_shift)) < m_blocks.size());
+            assert((static_cast<block_t>((zonePtr & m_zone_pointer_block_mask) >> m_zone_pointer_block_shift)) < m_blocks.size());
             m_alias_redirect_lookup.emplace(zonePtr, value);
         }
 
@@ -311,8 +314,8 @@ namespace
             // So all offsets are moved by 1.
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
 
-            const auto blockNum = static_cast<block_t>((offsetInt & m_block_mask) >> m_block_shift);
-            const auto blockOffset = static_cast<size_t>(offsetInt & m_offset_mask);
+            const auto blockNum = static_cast<block_t>((offsetInt & m_zone_pointer_block_mask) >> m_zone_pointer_block_shift);
+            const auto blockOffset = static_cast<size_t>(offsetInt & m_zone_pointer_offset_mask);
 
             if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
                 throw InvalidOffsetBlockException(blockNum);
@@ -330,8 +333,8 @@ namespace
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
 
-            const auto blockNum = static_cast<block_t>((offsetInt & m_block_mask) >> m_block_shift);
-            const auto blockOffset = static_cast<size_t>(offsetInt & m_offset_mask);
+            const auto blockNum = static_cast<block_t>((offsetInt & m_zone_pointer_block_mask) >> m_zone_pointer_block_shift);
+            const auto blockOffset = static_cast<size_t>(offsetInt & m_zone_pointer_offset_mask);
 
             if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
                 throw InvalidOffsetBlockException(blockNum);
@@ -356,7 +359,7 @@ namespace
 
             const auto blockNum = block->m_index;
             const auto blockOffset = static_cast<uintptr_t>(static_cast<const uint8_t*>(blockPtr) - block->m_buffer.get());
-            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_block_shift) | (blockOffset & m_offset_mask);
+            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_zone_pointer_block_shift) | (blockOffset & m_zone_pointer_offset_mask);
             m_pointer_redirect_lookup.emplace(zonePtr, alias);
         }
 
@@ -365,8 +368,8 @@ namespace
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
 
-            const auto blockNum = static_cast<block_t>((offsetInt & m_block_mask) >> m_block_shift);
-            const auto blockOffset = static_cast<size_t>(offsetInt & m_offset_mask);
+            const auto blockNum = static_cast<block_t>((offsetInt & m_zone_pointer_block_mask) >> m_zone_pointer_block_shift);
+            const auto blockOffset = static_cast<size_t>(offsetInt & m_zone_pointer_offset_mask);
 
             if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
                 throw InvalidOffsetBlockException(blockNum);
@@ -388,8 +391,8 @@ namespace
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
 
-            const auto blockNum = static_cast<block_t>((offsetInt & m_block_mask) >> m_block_shift);
-            const auto blockOffset = static_cast<size_t>(offsetInt & m_offset_mask);
+            const auto blockNum = static_cast<block_t>((offsetInt & m_zone_pointer_block_mask) >> m_zone_pointer_block_shift);
+            const auto blockOffset = static_cast<size_t>(offsetInt & m_zone_pointer_offset_mask);
 
             if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
                 throw InvalidOffsetBlockException(blockNum);
@@ -496,9 +499,9 @@ namespace
         MemoryManager& m_memory;
 
         unsigned m_pointer_byte_count;
-        uintptr_t m_block_mask;
-        unsigned m_block_shift;
-        uintptr_t m_offset_mask;
+        uintptr_t m_zone_pointer_block_mask;
+        unsigned m_zone_pointer_block_shift;
+        uintptr_t m_zone_pointer_offset_mask;
         XBlock* m_insert_block;
 
         std::vector<uint8_t> m_fill_buffer;
@@ -515,12 +518,14 @@ namespace
 } // namespace
 
 std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(const unsigned pointerBitCount,
-                                                         const unsigned blockBitCount,
+                                                         const unsigned zonePointerOffsetBitCount,
+                                                         const unsigned zonePointerBlockBitCount,
                                                          std::vector<XBlock*>& blocks,
                                                          const block_t insertBlock,
                                                          ILoadingStream& stream,
                                                          MemoryManager& memory,
                                                          std::optional<std::unique_ptr<ProgressCallback>> progressCallback)
 {
-    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory, std::move(progressCallback));
+    return std::make_unique<XBlockInputStream>(
+        pointerBitCount, zonePointerOffsetBitCount, zonePointerBlockBitCount, blocks, insertBlock, stream, memory, std::move(progressCallback));
 }
