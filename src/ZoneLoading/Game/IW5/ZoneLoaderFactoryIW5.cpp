@@ -277,7 +277,8 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
         variant->GetWordSize() == GameWordSize::ARCH_64 ? 64u : 32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
         zonePtr,
         std::move(progressCallback)));

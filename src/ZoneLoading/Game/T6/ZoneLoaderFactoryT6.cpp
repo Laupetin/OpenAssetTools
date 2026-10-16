@@ -348,7 +348,8 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
                 return std::make_unique<ContentLoader>(*zonePtr, stream);
             },
             32u,
-            ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+            ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+            ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
             zonePtr,
             std::move(progressCallback)));

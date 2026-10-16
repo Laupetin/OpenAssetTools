@@ -106,8 +106,12 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) co
 
     SetupBlocks(*writer);
 
-    auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
-        std::make_unique<ContentWriter>(zone), zone, 32u, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+    auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(zone),
+                                                                          zone,
+                                                                          32u,
+                                                                          ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+                                                                          ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
+                                                                          ZoneConstants::INSERT_BLOCK);
     auto* contentInMemoryPtr = contentInMemory.get();
     writer->AddWritingStep(std::move(contentInMemory));
 

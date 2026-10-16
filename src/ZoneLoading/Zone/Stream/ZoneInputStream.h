@@ -240,8 +240,21 @@ public:
     virtual void DebugOffsets(size_t assetIndex) const = 0;
 #endif
 
+    /**
+     * \brief Creates a new ZoneInputStream with given parameters.
+     * \param pointerBitCount The bit count of a pointer of the platform the zone data comes from.
+     * \param zonePointerBlockBitCount The bit count of the offset in a zone pointer. offsetBitCount + blockBitCount <= pointerBitCount
+     * \param zonePointerOffsetBitCount The bitcount of a block index in a zone pointer. offsetBitCount + blockBitCount <= pointerBitCount
+     * \param blocks The blocks of the zone.
+     * \param insertBlock The block index that is used when inserting a pointer. Should be the default normal block.
+     * \param stream The stream to load data from.
+     * \param memory The memory manager to use for allocating new memory.
+     * \param progressCallback An optional callback to call on progress.
+     * \return
+     */
     static std::unique_ptr<ZoneInputStream> Create(unsigned pointerBitCount,
-                                                   unsigned blockBitCount,
+                                                   unsigned zonePointerOffsetBitCount,
+                                                   unsigned zonePointerBlockBitCount,
                                                    std::vector<XBlock*>& blocks,
                                                    block_t insertBlock,
                                                    ILoadingStream& stream,
