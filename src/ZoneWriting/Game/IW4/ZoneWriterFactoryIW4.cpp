@@ -61,6 +61,7 @@ namespace
 std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) const
 {
     auto writer = std::make_unique<ZoneWriter>();
+    const auto* variant = IGameVariant::GetVariantById(zone.m_variant_id);
 
     // TODO Support signed fastfiles
     bool isSecure = false;
@@ -69,7 +70,7 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) co
 
     auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(zone),
                                                                           zone,
-                                                                          32u,
+                                                                          variant->GetWordSize() == GameWordSize::ARCH_64 ? 64u : 32u,
                                                                           ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
                                                                           ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
                                                                           ZoneConstants::INSERT_BLOCK);

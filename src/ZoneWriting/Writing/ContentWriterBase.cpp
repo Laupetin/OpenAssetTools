@@ -4,6 +4,7 @@
 
 ContentWriterBase::ContentWriterBase(const Zone& zone)
     : m_zone(zone),
+      m_word_size(GameVariant::GetVariantById(zone.m_variant_id)->GetWordSize()),
       m_stream(nullptr),
       varXString(nullptr),
       varXStringWritten(nullptr)
@@ -12,6 +13,7 @@ ContentWriterBase::ContentWriterBase(const Zone& zone)
 
 ContentWriterBase::ContentWriterBase(const Zone& zone, ZoneOutputStream& stream)
     : m_zone(zone),
+      m_word_size(GameVariant::GetVariantById(zone.m_variant_id)->GetWordSize()),
       m_stream(&stream),
       varXString(nullptr),
       varXStringWritten(nullptr)
