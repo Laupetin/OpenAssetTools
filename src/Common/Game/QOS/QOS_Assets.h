@@ -935,6 +935,42 @@ namespace QOS
         gcc_align32(8) uint64_t packed;
     };
 
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_METAL_GRATE,
+
+        SURF_TYPE_NUM
+    };
+
     struct MaterialInfo
     {
         const char* name;
@@ -2505,10 +2541,20 @@ namespace QOS
         DestructiblePiece* pieces;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[30];
-        FxEffectDef* flesh[4];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable
