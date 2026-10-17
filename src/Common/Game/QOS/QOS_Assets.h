@@ -1221,6 +1221,26 @@ namespace QOS
         char unknown[72];
     };
 
+    enum DynEntityDrawType
+    {
+        DYNENT_DRAW_MODEL = 0x0,
+        DYNENT_DRAW_BRUSH = 0x1,
+
+        DYNENT_DRAW_COUNT,
+    };
+
+    enum DynEntityCollType
+    {
+        DYNENT_COLL_CLIENT_FIRST = 0x0,
+        DYNENT_COLL_CLIENT_MODEL = 0x0,
+        DYNENT_COLL_CLIENT_BRUSH = 0x1,
+        DYNENT_COLL_SERVER_FIRST = 0x2,
+        DYNENT_COLL_SERVER_MODEL = 0x2,
+        DYNENT_COLL_SERVER_BRUSH = 0x3,
+
+        DYNENT_COLL_COUNT,
+    };
+
     struct clipMap_t
     {
         const char* name;
@@ -1272,11 +1292,11 @@ namespace QOS
         MapEnts* mapEnts;
         cbrush_t* box_brush;
         char unknown1[74];
-        uint16_t dynEntCount[4];
-        DynEntityDef* dynEntDefList[2];
-        DynEntityClient* dynEntClientList[2];
-        DynEntityServer* dynEntServerList[2];
-        DynEntityColl* dynEntCollList[4];
+        uint16_t dynEntCount[DYNENT_COLL_COUNT];
+        DynEntityDef* dynEntDefList[DYNENT_DRAW_COUNT];
+        DynEntityClient* dynEntClientList[DYNENT_DRAW_COUNT];
+        DynEntityServer* dynEntServerList[DYNENT_DRAW_COUNT];
+        DynEntityColl* dynEntCollList[DYNENT_COLL_COUNT];
         int num_constraints;
         DynEntityPhysConstraint* constraints;
         int unknown3;
@@ -1751,10 +1771,8 @@ namespace QOS
         sunflare_t sun;
         float outdoorLookupMatrix[4][4];
         GfxImage* outdoorImage;
-        unsigned int gfxSceneDynModelCount; // Unknown name
-        unsigned int gfxSceneDynBrushCount; // Unknown name
-        unsigned int unknownGfxDynEntCellRefCount0;
-        unsigned int unknownGfxDynEntCellRefCount1;
+        unsigned int dynEntClientCount[DYNENT_DRAW_COUNT];
+        unsigned int unknownGfxDynEntCellRefCount[DYNENT_DRAW_COUNT];
         unsigned char* smodelVisData0;
         unsigned char* smodelVisData1;
         unsigned char* smodelVisData2;
@@ -1767,26 +1785,15 @@ namespace QOS
         unsigned int* surfaceCastsSunShadow;
         unsigned int* cellCasterBits;
         unsigned char* cellHasSunLitSurfsBits;
-        unsigned char* dynEntVisData0_0;
-        unsigned char* dynEntVisData0_1;
-        unsigned char* dynEntVisData0_2;
-        unsigned char* dynEntVisData0_3;
-        unsigned char* dynEntVisData1_0;
-        unsigned char* dynEntVisData1_1;
-        unsigned char* dynEntVisData1_2;
-        unsigned char* dynEntVisData1_3;
-        unsigned char* dynEntCellBits0;
-        unsigned char* dynEntCellBits1;
-        unsigned short* dynEntSortList0;
-        unsigned short* dynEntSortList1;
-        GfxDynEntCellRef* unknownGfxDynEntCellRef0;
-        GfxDynEntCellRef* unknownGfxDynEntCellRef1;
-        GfxSceneDynModel4* gfxSceneDynModel; // name unknown
-        GfxSceneDynBrush* gfxSceneDynBrush;  // name unknown
+        unsigned char* dynEntVisData[DYNENT_DRAW_COUNT][4];
+        unsigned char* dynEntCellBits[DYNENT_DRAW_COUNT];
+        unsigned short* dynEntSortList[DYNENT_DRAW_COUNT];
+        GfxDynEntCellRef* unknownGfxDynEntCellRef[DYNENT_DRAW_COUNT];
+        GfxSceneDynModel4* sceneDynModel;
+        GfxSceneDynBrush* sceneDynBrush;
         unsigned short* sortedSurfIndex;
         unsigned int* primaryLightEntityShadowVis;
-        unsigned int* primaryLightDynEntShadowVis0;
-        unsigned int* primaryLightDynEntShadowVis1;
+        unsigned int* primaryLightDynEntShadowVis[DYNENT_DRAW_COUNT];
         GfxShadowGeometry* shadowGeom;
         unsigned int massiveAdSurfaceCount;
         GfxMassiveAdSurface* massiveAdSurface;
