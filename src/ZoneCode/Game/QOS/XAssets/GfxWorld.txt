@@ -46,45 +46,34 @@ set block cellCasterBits XFILE_BLOCK_RUNTIME;
 set count cellCasterBits cellCount * ((cellCount + 31) / 32);
 set block cellHasSunLitSurfsBits XFILE_BLOCK_RUNTIME;
 set count cellHasSunLitSurfsBits (cellCount * 512) + 1;
-set block dynEntVisData0_0 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_0 gfxSceneDynModelCount;
-set block dynEntVisData0_1 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_1 gfxSceneDynModelCount;
-set block dynEntVisData0_2 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_2 gfxSceneDynModelCount;
-set block dynEntVisData0_3 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData0_3 gfxSceneDynModelCount;
-set block dynEntVisData1_0 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_0 gfxSceneDynBrushCount;
-set block dynEntVisData1_1 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_1 gfxSceneDynBrushCount;
-set block dynEntVisData1_2 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_2 gfxSceneDynBrushCount;
-set block dynEntVisData1_3 XFILE_BLOCK_RUNTIME;
-set count dynEntVisData1_3 gfxSceneDynBrushCount;
-set block dynEntCellBits0 XFILE_BLOCK_RUNTIME;
-set count dynEntCellBits0 (cellCount * gfxSceneDynModelCount / 8) + 1;
-set block dynEntCellBits1 XFILE_BLOCK_RUNTIME;
-set count dynEntCellBits1 (cellCount * gfxSceneDynBrushCount / 8) + 1;
-set block dynEntSortList0 XFILE_BLOCK_RUNTIME;
-set count dynEntSortList0 gfxSceneDynModelCount;
-set block dynEntSortList1 XFILE_BLOCK_RUNTIME;
-set count dynEntSortList1 gfxSceneDynBrushCount;
-set block unknownGfxDynEntCellRef0 XFILE_BLOCK_RUNTIME;
-set count unknownGfxDynEntCellRef0 unknownGfxDynEntCellRefCount0;
-set block unknownGfxDynEntCellRef1 XFILE_BLOCK_RUNTIME;
-set count unknownGfxDynEntCellRef1 unknownGfxDynEntCellRefCount1;
-set block gfxSceneDynModel XFILE_BLOCK_RUNTIME;
-set count gfxSceneDynModel gfxSceneDynModelCount;
-set block gfxSceneDynBrush XFILE_BLOCK_RUNTIME;
-set count gfxSceneDynBrush gfxSceneDynBrushCount;
+set block dynEntVisData XFILE_BLOCK_RUNTIME;
+set count dynEntVisData[0][0] dynEntClientCount[0];
+set count dynEntVisData[0][1] dynEntClientCount[0];
+set count dynEntVisData[0][2] dynEntClientCount[0];
+set count dynEntVisData[0][3] dynEntClientCount[0];
+set count dynEntVisData[1][1] dynEntClientCount[1];
+set count dynEntVisData[1][0] dynEntClientCount[1];
+set count dynEntVisData[1][2] dynEntClientCount[1];
+set count dynEntVisData[1][3] dynEntClientCount[1];
+set block dynEntCellBits XFILE_BLOCK_RUNTIME;
+set count dynEntCellBits[0] (cellCount * dynEntClientCount[0] / 8) + 1;
+set count dynEntCellBits[1] (cellCount * dynEntClientCount[1] / 8) + 1;
+set block dynEntSortList XFILE_BLOCK_RUNTIME;
+set count dynEntSortList[0] dynEntClientCount[0];
+set count dynEntSortList[1] dynEntClientCount[1];
+set block unknownGfxDynEntCellRef XFILE_BLOCK_RUNTIME;
+set count unknownGfxDynEntCellRef[0] unknownGfxDynEntCellRefCount[0];
+set count unknownGfxDynEntCellRef[1] unknownGfxDynEntCellRefCount[1];
+set block sceneDynModel XFILE_BLOCK_RUNTIME;
+set count sceneDynModel dynEntClientCount[0];
+set block sceneDynBrush XFILE_BLOCK_RUNTIME;
+set count sceneDynBrush dynEntClientCount[1];
 set count sortedSurfIndex models::surfaceCount;
 set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
 set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x1000;
-set block primaryLightDynEntShadowVis0 XFILE_BLOCK_RUNTIME;
-set count primaryLightDynEntShadowVis0 gfxSceneDynModelCount * (primaryLightCount - sunPrimaryLightIndex - 1);
-set block primaryLightDynEntShadowVis1 XFILE_BLOCK_RUNTIME;
-set count primaryLightDynEntShadowVis1 gfxSceneDynBrushCount * (primaryLightCount - sunPrimaryLightIndex - 1);
+set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightDynEntShadowVis[0] dynEntClientCount[0] * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[1] dynEntClientCount[1] * (primaryLightCount - sunPrimaryLightIndex - 1);
 set count shadowGeom primaryLightCount;
 set count massiveAdSurface massiveAdSurfaceCount;
 reorder:
@@ -123,25 +112,14 @@ reorder:
     surfaceCastsSunShadow
     cellCasterBits
     cellHasSunLitSurfsBits
-    dynEntVisData0_0
-    dynEntVisData1_0
-    dynEntVisData0_1
-    dynEntVisData1_1
-    dynEntVisData0_2
-    dynEntVisData1_2
-    dynEntVisData0_3
-    dynEntVisData1_3
-    dynEntCellBits0
-    dynEntCellBits1
-    dynEntSortList0
-    dynEntSortList1
-    unknownGfxDynEntCellRef0
-    unknownGfxDynEntCellRef1
-    gfxSceneDynModel
-    gfxSceneDynBrush
+    dynEntVisData
+    dynEntCellBits
+    dynEntSortList
+    unknownGfxDynEntCellRef
+    sceneDynModel
+    sceneDynBrush
     primaryLightEntityShadowVis
-    primaryLightDynEntShadowVis0
-    primaryLightDynEntShadowVis1
+    primaryLightDynEntShadowVis
     sortedSurfIndex
     shadowGeom
     massiveAdSurface

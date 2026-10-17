@@ -148,10 +148,10 @@ set count dynEntCellBits[0] dynEntClientWordCount[0] * GfxWorld::dpvsPlanes::cel
 set count dynEntCellBits[1] dynEntClientWordCount[1] * GfxWorld::dpvsPlanes::cellCount;
 set block dynEntVisData XFILE_BLOCK_RUNTIME;
 set count dynEntVisData[0][0] 32 * dynEntClientWordCount[0];
-set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
 set count dynEntVisData[0][1] 32 * dynEntClientWordCount[0];
-set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
 set count dynEntVisData[0][2] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
 set count dynEntVisData[1][2] 32 * dynEntClientWordCount[1];
 
 // GfxWaterBuffer
