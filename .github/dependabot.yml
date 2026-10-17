@@ -17,7 +17,7 @@ updates:
       default-days: 3
 
   - package-ecosystem: "npm"
-    directory: "src/ModManUi"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "friday"
