@@ -15,7 +15,7 @@ using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("Simple Zone(IW4)", "[iw4][system][simple]")
+    void PerformTest(const std::string& zoneFileName, GameVariantId expectedGameVariantId)
     {
         const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW4/Simple").string();
         const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW4/Simple").string();
@@ -30,7 +30,7 @@ namespace
             sourceSearchPath.c_str(),
             "--output-folder",
             outputPath.c_str(),
-            "SimpleZoneIW4",
+            zoneFileName.c_str(),
         };
 
         LinkerArgs args;
@@ -53,9 +53,19 @@ namespace
         auto zone = std::move(*maybeZone);
 
         REQUIRE(zone->m_game_id == GameId::IW4);
-        REQUIRE(zone->m_variant_id == GameVariantId::IW4_PC32);
+        REQUIRE(zone->m_variant_id == expectedGameVariantId);
         REQUIRE(zone->m_name == "SimpleZoneIW4");
         REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
         REQUIRE(zone->m_pools.GetAsset<IW4::AssetRawFile>("SimpleZone.txt"));
+    }
+
+    TEST_CASE("Simple Zone(IW4|pc32)", "[iw4][pc32][system][simple]")
+    {
+        PerformTest("SimpleZoneIW4_32", GameVariantId::IW4_PC32);
+    }
+
+    TEST_CASE("Simple Zone(IW4|pc64)", "[iw4][pc64][system][simple]")
+    {
+        PerformTest("SimpleZoneIW4_64", GameVariantId::IW4_PC64);
     }
 } // namespace

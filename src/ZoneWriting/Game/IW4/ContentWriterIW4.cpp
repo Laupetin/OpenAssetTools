@@ -1,6 +1,7 @@
 #include "ContentWriterIW4.h"
 
 #include "Game/IW4/AssetWriter_iw4_pc32.h"
+#include "Game/IW4/AssetWriter_iw4_pc64.h"
 #include "Writing/WritingException.h"
 
 #include <cassert>
@@ -67,8 +68,13 @@ void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 
 #ifdef ARCH_x86
         static_assert(offsetof(ScriptStringList, strings) == 4u);
-#endif
         m_stream->MarkFollowing(varScriptStringListWritten.AtOffset(4));
+#else
+        if (m_word_size == GameWordSize::ARCH_64)
+            m_stream->MarkFollowing(varScriptStringListWritten.AtOffset(8));
+        else
+            m_stream->MarkFollowing(varScriptStringListWritten.AtOffset(4));
+#endif
     }
 }
 
@@ -80,10 +86,19 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 #define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Writer_##typeName##_pc32 writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                     \
-        writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                             \
+        if (m_word_size == GameWordSize::ARCH_64)                                                                                                              \
+        {                                                                                                                                                      \
+            Writer_##typeName##_pc64 writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                 \
+            writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(8));                                                                         \
+        }                                                                                                                                                      \
+        else                                                                                                                                                   \
+        {                                                                                                                                                      \
+            Writer_##typeName##_pc32 writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                 \
+            writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                         \
+        }                                                                                                                                                      \
         break;                                                                                                                                                 \
     }
+
 #define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
         break;
@@ -156,11 +171,18 @@ void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t coun
 #ifdef ARCH_x86
         varXAssetWritten = m_stream->Write(varXAsset, count);
 #else
-        const auto fill = m_stream->WriteWithFill(8u * count);
-        varXAssetWritten = fill.Offset();
+        if (m_word_size == GameWordSize::ARCH_64)
+        {
+            varXAssetWritten = m_stream->Write(varXAsset, count);
+        }
+        else
+        {
+            const auto fill = m_stream->WriteWithFill(8u * count);
+            varXAssetWritten = fill.Offset();
 
-        for (size_t index = 0; index < count; index++)
-            fill.Fill(varXAsset[index].type, 8u * index);
+            for (size_t index = 0; index < count; index++)
+                fill.Fill(varXAsset[index].type, 8u * index);
+        }
 #endif
     }
 
@@ -188,13 +210,20 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
     static_assert(offsetof(XAssetList, assetCount) == 8u);
     varXAssetListWritten = m_stream->WriteDataRaw(&assetList, sizeof(assetList));
 #else
-    const auto fillAccessor = m_stream->WriteWithFill(16u);
-    varXAssetListWritten = fillAccessor.Offset();
+    if (m_word_size == GameWordSize::ARCH_64)
+    {
+        varXAssetListWritten = m_stream->WriteDataRaw(&assetList, sizeof(assetList));
+    }
+    else
+    {
+        const auto fillAccessor = m_stream->WriteWithFill(16u);
+        varXAssetListWritten = fillAccessor.Offset();
 
-    varScriptStringList = &varXAssetList->stringList;
-    fillAccessor.Fill(varScriptStringList->count, 0u);
+        varScriptStringList = &varXAssetList->stringList;
+        fillAccessor.Fill(varScriptStringList->count, 0u);
 
-    fillAccessor.Fill(varXAssetList->assetCount, 8u);
+        fillAccessor.Fill(varXAssetList->assetCount, 8u);
+    }
 #endif
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
@@ -214,8 +243,13 @@ void ContentWriter::WriteContent(ZoneOutputStream& stream)
 
 #ifdef ARCH_x86
         static_assert(offsetof(XAssetList, assets) == 12u);
-#endif
         m_stream->MarkFollowing(varXAssetListWritten.AtOffset(12));
+#else
+        if (m_word_size == GameWordSize::ARCH_64)
+            m_stream->MarkFollowing(varXAssetListWritten.AtOffset(24));
+        else
+            m_stream->MarkFollowing(varXAssetListWritten.AtOffset(12));
+#endif
     }
 
     m_stream->PopBlock();
