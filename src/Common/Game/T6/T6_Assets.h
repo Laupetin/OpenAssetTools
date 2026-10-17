@@ -5175,18 +5175,40 @@ namespace T6
         vec3_t ikLeftHandUiViewerRotation;
     };
 
+    enum weaponAltModel_t
+    {
+        WEAP_ALT_MODEL0 = 0x0,
+        WEAP_ALT_MODEL1 = 0x1,
+        WEAP_ALT_MODEL2 = 0x2,
+        WEAP_ALT_MODEL3 = 0x3,
+        WEAP_ALT_MODEL4 = 0x4,
+        WEAP_ALT_MODEL5 = 0x5,
+        WEAP_ALT_MODEL6 = 0x6,
+        WEAP_ALT_MODEL7 = 0x7,
+        WEAP_ALT_MODEL8 = 0x8,
+        WEAP_ALT_MODEL9 = 0x9,
+        WEAP_ALT_MODEL10 = 0xA,
+        WEAP_ALT_MODEL11 = 0xB,
+        WEAP_ALT_MODEL12 = 0xC,
+        WEAP_ALT_MODEL13 = 0xD,
+        WEAP_ALT_MODEL14 = 0xE,
+        WEAP_ALT_MODEL15 = 0xF,
+
+        NUM_WEAP_ALTMODELS,
+    };
+
     struct WeaponFullDef
     {
         WeaponVariantDef weapVariantDef;
         WeaponDef weapDef;
         WeaponAttachment* attachments[63];
         WeaponAttachmentUnique* attachmentUniques[95];
-        XModel* gunXModel[16];
+        XModel* gunXModel[NUM_WEAP_ALTMODELS];
         const char* szXAnims[NUM_WEAP_ANIMS];
         uint16_t hideTags[32];
         uint16_t notetrackSoundMapKeys[20];
         uint16_t notetrackSoundMapValues[20];
-        XModel* worldModel[16];
+        XModel* worldModel[NUM_WEAP_ALTMODELS];
         XModel* attachViewModel[8];
         XModel* attachWorldModel[8];
         const char* attachViewModelTag[8];
@@ -5505,10 +5527,20 @@ namespace T6
         vec2_t billboardPivot;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[SURF_TYPE_NUM];
-        FxEffectDef* flesh[4];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct StringTableCell

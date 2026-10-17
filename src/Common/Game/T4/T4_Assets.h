@@ -3604,12 +3604,34 @@ namespace T4
         SndAliasCustom flameCooldownSound;
     };
 
+    enum weaponAltModel_t
+    {
+        WEAP_ALT_MODEL0 = 0x0,
+        WEAP_ALT_MODEL1 = 0x1,
+        WEAP_ALT_MODEL2 = 0x2,
+        WEAP_ALT_MODEL3 = 0x3,
+        WEAP_ALT_MODEL4 = 0x4,
+        WEAP_ALT_MODEL5 = 0x5,
+        WEAP_ALT_MODEL6 = 0x6,
+        WEAP_ALT_MODEL7 = 0x7,
+        WEAP_ALT_MODEL8 = 0x8,
+        WEAP_ALT_MODEL9 = 0x9,
+        WEAP_ALT_MODEL10 = 0xA,
+        WEAP_ALT_MODEL11 = 0xB,
+        WEAP_ALT_MODEL12 = 0xC,
+        WEAP_ALT_MODEL13 = 0xD,
+        WEAP_ALT_MODEL14 = 0xE,
+        WEAP_ALT_MODEL15 = 0xF,
+
+        NUM_WEAP_ALTMODELS,
+    };
+
     struct WeaponDef
     {
         const char* szInternalName;
         const char* szDisplayName;
         const char* szOverlayName;
-        XModel* gunXModel[16];
+        XModel* gunXModel[NUM_WEAP_ALTMODELS];
         XModel* handXModel;
         const char* szXAnims[NUM_WEAP_ANIMS];
         const char* szModeName;
@@ -3735,7 +3757,7 @@ namespace T4
         float fStandRotMinSpeed;
         float fDuckedRotMinSpeed;
         float fProneRotMinSpeed;
-        XModel* worldModel[16];
+        XModel* worldModel[NUM_WEAP_ALTMODELS];
         XModel* worldClipModel;
         XModel* rocketModel;
         XModel* knifeModel;
