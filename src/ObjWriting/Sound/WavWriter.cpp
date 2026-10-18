@@ -34,6 +34,9 @@ void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen
 void WavWriter::WritePcmData(const void* data, const size_t dataLen) const
 {
     m_stream.write(static_cast<const char*>(data), static_cast<std::streamsize>(dataLen));
+
+    // > The data is always padded to the nearest WORD boundary.
+    // https://learn.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-#chunks
     if (dataLen & 1u)
         m_stream.put('\0');
 }
