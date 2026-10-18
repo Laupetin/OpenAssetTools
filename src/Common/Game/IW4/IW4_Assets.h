@@ -1733,7 +1733,7 @@ namespace IW4
         bool hasBeenUploaded;
         unsigned char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[48];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     union RawFileBuffer
@@ -2724,10 +2724,20 @@ namespace IW4
         Glyph* glyphs;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[31];
-        FxEffectDef* flesh[4];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable
@@ -3070,6 +3080,23 @@ namespace IW4
         float origin[3];
     };
 
+    enum DynEntityDrawType
+    {
+        DYNENT_DRAW_MODEL = 0x0,
+        DYNENT_DRAW_BRUSH = 0x1,
+
+        DYNENT_DRAW_COUNT,
+    };
+
+    enum DynEntityCollType
+    {
+        DYNENT_COLL_CLIENT_FIRST = 0x0,
+        DYNENT_COLL_CLIENT_MODEL = 0x0,
+        DYNENT_COLL_CLIENT_BRUSH = 0x1,
+
+        DYNENT_COLL_COUNT,
+    };
+
     enum DynEntityType
     {
         DYNENT_TYPE_INVALID = 0x0,
@@ -3161,11 +3188,11 @@ namespace IW4
         MapEnts* mapEnts;
         uint16_t smodelNodeCount;
         SModelAabbNode* smodelNodes;
-        uint16_t dynEntCount[2];
-        DynEntityDef* dynEntDefList[2];
-        DynEntityPose* dynEntPoseList[2];
-        DynEntityClient* dynEntClientList[2];
-        DynEntityColl* dynEntCollList[2];
+        uint16_t dynEntCount[DYNENT_COLL_COUNT];
+        DynEntityDef* dynEntDefList[DYNENT_DRAW_COUNT];
+        DynEntityPose* dynEntPoseList[DYNENT_DRAW_COUNT];
+        DynEntityClient* dynEntClientList[DYNENT_DRAW_COUNT];
+        DynEntityColl* dynEntCollList[DYNENT_COLL_COUNT];
         unsigned int checksum;
         char padding[48];
     };
@@ -3921,10 +3948,10 @@ namespace IW4
 
     struct GfxWorldDpvsDynamic
     {
-        unsigned int dynEntClientWordCount[2];
-        unsigned int dynEntClientCount[2];
-        raw_uint* dynEntCellBits[2];
-        raw_byte16* dynEntVisData[2][3];
+        unsigned int dynEntClientWordCount[DYNENT_DRAW_COUNT];
+        unsigned int dynEntClientCount[DYNENT_DRAW_COUNT];
+        raw_uint* dynEntCellBits[DYNENT_DRAW_COUNT];
+        raw_byte16* dynEntVisData[DYNENT_DRAW_COUNT][3];
     };
 
     struct GfxHeroOnlyLight
@@ -3978,7 +4005,7 @@ namespace IW4
         GfxSceneDynModel4* sceneDynModel;
         GfxSceneDynBrush* sceneDynBrush;
         raw_uint* primaryLightEntityShadowVis;
-        raw_uint* primaryLightDynEntShadowVis[2];
+        raw_uint* primaryLightDynEntShadowVis[DYNENT_DRAW_COUNT];
         char* nonSunPrimaryLightForModelDynEnt;
         GfxShadowGeometry* shadowGeom;
         GfxLightRegion* lightRegion;
@@ -4289,6 +4316,28 @@ namespace IW4
     {
         snd_alias_list_name* name;
         snd_alias_list_t* sound;
+    };
+
+    enum weaponAltModel_t
+    {
+        WEAP_ALT_MODEL0 = 0x0,
+        WEAP_ALT_MODEL1 = 0x1,
+        WEAP_ALT_MODEL2 = 0x2,
+        WEAP_ALT_MODEL3 = 0x3,
+        WEAP_ALT_MODEL4 = 0x4,
+        WEAP_ALT_MODEL5 = 0x5,
+        WEAP_ALT_MODEL6 = 0x6,
+        WEAP_ALT_MODEL7 = 0x7,
+        WEAP_ALT_MODEL8 = 0x8,
+        WEAP_ALT_MODEL9 = 0x9,
+        WEAP_ALT_MODEL10 = 0xA,
+        WEAP_ALT_MODEL11 = 0xB,
+        WEAP_ALT_MODEL12 = 0xC,
+        WEAP_ALT_MODEL13 = 0xD,
+        WEAP_ALT_MODEL14 = 0xE,
+        WEAP_ALT_MODEL15 = 0xF,
+
+        NUM_WEAP_ALTMODELS,
     };
 
     struct WeaponDef
@@ -4757,18 +4806,18 @@ namespace IW4
         WeaponCompleteDef weapCompleteDef;
         WeaponDef weapDef;
         uint16_t hideTags[32];
-        const char* szXAnims[37];
-        XModel* gunXModel[16];
-        const char* szXAnimsRightHanded[37];
-        const char* szXAnimsLeftHanded[37];
+        const char* szXAnims[NUM_WEAP_ANIMS];
+        XModel* gunXModel[NUM_WEAP_ALTMODELS];
+        const char* szXAnimsRightHanded[NUM_WEAP_ANIMS];
+        const char* szXAnimsLeftHanded[NUM_WEAP_ANIMS];
         uint16_t notetrackSoundMapKeys[16];
         uint16_t notetrackSoundMapValues[16];
         uint16_t notetrackRumbleMapKeys[16];
         uint16_t notetrackRumbleMapValues[16];
-        XModel* worldModel[16];
-        float parallelBounce[31];
-        float perpendicularBounce[31];
-        float locationDamageMultipliers[20];
+        XModel* worldModel[NUM_WEAP_ALTMODELS];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
+        float locationDamageMultipliers[HITLOC_COUNT];
     };
 
     enum VehicleAxleType
@@ -4940,7 +4989,7 @@ namespace IW4
         SndAliasCustom speedSnd;
         float speedSndBlendSpeed;
         const char* surfaceSndPrefix;
-        SndAliasCustom surfaceSnds[31];
+        SndAliasCustom surfaceSnds[SURF_TYPE_NUM];
         float surfaceSndBlendSpeed;
         float slideVolume;
         float slideBlendSpeed;

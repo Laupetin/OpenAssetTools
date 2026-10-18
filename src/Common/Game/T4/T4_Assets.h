@@ -1551,7 +1551,7 @@ namespace T4
         bool hasBeenUploaded;
         char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[59];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct CardMemory
@@ -3604,14 +3604,36 @@ namespace T4
         SndAliasCustom flameCooldownSound;
     };
 
+    enum weaponAltModel_t
+    {
+        WEAP_ALT_MODEL0 = 0x0,
+        WEAP_ALT_MODEL1 = 0x1,
+        WEAP_ALT_MODEL2 = 0x2,
+        WEAP_ALT_MODEL3 = 0x3,
+        WEAP_ALT_MODEL4 = 0x4,
+        WEAP_ALT_MODEL5 = 0x5,
+        WEAP_ALT_MODEL6 = 0x6,
+        WEAP_ALT_MODEL7 = 0x7,
+        WEAP_ALT_MODEL8 = 0x8,
+        WEAP_ALT_MODEL9 = 0x9,
+        WEAP_ALT_MODEL10 = 0xA,
+        WEAP_ALT_MODEL11 = 0xB,
+        WEAP_ALT_MODEL12 = 0xC,
+        WEAP_ALT_MODEL13 = 0xD,
+        WEAP_ALT_MODEL14 = 0xE,
+        WEAP_ALT_MODEL15 = 0xF,
+
+        NUM_WEAP_ALTMODELS,
+    };
+
     struct WeaponDef
     {
         const char* szInternalName;
         const char* szDisplayName;
         const char* szOverlayName;
-        XModel* gunXModel[16];
+        XModel* gunXModel[NUM_WEAP_ALTMODELS];
         XModel* handXModel;
-        const char* szXAnims[35];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         const char* szModeName;
         uint16_t hideTags[8];
         uint16_t notetrackSoundMapKeys[20];
@@ -3735,7 +3757,7 @@ namespace T4
         float fStandRotMinSpeed;
         float fDuckedRotMinSpeed;
         float fProneRotMinSpeed;
-        XModel* worldModel[16];
+        XModel* worldModel[NUM_WEAP_ALTMODELS];
         XModel* worldClipModel;
         XModel* rocketModel;
         XModel* knifeModel;
@@ -3928,8 +3950,8 @@ namespace T4
         int holdButtonToThrow;
         int freezeMovementWhenFiring;
         float lowAmmoWarningThreshold;
-        float parallelBounce[31];
-        float perpendicularBounce[31];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
         FxEffectDef* projTrailEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
@@ -4290,10 +4312,20 @@ namespace T4
         FxElemDef* elemDefs;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[31];
-        FxEffectDef* flesh[4];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable

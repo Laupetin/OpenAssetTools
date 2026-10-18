@@ -1444,7 +1444,7 @@ namespace IW3
         bool hasBeenUploaded;
         char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
-        MaterialTechnique* techniques[34];
+        MaterialTechnique* techniques[TECHNIQUE_COUNT];
     };
 
     struct CardMemory
@@ -1772,6 +1772,23 @@ namespace IW3
         float origin[3];
     };
 
+    enum DynEntityDrawType
+    {
+        DYNENT_DRAW_MODEL = 0x0,
+        DYNENT_DRAW_BRUSH = 0x1,
+
+        DYNENT_DRAW_COUNT,
+    };
+
+    enum DynEntityCollType
+    {
+        DYNENT_COLL_CLIENT_FIRST = 0x0,
+        DYNENT_COLL_CLIENT_MODEL = 0x0,
+        DYNENT_COLL_CLIENT_BRUSH = 0x1,
+
+        DYNENT_COLL_COUNT,
+    };
+
     enum DynEntityType
     {
         DYNENT_TYPE_INVALID = 0x0,
@@ -1867,11 +1884,11 @@ namespace IW3
         MapEnts* mapEnts;
         cbrush_t* box_brush;
         cmodel_t box_model;
-        uint16_t dynEntCount[2];
-        DynEntityDef* dynEntDefList[2];
-        DynEntityPose* dynEntPoseList[2];
-        DynEntityClient* dynEntClientList[2];
-        DynEntityColl* dynEntCollList[2];
+        uint16_t dynEntCount[DYNENT_COLL_COUNT];
+        DynEntityDef* dynEntDefList[DYNENT_DRAW_COUNT];
+        DynEntityPose* dynEntPoseList[DYNENT_DRAW_COUNT];
+        DynEntityClient* dynEntClientList[DYNENT_DRAW_COUNT];
+        DynEntityColl* dynEntCollList[DYNENT_COLL_COUNT];
         unsigned int checksum;
     };
 
@@ -2402,10 +2419,10 @@ namespace IW3
 
     struct GfxWorldDpvsDynamic
     {
-        unsigned int dynEntClientWordCount[2];
-        unsigned int dynEntClientCount[2];
-        unsigned int* dynEntCellBits[2];
-        raw_byte16* dynEntVisData[2][3];
+        unsigned int dynEntClientWordCount[DYNENT_DRAW_COUNT];
+        unsigned int dynEntClientCount[DYNENT_DRAW_COUNT];
+        unsigned int* dynEntCellBits[DYNENT_DRAW_COUNT];
+        raw_byte16* dynEntVisData[DYNENT_DRAW_COUNT][3];
     };
 
     struct GfxWorldStreamInfo
@@ -2464,7 +2481,7 @@ namespace IW3
         GfxSceneDynModel4* sceneDynModel;
         GfxSceneDynBrush* sceneDynBrush;
         unsigned int* primaryLightEntityShadowVis;
-        unsigned int* primaryLightDynEntShadowVis[2];
+        unsigned int* primaryLightDynEntShadowVis[DYNENT_DRAW_COUNT];
         char* nonSunPrimaryLightForModelDynEnt;
         GfxShadowGeometry* shadowGeom;
         GfxLightRegion* lightRegion;
@@ -3129,14 +3146,36 @@ namespace IW3
         snd_alias_list_t* sound;
     };
 
+    enum weaponAltModel_t
+    {
+        WEAP_ALT_MODEL0 = 0x0,
+        WEAP_ALT_MODEL1 = 0x1,
+        WEAP_ALT_MODEL2 = 0x2,
+        WEAP_ALT_MODEL3 = 0x3,
+        WEAP_ALT_MODEL4 = 0x4,
+        WEAP_ALT_MODEL5 = 0x5,
+        WEAP_ALT_MODEL6 = 0x6,
+        WEAP_ALT_MODEL7 = 0x7,
+        WEAP_ALT_MODEL8 = 0x8,
+        WEAP_ALT_MODEL9 = 0x9,
+        WEAP_ALT_MODEL10 = 0xA,
+        WEAP_ALT_MODEL11 = 0xB,
+        WEAP_ALT_MODEL12 = 0xC,
+        WEAP_ALT_MODEL13 = 0xD,
+        WEAP_ALT_MODEL14 = 0xE,
+        WEAP_ALT_MODEL15 = 0xF,
+
+        NUM_WEAP_ALTMODELS,
+    };
+
     struct WeaponDef
     {
         const char* szInternalName;
         const char* szDisplayName;
         const char* szOverlayName;
-        XModel* gunXModel[16];
+        XModel* gunXModel[NUM_WEAP_ALTMODELS];
         XModel* handXModel;
-        const char* szXAnims[33];
+        const char* szXAnims[NUM_WEAP_ANIMS];
         const char* szModeName;
         uint16_t hideTags[8];
         uint16_t notetrackSoundMapKeys[16];
@@ -3226,7 +3265,7 @@ namespace IW3
         float fStandRotMinSpeed;
         float fDuckedRotMinSpeed;
         float fProneRotMinSpeed;
-        XModel* worldModel[16];
+        XModel* worldModel[NUM_WEAP_ALTMODELS];
         XModel* worldClipModel;
         XModel* rocketModel;
         XModel* knifeModel;
@@ -3404,8 +3443,8 @@ namespace IW3
         int holdButtonToThrow;
         int freezeMovementWhenFiring;
         float lowAmmoWarningThreshold;
-        float parallelBounce[29];
-        float perpendicularBounce[29];
+        float parallelBounce[SURF_TYPE_NUM];
+        float perpendicularBounce[SURF_TYPE_NUM];
         FxEffectDef* projTrailEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
@@ -3494,7 +3533,7 @@ namespace IW3
         float destabilizationRateTime;
         float destabilizationCurvatureMax;
         int destabilizeDistance;
-        float locationDamageMultipliers[19];
+        float locationDamageMultipliers[HITLOC_COUNT];
         const char* fireRumble;
         const char* meleeImpactRumble;
         float adsDofStart;
@@ -3695,10 +3734,20 @@ namespace IW3
         FxElemDef* elemDefs;
     };
 
+    enum FxFleshType
+    {
+        FX_FLESHTYPE_BODY_NONFATAL = 0x0,
+        FX_FLESHTYPE_BODY_FATAL = 0x1,
+        FX_FLESHTYPE_HEAD_NONFATAL = 0x2,
+        FX_FLESHTYPE_HEAD_FATAL = 0x3,
+
+        FX_FLESHTYPE_COUNT,
+    };
+
     struct FxImpactEntry
     {
-        FxEffectDef* nonflesh[29];
-        FxEffectDef* flesh[4];
+        FxEffectDef* nonflesh[SURF_TYPE_NUM];
+        FxEffectDef* flesh[FX_FLESHTYPE_COUNT];
     };
 
     struct FxImpactTable
