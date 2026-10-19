@@ -36,6 +36,7 @@ namespace IW4
     struct snd_alias_list_t;
     struct SndCurve;
     struct LoadedSound;
+    struct LoadedSound_64;
     struct clipMap_t;
     struct ComWorld;
     struct GameWorldSp;
@@ -77,7 +78,8 @@ namespace IW4
         GfxImage* image;
         snd_alias_list_t* sound;
         SndCurve* sndCurve;
-        LoadedSound* loadSnd;
+        LoadedSound* loadSnd32;
+        LoadedSound_64* loadSnd64;
         clipMap_t* clipMap;
         ComWorld* comWorld;
         GameWorldSp* gameWorldSp;
@@ -4846,6 +4848,11 @@ namespace IW4
         float parallelBounce[SURF_TYPE_NUM];
         float perpendicularBounce[SURF_TYPE_NUM];
         float locationDamageMultipliers[HITLOC_COUNT];
+    };
+
+    struct SndDriverGlobals
+    {
+        const char* name;
     };
 
     enum VehicleAxleType

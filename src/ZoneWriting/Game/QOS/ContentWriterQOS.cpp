@@ -77,10 +77,11 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 #ifdef ARCH_x86
     static_assert(offsetof(XAsset, header.data) == 4u);
 #endif
-#define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
-    case type_index:                                                                                                                                           \
+#define FALLTHROUGH_ASSET(assetName) case Asset##assetName## ::EnumEntry:
+#define WRITE_ASSET(assetName, headerEntry)                                                                                                                    \
+    case Asset##assetName## ::EnumEntry:                                                                                                                       \
     {                                                                                                                                                          \
-        Writer_##typeName##_pc writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                       \
+        Writer_##assetName##_pc writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                      \
         writer.Write(varXAsset->header.headerEntry, varXAssetWritten.AtOffset(4));                                                                             \
         break;                                                                                                                                                 \
     }
@@ -92,37 +93,37 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 
     switch (varXAsset->type)
     {
-        WRITE_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-        WRITE_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints)
-        WRITE_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef)
-        WRITE_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-        WRITE_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-        WRITE_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-        WRITE_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-        WRITE_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-        WRITE_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-        WRITE_ASSET(ASSET_TYPE_SND_CURVE, SndCurve, sndCurve)
-        WRITE_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap)
-        WRITE_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap)
-        WRITE_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-        WRITE_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-        WRITE_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-        WRITE_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-        WRITE_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-        WRITE_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-        WRITE_ASSET(ASSET_TYPE_FONT, Font_s, font)
-        WRITE_ASSET(ASSET_TYPE_MENUFILE, MenuList, menuList)
-        WRITE_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-        WRITE_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-        WRITE_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
-        WRITE_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-        WRITE_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-        WRITE_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-        WRITE_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-        WRITE_ASSET(ASSET_TYPE_XMLTREE, XmlTree, xmlTree)
-        WRITE_ASSET(ASSET_TYPE_SCENE_ANIMATION, SceneAnimation, sceneAnimation)
-        WRITE_ASSET(ASSET_TYPE_CUTSCENE, Cutscene, cutscene)
-        WRITE_ASSET(ASSET_TYPE_CUSTOM_CAMERA, CustomCamera, customCamera)
+        WRITE_ASSET(PhysPreset, physPreset)
+        WRITE_ASSET(PhysConstraints, physConstraints)
+        WRITE_ASSET(DestructibleDef, destructibleDef)
+        WRITE_ASSET(XAnim, parts)
+        WRITE_ASSET(XModel, model)
+        WRITE_ASSET(Material, material)
+        WRITE_ASSET(TechniqueSet, techniqueSet)
+        WRITE_ASSET(Image, image)
+        WRITE_ASSET(Sound, sound)
+        WRITE_ASSET(SoundCurve, sndCurve)
+        FALLTHROUGH_ASSET(ClipMapSp)
+        WRITE_ASSET(ClipMapMp, clipMap)
+        WRITE_ASSET(ComWorld, comWorld)
+        WRITE_ASSET(GameWorldSp, gameWorldSp)
+        WRITE_ASSET(GameWorldMp, gameWorldMp)
+        WRITE_ASSET(MapEnts, mapEnts)
+        WRITE_ASSET(GfxWorld, gfxWorld)
+        WRITE_ASSET(LightDef, lightDef)
+        WRITE_ASSET(Font, font)
+        WRITE_ASSET(MenuList, menuList)
+        WRITE_ASSET(Menu, menu)
+        WRITE_ASSET(Localize, localize)
+        WRITE_ASSET(Weapon, weapon)
+        WRITE_ASSET(Fx, fx)
+        WRITE_ASSET(ImpactFx, impactFx)
+        WRITE_ASSET(RawFile, rawfile)
+        WRITE_ASSET(StringTable, stringTable)
+        WRITE_ASSET(XmlTree, xmlTree)
+        WRITE_ASSET(SceneAnimation, sceneAnimation)
+        WRITE_ASSET(Cutscene, cutscene)
+        WRITE_ASSET(CustomCamera, customCamera)
 
     default:
     {

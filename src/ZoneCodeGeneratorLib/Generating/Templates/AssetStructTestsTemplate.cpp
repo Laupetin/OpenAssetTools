@@ -33,7 +33,7 @@ namespace
             LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
-            LINEF("namespace game::{0}::{1}::xassets::asset_{1}", m_env.m_game, m_env.m_variant->m_name, Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("namespace game::{0}::{1}::xassets::asset_{1}", m_env.m_game, m_env.m_variant->m_name, Lower(m_env.m_asset->m_asset_name))
             LINE("{")
             m_intendation++;
 
@@ -65,7 +65,10 @@ namespace
             {
                 if (!member->m_member->m_name.empty() && !member->m_member->m_type_declaration->m_has_custom_bit_size)
                 {
-                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});", structure->m_definition->GetFullName(), member->m_member->m_name, member->m_member->GetOffset(m_env.m_word_size))
+                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});",
+                          structure->m_definition->GetFullName(),
+                          member->m_member->m_name,
+                          member->m_member->GetOffset(m_env.m_word_size))
                 }
             }
 
@@ -85,7 +88,7 @@ std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerA
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
