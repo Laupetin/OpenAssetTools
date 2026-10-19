@@ -35,10 +35,10 @@ namespace
             {
                 if (!asset->IsIncludedForVariant(m_env.m_variant->m_index))
                     continue;
-                
+
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_write_db.h\"",
                       m_env.m_game,
-                      Lower(asset->m_definition->m_name),
+                      Lower(asset->m_asset_name),
                       Lower(m_env.m_game),
                       Lower(m_env.m_variant->m_name))
             }
@@ -165,7 +165,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_{2}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
+            LINEF("#include \"{0}_{1}_{2}_write_db.h\"", Lower(m_env.m_asset->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -173,7 +173,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_{2}_write_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_write_db.h\"", Lower(type->m_info->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
 
@@ -240,7 +240,7 @@ namespace
 
         std::string WriterClassName(const StructureInformation* asset) const
         {
-            return std::format("Writer_{0}_{1}", asset->m_definition->m_name, m_env.m_variant->m_name);
+            return std::format("Writer_{0}_{1}", asset->m_asset_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -365,7 +365,7 @@ namespace
                 "{0}::{0}({1}* asset, const Zone& zone, ZoneOutputStream& stream)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
 
             m_intendation++;
-            LINEF(": AssetWriter(zone.m_pools.GetAssetOrAssetReference({0}::EnumEntry, NonReferenceAssetName(AssetName<{0}>(*asset))), zone, stream)",
+            LINEF(": AssetWriter(zone.m_pools.GetAssetOrAssetReference(Asset{0}::EnumEntry, NonReferenceAssetName(AssetName<Asset{0}>(*asset))), zone, stream)",
                   m_env.m_asset->m_asset_name)
             m_intendation--;
 
@@ -1674,7 +1674,7 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerAsset(co
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;

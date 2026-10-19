@@ -38,7 +38,7 @@ namespace
 
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_load_db.h\"",
                       m_env.m_game,
-                      Lower(asset->m_definition->m_name),
+                      Lower(asset->m_asset_name),
                       Lower(m_env.m_game),
                       Lower(m_env.m_variant->m_name))
             }
@@ -170,7 +170,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_{2}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
+            LINEF("#include \"{0}_{1}_{2}_load_db.h\"", Lower(m_env.m_asset->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
             LINEF("#include \"Game/{0}/AssetMarker_{0}_{1}.h\"", Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
@@ -182,7 +182,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_{2}_load_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_load_db.h\"", Lower(type->m_info->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
 
@@ -262,7 +262,7 @@ namespace
 
         std::string LoaderClassName(const StructureInformation* asset) const
         {
-            return std::format("Loader_{0}_{1}", asset->m_definition->m_name, m_env.m_variant->m_name);
+            return std::format("Loader_{0}_{1}", asset->m_asset_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -335,7 +335,7 @@ namespace
             LINEF("{0}::{0}(Zone& zone, ZoneInputStream& stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
-            LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
+            LINE_STARTF(": AssetLoader(Asset{0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
             if (m_env.m_has_actions)
             {
                 LINE_MIDDLE(", m_actions(zone)")
@@ -2119,13 +2119,13 @@ namespace
             LINE("assert(pAsset != nullptr);")
             LINE("")
             LINE("AssetInfoCollector assetInfo(m_zone);")
-            LINEF("AssetMarker<{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
+            LINEF("AssetMarker<Asset{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
             LINE("marker.Mark(*pAsset);")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<{1}>(**pAsset), reallocatedAsset, "
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<Asset{1}>(**pAsset), reallocatedAsset, "
                   "assetInfo.GetDependencies(), "
                   "assetInfo.GetUsedScriptStrings(), assetInfo.GetIndirectAssetReferences()));",
                   info->m_definition->GetFullName(),
@@ -2151,7 +2151,7 @@ namespace
             LINE("")
             LINE("if (m_asset_info == nullptr && *pAsset != nullptr)")
             m_intendation++;
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<{1}>(**pAsset)));",
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<Asset{1}>(**pAsset)));",
                   m_env.m_asset->m_definition->GetFullName(),
                   m_env.m_asset->m_asset_name)
             m_intendation--;
@@ -2193,7 +2193,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(con
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
