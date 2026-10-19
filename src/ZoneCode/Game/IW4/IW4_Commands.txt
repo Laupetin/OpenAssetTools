@@ -18,6 +18,7 @@ asset GfxImage AssetImage;
 asset snd_alias_list_t AssetSound;
 asset SndCurve AssetSoundCurve;
 asset LoadedSound AssetLoadedSound;
+asset LoadedSound_64 AssetLoadedSound;
 asset clipMap_t AssetClipMapMp;
 asset ComWorld AssetComWorld;
 asset GameWorldSp AssetGameWorldSp;
