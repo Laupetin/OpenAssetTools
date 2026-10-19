@@ -3,9 +3,12 @@
 #include "SearchPath/MockOutputPath.h"
 #include "SearchPath/MockSearchPath.h"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <limits>
+#include <sstream>
 #include <string>
+#include <string_view>
 
 using namespace IW3;
 
@@ -89,6 +92,7 @@ namespace
         const auto* dumpedFile = dumpingOutput.GetMockedFile("fx/test/effect.efx");
         REQUIRE(dumpedFile != nullptr);
         const auto text = dumpedFile->AsString();
+        INFO(text);
 
         REQUIRE(text.starts_with("iwfx 2\n"));
         REQUIRE(text.find("name \"segment 1\";") != std::string::npos);
@@ -99,7 +103,17 @@ namespace
             != std::string::npos);
         REQUIRE(text.find("flags spawnRelative spawnOffsetSphere runRelToEffect useCollision nonUniformScale;") != std::string::npos);
         REQUIRE(text.find("spawnLooping 50 0;") != std::string::npos);
-        REQUIRE(text.find("spawnAnglePitch 90 0;") != std::string::npos);
+        constexpr std::string_view SPAWN_ANGLE_PITCH = "spawnAnglePitch ";
+        const auto pitchPosition = text.find(SPAWN_ANGLE_PITCH);
+        REQUIRE(pitchPosition != std::string::npos);
+        std::istringstream pitchValues(text.substr(pitchPosition + SPAWN_ANGLE_PITCH.size()));
+        float pitchBase{};
+        float pitchAmplitude{};
+        char pitchTerminator{};
+        REQUIRE(static_cast<bool>(pitchValues >> pitchBase >> pitchAmplitude >> pitchTerminator));
+        CHECK(pitchBase == Catch::Approx(90.0f));
+        CHECK(pitchAmplitude == Catch::Approx(0.0f));
+        CHECK(pitchTerminator == ';');
         REQUIRE(text.find("angleVelYaw 180 0;") != std::string::npos);
         REQUIRE(text.find("gravity 100 50;") != std::string::npos);
         REQUIRE(text.find("atlasBehavior startRandom playOverLife loopOnlyNTimes;") != std::string::npos);

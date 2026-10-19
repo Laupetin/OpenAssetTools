@@ -4,8 +4,12 @@
 #include "SearchPath/MockSearchPath.h"
 
 #include <algorithm>
+#include <array>
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <sstream>
 #include <string>
+#include <string_view>
 
 using namespace T5;
 
@@ -88,6 +92,7 @@ namespace
         const auto* dumpedFile = dumpingOutput.GetMockedFile("fx/test/effect.efx");
         REQUIRE(dumpedFile != nullptr);
         const auto text = dumpedFile->AsString();
+        INFO(text);
 
         REQUIRE(text.starts_with("iwfx 3\n"));
         REQUIRE(text.find("efFlags efUseBoundingBox efLocalBoundingBox;") != std::string::npos);
@@ -99,7 +104,18 @@ namespace
                           "runRelToWorld flamechunk hasReflection useRotationAxis useGaussianCloud useBillboardPivot "
                           "useWorldUp alignViewpoint;")
                 != std::string::npos);
-        REQUIRE(text.find("rotationAxis 0.707106769 0 0 0.707106769;") != std::string::npos);
+        constexpr std::string_view ROTATION_AXIS = "rotationAxis ";
+        const auto rotationAxisPosition = text.find(ROTATION_AXIS);
+        REQUIRE(rotationAxisPosition != std::string::npos);
+        std::istringstream rotationAxisValues(text.substr(rotationAxisPosition + ROTATION_AXIS.size()));
+        std::array<float, 4> rotationAxis{};
+        char rotationAxisTerminator{};
+        REQUIRE(static_cast<bool>(rotationAxisValues >> rotationAxis[0] >> rotationAxis[1] >> rotationAxis[2] >> rotationAxis[3] >> rotationAxisTerminator));
+        CHECK(rotationAxis[0] == Catch::Approx(0.707106769f));
+        CHECK(rotationAxis[1] == Catch::Approx(0.0f));
+        CHECK(rotationAxis[2] == Catch::Approx(0.0f));
+        CHECK(rotationAxis[3] == Catch::Approx(0.707106769f));
+        CHECK(rotationAxisTerminator == ';');
         REQUIRE(text.find("atlasBehavior startFixedRange playOverLife;") != std::string::npos);
         REQUIRE(text.find("atlasLoopCount 3;") != std::string::npos);
         REQUIRE(text.find("atlasEntryCount 8;") != std::string::npos);
