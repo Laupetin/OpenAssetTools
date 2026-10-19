@@ -795,7 +795,8 @@ namespace
 
             const auto referenceRowCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasRowCount);
             const auto referenceColumnCount = static_cast<unsigned int>(referenceMaterial->info.textureAtlasColumnCount);
-            if (!std::has_single_bit(referenceRowCount) || !std::has_single_bit(referenceColumnCount))
+            if ((referenceRowCount != 0u && !std::has_single_bit(referenceRowCount))
+                || (referenceColumnCount != 0u && !std::has_single_bit(referenceColumnCount)))
             {
                 return std::unexpected(std::format("element \"{}\" material \"{}\" is a {} x {} atlas, which is not a power of two on both axes",
                                                    source.name,
