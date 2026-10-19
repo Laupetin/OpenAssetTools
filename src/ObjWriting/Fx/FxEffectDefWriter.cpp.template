@@ -215,7 +215,7 @@ namespace
         if (!elem.visSamples)
             return result;
 
-        auto maxMagnitude = 0.0f;
+        auto scale = 0.0f;
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
             const auto base = baseAccessor(elem.visSamples[sampleIndex]) * valueScale;
@@ -223,16 +223,16 @@ namespace
             result.base[sampleIndex] = base;
             result.amplitude[sampleIndex] = base + amplitude;
 
-            if (signedValues)
-                maxMagnitude = std::max({maxMagnitude, std::abs(result.base[sampleIndex]), std::abs(result.amplitude[sampleIndex])});
-            else
-                maxMagnitude = std::max({maxMagnitude, result.base[sampleIndex], result.amplitude[sampleIndex]});
+            for (const auto value : {result.base[sampleIndex], result.amplitude[sampleIndex]})
+            {
+                if (std::abs(value) > std::abs(scale))
+                    scale = value;
+            }
         }
 
-        if (signedValues)
-            result.scale = maxMagnitude > 0.0f ? maxMagnitude * 2.0f : 1.0f;
-        else
-            result.scale = maxMagnitude > 0.0f ? maxMagnitude : 1.0f;
+        result.scale = signedValues ? std::abs(scale) * 2.0f : scale;
+        if (result.scale == 0.0f)
+            result.scale = 1.0f;
 
         for (auto sampleIndex = 0u; sampleIndex <= intervalCount; sampleIndex++)
         {
