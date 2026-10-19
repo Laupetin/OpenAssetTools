@@ -7,6 +7,7 @@
 #include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <string>
 #include <string_view>
 
@@ -140,6 +141,31 @@ namespace
         REQUIRE(element.effectOnDeath.name != nullptr);
         REQUIRE(std::string(element.effectOnDeath.name) == "death_effect");
         REQUIRE(HasIndirectAssetReference(*assetInfo, IW3::AssetFx::EnumEntry, "death_effect"));
+    }
+
+    TEST_CASE("FxEffectDef loader preserves IW3 one-shot spawn ranges", "[iw3][fx][assetloader][oneshotrange]")
+    {
+        const auto amplitude = GENERATE(-2, 0, 2);
+        auto source = MakeEffect(2, "", "    spawnOneShot 5 " + std::to_string(amplitude) + ";\n", "light");
+        constexpr std::string_view LOOPING_FLAG = "looping ";
+        source.erase(source.find(LOOPING_FLAG), LOOPING_FLAG.size());
+        MockSearchPath searchPath;
+        searchPath.AddFileData("fx/test.efx", source);
+        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
+        const auto loader = fx::CreateLoaderIW3(zone.Memory(), searchPath);
+        const auto result = loader->CreateAsset("test", context);
+        REQUIRE(result.HasBeenSuccessful());
+        const auto* effect = reinterpret_cast<XAssetInfo<IW3::FxEffectDef>*>(result.GetAssetInfo())->Asset();
+        REQUIRE(effect->elemDefCountLooping == 0);
+        REQUIRE(effect->elemDefCountOneShot == 1);
+        const auto& element = effect->elemDefs[0];
+        CHECK(element.spawn.oneShot.count.base == 5);
+        CHECK(element.spawn.oneShot.count.amplitude == amplitude);
+        CHECK(element.spawnRange.base == Approx(-2.0f));
+        CHECK(element.spawnRange.amplitude == Approx(4.0f));
     }
 
     TEST_CASE("FxEffectDef loader mirrors the primary size for uniform IW3 sprites", "[iw3][fx][assetloader]")

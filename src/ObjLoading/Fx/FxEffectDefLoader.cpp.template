@@ -1137,7 +1137,7 @@ namespace
                 destination.spawn.looping.count = source.spawnLoopingCount == 0 ? std::numeric_limits<int>::max() : source.spawnLoopingCount;
             }
             else
-                CopyCanonicalRange(destination.spawn.oneShot.count, source.spawnOneShotCount);
+                destination.spawn.oneShot.count = {source.spawnOneShotCount.base, source.spawnOneShotCount.amplitude};
 
             CopyCanonicalRange(destination.spawnDelayMsec, source.spawnDelayMsec);
             CopyCanonicalRange(destination.lifeSpanMsec, source.lifeSpanMsec);
