@@ -33,6 +33,9 @@ namespace
 
             for (const auto* asset : m_env.m_all_assets)
             {
+                if (!asset->IsIncludedForVariant(m_env.m_variant->m_index))
+                    continue;
+                
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_mark_db.h\"",
                       m_env.m_game,
                       Lower(asset->m_definition->m_name),
