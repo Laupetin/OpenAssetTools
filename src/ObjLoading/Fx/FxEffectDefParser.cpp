@@ -156,10 +156,10 @@ namespace fx
 
             std::string ReadString() const
             {
-                if (Token().m_type != SimpleParserValueType::STRING)
-                    Throw("Expected quoted string");
+                if (Token().m_type != SimpleParserValueType::STRING && Token().m_type != SimpleParserValueType::IDENTIFIER)
+                    Throw("Expected string or identifier");
 
-                auto result = Token().StringValue();
+                auto result = Token().m_type == SimpleParserValueType::IDENTIFIER ? Token().IdentifierValue() : Token().StringValue();
                 Pop();
                 return result;
             }

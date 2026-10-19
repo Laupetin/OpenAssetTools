@@ -99,7 +99,8 @@ namespace
     TEST_CASE("FxEffectDef loader converts stock IW3 fields", "[iw3][fx][assetloader]")
     {
         MockSearchPath searchPath;
-        searchPath.AddFileData("fx/test.efx", MakeEffect(1, "", "", "light"));
+        searchPath.AddFileData("fx/test.efx",
+                               MakeEffect(1, "", "    name test_element;\n    editorFlags playOnDeath;\n    fxOnDeath death_effect;\n", "light"));
 
         Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
         AssetCreatorCollection creatorCollection(zone);
@@ -136,6 +137,9 @@ namespace
         REQUIRE(element.visSamples[0].base.color.b == 64u);
         REQUIRE(element.visSamples[0].base.color.g == 128u);
         REQUIRE(element.visSamples[0].base.color.r == 255u);
+        REQUIRE(element.effectOnDeath.name != nullptr);
+        REQUIRE(std::string(element.effectOnDeath.name) == "death_effect");
+        REQUIRE(HasIndirectAssetReference(*assetInfo, IW3::AssetFx::EnumEntry, "death_effect"));
     }
 
     TEST_CASE("FxEffectDef loader mirrors the primary size for uniform IW3 sprites", "[iw3][fx][assetloader]")
