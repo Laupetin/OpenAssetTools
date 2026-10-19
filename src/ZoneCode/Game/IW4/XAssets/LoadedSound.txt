@@ -4,6 +4,17 @@
 use LoadedSound;
 set block XFILE_BLOCK_TEMP;
 set string name;
+set variant pc32;
+
+use LoadedSound_64;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set variant pc64;
+
+// XAudio2Sound
+use XAudio2Sound;
+set reusable data;
+set count data data_len;
 
 // MssSound
 use MssSound;
