@@ -8,8 +8,9 @@
 class GameVariant
 {
 public:
-    GameVariant(std::string name, WordSize wordSize, std::endian endianness);
+    GameVariant(unsigned index, std::string name, WordSize wordSize, std::endian endianness);
 
+    unsigned m_index;
     std::string m_name;
     WordSize m_word_size;
     std::endian m_endianness;
