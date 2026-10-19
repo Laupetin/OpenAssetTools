@@ -8,6 +8,7 @@
 #include "TypeInformation.h"
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 class MemberInformation;
@@ -17,9 +18,16 @@ class StructureInformation
 public:
     StructureInformation(DefinitionWithMembers* definition, TypeInformation* typeInfo);
 
+    [[nodiscard]] bool IsIncludedForVariant(unsigned variantIndex) const;
+
     DefinitionWithMembers* m_definition;
     TypeInformation* m_type_info;
     std::string m_asset_name;
+
+    /**
+     * All variants this structure should be included in. If empty, it should be included in all variants.
+     */
+    std::unordered_set<unsigned> m_variants;
 
     std::unique_ptr<IEvaluation> m_alloc_alignment;
     std::vector<StructureInformation*> m_usages;

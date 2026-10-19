@@ -16,3 +16,8 @@ StructureInformation::StructureInformation(DefinitionWithMembers* definition, Ty
       m_block(nullptr)
 {
 }
+
+bool StructureInformation::IsIncludedForVariant(const unsigned variantIndex) const
+{
+    return m_variants.empty() || m_variants.contains(variantIndex);
+}

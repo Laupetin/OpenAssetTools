@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <variant>
 
 namespace fs = std::filesystem;
 
@@ -195,6 +196,9 @@ bool CodeGenerator::GenerateCode(const IDataRepository* repository)
         {
             for (auto* asset : assets)
             {
+                if (!asset->IsIncludedForVariant(variant->m_index))
+                    continue;
+
                 auto context = std::make_unique<PerAssetRenderingContext>(repository, asset, variant);
                 const auto result = GenerateCodeOncePerAsset(*context, foundTemplate->second.get());
                 LogDirtyCheckResult(
