@@ -66,7 +66,23 @@ namespace menu
 
     std::vector<std::string> AbstractBaseWriter::CreateScriptTokenList(const char* script)
     {
-        const std::string scriptString(script);
+        std::string scriptString;
+        auto inString = false;
+        auto escaped = false;
+        for (const auto* character = script; *character; ++character)
+        {
+            // Native script arguments can contain literal line breaks.
+            if (inString && *character == '\n')
+                scriptString += "\\n";
+            else if (inString && *character == '\r')
+                scriptString += "\\r";
+            else
+                scriptString += *character;
+
+            if (*character == '"' && !escaped)
+                inString = !inString;
+            escaped = inString && *character == '\\' && !escaped;
+        }
         std::istringstream stringStream(scriptString);
         ParserSingleInputStream inputStream(stringStream, "MenuScript");
 
