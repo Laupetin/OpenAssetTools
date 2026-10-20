@@ -47,7 +47,6 @@ namespace
     void DumpFunctions(menu::IWriterIW5& menuDumper, const MenuList* menuList)
     {
         const auto allSupportingData = GetAllUniqueExpressionSupportingData(menuList);
-        auto functionIndex = 0u;
 
         assert(allSupportingData.size() <= 1);
 
@@ -62,9 +61,7 @@ namespace
                 if (!function)
                     continue;
 
-                menuDumper.WriteFunctionDef(std::format("FUNC_{}", functionIndex), function);
-
-                functionIndex++;
+                menuDumper.WriteFunctionDef(std::format("FUNC_{}", i), function);
             }
         }
     }
