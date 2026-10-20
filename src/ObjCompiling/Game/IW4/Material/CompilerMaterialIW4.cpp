@@ -4,7 +4,6 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/Techset/CompilerTechsetIW4.h"
 #include "Game/IW4/Techset/TechsetConstantsIW4.h"
 #include "Gdt/AbstractGdtEntryReader.h"
 #include "Gdt/IGdtQueryable.h"
