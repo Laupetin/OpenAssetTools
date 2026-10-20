@@ -114,7 +114,17 @@ namespace
         CHECK(pitchBase == Catch::Approx(90.0f));
         CHECK(pitchAmplitude == Catch::Approx(0.0f));
         CHECK(pitchTerminator == ';');
-        REQUIRE(text.find("angleVelYaw 180 0;") != std::string::npos);
+        constexpr std::string_view ANGLE_VEL_YAW = "angleVelYaw ";
+        const auto yawPosition = text.find(ANGLE_VEL_YAW);
+        REQUIRE(yawPosition != std::string::npos);
+        std::istringstream yawValues(text.substr(yawPosition + ANGLE_VEL_YAW.size()));
+        float yawBase{};
+        float yawAmplitude{};
+        char yawTerminator{};
+        REQUIRE(static_cast<bool>(yawValues >> yawBase >> yawAmplitude >> yawTerminator));
+        CHECK(yawBase == Catch::Approx(180.0f));
+        CHECK(yawAmplitude == Catch::Approx(0.0f));
+        CHECK(yawTerminator == ';');
         REQUIRE(text.find("gravity 100 50;") != std::string::npos);
         REQUIRE(text.find("atlasBehavior startRandom playOverLife loopOnlyNTimes;") != std::string::npos);
         REQUIRE(text.find("atlasLoopCount 2;") != std::string::npos);
