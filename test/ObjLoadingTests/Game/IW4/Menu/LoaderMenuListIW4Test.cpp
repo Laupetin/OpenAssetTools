@@ -1,6 +1,7 @@
 #include "Game/IW4/Menu/LoaderMenuListIW4.h"
 
 #include "Game/IW4/GameIW4.h"
+#include "ObjLoading.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
@@ -17,6 +18,16 @@ using namespace Catch::Matchers;
 
 namespace test::game::iw4::menu::parsing::it
 {
+    struct RestoreMenuLoadingConfiguration
+    {
+        ObjLoading::Configuration_t original{ObjLoading::Configuration};
+
+        ~RestoreMenuLoadingConfiguration()
+        {
+            ObjLoading::Configuration = original;
+        }
+    };
+
     class MenuParsingItHelper
     {
         static constexpr const char* DEFAULT_ASSET_NAME = "test.txt";
@@ -584,5 +595,31 @@ namespace test::game::iw4::menu::parsing::it
         CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
         CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
         CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
+    }
+
+    TEST_CASE("MenuParsingIW4IT: Numeric text expressions respect permissive mode", "[parsing][converting][menu][it]")
+    {
+        RestoreMenuLoadingConfiguration restore;
+        const auto permissive = GENERATE(false, true);
+        ObjLoading::Configuration.MenuPermissiveParsing = permissive;
+        ObjLoading::Configuration.MenuNoOptimization = GENERATE(false, true);
+        MenuParsingItHelper helper;
+        helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3); } } })MENU");
+
+        REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
+        if (!permissive)
+            return;
+
+        const auto* menu = helper.GetMenuAsset("test");
+        REQUIRE(menu->itemCount == 1);
+        const auto* item = menu->items[0];
+        REQUIRE(item->text);
+        CHECK(std::string(item->text) == "fallback");
+        const auto* expression = item->textExp;
+        REQUIRE(expression);
+        REQUIRE(expression->numEntries == 1);
+        CHECK(expression->entries[0].type == EET_OPERAND);
+        CHECK(expression->entries[0].data.operand.dataType == VAL_INT);
+        CHECK(expression->entries[0].data.operand.internals.intVal == 3);
     }
 } // namespace test::game::iw4::menu::parsing::it

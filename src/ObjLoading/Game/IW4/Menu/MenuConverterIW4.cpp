@@ -407,12 +407,11 @@ namespace
             if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto value = expression->EvaluateStatic();
-                if (value.m_type != SimpleExpressionValue::Type::STRING)
-                    throw MenuConversionException("Cannot convert numeric expression value to string", menu, item);
-
-                staticValue = m_memory.Dup(value.m_string_value->c_str());
-
-                return nullptr;
+                if (value.m_type == SimpleExpressionValue::Type::STRING)
+                {
+                    staticValue = m_memory.Dup(value.m_string_value->c_str());
+                    return nullptr;
+                }
             }
 
             return ConvertExpression(expression, menu, item);
