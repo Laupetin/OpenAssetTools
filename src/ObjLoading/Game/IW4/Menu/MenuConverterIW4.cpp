@@ -225,7 +225,7 @@ namespace
                 }
 
                 functionStatement = ConvertExpression(foundCommonFunction->second->m_value.get(), menu, item);
-                functionStatement = m_conversion_zone_state.AddFunction(foundCommonFunction->second->m_name, functionStatement);
+                functionStatement = m_conversion_zone_state.AddFunction(lowerCaseFunctionName, functionStatement);
             }
 
             entries.emplace_back(expressionEntry{
