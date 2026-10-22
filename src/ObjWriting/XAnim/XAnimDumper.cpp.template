@@ -21,6 +21,10 @@
 #define HAS_DELTA_QUAT_3D
 #endif
 
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T4)
+#define SUPPORTS_GLTF_XANIM
+#endif
+
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5)
 #define IS_LOOPED static_cast<bool>(parts.flags & ANIM_LOOP)
 #define HAS_DELTA static_cast<bool>(parts.flags & ANIM_DELTA)
@@ -40,6 +44,13 @@
 #include "XAnim/CompiledXAnimWriter.h"
 #include "XAnim/FlatXAnimReader.h"
 #include "XAnim/XAnimCommon.h"
+
+#ifdef SUPPORTS_GLTF_XANIM
+#include "ObjWriting.h"
+#include "XAnim/GltfXAnimWriter.h"
+#include "XModel/Gltf/GltfBinOutput.h"
+#include "XModel/Gltf/GltfTextOutput.h"
+#endif
 
 #include <array>
 #include <cassert>
@@ -323,10 +334,6 @@ namespace xanim
             return;
         }
 
-        const auto assetFile = context.OpenAssetFile(GetCompiledFileNameForAssetName(asset.m_name));
-        if (!assetFile)
-            return;
-
         CommonXAnimParts commonParts;
         commonParts.m_num_frames = parts.numframes;
         commonParts.m_looped = IS_LOOPED;
@@ -344,6 +351,34 @@ namespace xanim
         commonParts.m_bone_tracks = std::move(maybeBoneTracks).value();
         commonParts.m_notifies = ConvertNotifies(parts, asset);
         commonParts.m_delta_track = ConvertDeltaTrack(parts, useByteIndices, numLoopFrames);
+
+#ifdef SUPPORTS_GLTF_XANIM
+        if (ObjWriting::Configuration.XAnimOutputFormat == XAnimOutputFormat_e::GLTF)
+        {
+            const auto assetFile = context.OpenAssetFile(GetGltfFileNameForAssetName(asset.m_name));
+            if (!assetFile)
+                return;
+
+            const gltf::TextOutput output(*assetFile);
+            xanim_gltf::Write(commonParts, asset.m_name, output);
+            return;
+        }
+
+        if (ObjWriting::Configuration.XAnimOutputFormat == XAnimOutputFormat_e::GLB)
+        {
+            const auto assetFile = context.OpenAssetFile(GetGlbFileNameForAssetName(asset.m_name));
+            if (!assetFile)
+                return;
+
+            const gltf::BinOutput output(*assetFile);
+            xanim_gltf::Write(commonParts, asset.m_name, output);
+            return;
+        }
+#endif
+
+        const auto assetFile = context.OpenAssetFile(GetCompiledFileNameForAssetName(asset.m_name));
+        if (!assetFile)
+            return;
 
         WriteCompiledXAnim(
             *assetFile,
