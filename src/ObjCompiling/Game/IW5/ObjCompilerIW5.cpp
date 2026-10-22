@@ -6,6 +6,7 @@
 #include "Game/IW5/Techset/TechsetCompilerIW5.h"
 #include "Game/IW5/Techset/VertexDeclCompilerIW5.h"
 #include "Image/ImageIwdPostProcessor.h"
+#include "RawFile/BrandingAssetCreator.h"
 
 #include <memory>
 
@@ -48,5 +49,6 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              IOutputPath& cacheDir) const
 {
     ConfigureCompilers(collection, zone, searchPath);
+    collection.AddAssetCreator(raw_file::CreateBrandingAssetCreator<AssetRawFile, true>(zone.Memory(), zone, zoneDefinition.m_zone_definition));
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }
