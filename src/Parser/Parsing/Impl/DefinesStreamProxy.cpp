@@ -65,7 +65,9 @@ DefinesStreamProxy::Define::Define(std::string name, std::string value, const bo
 }
 
 DefinesStreamProxy::MacroParameterState::MacroParameterState()
-    : m_parameter_state(ParameterState::NOT_IN_PARAMETERS)
+    : m_parameter_state(ParameterState::NOT_IN_PARAMETERS),
+      m_in_string(false),
+      m_after_escape(false)
 {
 }
 
@@ -899,7 +901,24 @@ void DefinesStreamProxy::ContinueMacroParameters(
     {
         const auto c = input[inputPos];
 
-        if (c == ',')
+        if (state.m_in_string)
+        {
+            if (state.m_after_escape)
+                state.m_after_escape = false;
+            else if (c == '\\')
+                state.m_after_escape = true;
+            else if (c == '"')
+                state.m_in_string = false;
+
+            state.m_current_parameter << c;
+        }
+        else if (c == '"')
+        {
+            state.m_in_string = true;
+            state.m_parameter_state = ParameterState::AFTER_PARAM;
+            state.m_current_parameter << c;
+        }
+        else if (c == ',')
         {
             if (!state.m_bracket_depth.empty())
             {
