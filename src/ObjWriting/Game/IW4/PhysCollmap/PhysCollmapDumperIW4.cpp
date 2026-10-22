@@ -36,6 +36,7 @@ namespace phys_collmap
             switch (geom.type)
             {
             case PHYS_GEOM_NONE:
+            case PHYS_GEOM_COLLMAP:
                 // TODO: Dump BrushWrapper (probably GJK related)
                 mapFileDumper.WriteComment("TODO: Brush data");
                 break;
@@ -60,7 +61,6 @@ namespace phys_collmap
 
             case PHYS_GEOM_BRUSHMODEL:
             case PHYS_GEOM_BRUSH:
-            case PHYS_GEOM_COLLMAP:
             case PHYS_GEOM_CAPSULE:
             case PHYS_GEOM_GLASS:
             default:
