@@ -1127,6 +1127,26 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator in arguments of nested macros", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define s(t) #t",
+            "#define tag(id) s(id##_tag)",
+            "#define outer(list) tag(list##_member0)",
+            "outer(party)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "\"party_member0_tag\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with string and stringization outside macro", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
