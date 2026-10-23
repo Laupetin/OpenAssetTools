@@ -759,41 +759,31 @@ namespace
         unsigned m_start;
         unsigned m_end;
     };
-
-    void EmitPastedTokens(const ParserLine& line,
-                          const unsigned& linePos,
-                          std::ostream& out,
-                          const std::string& input,
-                          const TokenPasteToken& token0,
-                          const TokenPasteToken& token1)
-    {
-        if ((token0.m_type == TokenPasteTokenType::STRING) != (token1.m_type == TokenPasteTokenType::STRING))
-            throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
-                                   "String token can only use token-pasting operator on other string token");
-        if (token0.m_type == TokenPasteTokenType::STRING)
-        {
-            out << '"';
-            token0.EmitValue(out, input);
-            token1.EmitValue(out, input);
-            out << '"';
-        }
-        else
-        {
-            assert(token0.m_type == TokenPasteTokenType::IDENTIFIER || token0.m_type == TokenPasteTokenType::SYMBOL);
-
-            token0.EmitValue(out, input);
-            token1.EmitValue(out, input);
-        }
-    }
 } // namespace
 
 void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, const unsigned& linePos, std::string& input)
 {
     std::ostringstream ss;
 
+    auto copied = 0u;
+
+    std::ostringstream pasted;
+    auto pasting = false;
+    auto pastedIsString = false;
+
     auto pasteNext = false;
-    TokenPasteToken previousToken;
     TokenPasteToken currentToken;
+
+    const auto flushPasted = [&]
+    {
+        if (pastedIsString)
+            ss << '"' << pasted.str() << '"';
+        else
+            ss << pasted.str();
+
+        pasted.str(std::string());
+        pasting = false;
+    };
 
     const auto inputSize = input.size();
     for (auto i = 0u; i < inputSize;)
@@ -811,10 +801,17 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, co
             if (currentToken.m_type == TokenPasteTokenType::NONE)
                 throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without previous token");
 
-            if (previousToken.m_end < currentToken.m_start)
-                ss << std::string(input, previousToken.m_end, currentToken.m_start - previousToken.m_end);
+            if (!pasting)
+            {
+                if (copied < currentToken.m_start)
+                    ss << std::string(input, copied, currentToken.m_start - copied);
 
-            previousToken = currentToken;
+                currentToken.EmitValue(pasted, input);
+                pastedIsString = currentToken.m_type == TokenPasteTokenType::STRING;
+                copied = currentToken.m_end;
+                pasting = true;
+            }
+
             pasteNext = true;
 
             // Skip second #
@@ -825,18 +822,27 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, co
             currentToken.SetFromInput(line, linePos, input, i);
             if (pasteNext)
             {
-                EmitPastedTokens(line, linePos, ss, input, previousToken, currentToken);
-                previousToken = currentToken;
+                if (pastedIsString != (currentToken.m_type == TokenPasteTokenType::STRING))
+                    throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                           "String token can only use token-pasting operator on other string token");
+
+                currentToken.EmitValue(pasted, input);
+                copied = currentToken.m_end;
                 pasteNext = false;
             }
+            else if (pasting)
+                flushPasted();
         }
     }
 
-    if (inputSize > previousToken.m_end)
-        ss << std::string(input, previousToken.m_end, inputSize - previousToken.m_end);
-
     if (pasteNext)
         throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without following token");
+
+    if (pasting)
+        flushPasted();
+
+    if (inputSize > copied)
+        ss << std::string(input, copied, inputSize - copied);
 
     input = ss.str();
 }

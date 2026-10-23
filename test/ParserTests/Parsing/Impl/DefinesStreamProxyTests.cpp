@@ -1127,6 +1127,26 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Can chain token-pasting operators", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define member(list, i) list##_member##i",
+            "member(party, 0)",
+            "#define glue(a, b, c) a ## b ## c",
+            "glue(\"Hello\", \" \", \"World\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "party_member0");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "\"Hello World\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with string and stringization outside macro", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
