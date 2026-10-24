@@ -1,5 +1,6 @@
 #include "FileUtils.h"
 
+#include <algorithm>
 #include <cstring>
 #include <sstream>
 
@@ -7,8 +8,14 @@ namespace fs = std::filesystem;
 
 namespace utils
 {
-    bool ParsePathsString(const std::string& pathsString, std::set<std::string>& output)
+    bool ParsePathsString(const std::string& pathsString, std::vector<std::string>& output)
     {
+        const auto addPath = [&output](std::string path)
+        {
+            if (std::ranges::find(output, path) == output.end())
+                output.emplace_back(std::move(path));
+        };
+
         std::ostringstream currentPath;
         auto pathStart = true;
         auto quotationPos = 0; // 0 = before quotations, 1 = in quotations, 2 = after quotations
@@ -39,7 +46,7 @@ namespace utils
                     auto path = currentPath.str();
                     if (!path.empty())
                     {
-                        output.insert(path);
+                        addPath(std::move(path));
                         currentPath = std::ostringstream();
                     }
 
@@ -61,7 +68,7 @@ namespace utils
 
         if (currentPath.tellp() > 0)
         {
-            output.insert(currentPath.str());
+            addPath(currentPath.str());
         }
 
         return true;

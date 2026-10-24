@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace utils
 {
@@ -17,10 +17,10 @@ namespace utils
     /**
      * \brief Splits a path string as user input into a list of paths.
      * \param pathsString The path string that was taken as user input.
-     * \param output A set for strings to save the output to.
+     * \param output A list to append the paths to in the order they are specified, skipping paths it already contains.
      * \return \c true if the user input was valid and could be processed successfully, otherwise \c false.
      */
-    bool ParsePathsString(const std::string& pathsString, std::set<std::string>& output);
+    bool ParsePathsString(const std::string& pathsString, std::vector<std::string>& output);
 
     enum class TextFileCheckDirtyResult : std::uint8_t
     {
