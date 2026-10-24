@@ -36,11 +36,11 @@ namespace test::zone::definition::zone_def_writer
 >game,IW4
 
 localize,test
+menulist,ui_mp/test.txt
 image,unused_image
 material,white
 material,,black
 menu,main
-menulist,ui_mp/test.txt
 )");
     }
 
@@ -56,10 +56,10 @@ menulist,ui_mp/test.txt
         REQUIRE(WriteZoneDef(zone, std::move(assetTypes)) == R"(// Call Of Duty: Modern Warfare 2
 >game,IW4
 
+menulist,ui_mp/test.txt
 material,,white
 material,,black
 menu,main
-menulist,ui_mp/test.txt
 )");
     }
 } // namespace test::zone::definition::zone_def_writer

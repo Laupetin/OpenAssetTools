@@ -17,12 +17,19 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone&
 
     for (const auto& asset : zone.m_pools)
     {
+        if (asset->m_type == ASSET_TYPE_MENULIST && filter.ShouldWriteAsset(*asset))
+            stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), filter.EntryName(*asset));
+    }
+
+    for (const auto& asset : zone.m_pools)
+    {
         if (!filter.ShouldWriteAsset(*asset))
             continue;
 
         switch (asset->m_type)
         {
         case ASSET_TYPE_LOCALIZE_ENTRY:
+        case ASSET_TYPE_MENULIST:
             break;
 
         default:
