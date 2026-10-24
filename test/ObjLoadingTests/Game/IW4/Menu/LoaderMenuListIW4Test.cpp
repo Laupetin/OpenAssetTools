@@ -76,6 +76,11 @@ namespace
             return m_asset_creator->CreateAsset(DEFAULT_ASSET_NAME, m_context);
         }
 
+        AssetCreationResult CreateMenuList(const std::string& name)
+        {
+            return m_asset_creator->CreateAsset(name, m_context);
+        }
+
         menuDef_t* GetMenuAsset(const std::string& menuName) const
         {
             const auto addedAsset = m_zone.m_pools.GetAsset(ASSET_TYPE_MENU, menuName);
@@ -670,4 +675,44 @@ TEST_CASE("MenuParsingIW4IT: Double text expressions respect permissive mode", "
         CHECK(expression->entries[0].data.operand.dataType == VAL_FLOAT);
         CHECK(expression->entries[0].data.operand.internals.floatVal == Approx(3.5));
     }
+}
+
+TEST_CASE("MenuParsingIW4IT: Keeps the menus of a menu list loaded by an earlier one", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
+
+    helper.AddFile("ui_mp/ingame.txt", R"testmenu(
+{
+    loadMenu { "ui_mp/scriptmenus/killstreak.menu" }
+}
+)testmenu");
+
+    helper.AddFile("ui_mp/scriptmenus/killstreak.menu", R"testmenu(
+{
+    loadMenu { "ui_mp/killstreak_hint.menu" }
+    menuDef
+    {
+        name "killstreak"
+    }
+}
+)testmenu");
+
+    helper.AddFile("ui_mp/killstreak_hint.menu", R"testmenu(
+{
+    menuDef
+    {
+        name "killstreak_hint"
+    }
+}
+)testmenu");
+
+    REQUIRE(helper.CreateMenuList("ui_mp/ingame.txt").HasBeenSuccessful());
+
+    const auto result = helper.CreateMenuList("ui_mp/scriptmenus/killstreak.menu");
+    REQUIRE(result.HasBeenSuccessful());
+
+    const auto* menuList = static_cast<const MenuList*>(result.GetAssetInfo()->m_ptr);
+    REQUIRE(menuList->menuCount == 2);
+    REQUIRE(menuList->menus[0] == helper.GetMenuAsset("killstreak"));
+    REQUIRE(menuList->menus[1] == helper.GetMenuAsset("killstreak_hint"));
 }
