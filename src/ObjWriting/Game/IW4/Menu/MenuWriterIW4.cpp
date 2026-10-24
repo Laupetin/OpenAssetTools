@@ -740,7 +740,10 @@ namespace
             }
 
             if (!item.typeData.editField)
+            {
+                WriteStringProperty("dvar", item.dvar);
                 return;
+            }
 
             const auto& editField = *item.typeData.editField;
             if (std::fabs(-1.0f - editField.defVal) >= std::numeric_limits<float>::epsilon()
