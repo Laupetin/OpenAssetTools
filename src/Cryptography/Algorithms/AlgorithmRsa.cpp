@@ -84,6 +84,40 @@ namespace
 
 namespace cryptography
 {
+    bool RsaDecryptPkcs1(
+        const uint8_t* privateKey, const size_t privateKeySize, const uint8_t* encrypted, const size_t encryptedSize, uint8_t* output, size_t& outputSize)
+    {
+        internal::CryptoLibrary::Init();
+
+        rsa_key key{};
+        if (rsa_import(privateKey, static_cast<unsigned long>(privateKeySize), &key) != CRYPT_OK)
+            return false;
+
+        ltc_rsa_op_parameters params{
+            .params =
+                ltc_rsa_parameters{
+                                   .saltlen = 0,
+                                   .hash_idx = -1,
+                                   .mgf1_hash_idx = -1,
+                                   },
+            .padding = LTC_PKCS_1_V1_5,
+            .wprng = -1,
+            .prng = nullptr,
+            .u = {},
+        };
+
+        auto decryptedSize = static_cast<unsigned long>(outputSize);
+        int stat = 0;
+        const auto result = rsa_decrypt_key_v2(encrypted, static_cast<unsigned long>(encryptedSize), output, &decryptedSize, &params, &stat, &key);
+        rsa_free(&key);
+
+        if (result != CRYPT_OK || stat != 1)
+            return false;
+
+        outputSize = static_cast<size_t>(decryptedSize);
+        return true;
+    }
+
     std::unique_ptr<IPublicKeyAlgorithm> CreateRsa(const HashingAlgorithm hashingAlgorithm, const RsaPaddingMode paddingMode)
     {
         return std::make_unique<AlgorithmRsa>(hashingAlgorithm, paddingMode);

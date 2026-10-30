@@ -1,5 +1,6 @@
 #include "IGame.h"
 
+#include "CODO/GameCODO.h"
 #include "IW3/GameIW3.h"
 #include "IW4/GameIW4.h"
 #include "IW5/GameIW5.h"
@@ -14,6 +15,7 @@
 IGame* IGame::GetGameById(GameId gameId)
 {
     static IGame* games[]{
+        new CODO::Game(),
         new IW3::Game(),
         new IW4::Game(),
         new IW5::Game(),

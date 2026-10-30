@@ -11,6 +11,7 @@ It is not a reimplementation of existing modding tools or related to them but ai
 In its current form, it is still incomplete and only offers a small subset of modding features.
 It currently offers support for the PC versions of:
 
+- [CODO (Call of Duty: Online - 2012-2021)](https://en.wikipedia.org/wiki/Call_of_Duty_Online)
 - [IW3 (COD4: Modern Warfare - 2007)](https://en.wikipedia.org/wiki/Call_of_Duty_4:_Modern_Warfare)
 - [IW4 (Modern Warfare 2 - 2009)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_2)
 - [IW5 (Modern Warfare 3 - 2011)](https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_3)
