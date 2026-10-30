@@ -3510,6 +3510,63 @@ namespace CODO
         VEH_TYPE_COUNT
     };
 
+    enum VehicleAxleType
+    {
+        VEH_AXLE_FRONT,
+        VEH_AXLE_REAR,
+        VEH_AXLE_ALL,
+        VEH_AXLE_COUNT
+    };
+
+    struct VehiclePhysDef
+    {
+        int physicsEnabled;
+        const char* physPresetName;
+        PhysPreset* physPreset;
+        const char* accelGraphName;
+        VehicleAxleType steeringAxle;
+        VehicleAxleType powerAxle;
+        VehicleAxleType brakingAxle;
+        float topSpeed;
+        float reverseSpeed;
+        float maxVelocity;
+        float maxPitch;
+        float maxRoll;
+        float suspensionTravelFront;
+        float suspensionTravelRear;
+        float suspensionStrengthFront;
+        float suspensionDampingFront;
+        float suspensionStrengthRear;
+        float suspensionDampingRear;
+        float frictionBraking;
+        float frictionCoasting;
+        float frictionTopSpeed;
+        float frictionSide;
+        float frictionSideRear;
+        float velocityDependentSlip;
+        float rollStability;
+        float rollResistance;
+        float pitchResistance;
+        float yawResistance;
+        float uprightStrengthPitch;
+        float uprightStrengthRoll;
+        float targetAirPitch;
+        float airYawTorque;
+        float airPitchTorque;
+        float minimumMomentumForCollision;
+        float collisionLaunchForceScale;
+        float wreckedMassScale;
+        float wreckedBodyFriction;
+        float minimumJoltForNotify;
+        float slipThresholdFront;
+        float slipThresholdRear;
+        float slipFricScaleFront;
+        float slipFricScaleRear;
+        float slipFricRateFront;
+        float slipFricRateRear;
+        float slipYawTorque;
+    };
+
     struct VehicleDef
     {
         const char* name;
@@ -3552,12 +3609,20 @@ namespace CODO
         int projectileDamage;
         int projectileSplashDamage;
         int heavyExplosiveDamage;
-        // vehPhysDef
-        int physicsEnabled;
-        const char* physPresetName;
-        PhysPreset* physPreset;
-        const char* accelGraphName;
-        unsigned int unknownB8[54];
+        VehiclePhysDef vehPhysDef;
+        float wheelRadius;
+        float suspensionTravel;
+        float maxSteeringAngle;
+        float steeringLerp;
+        float minSteeringScale;
+        float minSteeringSpeed;
+        int camLookEnabled;
+        float camLerp;
+        float camPitchInfluence;
+        float camRollInfluence;
+        float camFovIncrease;
+        float camFovOffset;
+        float camFovSpeed;
         const char* turretWeaponName;
         WeaponCompleteDef* turretWeapon;
         float turretHorizSpanLeft;
@@ -3605,7 +3670,23 @@ namespace CODO
         float slideVolume;
         float slideBlendSpeed;
         float inAirPitch;
-        unsigned int unknown2C8[19];
+        int remoteControl;
+        int thirdPersonDriver;
+        float thirdPersonCameraRange;
+        float thirdPersonCameraHeight[2];
+        float thirdPersonCameraPitch[2];
+        float thirdPersonCameraMinPitchClamp;
+        float thirdPersonCameraMaxPitchClamp;
+        float thirdPersonCameraSpringDistance;
+        float thirdPersonCameraSpringTime;
+        float thirdPersonCameraHandbrakeTurnRateInc;
+        float thirdPersonCameraFov;
+        int boostEnabled;
+        float boostSpeedMultiplier;
+        float boostAccelMultiplier;
+        float boostDuration;
+        float boostRechargeTime;
+        int handbrakeEnabled;
     };
 
     struct AddonMapEnts
