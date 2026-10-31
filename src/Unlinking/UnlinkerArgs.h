@@ -27,6 +27,7 @@ private:
     static void PrintVersion();
     bool SetImageDumpingMode() const;
     bool SetModelDumpingMode() const;
+    bool SetXAnimDumpingMode() const;
 
     void AddSpecifiedAssetType(std::string value);
     void ParseCommaSeparatedAssetTypeString(const std::string& input);
