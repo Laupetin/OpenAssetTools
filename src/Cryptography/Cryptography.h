@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Algorithms/AlgorithmAesCtr.h"
 #include "Algorithms/AlgorithmMd5.h"
 #include "Algorithms/AlgorithmRsa.h"
 #include "Algorithms/AlgorithmSalsa20.h"

@@ -1,5 +1,6 @@
 #include "IZoneLoaderFactory.h"
 
+#include "Game/CODO/ZoneLoaderFactoryCODO.h"
 #include "Game/IW3/ZoneLoaderFactoryIW3.h"
 #include "Game/IW4/ZoneLoaderFactoryIW4.h"
 #include "Game/IW5/ZoneLoaderFactoryIW5.h"
@@ -13,6 +14,7 @@
 const IZoneLoaderFactory* IZoneLoaderFactory::GetZoneLoaderFactoryForGame(GameId game)
 {
     static const IZoneLoaderFactory* zoneCreators[]{
+        new CODO::ZoneLoaderFactory(),
         new IW3::ZoneLoaderFactory(),
         new IW4::ZoneLoaderFactory(),
         new IW5::ZoneLoaderFactory(),
