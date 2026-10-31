@@ -264,7 +264,7 @@ namespace
                     // Functions do not have opening parenthesis in the entries. We can just pretend they do though
                     const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
                     m_stream << "(";
-                    WriteStatementEntryRange(statement, currentPos + 1, closingParenPos);
+                    WriteStatementFunctionArguments(statement, currentPos + 1, closingParenPos);
                     m_stream << ")";
                     currentPos = closingParenPos + 1;
                 }
@@ -367,6 +367,20 @@ namespace
                     WriteStatementOperand(statement, currentPos, spaceNext);
                 }
             }
+        }
+
+        void WriteStatementFunctionArguments(const Statement_s& statement, size_t startOffset, size_t endOffset) const
+        {
+            while (startOffset + 2 < endOffset && statement.entries[startOffset].type == EET_OPERATOR && statement.entries[startOffset].data.op == OP_LEFTPAREN)
+            {
+                if (FindStatementClosingParenthesis(statement, startOffset) != endOffset - 1)
+                    break;
+
+                ++startOffset;
+                --endOffset;
+            }
+
+            WriteStatementEntryRange(statement, startOffset, endOffset);
         }
 
         void WriteStatement(const Statement_s& statement) const
