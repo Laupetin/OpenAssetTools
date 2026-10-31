@@ -84,6 +84,22 @@ namespace
         }
     }
 
+    TEST_CASE("CsvOutputStream can write rows with different column counts", "[csv]")
+    {
+        std::ostringstream ss;
+        CsvOutputStream outputStream(ss, false);
+
+        outputStream.WriteColumn("one");
+        outputStream.WriteColumn("two");
+        outputStream.WriteColumn("three");
+        outputStream.NextRow();
+        outputStream.WriteColumn("foo");
+        outputStream.WriteColumn("bar");
+        outputStream.NextRow();
+
+        REQUIRE(ss.str() == ("one,two,three" NEW_LINE "foo,bar" NEW_LINE));
+    }
+
     TEST_CASE("CsvInputStream", "[csv]")
     {
         SECTION("Ensure can write normal single-line csv")

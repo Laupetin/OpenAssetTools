@@ -1,0 +1,7 @@
+>game,IW4
+
+ignore,SimpleZoneIW4
+
+material,white
+rawfile,SimpleZone.txt
+rawfile,NotIgnored.txt
