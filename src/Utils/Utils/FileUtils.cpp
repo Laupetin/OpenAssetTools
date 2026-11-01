@@ -1,13 +1,23 @@
 #include "FileUtils.h"
 
+#include <algorithm>
 #include <cstring>
 #include <sstream>
 
 namespace fs = std::filesystem;
 
+namespace
+{
+    void AddPathsStringIfDistinct(std::vector<std::string>& output, std::string path)
+    {
+        if (std::ranges::find(output, path) == output.end())
+            output.emplace_back(std::move(path));
+    };
+} // namespace
+
 namespace utils
 {
-    bool ParsePathsString(const std::string& pathsString, std::set<std::string>& output)
+    bool ParsePathsString(const std::string& pathsString, std::vector<std::string>& output)
     {
         std::ostringstream currentPath;
         auto pathStart = true;
@@ -39,7 +49,7 @@ namespace utils
                     auto path = currentPath.str();
                     if (!path.empty())
                     {
-                        output.insert(path);
+                        AddPathsStringIfDistinct(output, std::move(path));
                         currentPath = std::ostringstream();
                     }
 
@@ -61,7 +71,7 @@ namespace utils
 
         if (currentPath.tellp() > 0)
         {
-            output.insert(currentPath.str());
+            AddPathsStringIfDistinct(output, currentPath.str());
         }
 
         return true;

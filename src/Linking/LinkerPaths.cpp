@@ -152,7 +152,7 @@ namespace
         {
         }
 
-        void BuildFromArgs(const std::set<std::string>& templates)
+        void BuildFromArgs(const std::vector<std::string>& templates)
         {
             m_templates.reserve(templates.size());
             for (const auto& templateString : templates)
