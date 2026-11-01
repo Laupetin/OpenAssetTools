@@ -1,6 +1,7 @@
 #include "ZoneWriteTemplate.h"
 
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -14,11 +15,11 @@ namespace
     constexpr CodeTemplateFileTag TAG_SOURCE = 2;
     constexpr CodeTemplateFileTag TAG_ALL_WRITERS = 3;
 
-    class PerTemplate final : BaseTemplate
+    class PerVariant final : BasePerVariantTemplate
     {
     public:
-        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerVariant(std::ostream& stream, const PerVariantRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -30,21 +31,28 @@ namespace
             LINE("#pragma once")
             LINE("")
 
-            for (const auto* asset : m_env.m_assets)
+            for (const auto* asset : m_env.m_all_assets)
             {
-                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_write_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+                if (!asset->IsIncludedForVariant(m_env.m_variant->m_index))
+                    continue;
+
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_write_db.h\"",
+                      m_env.m_game,
+                      Lower(asset->m_asset_name),
+                      Lower(m_env.m_game),
+                      Lower(m_env.m_variant->m_name))
             }
         }
 
     private:
-        const OncePerTemplateRenderingContext& m_env;
+        const PerVariantRenderingContext& m_env;
     };
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -124,8 +132,8 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                     LINE(VariableDecl(type->m_type))
             }
             for (const auto* type : m_env.m_used_types)
@@ -157,7 +165,7 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
+            LINEF("#include \"{0}_{1}_{2}_write_db.h\"", Lower(m_env.m_asset->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -165,7 +173,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_write_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_write_db.h\"", Lower(type->m_info->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
 
@@ -230,9 +238,9 @@ namespace
             SINGLE_POINTER
         };
 
-        static std::string WriterClassName(const StructureInformation* asset)
+        std::string WriterClassName(const StructureInformation* asset) const
         {
-            return std::format("Writer_{0}", asset->m_definition->m_name);
+            return std::format("Writer_{0}_{1}", asset->m_asset_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -357,7 +365,7 @@ namespace
                 "{0}::{0}({1}* asset, const Zone& zone, ZoneOutputStream& stream)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
 
             m_intendation++;
-            LINEF(": AssetWriter(zone.m_pools.GetAssetOrAssetReference({0}::EnumEntry, NonReferenceAssetName(AssetName<{0}>(*asset))), zone, stream)",
+            LINEF(": AssetWriter(zone.m_pools.GetAssetOrAssetReference(Asset{0}::EnumEntry, NonReferenceAssetName(AssetName<Asset{0}>(*asset))), zone, stream)",
                   m_env.m_asset->m_asset_name)
             m_intendation--;
 
@@ -370,8 +378,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                     PrintVariableInitialization(type->m_type);
             }
             for (const auto* type : m_env.m_used_types)
@@ -484,25 +492,26 @@ namespace
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
                       MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
                 if (!computations.IsInRuntimeBlock())
                 {
-                    LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                    LINEF("const auto fill = m_stream->WriteWithFill({0} * fillArraySize);",
+                          member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                     LINE("for (auto i = 0uz; i < fillArraySize; i++)")
                     LINE("{")
                     m_intendation++;
                     LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
                     LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
                           MakeSafeTypeName(member->m_type->m_definition),
-                          member->m_member->m_type_declaration->m_type->GetSize())
+                          member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                     m_intendation--;
                     LINE("}")
                 }
                 else
                 {
-                    LINEF("m_stream->IncBlockPos({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                    LINEF("m_stream->IncBlockPos({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 }
             }
             else
@@ -621,12 +630,12 @@ namespace
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("Write_{0}(true);", MakeSafeTypeName(member->m_type->m_definition))
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream->WriteWithFill({1}));",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
             }
             else
             {
@@ -736,16 +745,16 @@ namespace
 
             if (writeType == MemberWriteType::ARRAY_POINTER)
             {
-                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                if (member->m_type && !MemoryLayoutMatches(*member->m_type))
                 {
-                    LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize())
+                    LINE_MIDDLEF(", {0}", member->m_type->m_definition->GetSize(m_env.m_word_size))
                 }
 
                 LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
             }
             else if (writeType == MemberWriteType::POINTER_ARRAY)
             {
-                if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+                if (member->m_type && !MemoryLayoutMatches(*member->m_type))
                 {
                     LINE_MIDDLEF(", {0}", m_env.m_pointer_size)
                 }
@@ -813,7 +822,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Align({0});", modifier.GetAlignment())
+                LINEF("m_stream->Align({0});", modifier.GetAlignment(m_env.m_word_size))
             }
 
             WriteMember_InsertReuse(info, member, modifier, writeType);
@@ -838,7 +847,7 @@ namespace
         std::string MakeReusableInnerOffset(const DataDefinition* dataDefinition, const Variable* member) const
         {
             if (m_env.m_word_size_mismatch)
-                return std::to_string(member->m_offset);
+                return std::to_string(member->GetOffset(m_env.m_word_size));
 
             return std::format("offsetof({0}, {1})", dataDefinition->GetFullName(), member->m_name);
         }
@@ -1106,7 +1115,7 @@ namespace
             {
                 LINE("if (atStreamStart)")
 
-                if (info->m_has_matching_cross_platform_structure)
+                if (MemoryLayoutMatches(*info))
                 {
                     m_intendation++;
                     if (dynamicMember == nullptr)
@@ -1115,7 +1124,7 @@ namespace
                               MakeTypeWrittenVarName(info->m_definition),
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
-                              info->m_definition->GetSize())
+                              info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else
                     {
@@ -1132,7 +1141,7 @@ namespace
                     LINE("{")
                     m_intendation++;
                     LINEF("const auto fillAccessor = m_stream->WriteWithFill({0});",
-                          dynamicMember == nullptr ? info->m_definition->GetSize() : dynamicMember->m_member->m_offset)
+                          dynamicMember == nullptr ? info->m_definition->GetSize(m_env.m_word_size) : dynamicMember->m_member->GetOffset(m_env.m_word_size))
                     LINEF("{0} = fillAccessor.Offset();", MakeTypeWrittenVarName(info->m_definition))
                     LINEF("FillStruct_{0}(fillAccessor);", MakeSafeTypeName(info->m_definition))
                     m_intendation--;
@@ -1256,7 +1265,7 @@ namespace
                                                   const DeclarationModifierComputations& modifier,
                                                   const size_t nestedBaseOffset)
         {
-            if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+            if (memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type))
             {
                 LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
                 LINE("{")
@@ -1265,7 +1274,7 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -1286,7 +1295,7 @@ namespace
 
             if (!hasAnonymousType)
             {
-                const auto hasMismatchingStructure = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+                const auto hasMismatchingStructure = memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type);
                 const auto hasDynamicMember = memberInfo.m_type && StructureComputations(memberInfo.m_type).GetDynamicMember();
                 if (hasMismatchingStructure || hasDynamicMember)
                 {
@@ -1304,7 +1313,7 @@ namespace
             }
             else if (memberInfo.m_member->m_name.empty())
             {
-                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                const auto anonymousMemberOffset = memberInfo.m_member->GetOffset(m_env.m_word_size) + nestedBaseOffset;
                 for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
                 {
                     PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);
@@ -1478,7 +1487,7 @@ namespace
 
         void PrintWritePtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info, const bool reusable) const
         {
-            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment(m_env.m_word_size));
             LINEF("m_stream->Align({0});", alignment)
 
             if (reusable)
@@ -1579,7 +1588,7 @@ namespace
             LINE("")
             LINE("if (atStreamStart)")
 
-            if (info->m_has_matching_cross_platform_structure)
+            if (MemoryLayoutMatches(*info))
             {
                 m_intendation++;
                 LINEF("{0} = m_stream->Write<{1}>({2}, count);", MakeTypeWrittenVarName(def), def->GetFullName(), MakeTypeVarName(def))
@@ -1590,7 +1599,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize())
+                LINEF("const auto arrayFill = m_stream->WriteWithFill({0} * count);", def->GetSize(m_env.m_word_size))
                 LINEF("{0} = arrayFill.Offset();", MakeTypeWrittenVarName(def))
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
@@ -1599,7 +1608,7 @@ namespace
                 m_intendation++;
 
                 LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
-                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize(m_env.m_word_size))
                 LINE("var++;")
 
                 m_intendation--;
@@ -1625,7 +1634,7 @@ namespace
             LINEF("{0} = varWritten;", MakeTypeWrittenVarName(info->m_definition))
             LINEF("Write_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
-            LINEF("varWritten.Inc({0});", def->GetSize())
+            LINEF("varWritten.Inc({0});", def->GetSize(m_env.m_word_size))
 
             m_intendation--;
             LINE("}")
@@ -1634,44 +1643,53 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetWriter{0}.h", context.m_game), TAG_ALL_WRITERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetWriter_{0}_{1}.h", gameName, variantName), TAG_ALL_WRITERS);
 
     return files;
 }
 
-void ZoneWriteTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+void ZoneWriteTemplate::RenderOncePerVariantFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context)
 {
     assert(fileTag == TAG_ALL_WRITERS);
 
-    const PerTemplate t(stream, context);
+    const PerVariant t(stream, context);
     t.AllWriters();
 }
 
-std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
     utils::MakeStringLowerCase(gameName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_write_db.h", assetName, gameName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_write_db.cpp", assetName, gameName), TAG_SOURCE);
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_write_db.h", assetName, gameName, variantName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_write_db.cpp", assetName, gameName, variantName), TAG_SOURCE);
 
     return files;
 }
 
-void ZoneWriteTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void ZoneWriteTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

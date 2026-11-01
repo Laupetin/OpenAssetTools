@@ -5,5 +5,5 @@
 
 namespace zone_creator
 {
-    [[nodiscard]] std::unique_ptr<Zone> CreateZoneForDefinition(GameId game, ZoneCreationContext& context);
+    [[nodiscard]] std::unique_ptr<Zone> CreateZoneForDefinition(GameId gameId, GameVariantId variantId, ZoneCreationContext& context);
 }

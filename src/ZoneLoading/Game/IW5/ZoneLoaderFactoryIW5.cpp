@@ -8,6 +8,7 @@
 #include "Loading/Processor/ProcessorAuthedBlocks.h"
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorInflate.h"
+#include "Loading/Processor/ProcessorSkipAuthedBlocks.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadHash.h"
@@ -20,6 +21,7 @@
 #include "Loading/Steps/StepVerifyHash.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
+#include "Loading/WordSizeDeterminator.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Logging/Log.h"
 
@@ -32,19 +34,119 @@ using namespace IW5;
 
 namespace
 {
-    void SetupBlock(ZoneLoader& zoneLoader)
+    GameVariantId DeterminePcVariant(const ZoneDataPeeking& filePeek, const bool isSigned)
+    {
+        std::optional<GameWordSize> wordSize;
+        filePeek.PeekWithStream(
+            [&wordSize, isSigned](std::istream& stream)
+            {
+                auto zoneReader = std::make_unique<ZoneReader>();
+
+                size_t skipSizePreInflate = sizeof(ZoneHeader) //
+                                            + 1                // unknown
+                                            + 8                // timestamp
+                    ;
+                if (isSigned)
+                {
+                    skipSizePreInflate += sizeof(DB_AuthHeader)                                      // header
+                                          + ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader) // rest of the first chunk
+                        ;
+                }
+
+                constexpr size_t skipSizePostInflate = 8       // Zone sizes
+                                                       + 4 * 9 // Xblock sizes
+                    ;
+
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePreInflate));
+                if (isSigned)
+                {
+                    zoneReader->AddLoadingStep(step::CreateStepAddProcessor(
+                        processor::CreateProcessorSkipAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                                   ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                                   static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
+                                                                   32u)));
+                }
+                zoneReader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePostInflate));
+
+                wordSize = DetermineWordSizeFromXAssetList(stream,
+                                                           std::move(zoneReader),
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 4,
+                                                               .offsetAssetCount = 8,
+                                                               .offsetAssetPointer = 12,
+                                                           },
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 8,
+                                                               .offsetAssetCount = 16,
+                                                               .offsetAssetPointer = 24,
+                                                           });
+            });
+
+        if (wordSize && *wordSize == GameWordSize::ARCH_64)
+            return GameVariantId::IW5_PC64;
+
+        return GameVariantId::IW5_PC32;
+    }
+
+    std::optional<ZoneLoaderInspectionResult> InspectZoneHeaderIw5(ZoneDataPeeking& filePeek)
+    {
+        const auto& header = filePeek.PeekStruct<ZoneHeader>();
+        if (header.m_version != ZoneConstants::ZONE_VERSION)
+            return std::nullopt;
+
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
+        {
+            return ZoneLoaderInspectionResult{
+                .m_game_id = GameId::IW5,
+                .m_variant_id = DeterminePcVariant(filePeek, true),
+                .m_is_official = true,
+                .m_is_signed = true,
+                .m_is_encrypted = false,
+            };
+        }
+
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
+        {
+            return ZoneLoaderInspectionResult{
+                .m_game_id = GameId::IW5,
+                .m_variant_id = DeterminePcVariant(filePeek, false),
+                .m_is_official = false,
+                .m_is_signed = false,
+                .m_is_encrypted = false,
+            };
+        }
+
+        return std::nullopt;
+    }
+
+    bool CanLoadZone(const ZoneLoaderInspectionResult& inspectionResult)
+    {
+#ifdef ARCH_x86
+        if (GameVariant::GetVariantById(inspectionResult.m_variant_id)->GetWordSize() == GameWordSize::ARCH_64)
+        {
+            con::warn("x64 zones are only supported by a x64 OAT build!");
+            return false;
+        }
+#endif
+        return true;
+    }
+
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(XFILE_BLOCK_SCRIPT, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(XFILE_BLOCK_SCRIPT, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -123,37 +225,11 @@ namespace
 
 std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
-    const auto& header = filePeek.PeekStruct<ZoneHeader>();
-    if (header.m_version != ZoneConstants::ZONE_VERSION)
+    const auto result = InspectZoneHeaderIw5(filePeek);
+    if (!result || !CanLoadZone(*result))
         return std::nullopt;
 
-    if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
-    {
-        return ZoneLoaderInspectionResult{
-            .m_game_id = GameId::IW5,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
-            .m_is_official = true,
-            .m_is_signed = true,
-            .m_is_encrypted = false,
-        };
-    }
-
-    if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
-    {
-        return ZoneLoaderInspectionResult{
-            .m_game_id = GameId::IW5,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
-            .m_is_official = false,
-            .m_is_signed = false,
-            .m_is_encrypted = false,
-        };
-    }
-
-    return std::nullopt;
+    return result;
 }
 
 std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPeeking& filePeek,
@@ -164,15 +240,17 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
+    const auto* variant = GameVariant::GetVariantById(inspectResult->m_variant_id);
+
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW5, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, variant->GetId());
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -190,7 +268,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
 
     // Start of the XFile struct
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
     // Start of the zone content
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -198,10 +276,11 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         {
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
-        32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        variant->GetWordSize() == GameWordSize::ARCH_64 ? 64u : 32u,
+        ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
+        zonePtr,
         std::move(progressCallback)));
 
     return zoneLoader;

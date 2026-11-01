@@ -9,15 +9,20 @@ Variable::Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclar
 {
 }
 
-unsigned Variable::GetAlignment() const
+unsigned Variable::GetAlignment(const WordSize wordSize) const
 {
     if (m_has_alignment_override)
         return m_alignment_override;
 
-    return m_type_declaration->GetAlignment();
+    return m_type_declaration->GetAlignment(wordSize);
 }
 
 bool Variable::GetForceAlignment() const
 {
     return m_has_alignment_override || m_type_declaration->GetForceAlignment();
+}
+
+unsigned Variable::GetOffset(const WordSize wordSize) const
+{
+    return m_offset[std::to_underlying(wordSize)];
 }

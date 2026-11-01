@@ -102,7 +102,7 @@ namespace
         auto zone = std::move(*maybeZone);
 
         REQUIRE(zone->m_game_id == GameId::T6);
-        REQUIRE(zone->m_platform == GamePlatform::PC);
+        REQUIRE(zone->m_variant_id == GameVariantId::T6_PC);
         REQUIRE(zone->m_name == "CombinedZoneT6");
         REQUIRE(zone->m_pools.GetTotalAssetCount() == 2);
         REQUIRE(zone->m_pools.GetAsset<T6::AssetTechniqueSet>("trivial_floatz_2992w610"));

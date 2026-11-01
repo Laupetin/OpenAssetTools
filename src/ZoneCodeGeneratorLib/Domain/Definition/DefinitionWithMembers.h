@@ -16,14 +16,14 @@ public:
 
     DefinitionWithMembers(std::string _namespace, std::string name, unsigned pack);
 
-    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const override;
     [[nodiscard]] bool GetForceAlignment() const override;
-    [[nodiscard]] unsigned GetSize() const override;
+    [[nodiscard]] unsigned GetSize(WordSize wordSize) const override;
     [[nodiscard]] bool IsAnonymous() const;
 
     unsigned m_flags;
-    unsigned m_size;
-    unsigned m_alignment;
+    unsigned m_size[WORD_SIZE_COUNT];
+    unsigned m_alignment[WORD_SIZE_COUNT];
     unsigned m_pack;
 
     std::vector<std::shared_ptr<Variable>> m_members;

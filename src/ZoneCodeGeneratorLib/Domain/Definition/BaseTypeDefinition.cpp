@@ -13,7 +13,7 @@ DataDefinitionType BaseTypeDefinition::GetType() const
     return DataDefinitionType::BASE_TYPE;
 }
 
-unsigned BaseTypeDefinition::GetAlignment() const
+unsigned BaseTypeDefinition::GetAlignment(const WordSize wordSize) const
 {
     return m_size;
 }
@@ -23,7 +23,7 @@ bool BaseTypeDefinition::GetForceAlignment() const
     return false;
 }
 
-unsigned BaseTypeDefinition::GetSize() const
+unsigned BaseTypeDefinition::GetSize(const WordSize wordSize) const
 {
     return m_size;
 }

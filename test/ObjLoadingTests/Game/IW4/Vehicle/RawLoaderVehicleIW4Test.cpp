@@ -85,7 +85,7 @@ tag_trophy_04_fx)"
         MockSearchPath loadingSearchPath;
         loadingSearchPath.AddFileData("vehicles/test_vehicle", RAW_VEHICLE);
 
-        Zone zone("LoadingZone", 0, GameId::IW4, GamePlatform::PC);
+        Zone zone("LoadingZone", 0, GameVariantId::IW4_PC32);
 
         auto* physPresetInfo = GivenTestPhysPreset("vehicle_tank", zone);
         auto* weaponInfo = GivenTestWeapon("sp/bradley_turret", zone);

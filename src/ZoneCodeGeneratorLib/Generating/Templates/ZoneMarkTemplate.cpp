@@ -2,6 +2,7 @@
 
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -14,11 +15,11 @@ namespace
     constexpr int TAG_SOURCE = 2;
     constexpr int TAG_ALL_MARKERS = 3;
 
-    class PerTemplate final : BaseTemplate
+    class PerVariant final : BasePerVariantTemplate
     {
     public:
-        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerVariant(std::ostream& stream, const PerVariantRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -30,21 +31,28 @@ namespace
             LINE("#pragma once")
             LINE("")
 
-            for (const auto* asset : m_env.m_assets)
+            for (const auto* asset : m_env.m_all_assets)
             {
-                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_mark_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+                if (!asset->IsIncludedForVariant(m_env.m_variant->m_index))
+                    continue;
+
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_mark_db.h\"",
+                      m_env.m_game,
+                      Lower(asset->m_asset_name),
+                      Lower(m_env.m_game),
+                      Lower(m_env.m_variant->m_name))
             }
         }
 
     private:
-        const OncePerTemplateRenderingContext& m_env;
+        const PerVariantRenderingContext& m_env;
     };
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -132,14 +140,14 @@ namespace
             m_intendation--;
             LINE("}")
             LINE("")
-            LINEF("DEFINE_MARKER_CLASS_FOR_ASSET({0}::{1}, {0}::{2})", m_env.m_game, m_env.m_asset->m_asset_name, MarkerClassName(m_env.m_asset))
+            LINEF("DEFINE_MARKER_CLASS_FOR_ASSET({0}::Asset{1}, {0}::{2})", m_env.m_game, m_env.m_asset->m_asset_name, MarkerClassName(m_env.m_asset))
         }
 
         void Source()
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
+            LINEF("#include \"{0}_{1}_{2}_mark_db.h\"", Lower(m_env.m_asset->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
@@ -147,7 +155,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_mark_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_mark_db.h\"", Lower(type->m_info->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
             LINE("")
@@ -200,9 +208,9 @@ namespace
             SINGLE_POINTER
         };
 
-        static std::string MarkerClassName(const StructureInformation* asset)
+        std::string MarkerClassName(const StructureInformation* asset) const
         {
-            return std::format("Marker_{0}", asset->m_definition->m_name);
+            return std::format("Marker_{0}_{1}", asset->m_asset_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -301,7 +309,7 @@ namespace
 
             if (info && StructureComputations(info).IsAsset())
             {
-                LINEF("Mark_Dependency<{0}>(*{1});", info->m_asset_name, MakeTypePtrVarName(def))
+                LINEF("Mark_Dependency<Asset{0}>(*{1});", info->m_asset_name, MakeTypePtrVarName(def))
             }
             else
             {
@@ -397,14 +405,14 @@ namespace
             {
                 if (modifier.IsArray())
                 {
-                    LINEF("MarkArray_IndirectAssetRef({0}::EnumEntry, {1}, {2});",
+                    LINEF("MarkArray_IndirectAssetRef(Asset{0}::EnumEntry, {1}, {2});",
                           member->m_asset_ref,
                           MakeMemberAccess(info, member, modifier),
                           modifier.GetArraySize())
                 }
                 else
                 {
-                    LINEF("MarkArray_IndirectAssetRef({0}::EnumEntry, {1}, {2});",
+                    LINEF("MarkArray_IndirectAssetRef(Asset{0}::EnumEntry, {1}, {2});",
                           member->m_asset_ref,
                           MakeMemberAccess(info, member, modifier),
                           MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
@@ -412,7 +420,7 @@ namespace
             }
             else if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("Mark_IndirectAssetRef({0}::EnumEntry, {1});", member->m_asset_ref, MakeMemberAccess(info, member, modifier))
+                LINEF("Mark_IndirectAssetRef(Asset{0}::EnumEntry, {1});", member->m_asset_ref, MakeMemberAccess(info, member, modifier))
             }
             else
             {
@@ -428,7 +436,7 @@ namespace
         {
             if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("Mark_Dependency<{0}>({1});", member->m_type->m_asset_name, MakeMemberAccess(info, member, modifier))
+                LINEF("Mark_Dependency<Asset{0}>({1});", member->m_type->m_asset_name, MakeMemberAccess(info, member, modifier))
             }
             else if (loadType == MemberLoadType::POINTER_ARRAY)
             {
@@ -782,44 +790,53 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetMarker{0}.h", context.m_game), TAG_ALL_MARKERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetMarker_{0}_{1}.h", gameName, variantName), TAG_ALL_MARKERS);
 
     return files;
 }
 
-void ZoneMarkTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+void ZoneMarkTemplate::RenderOncePerVariantFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context)
 {
     assert(fileTag == TAG_ALL_MARKERS);
 
-    const PerTemplate t(stream, context);
+    const PerVariant t(stream, context);
     t.AllMarkers();
 }
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
     utils::MakeStringLowerCase(gameName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.h", assetName, gameName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_mark_db.cpp", assetName, gameName), TAG_SOURCE);
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_mark_db.h", assetName, gameName, variantName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_mark_db.cpp", assetName, gameName, variantName), TAG_SOURCE);
 
     return files;
 }
 
-void ZoneMarkTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void ZoneMarkTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

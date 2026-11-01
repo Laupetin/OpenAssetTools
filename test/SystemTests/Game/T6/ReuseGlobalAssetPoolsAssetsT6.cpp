@@ -105,7 +105,7 @@ namespace
         auto zone = std::move(*maybeZone);
 
         REQUIRE(zone->m_game_id == GameId::T6);
-        REQUIRE(zone->m_platform == GamePlatform::PC);
+        REQUIRE(zone->m_variant_id == GameVariantId::T6_PC);
         REQUIRE(zone->m_name == "TestZone");
         REQUIRE(zone->m_pools.GetTotalAssetCount() == 3);
         REQUIRE(zone->m_pools.GetAsset<T6::AssetMaterial>("Suzanne2"));

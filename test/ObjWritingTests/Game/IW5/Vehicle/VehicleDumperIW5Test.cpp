@@ -77,7 +77,7 @@ namespace
 
     std::string DumpVehicle(VehicleDef& vehicle)
     {
-        Zone dumpingZone("DumpingZone", 0, GameId::IW5, GamePlatform::PC);
+        Zone dumpingZone("DumpingZone", 0, GameVariantId::IW5_PC32);
         vehicle.trophyTags[0] = dumpingZone.m_script_strings.AddOrGetScriptString("tag_trophy_iw5");
         vehicle.audioOriginTag = dumpingZone.m_script_strings.AddOrGetScriptString("tag_audio_origin");
         vehicle.audioOriginTagAlt = dumpingZone.m_script_strings.AddOrGetScriptString("tag_audio_origin_alt");

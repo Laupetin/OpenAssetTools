@@ -4,9 +4,10 @@
 #include "Domain/Definition/StructDefinition.h"
 #include "Domain/Definition/TypedefDefinition.h"
 #include "Domain/Definition/UnionDefinition.h"
-#include "Domain/Environment/WordSize.h"
-#include "Domain/FastFile/FastFileBlock.h"
+#include "Domain/FastFileBlock.h"
+#include "Domain/GameVariant.h"
 #include "Domain/Information/StructureInformation.h"
+#include "Domain/WordSize.h"
 
 #include <vector>
 
@@ -30,8 +31,8 @@ public:
 
     [[nodiscard]] virtual const std::string& GetGameName() const = 0;
     virtual void SetGame(std::string gameName) = 0;
-    [[nodiscard]] virtual WordSize GetWordSize() const = 0;
-    virtual void SetWordSize(WordSize wordSize) = 0;
+    [[nodiscard]] virtual const std::vector<GameVariant*>& GetGameVariants() const = 0;
+    virtual void AddGameVariant(std::unique_ptr<GameVariant> gameVariant) = 0;
 
     [[nodiscard]] virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
     [[nodiscard]] virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;
