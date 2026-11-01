@@ -915,6 +915,24 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Macro arguments can contain strings with commas and brackets", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a, b) [a|b]",
+            R"(testMacro("Hello, world", "a ) b"))",
+            R"(testMacro("with \"quotes, and\" more", x))",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, R"(["Hello, world"|"a ) b"])");
+        ExpectLine(&proxy, 3, R"(["with \"quotes, and\" more"|x])");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Can use second macro after multi-line macro", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
