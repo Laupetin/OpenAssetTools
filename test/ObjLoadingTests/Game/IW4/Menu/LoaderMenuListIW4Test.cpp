@@ -6,6 +6,7 @@
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -14,6 +15,7 @@
 
 using namespace IW4;
 using namespace std::literals;
+using namespace Catch;
 using namespace Catch::Matchers;
 
 namespace test::game::iw4::menu::parsing::it
@@ -597,12 +599,14 @@ namespace test::game::iw4::menu::parsing::it
         CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
     }
 
-    TEST_CASE("MenuParsingIW4IT: Numeric text expressions respect permissive mode", "[parsing][converting][menu][it]")
+    TEST_CASE("MenuParsingIW4IT: Integer text expressions respect permissive mode", "[parsing][converting][menu][it]")
     {
         RestoreMenuLoadingConfiguration restore;
         const auto permissive = GENERATE(false, true);
+        const auto optimization = GENERATE(false, true);
+        CAPTURE(permissive, optimization);
         ObjLoading::Configuration.MenuPermissiveParsing = permissive;
-        ObjLoading::Configuration.MenuNoOptimization = GENERATE(false, true);
+        ObjLoading::Configuration.MenuNoOptimization = !optimization;
         MenuParsingItHelper helper;
         helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3); } } })MENU");
 
@@ -614,12 +618,58 @@ namespace test::game::iw4::menu::parsing::it
         REQUIRE(menu->itemCount == 1);
         const auto* item = menu->items[0];
         REQUIRE(item->text);
-        CHECK(std::string(item->text) == "fallback");
-        const auto* expression = item->textExp;
-        REQUIRE(expression);
-        REQUIRE(expression->numEntries == 1);
-        CHECK(expression->entries[0].type == EET_OPERAND);
-        CHECK(expression->entries[0].data.operand.dataType == VAL_INT);
-        CHECK(expression->entries[0].data.operand.internals.intVal == 3);
+
+        if (optimization)
+        {
+            CHECK(std::string(item->text) == "3");
+            REQUIRE(!item->textExp);
+        }
+        else
+        {
+            CHECK(std::string(item->text) == "fallback");
+            const auto* expression = item->textExp;
+            REQUIRE(expression);
+            REQUIRE(expression->numEntries == 1);
+            CHECK(expression->entries[0].type == EET_OPERAND);
+            CHECK(expression->entries[0].data.operand.dataType == VAL_INT);
+            CHECK(expression->entries[0].data.operand.internals.intVal == 3);
+        }
+    }
+
+    TEST_CASE("MenuParsingIW4IT: Double text expressions respect permissive mode", "[parsing][converting][menu][it]")
+    {
+        RestoreMenuLoadingConfiguration restore;
+        const auto permissive = GENERATE(false, true);
+        const auto optimization = GENERATE(false, true);
+        CAPTURE(permissive, optimization);
+        ObjLoading::Configuration.MenuPermissiveParsing = permissive;
+        ObjLoading::Configuration.MenuNoOptimization = !optimization;
+        MenuParsingItHelper helper;
+        helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3.5); } } })MENU");
+
+        REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
+        if (!permissive)
+            return;
+
+        const auto* menu = helper.GetMenuAsset("test");
+        REQUIRE(menu->itemCount == 1);
+        const auto* item = menu->items[0];
+        REQUIRE(item->text);
+
+        if (optimization)
+        {
+            CHECK(std::string(item->text) == "3.5");
+            REQUIRE(!item->textExp);
+        }
+        else
+        {
+            CHECK(std::string(item->text) == "fallback");
+            const auto* expression = item->textExp;
+            REQUIRE(expression);
+            REQUIRE(expression->numEntries == 1);
+            CHECK(expression->entries[0].type == EET_OPERAND);
+            CHECK(expression->entries[0].data.operand.dataType == VAL_FLOAT);
+            CHECK(expression->entries[0].data.operand.internals.floatVal == Approx(3.5));
+        }
     }
 } // namespace test::game::iw4::menu::parsing::it

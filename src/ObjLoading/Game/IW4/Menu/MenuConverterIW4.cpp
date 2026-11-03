@@ -412,6 +412,18 @@ namespace
                     staticValue = m_memory.Dup(value.m_string_value->c_str());
                     return nullptr;
                 }
+                if (value.m_type == SimpleExpressionValue::Type::INT)
+                {
+                    const std::string strValue = std::to_string(value.m_int_value);
+                    staticValue = m_memory.Dup(strValue.c_str());
+                    return nullptr;
+                }
+                if (value.m_type == SimpleExpressionValue::Type::DOUBLE)
+                {
+                    const std::string strValue = std::format("{:g}", value.m_double_value);
+                    staticValue = m_memory.Dup(strValue.c_str());
+                    return nullptr;
+                }
             }
 
             return ConvertExpression(expression, menu, item);
