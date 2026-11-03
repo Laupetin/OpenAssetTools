@@ -152,12 +152,11 @@ namespace
             loadDef->resourceSize = static_cast<unsigned>(dataSize);
 
             char* currentDataBuffer = loadDef->data;
-            for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
+            for (auto face = 0; face < faceCount; face++)
             {
-                const auto mipSize = texture->GetSizeOfMipLevel(mipLevel);
-
-                for (auto face = 0; face < faceCount; face++)
+                for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 {
+                    const auto mipSize = texture->GetSizeOfMipLevel(mipLevel);
                     memcpy(currentDataBuffer, texture->GetBufferForMipLevel(mipLevel, face), mipSize);
                     currentDataBuffer += mipSize;
                 }

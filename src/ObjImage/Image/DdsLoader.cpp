@@ -251,12 +251,11 @@ namespace
 
             result->Allocate();
 
-            for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
+            for (auto face = 0; face < faceCount; face++)
             {
-                const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
-
-                for (auto face = 0; face < faceCount; face++)
+                for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
                 {
+                    const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
                     m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
 
                     if (m_stream.gcount() != mipSize)
