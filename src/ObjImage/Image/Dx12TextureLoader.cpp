@@ -92,9 +92,9 @@ namespace image
         const auto faceCount = m_type == TextureType::T_CUBE ? 6 : 1;
         const void* currentDataOffset = data;
 
-        for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
+        for (auto currentFace = 0; currentFace < faceCount; currentFace++)
         {
-            for (auto currentFace = 0; currentFace < faceCount; currentFace++)
+            for (auto currentMipLevel = 0; currentMipLevel < mipMapCount; currentMipLevel++)
             {
                 const auto mipSize = texture->GetSizeOfMipLevel(currentMipLevel);
                 memcpy(texture->GetBufferForMipLevel(currentMipLevel, currentFace), currentDataOffset, mipSize);

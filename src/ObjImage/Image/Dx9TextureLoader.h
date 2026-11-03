@@ -18,8 +18,8 @@ namespace image
 
         enum class CubeMapDataOrder
         {
-            MipMajor,
             FaceMajor,
+            MipMajor,
         };
 
         Dx9TextureLoader();

@@ -25,7 +25,7 @@ namespace image
           m_type(TextureType::T_2D),
           m_has_mip_maps(false),
           m_mip_map_order(MipMapDataOrder::LargestToSmallest),
-          m_cube_map_data_order(CubeMapDataOrder::MipMajor),
+          m_cube_map_data_order(CubeMapDataOrder::FaceMajor),
           m_width(1u),
           m_height(1u),
           m_depth(1u)

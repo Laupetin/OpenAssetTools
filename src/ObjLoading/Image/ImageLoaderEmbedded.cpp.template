@@ -152,31 +152,13 @@ namespace
             loadDef->resourceSize = static_cast<unsigned>(dataSize);
 
             char* currentDataBuffer = loadDef->data;
-#ifdef FEATURE_IW3
-            if (texture->GetTextureType() == TextureType::T_CUBE)
-            {
-                for (auto face = 0; face < faceCount; face++)
-                {
-                    for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
-                    {
-                        const auto mipSize = texture->GetSizeOfMipLevel(mipLevel);
-                        memcpy(currentDataBuffer, texture->GetBufferForMipLevel(mipLevel, face), mipSize);
-                        currentDataBuffer += mipSize;
-                    }
-                }
-            }
-            else
-#endif
+            for (auto face = 0; face < faceCount; face++)
             {
                 for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 {
                     const auto mipSize = texture->GetSizeOfMipLevel(mipLevel);
-
-                    for (auto face = 0; face < faceCount; face++)
-                    {
-                        memcpy(currentDataBuffer, texture->GetBufferForMipLevel(mipLevel, face), mipSize);
-                        currentDataBuffer += mipSize;
-                    }
+                    memcpy(currentDataBuffer, texture->GetBufferForMipLevel(mipLevel, face), mipSize);
+                    currentDataBuffer += mipSize;
                 }
             }
 
