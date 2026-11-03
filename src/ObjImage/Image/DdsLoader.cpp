@@ -251,38 +251,17 @@ namespace
 
             result->Allocate();
 
-            if (m_texture_type == TextureType::T_CUBE)
-            {
-                for (auto face = 0; face < faceCount; face++)
-                {
-                    for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
-                    {
-                        const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
-                        m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
-
-                        if (m_stream.gcount() != mipSize)
-                        {
-                            con::error("Failed to read texture data from dds");
-                            return nullptr;
-                        }
-                    }
-                }
-            }
-            else
+            for (auto face = 0; face < faceCount; face++)
             {
                 for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
                 {
                     const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
+                    m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
 
-                    for (auto face = 0; face < faceCount; face++)
+                    if (m_stream.gcount() != mipSize)
                     {
-                        m_stream.read(reinterpret_cast<char*>(result->GetBufferForMipLevel(mipLevel, face)), mipSize);
-
-                        if (m_stream.gcount() != mipSize)
-                        {
-                            con::error("Failed to read texture data from dds");
-                            return nullptr;
-                        }
+                        con::error("Failed to read texture data from dds");
+                        return nullptr;
                     }
                 }
             }

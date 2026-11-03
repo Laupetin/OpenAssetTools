@@ -122,7 +122,7 @@ namespace image
         const auto faceCount = m_type == TextureType::T_CUBE ? 6 : 1;
         auto* currentDataOffset = static_cast<const uint8_t*>(data);
 
-        if (m_type == TextureType::T_CUBE && m_cube_map_data_order == CubeMapDataOrder::FaceMajor)
+        if (m_cube_map_data_order == CubeMapDataOrder::FaceMajor)
         {
             for (auto currentFace = 0; currentFace < faceCount; currentFace++)
             {
