@@ -18,7 +18,7 @@ using namespace std::literals;
 using namespace Catch;
 using namespace Catch::Matchers;
 
-namespace test::game::iw4::menu::parsing::it
+namespace
 {
     struct RestoreMenuLoadingConfiguration
     {
@@ -76,7 +76,7 @@ namespace test::game::iw4::menu::parsing::it
             return m_asset_creator->CreateAsset(DEFAULT_ASSET_NAME, m_context);
         }
 
-        menuDef_t* GetMenuAsset(const std::string& menuName)
+        menuDef_t* GetMenuAsset(const std::string& menuName) const
         {
             const auto addedAsset = m_zone.m_pools.GetAsset(ASSET_TYPE_MENU, menuName);
             REQUIRE(addedAsset);
@@ -85,12 +85,13 @@ namespace test::game::iw4::menu::parsing::it
             return static_cast<menuDef_t*>(addedAsset->m_ptr);
         }
     };
+} // namespace
 
-    TEST_CASE("MenuParsingIW4IT: Can convert simple menu without properties", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Can convert simple menu without properties", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 {
 	menuDef
 	{
@@ -99,27 +100,27 @@ namespace test::game::iw4::menu::parsing::it
 }
 			)testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
-        const auto* menu = helper.GetMenuAsset("Hello");
+    const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
+    const auto* menu = helper.GetMenuAsset("Hello");
 
-        REQUIRE(menuList->menuCount == 1);
-        REQUIRE(menuList->menus);
+    REQUIRE(menuList->menuCount == 1);
+    REQUIRE(menuList->menus);
 
-        REQUIRE(menuList->menus[0] == menu);
+    REQUIRE(menuList->menus[0] == menu);
 
-        REQUIRE(menu->window.name == "Hello"s);
-        REQUIRE(menu->itemCount == 0);
-        REQUIRE(menu->items == nullptr);
-    }
+    REQUIRE(menu->window.name == "Hello"s);
+    REQUIRE(menu->itemCount == 0);
+    REQUIRE(menu->items == nullptr);
+}
 
-    TEST_CASE("MenuParsingIW4IT: Can convert simple menu", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Can convert simple menu", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 #define COOL_STYLE 5
 #define VISIBILITY_ENABLED 1
 #define HIDE_STUPID_ELEMENTS 0
@@ -178,147 +179,145 @@ namespace test::game::iw4::menu::parsing::it
 }
 			)testmenu");
 
-        const auto* funnyDogMaterial = helper.AddMaterial("funny_dog.png");
+    const auto* funnyDogMaterial = helper.AddMaterial("funny_dog.png");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
-        const auto* menu = helper.GetMenuAsset("Bla");
+    const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
+    const auto* menu = helper.GetMenuAsset("Bla");
 
-        REQUIRE(menuList->menuCount == 1);
-        REQUIRE(menuList->menus);
+    REQUIRE(menuList->menuCount == 1);
+    REQUIRE(menuList->menus);
 
-        REQUIRE(menuList->menus[0] == menu);
+    REQUIRE(menuList->menus[0] == menu);
 
-        REQUIRE(menu->window.name == "Bla"s);
-        REQUIRE(menu->fullScreen > 0);
-        REQUIRE(menu->window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
-        REQUIRE(menu->window.staticFlags & WINDOW_FLAG_DECORATION);
-        REQUIRE_THAT(menu->window.rect.x, WithinRel(420.0f));
-        REQUIRE_THAT(menu->window.rect.y, WithinRel(1337.0f));
-        REQUIRE_THAT(menu->window.rect.w, WithinRel(12.0f));
-        REQUIRE_THAT(menu->window.rect.h, WithinRel(64.0f));
-        REQUIRE(menu->window.rect.horzAlign == 1);
-        REQUIRE(menu->window.rect.vertAlign == 2);
-        REQUIRE(menu->window.style == 5);
+    REQUIRE(menu->window.name == "Bla"s);
+    REQUIRE(menu->fullScreen > 0);
+    REQUIRE(menu->window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
+    REQUIRE(menu->window.staticFlags & WINDOW_FLAG_DECORATION);
+    REQUIRE_THAT(menu->window.rect.x, WithinRel(420.0f));
+    REQUIRE_THAT(menu->window.rect.y, WithinRel(1337.0f));
+    REQUIRE_THAT(menu->window.rect.w, WithinRel(12.0f));
+    REQUIRE_THAT(menu->window.rect.h, WithinRel(64.0f));
+    REQUIRE(menu->window.rect.horzAlign == 1);
+    REQUIRE(menu->window.rect.vertAlign == 2);
+    REQUIRE(menu->window.style == 5);
 
-        REQUIRE(menu->visibleExp == nullptr);
-        REQUIRE(menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE);
+    REQUIRE(menu->visibleExp == nullptr);
+    REQUIRE(menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE);
 
-        REQUIRE(menu->onOpen != nullptr);
-        REQUIRE(menu->onOpen->eventHandlerCount == 1);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript
-                == R"("focusFirst" ; "play" "fart_sound" ; "exec" "wait 1; set r_fullbright 1" ; )"s);
+    REQUIRE(menu->onOpen != nullptr);
+    REQUIRE(menu->onOpen->eventHandlerCount == 1);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript == R"("focusFirst" ; "play" "fart_sound" ; "exec" "wait 1; set r_fullbright 1" ; )"s);
 
-        REQUIRE(menu->onClose != nullptr);
-        REQUIRE(menu->onClose->eventHandlerCount == 4);
-        REQUIRE(menu->onClose->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript == R"("setBackground" "cute_cat.jpg" ; )"s);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventType == EventType::EVENT_IF);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->numEntries == 5);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].type == expressionEntryType::EET_OPERATOR);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].data.op == 102); // anynewmappacks
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].type == expressionEntryType::EET_OPERATOR);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].data.op == OP_RIGHTPAREN);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].type == expressionEntryType::EET_OPERATOR);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].data.op == OP_AND);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].type == expressionEntryType::EET_OPERATOR);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].data.op == 118); // isreloading
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].type == expressionEntryType::EET_OPERATOR);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].data.op == OP_RIGHTPAREN);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlerCount == 1);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0] != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventData.unconditionalScript
-                == R"("exec" "quit" ; )"s);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventType == EventType::EVENT_ELSE);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlerCount == 1);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0] != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventData.unconditionalScript
-                == R"("uiScript" "startSingleplayer" ; )"s);
-        REQUIRE(menu->onClose->eventHandlers[3]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript == R"("setGameMode" "dm" ; )"s);
+    REQUIRE(menu->onClose != nullptr);
+    REQUIRE(menu->onClose->eventHandlerCount == 4);
+    REQUIRE(menu->onClose->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript == R"("setBackground" "cute_cat.jpg" ; )"s);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventType == EventType::EVENT_IF);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->numEntries == 5);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].type == expressionEntryType::EET_OPERATOR);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].data.op == 102); // anynewmappacks
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].type == expressionEntryType::EET_OPERATOR);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].data.op == OP_RIGHTPAREN);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].type == expressionEntryType::EET_OPERATOR);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].data.op == OP_AND);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].type == expressionEntryType::EET_OPERATOR);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].data.op == 118); // isreloading
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].type == expressionEntryType::EET_OPERATOR);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].data.op == OP_RIGHTPAREN);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlerCount == 1);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0] != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventData.unconditionalScript
+            == R"("exec" "quit" ; )"s);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventType == EventType::EVENT_ELSE);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlerCount == 1);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0] != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventData.unconditionalScript == R"("uiScript" "startSingleplayer" ; )"s);
+    REQUIRE(menu->onClose->eventHandlers[3]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript == R"("setGameMode" "dm" ; )"s);
 
-        REQUIRE(menu->onCloseRequest != nullptr);
-        REQUIRE(menu->onCloseRequest->eventHandlerCount == 1);
-        REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript == R"("play" "nope" ; )"s);
+    REQUIRE(menu->onCloseRequest != nullptr);
+    REQUIRE(menu->onCloseRequest->eventHandlerCount == 1);
+    REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript == R"("play" "nope" ; )"s);
 
-        REQUIRE(menu->onESC != nullptr);
-        REQUIRE(menu->onESC->eventHandlerCount == 1);
-        REQUIRE(menu->onESC->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "backColor" "1" "0.5" "0.1" "1" ; )"s);
+    REQUIRE(menu->onESC != nullptr);
+    REQUIRE(menu->onESC->eventHandlerCount == 1);
+    REQUIRE(menu->onESC->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "backColor" "1" "0.5" "0.1" "1" ; )"s);
 
-        REQUIRE(menu->window.border == 1);
-        REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25f));
-        REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25));
-        REQUIRE_THAT(menu->window.backColor[0], WithinRel(1.0f));
-        REQUIRE_THAT(menu->window.backColor[1], WithinRel(0.8f));
-        REQUIRE_THAT(menu->window.backColor[2], WithinRel(0.4f));
-        REQUIRE_THAT(menu->window.backColor[3], WithinRel(0.95f));
-        REQUIRE_THAT(menu->window.foreColor[0], WithinRel(0.7f));
-        REQUIRE_THAT(menu->window.foreColor[1], WithinRel(0.0f));
-        REQUIRE_THAT(menu->window.foreColor[2], WithinRel(0.0f));
-        REQUIRE_THAT(menu->window.foreColor[3], WithinRel(0.0f));
-        REQUIRE(menu->window.background == funnyDogMaterial);
+    REQUIRE(menu->window.border == 1);
+    REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25f));
+    REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25));
+    REQUIRE_THAT(menu->window.backColor[0], WithinRel(1.0f));
+    REQUIRE_THAT(menu->window.backColor[1], WithinRel(0.8f));
+    REQUIRE_THAT(menu->window.backColor[2], WithinRel(0.4f));
+    REQUIRE_THAT(menu->window.backColor[3], WithinRel(0.95f));
+    REQUIRE_THAT(menu->window.foreColor[0], WithinRel(0.7f));
+    REQUIRE_THAT(menu->window.foreColor[1], WithinRel(0.0f));
+    REQUIRE_THAT(menu->window.foreColor[2], WithinRel(0.0f));
+    REQUIRE_THAT(menu->window.foreColor[3], WithinRel(0.0f));
+    REQUIRE(menu->window.background == funnyDogMaterial);
 
-        REQUIRE(menu->onKey != nullptr);
-        REQUIRE(menu->onKey->next != nullptr);
-        REQUIRE(menu->onKey->next->next == nullptr);
+    REQUIRE(menu->onKey != nullptr);
+    REQUIRE(menu->onKey->next != nullptr);
+    REQUIRE(menu->onKey->next->next == nullptr);
 
-        const auto keyHandler1 = menu->onKey;
-        const auto keyHandler2 = menu->onKey->next;
+    const auto keyHandler1 = menu->onKey;
+    const auto keyHandler2 = menu->onKey->next;
 
-        ItemKeyHandler* qKeyHandler;
-        ItemKeyHandler* leetKeyHandler;
-        if (keyHandler1->key == 'q')
-        {
-            qKeyHandler = keyHandler1;
-            leetKeyHandler = keyHandler2;
-        }
-        else
-        {
-            leetKeyHandler = keyHandler1;
-            qKeyHandler = keyHandler2;
-        }
-
-        REQUIRE(qKeyHandler->key == 'q');
-        REQUIRE(qKeyHandler->action->eventHandlerCount == 1);
-        REQUIRE(qKeyHandler->action->eventHandlers != nullptr);
-        REQUIRE(qKeyHandler->action->eventHandlers[0] != nullptr);
-        REQUIRE(qKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
-        REQUIRE(qKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "quit" ; )"s);
-
-        REQUIRE(leetKeyHandler->key == 1337);
-        REQUIRE(leetKeyHandler->action->eventHandlerCount == 1);
-        REQUIRE(leetKeyHandler->action->eventHandlers != nullptr);
-        REQUIRE(leetKeyHandler->action->eventHandlers[0] != nullptr);
-        REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
-        REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "vid_restart" ; )"s);
-
-        REQUIRE(menu->itemCount == 0);
-        REQUIRE(menu->items == nullptr);
+    ItemKeyHandler* qKeyHandler;
+    ItemKeyHandler* leetKeyHandler;
+    if (keyHandler1->key == 'q')
+    {
+        qKeyHandler = keyHandler1;
+        leetKeyHandler = keyHandler2;
+    }
+    else
+    {
+        leetKeyHandler = keyHandler1;
+        qKeyHandler = keyHandler2;
     }
 
-    TEST_CASE("MenuParsingIW4IT: Can use numeric focus dvar values", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+    REQUIRE(qKeyHandler->key == 'q');
+    REQUIRE(qKeyHandler->action->eventHandlerCount == 1);
+    REQUIRE(qKeyHandler->action->eventHandlers != nullptr);
+    REQUIRE(qKeyHandler->action->eventHandlers[0] != nullptr);
+    REQUIRE(qKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
+    REQUIRE(qKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "quit" ; )"s);
 
-        helper.AddFile(R"testmenu(
+    REQUIRE(leetKeyHandler->key == 1337);
+    REQUIRE(leetKeyHandler->action->eventHandlerCount == 1);
+    REQUIRE(leetKeyHandler->action->eventHandlers != nullptr);
+    REQUIRE(leetKeyHandler->action->eventHandlers[0] != nullptr);
+    REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
+    REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "vid_restart" ; )"s);
+
+    REQUIRE(menu->itemCount == 0);
+    REQUIRE(menu->items == nullptr);
+}
+
+TEST_CASE("MenuParsingIW4IT: Can use numeric focus dvar values", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
+
+    helper.AddFile(R"testmenu(
 {
     menuDef
     {
@@ -331,24 +330,24 @@ namespace test::game::iw4::menu::parsing::it
 }
             )testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menu = helper.GetMenuAsset("NumericFocusDvar");
-        REQUIRE(menu->itemCount == 1);
-        REQUIRE(menu->items != nullptr);
+    const auto* menu = helper.GetMenuAsset("NumericFocusDvar");
+    REQUIRE(menu->itemCount == 1);
+    REQUIRE(menu->items != nullptr);
 
-        const auto* item = menu->items[0];
-        REQUIRE(item != nullptr);
-        REQUIRE(item->enableDvar == R"("0" "1.5" "-2" )"s);
-        REQUIRE(item->dvarFlags == ITEM_DVAR_FLAG_FOCUS);
-    }
+    const auto* item = menu->items[0];
+    REQUIRE(item != nullptr);
+    REQUIRE(item->enableDvar == R"("0" "1.5" "-2" )"s);
+    REQUIRE(item->dvarFlags == ITEM_DVAR_FLAG_FOCUS);
+}
 
-    TEST_CASE("MenuParsingIW4IT: Can omit list box column alignment", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Can omit list box column alignment", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 {
     menuDef
     {
@@ -369,39 +368,39 @@ namespace test::game::iw4::menu::parsing::it
 }
             )testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menu = helper.GetMenuAsset("ListBoxColumns");
-        REQUIRE(menu->itemCount == 2);
-        REQUIRE(menu->items != nullptr);
+    const auto* menu = helper.GetMenuAsset("ListBoxColumns");
+    REQUIRE(menu->itemCount == 2);
+    REQUIRE(menu->items != nullptr);
 
-        const auto* columnsWithoutAlignment = menu->items[0]->typeData.listBox;
-        REQUIRE(columnsWithoutAlignment != nullptr);
-        REQUIRE(columnsWithoutAlignment->numColumns == 1);
-        CHECK(columnsWithoutAlignment->columnInfo[0].pos == 22);
-        CHECK(columnsWithoutAlignment->columnInfo[0].width == 190);
-        CHECK(columnsWithoutAlignment->columnInfo[0].maxChars == 64);
-        CHECK(columnsWithoutAlignment->columnInfo[0].alignment == 0);
+    const auto* columnsWithoutAlignment = menu->items[0]->typeData.listBox;
+    REQUIRE(columnsWithoutAlignment != nullptr);
+    REQUIRE(columnsWithoutAlignment->numColumns == 1);
+    CHECK(columnsWithoutAlignment->columnInfo[0].pos == 22);
+    CHECK(columnsWithoutAlignment->columnInfo[0].width == 190);
+    CHECK(columnsWithoutAlignment->columnInfo[0].maxChars == 64);
+    CHECK(columnsWithoutAlignment->columnInfo[0].alignment == 0);
 
-        const auto* columnsWithAlignment = menu->items[1]->typeData.listBox;
-        REQUIRE(columnsWithAlignment != nullptr);
-        REQUIRE(columnsWithAlignment->numColumns == 2);
-        CHECK(columnsWithAlignment->columnInfo[0].pos == 0);
-        CHECK(columnsWithAlignment->columnInfo[0].width == 18);
-        CHECK(columnsWithAlignment->columnInfo[0].maxChars == 3);
-        CHECK(columnsWithAlignment->columnInfo[0].alignment == 2);
-        CHECK(columnsWithAlignment->columnInfo[1].pos == 18);
-        CHECK(columnsWithAlignment->columnInfo[1].width == 25);
-        CHECK(columnsWithAlignment->columnInfo[1].maxChars == 10);
-        CHECK(columnsWithAlignment->columnInfo[1].alignment == 1);
-    }
+    const auto* columnsWithAlignment = menu->items[1]->typeData.listBox;
+    REQUIRE(columnsWithAlignment != nullptr);
+    REQUIRE(columnsWithAlignment->numColumns == 2);
+    CHECK(columnsWithAlignment->columnInfo[0].pos == 0);
+    CHECK(columnsWithAlignment->columnInfo[0].width == 18);
+    CHECK(columnsWithAlignment->columnInfo[0].maxChars == 3);
+    CHECK(columnsWithAlignment->columnInfo[0].alignment == 2);
+    CHECK(columnsWithAlignment->columnInfo[1].pos == 18);
+    CHECK(columnsWithAlignment->columnInfo[1].width == 25);
+    CHECK(columnsWithAlignment->columnInfo[1].maxChars == 10);
+    CHECK(columnsWithAlignment->columnInfo[1].alignment == 1);
+}
 
-    TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 {
 	menuDef
 	{
@@ -434,52 +433,52 @@ namespace test::game::iw4::menu::parsing::it
 }
 			)testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
-        const auto* menu = helper.GetMenuAsset("Blab");
+    const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
+    const auto* menu = helper.GetMenuAsset("Blab");
 
-        REQUIRE(menuList->menuCount == 1);
-        REQUIRE(menuList->menus);
+    REQUIRE(menuList->menuCount == 1);
+    REQUIRE(menuList->menus);
 
-        REQUIRE(menuList->menus[0] == menu);
+    REQUIRE(menuList->menus[0] == menu);
 
-        REQUIRE(menu->window.name == "Blab"s);
+    REQUIRE(menu->window.name == "Blab"s);
 
-        REQUIRE(menu->onOpen != nullptr);
-        REQUIRE(menu->onOpen->eventHandlerCount == 3);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript == R"("focusFirst" ; )"s);
-        REQUIRE(menu->onOpen->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript == R"("play" "fart_sound" ; )"s);
-        REQUIRE(menu->onOpen->eventHandlers[2]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript != nullptr);
-        REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript == R"("exec" "wait 1; set r_fullbright 1" ; )"s);
+    REQUIRE(menu->onOpen != nullptr);
+    REQUIRE(menu->onOpen->eventHandlerCount == 3);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript == R"("focusFirst" ; )"s);
+    REQUIRE(menu->onOpen->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript == R"("play" "fart_sound" ; )"s);
+    REQUIRE(menu->onOpen->eventHandlers[2]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript != nullptr);
+    REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript == R"("exec" "wait 1; set r_fullbright 1" ; )"s);
 
-        REQUIRE(menu->itemCount == 1);
-        REQUIRE(menu->items != nullptr);
+    REQUIRE(menu->itemCount == 1);
+    REQUIRE(menu->items != nullptr);
 
-        const auto* item = menu->items[0];
-        REQUIRE(item != nullptr);
+    const auto* item = menu->items[0];
+    REQUIRE(item != nullptr);
 
-        REQUIRE(item->action != nullptr);
-        REQUIRE(item->action->eventHandlerCount == 2);
-        REQUIRE(item->action->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-        REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript == R"("play" "lmfao" ; )"s);
-        REQUIRE(item->action->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
-        REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript != nullptr);
-        REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript == R"("play" "lol" ; )"s);
-    }
+    REQUIRE(item->action != nullptr);
+    REQUIRE(item->action->eventHandlerCount == 2);
+    REQUIRE(item->action->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+    REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript == R"("play" "lmfao" ; )"s);
+    REQUIRE(item->action->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
+    REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript != nullptr);
+    REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript == R"("play" "lol" ; )"s);
+}
 
-    TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent pos", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent pos", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 {
     menuDef
     {
@@ -502,52 +501,52 @@ namespace test::game::iw4::menu::parsing::it
     }
 })testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
-        const auto* menu = helper.GetMenuAsset("Blab");
+    const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
+    const auto* menu = helper.GetMenuAsset("Blab");
 
-        REQUIRE(menuList->menuCount == 1);
-        REQUIRE(menuList->menus);
-        REQUIRE(menuList->menus[0] == menu);
-        REQUIRE(menu->window.name == "Blab"s);
-        CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
-        CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
-        CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
-        CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
+    REQUIRE(menuList->menuCount == 1);
+    REQUIRE(menuList->menus);
+    REQUIRE(menuList->menus[0] == menu);
+    REQUIRE(menu->window.name == "Blab"s);
+    CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
+    CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
+    CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
+    CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
 
-        REQUIRE(menu->itemCount == 2);
-        REQUIRE(menu->items != nullptr);
+    REQUIRE(menu->itemCount == 2);
+    REQUIRE(menu->items != nullptr);
 
-        const auto* item0 = menu->items[0];
-        REQUIRE(item0 != nullptr);
-        CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
-        CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
-        CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
-        CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
-        CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
+    const auto* item0 = menu->items[0];
+    REQUIRE(item0 != nullptr);
+    CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
+    CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
+    CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
+    CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
+    CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
 
-        const auto* item1 = menu->items[1];
-        REQUIRE(item1 != nullptr);
-        CHECK_THAT(item1->window.rectClient.x, WithinRel(20.0f));
-        CHECK_THAT(item1->window.rectClient.y, WithinRel(20.0f));
-        CHECK_THAT(item1->window.rectClient.w, WithinRel(40.0f));
-        CHECK_THAT(item1->window.rectClient.h, WithinRel(40.0f));
-        CHECK_THAT(item1->window.rect.x, WithinRel(30.0f));
-        CHECK_THAT(item1->window.rect.y, WithinRel(30.0f));
-        CHECK_THAT(item1->window.rect.w, WithinRel(40.0f));
-        CHECK_THAT(item1->window.rect.h, WithinRel(40.0f));
-    }
+    const auto* item1 = menu->items[1];
+    REQUIRE(item1 != nullptr);
+    CHECK_THAT(item1->window.rectClient.x, WithinRel(20.0f));
+    CHECK_THAT(item1->window.rectClient.y, WithinRel(20.0f));
+    CHECK_THAT(item1->window.rectClient.w, WithinRel(40.0f));
+    CHECK_THAT(item1->window.rectClient.h, WithinRel(40.0f));
+    CHECK_THAT(item1->window.rect.x, WithinRel(30.0f));
+    CHECK_THAT(item1->window.rect.y, WithinRel(30.0f));
+    CHECK_THAT(item1->window.rect.w, WithinRel(40.0f));
+    CHECK_THAT(item1->window.rect.h, WithinRel(40.0f));
+}
 
-    TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent optimized pos", "[parsing][converting][menu][it]")
-    {
-        MenuParsingItHelper helper;
+TEST_CASE("MenuParsingIW4IT: Optimized exp rect considers parent optimized pos", "[parsing][converting][menu][it]")
+{
+    MenuParsingItHelper helper;
 
-        helper.AddFile(R"testmenu(
+    helper.AddFile(R"testmenu(
 {
     menuDef
     {
@@ -569,107 +568,106 @@ namespace test::game::iw4::menu::parsing::it
     }
 })testmenu");
 
-        const auto result = helper.RunIntegrationTest();
-        REQUIRE(result.HasBeenSuccessful());
+    const auto result = helper.RunIntegrationTest();
+    REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
-        const auto* menu = helper.GetMenuAsset("Blab");
+    const auto* menuList = static_cast<MenuList*>(result.GetAssetInfo()->m_ptr);
+    const auto* menu = helper.GetMenuAsset("Blab");
 
-        REQUIRE(menuList->menuCount == 1);
-        REQUIRE(menuList->menus);
-        REQUIRE(menuList->menus[0] == menu);
-        REQUIRE(menu->window.name == "Blab"s);
-        CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
-        CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
-        CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
-        CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
+    REQUIRE(menuList->menuCount == 1);
+    REQUIRE(menuList->menus);
+    REQUIRE(menuList->menus[0] == menu);
+    REQUIRE(menu->window.name == "Blab"s);
+    CHECK_THAT(menu->window.rect.x, WithinRel(10.0f));
+    CHECK_THAT(menu->window.rect.y, WithinRel(10.0f));
+    CHECK_THAT(menu->window.rect.w, WithinRel(70.0f));
+    CHECK_THAT(menu->window.rect.h, WithinRel(70.0f));
 
-        REQUIRE(menu->itemCount == 1);
-        REQUIRE(menu->items != nullptr);
+    REQUIRE(menu->itemCount == 1);
+    REQUIRE(menu->items != nullptr);
 
-        const auto* item0 = menu->items[0];
-        REQUIRE(item0 != nullptr);
-        CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
-        CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
-        CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
-        CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
-        CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
-        CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
-    }
+    const auto* item0 = menu->items[0];
+    REQUIRE(item0 != nullptr);
+    CHECK_THAT(item0->window.rectClient.x, WithinRel(20.0f));
+    CHECK_THAT(item0->window.rectClient.y, WithinRel(20.0f));
+    CHECK_THAT(item0->window.rectClient.w, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rectClient.h, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rect.x, WithinRel(30.0f));
+    CHECK_THAT(item0->window.rect.y, WithinRel(30.0f));
+    CHECK_THAT(item0->window.rect.w, WithinRel(40.0f));
+    CHECK_THAT(item0->window.rect.h, WithinRel(40.0f));
+}
 
-    TEST_CASE("MenuParsingIW4IT: Integer text expressions respect permissive mode", "[parsing][converting][menu][it]")
+TEST_CASE("MenuParsingIW4IT: Integer text expressions respect permissive mode", "[parsing][converting][menu][it]")
+{
+    RestoreMenuLoadingConfiguration restore;
+    const auto permissive = GENERATE(false, true);
+    const auto optimization = GENERATE(false, true);
+    CAPTURE(permissive, optimization);
+    ObjLoading::Configuration.MenuPermissiveParsing = permissive;
+    ObjLoading::Configuration.MenuNoOptimization = !optimization;
+    MenuParsingItHelper helper;
+    helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3); } } })MENU");
+
+    REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
+    if (!permissive)
+        return;
+
+    const auto* menu = helper.GetMenuAsset("test");
+    REQUIRE(menu->itemCount == 1);
+    const auto* item = menu->items[0];
+    REQUIRE(item->text);
+
+    if (optimization)
     {
-        RestoreMenuLoadingConfiguration restore;
-        const auto permissive = GENERATE(false, true);
-        const auto optimization = GENERATE(false, true);
-        CAPTURE(permissive, optimization);
-        ObjLoading::Configuration.MenuPermissiveParsing = permissive;
-        ObjLoading::Configuration.MenuNoOptimization = !optimization;
-        MenuParsingItHelper helper;
-        helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3); } } })MENU");
-
-        REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
-        if (!permissive)
-            return;
-
-        const auto* menu = helper.GetMenuAsset("test");
-        REQUIRE(menu->itemCount == 1);
-        const auto* item = menu->items[0];
-        REQUIRE(item->text);
-
-        if (optimization)
-        {
-            CHECK(std::string(item->text) == "3");
-            REQUIRE(!item->textExp);
-        }
-        else
-        {
-            CHECK(std::string(item->text) == "fallback");
-            const auto* expression = item->textExp;
-            REQUIRE(expression);
-            REQUIRE(expression->numEntries == 1);
-            CHECK(expression->entries[0].type == EET_OPERAND);
-            CHECK(expression->entries[0].data.operand.dataType == VAL_INT);
-            CHECK(expression->entries[0].data.operand.internals.intVal == 3);
-        }
+        CHECK(std::string(item->text) == "3");
+        REQUIRE(!item->textExp);
     }
-
-    TEST_CASE("MenuParsingIW4IT: Double text expressions respect permissive mode", "[parsing][converting][menu][it]")
+    else
     {
-        RestoreMenuLoadingConfiguration restore;
-        const auto permissive = GENERATE(false, true);
-        const auto optimization = GENERATE(false, true);
-        CAPTURE(permissive, optimization);
-        ObjLoading::Configuration.MenuPermissiveParsing = permissive;
-        ObjLoading::Configuration.MenuNoOptimization = !optimization;
-        MenuParsingItHelper helper;
-        helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3.5); } } })MENU");
-
-        REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
-        if (!permissive)
-            return;
-
-        const auto* menu = helper.GetMenuAsset("test");
-        REQUIRE(menu->itemCount == 1);
-        const auto* item = menu->items[0];
-        REQUIRE(item->text);
-
-        if (optimization)
-        {
-            CHECK(std::string(item->text) == "3.5");
-            REQUIRE(!item->textExp);
-        }
-        else
-        {
-            CHECK(std::string(item->text) == "fallback");
-            const auto* expression = item->textExp;
-            REQUIRE(expression);
-            REQUIRE(expression->numEntries == 1);
-            CHECK(expression->entries[0].type == EET_OPERAND);
-            CHECK(expression->entries[0].data.operand.dataType == VAL_FLOAT);
-            CHECK(expression->entries[0].data.operand.internals.floatVal == Approx(3.5));
-        }
+        CHECK(std::string(item->text) == "fallback");
+        const auto* expression = item->textExp;
+        REQUIRE(expression);
+        REQUIRE(expression->numEntries == 1);
+        CHECK(expression->entries[0].type == EET_OPERAND);
+        CHECK(expression->entries[0].data.operand.dataType == VAL_INT);
+        CHECK(expression->entries[0].data.operand.internals.intVal == 3);
     }
-} // namespace test::game::iw4::menu::parsing::it
+}
+
+TEST_CASE("MenuParsingIW4IT: Double text expressions respect permissive mode", "[parsing][converting][menu][it]")
+{
+    RestoreMenuLoadingConfiguration restore;
+    const auto permissive = GENERATE(false, true);
+    const auto optimization = GENERATE(false, true);
+    CAPTURE(permissive, optimization);
+    ObjLoading::Configuration.MenuPermissiveParsing = permissive;
+    ObjLoading::Configuration.MenuNoOptimization = !optimization;
+    MenuParsingItHelper helper;
+    helper.AddFile(R"MENU({ menuDef { name "test" itemDef { text "fallback" exp text (3.5); } } })MENU");
+
+    REQUIRE(helper.RunIntegrationTest().HasBeenSuccessful() == permissive);
+    if (!permissive)
+        return;
+
+    const auto* menu = helper.GetMenuAsset("test");
+    REQUIRE(menu->itemCount == 1);
+    const auto* item = menu->items[0];
+    REQUIRE(item->text);
+
+    if (optimization)
+    {
+        CHECK(std::string(item->text) == "3.5");
+        REQUIRE(!item->textExp);
+    }
+    else
+    {
+        CHECK(std::string(item->text) == "fallback");
+        const auto* expression = item->textExp;
+        REQUIRE(expression);
+        REQUIRE(expression->numEntries == 1);
+        CHECK(expression->entries[0].type == EET_OPERAND);
+        CHECK(expression->entries[0].data.operand.dataType == VAL_FLOAT);
+        CHECK(expression->entries[0].data.operand.internals.floatVal == Approx(3.5));
+    }
+}
