@@ -23,8 +23,8 @@ namespace
     TEST_CASE("AbstractMenuWriter: Preserves literal line breaks in script arguments", "[menu][writing]")
     {
         const std::string lineBreak = GENERATE("\n", "\r", "\r\n");
-        const auto argument = std::string("onlinegame 0;\txstopprivateparty") + lineBreak;
-        const auto script = "\"exec\" \"" + argument + "\" ; ";
+        const auto argument = std::format("onlinegame 0;\txstopprivateparty{}", lineBreak);
+        const auto script = std::format(R"("exec" "{}" ; )", argument);
         const auto tokens = TestMenuWriter::CreateScriptTokenList(script.c_str());
 
         REQUIRE(tokens.size() == 3);
