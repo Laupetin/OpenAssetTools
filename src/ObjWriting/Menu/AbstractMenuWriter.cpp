@@ -8,6 +8,38 @@
 #include <cstdlib>
 #include <sstream>
 
+namespace
+{
+    /**
+     * \brief Escapes new lines in script whenever they are encountered in a script.
+     *        e.g. "test<newline>" becomes "test\n". Occurrences outside of strings are not escaped.
+     * \param script The original script input.
+     * \return The script string with newlines in strings escaped.
+     */
+    std::string EscapeStringNewLines(const char* script)
+    {
+        auto inString = false;
+        auto escaped = false;
+        std::ostringstream scriptString;
+        for (const auto* character = script; *character; ++character)
+        {
+            // Native script arguments can contain literal line breaks.
+            if (inString && *character == '\n')
+                scriptString << "\\n";
+            else if (inString && *character == '\r')
+                scriptString << "\\r";
+            else
+                scriptString << *character;
+
+            if (*character == '"' && !escaped)
+                inString = !inString;
+            escaped = inString && *character == '\\' && !escaped;
+        }
+
+        return std::move(scriptString).str();
+    }
+} // namespace
+
 namespace menu
 {
     AbstractBaseWriter::AbstractBaseWriter(std::ostream& stream)
@@ -66,8 +98,7 @@ namespace menu
 
     std::vector<std::string> AbstractBaseWriter::CreateScriptTokenList(const char* script)
     {
-        const std::string scriptString(script);
-        std::istringstream stringStream(scriptString);
+        std::istringstream stringStream(EscapeStringNewLines(script));
         ParserSingleInputStream inputStream(stringStream, "MenuScript");
 
         SimpleLexer::Config lexerConfig;
