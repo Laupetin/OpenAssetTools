@@ -19,6 +19,6 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone&
         if (!filter.ShouldWriteAsset(*asset))
             continue;
 
-        stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), asset->m_name);
+        stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), filter.EntryName(*asset));
     }
 }
