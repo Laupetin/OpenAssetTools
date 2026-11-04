@@ -542,7 +542,7 @@ namespace
                                   if (rigidBone0.has_value() != rigidBone1.has_value())
                                       return rigidBone0.has_value();
                                   if (!rigidBone0.has_value())
-                                      return true;
+                                      return false;
 
                                   return *rigidBone0 < *rigidBone1;
                               });
