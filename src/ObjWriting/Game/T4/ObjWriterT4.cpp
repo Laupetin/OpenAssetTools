@@ -13,6 +13,7 @@
 #include "PhysPreset/PhysPresetInfoStringDumperT4.h"
 #include "RawFile/RawFileDumperT4.h"
 #include "Sound/LoadedSoundDumperT4.h"
+#include "Sound/StreamedSoundDumperT4.h"
 #include "StringTable/StringTableDumperT4.h"
 #include "Weapon/WeaponDumperT4.h"
 
@@ -27,6 +28,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
     RegisterAssetDumper(std::make_unique<material::JsonDumperT4>());
     RegisterAssetDumper(std::make_unique<image::DumperT4>());
     RegisterAssetDumper(std::make_unique<sound::LoadedSoundDumperT4>());
+    RegisterAssetDumper(std::make_unique<sound::StreamedSoundDumperT4>());
     RegisterAssetDumper(std::make_unique<map_ents::DumperT4>());
     RegisterAssetDumper(std::make_unique<font::JsonDumperT4>());
     RegisterAssetDumper(std::make_unique<menu::MenuListDumperT4>());
