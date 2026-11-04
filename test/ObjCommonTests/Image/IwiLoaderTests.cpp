@@ -1,5 +1,6 @@
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/IwiWriter13.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
@@ -186,5 +187,30 @@ namespace
             REQUIRE(largestMip[pixel * 4u + 2u] == RED);
             REQUIRE(largestMip[pixel * 4u + 3u] == 0xFF);
         }
+    }
+
+    TEST_CASE("IwiLoader: Can load IWI13 A16B16G16R16F written by IwiWriter13", "[image][iwi]")
+    {
+        Texture2D texture(&format::R16_G16_B16_A16_FLOAT, 2, 2, false);
+        texture.Allocate();
+        auto* pixels = texture.GetBufferForMipLevel(0, 0);
+        for (auto byte = 0u; byte < texture.GetSizeOfMipLevel(0); byte++)
+            pixels[byte] = static_cast<std::uint8_t>(byte);
+
+        std::ostringstream iwi;
+        iwi13::IwiWriter().DumpImage(iwi, &texture);
+
+        auto result = Load(iwi.str());
+
+        REQUIRE(result.has_value());
+        REQUIRE(result->m_version == IwiVersion::IWI_13);
+        REQUIRE(result->m_texture->GetFormat()->GetId() == ImageFormatId::R16_G16_B16_A16_FLOAT);
+        REQUIRE(result->m_texture->GetWidth() == 2);
+        REQUIRE(result->m_texture->GetHeight() == 2);
+        REQUIRE(!result->m_texture->HasMipMaps());
+
+        const auto* loadedPixels = result->m_texture->GetBufferForMipLevel(0);
+        for (auto byte = 0u; byte < texture.GetSizeOfMipLevel(0); byte++)
+            REQUIRE(loadedPixels[byte] == static_cast<std::uint8_t>(byte));
     }
 } // namespace
