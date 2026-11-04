@@ -197,7 +197,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 |----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
 | PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ✅              | ❌              |                                                                              |
-| DestructibleDef      | ❌              | ❌              |                                                                              |
+| DestructibleDef      | ✅              | ✅              | Pieces are dumped/loaded as separate `destructiblepiece` files.              |
 | XAnimParts           | ✅              | ✅              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
 | Material             | ✅              | ✅              |                                                                              |
