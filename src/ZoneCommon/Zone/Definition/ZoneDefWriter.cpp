@@ -1,5 +1,6 @@
 #include "ZoneDefWriter.h"
 
+#include "Game/CODO/Zone/Definition/ZoneDefWriterCODO.h"
 #include "Game/IW3/Zone/Definition/ZoneDefWriterIW3.h"
 #include "Game/IW4/Zone/Definition/ZoneDefWriterIW4.h"
 #include "Game/IW5/Zone/Definition/ZoneDefWriterIW5.h"
@@ -46,6 +47,7 @@ bool ZoneDefFilter::ShouldWriteAsset(const XAssetInfoGeneric& asset) const
 const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
 {
     static const IZoneDefWriter* zoneDefWriters[]{
+        new CODO::ZoneDefWriter(),
         new IW3::ZoneDefWriter(),
         new IW4::ZoneDefWriter(),
         new IW5::ZoneDefWriter(),

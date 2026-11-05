@@ -77,7 +77,9 @@ export type CommonAssetType =
   | "xml_tree"
   | "scene_animation"
   | "cutscene"
-  | "custom_camera";
+  | "custom_camera"
+  | "net_const_strings"
+  | "marketplace_data";
 
 export interface AssetDto {
   type: CommonAssetType;

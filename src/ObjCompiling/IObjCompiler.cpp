@@ -1,5 +1,6 @@
 #include "IObjCompiler.h"
 
+#include "Game/CODO/ObjCompilerCODO.h"
 #include "Game/IW3/ObjCompilerIW3.h"
 #include "Game/IW4/ObjCompilerIW4.h"
 #include "Game/IW5/ObjCompilerIW5.h"
@@ -13,6 +14,7 @@
 const IObjCompiler* IObjCompiler::GetObjCompilerForGame(GameId game)
 {
     static const IObjCompiler* objCompilers[]{
+        new CODO::ObjCompiler(),
         new IW3::ObjCompiler(),
         new IW4::ObjCompiler(),
         new IW5::ObjCompiler(),

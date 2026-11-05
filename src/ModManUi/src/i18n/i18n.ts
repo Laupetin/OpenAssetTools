@@ -93,6 +93,8 @@ const ASSET_TYPE_LOOKUP: Record<CommonAssetType, string> = {
   scene_animation: "Scene animation",
   cutscene: "Cutscene",
   custom_camera: "Custom camera",
+  net_const_strings: "Net const strings",
+  marketplace_data: "Marketplace data",
 };
 
 export function localizeAssetType(assetType: CommonAssetType): string {

@@ -1,5 +1,6 @@
 ﻿#include "ObjWriter.h"
 
+#include "Game/CODO/ObjWriterCODO.h"
 #include "Game/IW3/ObjWriterIW3.h"
 #include "Game/IW4/ObjWriterIW4.h"
 #include "Game/IW5/ObjWriterIW5.h"
@@ -43,6 +44,7 @@ void IObjWriter::RegisterAssetDumper(std::unique_ptr<IAssetDumper> dumper)
 IObjWriter* IObjWriter::GetObjWriterForGame(GameId game)
 {
     static IObjWriter* objWriters[]{
+        new CODO::ObjWriter(),
         new IW3::ObjWriter(),
         new IW4::ObjWriter(),
         new IW5::ObjWriter(),

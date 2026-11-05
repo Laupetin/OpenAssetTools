@@ -1,0 +1,12 @@
+// =========================================
+// MaterialVertexShader
+// =========================================
+use MaterialVertexShader;
+set block XFILE_BLOCK_TEMP;
+set string name;
+
+// GfxVertexShaderLoadDef
+set count GfxVertexShaderLoadDef::program programSize;
+
+// MaterialVertexShaderProgram
+set condition MaterialVertexShaderProgram::vs never;

@@ -7,13 +7,14 @@
 
 NLOHMANN_JSON_SERIALIZE_ENUM(GameId,
                              {
-                                 {GameId::IW3, "iw3"},
-                                 {GameId::IW4, "iw4"},
-                                 {GameId::IW5, "iw5"},
-                                 {GameId::QOS, "qos"},
-                                 {GameId::T4,  "t4" },
-                                 {GameId::T5,  "t5" },
-                                 {GameId::T6,  "t6" },
+                                 {GameId::CODO, "codo"},
+                                 {GameId::IW3,  "iw3" },
+                                 {GameId::IW4,  "iw4" },
+                                 {GameId::IW5,  "iw5" },
+                                 {GameId::QOS,  "qos" },
+                                 {GameId::T4,   "t4"  },
+                                 {GameId::T5,   "t5"  },
+                                 {GameId::T6,   "t6"  },
 });
 
 NLOHMANN_JSON_SERIALIZE_ENUM(GamePlatform,

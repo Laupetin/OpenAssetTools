@@ -1,5 +1,6 @@
 #include "AutoSearchPaths.h"
 
+#include "CODO/AutoSearchPathsCODO.h"
 #include "IW3/AutoSearchPathsIW3.h"
 #include "IW4/AutoSearchPathsIW4.h"
 #include "IW4/InfoString/InfoStringToStructConverter.h"
@@ -74,6 +75,7 @@ std::vector<std::string> AutoSearchPaths::GetSearchPathsForZonePath(const std::s
 AutoSearchPaths* AutoSearchPaths::GetForGame(GameId gameId)
 {
     static AutoSearchPaths* autoSearchPaths[]{
+        new AutoSearchPathsCODO(),
         new AutoSearchPathsIW3(),
         new AutoSearchPathsIW4(),
         new AutoSearchPathsIW5(),
