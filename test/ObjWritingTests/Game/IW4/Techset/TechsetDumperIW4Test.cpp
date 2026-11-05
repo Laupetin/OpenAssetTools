@@ -214,7 +214,7 @@ namespace
 
 TEST_CASE("TechsetDumperIW4", "[iw4][techset][dumper]")
 {
-    Zone zone("MockZone", 0, GameId::IW4, GamePlatform::PC);
+    Zone zone("MockZone", 0, GameVariantId::IW4_PC32);
     zone.Register();
 
     MemoryManager memory;

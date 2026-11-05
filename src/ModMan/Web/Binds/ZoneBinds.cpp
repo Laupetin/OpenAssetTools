@@ -68,7 +68,7 @@ namespace
             .name = loadedZone.GetZone().m_name,
             .filePath = loadedZone.GetFilePath(),
             .game = loadedZone.GetZone().m_game_id,
-            .platform = loadedZone.GetZone().m_platform,
+            .platform = IGameVariant::GetVariantById(loadedZone.GetZone().m_variant_id)->GetPlatform(),
         };
     }
 

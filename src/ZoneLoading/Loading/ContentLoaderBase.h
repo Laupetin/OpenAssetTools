@@ -37,6 +37,7 @@ protected:
     const char** varXString;
 
     Zone& m_zone;
+    GameWordSize m_word_size;
     MemoryManager& m_memory;
     ZoneInputStream& m_stream;
 

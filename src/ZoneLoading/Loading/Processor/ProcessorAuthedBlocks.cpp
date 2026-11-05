@@ -1,6 +1,5 @@
 #include "ProcessorAuthedBlocks.h"
 
-#include "Game/IW4/IW4.h"
 #include "Loading/Exception/InvalidHashException.h"
 #include "Loading/Exception/TooManyAuthedGroupsException.h"
 #include "Loading/Exception/UnexpectedEndOfFileException.h"

@@ -7,10 +7,12 @@
 #include <cstdint>
 #include <format>
 #include <optional>
+#include <utility>
 
 namespace
 {
     constexpr auto METADATA_GAME = "game";
+    constexpr auto METADATA_VARIANT = "variant";
     constexpr auto METADATA_GDT = "gdt";
     constexpr auto METADATA_NAME = "name";
     constexpr auto METADATA_TYPE = "type";
@@ -23,10 +25,32 @@ namespace
         auto upperGameName = gameName;
         utils::MakeStringUpperCase(upperGameName);
 
-        for (auto i = 0u; i < static_cast<unsigned>(GameId::COUNT); i++)
+        for (auto curGameIdNum = 0u; curGameIdNum < std::to_underlying(GameId::COUNT); curGameIdNum++)
         {
-            if (upperGameName == GameId_Names[i])
-                return static_cast<GameId>(i);
+            const auto curGameId = static_cast<GameId>(curGameIdNum);
+            const auto& curGameName = IGame::GetGameById(curGameId)->GetShortName();
+            if (upperGameName == curGameName)
+                return curGameId;
+        }
+
+        return std::nullopt;
+    }
+
+    std::optional<GameVariantId> GetVariantByName(const GameId gameId, const std::string& variantName)
+    {
+        auto lowerVariantName = variantName;
+        utils::MakeStringLowerCase(lowerVariantName);
+
+        for (auto curVariantIdNum = 0u; curVariantIdNum < std::to_underlying(GameVariantId::COUNT); curVariantIdNum++)
+        {
+            const auto curVariantId = static_cast<GameVariantId>(curVariantIdNum);
+            const auto* variant = IGameVariant::GetVariantById(curVariantId);
+            if (variant->GetGameId() != gameId)
+                continue;
+
+            const auto& curVariantName = variant->GetName();
+            if (lowerVariantName == curVariantName)
+                return curVariantId;
         }
 
         return std::nullopt;
@@ -82,11 +106,25 @@ namespace
         if (!game)
             throw ParsingException(valueToken.GetPos(), "Unknown game name");
 
-        const auto previousGame = state->m_definition->m_game;
-        if (previousGame != GameId::COUNT && previousGame != *game)
-            throw ParsingException(valueToken.GetPos(), std::format("Game was previously defined as: {}", GameId_Names[static_cast<unsigned>(previousGame)]));
+        if (!state->m_game)
+            state->SetGame(*game);
+        else if ((*state->m_game)->GetId() != *game)
+            throw ParsingException(valueToken.GetPos(), std::format("Game was previously defined as: {}", (*state->m_game)->GetShortName()));
+    }
 
-        state->SetGame(*game);
+    void ProcessMetaDataVariant(ZoneDefinitionParserState* state, const ZoneDefinitionParserValue& valueToken, const std::string& value)
+    {
+        if (!state->m_game)
+            throw ParsingException(valueToken.GetPos(), "The game must be specified before the variant");
+
+        const auto variantId = GetVariantByName((*state->m_game)->GetId(), value);
+        if (!variantId)
+            throw ParsingException(valueToken.GetPos(), "Unknown variant name");
+
+        if (!state->m_variant)
+            state->SetVariant(*variantId);
+        else if ((*state->m_variant)->GetId() != *variantId)
+            throw ParsingException(valueToken.GetPos(), std::format("Variant was previously defined as: {}", (*state->m_variant)->GetName()));
     }
 
     void ProcessMetaDataType(ZoneDefinitionParserState* state, const ZoneDefinitionParserValue& keyToken, const ZoneDefinitionParserValue& valueToken)
@@ -133,6 +171,10 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
     if (key == METADATA_GAME)
     {
         ProcessMetaDataGame(state, valueToken, value);
+    }
+    else if (key == METADATA_VARIANT)
+    {
+        ProcessMetaDataVariant(state, valueToken, value);
     }
     else if (key == METADATA_GDT)
     {

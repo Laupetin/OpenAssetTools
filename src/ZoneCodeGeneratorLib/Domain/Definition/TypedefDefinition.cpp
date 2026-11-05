@@ -13,13 +13,14 @@ DataDefinitionType TypedefDefinition::GetType() const
     return DataDefinitionType::TYPEDEF;
 }
 
-unsigned TypedefDefinition::GetAlignment() const
+unsigned TypedefDefinition::GetAlignment(WordSize wordSize) const
 {
     if (m_has_alignment_override)
     {
         return m_alignment_override;
     }
-    return m_type_declaration->GetAlignment();
+
+    return m_type_declaration->GetAlignment(wordSize);
 }
 
 bool TypedefDefinition::GetForceAlignment() const
@@ -27,7 +28,7 @@ bool TypedefDefinition::GetForceAlignment() const
     return m_has_alignment_override || m_type_declaration->GetForceAlignment();
 }
 
-unsigned TypedefDefinition::GetSize() const
+unsigned TypedefDefinition::GetSize(const WordSize wordSize) const
 {
-    return m_type_declaration->GetSize();
+    return m_type_declaration->GetSize(wordSize);
 }

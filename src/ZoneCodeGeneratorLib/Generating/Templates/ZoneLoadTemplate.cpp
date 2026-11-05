@@ -2,6 +2,7 @@
 
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -14,11 +15,11 @@ namespace
     constexpr int TAG_SOURCE = 2;
     constexpr int TAG_ALL_LOADERS = 3;
 
-    class PerTemplate final : BaseTemplate
+    class PerVariant final : BasePerVariantTemplate
     {
     public:
-        PerTemplate(std::ostream& stream, const OncePerTemplateRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerVariant(std::ostream& stream, const PerVariantRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -30,21 +31,28 @@ namespace
             LINE("#pragma once")
             LINE("")
 
-            for (const auto* asset : m_env.m_assets)
+            for (const auto* asset : m_env.m_all_assets)
             {
-                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_load_db.h\"", m_env.m_game, Lower(asset->m_definition->m_name), Lower(m_env.m_game))
+                if (!asset->IsIncludedForVariant(m_env.m_variant->m_index))
+                    continue;
+
+                LINEF("#include \"Game/{0}/XAssets/{1}/{1}_{2}_{3}_load_db.h\"",
+                      m_env.m_game,
+                      Lower(asset->m_asset_name),
+                      Lower(m_env.m_game),
+                      Lower(m_env.m_variant->m_name))
             }
         }
 
     private:
-        const OncePerTemplateRenderingContext& m_env;
+        const PerVariantRenderingContext& m_env;
     };
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -138,8 +146,8 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                 {
                     LINE(VariableDecl(type->m_type))
                 }
@@ -162,9 +170,9 @@ namespace
         {
             AddGeneratedHint();
 
-            LINEF("#include \"{0}_{1}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name), Lower(m_env.m_game))
+            LINEF("#include \"{0}_{1}_{2}_load_db.h\"", Lower(m_env.m_asset->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
-            LINEF("#include \"Game/{0}/AssetMarker{0}.h\"", m_env.m_game)
+            LINEF("#include \"Game/{0}/AssetMarker_{0}_{1}.h\"", Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
             LINE("")
             LINE("#include \"Loading/AssetInfoCollector.h\"")
 
@@ -174,7 +182,7 @@ namespace
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
-                    LINEF("#include \"../{0}/{0}_{1}_load_db.h\"", Lower(type->m_type->m_name), Lower(m_env.m_game))
+                    LINEF("#include \"../{0}/{0}_{1}_{2}_load_db.h\"", Lower(type->m_info->m_asset_name), Lower(m_env.m_game), Lower(m_env.m_variant->m_name))
                 }
             }
 
@@ -252,9 +260,9 @@ namespace
             SINGLE_POINTER
         };
 
-        static std::string LoaderClassName(const StructureInformation* asset)
+        std::string LoaderClassName(const StructureInformation* asset) const
         {
-            return std::format("Loader_{0}", asset->m_definition->m_name);
+            return std::format("Loader_{0}_{1}", asset->m_asset_name, m_env.m_variant->m_name);
         }
 
         static std::string VariableDecl(const DataDefinition* def)
@@ -327,7 +335,7 @@ namespace
             LINEF("{0}::{0}(Zone& zone, ZoneInputStream& stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
-            LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
+            LINE_STARTF(": AssetLoader(Asset{0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
             if (m_env.m_has_actions)
             {
                 LINE_MIDDLE(", m_actions(zone)")
@@ -345,8 +353,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->IsAnonymous()
-                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->IsAnonymous() && (!type->m_info->m_is_leaf || !MemoryLayoutMatches(*type->m_info))
+                    && !StructureComputations(type->m_info).IsAsset())
                 {
                     PrintVariableInitialization(type->m_type);
                 }
@@ -374,7 +382,7 @@ namespace
             LINE("{")
             m_intendation++;
 
-            const auto callFillForMember = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+            const auto callFillForMember = memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type);
 
             if (callFillForMember)
             {
@@ -385,7 +393,8 @@ namespace
             }
             else
             {
-                LINEF("fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->m_offset)
+                LINEF(
+                    "fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->GetOffset(m_env.m_word_size))
             }
 
             LINEF("for (auto i = 1uz; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
@@ -397,14 +406,14 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->GetSize())
+                      memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size))
             }
             else
             {
                 LINEF("fillAccessor.Fill({0}[i], {1} + i * {2});",
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->GetSize())
+                      memberInfo.m_member->m_type_declaration->GetSize(m_env.m_word_size))
             }
             m_intendation--;
             LINE("}")
@@ -454,7 +463,7 @@ namespace
                                                   const DeclarationModifierComputations& modifier,
                                                   const size_t nestedBaseOffset)
         {
-            if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+            if (memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type))
             {
                 LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
                 LINE("{")
@@ -463,7 +472,7 @@ namespace
                 LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
-                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -484,7 +493,7 @@ namespace
 
             if (!hasAnonymousType)
             {
-                const auto hasMismatchingStructure = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+                const auto hasMismatchingStructure = memberInfo.m_type && !MemoryLayoutMatches(*memberInfo.m_type);
                 const auto hasDynamicMember = memberInfo.m_type && StructureComputations(memberInfo.m_type).GetDynamicMember();
                 if (hasMismatchingStructure || hasDynamicMember)
                 {
@@ -502,7 +511,7 @@ namespace
             }
             else if (memberInfo.m_member->m_name.empty())
             {
-                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                const auto anonymousMemberOffset = memberInfo.m_member->GetOffset(m_env.m_word_size) + nestedBaseOffset;
                 for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
                 {
                     PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);
@@ -718,7 +727,7 @@ namespace
             if (memberComputations.HasDynamicArraySize())
             {
                 LINEF("const auto dynamicArrayEntries = static_cast<size_t>({0});", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
-                LINEF("m_stream.AppendToFill(dynamicArrayEntries * {0});", member.m_member->m_type_declaration->m_type->GetSize())
+                LINEF("m_stream.AppendToFill(dynamicArrayEntries * {0});", member.m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 LINEF("return dynamicArrayEntries * sizeof({0}{1}) + offsetof({2}, {3});",
                       MakeTypeDecl(member.m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
@@ -729,13 +738,13 @@ namespace
             {
                 LINEF("return LoadDynamicFill_{0}(fillAccessor.AtOffset({1})) + offsetof({2}, {3});",
                       MakeSafeTypeName(member.m_type->m_definition),
-                      member.m_member->m_offset,
+                      member.m_member->GetOffset(m_env.m_word_size),
                       info.m_definition->GetFullName(),
                       member.m_member->m_name)
             }
             else
             {
-                LINEF("m_stream.AppendToFill({0});", member.m_member->m_type_declaration->GetSize())
+                LINEF("m_stream.AppendToFill({0});", member.m_member->m_type_declaration->GetSize(m_env.m_word_size))
                 LINEF("return sizeof({0}{1}) + offsetof({2}, {3});",
                       MakeTypeDecl(member.m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
@@ -769,7 +778,7 @@ namespace
             const StructureComputations structureComputations(&info);
             const auto dynamicMember = structureComputations.GetDynamicMember();
 
-            LINEF("const auto fillAccessor = m_stream.AppendToFill({0}).AtOffset(parentFill.Offset());", dynamicMember->m_member->m_offset)
+            LINEF("const auto fillAccessor = m_stream.AppendToFill({0}).AtOffset(parentFill.Offset());", dynamicMember->m_member->GetOffset(m_env.m_word_size))
             LINE("")
 
             for (const auto& member : info.m_ordered_members)
@@ -888,8 +897,8 @@ namespace
 
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
-            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment());
-            if (info && !info->m_has_matching_cross_platform_structure && StructureComputations(info).GetDynamicMember())
+            const auto alignment = info && def == info->m_definition ? MakeAllocAlignment(*info) : std::to_string(def->GetAlignment(m_env.m_word_size));
+            if (info && !MemoryLayoutMatches(*info) && StructureComputations(info).GetDynamicMember())
             {
                 assert(def == info->m_definition);
                 LINE("// Alloc first for alignment, then proceed to read as game does")
@@ -945,7 +954,7 @@ namespace
                     LINE("{")
                     m_intendation++;
 
-                    if (info && !info->m_has_matching_cross_platform_structure)
+                    if (info && !MemoryLayoutMatches(*info))
                     {
                         LINEF("*{0} = m_stream.ConvertOffsetToPointerLookup(*{0}).Expect();", MakeTypePtrVarName(def))
                     }
@@ -1032,7 +1041,7 @@ namespace
             LINE("")
             LINE("if (atStreamStart)")
 
-            if (info->m_has_matching_cross_platform_structure)
+            if (MemoryLayoutMatches(*info))
             {
                 m_intendation++;
                 LINEF("m_stream.Load<{0}>({1}, count);", info->m_definition->GetFullName(), MakeTypeVarName(def))
@@ -1043,7 +1052,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count);", def->GetSize())
+                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count);", def->GetSize(m_env.m_word_size))
                 LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
                 LINEF("auto* var = {0};", MakeTypeVarName(def))
                 LINE("for (size_t index = 0; index < count; index++)")
@@ -1051,7 +1060,7 @@ namespace
                 m_intendation++;
 
                 LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
-                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize(m_env.m_word_size))
                 LINE("var++;")
 
                 m_intendation--;
@@ -1159,17 +1168,17 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
-                LINEF("const auto fill = m_stream.LoadWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                LINEF("const auto fill = m_stream.LoadWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 LINE("for (auto i = 0uz; i < fillArraySize; i++)")
                 LINE("{")
                 m_intendation++;
                 LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
                       MakeSafeTypeName(member->m_type->m_definition),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
                 m_intendation--;
                 LINE("}")
             }
@@ -1253,7 +1262,7 @@ namespace
                       m_env.m_word_size_mismatch ? "false" : "true",
                       MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
             }
-            else if (info->m_has_matching_cross_platform_structure)
+            else if (MemoryLayoutMatches(*info))
             {
                 if (m_env.m_word_size_mismatch)
                 {
@@ -1332,12 +1341,12 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
+            else if (member->m_type && !MemoryLayoutMatches(*member->m_type))
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
-                      member->m_member->m_type_declaration->m_type->GetSize())
+                      member->m_member->m_type_declaration->m_type->GetSize(m_env.m_word_size))
             }
             else
             {
@@ -1423,8 +1432,7 @@ namespace
 
         [[nodiscard]] bool ShouldAllocOutOfBlock(const MemberInformation& member, const MemberLoadType loadType) const
         {
-            return m_env.m_word_size_mismatch
-                   && ((member.m_type && !member.m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
+            return m_env.m_word_size_mismatch && ((member.m_type && !MemoryLayoutMatches(*member.m_type)) || loadType == MemberLoadType::POINTER_ARRAY);
         }
 
         [[nodiscard]] bool
@@ -1460,7 +1468,7 @@ namespace
                 }
                 else
                 {
-                    LINEF("m_stream.Alloc({0});", modifier.GetAlignment())
+                    LINEF("m_stream.Alloc({0});", modifier.GetAlignment(m_env.m_word_size))
                 }
 
                 LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(member->m_type->m_definition))
@@ -1491,7 +1499,7 @@ namespace
                 }
                 else
                 {
-                    LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                    LINE_MIDDLEF("{0}", modifier.GetAlignment(m_env.m_word_size))
                 }
 
                 if (allocOutOfBlock && modifier.IsArrayPointer())
@@ -1585,7 +1593,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                if (info->m_has_matching_cross_platform_structure)
+                if (MemoryLayoutMatches(*info))
                 {
                     LINEF("{0} = m_stream.ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
                 }
@@ -1617,7 +1625,7 @@ namespace
                     if (loadType == MemberLoadType::POINTER_ARRAY)
                     {
                         LINE_MIDDLEF(".OrNulled({0}uz * ({1}), sizeof({2}{3}) * ({1}), m_memory)",
-                                     member->m_member->m_type_declaration->GetSize(),
+                                     member->m_member->m_type_declaration->GetSize(m_env.m_word_size),
                                      MakeEvaluation(modifier.GetPointerArrayCountEvaluation()),
                                      MakeTypeDecl(member->m_member->m_type_declaration.get()),
                                      MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()))
@@ -1867,7 +1875,7 @@ namespace
             LINEF("assert({0} != nullptr);", MakeTypeVarName(info->m_definition))
 
             const auto* dynamicMember = computations.GetDynamicMember();
-            if (!info->m_has_matching_cross_platform_structure && dynamicMember && !info->m_non_embedded_reference_exists)
+            if (!MemoryLayoutMatches(*info) && dynamicMember && !info->m_non_embedded_reference_exists)
             {
                 LINE("assert(!atStreamStart);")
             }
@@ -1877,14 +1885,14 @@ namespace
                 LINE("if (atStreamStart)")
 
                 m_intendation++;
-                if (info->m_has_matching_cross_platform_structure)
+                if (MemoryLayoutMatches(*info))
                 {
                     if (dynamicMember == nullptr)
                     {
                         LINEF("m_stream.Load<{0}>({1}); // Size: {2}",
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
-                              info->m_definition->GetSize())
+                              info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else
                     {
@@ -1898,7 +1906,8 @@ namespace
                 {
                     if (dynamicMember == nullptr)
                     {
-                        LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+                        LINEF(
+                            "FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize(m_env.m_word_size))
                     }
                     else if (info->m_non_embedded_reference_exists)
                     {
@@ -2068,7 +2077,7 @@ namespace
 
             if (inTemp)
             {
-                if (info->m_has_matching_cross_platform_structure)
+                if (MemoryLayoutMatches(*info))
                 {
                     LINEF("*{0} = m_stream.ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
                 }
@@ -2110,13 +2119,13 @@ namespace
             LINE("assert(pAsset != nullptr);")
             LINE("")
             LINE("AssetInfoCollector assetInfo(m_zone);")
-            LINEF("AssetMarker<{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
+            LINEF("AssetMarker<Asset{0}> marker(assetInfo);", m_env.m_asset->m_asset_name)
             LINE("marker.Mark(*pAsset);")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<{1}>(**pAsset), reallocatedAsset, "
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetName<Asset{1}>(**pAsset), reallocatedAsset, "
                   "assetInfo.GetDependencies(), "
                   "assetInfo.GetUsedScriptStrings(), assetInfo.GetIndirectAssetReferences()));",
                   info->m_definition->GetFullName(),
@@ -2142,7 +2151,7 @@ namespace
             LINE("")
             LINE("if (m_asset_info == nullptr && *pAsset != nullptr)")
             m_intendation++;
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<{1}>(**pAsset)));",
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetName<Asset{1}>(**pAsset)));",
                   m_env.m_asset->m_definition->GetFullName(),
                   m_env.m_asset->m_asset_name)
             m_intendation--;
@@ -2153,44 +2162,53 @@ namespace
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    files.emplace_back(std::format("AssetLoader{0}.h", context.m_game), TAG_ALL_LOADERS);
+    auto gameName = context.m_game;
+    utils::MakeStringLowerCase(gameName);
+
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("AssetLoader_{0}_{1}.h", gameName, variantName), TAG_ALL_LOADERS);
 
     return files;
 }
 
-void ZoneLoadTemplate::RenderOncePerTemplateFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context)
+void ZoneLoadTemplate::RenderOncePerVariantFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context)
 {
     assert(fileTag == TAG_ALL_LOADERS);
 
-    const PerTemplate t(stream, context);
+    const PerVariant t(stream, context);
     t.AllLoaders();
 }
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
     utils::MakeStringLowerCase(gameName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.h", assetName, gameName), TAG_HEADER);
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_load_db.cpp", assetName, gameName), TAG_SOURCE);
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_load_db.h", assetName, gameName, variantName), TAG_HEADER);
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_load_db.cpp", assetName, gameName, variantName), TAG_SOURCE);
 
     return files;
 }
 
-void ZoneLoadTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void ZoneLoadTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

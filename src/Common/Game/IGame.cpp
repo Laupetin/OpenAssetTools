@@ -11,7 +11,7 @@
 
 #include <cassert>
 
-IGame* IGame::GetGameById(GameId gameId)
+IGame* IGame::GetGameById(const GameId gameId)
 {
     static IGame* games[]{
         new IW3::Game(),

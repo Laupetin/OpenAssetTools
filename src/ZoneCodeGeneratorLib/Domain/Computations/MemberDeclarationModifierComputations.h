@@ -28,7 +28,7 @@ public:
     [[nodiscard]] bool IsDynamicArray() const;
     [[nodiscard]] const IEvaluation* GetDynamicArraySizeEvaluation() const;
     [[nodiscard]] bool HasPointerModifier() const;
-    [[nodiscard]] unsigned GetAlignment() const;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const;
 
 private:
     DeclarationModifierComputations(const MemberInformation* member, std::vector<int> modifierIndices);

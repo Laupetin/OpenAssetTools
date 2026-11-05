@@ -30,7 +30,7 @@ namespace
         mapEnts.stages = &stage;
         mapEnts.stageCount = 1;
 
-        Zone zone("MockZone", 0, GameId::IW4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::IW4_PC32);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<MapEnts>>(ASSET_TYPE_MAP_ENTS, mapEnts.name, &mapEnts));
 
         MockSearchPath mockObjPath;

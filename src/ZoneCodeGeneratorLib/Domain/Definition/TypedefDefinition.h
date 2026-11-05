@@ -9,9 +9,9 @@ public:
     TypedefDefinition(std::string _namespace, std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration);
 
     [[nodiscard]] DataDefinitionType GetType() const override;
-    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const override;
     [[nodiscard]] bool GetForceAlignment() const override;
-    [[nodiscard]] unsigned GetSize() const override;
+    [[nodiscard]] unsigned GetSize(WordSize wordSize) const override;
 
     bool m_has_alignment_override;
     unsigned m_alignment_override;

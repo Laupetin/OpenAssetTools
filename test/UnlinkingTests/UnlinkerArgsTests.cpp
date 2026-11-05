@@ -19,7 +19,7 @@ namespace
         REQUIRE(shouldContinue);
         REQUIRE(args.m_output_folder == UnlinkerArgs::DEFAULT_OUTPUT_FOLDER);
 
-        const Zone zone("test_zone", 0, GameId::IW4, GamePlatform::PC);
+        const Zone zone("test_zone", 0, GameVariantId::IW4_PC32);
         REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/iw4/test_zone");
     }
 
@@ -28,7 +28,7 @@ namespace
         UnlinkerArgs args;
         args.m_output_folder = "zone_dump/custom";
 
-        const Zone zone("test_zone", 0, GameId::IW4, GamePlatform::PC);
+        const Zone zone("test_zone", 0, GameVariantId::IW4_PC32);
 
         REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/custom");
     }
@@ -38,7 +38,7 @@ namespace
         UnlinkerArgs args;
         args.m_output_folder = "zone_dump/?game?/?game?/?zone?";
 
-        const Zone zone("test_zone", 0, GameId::IW4, GamePlatform::PC);
+        const Zone zone("test_zone", 0, GameVariantId::IW4_PC32);
 
         REQUIRE(args.GetOutputFolderPathForZone(zone) == "zone_dump/iw4/iw4/test_zone");
     }

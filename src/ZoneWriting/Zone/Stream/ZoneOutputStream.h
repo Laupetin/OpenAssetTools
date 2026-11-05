@@ -143,6 +143,10 @@ public:
         return WriteDataInBlock(dst, size);
     }
 
-    static std::unique_ptr<ZoneOutputStream>
-        Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, InMemoryZoneData& zoneData);
+    static std::unique_ptr<ZoneOutputStream> Create(unsigned pointerBitCount,
+                                                    unsigned zonePointerOffsetBitCount,
+                                                    unsigned zonePointerBlockBitCount,
+                                                    std::vector<XBlock*>& blocks,
+                                                    block_t insertBlock,
+                                                    InMemoryZoneData& zoneData);
 };

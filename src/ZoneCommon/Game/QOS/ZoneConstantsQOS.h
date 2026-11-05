@@ -16,7 +16,8 @@ namespace QOS
         static constexpr size_t FILE_HEADER_SIZE = 28;
         static constexpr size_t AUTHED_CHUNK_SIZE = 0x20000;
 
-        static constexpr unsigned OFFSET_BLOCK_BIT_COUNT = 3u;
+        static constexpr unsigned ZONE_POINTER_OFFSET_BIT_COUNT = 29u;
+        static constexpr unsigned ZONE_POINTER_BLOCK_BIT_COUNT = 3u;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
     };
 } // namespace QOS

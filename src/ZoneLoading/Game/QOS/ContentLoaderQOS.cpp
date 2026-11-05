@@ -1,6 +1,6 @@
 #include "ContentLoaderQOS.h"
 
-#include "Game/QOS/AssetLoaderQOS.h"
+#include "Game/QOS/AssetLoader_qos_pc.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
 #include <cassert>
@@ -40,10 +40,11 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
 void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
-#define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
-    case type_index:                                                                                                                                           \
+#define FALLTHROUGH_ASSET(assetName) case Asset##assetName## ::EnumEntry:
+#define LOAD_ASSET(assetName, headerEntry)                                                                                                                     \
+    case Asset##assetName## ::EnumEntry:                                                                                                                       \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        Loader_##assetName##_pc loader(m_zone, m_stream);                                                                                                      \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
@@ -55,37 +56,37 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 
     switch (varXAsset->type)
     {
-        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-        LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints)
-        LOAD_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef)
-        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-        LOAD_ASSET(ASSET_TYPE_SND_CURVE, SndCurve, sndCurve)
-        LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap)
-        LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap)
-        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
-        LOAD_ASSET(ASSET_TYPE_MENUFILE, MenuList, menuList)
-        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
-        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-        LOAD_ASSET(ASSET_TYPE_XMLTREE, XmlTree, xmlTree)
-        LOAD_ASSET(ASSET_TYPE_SCENE_ANIMATION, SceneAnimation, sceneAnimation)
-        LOAD_ASSET(ASSET_TYPE_CUTSCENE, Cutscene, cutscene)
-        LOAD_ASSET(ASSET_TYPE_CUSTOM_CAMERA, CustomCamera, customCamera)
+        LOAD_ASSET(PhysPreset, physPreset)
+        LOAD_ASSET(PhysConstraints, physConstraints)
+        LOAD_ASSET(DestructibleDef, destructibleDef)
+        LOAD_ASSET(XAnim, parts)
+        LOAD_ASSET(XModel, model)
+        LOAD_ASSET(Material, material)
+        LOAD_ASSET(TechniqueSet, techniqueSet)
+        LOAD_ASSET(Image, image)
+        LOAD_ASSET(Sound, sound)
+        LOAD_ASSET(SoundCurve, sndCurve)
+        FALLTHROUGH_ASSET(ClipMapSp)
+        LOAD_ASSET(ClipMapMp, clipMap)
+        LOAD_ASSET(ComWorld, comWorld)
+        LOAD_ASSET(GameWorldSp, gameWorldSp)
+        LOAD_ASSET(GameWorldMp, gameWorldMp)
+        LOAD_ASSET(MapEnts, mapEnts)
+        LOAD_ASSET(GfxWorld, gfxWorld)
+        LOAD_ASSET(LightDef, lightDef)
+        LOAD_ASSET(Font, font)
+        LOAD_ASSET(MenuList, menuList)
+        LOAD_ASSET(Menu, menu)
+        LOAD_ASSET(Localize, localize)
+        LOAD_ASSET(Weapon, weapon)
+        LOAD_ASSET(Fx, fx)
+        LOAD_ASSET(ImpactFx, impactFx)
+        LOAD_ASSET(RawFile, rawfile)
+        LOAD_ASSET(StringTable, stringTable)
+        LOAD_ASSET(XmlTree, xmlTree)
+        LOAD_ASSET(SceneAnimation, sceneAnimation)
+        LOAD_ASSET(Cutscene, cutscene)
+        LOAD_ASSET(CustomCamera, customCamera)
 
     default:
     {

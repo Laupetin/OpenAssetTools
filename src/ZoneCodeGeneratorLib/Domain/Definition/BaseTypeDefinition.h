@@ -23,9 +23,9 @@ public:
     static const size_t ALL_BASE_TYPES_COUNT;
 
     [[nodiscard]] DataDefinitionType GetType() const override;
-    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] unsigned GetAlignment(WordSize wordSize) const override;
     [[nodiscard]] bool GetForceAlignment() const override;
-    [[nodiscard]] unsigned GetSize() const override;
+    [[nodiscard]] unsigned GetSize(WordSize wordSize) const override;
 
     const unsigned m_size;
 
