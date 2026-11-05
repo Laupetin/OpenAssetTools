@@ -1,5 +1,6 @@
 #include "ObjWriterT5.h"
 
+#include "Destructible/DestructibleDefDumperT5.h"
 #include "Game/T5/Font/FontDumperT5.h"
 #include "Game/T5/Image/ImageDumperT5.h"
 #include "Game/T5/Maps/MapEntsDumperT5.h"
@@ -21,7 +22,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
 {
     RegisterAssetDumper(std::make_unique<phys_preset::InfoStringDumperT5>());
     RegisterAssetDumper(std::make_unique<phys_constraints::InfoStringDumperT5>());
-    // REGISTER_DUMPER(AssetDumperDestructibleDef, m_destructible_def)
+    RegisterAssetDumper(std::make_unique<destructible::DumperT5>());
     RegisterAssetDumper(std::make_unique<xanim::DumperT5>());
     RegisterAssetDumper(std::make_unique<xmodel::DumperT5>());
     RegisterAssetDumper(std::make_unique<material::JsonDumperT5>());

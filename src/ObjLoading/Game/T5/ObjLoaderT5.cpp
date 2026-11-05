@@ -1,6 +1,7 @@
 #include "ObjLoaderT5.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
+#include "Destructible/RawLoaderDestructibleDefT5.h"
 #include "Game/T5/AssetMarkerT5.h"
 #include "Game/T5/Font/FontLoaderT5.h"
 #include "Game/T5/GameT5.h"
@@ -117,7 +118,7 @@ namespace
         collection.AddAssetCreator(phys_preset::CreateRawLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderT5(memory, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
+        collection.AddAssetCreator(destructible::CreateRawLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(xanim::CreateLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(xmodel::CreateLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(material::CreateLoaderT5(memory, searchPath));
