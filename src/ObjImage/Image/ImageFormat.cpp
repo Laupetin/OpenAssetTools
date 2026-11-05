@@ -218,6 +218,9 @@ namespace image
         const ImageFormatBlockCompressed BC3(ImageFormatId::BC3, "BC3", oat::D3DFMT_DXT5, oat::DXGI_FORMAT_BC3_UNORM, 4, 128, true, true, true, true);
         const ImageFormatBlockCompressed BC4(ImageFormatId::BC4, "BC4", oat::D3DFMT_UNKNOWN, oat::DXGI_FORMAT_BC4_UNORM, 4, 64, true, false, false, false);
         const ImageFormatBlockCompressed BC5(ImageFormatId::BC5, "BC5", oat::D3DFMT_UNKNOWN, oat::DXGI_FORMAT_BC5_UNORM, 4, 128, true, true, false, false);
+        const ImageFormatUnsigned B5_G6_R5(ImageFormatId::B5_G6_R5, "B5_G6_R5", oat::D3DFMT_R5G6B5, oat::DXGI_FORMAT_B5G6R5_UNORM, 16, 11, 5, 5, 6, 0, 5, 0, 0);
+        const ImageFormatUnsigned R16_G16(ImageFormatId::R16_G16, "R16_G16", oat::D3DFMT_G16R16, oat::DXGI_FORMAT_R16G16_UNORM, 32, 0, 16, 16, 16, 0, 0, 0, 0);
+        const ImageFormatUnsigned R32_FLOAT(ImageFormatId::R32_FLOAT, "R32_FLOAT", oat::D3DFMT_R32F, oat::DXGI_FORMAT_R32_FLOAT, 32, 0, 32, 0, 0, 0, 0, 0, 0);
 
         const ImageFormat* const ALL[static_cast<unsigned>(ImageFormatId::MAX)]{
             &B8_G8_R8,
@@ -233,6 +236,9 @@ namespace image
             &BC3,
             &BC4,
             &BC5,
+            &B5_G6_R5,
+            &R16_G16,
+            &R32_FLOAT,
         };
     } // namespace format
 } // namespace image

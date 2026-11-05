@@ -78,6 +78,30 @@
 using namespace GAME;
 using namespace image;
 
+#ifdef FEATURE_T5
+namespace
+{
+    bool TryCopyOriginalIwi(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
+    {
+        const auto* image = asset.Asset();
+        if (image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+            return false;
+
+        const auto fileName = GetFileNameForAsset(asset.m_name, ".iwi");
+        const auto originalFile = context.m_obj_search_path.Open(fileName);
+        if (!originalFile.IsOpen())
+            return false;
+
+        const auto assetFile = context.OpenAssetFile(fileName);
+        if (!assetFile)
+            return true;
+
+        *assetFile << originalFile.m_stream->rdbuf();
+        return true;
+    }
+} // namespace
+#endif
+
 #set CLASS_NAME "Dumper" + GAME
 
 namespace image
@@ -103,6 +127,11 @@ namespace image
 
     void CLASS_NAME::DumpAsset(AssetDumpingContext& context, const XAssetInfo<AssetImage::Type>& asset)
     {
+#ifdef FEATURE_T5
+        if (ObjWriting::Configuration.ImageOutputFormat == ImageOutputFormat_e::IWI && TryCopyOriginalIwi(context, asset))
+            return;
+#endif
+
         const auto* image = asset.Asset();
         auto texture = CONVERTER_NAME().Convert(asset, context.m_obj_search_path);
         if (!texture)
@@ -112,7 +141,14 @@ namespace image
         if (convertedTexture)
             texture = std::move(convertedTexture);
 
-        if (!m_writer->SupportsImageFormat(texture->GetFormat()))
+        auto* writer = m_writer.get();
+#ifdef FEATURE_T5
+        DdsWriter ddsWriter;
+        if (!writer->SupportsImageFormat(texture->GetFormat()))
+            writer = &ddsWriter;
+#endif
+
+        if (!writer->SupportsImageFormat(texture->GetFormat()))
         {
             con::warn("Not dumping image {} as {} does not support the image format {}",
                       image->name,
@@ -121,12 +157,12 @@ namespace image
             return;
         }
 
-        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name, m_writer->GetFileExtension()));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset.m_name, writer->GetFileExtension()));
 
         if (!assetFile)
             return;
 
         auto& stream = *assetFile;
-        m_writer->DumpImage(stream, texture.get());
+        writer->DumpImage(stream, texture.get());
     }
 } // namespace image

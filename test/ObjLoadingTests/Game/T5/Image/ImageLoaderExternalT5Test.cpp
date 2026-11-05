@@ -1,6 +1,10 @@
 #include "Game/T5/Image/ImageLoaderExternalT5.h"
 
+#include "Game/T5/CommonT5.h"
 #include "Game/T5/GameT5.h"
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
+#include "Image/D3DFormat.h"
+#include "Image/IwiTypes.h"
 #include "OatTestPaths.h"
 #include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
@@ -43,12 +47,35 @@ namespace
         auto result = loader->CreateAsset("testimage", context);
         REQUIRE(result.HasBeenSuccessful());
 
-        const auto* assetInfo = reinterpret_cast<XAssetInfo<GfxImage>*>(result.GetAssetInfo());
-        const auto* image = assetInfo->Asset();
+        auto* assetInfo = reinterpret_cast<XAssetInfo<GfxImage>*>(result.GetAssetInfo());
+        auto* image = assetInfo->Asset();
 
         REQUIRE(image->name == "testimage"s);
         REQUIRE(image->width == 64);
         REQUIRE(image->height == 64);
         REQUIRE(image->depth == 1);
+
+        REQUIRE(image->hash == Common::R_HashString("testimage", 0));
+        REQUIRE(image->category == IMG_CATEGORY_LOAD_FROM_FILE);
+        REQUIRE(image->mapType == MAPTYPE_2D);
+        REQUIRE(image->semantic == TS_2D);
+        REQUIRE(!image->delayLoadPixels);
+        REQUIRE(image->noPicmip);
+        REQUIRE(!image->streaming);
+        REQUIRE(image->cardMemory.platform[0] == 2048);
+        REQUIRE(image->cardMemory.platform[1] == 2048);
+
+        REQUIRE(image->texture.loadDef);
+        REQUIRE(image->texture.loadDef->resourceSize == 0);
+        REQUIRE(image->texture.loadDef->format == oat::D3DFMT_DXT1);
+        REQUIRE(image->texture.loadDef->levelCount == 1);
+        REQUIRE(image->texture.loadDef->flags == image::iwi13::IMG_FLAG_NOMIPMAPS);
+
+        auto& semanticState = context.GetZoneAssetCreationState<image::SemanticZoneStateT5>();
+        semanticState.AssignSemantic(*image, TS_COLOR_MAP);
+        semanticState.AssignSemantic(*image, TS_NORMAL_MAP);
+
+        REQUIRE(image->semantic == TS_COLOR_MAP);
+        REQUIRE(image->delayLoadPixels);
     }
 } // namespace
