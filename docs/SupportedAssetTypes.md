@@ -32,8 +32,8 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | menuDef_t            | ✅              | ✅              | See menulist.                                                                |
 | LocalizeEntry        | ✅              | ✅              |                                                                              |
 | WeaponDef            | ✅              | ✅              |                                                                              |
-| FxEffectDef          | ❌              | ❌              |                                                                              |
-| FxImpactTable        | ❌              | ❌              |                                                                              |
+| FxEffectDef          | ✅              | ✅              | Output is decompiled from sampled runtime data and will not match the input. |
+| FxImpactTable        | ✅              | ❌              | Output is a flattened CSV containing all resolved entries.                   |
 | RawFile              | ✅              | ✅              |                                                                              |
 | StringTable          | ✅              | ✅              |                                                                              |
 
@@ -185,8 +185,8 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | menuDef_t            | ✅              | ✅              | See menulist.                                                                |
 | LocalizeEntry        | ✅              | ✅              |                                                                              |
 | WeaponDef            | ✅              | ✅              |                                                                              |
-| FxEffectDef          | ❌              | ❌              |                                                                              |
-| FxImpactTable        | ❌              | ❌              |                                                                              |
+| FxEffectDef          | ✅              | ✅              | Output is decompiled from sampled runtime data and will not match the input. |
+| FxImpactTable        | ✅              | ❌              | Output is a flattened CSV containing all resolved entries.                   |
 | RawFile              | ✅              | ✅              |                                                                              |
 | StringTable          | ✅              | ✅              |                                                                              |
 | PackIndex            | ❌              | ❌              |                                                                              |
@@ -218,8 +218,8 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | LocalizeEntry        | ✅              | ✅              |                                                                              |
 | WeaponVariantDef     | ✅              | ✅              |                                                                              |
 | SndDriverGlobals     | ❌              | ❌              |                                                                              |
-| FxEffectDef          | ❌              | ❌              |                                                                              |
-| FxImpactTable        | ❌              | ❌              |                                                                              |
+| FxEffectDef          | ✅              | ✅              | Output is decompiled from sampled runtime data and will not match the input. |
+| FxImpactTable        | ✅              | ❌              | Output is a flattened CSV containing all resolved entries.                   |
 | RawFile              | ✅              | ✅              |                                                                              |
 | StringTable          | ✅              | ✅              |                                                                              |
 | PackIndex            | ❌              | ❌              |                                                                              |

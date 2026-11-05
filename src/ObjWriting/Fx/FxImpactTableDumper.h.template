@@ -1,0 +1,24 @@
+#options GAME(IW3, T4, T5)
+
+#filename "Game/" + GAME + "/Fx/FxImpactTableDumper" + GAME + ".h"
+
+// This file was templated.
+// See FxImpactTableDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+namespace fx
+{
+#set CLASS_NAME "ImpactTableDumper" + GAME
+    class CLASS_NAME final : public AbstractAssetDumper<GAME::AssetImpactFx>
+    {
+    protected:
+        bool ShouldDump(const XAssetInfo<GAME::AssetImpactFx::Type>& asset) override;
+        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<GAME::AssetImpactFx::Type>& asset) override;
+    };
+} // namespace fx
