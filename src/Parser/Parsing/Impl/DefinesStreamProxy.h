@@ -60,6 +60,8 @@ public:
         std::ostringstream m_current_parameter;
         std::vector<std::string> m_parameters;
         std::stack<char> m_bracket_depth;
+        bool m_in_string;
+        bool m_after_escape;
     };
 
     explicit DefinesStreamProxy(IParserLineStream* stream, bool skipDirectiveLines = false);
