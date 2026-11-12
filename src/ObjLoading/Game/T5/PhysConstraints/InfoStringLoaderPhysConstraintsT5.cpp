@@ -1,0 +1,116 @@
+#include "InfoStringLoaderPhysConstraintsT5.h"
+
+#include "Game/T5/InfoString/InfoStringToStructConverter.h"
+#include "Game/T5/PhysConstraints/PhysConstraintsFields.h"
+#include "Game/T5/T5.h"
+#include "Utils/Logging/Log.h"
+
+#include <cassert>
+#include <cstring>
+#include <format>
+#include <iostream>
+#include <limits>
+
+using namespace T5;
+
+namespace
+{
+    class InfoStringToPhysConstraintsConverter final : public InfoStringToStructConverter
+    {
+    protected:
+        bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
+        {
+            switch (static_cast<constraintsFieldType_t>(field.iFieldType))
+            {
+            case CFT_TYPE:
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_constraintTypeNames, std::extent_v<decltype(s_constraintTypeNames)>);
+
+            default:
+                assert(false);
+                return false;
+            }
+        }
+
+    public:
+        InfoStringToPhysConstraintsConverter(const InfoString& infoString,
+                                             PhysConstraints& physConstraints,
+                                             ZoneScriptStrings& zoneScriptStrings,
+                                             MemoryManager& memory,
+                                             AssetCreationContext& context,
+                                             AssetRegistration<AssetPhysConstraints>& registration,
+                                             const cspField_t* fields,
+                                             const size_t fieldCount)
+            : InfoStringToStructConverter(infoString, &physConstraints, zoneScriptStrings, memory, context, registration, fields, fieldCount)
+        {
+        }
+    };
+
+    void CalculatePhysConstraintsFields(PhysConstraints& physConstraints, ZoneScriptStrings& scriptStrings)
+    {
+        for (auto& constraint : physConstraints.data)
+        {
+            constraint.targetname = scriptStrings.AddOrGetScriptString("");
+            constraint.target_ent1 = scriptStrings.AddOrGetScriptString("");
+            constraint.target_ent2 = scriptStrings.AddOrGetScriptString("");
+            constraint.attach_point_type1 = ATTACH_POINT_BONE;
+            constraint.attach_point_type2 = ATTACH_POINT_BONE;
+            if (constraint.target_bone1 == nullptr)
+                constraint.target_bone1 = "";
+            if (constraint.target_bone2 == nullptr)
+                constraint.target_bone2 = "";
+        }
+
+        // count
+        {
+            auto foundEnd = false;
+            for (auto i = 0u; i < std::extent_v<decltype(PhysConstraints::data)>; i++)
+            {
+                if (physConstraints.data[i].type == CONSTRAINT_NONE)
+                {
+                    foundEnd = true;
+                    physConstraints.count = i;
+                    break;
+                }
+            }
+
+            if (!foundEnd)
+                physConstraints.count = std::extent_v<decltype(PhysConstraints::data)>;
+        }
+    }
+} // namespace
+
+namespace phys_constraints
+{
+    InfoStringLoaderT5::InfoStringLoaderT5(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
+    {
+    }
+
+    AssetCreationResult InfoStringLoaderT5::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* physConstraints = m_memory.Alloc<PhysConstraints>();
+        physConstraints->name = m_memory.Dup(assetName.c_str());
+
+        AssetRegistration<AssetPhysConstraints> registration(assetName, physConstraints);
+        InfoStringToPhysConstraintsConverter converter(infoString,
+                                                       *physConstraints,
+                                                       m_zone.m_script_strings,
+                                                       m_memory,
+                                                       context,
+                                                       registration,
+                                                       phys_constraints_fields,
+                                                       std::extent_v<decltype(phys_constraints_fields)>);
+        if (!converter.Convert())
+        {
+            con::error("Failed to parse phys constraints: \"{}\"", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        CalculatePhysConstraintsFields(*physConstraints, m_zone.m_script_strings);
+        registration.AddScriptString(m_zone.m_script_strings.AddOrGetScriptString(""));
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace phys_constraints
