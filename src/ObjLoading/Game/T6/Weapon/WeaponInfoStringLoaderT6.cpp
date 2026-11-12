@@ -705,12 +705,28 @@ namespace
 
     void CalculateAttachmentFields(const WeaponFullDef& weapon)
     {
+        auto combinedSoundOverrides = 0;
+        auto combinedEffectOverrides = 0;
         for (auto attachmentUniqueIndex = 0u; attachmentUniqueIndex < std::extent_v<decltype(WeaponFullDef::attachmentUniques)>; attachmentUniqueIndex++)
         {
-            if (weapon.attachmentUniques[attachmentUniqueIndex] == nullptr)
+            auto* attachmentUnique = weapon.attachmentUniques[attachmentUniqueIndex];
+            if (!attachmentUnique)
                 continue;
 
-            CalculateAttachmentFields(weapon, attachmentUniqueIndex, *weapon.attachmentUniques[attachmentUniqueIndex]);
+            CalculateAttachmentFields(weapon, attachmentUniqueIndex, *attachmentUnique);
+
+            if (attachmentUniqueIndex > ATTACHMENT_NONE)
+            {
+                combinedSoundOverrides |= attachmentUnique->soundOverrides;
+                combinedEffectOverrides |= attachmentUnique->effectOverrides;
+            }
+        }
+
+        auto* noneAttachmentUnique = weapon.attachmentUniques[ATTACHMENT_NONE];
+        if (noneAttachmentUnique)
+        {
+            noneAttachmentUnique->soundOverrides |= combinedSoundOverrides;
+            noneAttachmentUnique->effectOverrides |= combinedEffectOverrides;
         }
     }
 } // namespace

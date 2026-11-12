@@ -24,6 +24,11 @@ public:
 
     [[nodiscard]] bool IsAssetIgnored(asset_type_t assetType, const std::string& name) const;
 
+    template<AssetDefinition Asset_t> void Ignore(const std::string& assetName)
+    {
+        m_ignored_asset_lookup.emplace(assetName, Asset_t::EnumEntry);
+    }
+
     std::unordered_multimap<std::string, asset_type_t> m_ignored_asset_lookup;
 };
 
