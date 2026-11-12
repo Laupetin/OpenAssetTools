@@ -31,7 +31,7 @@ namespace
 
 TEST_CASE("TechsetCompilerIW3", "[techset][iw3][compiler]")
 {
-    Zone zone("test", 0, GameId::IW3, GamePlatform::PC);
+    Zone zone("test", 0, GameVariantId::IW3_PC);
     AssetCreatorCollection creators(zone);
     IgnoredAssetLookup ignoredAssets;
     AssetCreationContext context(zone, &creators, &ignoredAssets);

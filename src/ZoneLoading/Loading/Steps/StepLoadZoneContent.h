@@ -11,8 +11,9 @@ namespace step
 {
     std::unique_ptr<ILoadingStep> CreateStepLoadZoneContent(std::function<std::unique_ptr<IContentLoadingEntryPoint>(ZoneInputStream&)> entryPointFactory,
                                                             unsigned pointerBitCount,
-                                                            unsigned offsetBlockBitCount,
+                                                            unsigned zonePointerOffsetBitCount,
+                                                            unsigned zonePointerBlockBitCount,
                                                             block_t insertBlock,
-                                                            MemoryManager& memory,
+                                                            Zone* zone,
                                                             std::optional<std::unique_ptr<ProgressCallback>> progressCallback);
 }

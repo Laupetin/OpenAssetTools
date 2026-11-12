@@ -3,7 +3,7 @@
 #include "ILoadingStream.h"
 #include "Loading/ZoneLoader.h"
 
-class ZoneLoader;
+class ZoneReader;
 
 class ILoadingStep
 {
@@ -15,5 +15,5 @@ public:
     ILoadingStep& operator=(const ILoadingStep& other) = default;
     ILoadingStep& operator=(ILoadingStep&& other) noexcept = default;
 
-    virtual void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) = 0;
+    virtual void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) = 0;
 };

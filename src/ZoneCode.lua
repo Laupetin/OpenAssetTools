@@ -1,275 +1,317 @@
 ZoneCode = {}
 
-ZoneCode.Assets = {
+ZoneCode.Games = {
     IW3 = {
-        "PhysPreset",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "snd_alias_list_t",
-        "SndCurve",
-        "LoadedSound",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponDef",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable"
+        Variants = {
+            "pc"
+        },
+        Assets = {
+            "PhysPreset",
+            "XAnim",
+            "XModel",
+            "Material",
+            "TechniqueSet",
+            "Image",
+            "Sound",
+            "SoundCurve",
+            "LoadedSound",
+            "ClipMapPvs",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable"
+        }
     },
 
     IW4 = {
-        "PhysPreset",
-        "PhysCollmap",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialPixelShader",
-        "MaterialVertexShader",
-        "MaterialVertexDeclaration",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "snd_alias_list_t",
-        "SndCurve",
-        "LoadedSound",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "FxWorld",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponCompleteDef",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable",
-        "LeaderboardDef",
-        "StructuredDataDefSet",
-        "TracerDef",
-        "VehicleDef",
-        "AddonMapEnts"
+        Variants = {
+            "pc32",
+            "pc64"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysCollMap",
+            "XAnim",
+            "XModel",
+            "Material",
+            "PixelShader",
+            "VertexShader",
+            "VertexDecl",
+            "TechniqueSet",
+            "Image",
+            "Sound",
+            "SoundCurve",
+            "LoadedSound",
+            "ClipMapMp",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "FxWorld",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable",
+            "Leaderboard",
+            "StructuredDataDef",
+            "Tracer",
+            "Vehicle",
+            "AddonMapEnts"
+        }
     },
 
     IW5 = {
-        "PhysPreset",
-        "PhysCollmap",
-        "XAnimParts",
-        "XModelSurfs",
-        "XModel",
-        "Material",
-        "MaterialPixelShader",
-        "MaterialVertexShader",
-        "MaterialVertexDeclaration",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "snd_alias_list_t",
-        "SndCurve",
-        "LoadedSound",
-        "clipMap_t",
-        "ComWorld",
-        "GlassWorld",
-        "PathData",
-        "VehicleTrack",
-        "MapEnts",
-        "FxWorld",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponAttachment",
-        "WeaponCompleteDef",
-        "FxEffectDef",
-        "FxImpactTable",
-        "SurfaceFxTable",
-        "RawFile",
-        "ScriptFile",
-        "StringTable",
-        "LeaderboardDef",
-        "StructuredDataDefSet",
-        "TracerDef",
-        "VehicleDef",
-        "AddonMapEnts",
+        Variants = {
+            "pc32",
+            "pc64"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysCollMap",
+            "XAnim",
+            "XModelSurfs",
+            "XModel",
+            "Material",
+            "PixelShader",
+            "VertexShader",
+            "VertexDecl",
+            "TechniqueSet",
+            "Image",
+            "Sound",
+            "SoundCurve",
+            "LoadedSound",
+            "ClipMap",
+            "ComWorld",
+            "GlassWorld",
+            "PathData",
+            "VehicleTrack",
+            "MapEnts",
+            "FxWorld",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Attachment",
+            "Weapon",
+            "Fx",
+            "ImpactFx",
+            "SurfaceFx",
+            "RawFile",
+            "Script",
+            "StringTable",
+            "Leaderboard",
+            "StructuredDataDef",
+            "Tracer",
+            "Vehicle",
+            "AddonMapEnts",
+        }
     },
 
     QOS = {
-        "PhysPreset",
-        "PhysConstraints",
-        "DestructibleDef",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "snd_alias_list_t",
-        "SndCurve",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponDef",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable",
-        "XmlTree",
-        "SceneAnimation",
-        "Cutscene",
-        "CustomCamera",
+        Variants = {
+            "pc"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysConstraints",
+            "DestructibleDef",
+            "XAnim",
+            "XModel",
+            "Material",
+            "TechniqueSet",
+            "Image",
+            "Sound",
+            "SoundCurve",
+            "ClipMapMp",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable",
+            "XmlTree",
+            "SceneAnimation",
+            "Cutscene",
+            "CustomCamera",
+        }
     },
 
     T4 = {
-        "PhysPreset",
-        "PhysConstraints",
-        "DestructibleDef",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "snd_alias_list_t",
-        "SndDriverGlobals",
-        "LoadedSound",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponDef",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable",
-        "PackIndex",
+        Variants = {
+            "pc"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysConstraints",
+            "DestructibleDef",
+            "XAnim",
+            "XModel",
+            "Material",
+            "TechniqueSet",
+            "Image",
+            "Sound",
+            "SoundDriverGlobals",
+            "LoadedSound",
+            "ClipMapPvs",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable",
+            "PackIndex",
+        }
     },
 
     T5 = {
-        "PhysPreset",
-        "PhysConstraints",
-        "DestructibleDef",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "SndBank",
-        "SndPatch",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponVariantDef",
-        "SndDriverGlobals",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable",
-        "PackIndex",
-        "XGlobals",
-        "ddlRoot_t",
-        "Glasses",
-        "EmblemSet"
+        Variants = {
+            "pc"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysConstraints",
+            "DestructibleDef",
+            "XAnim",
+            "XModel",
+            "Material",
+            "TechniqueSet",
+            "Image",
+            "SoundBank",
+            "SoundPatch",
+            "ClipMapPvs",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "SoundDriverGlobals",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable",
+            "PackIndex",
+            "XGlobals",
+            "DDL",
+            "Glasses",
+            "EmblemSet"
+        }
     },
 
     T6 = {
-        "PhysPreset",
-        "PhysConstraints",
-        "DestructibleDef",
-        "XAnimParts",
-        "XModel",
-        "Material",
-        "MaterialTechniqueSet",
-        "GfxImage",
-        "SndBank",
-        "SndPatch",
-        "clipMap_t",
-        "ComWorld",
-        "GameWorldSp",
-        "GameWorldMp",
-        "MapEnts",
-        "GfxWorld",
-        "GfxLightDef",
-        "Font_s",
-        "FontIcon",
-        "MenuList",
-        "menuDef_t",
-        "LocalizeEntry",
-        "WeaponVariantDef",
-        "WeaponAttachment",
-        "WeaponAttachmentUnique",
-        "WeaponCamo",
-        "SndDriverGlobals",
-        "FxEffectDef",
-        "FxImpactTable",
-        "RawFile",
-        "StringTable",
-        "LeaderboardDef",
-        "XGlobals",
-        "ddlRoot_t",
-        "Glasses",
-        "EmblemSet",
-        "ScriptParseTree",
-        "KeyValuePairs",
-        "VehicleDef",
-        "MemoryBlock",
-        "AddonMapEnts",
-        "TracerDef",
-        "SkinnedVertsDef",
-        "Qdb",
-        "Slug",
-        "FootstepTableDef",
-        "FootstepFXTableDef",
-        "ZBarrierDef"
+        Variants = {
+            "pc"
+        },
+        Assets = {
+            "PhysPreset",
+            "PhysConstraints",
+            "DestructibleDef",
+            "XAnim",
+            "XModel",
+            "Material",
+            "TechniqueSet",
+            "Image",
+            "SoundBank",
+            "SoundPatch",
+            "ClipMapPvs",
+            "ComWorld",
+            "GameWorldSp",
+            "GameWorldMp",
+            "MapEnts",
+            "GfxWorld",
+            "LightDef",
+            "Font",
+            "FontIcon",
+            "MenuList",
+            "Menu",
+            "Localize",
+            "Weapon",
+            "Attachment",
+            "AttachmentUnique",
+            "WeaponCamo",
+            "SoundDriverGlobals",
+            "Fx",
+            "ImpactFx",
+            "RawFile",
+            "StringTable",
+            "Leaderboard",
+            "XGlobals",
+            "DDL",
+            "Glasses",
+            "EmblemSet",
+            "Script",
+            "KeyValuePairs",
+            "Vehicle",
+            "MemoryBlock",
+            "AddonMapEnts",
+            "Tracer",
+            "SkinnedVerts",
+            "Qdb",
+            "Slug",
+            "FootstepTable",
+            "FootstepFxTable",
+            "ZBarrier"
+        }
     }
 }
 
 function ZoneCode:allTestFiles()
     result = {}
 
-    for game, assets in pairs(self.Assets) do
+    for game, gameData in pairs(self.Games) do
         local gameLower = string.lower(game)
 
-        for i, assetName in ipairs(assets) do
-            local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_struct_test.cpp")
+        for i, variantName in ipairs(gameData.Variants) do
+            local variantLower = string.lower(variantName)
+
+            -- Per asset
+            for j, assetName in ipairs(gameData.Assets) do
+                local assetNameLower = string.lower(assetName)
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_struct_test.cpp")
+            end
         end
     end
     
@@ -279,18 +321,22 @@ end
 function ZoneCode:allMarkFiles()
     result = {}
 
-    for game, assets in pairs(self.Assets) do
+    for game, gameData in pairs(self.Games) do
         local gameLower = string.lower(game)
 
-        -- PerAsset
-        for i, assetName in ipairs(assets) do
-            local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_mark_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_mark_db.h")
+        for i, variantName in ipairs(gameData.Variants) do
+            local variantLower = string.lower(variantName)
+
+            -- Per asset
+            for j, assetName in ipairs(gameData.Assets) do
+                local assetNameLower = string.lower(assetName)
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_mark_db.cpp")
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_mark_db.h")
+            end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker_" .. gameLower .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetMarker" .. game .. ".h")
     end
     
     return result
@@ -299,18 +345,22 @@ end
 function ZoneCode:allLoadFiles()
     result = {}
 
-    for game, assets in pairs(self.Assets) do
+    for game, gameData in pairs(self.Games) do
         local gameLower = string.lower(game)
 
-        -- PerAsset
-        for i, assetName in ipairs(assets) do
-            local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_load_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_load_db.h")
+        for i, variantName in ipairs(gameData.Variants) do
+            local variantLower = string.lower(variantName)
+
+            -- Per asset
+            for j, assetName in ipairs(gameData.Assets) do
+                local assetNameLower = string.lower(assetName)
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_load_db.cpp")
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_load_db.h")
+            end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader_" .. gameLower .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetLoader" .. game .. ".h")
     end
     
     return result
@@ -319,18 +369,22 @@ end
 function ZoneCode:allWriteFiles()
     result = {}
 
-    for game, assets in pairs(self.Assets) do
+    for game, gameData in pairs(self.Games) do
         local gameLower = string.lower(game)
 
-        -- PerAsset
-        for i, assetName in ipairs(assets) do
-            local assetNameLower = string.lower(assetName)
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_write_db.cpp")
-            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_write_db.h")
+        for i, variantName in ipairs(gameData.Variants) do
+            local variantLower = string.lower(variantName)
+
+            -- Per asset
+            for j, assetName in ipairs(gameData.Assets) do
+                local assetNameLower = string.lower(assetName)
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_write_db.cpp")
+                table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/XAssets/" .. assetNameLower .. "/" .. assetNameLower .. "_" .. gameLower .. "_" .. variantName .. "_write_db.h")
+            end
+            
+            -- Per variant
+            table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter_" .. gameLower .. "_" .. variantLower .. ".h")
         end
-        
-        -- PerTemplate
-        table.insert(result, "%{wks.location}/src/ZoneCode/Game/" .. game .. "/AssetWriter" .. game .. ".h")
     end
     
     return result

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game/GameLanguage.h"
+#include "Game/GameVariant.h"
 #include "Game/IGame.h"
 #include "Pool/AssetPool.h"
 #include "Zone/ZoneTypes.h"
@@ -13,7 +14,7 @@
 class Zone
 {
 public:
-    Zone(std::string name, zone_priority_t priority, GameId gameId, GamePlatform platform);
+    Zone(std::string name, zone_priority_t priority, GameVariantId variantId);
     ~Zone();
     Zone(const Zone& other) = delete;
     Zone(Zone&& other) noexcept = delete;
@@ -28,7 +29,7 @@ public:
     zone_priority_t m_priority;
     GameLanguage m_language;
     GameId m_game_id;
-    GamePlatform m_platform;
+    GameVariantId m_variant_id;
     ZoneScriptStrings m_script_strings;
     ZoneAssetPools m_pools;
 

@@ -221,6 +221,7 @@ namespace IW4
     using AssetMenu = Asset<ASSET_TYPE_MENU, menuDef_t>;
     using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
     using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponCompleteDef>;
+    using AssetSoundDriverGlobals = Asset<ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals>;
     using AssetFx = Asset<ASSET_TYPE_FX, FxEffectDef>;
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;

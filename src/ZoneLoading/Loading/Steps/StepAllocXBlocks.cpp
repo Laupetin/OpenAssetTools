@@ -9,9 +9,15 @@ namespace
     class StepAllocXBlocks final : public ILoadingStep
     {
     public:
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        explicit StepAllocXBlocks(Zone* zone)
+            : m_zone(zone)
         {
-            const auto blockCount = static_cast<unsigned>(zoneLoader.m_blocks.size());
+        }
+
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
+        {
+            const auto& zoneMemory = m_zone->Memory();
+            const auto blockCount = static_cast<unsigned>(zoneMemory.GetBlockCount());
 
             std::vector<xblock_size_t> blockSizes(blockCount);
             stream.Load(blockSizes.data(), sizeof(xblock_size_t) * blockCount);
@@ -29,16 +35,19 @@ namespace
 
             for (unsigned int block = 0; block < blockCount; block++)
             {
-                zoneLoader.m_blocks[block]->Alloc(blockSizes[block]);
+                zoneMemory.GetBlock(block)->Alloc(blockSizes[block]);
             }
         }
+
+    private:
+        Zone* m_zone;
     };
 } // namespace
 
 namespace step
 {
-    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks()
+    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks(Zone* zone)
     {
-        return std::make_unique<StepAllocXBlocks>();
+        return std::make_unique<StepAllocXBlocks>(zone);
     }
 } // namespace step

@@ -2,6 +2,7 @@
 
 #include "ContentLoaderT4.h"
 #include "Game/GameLanguage.h"
+#include "Game/T4/GameT4.h"
 #include "Game/T4/T4.h"
 #include "Game/T4/ZoneConstantsT4.h"
 #include "Loading/Processor/ProcessorInflate.h"
@@ -19,17 +20,17 @@ using namespace T4;
 
 namespace
 {
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -43,9 +44,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::T4,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            .m_variant_id = GameVariantId::T4_PC,
             // There is no way to know whether unsigned zones are official.
             .m_is_official = false,
             .m_is_signed = false,
@@ -65,30 +64,31 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T4, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
 
     zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
         [zonePtr](ZoneInputStream& stream)
         {
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
         32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
+        zonePtr,
         std::move(progressCallback)));
 
     return zoneLoader;

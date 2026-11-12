@@ -53,7 +53,7 @@ namespace
 
     TEST_CASE("LoadedSoundDumperT4: Can dump PCM WAV loaded sound", "[t4][loaded-sound][assetdumper]")
     {
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         MockSearchPath mockObjPath;
         MockOutputPath mockOutput;
         AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);

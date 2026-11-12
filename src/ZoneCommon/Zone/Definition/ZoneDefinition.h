@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Game/GameVariant.h"
 #include "Game/IGame.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/ZoneTypes.h"
@@ -61,8 +62,10 @@ class ZoneDefinition
 public:
     ZoneDefinition();
 
+    [[nodiscard]] GameId GetGameId() const;
+
     std::string m_name;
-    GameId m_game;
+    GameVariantId m_variant;
     ZoneDefinitionProperties m_properties;
     std::vector<std::string> m_ignores;
     std::vector<std::string> m_targets_to_build;

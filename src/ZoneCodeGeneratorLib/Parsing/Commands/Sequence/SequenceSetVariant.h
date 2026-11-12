@@ -2,10 +2,10 @@
 
 #include "Parsing/Commands/Impl/CommandsParser.h"
 
-class SequenceWordSize final : public CommandsParser::sequence_t
+class SequenceSetVariant final : public CommandsParser::sequence_t
 {
 public:
-    SequenceWordSize();
+    SequenceSetVariant();
 
 protected:
     void ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const override;

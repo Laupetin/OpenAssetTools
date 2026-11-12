@@ -3,11 +3,12 @@
 #include "Domain/Definition/DefinitionWithMembers.h"
 #include "Domain/Definition/EnumMember.h"
 #include "Domain/Extension/CustomAction.h"
-#include "Domain/FastFile/FastFileBlock.h"
+#include "Domain/FastFileBlock.h"
 #include "MemberInformation.h"
 #include "TypeInformation.h"
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 class MemberInformation;
@@ -17,9 +18,16 @@ class StructureInformation
 public:
     StructureInformation(DefinitionWithMembers* definition, TypeInformation* typeInfo);
 
+    [[nodiscard]] bool IsIncludedForVariant(unsigned variantIndex) const;
+
     DefinitionWithMembers* m_definition;
     TypeInformation* m_type_info;
     std::string m_asset_name;
+
+    /**
+     * All variants this structure should be included in. If empty, it should be included in all variants.
+     */
+    std::unordered_set<unsigned> m_variants;
 
     std::unique_ptr<IEvaluation> m_alloc_alignment;
     std::vector<StructureInformation*> m_usages;
@@ -27,7 +35,7 @@ public:
 
     bool m_is_leaf;
     bool m_requires_marking;
-    bool m_has_matching_cross_platform_structure;
+    bool m_has_matching_cross_platform_memory_layout;
 
     bool m_embedded_reference_exists;
     bool m_non_embedded_reference_exists;

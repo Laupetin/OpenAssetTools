@@ -36,6 +36,9 @@ std::expected<std::unique_ptr<Zone>, std::string> ZoneLoading::LoadZone(const st
     if (!zoneLoader)
         return std::unexpected(std::format("Could not create factory for zone '{}'.", zoneName));
 
+    // We may have to clear a fail bit if the peeking resulted in eof.
+    // Otherwise, we cannot seek.
+    file.clear();
     // Revert to beginning to make sure no peeking has advanced the read position.
     // (As different peeking logic may advance by different amounts of bytes).
     file.seekg(0, std::ios::beg);

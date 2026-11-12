@@ -9,6 +9,7 @@
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorIW4xDecryption.h"
 #include "Loading/Processor/ProcessorInflate.h"
+#include "Loading/Processor/ProcessorSkipAuthedBlocks.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepDumpData.h"
@@ -23,6 +24,7 @@
 #include "Loading/Steps/StepVerifyHash.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepVerifySignature.h"
+#include "Loading/WordSizeDeterminator.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/Logging/Log.h"
@@ -43,6 +45,63 @@ namespace
         bool m_is_iw4x;
     };
 
+    GameVariantId DeterminePcVariant(const ZoneDataPeeking& filePeek, const bool isSigned)
+    {
+        std::optional<GameWordSize> wordSize;
+        filePeek.PeekWithStream(
+            [&wordSize, isSigned](std::istream& stream)
+            {
+                auto zoneReader = std::make_unique<ZoneReader>();
+
+                size_t skipSizePreInflate = sizeof(ZoneHeader) //
+                                            + 1                // unknown
+                                            + 8                // timestamp
+                    ;
+                if (isSigned)
+                {
+                    skipSizePreInflate += sizeof(DB_AuthHeader)                                      // header
+                                          + ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader) // rest of the first chunk
+                        ;
+                }
+
+                constexpr size_t skipSizePostInflate = 8       // Zone sizes
+                                                       + 4 * 8 // Xblock sizes
+                    ;
+
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePreInflate));
+                if (isSigned)
+                {
+                    zoneReader->AddLoadingStep(step::CreateStepAddProcessor(
+                        processor::CreateProcessorSkipAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                                   ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                                   static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
+                                                                   32u)));
+                }
+                zoneReader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
+                zoneReader->AddLoadingStep(step::CreateStepSkipBytes(skipSizePostInflate));
+
+                wordSize = DetermineWordSizeFromXAssetList(stream,
+                                                           std::move(zoneReader),
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 4,
+                                                               .offsetAssetCount = 8,
+                                                               .offsetAssetPointer = 12,
+                                                           },
+                                                           XAssetListOffsets{
+                                                               .offsetStringCount = 0,
+                                                               .offsetStringPointer = 8,
+                                                               .offsetAssetCount = 16,
+                                                               .offsetAssetPointer = 24,
+                                                           });
+            });
+
+        if (wordSize && *wordSize == GameWordSize::ARCH_64)
+            return GameVariantId::IW4_PC64;
+
+        return GameVariantId::IW4_PC32;
+    }
+
     std::optional<ZoneLoaderInspectionResultIW4> InspectZoneHeaderIw4(ZoneDataPeeking& filePeek)
     {
         const auto& header = filePeek.PeekStruct<ZoneHeader>();
@@ -53,17 +112,16 @@ namespace
                 if (*reinterpret_cast<const uint32_t*>(&header.m_magic[std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)])
                     == ZoneConstants::ZONE_VERSION_IW4x)
                 {
+                    constexpr ZoneLoaderInspectionResult generic{
+                        .m_game_id = GameId::IW4,
+                        // IW4x magic zones are always 32bit
+                        .m_variant_id = GameVariantId::IW4_PC32,
+                        .m_is_official = false,
+                        .m_is_signed = false,
+                        .m_is_encrypted = false,
+                    };
                     return ZoneLoaderInspectionResultIW4{
-                        .m_generic_result =
-                            ZoneLoaderInspectionResult{
-                                                       .m_game_id = GameId::IW4,
-                                                       .m_endianness = GameEndianness::LE,
-                                                       .m_word_size = GameWordSize::ARCH_32,
-                                                       .m_platform = GamePlatform::PC,
-                                                       .m_is_official = false,
-                                                       .m_is_signed = false,
-                                                       .m_is_encrypted = false,
-                                                       },
+                        .m_generic_result = generic,
                         .m_is_iw4x = true,
                     };
                 }
@@ -73,34 +131,30 @@ namespace
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
             {
+                const ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::IW4,
+                    .m_variant_id = DeterminePcVariant(filePeek, true),
+                    .m_is_official = true,
+                    .m_is_signed = true,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultIW4{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::IW4,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_is_iw4x = false,
                 };
             }
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
             {
+                const ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::IW4,
+                    .m_variant_id = DeterminePcVariant(filePeek, false),
+                    .m_is_official = false,
+                    .m_is_signed = false,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultIW4{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::IW4,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = false,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_is_iw4x = false,
                 };
             }
@@ -110,33 +164,29 @@ namespace
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::IW4,
+                    .m_variant_id = GameVariantId::IW4_XBOX,
+                    .m_is_official = false,
+                    .m_is_signed = false,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultIW4{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::IW4,
-                                                   .m_endianness = GameEndianness::BE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::XBOX,
-                                                   .m_is_official = false,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_is_iw4x = false,
                 };
             }
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::IW4,
+                    .m_variant_id = GameVariantId::IW4_XBOX,
+                    .m_is_official = true,
+                    .m_is_signed = true,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultIW4{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::IW4,
-                                                   .m_endianness = GameEndianness::BE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::XBOX,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_is_iw4x = false,
                 };
             }
@@ -145,34 +195,46 @@ namespace
         return std::nullopt;
     }
 
-    void SetupBlock(ZoneLoader& zoneLoader)
+    bool CanLoadZone(const ZoneLoaderInspectionResultIW4& inspectionResult)
+    {
+#ifdef ARCH_x86
+        if (GameVariant::GetVariantById(inspectionResult.m_generic_result.m_variant_id)->GetWordSize() == GameWordSize::ARCH_64)
+        {
+            con::warn("x64 zones are only supported by a x64 OAT build!");
+            return false;
+        }
+#endif
+        return true;
+    }
+
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_CALLBACK, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_VERTEX, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_INDEX, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
 
-    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial, const GamePlatform platform)
+    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial, const GameVariantId variant)
     {
         if (isOfficial)
         {
             auto rsa = cryptography::CreateRsa(cryptography::HashingAlgorithm::RSA_HASH_SHA256, cryptography::RsaPaddingMode::RSA_PADDING_PSS);
 
             bool keySetSuccessful;
-            if (platform == GamePlatform::PC)
+            if (variant == GameVariantId::IW4_PC32 || variant == GameVariantId::IW4_PC64)
             {
                 keySetSuccessful = rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_PC, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_PC));
             }
-            else if (platform == GamePlatform::XBOX)
+            else if (variant == GameVariantId::IW4_XBOX)
             {
                 keySetSuccessful = rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD_XENON));
             }
@@ -199,47 +261,47 @@ namespace
         }
     }
 
-    void AddAuthHeaderSteps(const ZoneLoaderInspectionResultIW4& inspectResult, ZoneLoader& zoneLoader, const std::string& fileName)
+    void AddAuthHeaderSteps(const ZoneLoaderInspectionResultIW4& inspectResult, ZoneReader& zoneReader, const std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!inspectResult.m_generic_result.m_is_signed)
             return;
 
         // If file is signed setup a RSA instance.
-        auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official, inspectResult.m_generic_result.m_platform);
+        auto rsa = SetupRsa(inspectResult.m_generic_result.m_is_official, inspectResult.m_generic_result.m_variant_id);
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
+        zoneReader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
         auto subHeaderHash = step::CreateStepLoadHash(sizeof(DB_AuthHash::bytes), 1);
         auto* subHeaderHashPtr = subHeaderHash.get();
-        zoneLoader.AddLoadingStep(std::move(subHeaderHash));
+        zoneReader.AddLoadingStep(std::move(subHeaderHash));
 
         auto subHeaderHashSignature = step::CreateStepLoadSignature(sizeof(DB_AuthSignature::bytes));
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
-        zoneLoader.AddLoadingStep(std::move(subHeaderHashSignature));
+        zoneReader.AddLoadingStep(std::move(subHeaderHashSignature));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
+        zoneReader.AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
 
         auto subHeaderCapture = processor::CreateProcessorCaptureData(sizeof(DB_AuthSubHeader));
         auto* subHeaderCapturePtr = subHeaderCapture.get();
-        zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(std::move(subHeaderCapture)));
+        zoneReader.AddLoadingStep(step::CreateStepAddProcessor(std::move(subHeaderCapture)));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyFileName(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
+        zoneReader.AddLoadingStep(step::CreateStepVerifyFileName(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Skip reserved
 
         auto masterBlockHashes =
             step::CreateStepLoadHash(sizeof(DB_AuthHash::bytes), static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>));
         auto* masterBlockHashesPtr = masterBlockHashes.get();
-        zoneLoader.AddLoadingStep(std::move(masterBlockHashes));
+        zoneReader.AddLoadingStep(std::move(masterBlockHashes));
 
-        zoneLoader.AddLoadingStep(step::CreateStepVerifyHash(cryptography::CreateSha256(), 0, subHeaderHashPtr, subHeaderCapturePtr));
-        zoneLoader.AddLoadingStep(step::CreateStepRemoveProcessor(subHeaderCapturePtr));
+        zoneReader.AddLoadingStep(step::CreateStepVerifyHash(cryptography::CreateSha256(), 0, subHeaderHashPtr, subHeaderCapturePtr));
+        zoneReader.AddLoadingStep(step::CreateStepRemoveProcessor(subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
-        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
+        zoneReader.AddLoadingStep(step::CreateStepSkipBytes(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
-        zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(
+        zoneReader.AddLoadingStep(step::CreateStepAddProcessor(
             processor::CreateProcessorAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
                                                    ZoneConstants::AUTHED_CHUNK_SIZE,
                                                    static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
@@ -251,7 +313,7 @@ namespace
 std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(ZoneDataPeeking& filePeek) const
 {
     auto resultIw4 = InspectZoneHeaderIw4(filePeek);
-    if (!resultIw4)
+    if (!resultIw4 || !CanLoadZone(*resultIw4))
         return std::nullopt;
 
     return resultIw4->m_generic_result;
@@ -265,15 +327,17 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
+    const auto* variant = GameVariant::GetVariantById(inspectResult->m_generic_result.m_variant_id);
+
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::IW4, inspectResult->m_generic_result.m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, variant->GetId());
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -285,7 +349,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(8));
 
     // Xbox fastfiles have an additional header of all included images outside the zone data
-    if (inspectResult->m_generic_result.m_platform == GamePlatform::XBOX)
+    if (inspectResult->m_generic_result.m_variant_id == GameVariantId::IW4_XBOX)
         zoneLoader->AddLoadingStep(step::CreateStepSkipZoneImageHeaders());
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
@@ -299,11 +363,11 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(1));
     }
 
-    if (inspectResult->m_generic_result.m_endianness == GameEndianness::LE)
+    if (variant->GetPlatform() == GamePlatform::PC)
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
         // Start of the zone content
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -311,10 +375,11 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             {
                 return std::make_unique<ContentLoader>(*zonePtr, stream);
             },
-            32u,
-            ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+            variant->GetWordSize() == GameWordSize::ARCH_64 ? 64u : 32u,
+            ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+            ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
-            zonePtr->Memory(),
+            zonePtr,
             std::move(progressCallback)));
     }
     else

@@ -43,7 +43,7 @@ namespace
 
     std::string DumpPhysPreset(PhysPreset& physPreset)
     {
-        Zone dumpingZone("DumpingZone", 0, GameId::T5, GamePlatform::PC);
+        Zone dumpingZone("DumpingZone", 0, GameVariantId::T5_PC);
         dumpingZone.m_pools.AddAsset(std::make_unique<XAssetInfo<PhysPreset>>(ASSET_TYPE_PHYSPRESET, physPreset.name, &physPreset));
 
         MockSearchPath dumpingObjPath;

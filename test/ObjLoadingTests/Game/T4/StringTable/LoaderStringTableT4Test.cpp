@@ -19,7 +19,7 @@ namespace
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
