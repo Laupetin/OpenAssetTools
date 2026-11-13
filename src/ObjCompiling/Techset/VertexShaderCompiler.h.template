@@ -1,0 +1,41 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Techset/VertexShaderCompiler" + GAME + ".h"
+
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define IS_SUB_ASSET
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#define IS_SUB_ASSET
+#elif GAME == "T6"
+#define FEATURE_T6
+#define IS_SUB_ASSET
+#endif
+
+// This file was templated.
+// See VertexShaderCompiler.h.template.
+// Do not modify, changes will be lost.
+#pragma once
+
+#include "Asset/IAssetCreator.h"
+#include "Utils/MemoryManager.h"
+
+#include <memory>
+
+#set CREATE_COMPILER_METHOD "CreateVertexShaderCompiler" + GAME
+
+#if defined(IS_SUB_ASSET)
+#define INTERFACE_NAME ISubAssetCreator
+#else
+#define INTERFACE_NAME IAssetCreator
+#endif
+
+namespace techset
+{
+    std::unique_ptr<INTERFACE_NAME> CREATE_COMPILER_METHOD(MemoryManager& memory, ISearchPath& searchPath);
+}
