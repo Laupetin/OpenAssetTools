@@ -1,5 +1,6 @@
 #include "ImageToCommonConverter.h"
 
+#include "Game/CODO/Image/ImageToCommonConverterCODO.h"
 #include "Game/IW3/Image/ImageToCommonConverterIW3.h"
 #include "Game/IW4/Image/ImageToCommonConverterIW4.h"
 #include "Game/IW5/Image/ImageToCommonConverterIW5.h"
@@ -15,6 +16,7 @@ namespace image
     ToCommonConverter* ToCommonConverter::GetForGame(const GameId gameId)
     {
         static ToCommonConverter* toCommonConverters[]{
+            new ToCommonConverterCODO(),
             new ToCommonConverterIW3(),
             new ToCommonConverterIW4(),
             new ToCommonConverterIW5(),

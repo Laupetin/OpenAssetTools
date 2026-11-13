@@ -261,8 +261,14 @@ namespace
                 if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi8::IwiHeader::fileSizeForPicmip)>)
                     && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
                 {
-                    con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
-                    return std::nullopt;
+                    // CODO writes the full file size into every picmip slot of images that cannot be picmipped
+                    const auto fullSizeInAllSlots = (header.flags & iwi8::IwiFlags::IMG_FLAG_NOPICMIP) && currentMipLevel > 0
+                                                    && header.fileSizeForPicmip[currentMipLevel] == header.fileSizeForPicmip[0];
+                    if (!fullSizeInAllSlots)
+                    {
+                        con::error("Iwi has invalid file size for picmip {}", currentMipLevel);
+                        return std::nullopt;
+                    }
                 }
 
                 stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
@@ -565,6 +571,8 @@ namespace image
             return LoadIwi6(stream);
 
         case 8:
+        // CODO uses the same layout as version 8
+        case 9:
             return LoadIwi8(stream);
 
         case 13:
