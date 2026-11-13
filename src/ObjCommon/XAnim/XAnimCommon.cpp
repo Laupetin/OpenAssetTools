@@ -145,4 +145,14 @@ namespace xanim
     {
         return std::format("xanim/{}", assetName);
     }
+
+    std::string GetGltfFileNameForAssetName(const std::string& assetName)
+    {
+        return std::format("xanim/{}.gltf", assetName);
+    }
+
+    std::string GetGlbFileNameForAssetName(const std::string& assetName)
+    {
+        return std::format("xanim/{}.glb", assetName);
+    }
 } // namespace xanim
