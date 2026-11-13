@@ -12,8 +12,14 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone&
 
     // Localized strings are all collected in one string file. So only add this to the zone file.
     auto localizePoolAssets = zone.m_pools.PoolAssets<AssetLocalize>();
-    if (localizePoolAssets.begin() != localizePoolAssets.end())
+    if (localizePoolAssets.begin() != localizePoolAssets.end() && filter.ShouldWriteAssetType(ASSET_TYPE_LOCALIZE_ENTRY))
         stream.WriteEntry(*game->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone.m_name);
+
+    for (const auto& asset : zone.m_pools)
+    {
+        if (asset->m_type == ASSET_TYPE_MENULIST && filter.ShouldWriteAsset(*asset))
+            stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), filter.EntryName(*asset));
+    }
 
     for (const auto& asset : zone.m_pools)
     {
@@ -23,10 +29,11 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone&
         switch (asset->m_type)
         {
         case ASSET_TYPE_LOCALIZE_ENTRY:
+        case ASSET_TYPE_MENULIST:
             break;
 
         default:
-            stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), asset->m_name);
+            stream.WriteEntry(*game->GetAssetTypeName(asset->m_type), filter.EntryName(*asset));
             break;
         }
     }

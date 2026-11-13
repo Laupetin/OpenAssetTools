@@ -10,6 +10,7 @@
 #include "Pool/XAssetInfo.h"
 
 #include <cassert>
+#include <format>
 
 namespace
 {
@@ -38,9 +39,49 @@ ZoneDefFilter ZoneDefFilter::WithOnlyRootAssets(const Zone& zone)
     return std::move(result);
 }
 
+void ZoneDefFilter::RestrictToAssetTypes(const Zone& zone, std::vector<bool> assetTypes)
+{
+    m_asset_types = std::move(assetTypes);
+    m_reference_asset_lookup.clear();
+
+    for (const auto& asset : zone.m_pools)
+    {
+        if (!ShouldWriteAssetType(asset->m_type))
+            continue;
+
+        for (const auto* dependency : asset->m_dependencies)
+        {
+            if (dependency != nullptr && dependency->m_zone == &zone && !ShouldWriteAssetType(dependency->m_type))
+                m_reference_asset_lookup.emplace(dependency);
+        }
+    }
+}
+
+bool ZoneDefFilter::ShouldWriteAssetType(const asset_type_t assetType) const
+{
+    if (assetType < 0 || static_cast<size_t>(assetType) >= m_asset_types.size())
+        return true;
+
+    return m_asset_types[assetType];
+}
+
 bool ZoneDefFilter::ShouldWriteAsset(const XAssetInfoGeneric& asset) const
 {
+    if (m_reference_asset_lookup.contains(&asset))
+        return true;
+
+    if (!ShouldWriteAssetType(asset.m_type))
+        return false;
+
     return m_non_root_asset_lookup.empty() || !m_non_root_asset_lookup.contains(&asset);
+}
+
+std::string ZoneDefFilter::EntryName(const XAssetInfoGeneric& asset) const
+{
+    if (!asset.IsReference() && m_reference_asset_lookup.contains(&asset))
+        return std::format(",{}", asset.m_name);
+
+    return asset.m_name;
 }
 
 const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
@@ -63,7 +104,7 @@ const IZoneDefWriter* IZoneDefWriter::GetZoneDefWriterForGame(GameId game)
     return result;
 }
 
-void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone, const bool useGdt, const bool minimalZone) const
+void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone, const bool useGdt, const bool minimalZone, std::vector<bool> assetTypes) const
 {
     ZoneDefinitionOutputStream out(stream);
     const auto* game = IGame::GetGameById(zone.m_game_id);
@@ -81,6 +122,7 @@ void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const Zone& zone,
 
     WriteMetaData(out, zone);
 
-    const auto filter = minimalZone ? ZoneDefFilter::WithOnlyRootAssets(zone) : ZoneDefFilter::AllEntries();
+    auto filter = minimalZone ? ZoneDefFilter::WithOnlyRootAssets(zone) : ZoneDefFilter::AllEntries();
+    filter.RestrictToAssetTypes(zone, std::move(assetTypes));
     WriteContent(out, zone, filter);
 }
