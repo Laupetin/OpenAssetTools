@@ -55,7 +55,8 @@ namespace
         REQUIRE(zone->m_game_id == GameId::IW4);
         REQUIRE(zone->m_platform == GamePlatform::PC);
         REQUIRE(zone->m_name == "SimpleZoneIW4");
-        REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
+        REQUIRE(zone->m_pools.GetTotalAssetCount() == 2);
         REQUIRE(zone->m_pools.GetAsset<IW4::AssetRawFile>("SimpleZone.txt"));
+        REQUIRE(zone->m_pools.GetAsset<IW4::AssetRawFile>("SimpleZoneIW4"));
     }
 } // namespace
