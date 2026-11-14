@@ -38,7 +38,10 @@ namespace phys_collmap
             case PHYS_GEOM_NONE:
             case PHYS_GEOM_COLLMAP:
                 // TODO: Dump BrushWrapper (probably GJK related)
-                mapFileDumper.WriteComment("TODO: Brush data");
+                if (geom.brushWrapper)
+                    mapFileDumper.WriteComment("TODO: Brush data");
+                else
+                    mapFileDumper.WriteComment("Invalid brush data");
                 break;
             case PHYS_GEOM_BOX:
                 mapFileDumper.WritePhysicsBox({
