@@ -52,6 +52,21 @@ namespace
                 else
                     return AssetCreationResult::Failure();
             }
+            else
+            {
+                for (auto* menu : alreadyLoadedMenuListFileMenus->second)
+                {
+                    menus.emplace_back(menu->Asset());
+                    registration.AddDependency(menu);
+                }
+
+                if (const auto menusToLoad = conversionState.m_menus_to_load_by_filename.find(assetName);
+                    menusToLoad != conversionState.m_menus_to_load_by_filename.end())
+                {
+                    for (const auto& menuToLoad : menusToLoad->second)
+                        menuLoadQueue.emplace_back(menuToLoad);
+                }
+            }
 
             while (!menuLoadQueue.empty())
             {
@@ -110,7 +125,10 @@ namespace
                 if (!ProcessParsedResults(menuFilePath, context, *menuFileResult, zoneState, conversionState, menus, registration))
                     return false;
                 if (!menuFileResult->m_menus_to_load.empty())
+                {
                     con::warn("Menu file has menus to load even though it is not a menu list, ignoring: \"{}\"", menuFilePath);
+                    conversionState.m_menus_to_load_by_filename.emplace(menuFilePath, std::move(menuFileResult->m_menus_to_load));
+                }
 
                 return true;
             }

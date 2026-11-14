@@ -26,6 +26,7 @@ namespace IW4
         void FinalizeSupportingData() const;
 
         std::unordered_map<std::string, std::vector<XAssetInfo<menuDef_t>*>> m_menus_by_filename;
+        std::unordered_map<std::string, std::vector<std::string>> m_menus_to_load_by_filename;
         ExpressionSupportingData* m_supporting_data;
 
     private:
