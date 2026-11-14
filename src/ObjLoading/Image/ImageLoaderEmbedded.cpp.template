@@ -49,6 +49,11 @@
 #include "Image/IwiTypes.h"
 #include "Utils/Logging/Log.h"
 
+#ifdef FEATURE_T5
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
+#include "Image/IwiLoader.h"
+#endif
+
 #include <cstring>
 
 using namespace GAME;
@@ -56,6 +61,41 @@ using namespace image;
 
 namespace
 {
+#ifdef FEATURE_T5
+    void SetupEmbeddedImageT5(GfxImage& image, const Texture& texture, const SemanticZoneStateT5& semanticState)
+    {
+        const std::string name(image.name);
+        const auto isCodeImage = name[0] == '$';
+
+        image.hash = Common::R_HashString(image.name, 0);
+        image.noPicmip = false;
+        image.cardMemory.platform[0] = image.texture.loadDef->resourceSize;
+        image.cardMemory.platform[1] = image.texture.loadDef->resourceSize;
+        image.texture.loadDef->levelCount = texture.HasMipMaps() ? 0 : 1;
+
+        if (name.starts_with("*lightmap"))
+            image.category = IMG_CATEGORY_LIGHTMAP;
+        else
+            image.category = IMG_CATEGORY_AUTO_GENERATED;
+
+        if (!isCodeImage || name == "$outdoor")
+        {
+            image.semantic = TS_FUNCTION;
+            image.delayLoadPixels = true;
+        }
+        else if (name == "$identitynormalmap")
+        {
+            image.semantic = TS_NORMAL_MAP;
+            image.delayLoadPixels = semanticState.DelayLoadPixels();
+        }
+        else
+        {
+            image.semantic = TS_2D;
+            image.delayLoadPixels = false;
+        }
+    }
+#endif
+
 #set LOADER_CLASS "ImageLoader" + GAME
     class LOADER_CLASS final : public AssetCreator<AssetImage>
     {
@@ -70,19 +110,38 @@ namespace
         {
             // Do not load any GfxImages from raw for now that are not loaded
             // TODO: Load iwis and add streaming info to asset
+#ifdef FEATURE_T5
+            if (assetName.empty() || (assetName[0] != '*' && assetName[0] != '$'))
+#else
             if (assetName.empty() || assetName[0] != '*')
+#endif
                 return AssetCreationResult::NoAction();
 
-            const auto file = m_search_path.Open(image::GetFileNameForAsset(assetName, ".dds"));
-            if (!file.IsOpen())
-                return AssetCreationResult::NoAction();
-
-            const auto texture = image::LoadDds(*file.m_stream);
-            if (!texture)
+            std::unique_ptr<Texture> texture;
+            if (const auto ddsFile = m_search_path.Open(image::GetFileNameForAsset(assetName, ".dds")); ddsFile.IsOpen())
             {
-                con::error("Failed to load dds file for image asset \"{}\"", assetName);
-                return AssetCreationResult::Failure();
+                texture = image::LoadDds(*ddsFile.m_stream);
+                if (!texture)
+                {
+                    con::error("Failed to load dds file for image asset \"{}\"", assetName);
+                    return AssetCreationResult::Failure();
+                }
             }
+#ifdef FEATURE_T5
+            else if (const auto iwiFile = m_search_path.Open(image::GetFileNameForAsset(assetName, ".iwi")); iwiFile.IsOpen())
+            {
+                auto loadingResult = image::LoadIwi(*iwiFile.m_stream);
+                if (!loadingResult)
+                {
+                    con::error("Failed to load iwi file for image asset \"{}\"", assetName);
+                    return AssetCreationResult::Failure();
+                }
+
+                texture = std::move(loadingResult->m_texture);
+            }
+#endif
+            else
+                return AssetCreationResult::NoAction();
 
             auto* image = m_memory.Alloc<GfxImage>();
             image->name = m_memory.Dup(assetName.c_str());
@@ -161,6 +220,10 @@ namespace
                     currentDataBuffer += mipSize;
                 }
             }
+
+#ifdef FEATURE_T5
+            SetupEmbeddedImageT5(*image, *texture, context.GetZoneAssetCreationState<SemanticZoneStateT5>());
+#endif
 
             return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
         }

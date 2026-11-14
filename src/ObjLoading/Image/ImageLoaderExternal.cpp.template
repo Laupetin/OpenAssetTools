@@ -45,6 +45,13 @@
 #include "Image/ImageLoaderCommon.h"
 #include "Utils/Logging/Log.h"
 
+#ifdef FEATURE_T5
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
+#include "Image/IwiTypes.h"
+
+#include <algorithm>
+#endif
+
 #include <cstring>
 
 using namespace GAME;
@@ -52,6 +59,61 @@ using namespace image;
 
 namespace
 {
+#ifdef FEATURE_T5
+    void SetupImageT5(GfxImage& image, const Texture& texture, const CommonIwiMetaData& meta)
+    {
+        const auto textureType = texture.GetTextureType();
+        const auto hasMipMaps = texture.HasMipMaps();
+        const auto minDimension = std::min(texture.GetWidth(), texture.GetHeight());
+
+        image.hash = Common::R_HashString(image.name, 0);
+        image.category = IMG_CATEGORY_LOAD_FROM_FILE;
+        image.semantic = TS_2D;
+        image.delayLoadPixels = false;
+        image.noPicmip = meta.m_no_picmip || !hasMipMaps || minDimension < 32;
+        image.streaming = meta.m_streaming && textureType == TextureType::T_2D && minDimension > 128;
+
+        switch (textureType)
+        {
+        case TextureType::T_CUBE:
+            image.mapType = MAPTYPE_CUBE;
+            break;
+
+        case TextureType::T_3D:
+            image.mapType = MAPTYPE_3D;
+            break;
+
+        default:
+            image.mapType = MAPTYPE_2D;
+            break;
+        }
+
+        const auto* cardFormat = texture.GetFormat();
+        if (cardFormat->GetId() == ImageFormatId::B8_G8_R8)
+            cardFormat = &format::B8_G8_R8_X8;
+
+        const auto mipCount = hasMipMaps ? texture.GetMipMapCount() : 1;
+        auto cardMemory = 0uz;
+        for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
+            cardMemory += cardFormat->GetSizeOfMipLevel(mipLevel, texture.GetWidth(), texture.GetHeight(), texture.GetDepth()) * texture.GetFaceCount();
+
+        image.cardMemory.platform[0] = static_cast<int>(cardMemory);
+        image.cardMemory.platform[1] = static_cast<int>(cardMemory);
+
+        auto& loadDef = *image.texture.loadDef;
+        loadDef.levelCount = hasMipMaps ? 0 : 1;
+        loadDef.flags = 0;
+        if (!hasMipMaps)
+            loadDef.flags |= iwi13::IMG_FLAG_NOMIPMAPS;
+        if (textureType == TextureType::T_CUBE)
+            loadDef.flags |= iwi13::IMG_FLAG_CUBEMAP;
+        if (textureType == TextureType::T_3D)
+            loadDef.flags |= iwi13::IMG_FLAG_VOLMAP;
+
+        loadDef.format = static_cast<int>(cardFormat->GetD3DFormat());
+    }
+#endif
+
 #set LOADER_CLASS "ImageLoader" + GAME
     class LOADER_CLASS final : public AssetCreator<AssetImage>
     {
@@ -94,6 +156,11 @@ namespace
 #endif
 
             image->texture.loadDef = m_memory.Alloc<GfxImageLoadDef>();
+
+#ifdef FEATURE_T5
+            SetupImageT5(*image, *texture, loadingResult.m_meta);
+            context.GetZoneAssetCreationState<SemanticZoneStateT5>().TrackImage(*image);
+#endif
 
             return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
         }

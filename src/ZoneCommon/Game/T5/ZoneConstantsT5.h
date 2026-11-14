@@ -22,5 +22,7 @@ namespace T5
 
         static constexpr unsigned OFFSET_BLOCK_BIT_COUNT = 3u;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
+
+        static constexpr const char* METADATA_DELAY_LOAD_PIXELS = "delayloadpixels";
     };
 } // namespace T5
