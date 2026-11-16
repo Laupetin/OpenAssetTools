@@ -99,7 +99,7 @@ TEST_CASE("MenuListLoaderT4: Loads dumped menus and preserves T4 data", "[t4][me
             name "empty_text"
             text ""
             rect 10 20 180 24 1 2
-            type 1
+            type 0
             visible 1
             forecolor 0.9 0.9 1 0.07
             dvar "ui_fallback_text"

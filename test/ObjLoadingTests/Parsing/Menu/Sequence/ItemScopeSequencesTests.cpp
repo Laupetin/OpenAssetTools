@@ -434,4 +434,27 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(multiValueFeatures->m_step_names == std::vector<std::string>{"@MPUI_RULES_5MINUTES", ""});
         REQUIRE(multiValueFeatures->m_string_values == std::vector<std::string>{"5", "0"});
     }
+
+    TEST_CASE("ItemScopeSequences: Ensure dvar sets edit field properties", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("dvar")),
+            SimpleParserValue::String(pos, new std::string("foobar")),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 2);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE(item->m_dvar == "foobar");
+        REQUIRE(item->m_feature_type == CommonItemFeatureType::EDIT_FIELD);
+        REQUIRE(item->m_edit_field_features);
+    }
 } // namespace test::parsing::menu::sequence::item
