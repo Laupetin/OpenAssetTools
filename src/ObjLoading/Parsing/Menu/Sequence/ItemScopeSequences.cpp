@@ -852,8 +852,10 @@ void ItemScopeSequences::AddSequences(const FeatureLevel featureLevel, const boo
         }));
     // special
     AddSequence(std::make_unique<GenericStringPropertySequence>("dvar",
-                                                                [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
+                                                                [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
                                                                 {
+                                                                    ItemScopeOperations::EnsureHasEditFieldFeatures(
+                                                                        *state->m_current_item, state->m_feature_level, pos);
                                                                     state->m_current_item->m_dvar = value;
                                                                 }));
     AddSequence(std::make_unique<GenericStringPropertySequence>("focusSound",
