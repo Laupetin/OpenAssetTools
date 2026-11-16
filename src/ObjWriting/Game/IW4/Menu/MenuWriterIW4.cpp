@@ -741,6 +741,7 @@ namespace
 
             if (!item.typeData.editField)
             {
+                // Usually dvar should be unset here, but older OAT versions did not set editField even when dvar was set.
                 WriteStringProperty("dvar", item.dvar);
                 return;
             }
