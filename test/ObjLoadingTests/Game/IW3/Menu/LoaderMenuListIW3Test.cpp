@@ -93,7 +93,7 @@ TEST_CASE("MenuListLoaderIW3: Loads dumped menus and preserves IW3 data", "[iw3]
             name "empty_text"
             text ""
             rect 10 20 180 24 1 2
-            type 1
+            type 0
             visible 1
             forecolor 0.9 0.9 1 0.07
             dvar "ui_fallback_text"
