@@ -16,6 +16,8 @@
 #include "Localize/LoaderLocalizeT5.h"
 #include "Material/LoaderMaterialT5.h"
 #include "ObjLoading.h"
+#include "PhysConstraints/GdtLoaderPhysConstraintsT5.h"
+#include "PhysConstraints/RawLoaderPhysConstraintsT5.h"
 #include "PhysPreset/GdtLoaderPhysPresetT5.h"
 #include "PhysPreset/RawLoaderPhysPresetT5.h"
 #include "RawFile/LoaderRawFileT5.h"
@@ -116,7 +118,8 @@ namespace
 
         collection.AddAssetCreator(phys_preset::CreateRawLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(phys_preset::CreateGdtLoaderT5(memory, gdt, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
+        collection.AddAssetCreator(phys_constraints::CreateRawLoaderT5(memory, searchPath, zone));
+        collection.AddAssetCreator(phys_constraints::CreateGdtLoaderT5(memory, searchPath, gdt, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
         collection.AddAssetCreator(xanim::CreateLoaderT5(memory, searchPath, zone));
         collection.AddAssetCreator(xmodel::CreateLoaderT5(memory, searchPath, zone));
