@@ -50,7 +50,10 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsig
 }
 
 DefinesStreamProxy::Define::Define()
-    : m_contains_token_pasting_operators(false) {};
+    : m_parameterized(false),
+      m_contains_token_pasting_operators(false)
+{
+}
 
 DefinesStreamProxy::Define::Define(std::string name, std::string value)
     : Define(std::move(name), std::move(value), false)
