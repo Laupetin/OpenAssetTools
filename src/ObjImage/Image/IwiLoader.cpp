@@ -331,11 +331,12 @@ namespace
             return &format::R8_A8;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
             return &format::R8;
+        case iwi13::IwiFormat::IMG_FORMAT_A16B16G16R16F:
+            return &format::R16_G16_B16_A16_FLOAT;
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB565:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB5A3:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_C8:
         case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA8:
-        case iwi13::IwiFormat::IMG_FORMAT_A16B16G16R16F:
             con::error("Unsupported IWI format: {}", format);
             break;
         default:

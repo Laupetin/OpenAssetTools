@@ -38,6 +38,10 @@
 #include "Base64.h"
 #endif
 
+#ifdef FEATURE_T5
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
+#endif
+
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
@@ -222,6 +226,11 @@ namespace
                 return false;
             }
             m_registration.AddDependency(imageAsset);
+
+#ifdef FEATURE_T5
+            if (jTexture.semantic != TS_WATER_MAP)
+                m_context.GetZoneAssetCreationState<image::SemanticZoneStateT5>().AssignSemantic(*imageAsset->Asset(), jTexture.semantic);
+#endif
 
 #ifdef HAS_WATER
             if (jTexture.water)

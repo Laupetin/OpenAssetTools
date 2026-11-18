@@ -1,10 +1,12 @@
 #include "ObjCompilerT5.h"
 
 #include "Game/T5/Font/FontCompilerT5.h"
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
 #include "Game/T5/T5.h"
 #include "Game/T5/Techset/TechniqueCompilerT5.h"
 #include "Game/T5/Techset/TechsetCompilerT5.h"
 #include "Game/T5/Techset/VertexDeclCompilerT5.h"
+#include "Game/T5/ZoneConstantsT5.h"
 #include "Image/ImageIwdPostProcessor.h"
 
 #include <memory>
@@ -22,6 +24,14 @@ namespace
 
         collection.AddSubAssetCreator(techset::CreateTechniqueCompilerT5(memory, zone, searchPath));
         collection.AddSubAssetCreator(techset::CreateVertexDeclCompilerT5(memory));
+    }
+
+    void ConfigureZoneStates(const ZoneDefinitionContext& zoneDefinition, ZoneAssetCreationStateContainer& zoneStates)
+    {
+        const auto& properties = zoneDefinition.m_zone_definition.m_properties.m_properties;
+        const auto delayLoadPixels = properties.find(ZoneConstants::METADATA_DELAY_LOAD_PIXELS);
+        if (delayLoadPixels != properties.end() && (delayLoadPixels->second == "0" || delayLoadPixels->second == "false"))
+            zoneStates.GetZoneAssetCreationState<image::SemanticZoneStateT5>().SetDelayLoadPixels(false);
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -47,6 +57,7 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              IOutputPath& outDir,
                                              IOutputPath& cacheDir) const
 {
+    ConfigureZoneStates(zoneDefinition, zoneStates);
     ConfigureCompilers(collection, zone, searchPath);
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }
