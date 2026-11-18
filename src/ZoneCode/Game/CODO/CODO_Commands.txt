@@ -1,0 +1,91 @@
+// Game: Call of Duty Online (CODO)
+game CODO;
+wordsize 32;
+
+// Game Assets
+asset PhysPreset AssetPhysPreset;
+asset PhysCollmap AssetPhysCollMap;
+asset XAnimParts AssetXAnim;
+asset XModelSurfs AssetXModelSurfs;
+asset XModel AssetXModel;
+asset FxEffectDef AssetFx;
+asset FxImpactTable AssetImpactFx;
+asset TracerDef AssetTracer;
+asset FxWorld AssetFxWorld;
+asset GfxWorld AssetGfxWorld;
+asset GfxLightDef AssetLightDef;
+asset Font_s AssetFont;
+asset MenuList AssetMenuList;
+asset menuDef_t AssetMenu;
+asset VehicleDef AssetVehicle;
+asset WeaponCompleteDef AssetWeapon;
+asset snd_alias_list_t AssetSound;
+asset SndCurve AssetSoundCurve;
+asset LoadedSound AssetLoadedSound;
+asset clipMap_t AssetClipMap;
+asset ComWorld AssetComWorld;
+asset MapEnts AssetMapEnts;
+asset AddonMapEnts AssetAddonMapEnts;
+asset Material AssetMaterial;
+asset MaterialPixelShader AssetPixelShader;
+asset MaterialVertexShader AssetVertexShader;
+asset MaterialVertexDeclaration AssetVertexDecl;
+asset MaterialTechniqueSet AssetTechniqueSet;
+asset GfxImage AssetImage;
+asset LeaderboardDef AssetLeaderboard;
+asset LocalizeEntry AssetLocalize;
+asset RawFile AssetRawFile;
+asset NetConstStrings AssetNetConstStrings;
+asset StringTable AssetStringTable;
+asset StructuredDataDefSet AssetStructuredDataDef;
+asset WeaponAttach AssetWeaponAttach;
+asset MarketplaceData AssetMarketplaceData;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block normal  XFILE_BLOCK_PHYSICAL;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_CALLBACK;
+block normal  XFILE_BLOCK_VERTEX;
+block normal  XFILE_BLOCK_INDEX;
+
+#include "XAssets/PhysPreset.txt"
+#include "XAssets/PhysCollmap.txt"
+#include "XAssets/XAnimParts.txt"
+#include "XAssets/XModelSurfs.txt"
+#include "XAssets/XModel.txt"
+#include "XAssets/FxEffectDef.txt"
+#include "XAssets/FxImpactTable.txt"
+#include "XAssets/TracerDef.txt"
+#include "XAssets/FxWorld.txt"
+#include "XAssets/GfxWorld.txt"
+#include "XAssets/GfxLightDef.txt"
+#include "XAssets/Font_s.txt"
+#include "XAssets/MenuList.txt"
+#include "XAssets/menuDef_t.txt"
+#include "XAssets/VehicleDef.txt"
+#include "XAssets/WeaponCompleteDef.txt"
+#include "XAssets/snd_alias_list_t.txt"
+#include "XAssets/SndCurve.txt"
+#include "XAssets/LoadedSound.txt"
+#include "XAssets/clipMap_t.txt"
+#include "XAssets/ComWorld.txt"
+#include "XAssets/MapEnts.txt"
+#include "XAssets/AddonMapEnts.txt"
+#include "XAssets/Material.txt"
+#include "XAssets/MaterialTechniqueSet.txt"
+#include "XAssets/MaterialVertexDeclaration.txt"
+#include "XAssets/MaterialVertexShader.txt"
+#include "XAssets/MaterialPixelShader.txt"
+#include "XAssets/GfxImage.txt"
+#include "XAssets/LeaderboardDef.txt"
+#include "XAssets/LocalizeEntry.txt"
+#include "XAssets/RawFile.txt"
+#include "XAssets/NetConstStrings.txt"
+#include "XAssets/StringTable.txt"
+#include "XAssets/StructuredDataDefSet.txt"
+#include "XAssets/WeaponAttach.txt"
+#include "XAssets/MarketplaceData.txt"
+

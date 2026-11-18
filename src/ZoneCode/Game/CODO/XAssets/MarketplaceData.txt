@@ -1,0 +1,78 @@
+// =========================================
+// MarketplaceData
+// =========================================
+use MarketplaceData;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count unknown4 unknown8Count;
+set count unknownC unknown10Count;
+set count unknown14 unknown18Count;
+set count unknown1C unknown20Count;
+set count unknownA8 unknownACCount;
+set count unknown27C0 unknown27C4Count;
+set count unknown27C8 unknown27CCCount;
+set count unknown27D0 unknown27D4Count;
+set count unknown27D8 unknown27DCCount;
+set count unknown27E0 unknown27E4Count;
+set count unknown27E8 unknown27ECCount;
+set count unknown30B0 unknown30B8Count;
+set count unknown30B4 unknown30B8Count;
+set count unknown30BC unknown30C0Count;
+set count unknown30C4 unknown30C8Count;
+set count unknown30CC unknown30D0Count;
+set count unknown30D4 unknown30D8Count;
+set count unknown30DC unknown30E0Count;
+set count unknown30E4 unknown30E8Count;
+
+// MarketplaceDataStringEntry
+set string MarketplaceDataStringEntry::string;
+
+// MarketplaceDataEntry28
+use MarketplaceDataEntry28;
+set string strings;
+set scriptstring unknown1C;
+set count unknown24 unknown22Count;
+
+// MarketplaceDataEntry1C
+use MarketplaceDataEntry1C;
+set count unknown10 unknownECount;
+set count unknown18 unknown14Count;
+
+// MarketplaceDataStrings3
+set string MarketplaceDataStrings3::strings;
+
+// MarketplaceDataEntryC
+set count MarketplaceDataEntryC::unknown8 unknown4Count;
+
+// MarketplaceDataUShortList
+set count MarketplaceDataUShortList::values count;
+
+// MarketplaceDataStringEntry2
+use MarketplaceDataStringEntry2;
+set string string;
+set string unknown8;
+
+// MarketplaceDataStringEntry10
+set string MarketplaceDataStringEntry10::string;
+
+// MarketplaceDataEntry90
+use MarketplaceDataEntry90;
+set string strings;
+set count unknown48 unknown44Count;
+
+// MarketplaceDataStringArrayEntry
+use MarketplaceDataStringArrayEntry;
+set string string;
+set string strings;
+set count strings stringCount;
+
+// MarketplaceDataEntry34
+use MarketplaceDataEntry34;
+set count unknown28 unknown24Count;
+set count unknown30 unknown2CCount;
+
+// MarketplaceDataEntry14
+set string MarketplaceDataEntry14::strings;
+
+// MarketplaceDataEntry8
+set count MarketplaceDataEntry8::entries count;

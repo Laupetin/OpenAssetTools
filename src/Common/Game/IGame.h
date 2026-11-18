@@ -12,6 +12,7 @@
 
 enum class GameId : std::uint8_t
 {
+    CODO,
     IW3,
     IW4,
     IW5,
@@ -48,6 +49,7 @@ enum class GamePlatform : std::uint8_t
 };
 
 static constexpr const char* GameId_Names[]{
+    "CODO",
     "IW3",
     "IW4",
     "IW5",

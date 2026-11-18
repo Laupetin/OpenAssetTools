@@ -1,0 +1,19 @@
+// =========================================
+// WeaponAttach
+// =========================================
+use WeaponAttach;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count entries entryCount;
+
+// WeaponAttachValue
+// The value is only a string for these entry types: 0-3, 10-15, 40, 41, 43, 44
+use WeaponAttachValue;
+set condition string WeaponAttachEntry::type < 4
+|| (WeaponAttachEntry::type >= 10 && WeaponAttachEntry::type < 16)
+|| WeaponAttachEntry::type == 40
+|| WeaponAttachEntry::type == 41
+|| WeaponAttachEntry::type == 43
+|| WeaponAttachEntry::type == 44;
+set string string;
+set condition intValue never;

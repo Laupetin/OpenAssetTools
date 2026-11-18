@@ -1,0 +1,98 @@
+// =========================================
+// clipMap_t
+// =========================================
+use clipMap_t;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set count staticModelList numStaticModels;
+set count nodes numNodes;
+set count leafs numLeafs;
+set count verts vertCount;
+set count triIndices 3 * triCount;
+set count triEdgeIsWalkable ((3 * triCount + 31) / 32) * 4;
+set count borders borderCount;
+set count partitions partitionCount;
+set count aabbTrees aabbTreeCount;
+set count cmodels numSubModels;
+set count stages stageCount;
+set count smodelNodes smodelNodeCount;
+set count dynEntDefList[0] dynEntCount[0];
+set count dynEntDefList[1] dynEntCount[1];
+set block dynEntPoseList XFILE_BLOCK_RUNTIME;
+set count dynEntPoseList[0] dynEntCount[0];
+set count dynEntPoseList[1] dynEntCount[1];
+set block dynEntClientList XFILE_BLOCK_RUNTIME;
+set count dynEntClientList[0] dynEntCount[0];
+set count dynEntClientList[1] dynEntCount[1];
+set block dynEntCollList XFILE_BLOCK_RUNTIME;
+set count dynEntCollList[0] dynEntCount[0];
+set count dynEntCollList[1] dynEntCount[1];
+reorder:
+    ...
+    smodelNodes
+    mapEnts
+    stages
+    stageTrigger
+    dynEntDefList
+    dynEntPoseList
+    dynEntClientList
+    dynEntCollList;
+
+set reusable clipMap_t::pInfo;
+set block clipMap_t::pInfo XFILE_BLOCK_TEMP;
+
+// ClipInfo
+use ClipInfo;
+set reusable planes;
+set count planes planeCount;
+set count materials numMaterials;
+set count brushsides numBrushSides;
+set count brushEdges numBrushEdges;
+set count leafbrushNodes leafbrushNodesCount;
+set count leafbrushes numLeafBrushes;
+set count brushes numBrushes;
+set count brushBounds numBrushes;
+set count brushContents numBrushes;
+
+// ClipMaterial
+set string ClipMaterial::name;
+
+// Stage
+set string Stage::name;
+
+// Pointers whose back-references point at the earlier pointer slot (dereferenced by the game)
+set reusable cStaticModel_s::xmodel;
+set block cStaticModel_s::xmodel XFILE_BLOCK_TEMP;
+set reusable DynEntityDef::xModel;
+set block DynEntityDef::xModel XFILE_BLOCK_TEMP;
+set reusable DynEntityDef::destroyFx;
+set block DynEntityDef::destroyFx XFILE_BLOCK_TEMP;
+set reusable DynEntityDef::physPreset;
+set block DynEntityDef::physPreset XFILE_BLOCK_TEMP;
+set reusable cmodel_t::info;
+set block cmodel_t::info XFILE_BLOCK_TEMP;
+
+// Pointers whose back-references are plain addresses
+set reusable cNode_t::plane;
+set reusable cbrushside_t::plane;
+
+// cLeafBrushNode_s
+use cLeafBrushNode_s;
+set condition data::leaf leafBrushCount > 0;
+set reusable data::leaf::brushes;
+set count data::leaf::brushes leafBrushCount;
+
+// CollisionPartition
+use CollisionPartition;
+set reusable borders;
+
+// cbrush_t
+use cbrush_t;
+set reusable sides;
+set reusable baseAdjacentSide;
+
+// MapTriggers
+use MapTriggers;
+set count models count;
+set count hulls hullCount;
+set count slabs slabCount;

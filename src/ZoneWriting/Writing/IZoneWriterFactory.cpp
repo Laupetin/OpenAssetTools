@@ -1,5 +1,6 @@
 #include "IZoneWriterFactory.h"
 
+#include "Game/CODO/ZoneWriterFactoryCODO.h"
 #include "Game/IW3/ZoneWriterFactoryIW3.h"
 #include "Game/IW4/ZoneWriterFactoryIW4.h"
 #include "Game/IW5/ZoneWriterFactoryIW5.h"
@@ -13,6 +14,7 @@
 const IZoneWriterFactory* IZoneWriterFactory::GetZoneWriterFactoryForGame(GameId game)
 {
     static const IZoneWriterFactory* zoneCreators[]{
+        new CODO::ZoneWriterFactory(),
         new IW3::ZoneWriterFactory(),
         new IW4::ZoneWriterFactory(),
         new IW5::ZoneWriterFactory(),
