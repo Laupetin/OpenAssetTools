@@ -177,6 +177,17 @@ namespace T5
         CFT_NUM_FIELD_TYPES
     };
 
+    enum destructibleFieldType_t
+    {
+        DFT_BREAK_HEALTH = CSPFT_NUM_BASE_FIELD_TYPES,
+        DFT_EXPLOSIVE_DAMAGE_ONLY,
+        DFT_MELEE_DAMAGE,
+        DFT_PARENT_DAMAGE,
+        DFT_PHYSICS_PARENT,
+
+        DFT_NUM_FIELD_TYPES
+    };
+
     struct AccuracyGraph
     {
         vec2_t* graphKnots;
