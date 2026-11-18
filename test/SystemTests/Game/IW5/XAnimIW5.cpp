@@ -40,7 +40,7 @@ namespace
 
         searchPath.AddFileData(std::format("xanim/{}", animName), std::string(data.get(), fileSize));
 
-        Zone zone("MockZone", 0, GameId::IW5, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::IW5_PC32);
         AssetCreatorCollection creatorCollection(zone);
         IgnoredAssetLookup ignoredAssetLookup;
         MemoryManager memoryManager;

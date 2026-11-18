@@ -20,17 +20,17 @@ using namespace T5;
 
 namespace
 {
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T5::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_LARGE_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T5::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -46,9 +46,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::T5,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            .m_variant_id = GameVariantId::T5_PC,
             // There is no way to know whether unsigned zones are official.
             .m_is_official = false,
             .m_is_signed = false,
@@ -68,14 +66,14 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
         return nullptr;
 
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T5, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -84,7 +82,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
 
     // Start of the XFile struct
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
     // Start of the zone content
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -93,9 +91,10 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
         32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
+        zonePtr,
         std::move(progressCallback)));
 
     return zoneLoader;

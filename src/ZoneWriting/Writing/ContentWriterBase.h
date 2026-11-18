@@ -21,6 +21,7 @@ protected:
     void WriteXStringArray(bool atStreamStart, size_t count);
 
     const Zone& m_zone;
+    GameWordSize m_word_size;
     ZoneOutputStream* m_stream;
 
     const char** varXString;

@@ -550,7 +550,7 @@ namespace
     ]
 })MATERIAL");
 
-        Zone zone("MockZone", 0, GameId::IW3, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::IW3_PC);
 
         MemoryManager memory;
         MockSearchPath mockObjPath;

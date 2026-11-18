@@ -1,5 +1,6 @@
 #include "Game/IW5/Techset/VertexDeclCompilerIW5.h"
 
+#include "Game/IW5/GameIW5.h"
 #include "Game/IW5/IW5.h"
 #include "Utils/MemoryManager.h"
 
@@ -11,7 +12,7 @@ using namespace std::literals;
 
 TEST_CASE("VertexDeclCompilerIW5", "[iw5][techset][compiler]")
 {
-    Zone zone("MockZone", 0, GameId::IW5, GamePlatform::PC);
+    Zone zone("MockZone", 0, GameVariantId::IW5_PC32);
     zone.Register();
 
     MemoryManager memory;

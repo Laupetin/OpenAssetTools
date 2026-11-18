@@ -6,5 +6,5 @@
 
 namespace step
 {
-    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks();
+    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks(Zone* zone);
 }

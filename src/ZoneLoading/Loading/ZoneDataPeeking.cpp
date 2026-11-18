@@ -5,6 +5,22 @@ ZoneDataPeeking::ZoneDataPeeking(std::istream& stream)
 {
 }
 
+void ZoneDataPeeking::PeekWithStream(const std::function<void(std::istream& stream)>& cb) const
+{
+    const auto previousBits = m_stream.rdstate();
+    // Clear any bits set previously
+    m_stream.clear();
+
+    const auto previousPos = m_stream.tellg();
+    m_stream.seekg(0, std::ios::beg);
+
+    cb(m_stream);
+
+    m_stream.clear();
+    m_stream.seekg(previousPos);
+    m_stream.setstate(previousBits);
+}
+
 void ZoneDataPeeking::EnsureHasEnoughData(const size_t size)
 {
     const auto currentSize = m_data.size();

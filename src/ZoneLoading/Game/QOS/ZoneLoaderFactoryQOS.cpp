@@ -2,6 +2,7 @@
 
 #include "ContentLoaderQOS.h"
 #include "Game/GameLanguage.h"
+#include "Game/QOS/GameQOS.h"
 #include "Game/QOS/QOS.h"
 #include "Game/QOS/ZoneConstantsQOS.h"
 #include "Loading/Processor/ProcessorInflate.h"
@@ -20,15 +21,15 @@ namespace
 
     static_assert(REMAINING_FILE_HEADER_SIZE == sizeof(uint32_t) * 4u);
 
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_RUNTIME, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_LARGE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(QOS::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -41,9 +42,7 @@ std::optional<ZoneLoaderInspectionResult> ZoneLoaderFactory::InspectZoneHeader(Z
     {
         return ZoneLoaderInspectionResult{
             .m_game_id = GameId::QOS,
-            .m_endianness = GameEndianness::LE,
-            .m_word_size = GameWordSize::ARCH_32,
-            .m_platform = GamePlatform::PC,
+            .m_variant_id = GameVariantId::QOS_PC,
             // There is no way to know whether unsigned zones are official.
             .m_is_official = false,
             .m_is_signed = false,
@@ -62,12 +61,12 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::QOS, inspectResult->m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GameLanguage::LANGUAGE_NONE;
 
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeaderQos)));
@@ -75,7 +74,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     // Maybe external data size?
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(4));
 
-    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
     zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
         [zonePtr](ZoneInputStream& stream)
@@ -83,9 +82,10 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
         32u,
-        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+        ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
         ZoneConstants::INSERT_BLOCK,
-        zonePtr->Memory(),
+        zonePtr,
         std::move(progressCallback)));
 
     return zoneLoader;

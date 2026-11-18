@@ -42,7 +42,7 @@ namespace
             "tag_clip",
         };
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
 
         std::array<ScriptString, boneNameValues.size()> boneNames{};
         for (auto boneIndex = 0u; boneIndex < boneNameValues.size(); boneIndex++)

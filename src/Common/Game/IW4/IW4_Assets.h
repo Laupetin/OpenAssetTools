@@ -36,6 +36,7 @@ namespace IW4
     struct snd_alias_list_t;
     struct SndCurve;
     struct LoadedSound;
+    struct LoadedSound_64;
     struct clipMap_t;
     struct ComWorld;
     struct GameWorldSp;
@@ -77,7 +78,8 @@ namespace IW4
         GfxImage* image;
         snd_alias_list_t* sound;
         SndCurve* sndCurve;
-        LoadedSound* loadSnd;
+        LoadedSound* loadSnd32;
+        LoadedSound_64* loadSnd64;
         clipMap_t* clipMap;
         ComWorld* comWorld;
         GameWorldSp* gameWorldSp;
@@ -1783,10 +1785,38 @@ namespace IW4
         char* data;
     };
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex
+    struct XAudioWaveFormatEx
+    {
+        uint16_t wFormatTag;
+        uint16_t nChannels;
+        uint32_t nSamplesPerSec;
+        uint32_t nAvgBytesPerSec;
+        uint16_t nBlockAlign;
+        uint16_t wBitsPerSample;
+        uint16_t cbSize;
+        uint16_t probablyPadding;
+    };
+
+    struct XAudio2Sound
+    {
+        XAudioWaveFormatEx waveFormat;
+        uint8_t unknown_18[4];
+        unsigned int data_len;
+        uint8_t unknown_28[20];
+        char* data;
+    };
+
     struct LoadedSound
     {
         const char* name;
         MssSound sound;
+    };
+
+    struct LoadedSound_64
+    {
+        const char* name;
+        XAudio2Sound sound;
     };
 
     struct StreamedSound
@@ -4818,6 +4848,11 @@ namespace IW4
         float parallelBounce[SURF_TYPE_NUM];
         float perpendicularBounce[SURF_TYPE_NUM];
         float locationDamageMultipliers[HITLOC_COUNT];
+    };
+
+    struct SndDriverGlobals
+    {
+        const char* name;
     };
 
     enum VehicleAxleType

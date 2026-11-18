@@ -3,6 +3,7 @@
 #include "IW4.h"
 
 #include <algorithm>
+#include <utility>
 
 using namespace IW4;
 

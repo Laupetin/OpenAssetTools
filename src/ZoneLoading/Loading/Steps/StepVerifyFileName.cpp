@@ -17,7 +17,7 @@ namespace
                 m_expected_file_name.erase(m_file_name_buffer_size - 1);
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             std::stringstream originalFilenameStream;
             unsigned bufferOffset = 0;

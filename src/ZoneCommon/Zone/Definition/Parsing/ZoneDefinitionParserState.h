@@ -15,6 +15,7 @@ public:
     ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream);
 
     void SetGame(GameId gameId);
+    void SetVariant(GameVariantId variantId);
 
     void StartIPak(std::string ipakName);
     void StartIwd(std::string iwdName);
@@ -26,6 +27,7 @@ public:
     std::unordered_set<std::string> m_inclusions;
 
     std::optional<IGame*> m_game;
+    std::optional<IGameVariant*> m_variant;
 
     std::optional<ZoneDefinitionObjContainer> m_current_ipak;
     std::optional<ZoneDefinitionObjContainer> m_current_iwd;

@@ -207,7 +207,7 @@ namespace
             return {};
         }
 
-        [[nodiscard]] std::unique_ptr<ISearchPath> BuildSearchPathsSpecificToProjectAndGame(const std::string& projectName, GameId game) const override
+        [[nodiscard]] std::unique_ptr<ISearchPath> BuildSearchPathsSpecificToProjectAndGame(const std::string& projectName, GameId gameId) const override
         {
             SearchPaths searchPaths;
             std::unordered_set<std::string> addedSearchPaths;
@@ -217,7 +217,7 @@ namespace
             {
                 if (!curTemplate.CanRender(PROJECT_MASK) && curTemplate.CanRender(GAME_MASK))
                 {
-                    std::string gameName(GameId_Names[static_cast<unsigned>(game)]);
+                    std::string gameName(IGame::GetGameById(gameId)->GetShortName());
                     utils::MakeStringLowerCase(gameName);
 
                     auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, projectName, gameName);
@@ -292,14 +292,14 @@ namespace
             return m_source_search_paths;
         }
 
-        [[nodiscard]] std::string BuildCacheFolderPath(const std::string& projectName, GameId game) const override
+        [[nodiscard]] std::string BuildCacheFolderPath(const std::string& projectName, GameId gameId) const override
         {
-            return m_cache_template.Render(m_bin_dir, m_base_dir, projectName, GameId_Names[static_cast<unsigned>(game)]);
+            return m_cache_template.Render(m_bin_dir, m_base_dir, projectName, IGame::GetGameById(gameId)->GetShortName());
         }
 
-        [[nodiscard]] std::string BuildOutputFolderPath(const std::string& projectName, GameId game) const override
+        [[nodiscard]] std::string BuildOutputFolderPath(const std::string& projectName, GameId gameId) const override
         {
-            return m_out_template.Render(m_bin_dir, m_base_dir, projectName, GameId_Names[static_cast<unsigned>(game)]);
+            return m_out_template.Render(m_bin_dir, m_base_dir, projectName, IGame::GetGameById(gameId)->GetShortName());
         }
 
     private:
