@@ -50,7 +50,10 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsig
 }
 
 DefinesStreamProxy::Define::Define()
-    : m_contains_token_pasting_operators(false) {};
+    : m_parameterized(false),
+      m_contains_token_pasting_operators(false)
+{
+}
 
 DefinesStreamProxy::Define::Define(std::string name, std::string value)
     : Define(std::move(name), std::move(value), false)
@@ -761,39 +764,27 @@ namespace
         unsigned m_end;
     };
 
-    void EmitPastedTokens(const ParserLine& line,
-                          const unsigned& linePos,
-                          std::ostream& out,
-                          const std::string& input,
-                          const TokenPasteToken& token0,
-                          const TokenPasteToken& token1)
+    void FlushTokenPastingResult(std::ostringstream& pasteOutput, std::ostringstream& pasted, const bool pastedIsString)
     {
-        if ((token0.m_type == TokenPasteTokenType::STRING) != (token1.m_type == TokenPasteTokenType::STRING))
-            throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
-                                   "String token can only use token-pasting operator on other string token");
-        if (token0.m_type == TokenPasteTokenType::STRING)
-        {
-            out << '"';
-            token0.EmitValue(out, input);
-            token1.EmitValue(out, input);
-            out << '"';
-        }
+        if (pastedIsString)
+            pasteOutput << '"' << pasted.str() << '"';
         else
-        {
-            assert(token0.m_type == TokenPasteTokenType::IDENTIFIER || token0.m_type == TokenPasteTokenType::SYMBOL);
+            pasteOutput << pasted.str();
 
-            token0.EmitValue(out, input);
-            token1.EmitValue(out, input);
-        }
-    }
+        pasted.str(std::string());
+    };
 } // namespace
 
 void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, const unsigned& linePos, std::string& input)
 {
-    std::ostringstream ss;
+    std::ostringstream pasteOutput;
+
+    std::ostringstream pasted;
+    auto pasting = false;
+    auto pastedIsString = false;
+    auto copyStart = 0u;
 
     auto pasteNext = false;
-    TokenPasteToken previousToken;
     TokenPasteToken currentToken;
 
     const auto inputSize = input.size();
@@ -812,10 +803,17 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, co
             if (currentToken.m_type == TokenPasteTokenType::NONE)
                 throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without previous token");
 
-            if (previousToken.m_end < currentToken.m_start)
-                ss << std::string(input, previousToken.m_end, currentToken.m_start - previousToken.m_end);
+            if (!pasting)
+            {
+                if (copyStart < currentToken.m_start)
+                    pasteOutput << std::string(input, copyStart, currentToken.m_start - copyStart);
 
-            previousToken = currentToken;
+                currentToken.EmitValue(pasted, input);
+                pastedIsString = currentToken.m_type == TokenPasteTokenType::STRING;
+                copyStart = currentToken.m_end;
+                pasting = true;
+            }
+
             pasteNext = true;
 
             // Skip second #
@@ -826,20 +824,34 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, co
             currentToken.SetFromInput(line, linePos, input, i);
             if (pasteNext)
             {
-                EmitPastedTokens(line, linePos, ss, input, previousToken, currentToken);
-                previousToken = currentToken;
+                if (pastedIsString != (currentToken.m_type == TokenPasteTokenType::STRING))
+                {
+                    throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                           "String token can only use token-pasting operator on other string token");
+                }
+
+                currentToken.EmitValue(pasted, input);
+                copyStart = currentToken.m_end;
                 pasteNext = false;
+            }
+            else if (pasting)
+            {
+                FlushTokenPastingResult(pasteOutput, pasted, pastedIsString);
+                pasting = false;
             }
         }
     }
 
-    if (inputSize > previousToken.m_end)
-        ss << std::string(input, previousToken.m_end, inputSize - previousToken.m_end);
-
     if (pasteNext)
         throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without following token");
 
-    input = ss.str();
+    if (pasting)
+        FlushTokenPastingResult(pasteOutput, pasted, pastedIsString);
+
+    if (inputSize > copyStart)
+        pasteOutput << std::string(input, copyStart, inputSize - copyStart);
+
+    input = pasteOutput.str();
 }
 
 void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const Define* macro, const std::vector<std::string>& parameterValues)
