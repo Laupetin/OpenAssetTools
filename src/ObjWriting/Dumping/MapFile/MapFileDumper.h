@@ -41,6 +41,14 @@ public:
         PhysicsCylinder(Vec3 middlePoint, float radius, float height, Vec3 orientation);
     };
 
+    struct BrushPlane
+    {
+        Vec3 m_normal;
+        float m_distance;
+
+        BrushPlane(Vec3 normal, float distance);
+    };
+
 private:
     struct
     {
@@ -64,6 +72,7 @@ public:
     void EndBrush();
 
     void WriteKeyValue(const std::string& key, const std::string& value) const;
+    void WriteBrushPlane(BrushPlane plane) const;
     void WritePhysicsBox(PhysicsBox box);
     void WritePhysicsCylinder(PhysicsCylinder cylinder);
 };
