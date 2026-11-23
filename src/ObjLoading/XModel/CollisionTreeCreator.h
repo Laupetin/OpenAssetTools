@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma warning(push, 0)
 #include <Eigen>
+#pragma warning(pop)
+
 #include <array>
 #include <cstdint>
 #include <memory>
