@@ -13,6 +13,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -358,6 +359,62 @@ TEST_CASE("TechniqueCompilerT4", "[t4][techset][compiler]")
         CHECK(pass.args[13].u.codeConst.index == CONST_SRC_CODE_LIGHT_SPOTFACTORS);
         CHECK(pass.args[13].u.codeConst.firstRow == 0);
         CHECK(pass.args[13].u.codeConst.rowCount == 1);
+    }
+
+    SECTION("Uses stock update groups for dynamic shadows and model world-to-object matrices")
+    {
+        const auto [matrixAccessor, expectedMatrix] = GENERATE(Catch::Generators::table<const char*, ShaderCodeConstants>({
+            {"modelWorldToObjectMatrix",                 CONST_SRC_CODE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX        },
+            {"inverseModelWorldToObjectMatrix",          CONST_SRC_CODE_INVERSE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX},
+            {"transposeModelWorldToObjectMatrix",        CONST_SRC_CODE_MODEL_WORLD_TO_OBJECT_MATRIX                  },
+            {"inverseTransposeModelWorldToObjectMatrix", CONST_SRC_CODE_INVERSE_MODEL_WORLD_TO_OBJECT_MATRIX          },
+        }));
+        CAPTURE(matrixAccessor);
+
+        searchPath.AddFileData("techniques/update_groups.tech",
+                               std::format(R"TECHNIQUE(
+{{
+  stateMap "passthrough";
+
+  vertexShader 3.0 "advanced.hlsl"
+  {{
+    worldMatrix = constant.{};
+  }}
+
+  pixelShader 3.0 "advanced.hlsl"
+  {{
+    attenuationSampler = sampler.dynamicShadowSampler;
+    normalMapSampler = material.normalMap;
+    colorMapSampler = material.colorMap;
+  }}
+
+  vertex.position = code.position;
+  vertex.color[0] = code.color;
+  vertex.texcoord[0] = code.texcoord[0];
+  vertex.normal = code.normal;
+  vertex.texcoord[2] = code.tangent;
+}}
+)TECHNIQUE",
+                                           matrixAccessor));
+        GivenVertexShaderFile("advanced.hlsl", searchPath);
+        GivenPixelShaderFile("advanced.hlsl", searchPath);
+
+        const auto result = loader->CreateSubAsset("update_groups", context);
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<MaterialTechnique>*>(result.GetAssetInfo());
+        const auto* technique = assetInfo->Asset();
+        REQUIRE(technique->passCount == 1);
+        const auto& pass = technique->passArray[0];
+        REQUIRE(pass.perPrimArgCount == 1);
+        REQUIRE(pass.perObjArgCount == 2);
+        REQUIRE(pass.stableArgCount == 11);
+
+        REQUIRE(pass.args[2].type == MTL_ARG_CODE_PIXEL_SAMPLER);
+        CHECK(pass.args[2].u.codeSampler == TEXTURE_SRC_CODE_DYNAMIC_SHADOWS);
+
+        REQUIRE(pass.args[5].type == MTL_ARG_CODE_VERTEX_CONST);
+        CHECK(pass.args[5].u.codeConst.index == expectedMatrix);
     }
 
     SECTION("Applies material-dependent technique flags")

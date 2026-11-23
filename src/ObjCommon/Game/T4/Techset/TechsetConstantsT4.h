@@ -928,28 +928,28 @@ namespace T4
          .value = CONST_SRC_CODE_MODEL_WORLD_TO_OBJECT_MATRIX,
          .accessor = "modelWorldToObjectMatrix",
          .arrayCount = 0,
-         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .transposedMatrix = CONST_SRC_CODE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          .accessor = "inverseModelWorldToObjectMatrix",
          .arrayCount = 0,
-         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .transposedMatrix = CONST_SRC_CODE_INVERSE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          .accessor = "transposeModelWorldToObjectMatrix",
          .arrayCount = 0,
-         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .transposedMatrix = CONST_SRC_CODE_MODEL_WORLD_TO_OBJECT_MATRIX,
          },
         {
          .value = CONST_SRC_CODE_INVERSE_TRANSPOSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          .accessor = "inverseTransposeModelWorldToObjectMatrix",
          .arrayCount = 0,
-         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_PRIM,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
          .transposedMatrix = CONST_SRC_CODE_INVERSE_MODEL_WORLD_TO_OBJECT_MATRIX,
          },
     };
@@ -1052,7 +1052,7 @@ namespace T4
         {
          .value = TEXTURE_SRC_CODE_DYNAMIC_SHADOWS,
          .accessor = "dynamicShadowSampler",
-         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::RARELY,
+         .updateFrequency = techset::CommonCodeSourceUpdateFrequency::PER_OBJECT,
          },
         {
          .value = TEXTURE_SRC_CODE_OUTDOOR,
