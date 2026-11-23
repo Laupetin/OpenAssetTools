@@ -128,6 +128,26 @@ na 0.8100
         REQUIRE(streamed.speakerMap->channelMaps[1][1].speakers[2].levels[0] == 0.0f);
     }
 
+    TEST_CASE("SoundAliasLoaderIW3: Uses channel IDs from channels.def", "[iw3][sound-alias][assetloader]")
+    {
+        Fixture f;
+        f.search.AddFileData("soundaliases/probe.csv", "name,file,type,channel\nprobe,null.wav,loaded,CUSTOM\n");
+
+        SECTION("Uses file order and matches names case insensitively")
+        {
+            f.search.AddFileData("soundaliases/channels.def", "# Channels\r\nphysics,0,3d\r\n\r\nCustom,1,2d\r\nauto\r\n");
+            const auto* info = f.context.LoadDependency<AssetSound>("probe");
+            REQUIRE(info != nullptr);
+            CHECK((info->Asset()->head->flags & SND_ALIAS_FLAG_CHANNEL_MASK) >> SND_ALIAS_FLAG_CHANNEL_SHIFT == 1);
+        }
+
+        SECTION("Rejects duplicate channel names")
+        {
+            f.search.AddFileData("soundaliases/channels.def", "physics\nCustom\nCUSTOM\n");
+            CHECK(f.context.LoadDependency<AssetSound>("probe") == nullptr);
+        }
+    }
+
     TEST_CASE("SoundAliasLoaderIW3: Resolves cyclic alias references and custom curves", "[iw3][sound-alias][assetloader]")
     {
         Fixture f;

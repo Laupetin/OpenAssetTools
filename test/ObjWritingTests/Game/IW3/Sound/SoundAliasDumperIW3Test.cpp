@@ -187,4 +187,39 @@ namespace
         REQUIRE(speakerMapFile->AsString().find("RIGHTSOURCE RIGHTSURROUNDSPEAKER 0.9000\n") != std::string::npos);
         REQUIRE(mockOutput.GetMockedFile("soundaliases/default.spkrmap") == nullptr);
     }
+
+    TEST_CASE("SoundAliasDumperIW3: Exports custom channel names and definitions", "[iw3][sound-alias][assetdumper]")
+    {
+        SoundFile soundFile{};
+        soundFile.type = SAT_STREAMED;
+        soundFile.u.streamSnd.name = "probe.mp3";
+
+        snd_alias_t alias{};
+        alias.soundFile = &soundFile;
+        alias.flags = 1 << SND_ALIAS_FLAG_CHANNEL_SHIFT;
+        snd_alias_list_t aliasList{"probe", &alias, 1};
+
+        Zone zone("DumpingZone", 0, GameId::IW3, GamePlatform::PC);
+        zone.m_pools.AddAsset(std::make_unique<XAssetInfo<snd_alias_list_t>>(ASSET_TYPE_SOUND, aliasList.aliasName, &aliasList));
+
+        constexpr auto definition = "# Channels\r\nphysics,0,3d\r\nCustom,1,2d\r\n";
+        MockSearchPath objPath;
+        objPath.AddFileData("soundaliases/channels.def", definition);
+        MockOutputPath output;
+        AssetDumpingContext context(zone, "", output, objPath, std::nullopt);
+        sound_alias::DumperIW3().Dump(context);
+
+        const auto* channels = output.GetMockedFile("soundaliases/channels.def");
+        REQUIRE(channels != nullptr);
+        CHECK(channels->AsString() == definition);
+        const auto* file = output.GetMockedFile("soundaliases/DumpingZone.csv");
+        REQUIRE(file != nullptr);
+        std::istringstream input(file->AsString());
+        CsvInputStream csv(input);
+        std::vector<std::string> row;
+        REQUIRE(csv.NextRow(row));
+        REQUIRE(csv.NextRow(row));
+        REQUIRE(row.size() > 10);
+        CHECK(row[10] == "Custom");
+    }
 } // namespace

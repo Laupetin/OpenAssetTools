@@ -1,6 +1,7 @@
 #include "SoundAliasLoaderIW3.h"
 
 #include "Csv/CsvStream.h"
+#include "Game/IW3/SoundAliasChannelsIW3.h"
 #include "Game/IW3/SoundConstantsIW3.h"
 #include "Utils/Logging/Log.h"
 #include "Utils/StringUtils.h"
@@ -282,13 +283,17 @@ namespace
             if (!typeName.empty() && typeName != "loaded" && typeName != "streamed")
                 throw std::runtime_error(std::format("Unknown sound type '{}'", typeName));
             alias.flags = type << SND_ALIAS_FLAG_TYPE_SHIFT;
-            if (!fields[SA_CHANNEL].empty())
+            const auto& channel = fields[SA_CHANNEL];
+            if (!channel.empty())
             {
-                const auto channel = Lower(fields[SA_CHANNEL]);
-                const auto found = std::ranges::find(SOUND_CHANNEL_NAMES, channel);
-                if (found == std::end(SOUND_CHANNEL_NAMES))
+                const auto found = std::ranges::find_if(m_channel_names,
+                                                        [&channel](const auto& name)
+                                                        {
+                                                            return utils::StringEqualsIgnoreCase(channel, name);
+                                                        });
+                if (found == m_channel_names.end())
                     throw std::runtime_error(std::format("Unknown sound channel '{}'", channel));
-                alias.flags |= static_cast<int>(found - std::begin(SOUND_CHANNEL_NAMES)) << SND_ALIAS_FLAG_CHANNEL_SHIFT;
+                alias.flags |= static_cast<int>(found - m_channel_names.begin()) << SND_ALIAS_FLAG_CHANNEL_SHIFT;
             }
             const auto looping = Lower(fields[SA_LOOP]);
             if (looping == "looping" || looping == "rlooping")
@@ -393,6 +398,14 @@ namespace
             }
             if (sequences.empty())
                 return AssetCreationResult::NoAction();
+            if (m_channel_names.empty())
+            {
+                auto channels = sound_alias::ReadSoundAliasChannelsIW3(m_search_path);
+                if (!channels)
+                    return AssetCreationResult::Failure();
+                m_channel_names = std::move(channels->m_names);
+            }
+
             auto* list = m_memory.Alloc<snd_alias_list_t>();
             list->aliasName = m_memory.Dup(name.c_str());
             list->count = static_cast<int>(sequences.size());
@@ -427,6 +440,7 @@ namespace
         Zone& m_zone;
         bool m_indexed = false;
         bool m_volume_modifiers_loaded = false;
+        std::vector<std::string> m_channel_names;
         std::set<std::string> m_read_files;
         std::map<std::string, std::vector<AliasRow>> m_rows;
         std::map<std::string, float> m_volume_modifiers;

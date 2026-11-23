@@ -1,6 +1,7 @@
 #include "SoundAliasDumperIW3.h"
 
 #include "Csv/CsvStream.h"
+#include "Game/IW3/SoundAliasChannelsIW3.h"
 #include "Game/IW3/SoundConstantsIW3.h"
 #include "Sound/SpeakerMapCommon.h"
 #include "Utils/Logging/Log.h"
@@ -54,13 +55,13 @@ namespace
         }
     }
 
-    std::string GetChannelName(const int flags, const char* aliasName)
+    std::string GetChannelName(const std::vector<std::string>& channelNames, const int flags, const char* aliasName)
     {
         const auto channel = static_cast<unsigned>((flags & SND_ALIAS_FLAG_CHANNEL_MASK) >> SND_ALIAS_FLAG_CHANNEL_SHIFT);
-        if (channel < std::extent_v<decltype(SOUND_CHANNEL_NAMES)>)
-            return SOUND_CHANNEL_NAMES[channel];
+        if (channel < channelNames.size())
+            return channelNames[channel];
 
-        con::warn("Cannot map channel index {} for IW3 sound alias '{}' to the stock channels.def", channel, aliasName ? aliasName : "");
+        con::warn("Cannot map channel index {} for IW3 sound alias '{}' using channels.def or the stock fallback", channel, aliasName ? aliasName : "");
         return {};
     }
 
@@ -167,7 +168,7 @@ namespace
         }
     }
 
-    void WriteAlias(CsvOutputStream& csv, const snd_alias_t& alias, const char* fallbackAliasName, const int sequence)
+    void WriteAlias(CsvOutputStream& csv, const std::vector<std::string>& channelNames, const snd_alias_t& alias, const char* fallbackAliasName, const int sequence)
     {
         const auto* aliasName = alias.aliasName && alias.aliasName[0] ? alias.aliasName : fallbackAliasName;
 
@@ -183,7 +184,7 @@ namespace
         WriteFloat(csv, alias.pitchMax);                         // SA_PITCH_MAX
         WriteFloat(csv, alias.distMin);                          // SA_DIST_MIN
         WriteFloat(csv, alias.distMax);                          // SA_DIST_MAX
-        csv.WriteColumn(GetChannelName(alias.flags, aliasName)); // SA_CHANNEL
+        csv.WriteColumn(GetChannelName(channelNames, alias.flags, aliasName)); // SA_CHANNEL
         csv.WriteColumn(GetSoundTypeName(alias));                // SA_TYPE
         WriteFloat(csv, alias.probability);                      // SA_PROBABILITY
         csv.WriteColumn(GetLoopingName(alias.flags));            // SA_LOOP
@@ -215,6 +216,23 @@ namespace sound_alias
         if (soundAssets.empty())
             return;
 
+        const auto channels = ReadSoundAliasChannelsIW3(context.m_obj_search_path);
+        if (!channels)
+        {
+            context.IncrementProgress();
+            return;
+        }
+        if (!channels->m_definition.empty())
+        {
+            const auto definitionFile = context.OpenAssetFile(IW3_CHANNELS_FILE);
+            if (!definitionFile || !(*definitionFile << channels->m_definition))
+            {
+                con::error("Could not dump IW3 channel definitions to '{}'", IW3_CHANNELS_FILE);
+                context.IncrementProgress();
+                return;
+            }
+        }
+
         const auto assetFile = context.OpenAssetFile(std::format("soundaliases/{}.csv", context.m_zone.m_name));
         if (!assetFile)
         {
@@ -239,7 +257,7 @@ namespace sound_alias
             for (auto sequence = 0; sequence < aliasList->count; sequence++)
             {
                 const auto& alias = aliasList->head[sequence];
-                WriteAlias(csv, alias, aliasList->aliasName, sequence);
+                WriteAlias(csv, channels->m_names, alias, aliasList->aliasName, sequence);
 
                 const auto* speakerMap = alias.speakerMap;
                 if (speakerMap && !speakerMap->isDefault && speakerMap->name && speakerMap->name[0] && dumpedSpeakerMaps.emplace(speakerMap->name).second)
