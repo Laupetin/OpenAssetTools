@@ -17,8 +17,8 @@ jobs:
   build-test-linux:
     strategy:
       matrix:
-        build_arch: [ x86, x64 ]
-        toolset: [ gcc, clang ]
+        build_arch: [x86, x64]
+        toolset: [gcc, clang]
         include:
           - build_arch: x86
             gtk_packages: libgtk-4-dev:i386 libwebkitgtk-6.0-dev:i386
@@ -80,6 +80,9 @@ jobs:
           npm install
           npm run build
 
+      - name: Set up problem matching
+        run: echo "::add-matcher::${{ github.workspace }}/.github/problem-matcher/${{ matrix.toolset }}.json"
+
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
@@ -112,7 +115,7 @@ jobs:
   build-test-windows:
     strategy:
       matrix:
-        build_arch: [ x86, x64 ]
+        build_arch: [x86, x64]
         include:
           - build_arch: x86
             msbuild_config: Win32
@@ -177,6 +180,9 @@ jobs:
         run: |
           npm install
           npm run build
+
+      - name: Set up problem matching
+        run: echo "::add-matcher::${{ github.workspace }}/.github/problem-matcher/msvc.json"
 
       - name: Build
         working-directory: ${{ github.workspace }}

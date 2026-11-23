@@ -38,6 +38,9 @@ jobs:
           PREMAKE_NO_PROMPT: 1
         run: ./generate.sh --cc=gcc --oat-version=${{ github.ref_name }}
 
+      - name: Set up problem matching
+        run: echo "::add-matcher::${{ github.workspace }}/.github/problem-matcher/gcc.json"
+
       - name: Build
         working-directory: ${{ github.workspace }}
         run: |
@@ -69,6 +72,9 @@ jobs:
         env:
           PREMAKE_NO_PROMPT: 1
         run: ./generate.bat --oat-version=${{ github.ref_name }}
+
+      - name: Set up problem matching
+        run: echo "::add-matcher::${{ github.workspace }}/.github/problem-matcher/msvc.json"
 
       - name: Build
         working-directory: ${{ github.workspace }}
