@@ -423,6 +423,14 @@ TEST_CASE("TechniqueCompilerT4", "[t4][techset][compiler]")
             {"m_treecanopy", true },
             {"example",      false},
         }));
+        const auto [stateBitsEntry, expectedDepthUse] = GENERATE(Catch::Generators::table<unsigned char, bool>({
+            {0,    false},
+            {1,    true },
+            {0x80, true },
+            {0x81, false},
+            {0xFF, false},
+        }));
+        CAPTURE(techsetName, static_cast<unsigned>(stateBitsEntry));
 
         auto* technique = memory.Alloc<MaterialTechnique>();
         auto* techset = memory.Alloc<MaterialTechniqueSet>();
@@ -433,18 +441,20 @@ TEST_CASE("TechniqueCompilerT4", "[t4][techset][compiler]")
         auto* material = memory.Alloc<Material>();
         material->info.name = "example_material";
         material->techniqueSet = techset;
-        for (auto& stateBitsEntry : material->stateBitsEntry)
-            stateBitsEntry = -1;
-        material->stateBitsEntry[TECHNIQUE_UNLIT] = 0;
-        material->stateBitsCount = 1;
-        material->stateBitsTable = memory.Alloc<GfxStateBits>();
+        for (auto& entry : material->stateBitsEntry)
+            entry = -1;
+        material->stateBitsEntry[TECHNIQUE_UNLIT] = static_cast<char>(stateBitsEntry);
+        material->stateBitsCount = 0x81;
+        material->stateBitsTable = memory.Alloc<GfxStateBits>(material->stateBitsCount);
         material->stateBitsTable[0].loadBits.structured.depthTestDisabled = 1;
-        material->stateBitsTable[0].loadBits.structured.depthWrite = 1;
+        material->stateBitsTable[1].loadBits.structured.depthTestDisabled = 1;
+        material->stateBitsTable[1].loadBits.structured.depthWrite = 1;
+        material->stateBitsTable[0x80] = material->stateBitsTable[1];
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<Material>>(ASSET_TYPE_MATERIAL, material->info.name, material));
 
         loader->FinalizeZone(context);
 
-        CHECK((technique->flags & TECHNIQUE_FLAG_80) != 0);
+        CHECK(((technique->flags & TECHNIQUE_FLAG_80) != 0) == expectedDepthUse);
         CHECK(((technique->flags & MTL_TECHFLAG_TREE_CANOPY) != 0) == expectedTreeCanopy);
     }
 

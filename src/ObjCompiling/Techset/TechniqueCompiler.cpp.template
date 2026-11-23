@@ -370,7 +370,6 @@ namespace
         for (auto techType = 0u; techType < TECHNIQUE_COUNT; techType++)
         {
             auto* technique = techniqueSetAsset->Asset()->techniques[techType];
-            const auto stateBitsEntry = material.stateBitsEntry[techType];
 
             if (!technique)
                 continue;
@@ -383,10 +382,16 @@ namespace
             if (!material.stateBitsTable)
                 continue;
 
-            if (stateBitsEntry < 0 || static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry) >= material.stateBitsCount)
+#if defined(FEATURE_T4)
+            // Stock T4 uses unsigned byte indices and reserves 0xFF for missing entries.
+            const int stateBitsEntry = static_cast<unsigned char>(material.stateBitsEntry[techType]);
+#else
+            const int stateBitsEntry = material.stateBitsEntry[techType];
+#endif
+            if (stateBitsEntry < 0 || stateBitsEntry >= material.stateBitsCount)
                 continue;
 
-            const auto& stateBits = material.stateBitsTable[static_cast<decltype(Material::stateBitsCount)>(stateBitsEntry)].loadBits;
+            const auto& stateBits = material.stateBitsTable[stateBitsEntry].loadBits;
             const bool shouldSetFlag80 = stateBits.structured.depthTestDisabled == 0 || stateBits.structured.depthWrite > 0
                                          || stateBits.structured.depthTest > 0 || stateBits.structured.polygonOffset > 0;
             if (shouldSetFlag80)
