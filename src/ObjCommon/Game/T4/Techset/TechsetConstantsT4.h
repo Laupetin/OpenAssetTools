@@ -118,6 +118,11 @@ namespace T4
          .abbreviation = "n1",
          .optional = true,
          },
+        {
+         .name = "blendweight",
+         .abbreviation = "b",
+         .optional = true,
+         },
     };
     static_assert(std::extent_v<decltype(streamRoutingSources)> == STREAM_SRC_COUNT);
 
@@ -137,6 +142,10 @@ namespace T4
         {
          .name = "color[1]",
          .abbreviation = "c1",
+         },
+        {
+         .name = "depth",
+         .abbreviation = "d",
          },
         {
          .name = "texcoord[0]",
@@ -169,6 +178,10 @@ namespace T4
         {
          .name = "texcoord[7]",
          .abbreviation = "t7",
+         },
+        {
+         .name = "blendweight",
+         .abbreviation = "b",
          },
     };
     static_assert(std::extent_v<decltype(streamRoutingDestinations)> == STREAM_DST_COUNT);

@@ -247,7 +247,7 @@ TEST_CASE("TechsetDumperT4", "[t4][techset][dumper]")
     MockOutputPath mockOutput;
     AssetDumpingContext context(zone, "", mockOutput, mockObjPath, std::nullopt);
 
-    GivenTechset(zone, memory);
+    const auto* techset = GivenTechset(zone, memory);
 
     techset::DumperT4 dumper(true);
 
@@ -336,6 +336,27 @@ TEST_CASE("TechsetDumperT4", "[t4][techset][dumper]")
         const auto* file = mockOutput.GetMockedFile("techniques/example_lit_spot.tech");
         REQUIRE(file);
         REQUIRE(Trimmed(file->AsString()) == Trimmed(expected));
+    }
+
+    SECTION("Dumps stock T4 routing IDs as depth, texcoords, and blendweight")
+    {
+        auto& vertexDecl = *techset->techniques[TECHNIQUE_DEPTH_PREPASS]->passArray[0].vertexDecl;
+        vertexDecl.streamCount = 4;
+        vertexDecl.hasOptionalSource = true;
+        vertexDecl.routing.data[0] = {STREAM_SRC_POSITION, 0x4};
+        vertexDecl.routing.data[1] = {STREAM_SRC_TEXCOORD_0, 0x5};
+        vertexDecl.routing.data[2] = {STREAM_SRC_TANGENT, 0xC};
+        vertexDecl.routing.data[3] = {0x9, 0xD};
+
+        dumper.Dump(context);
+
+        const auto* file = mockOutput.GetMockedFile("techniques/example_zprepass.tech");
+        REQUIRE(file);
+        CHECK(file->AsString().find("  vertex.depth = code.position;\n"
+                                    "  vertex.texcoord[0] = code.texcoord[0];\n"
+                                    "  vertex.texcoord[7] = code.tangent;\n"
+                                    "  vertex.blendweight = code.blendweight;\n")
+              != std::string::npos);
     }
 
     SECTION("Can dump shader binaries")

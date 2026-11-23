@@ -58,4 +58,21 @@ TEST_CASE("VertexDeclCompilerT4", "[t4][techset][compiler]")
         CHECK(decl->routing.data[4].source == STREAM_SRC_NORMAL_TRANSFORM_1);
         CHECK(decl->routing.data[4].dest == STREAM_DST_NORMAL);
     }
+
+    SECTION("Uses stock T4 routing IDs for depth, texcoords, and blendweight")
+    {
+        const auto result = loader->CreateSubAsset("pdt0t0tt7bb", context);
+        REQUIRE(result.HasBeenSuccessful());
+
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<MaterialVertexDeclaration>*>(result.GetAssetInfo());
+        const auto* decl = assetInfo->Asset();
+        CHECK(decl->hasOptionalSource);
+
+        REQUIRE(decl->streamCount == 4);
+        CHECK(decl->routing.data[0].dest == 0x4);
+        CHECK(decl->routing.data[1].dest == 0x5);
+        CHECK(decl->routing.data[2].dest == 0xC);
+        CHECK(decl->routing.data[3].source == 0x9);
+        CHECK(decl->routing.data[3].dest == 0xD);
+    }
 }
