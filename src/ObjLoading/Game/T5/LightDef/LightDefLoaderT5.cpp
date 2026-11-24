@@ -1,5 +1,6 @@
 #include "LightDefLoaderT5.h"
 
+#include "Game/T5/Image/ImageSemanticZoneStateT5.h"
 #include "Game/T5/T5.h"
 #include "LightDef/LightDefCommon.h"
 #include "Utils/Logging/Log.h"
@@ -47,6 +48,7 @@ namespace
                 return AssetCreationResult::Failure();
             }
             registration.AddDependency(attenuationImageDependency);
+            context.GetZoneAssetCreationState<image::SemanticZoneStateT5>().AssignSemantic(*attenuationImageDependency->Asset(), TS_FUNCTION);
 
             lightDef->attenuation.image = attenuationImageDependency->Asset();
             lightDef->lmapLookupStart = 0;

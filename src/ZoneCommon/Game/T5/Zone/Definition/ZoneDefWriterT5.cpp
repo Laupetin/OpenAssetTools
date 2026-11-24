@@ -1,10 +1,46 @@
 #include "ZoneDefWriterT5.h"
 
 #include "Game/T5/AssetMarkerT5.h"
+#include "Game/T5/ZoneConstantsT5.h"
+
+#include <string>
 
 using namespace T5;
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const {}
+namespace
+{
+    bool IsDelayedWhenEnabled(const GfxImage& image)
+    {
+        if (image.category == IMG_CATEGORY_LOAD_FROM_FILE)
+            return image.semantic != TS_2D;
+
+        return image.name != nullptr && std::string(image.name) == "$identitynormalmap";
+    }
+
+    bool HasDisabledDelayLoadPixels(const Zone& zone)
+    {
+        auto hasDelayableImages = false;
+        for (const auto* imageInfo : zone.m_pools.PoolAssets<AssetImage>())
+        {
+            const auto* image = imageInfo->Asset();
+            if (imageInfo->IsReference() || !IsDelayedWhenEnabled(*image))
+                continue;
+
+            if (image->delayLoadPixels)
+                return false;
+
+            hasDelayableImages = true;
+        }
+
+        return hasDelayableImages;
+    }
+} // namespace
+
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Zone& zone) const
+{
+    if (HasDisabledDelayLoadPixels(zone))
+        stream.WriteMetaData(ZoneConstants::METADATA_DELAY_LOAD_PIXELS, "false");
+}
 
 void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Zone& zone, const ZoneDefFilter& filter) const
 {

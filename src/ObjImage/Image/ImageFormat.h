@@ -24,6 +24,9 @@ namespace image
         BC3,
         BC4,
         BC5,
+        B5_G6_R5,
+        R16_G16,
+        R32_FLOAT,
 
         MAX
     };
@@ -151,6 +154,9 @@ namespace image
         extern const ImageFormatBlockCompressed BC3;
         extern const ImageFormatBlockCompressed BC4;
         extern const ImageFormatBlockCompressed BC5;
+        extern const ImageFormatUnsigned B5_G6_R5;
+        extern const ImageFormatUnsigned R16_G16;
+        extern const ImageFormatUnsigned R32_FLOAT;
 
         extern const ImageFormat* const ALL[std::to_underlying(ImageFormatId::MAX)];
     } // namespace format
