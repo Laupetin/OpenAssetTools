@@ -66,7 +66,7 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
         with:
-          version: v0.20.0
+          version: v0.20.1
 
       - name: Premake generate
         working-directory: ${{ github.workspace }}
@@ -135,7 +135,7 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
         with:
-          version: v0.20.0
+          version: v0.20.1
 
       - name: Configure sccache for MSBuild
         shell: pwsh
