@@ -111,7 +111,7 @@ tag_trophy_04_fx\trophyExplodeFx\testfx1\trophyFlashFx\testfx2)"
         MockSearchPath loadingSearchPath;
         loadingSearchPath.AddFileData("vehicles/test_vehicle", RAW_VEHICLE);
 
-        Zone zone("LoadingZone", 0, GameId::IW5, GamePlatform::PC);
+        Zone zone("LoadingZone", 0, GameVariantId::IW5_PC32);
 
         auto* physPresetInfo = GivenTestPhysPreset("vehicle_tank", zone);
         auto* weaponInfo = GivenTestWeapon("sp/bradley_turret", zone);

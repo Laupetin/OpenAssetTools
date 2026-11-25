@@ -87,7 +87,7 @@ namespace
         assert(image);
         assert(zone);
 
-        const auto gameName = GameId_Names[std::to_underlying(zone->m_game_id)];
+        const auto gameName = IGame::GetGameById(zone->m_game_id)->GetShortName();
         const auto toCommonConverter = ToCommonConverter::GetForGame(zone->m_game_id);
         if (!toCommonConverter)
         {

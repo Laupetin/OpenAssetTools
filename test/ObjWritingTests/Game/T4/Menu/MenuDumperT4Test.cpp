@@ -212,7 +212,7 @@ namespace
         menu.itemCount = static_cast<int>(std::size(items));
         menu.items = items;
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
 
         MockSearchPath mockObjPath;
@@ -377,7 +377,7 @@ namespace
         menu.itemCount = static_cast<int>(std::size(items));
         menu.items = items;
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
 
         MockSearchPath mockObjPath;
@@ -426,7 +426,7 @@ namespace
         menuList.menuCount = static_cast<int>(std::size(menus));
         menuList.menus = menus;
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<MenuList>>(ASSET_TYPE_MENULIST, menuList.name, &menuList));
 
@@ -531,7 +531,7 @@ namespace
         menu.itemCount = static_cast<int>(std::size(items));
         menu.items = items;
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
 
         MockSearchPath mockObjPath;
@@ -628,7 +628,7 @@ namespace
         menu.itemCount = static_cast<int>(std::size(items));
         menu.items = items;
 
-        Zone zone("MockZone", 0, GameId::T4, GamePlatform::PC);
+        Zone zone("MockZone", 0, GameVariantId::T4_PC);
         zone.m_pools.AddAsset(std::make_unique<XAssetInfo<menuDef_t>>(ASSET_TYPE_MENU, menu.window.name, &menu));
 
         MockSearchPath mockObjPath;

@@ -10,7 +10,7 @@ namespace
         {
         }
 
-        void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
+        void PerformStep(ZoneReader& zoneReader, ILoadingStream& stream) override
         {
             uint8_t tempBuffer[128];
             auto skippedBytes = 0uz;

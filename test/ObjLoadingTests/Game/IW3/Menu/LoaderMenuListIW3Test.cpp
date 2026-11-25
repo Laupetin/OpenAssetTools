@@ -20,7 +20,7 @@ namespace
     {
     public:
         MenuLoadingTestHelper()
-            : m_zone("MockZone", 0, GameId::IW3, GamePlatform::PC),
+            : m_zone("MockZone", 0, GameVariantId::IW3_PC),
               m_creator_collection(m_zone),
               m_context(m_zone, &m_creator_collection, &m_ignored_asset_lookup)
         {

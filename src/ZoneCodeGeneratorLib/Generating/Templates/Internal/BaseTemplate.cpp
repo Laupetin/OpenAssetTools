@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-BaseTemplate::BaseTemplate(std::ostream& stream, const BaseRenderingContext& context)
+BaseTemplate::BaseTemplate(std::ostream& stream, const PerTemplateRenderingContext& context)
     : m_out(stream),
       m_intendation(0u),
       m_env(context)
@@ -256,14 +256,6 @@ void BaseTemplate::MakeEvaluationInternal(const IEvaluation* evaluation, std::os
         MakeOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation), str);
 }
 
-std::string BaseTemplate::MakeAllocAlignment(const StructureInformation& info)
-{
-    if (info.m_alloc_alignment)
-        return MakeEvaluation(info.m_alloc_alignment.get());
-
-    return std::to_string(info.m_definition->GetAlignment());
-}
-
 std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
 {
     std::ostringstream str;
@@ -274,48 +266,8 @@ std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
 bool BaseTemplate::ShouldGenerateFillMethod(const RenderingUsedType& type)
 {
     const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
-    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
+    const auto hasMismatchingStructure = type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_memory_layout;
     const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
 
     return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
-}
-
-size_t BaseTemplate::SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
-{
-    const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
-    if (declModifiers.empty())
-        return memberInfo.m_member->m_type_declaration->GetSize();
-
-    if (level == 0)
-        return memberInfo.m_member->m_type_declaration->GetSize();
-
-    size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
-    const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
-    for (auto i = declModifiers.rbegin(); i != end; ++i)
-    {
-        if ((*i)->GetType() == DeclarationModifierType::POINTER)
-            currentSize = m_env.m_pointer_size;
-        else
-            currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
-    }
-
-    return currentSize;
-}
-
-size_t BaseTemplate::OffsetForMemberModifier(const MemberInformation& memberInfo,
-                                             const DeclarationModifierComputations& modifier,
-                                             const size_t nestedBaseOffset) const
-{
-    size_t curOffset = memberInfo.m_member->m_offset;
-
-    auto curLevel = 0u;
-    for (const auto index : modifier.GetArrayIndices())
-    {
-        if (index > 0)
-            curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
-
-        curLevel++;
-    }
-
-    return curOffset + nestedBaseOffset;
 }

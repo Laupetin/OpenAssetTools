@@ -5,8 +5,9 @@
 
 namespace
 {
-    constexpr auto CAPTURE_TYPE = 1;
-    constexpr auto CAPTURE_ASSET_NAME = 2;
+    constexpr auto CAPTURE_START = 1;
+    constexpr auto CAPTURE_TYPE = 2;
+    constexpr auto CAPTURE_ASSET_NAME = 3;
 } // namespace
 
 SequenceAsset::SequenceAsset()
@@ -15,9 +16,9 @@ SequenceAsset::SequenceAsset()
 
     AddLabeledMatchers(CommandsCommonMatchers::Typename(this), CommandsCommonMatchers::LABEL_TYPENAME);
     AddMatchers({
-        create.Keyword("asset"),
+        create.Keyword("asset").Capture(CAPTURE_START),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Identifier().Capture(CAPTURE_ASSET_NAME),
+        create.Optional(create.Identifier().Capture(CAPTURE_ASSET_NAME)),
         create.Char(';'),
     });
 }
@@ -25,7 +26,6 @@ SequenceAsset::SequenceAsset()
 void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
     const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
-    const auto& assetNameToken = result.NextCapture(CAPTURE_ASSET_NAME);
 
     auto* definition = state->GetRepository()->GetDataDefinitionByName(typeNameToken.TypeNameValue());
     if (definition == nullptr)
@@ -39,7 +39,16 @@ void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<Comm
     if (information == nullptr)
         throw ParsingException(typeNameToken.GetPos(), "No information for definition");
 
-    information->m_asset_name = assetNameToken.IdentifierValue();
+    if (result.HasNextCapture(CAPTURE_ASSET_NAME))
+    {
+        const auto& assetNameToken = result.NextCapture(CAPTURE_ASSET_NAME);
+        information->m_asset_name = assetNameToken.IdentifierValue();
+    }
+    else
+    {
+        information->m_asset_name = definition->m_name;
+    }
+
     if (information->m_asset_name.empty())
-        throw ParsingException(assetNameToken.GetPos(), "Asset name is empty");
+        throw ParsingException(result.NextCapture(CAPTURE_START).GetPos(), "Asset name is empty");
 }

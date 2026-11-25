@@ -1,6 +1,7 @@
 #include "ContentLoaderIW5.h"
 
-#include "Game/IW5/AssetLoaderIW5.h"
+#include "Game/IW5/AssetLoader_iw5_pc32.h"
+#include "Game/IW5/AssetLoader_iw5_pc64.h"
 #include "Game/IW5/IW5.h"
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
@@ -27,7 +28,10 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 #ifdef ARCH_x86
         varScriptStringList->strings = m_stream.Alloc<const char*>(4);
 #else
-        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
+        if (m_word_size == GameWordSize::ARCH_64)
+            varScriptStringList->strings = m_stream.Alloc<const char*>(4);
+        else
+            varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
 #endif
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
@@ -41,16 +45,22 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
 void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
-#define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
-    case type_index:                                                                                                                                           \
+#define LOAD_ASSET_PER_VARIANT(assetName, headerEntry32, headerEntry64)                                                                                        \
+    case Asset##assetName## ::EnumEntry:                                                                                                                       \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
-        loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
+        if (m_word_size == GameWordSize::ARCH_64)                                                                                                              \
+        {                                                                                                                                                      \
+            Loader_##assetName##_pc64 loader(m_zone, m_stream);                                                                                                \
+            loader.Load(&varXAsset->header.headerEntry64);                                                                                                     \
+        }                                                                                                                                                      \
+        else                                                                                                                                                   \
+        {                                                                                                                                                      \
+            Loader_##assetName##_pc32 loader(m_zone, m_stream);                                                                                                \
+            loader.Load(&varXAsset->header.headerEntry32);                                                                                                     \
+        }                                                                                                                                                      \
         break;                                                                                                                                                 \
     }
-#define SKIP_ASSET(type_index)                                                                                                                                 \
-    case type_index:                                                                                                                                           \
-        break;
+#define LOAD_ASSET(assetName, headerEntry) LOAD_ASSET_PER_VARIANT(assetName, headerEntry, headerEntry)
 
     assert(varXAsset != nullptr);
 
@@ -59,47 +69,46 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 
     switch (varXAsset->type)
     {
-        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-        LOAD_ASSET(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap)
-        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-        LOAD_ASSET(ASSET_TYPE_XMODEL_SURFS, XModelSurfs, modelSurfs)
-        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-        LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader)
-        LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader)
-        LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl)
-        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
-        LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
-        LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
-        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-        LOAD_ASSET(ASSET_TYPE_GLASSWORLD, GlassWorld, glassWorld)
-        LOAD_ASSET(ASSET_TYPE_PATHDATA, PathData, pathData)
-        LOAD_ASSET(ASSET_TYPE_VEHICLE_TRACK, VehicleTrack, vehicleTrack)
-        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-        LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld)
-        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
-        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
-        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-        LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment)
-        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon)
-        SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS)
-        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-        LOAD_ASSET(ASSET_TYPE_SURFACE_FX, SurfaceFxTable, surfaceFx)
-        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-        LOAD_ASSET(ASSET_TYPE_SCRIPTFILE, ScriptFile, scriptfile)
-        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-        LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef)
-        LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet)
-        LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef)
-        LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef)
-        LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts)
+        LOAD_ASSET(PhysPreset, physPreset)
+        LOAD_ASSET(PhysCollMap, physCollmap)
+        LOAD_ASSET(XAnim, parts)
+        LOAD_ASSET(XModelSurfs, modelSurfs)
+        LOAD_ASSET(XModel, model)
+        LOAD_ASSET(Material, material)
+        LOAD_ASSET(PixelShader, pixelShader)
+        LOAD_ASSET(VertexShader, vertexShader)
+        LOAD_ASSET(VertexDecl, vertexDecl)
+        LOAD_ASSET(TechniqueSet, techniqueSet)
+        LOAD_ASSET(Image, image)
+        LOAD_ASSET(Sound, sound)
+        LOAD_ASSET(SoundCurve, sndCurve)
+        LOAD_ASSET(LoadedSound, loadSnd)
+        LOAD_ASSET(ClipMap, clipMap)
+        LOAD_ASSET(ComWorld, comWorld)
+        LOAD_ASSET(GlassWorld, glassWorld)
+        LOAD_ASSET(PathData, pathData)
+        LOAD_ASSET(VehicleTrack, vehicleTrack)
+        LOAD_ASSET(MapEnts, mapEnts)
+        LOAD_ASSET(FxWorld, fxWorld)
+        LOAD_ASSET(GfxWorld, gfxWorld)
+        LOAD_ASSET(LightDef, lightDef)
+        LOAD_ASSET(Font, font)
+        LOAD_ASSET(MenuList, menuList)
+        LOAD_ASSET(Menu, menu)
+        LOAD_ASSET(Localize, localize)
+        LOAD_ASSET(Attachment, attachment)
+        LOAD_ASSET(Weapon, weapon)
+        LOAD_ASSET(Fx, fx)
+        LOAD_ASSET(ImpactFx, impactFx)
+        LOAD_ASSET(SurfaceFx, surfaceFx)
+        LOAD_ASSET(RawFile, rawfile)
+        LOAD_ASSET(Script, scriptfile)
+        LOAD_ASSET(StringTable, stringTable)
+        LOAD_ASSET(Leaderboard, leaderboardDef)
+        LOAD_ASSET(StructuredDataDef, structuredDataDefSet)
+        LOAD_ASSET(Tracer, tracerDef)
+        LOAD_ASSET(Vehicle, vehDef)
+        LOAD_ASSET(AddonMapEnts, addonMapEnts)
 
     default:
     {
@@ -119,13 +128,20 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
 #ifdef ARCH_x86
         m_stream.Load<XAsset>(varXAsset, count);
 #else
-        const auto fill = m_stream.LoadWithFill(8u * count);
-
-        for (size_t index = 0; index < count; index++)
+        if (m_word_size == GameWordSize::ARCH_64)
         {
-            fill.Fill(varXAsset[index].type, 8u * index);
-            fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
-            m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
+            m_stream.Load<XAsset>(varXAsset, count);
+        }
+        else
+        {
+            const auto fill = m_stream.LoadWithFill(8u * count);
+
+            for (size_t index = 0; index < count; index++)
+            {
+                fill.Fill(varXAsset[index].type, 8u * index);
+                fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
+                m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
+            }
         }
 #endif
     }
@@ -149,13 +165,20 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
     m_stream.LoadDataRaw(&assetList, sizeof(assetList));
 #else
-    const auto fillAccessor = m_stream.LoadWithFill(16u);
-    varScriptStringList = &varXAssetList->stringList;
-    fillAccessor.Fill(varScriptStringList->count, 0u);
-    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
+    if (m_word_size == GameWordSize::ARCH_64)
+    {
+        m_stream.LoadDataRaw(&assetList, sizeof(assetList));
+    }
+    else
+    {
+        const auto fillAccessor = m_stream.LoadWithFill(16u);
+        varScriptStringList = &varXAssetList->stringList;
+        fillAccessor.Fill(varScriptStringList->count, 0u);
+        fillAccessor.FillPtr(varScriptStringList->strings, 4u);
 
-    fillAccessor.Fill(varXAssetList->assetCount, 8u);
-    fillAccessor.FillPtr(varXAssetList->assets, 12u);
+        fillAccessor.Fill(varXAssetList->assetCount, 8u);
+        fillAccessor.FillPtr(varXAssetList->assets, 12u);
+    }
 #endif
 
     m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
@@ -170,7 +193,10 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
         assetList.assets = m_stream.Alloc<XAsset>(4);
 #else
-        assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
+        if (m_word_size == GameWordSize::ARCH_64)
+            assetList.assets = m_stream.Alloc<XAsset>(4);
+        else
+            assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
 #endif
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);

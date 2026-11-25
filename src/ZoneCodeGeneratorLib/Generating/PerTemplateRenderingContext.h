@@ -5,17 +5,17 @@
 #include <string>
 #include <vector>
 
-class BaseRenderingContext
+class PerTemplateRenderingContext
 {
 public:
+    explicit PerTemplateRenderingContext(const IDataRepository* repository);
+
     std::string m_game;
-    bool m_word_size_mismatch;
-    unsigned m_pointer_size;
     std::vector<const FastFileBlock*> m_blocks;
 
     const FastFileBlock* m_default_normal_block;
     const FastFileBlock* m_default_temp_block;
 
-protected:
-    BaseRenderingContext(std::string game, WordSize gameWordSize, std::vector<const FastFileBlock*> fastFileBlocks);
+    std::vector<StructureInformation*> m_all_assets;
+    std::vector<GameVariant*> m_all_variants;
 };

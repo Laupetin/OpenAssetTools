@@ -54,68 +54,64 @@ namespace
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    // Assume 32bit at first until we may know better later
+                    .m_variant_id = GameVariantId::T6_PC,
+                    .m_is_official = true,
+                    .m_is_signed = true,
+                    .m_is_encrypted = true,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = true,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    // Assume 32bit at first until we may know better later
+                    .m_variant_id = GameVariantId::T6_PC,
+                    .m_is_official = false,
+                    .m_is_signed = true,
+                    .m_is_encrypted = true,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = false,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = true,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    // Assume 32bit at first until we may know better later
+                    .m_variant_id = GameVariantId::T6_PC,
+                    .m_is_official = false,
+                    .m_is_signed = false,
+                    .m_is_encrypted = true,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = false,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = true,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    // Assume 32bit at first until we may know better later
+                    .m_variant_id = GameVariantId::T6_PC,
+                    .m_is_official = true,
+                    .m_is_signed = false,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PC,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
@@ -124,34 +120,30 @@ namespace
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    .m_variant_id = GameVariantId::T6_XBOX,
+                    .m_is_official = true,
+                    .m_is_signed = true,
+                    .m_is_encrypted = true,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::BE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::XBOX,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = true,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
 
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_LZX_TREYARCH, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    .m_variant_id = GameVariantId::T6_XBOX,
+                    .m_is_official = true,
+                    .m_is_signed = true,
+                    .m_is_encrypted = true,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::BE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::XBOX,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = true,
-                                                   .m_is_encrypted = true,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::LZX,
                 };
             }
@@ -160,36 +152,32 @@ namespace
         {
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
             {
+                constexpr ZoneLoaderInspectionResult generic{
+                    .m_game_id = GameId::T6,
+                    .m_variant_id = GameVariantId::T6_PS3,
+                    .m_is_official = true,
+                    .m_is_signed = false,
+                    .m_is_encrypted = false,
+                };
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::PS3,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
         }
         else if (endianness::FromLittleEndian(header.m_version) == ZoneConstants::ZONE_VERSION_WIIU)
         {
+            constexpr ZoneLoaderInspectionResult generic{
+                .m_game_id = GameId::T6,
+                .m_variant_id = GameVariantId::T6_WIIU,
+                .m_is_official = true,
+                .m_is_signed = false,
+                .m_is_encrypted = false,
+            };
             if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, 8))
             {
                 return ZoneLoaderInspectionResultT6{
-                    .m_generic_result =
-                        ZoneLoaderInspectionResult{
-                                                   .m_game_id = GameId::T6,
-                                                   .m_endianness = GameEndianness::LE,
-                                                   .m_word_size = GameWordSize::ARCH_32,
-                                                   .m_platform = GamePlatform::WIIU,
-                                                   .m_is_official = true,
-                                                   .m_is_signed = false,
-                                                   .m_is_encrypted = false,
-                                                   },
+                    .m_generic_result = generic,
                     .m_compression_type = ZoneCompressionTypeT6::DEFLATE,
                 };
             }
@@ -213,18 +201,18 @@ namespace
         return GameLanguage::LANGUAGE_NONE;
     }
 
-    void SetupBlock(ZoneLoader& zoneLoader)
+    void SetupBlock(ZoneMemory& zoneMemory)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlockType::BLOCK_TYPE_RUNTIME));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlockType::BLOCK_TYPE_DELAY));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlockType::BLOCK_TYPE_DELAY));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
-        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlockType::BLOCK_TYPE_TEMP));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlockType::BLOCK_TYPE_RUNTIME));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlockType::BLOCK_TYPE_DELAY));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlockType::BLOCK_TYPE_DELAY));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlockType::BLOCK_TYPE_NORMAL));
+        zoneMemory.AddBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlockType::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -269,14 +257,15 @@ namespace
         return signatureLoadStepPtr;
     }
 
-    ICapturedDataProvider* AddXChunkProcessor(const ZoneLoaderInspectionResultT6& inspectResult, ZoneLoader& zoneLoader, const std::string& fileName)
+    ICapturedDataProvider*
+        AddXChunkProcessor(const ZoneLoaderInspectionResultT6& inspectResult, const IGameVariant& variant, ZoneLoader& zoneLoader, const std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
         auto xChunkProcessor = processor::CreateProcessorXChunks(
-            ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, inspectResult.m_generic_result.m_endianness, ZoneConstants::VANILLA_BUFFER_SIZE);
+            ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, variant.GetEndianness(), ZoneConstants::VANILLA_BUFFER_SIZE);
 
-        const uint8_t (&salsa20Key)[32] = inspectResult.m_generic_result.m_platform == GamePlatform::XBOX ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON
-                                                                                                          : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
+        const uint8_t (&salsa20Key)[32] =
+            variant.GetPlatform() == GamePlatform::XBOX ? ZoneConstants::SALSA20_KEY_TREYARCH_XENON : ZoneConstants::SALSA20_KEY_TREYARCH_PC;
 
         if (inspectResult.m_generic_result.m_is_encrypted)
         {
@@ -322,15 +311,17 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     if (!inspectResult)
         return nullptr;
 
+    const auto variant = IGameVariant::GetVariantById(inspectResult->m_generic_result.m_variant_id);
+
     // Create new zone
-    auto zone = std::make_unique<Zone>(fileName, 0, GameId::T6, inspectResult->m_generic_result.m_platform);
+    auto zone = std::make_unique<Zone>(fileName, 0, inspectResult->m_generic_result.m_variant_id);
     auto* zonePtr = zone.get();
     zone->m_language = GetZoneLanguage(fileName);
 
     // File is supported. Now setup all required steps for loading this file.
     auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
 
-    SetupBlock(*zoneLoader);
+    SetupBlock(zonePtr->Memory());
 
     // Skip the initial header that we peeked at before
     zoneLoader->AddLoadingStep(step::CreateStepSkipBytes(sizeof(ZoneHeader)));
@@ -342,13 +333,13 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
     ISignatureProvider* signatureProvider = AddAuthHeaderSteps(inspectResult->m_generic_result.m_is_signed, *zoneLoader, fileName);
 
     // Setup loading XChunks from the zone from this point on.
-    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(*inspectResult, *zoneLoader, fileName);
+    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(*inspectResult, *variant, *zoneLoader, fileName);
 
-    if (inspectResult->m_generic_result.m_endianness == GameEndianness::LE)
+    if (variant->GetEndianness() == GameEndianness::LE)
     {
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
-        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
+        zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks(zonePtr));
 
         // Start of the zone content
         zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
@@ -357,9 +348,10 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneDataPee
                 return std::make_unique<ContentLoader>(*zonePtr, stream);
             },
             32u,
-            ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+            ZoneConstants::ZONE_POINTER_OFFSET_BIT_COUNT,
+            ZoneConstants::ZONE_POINTER_BLOCK_BIT_COUNT,
             ZoneConstants::INSERT_BLOCK,
-            zonePtr->Memory(),
+            zonePtr,
             std::move(progressCallback)));
 
         if (inspectResult->m_generic_result.m_is_signed)

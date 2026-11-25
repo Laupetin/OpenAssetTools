@@ -16,7 +16,7 @@ using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("Simple Zone(IW5)", "[iw5][system][simple]")
+    void PerformTest(const std::string& zoneFileName, GameVariantId expectedGameVariantId)
     {
         const auto assetSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/Simple").string();
         const auto sourceSearchPath = (oat::paths::GetSystemTestsDirectory() / "Game/IW5/Simple").string();
@@ -31,7 +31,7 @@ namespace
             sourceSearchPath.c_str(),
             "--output-folder",
             outputPath.c_str(),
-            "SimpleZoneIW5",
+            zoneFileName.c_str(),
         };
 
         LinkerArgs args;
@@ -54,9 +54,19 @@ namespace
         auto zone = std::move(*maybeZone);
 
         REQUIRE(zone->m_game_id == GameId::IW5);
-        REQUIRE(zone->m_platform == GamePlatform::PC);
+        REQUIRE(zone->m_variant_id == expectedGameVariantId);
         REQUIRE(zone->m_name == "SimpleZoneIW5");
         REQUIRE(zone->m_pools.GetTotalAssetCount() == 1);
         REQUIRE(zone->m_pools.GetAsset<IW5::AssetRawFile>("SimpleZone.txt"));
+    }
+
+    TEST_CASE("Simple Zone(IW5|pc32)", "[iw5][pc32][system][simple]")
+    {
+        PerformTest("SimpleZoneIW5_32", GameVariantId::IW5_PC32);
+    }
+
+    TEST_CASE("Simple Zone(IW5|pc64)", "[iw5][pc64][system][simple]")
+    {
+        PerformTest("SimpleZoneIW5_64", GameVariantId::IW5_PC64);
     }
 } // namespace

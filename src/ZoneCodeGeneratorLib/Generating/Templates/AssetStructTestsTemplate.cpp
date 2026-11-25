@@ -1,6 +1,7 @@
 #include "AssetStructTestsTemplate.h"
 
 #include "Domain/Computations/StructureComputations.h"
+#include "Internal/BasePerVariantTemplate.h"
 #include "Internal/BaseTemplate.h"
 #include "Utils/StringUtils.h"
 
@@ -11,11 +12,11 @@ namespace
 {
     constexpr int TAG_SOURCE = 1;
 
-    class PerAsset final : BaseTemplate
+    class PerAsset final : BasePerVariantTemplate
     {
     public:
-        PerAsset(std::ostream& stream, const OncePerAssetRenderingContext& context)
-            : BaseTemplate(stream, context),
+        PerAsset(std::ostream& stream, const PerAssetRenderingContext& context)
+            : BasePerVariantTemplate(stream, context),
               m_env(context)
         {
         }
@@ -32,17 +33,17 @@ namespace
             LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
-            LINEF("namespace game::{0}::xassets::asset_{1}", m_env.m_game, Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("namespace game::{0}::{1}::xassets::asset_{1}", m_env.m_game, m_env.m_variant->m_name, Lower(m_env.m_asset->m_asset_name))
             LINE("{")
             m_intendation++;
 
-            if (m_env.m_asset->m_has_matching_cross_platform_structure)
+            if (MemoryLayoutMatches(*m_env.m_asset))
                 TestMethod(m_env.m_asset);
 
             for (const auto* structure : m_env.m_used_structures)
             {
                 StructureComputations computations(structure->m_info);
-                if (!structure->m_info->m_definition->IsAnonymous() && !computations.IsAsset() && structure->m_info->m_has_matching_cross_platform_structure)
+                if (!structure->m_info->m_definition->IsAnonymous() && !computations.IsAsset() && MemoryLayoutMatches(*structure->m_info))
                     TestMethod(structure->m_info);
             }
 
@@ -64,38 +65,44 @@ namespace
             {
                 if (!member->m_member->m_name.empty() && !member->m_member->m_type_declaration->m_has_custom_bit_size)
                 {
-                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});", structure->m_definition->GetFullName(), member->m_member->m_name, member->m_member->m_offset)
+                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});",
+                          structure->m_definition->GetFullName(),
+                          member->m_member->m_name,
+                          member->m_member->GetOffset(m_env.m_word_size))
                 }
             }
 
             LINE("")
 
-            LINEF("REQUIRE({0}u == sizeof({1}));", structure->m_definition->GetSize(), structure->m_definition->GetFullName())
-            LINEF("REQUIRE({0}u == alignof({1}));", structure->m_definition->GetAlignment(), structure->m_definition->GetFullName())
+            LINEF("REQUIRE({0}u == sizeof({1}));", structure->m_definition->GetSize(m_env.m_word_size), structure->m_definition->GetFullName())
+            LINEF("REQUIRE({0}u == alignof({1}));", structure->m_definition->GetAlignment(m_env.m_word_size), structure->m_definition->GetFullName())
             m_intendation--;
             LINE("}")
         }
 
-        const OncePerAssetRenderingContext& m_env;
+        const PerAssetRenderingContext& m_env;
     };
 } // namespace
 
-std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context.m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_asset_name;
     utils::MakeStringLowerCase(assetName);
 
     auto gameName = context.m_game;
     utils::MakeStringLowerCase(gameName);
 
-    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_struct_test.cpp", assetName, gameName), TAG_SOURCE);
+    auto variantName = context.m_variant->m_name;
+    utils::MakeStringLowerCase(variantName);
+
+    files.emplace_back(std::format("XAssets/{0}/{0}_{1}_{2}_struct_test.cpp", assetName, gameName, variantName), TAG_SOURCE);
 
     return files;
 }
 
-void AssetStructTestsTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context)
+void AssetStructTestsTemplate::RenderOncePerAssetFile(std::ostream& stream, const CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context)
 {
     PerAsset t(stream, context);
 

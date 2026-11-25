@@ -1,7 +1,7 @@
 #pragma once
 
-#include "OncePerAssetRenderingContext.h"
-#include "OncePerTemplateRenderingContext.h"
+#include "PerAssetRenderingContext.h"
+#include "PerTemplateRenderingContext.h"
 
 #include <ostream>
 #include <string>
@@ -32,17 +32,24 @@ public:
     ICodeTemplate& operator=(const ICodeTemplate& other) = default;
     ICodeTemplate& operator=(ICodeTemplate&& other) noexcept = default;
 
-    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerTemplate(const OncePerTemplateRenderingContext& context)
+    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerTemplate(const PerTemplateRenderingContext& context)
     {
         return {};
     }
 
-    virtual void RenderOncePerTemplateFile(std::ostream& stream, CodeTemplateFileTag fileTag, const OncePerTemplateRenderingContext& context) {}
+    virtual void RenderOncePerTemplateFile(std::ostream& stream, CodeTemplateFileTag fileTag, const PerTemplateRenderingContext& context) {}
 
-    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerAsset(const OncePerAssetRenderingContext& context)
+    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerVariant(const PerVariantRenderingContext& context)
     {
         return {};
     }
 
-    virtual void RenderOncePerAssetFile(std::ostream& stream, CodeTemplateFileTag fileTag, const OncePerAssetRenderingContext& context) {}
+    virtual void RenderOncePerVariantFile(std::ostream& stream, CodeTemplateFileTag fileTag, const PerVariantRenderingContext& context) {}
+
+    virtual std::vector<CodeTemplateFile> GetFilesToRenderOncePerAsset(const PerAssetRenderingContext& context)
+    {
+        return {};
+    }
+
+    virtual void RenderOncePerAssetFile(std::ostream& stream, CodeTemplateFileTag fileTag, const PerAssetRenderingContext& context) {}
 };

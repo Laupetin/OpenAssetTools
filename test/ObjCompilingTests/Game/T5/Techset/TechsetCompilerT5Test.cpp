@@ -28,7 +28,7 @@ namespace
 
 TEST_CASE("TechsetCompilerT5", "[techset][t5][compiler]")
 {
-    Zone zone("test", 0, GameId::T5, GamePlatform::PC);
+    Zone zone("test", 0, GameVariantId::T5_PC);
     AssetCreatorCollection creators(zone);
     IgnoredAssetLookup ignoredAssets;
     AssetCreationContext context(zone, &creators, &ignoredAssets);

@@ -26,7 +26,7 @@ menu,demo_ingame
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
 
-        REQUIRE(result->m_game == GameId::T6);
+        REQUIRE(result->m_variant == GameVariantId::T6_PC);
         REQUIRE(result->m_name == "common_mp");
         REQUIRE(result->m_assets.size() == 3u);
 
@@ -58,7 +58,7 @@ material,demo_material
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
 
-        REQUIRE(result->m_game == GameId::T6);
+        REQUIRE(result->m_variant == GameVariantId::T6_PC);
         REQUIRE(result->m_name == "test");
         REQUIRE(result->m_assets.size() == 1u);
     }
