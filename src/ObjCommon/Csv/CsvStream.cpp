@@ -217,11 +217,12 @@ namespace
     }
 } // namespace
 
-CsvOutputStream::CsvOutputStream(std::ostream& stream)
+CsvOutputStream::CsvOutputStream(std::ostream& stream, const bool padColumns)
     : m_stream(stream),
       m_column_count(0),
       m_current_column(0),
-      m_first_row(true)
+      m_first_row(true),
+      m_pad_columns(padColumns)
 {
 }
 
@@ -265,7 +266,7 @@ void CsvOutputStream::NextRow()
         m_first_row = false;
         m_column_count = m_current_column;
     }
-    else
+    else if (m_pad_columns)
     {
         while (m_current_column < m_column_count)
         {
