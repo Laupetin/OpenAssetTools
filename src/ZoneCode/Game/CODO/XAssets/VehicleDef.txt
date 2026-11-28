@@ -1,0 +1,32 @@
+// =========================================
+// VehicleDef
+// =========================================
+use VehicleDef;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set string useHintString;
+set string turretWeaponName;
+set scriptstring trophyTags;
+set string surfaceSndPrefix;
+set reusable turretSpinSnd;
+set reusable turretStopSnd;
+set reusable idleLowSnd;
+set reusable idleHighSnd;
+set reusable engineLowSnd;
+set reusable engineHighSnd;
+set reusable engineStartUpSnd;
+set reusable engineShutdownSnd;
+set reusable engineIdleSnd;
+set reusable engineSustainSnd;
+set reusable engineRampUpSnd;
+set reusable engineRampDownSnd;
+set reusable suspensionSoftSnd;
+set reusable suspensionHardSnd;
+set reusable collisionSnd;
+set reusable speedSnd;
+set reusable surfaceSnds;
+
+// VehiclePhysDef
+use VehiclePhysDef;
+set string physPresetName;
+set string accelGraphName;

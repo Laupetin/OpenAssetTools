@@ -1,0 +1,140 @@
+// =========================================
+// GfxWorld
+// =========================================
+use GfxWorld;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set string baseName;
+set count skies skyCount;
+set count aabbTreeCounts dpvsPlanes::cellCount;
+set count aabbTrees dpvsPlanes::cellCount;
+set count cells dpvsPlanes::cellCount;
+set count models modelCount;
+set count materialMemory materialMemoryCount;
+set condition cellCasterBits never;
+set condition cellHasSunLitSurfsBits never;
+set condition sceneDynModel never;
+set condition sceneDynBrush never;
+set condition primaryLightEntityShadowVis never;
+set condition primaryLightDynEntShadowVis never;
+set condition nonSunPrimaryLightForModelDynEnt never;
+set count shadowGeom primaryLightCount;
+set count lightRegion primaryLightCount;
+set condition dynEntCellBits never;
+set condition dynEntVisData never;
+set count heroOnlyLights heroOnlyLightCount;
+set reusable aabbTreeCounts;
+set reusable models;
+set reusable materialMemory;
+set reusable shadowGeom;
+set reusable lightRegion;
+set reusable heroOnlyLights;
+
+// GfxWorldSky
+use GfxWorldSky;
+set count skyStartSurfs skySurfCount;
+set reusable skyStartSurfs;
+
+// GfxWorldDpvsPlanesC
+use GfxWorldDpvsPlanesC;
+set reusable planes;
+set count planes GfxWorld::planeCount;
+set reusable nodes;
+set count nodes GfxWorld::nodeCount;
+
+// GfxCellTreeC
+set count GfxCellTreeC::aabbTree GfxWorld::aabbTreeCounts[GfxCellTreeC - GfxWorld::aabbTrees];
+
+// GfxAabbTreeC
+use GfxAabbTreeC;
+set reusable smodelIndexes;
+set count smodelIndexes smodelIndexCount;
+
+// GfxWorldCellC
+use GfxWorldCellC;
+set count portals portalCount;
+set reusable portals;
+set count reflectionProbes reflectionProbeCount;
+set reusable reflectionProbes;
+set count reflectionProbeReferences reflectionProbeReferenceCount;
+set reusable reflectionProbeReferences;
+
+// GfxPortalC
+use GfxPortalC;
+set count vertices vertexCount;
+set reusable vertices;
+
+// GfxProbeEntryC
+use GfxProbeEntryC;
+set count data count;
+set reusable data;
+
+// GfxProbeGroupC
+use GfxProbeGroupC;
+set count entries entryCount;
+set reusable entries;
+
+// GfxWorldDrawC
+use GfxWorldDrawC;
+set count reflectionProbes reflectionProbeCount;
+set count probeGroups reflectionProbeCount;
+set reusable probeGroups;
+set count reflectionProbeReferenceOrigins reflectionProbeReferenceCount;
+set reusable reflectionProbeReferenceOrigins;
+set count reflectionProbeReferences reflectionProbeReferenceCount;
+set reusable reflectionProbeReferences;
+set count lightmaps lightmapCount;
+set reusable lightmaps;
+set condition lightmapPrimaryTextures never;
+set condition lightmapSecondaryTextures never;
+set count vertices vertexCount;
+set reusable vertices;
+set count vertexLayerData vertexLayerDataSize;
+set reusable vertexLayerData;
+set count indices indexCount;
+set reusable indices;
+
+// GfxLightGridC
+use GfxLightGridC;
+set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
+set reusable rowDataStart;
+set count rawRowData rawRowDataSize;
+set reusable rawRowData;
+set count entries entryCount;
+set reusable entries;
+set count colors colorCount;
+set reusable colors;
+
+// GfxShadowGeometryC
+use GfxShadowGeometryC;
+set count sortedSurfIndex surfaceCount;
+set reusable sortedSurfIndex;
+set count smodelIndex smodelCount;
+set reusable smodelIndex;
+
+// GfxLightRegionHullC
+use GfxLightRegionHullC;
+set count axis axisCount;
+set reusable axis;
+
+// GfxLightRegionC
+use GfxLightRegionC;
+set count hulls hullCount;
+set reusable hulls;
+
+// GfxWorldDpvsStaticC
+use GfxWorldDpvsStaticC;
+set condition smodelVisData never;
+set condition surfaceVisData never;
+set count sortedSurfIndex staticSurfaceCount + staticSurfaceCountNoDecal;
+set reusable sortedSurfIndex;
+set count smodelInsts smodelCount;
+set reusable smodelInsts;
+set count surfaces GfxWorld::surfaceCount;
+set reusable surfaces;
+set count surfacesBounds GfxWorld::surfaceCount;
+set reusable surfacesBounds;
+set count smodelDrawInsts smodelCount;
+set reusable smodelDrawInsts;
+set condition surfaceMaterials never;
+set condition surfaceCastsSunShadow never;

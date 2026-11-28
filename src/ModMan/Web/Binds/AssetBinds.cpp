@@ -86,6 +86,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CommonAssetType,
                                  {CommonAssetType::SCENE_ANIMATION,      "scene_animation"     },
                                  {CommonAssetType::CUTSCENE,             "cutscene"            },
                                  {CommonAssetType::CUSTOM_CAMERA,        "custom_camera"       },
+                                 {CommonAssetType::NET_CONST_STRINGS,    "net_const_strings"   },
+                                 {CommonAssetType::MARKETPLACE_DATA,     "marketplace_data"    },
 });
 
 namespace

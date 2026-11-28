@@ -7,10 +7,55 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 - ✅ = Supported
 - ⁉️ = Partial support
 
+## CODO (Call of Duty: Online)
+
+Only dumping is supported. Fastfiles for this game cannot be built.
+Only fastfiles from game version `v3.19.26.22` are supported. These use zone version `461`, except for a few addon fastfiles which use zone version `460`.
+
+| Asset Type                | Dumping Support | Loading Support | Notes |
+| ------------------------- | --------------- | --------------- | ----- |
+| PhysPreset                | ❌              | ❌              |       |
+| PhysCollmap               | ❌              | ❌              |       |
+| XAnimParts                | ❌              | ❌              |       |
+| XModelSurfs               | ❌              | ❌              |       |
+| XModel                    | ❌              | ❌              |       |
+| Material                  | ❌              | ❌              |       |
+| MaterialPixelShader       | ❌              | ❌              |       |
+| MaterialVertexShader      | ❌              | ❌              |       |
+| MaterialVertexDeclaration | ❌              | ❌              |       |
+| MaterialTechniqueSet      | ❌              | ❌              |       |
+| GfxImage                  | ❌              | ❌              |       |
+| snd_alias_list_t          | ❌              | ❌              |       |
+| SndCurve                  | ❌              | ❌              |       |
+| LoadedSound               | ❌              | ❌              |       |
+| clipMap_t                 | ❌              | ❌              |       |
+| ComWorld                  | ❌              | ❌              |       |
+| MapEnts                   | ❌              | ❌              |       |
+| FxWorld                   | ❌              | ❌              |       |
+| GfxWorld                  | ❌              | ❌              |       |
+| GfxLightDef               | ❌              | ❌              |       |
+| Font_s                    | ❌              | ❌              |       |
+| MenuList                  | ❌              | ❌              |       |
+| menuDef_t                 | ❌              | ❌              |       |
+| LocalizeEntry             | ✅              | ❌              |       |
+| WeaponCompleteDef         | ❌              | ❌              |       |
+| FxEffectDef               | ❌              | ❌              |       |
+| FxImpactTable             | ❌              | ❌              |       |
+| RawFile                   | ✅              | ❌              |       |
+| StringTable               | ✅              | ❌              |       |
+| LeaderboardDef            | ❌              | ❌              |       |
+| StructuredDataDefSet      | ❌              | ❌              |       |
+| TracerDef                 | ❌              | ❌              |       |
+| VehicleDef                | ❌              | ❌              |       |
+| AddonMapEnts              | ❌              | ❌              |       |
+| WeaponAttach              | ❌              | ❌              |       |
+| NetConstStrings           | ❌              | ❌              |       |
+| MarketplaceData           | ❌              | ❌              |       |
+
 ## IW3 (Call of Duty 4: Modern Warfare)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
-|----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset           | ✅              | ✅              |                                                                              |
 | XAnimParts           | ✅              | ✅              |                                                                              |
 | XModel               | ✅              | ✅              | Model data can be exported to `XMODEL_EXPORT/XMODEL_BIN`, `OBJ`, `GLB/GLTF`. |
@@ -40,7 +85,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 ## IW4 (Call of Duty: Modern Warfare 2)
 
 | Asset Type                | Dumping Support | Loading Support | Notes                                                                        |
-|---------------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| ------------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset                | ✅              | ✅              |                                                                              |
 | PhysCollmap               | ❌              | ❌              |                                                                              |
 | XAnimParts                | ✅              | ✅              |                                                                              |
@@ -58,7 +103,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | ComWorld                  | ❌              | ❌              |                                                                              |
 | GameWorldSp               | ❌              | ❌              |                                                                              |
 | GameWorldMp               | ❌              | ❌              |                                                                              |
-| MapEnts                   | ⁉️               | ❌              | Entity string can be exported. Binary data currently not.                    |
+| MapEnts                   | ⁉️              | ❌              | Entity string can be exported. Binary data currently not.                    |
 | FxWorld                   | ❌              | ❌              |                                                                              |
 | GfxWorld                  | ❌              | ❌              |                                                                              |
 | GfxLightDef               | ✅              | ✅              |                                                                              |
@@ -75,12 +120,12 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | StructuredDataDefSet      | ✅              | ✅              | The format is custom due to lacking information about original format.       |
 | TracerDef                 | ✅              | ✅              |                                                                              |
 | VehicleDef                | ✅              | ✅              |                                                                              |
-| AddonMapEnts              | ⁉️               | ❌              | MapEnts String can be exported. Binary data currently not.                   |
+| AddonMapEnts              | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.                   |
 
 ## IW5 (Call of Duty: Modern Warfare 3)
 
 | Asset Type                | Dumping Support | Loading Support | Notes                                                                                                         |
-|---------------------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
+| ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
 | PhysPreset                | ✅              | ✅              |                                                                                                               |
 | PhysCollmap               | ❌              | ❌              |                                                                                                               |
 | XAnimParts                | ✅              | ✅              |                                                                                                               |
@@ -100,7 +145,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | GlassWorld                | ❌              | ❌              |                                                                                                               |
 | PathData                  | ❌              | ❌              |                                                                                                               |
 | VehicleTrack              | ❌              | ❌              |                                                                                                               |
-| MapEnts                   | ⁉️               | ❌              | Entity string can be exported. Binary data currently not.                                                     |
+| MapEnts                   | ⁉️              | ❌              | Entity string can be exported. Binary data currently not.                                                     |
 | FxWorld                   | ❌              | ❌              |                                                                                                               |
 | GfxWorld                  | ❌              | ❌              |                                                                                                               |
 | GfxLightDef               | ✅              | ✅              |                                                                                                               |
@@ -114,18 +159,18 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | FxImpactTable             | ❌              | ❌              |                                                                                                               |
 | SurfaceFxTable            | ❌              | ❌              |                                                                                                               |
 | RawFile                   | ✅              | ✅              |                                                                                                               |
-| ScriptFile                | ⁉️               | ⁉️               | Can only be dumped/loaded as binary. Editing is possible with [GSC-Tool](https://github.com/xensik/gsc-tool). |
+| ScriptFile                | ⁉️              | ⁉️              | Can only be dumped/loaded as binary. Editing is possible with [GSC-Tool](https://github.com/xensik/gsc-tool). |
 | StringTable               | ✅              | ✅              |                                                                                                               |
 | LeaderboardDef            | ✅              | ✅              |                                                                                                               |
 | StructuredDataDefSet      | ❌              | ❌              |                                                                                                               |
 | TracerDef                 | ✅              | ✅              |                                                                                                               |
 | VehicleDef                | ✅              | ✅              |                                                                                                               |
-| AddonMapEnts              | ⁉️               | ❌              | MapEnts String can be exported. Binary data currently not.                                                    |
+| AddonMapEnts              | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.                                                    |
 
 ## QOS (007: Quantum of Solace)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
-|----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset           | ❌              | ❌              |                                                                              |
 | PhysConstraints      | ❌              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
@@ -161,7 +206,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 ## T4 (Call of Duty: World at War)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
-|----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ✅              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
@@ -194,7 +239,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 ## T5 (Call of Duty: Black Ops)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                                        |
-|----------------------|-----------------|-----------------|------------------------------------------------------------------------------|
+| -------------------- | --------------- | --------------- | ---------------------------------------------------------------------------- |
 | PhysPreset           | ✅              | ✅              |                                                                              |
 | PhysConstraints      | ✅              | ❌              |                                                                              |
 | DestructibleDef      | ❌              | ❌              |                                                                              |
@@ -231,7 +276,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 ## T6 (Call of Duty: Black Ops II)
 
 | Asset Type             | Dumping Support | Loading Support | Notes                                                                                                                                                          |
-|------------------------|-----------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | --------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PhysPreset             | ✅              | ✅              |                                                                                                                                                                |
 | PhysConstraints        | ✅              | ✅              |                                                                                                                                                                |
 | DestructibleDef        | ❌              | ❌              |                                                                                                                                                                |
@@ -246,7 +291,7 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | ComWorld               | ❌              | ❌              |                                                                                                                                                                |
 | GameWorldSp            | ❌              | ❌              |                                                                                                                                                                |
 | GameWorldMp            | ❌              | ❌              |                                                                                                                                                                |
-| MapEnts                | ⁉️               | ❌              | Entity string can be exported. Binary data currently not.                                                                                                      |
+| MapEnts                | ⁉️              | ❌              | Entity string can be exported. Binary data currently not.                                                                                                      |
 | GfxWorld               | ❌              | ❌              |                                                                                                                                                                |
 | GfxLightDef            | ✅              | ✅              |                                                                                                                                                                |
 | Font_s                 | ✅              | ✅              |                                                                                                                                                                |
@@ -268,15 +313,15 @@ are supported to be dumped to disk (using `Unlinker`) and loaded from disk (usin
 | ddlRoot_t              | ❌              | ❌              |                                                                                                                                                                |
 | Glasses                | ❌              | ❌              |                                                                                                                                                                |
 | EmblemSet              | ❌              | ❌              |                                                                                                                                                                |
-| ScriptParseTree        | ⁉️               | ⁉️               | Can only be dumped/loaded as binary. Editing is possible with [GSC-Tool](https://github.com/xensik/gsc-tool). Plutonium supports loading source files however. |
+| ScriptParseTree        | ⁉️              | ⁉️              | Can only be dumped/loaded as binary. Editing is possible with [GSC-Tool](https://github.com/xensik/gsc-tool). Plutonium supports loading source files however. |
 | KeyValuePairs          | ✅              | ✅              | Is dumped/loaded as part of the `.zone` file.                                                                                                                  |
 | VehicleDef             | ✅              | ✅              |                                                                                                                                                                |
 | MemoryBlock            | ❌              | ❌              |                                                                                                                                                                |
-| AddonMapEnts           | ⁉️               | ❌              | MapEnts String can be exported. Binary data currently not.                                                                                                     |
+| AddonMapEnts           | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.                                                                                                     |
 | TracerDef              | ✅              | ✅              |                                                                                                                                                                |
 | SkinnedVertsDef        | ❌              | ❌              |                                                                                                                                                                |
-| Qdb                    | ⁉️               | ⁉️               | Dumping/Loading is implemented as rawfiles. Their use is currently unknown.                                                                                    |
-| Slug                   | ⁉️               | ⁉️               | Dumping/Loading is implemented as rawfiles. Their use is currently unknown.                                                                                    |
+| Qdb                    | ⁉️              | ⁉️              | Dumping/Loading is implemented as rawfiles. Their use is currently unknown.                                                                                    |
+| Slug                   | ⁉️              | ⁉️              | Dumping/Loading is implemented as rawfiles. Their use is currently unknown.                                                                                    |
 | FootstepTableDef       | ❌              | ❌              |                                                                                                                                                                |
 | FootstepFXTableDef     | ❌              | ❌              |                                                                                                                                                                |
 | ZBarrierDef            | ✅              | ✅              |                                                                                                                                                                |

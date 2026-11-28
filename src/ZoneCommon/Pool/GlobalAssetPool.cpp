@@ -197,6 +197,7 @@ XAssetInfoGeneric* GameGlobalAssetPools::GetAsset(const asset_type_t assetType, 
 GameGlobalAssetPools* GameGlobalAssetPools::GetGlobalPoolsForGame(GameId gameId)
 {
     static GameGlobalAssetPools* globalAssetPools[]{
+        new GameGlobalAssetPools(GameId::CODO),
         new GameGlobalAssetPools(GameId::IW3),
         new GameGlobalAssetPools(GameId::IW4),
         new GameGlobalAssetPools(GameId::IW5),
